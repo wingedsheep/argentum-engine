@@ -7213,6 +7213,89 @@
     ]
 }
 
+// Grand Entryway // Elegant Rotunda
+{
+    "name": "Grand Entryway // Elegant Rotunda",
+    "manaCost": "",
+    "typeLine": "Enchantment — Room",
+    "oracleText": "When you unlock this door, create a 1/1 white Glimmer enchantment creature token.\n//\nWhen you unlock this door, put a +1/+1 counter on each of up to two target creatures.",
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Carlos Palma Cruchaga",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef8a8ba7-f955-425d-9a16-816fc48a2a83.jpg?1726867775"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Grand Entryway",
+            "manaCost": "{1}{W}",
+            "typeLine": "Enchantment — Room",
+            "oracleText": "When you unlock this door, create a 1/1 white Glimmer enchantment creature token.",
+            "script": {
+                "triggeredAbilities": [
+                    {
+                        "id": "ability_1",
+                        "trigger": "DoorUnlockedEvent",
+                        "effect": {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Glimmer"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/4/7/475c7449-2c95-4873-94de-68a5e06cdfb8.jpg?1754930946",
+                            "enchantmentToken": true
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "Elegant Rotunda",
+            "manaCost": "{2}{W}",
+            "typeLine": "Enchantment — Room",
+            "oracleText": "When you unlock this door, put a +1/+1 counter on each of up to two target creatures.",
+            "script": {
+                "triggeredAbilities": [
+                    {
+                        "id": "ability_2",
+                        "trigger": "DoorUnlockedEvent",
+                        "effect": {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "AddCounters",
+                                "counterType": "+1/+1",
+                                "count": 1,
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        },
+                        "targetRequirement": {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "up to two target creatures"
+                        },
+                        "descriptionOverride": "When you unlock this door, put a +1/+1 counter on each of up to two target creatures."
+                    }
+                ]
+            }
+        }
+    ]
+}
+
 // Grasping Longneck
 {
     "name": "Grasping Longneck",
@@ -9309,6 +9392,149 @@
     ]
 }
 
+// Let's Play a Game
+{
+    "name": "Let's Play a Game",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Delirium — Choose one. If there are four or more card types among cards in your graveyard, choose one or more instead.\n• Creatures your opponents control get -1/-1 until end of turn.\n• Each opponent discards two cards.\n• Each opponent loses 3 life and you gain 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": -1
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "description": "Creatures your opponents control get -1/-1 until end of turn."
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": "EachOpponent"
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        }
+                                    },
+                                    "storeSelected": "discarded"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    },
+                    "description": "Each opponent discards two cards."
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            }
+                        ]
+                    },
+                    "description": "Each opponent loses 3 life and you gain 3 life."
+                }
+            ],
+            "dynamicChooseCount": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateZone",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "aggregation": "DISTINCT_TYPES"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "UNCOMMON",
+        "artist": "Riccardo Federici",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/645911b4-7728-4380-9097-e4139b986423.jpg?1726286240"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Leyline of Hope
 {
     "name": "Leyline of Hope",
@@ -9365,6 +9591,105 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Leyline of Mutation
+{
+    "name": "Leyline of Mutation",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nYou may pay {W}{U}{B}{R}{G} rather than pay the mana cost for spells you cast.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantAlternativeCastingCost",
+                "cost": "{W}{U}{B}{R}{G}"
+            }
+        ],
+        "mayStartOnBattlefield": true
+    },
+    "metadata": {
+        "collectorNumber": "188",
+        "rarity": "RARE",
+        "artist": "Sergey Glushakov",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/2359b670-41f0-4ec7-8db9-3f87f7577bc3.jpg?1726286566"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Leyline of Resonance
+{
+    "name": "Leyline of Resonance",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nWhenever you cast an instant or sorcery spell that targets only a single creature you control, copy that spell. You may choose new targets for the copy.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "requires": [
+                        {
+                            "type": "SpellTargetsMatching",
+                            "filter": "creature ctrl:you"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": "TriggeringEntity"
+                },
+                "triggerCondition": "TriggeringSpellHasSingleTarget"
+            }
+        ],
+        "mayStartOnBattlefield": true
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "RARE",
+        "artist": "Sergey Glushakov",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92c5f0e3-345a-40a8-9cda-565a62156692.jpg?1731574465",
+        "rulings": [
+            {
+                "date": "2024-09-20",
+                "text": "The copy will have the same targets (all the same creature you control) as the spell it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. The new targets must be legal."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "If the spell that's copied is modal, the copy will have the same mode or modes. You can't choose different ones."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "If the spell that's copied has an X whose value was determined as it was cast, the copy will have the same value of X."
+            },
+            {
+                "date": "2024-09-20",
+                "text": "The copy is created on the stack, so it's not \"cast.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
