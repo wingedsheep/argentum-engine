@@ -148,7 +148,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [x] Fancy Footwork
 - [x] Fatal Fissure
 - [ ] Fated Firepower
-- [ ] Fire Lord Azula
+- [x] Fire Lord Azula
 - [x] Fire Lord Zuko
 - [ ] Fire Nation Attacks
 - [ ] Fire Nation Cadets
