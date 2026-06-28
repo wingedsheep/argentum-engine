@@ -70,12 +70,9 @@
   white-space: nowrap;
 }
 
-/* Admin: a subtle pill that only renders for admin accounts, linking to the dashboard. */
+/* Admin: matches the Log out pill's weight/casing; only renders for admin accounts. */
 .admin {
   padding: var(--space-2) var(--space-3);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
 }
 
 .admin:hover {
