@@ -228,7 +228,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [x] Meteor Sword
 - [x] Misty Palms Oasis
 - [x] Momo, Friendly Flier
-- [ ] Momo, Playful Pet
+- [x] Momo, Playful Pet
 - [ ] Mongoose Lizard
 - [x] Mountain
 - [x] North Pole Gates

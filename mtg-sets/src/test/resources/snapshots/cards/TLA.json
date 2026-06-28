@@ -3020,6 +3020,81 @@
     ]
 }
 
+// Momo, Playful Pet
+{
+    "name": "Momo, Playful Pet",
+    "manaCost": "{W}",
+    "typeLine": "Legendary Creature — Lemur Bat Ally",
+    "oracleText": "Flying, vigilance\nWhen Momo leaves the battlefield, choose one —\n• Create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")\n• Put a +1/+1 counter on target creature you control.\n• Scry 2.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Food"
+                            },
+                            "description": "Create a Food token."
+                        },
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "+1/+1",
+                                "count": 1,
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                }
+                            ],
+                            "description": "Put a +1/+1 counter on target creature you control."
+                        },
+                        {
+                            "effect": {
+                                "type": "Scry",
+                                "count": 2
+                            },
+                            "description": "Scry 2."
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "rarity": "UNCOMMON",
+        "artist": "Awanqi (Angela Wang)",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/9350bf4a-fa12-4867-b31f-1f1394d99571.jpg?1764120089"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // North Pole Gates
 {
     "name": "North Pole Gates",
