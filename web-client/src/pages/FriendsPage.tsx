@@ -213,9 +213,14 @@ export function FriendsPage() {
                     {f.displayName}
                     <span style={styles.statusText}>{f.online ? 'Online' : 'Offline'}</span>
                   </span>
-                  <button type="button" style={styles.smallGhost} onClick={() => void unfriend(f.accountId)}>
-                    Unfriend
-                  </button>
+                  <span style={{ display: 'flex', gap: 8 }}>
+                    <button type="button" style={styles.smallGhost} onClick={() => navigate(`/u/${f.accountId}`)}>
+                      View profile
+                    </button>
+                    <button type="button" style={styles.smallGhost} onClick={() => void unfriend(f.accountId)}>
+                      Unfriend
+                    </button>
+                  </span>
                 </div>
               ))
             )}

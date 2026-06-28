@@ -1,6 +1,8 @@
 package com.wingedsheep.gameserver.stats
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.sdk.core.CardType
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Service
@@ -30,6 +32,30 @@ data class GameHistoryEntry(
     val gameId: String,
     /** True when a compact replay was stored for this game and can be watched/shared. */
     val hasReplay: Boolean,
+)
+
+/** One card line in a stored deck (for the recent-games deck viewer). */
+data class DeckCardEntry(val cardName: String, val copies: Int)
+
+/** One seat's recorded deck within a finished game, for the recent-games deck viewer. */
+data class GameDeckParticipant(
+    val playerName: String,
+    val isAi: Boolean,
+    /** True for the seat belonging to the requesting user. */
+    val isSelf: Boolean,
+    val won: Boolean,
+    /** Color identity recomputed from the stored deck, canonical WUBRG order; "" = colorless. */
+    val colors: String,
+    /** The deck's cards, most copies first then alphabetical. */
+    val cards: List<DeckCardEntry>,
+)
+
+/** Both seats' decks for one finished game the requesting user played. */
+data class GameDecks(
+    val gameId: String,
+    val endedAt: String,
+    val gameMode: String?,
+    val participants: List<GameDeckParticipant>,
 )
 
 /** Global, cross-user totals for the admin dashboard. */
@@ -96,22 +122,30 @@ data class TournamentSummary(
  */
 @Service
 @ConditionalOnProperty(name = ["accounts.enabled"], havingValue = "true")
-class StatsQueryService(private val jdbc: JdbcTemplate) {
+class StatsQueryService(
+    private val jdbc: JdbcTemplate,
+    private val deckProfiler: DeckProfiler,
+    private val cardRegistry: CardRegistry,
+) {
 
     // ---- Per-user ----------------------------------------------------------------------------
 
-    /** How often the user has played each color identity (e.g. "WU"), most-played first. */
-    fun colorBreakdown(userId: UUID): List<StatBucket> = jdbc.query(
-        """
-        SELECT COALESCE(colors, '') AS label, count(*) AS n
-        FROM match_participants
-        WHERE user_id = ?
-        GROUP BY COALESCE(colors, '')
-        ORDER BY n DESC
-        """.trimIndent(),
-        { rs, _ -> StatBucket(rs.getString("label"), rs.getLong("n")) },
-        userId,
-    )
+    /**
+     * How often the user has played each color identity (e.g. "WU"), most-played first. Recomputed
+     * from each game's stored deck list (the authoritative source) rather than the denormalized
+     * `colors` column, which can be stale/empty for games recorded before a card's color identity
+     * was known. Games with no stored deck cards are omitted (we genuinely don't know their colors,
+     * so they must not masquerade as "Colorless").
+     */
+    fun colorBreakdown(userId: UUID): List<StatBucket> {
+        val byColors = decksByParticipant(userId).values
+            .map { cards -> deckProfiler.profile(cards.map { it.cardName }).colors }
+            .groupingBy { it }
+            .eachCount()
+        return byColors.entries
+            .sortedWith(compareByDescending<Map.Entry<String, Int>> { it.value }.thenBy { it.key })
+            .map { StatBucket(it.key, it.value.toLong()) }
+    }
 
     /** How often the user has played each set, most-played first. Splits the comma-separated codes. */
     fun setBreakdown(userId: UUID): List<StatBucket> = jdbc.query(
@@ -141,7 +175,11 @@ class StatsQueryService(private val jdbc: JdbcTemplate) {
         userId,
     )
 
-    /** Win/loss against each opponent the user has faced, most-played first. */
+    /**
+     * Win/loss against each human opponent the user has faced, most-played first. AI seats are
+     * excluded — the head-to-head is about the most common *people* you play against, and the
+     * built-in AI would otherwise dominate every casual player's list.
+     */
     fun headToHead(userId: UUID): List<HeadToHead> = jdbc.query(
         """
         SELECT COALESCE(u.display_name, opp.player_name) AS opponent,
@@ -152,7 +190,7 @@ class StatsQueryService(private val jdbc: JdbcTemplate) {
         FROM match_participants me
         JOIN match_participants opp ON opp.match_id = me.match_id AND opp.id <> me.id
         LEFT JOIN users u ON u.id = opp.user_id
-        WHERE me.user_id = ?
+        WHERE me.user_id = ? AND opp.is_ai = false
         GROUP BY COALESCE(u.display_name, opp.player_name), opp.user_id
         ORDER BY count(*) DESC, opponent ASC
         """.trimIndent(),
@@ -168,39 +206,236 @@ class StatsQueryService(private val jdbc: JdbcTemplate) {
         userId,
     )
 
-    /** Most-recent games the user played, newest first. */
-    fun recentGames(userId: UUID, limit: Int, offset: Int): List<GameHistoryEntry> = jdbc.query(
+    /** Total number of games the user has played — drives the recent-games pager. */
+    fun recentGamesCount(userId: UUID): Long = jdbc.queryForObject(
+        "SELECT count(*) FROM match_participants WHERE user_id = ?",
+        Long::class.java,
+        userId,
+    ) ?: 0
+
+    /**
+     * Most-recent games the user played, newest first, one page at a time. Each row's deck colors
+     * are recomputed from the stored deck list (see [colorBreakdown]) so the table never shows a
+     * real deck as "Colorless" because of a stale `colors` column; when no deck was recorded the
+     * colors are left null and the client renders a dash.
+     */
+    fun recentGames(userId: UUID, limit: Int, offset: Int): List<GameHistoryEntry> {
+        data class Row(
+            val pid: Long,
+            val entry: GameHistoryEntry,
+        )
+        val rows = jdbc.query(
+            """
+            SELECT me.id AS pid, r.ended_at AS ended_at, r.game_mode AS game_mode, r.format AS format,
+                   me.won AS won, me.colors AS colors, r.game_id AS game_id,
+                   (gr.id IS NOT NULL) AS has_replay,
+                   (SELECT string_agg(COALESCE(u2.display_name, o.player_name), ', ')
+                      FROM match_participants o
+                      LEFT JOIN users u2 ON u2.id = o.user_id
+                      WHERE o.match_id = r.id AND o.id <> me.id) AS opponents
+            FROM match_participants me
+            JOIN match_results r ON r.id = me.match_id
+            LEFT JOIN game_replays gr ON gr.game_id = r.game_id
+            WHERE me.user_id = ?
+            ORDER BY r.ended_at DESC
+            LIMIT ? OFFSET ?
+            """.trimIndent(),
+            { rs, _ ->
+                Row(
+                    pid = rs.getLong("pid"),
+                    entry = GameHistoryEntry(
+                        endedAt = rs.getTimestamp("ended_at").toInstant().toString(),
+                        gameMode = rs.getString("game_mode"),
+                        format = rs.getString("format"),
+                        colors = rs.getString("colors"),
+                        opponents = rs.getString("opponents"),
+                        won = rs.getBoolean("won"),
+                        gameId = rs.getString("game_id"),
+                        hasReplay = rs.getBoolean("has_replay"),
+                    ),
+                )
+            },
+            userId, limit, offset,
+        )
+        val cardsByPid = cardsForParticipants(rows.map { it.pid })
+        return rows.map { row ->
+            val cards = cardsByPid[row.pid]
+            // Recompute from the recorded deck when we have one; otherwise keep whatever was stored.
+            val colors = if (cards.isNullOrEmpty()) row.entry.colors
+            else deckProfiler.profile(cards.map { it.cardName }).colors
+            row.entry.copy(colors = colors)
+        }
+    }
+
+    /**
+     * Both seats' decks for one finished game the user played, for the recent-games deck viewer.
+     * Returns null when the game isn't one the [userId] participated in (so a user can't read a
+     * stranger's deck by guessing game ids). Colors are recomputed per seat from its stored deck.
+     */
+    fun decksForGame(userId: UUID, gameId: String): GameDecks? {
+        data class Seat(val pid: Long, val name: String, val isAi: Boolean, val isSelf: Boolean, val won: Boolean)
+        val header = jdbc.query(
+            """
+            SELECT r.ended_at AS ended_at, r.game_mode AS game_mode
+            FROM match_results r
+            JOIN match_participants me ON me.match_id = r.id AND me.user_id = ?
+            WHERE r.game_id = ?
+            LIMIT 1
+            """.trimIndent(),
+            { rs, _ -> rs.getTimestamp("ended_at").toInstant().toString() to rs.getString("game_mode") },
+            userId, gameId,
+        ).firstOrNull() ?: return null
+        val seats = jdbc.query(
+            """
+            SELECT p.id AS pid, COALESCE(u.display_name, p.player_name) AS name,
+                   p.is_ai AS is_ai, COALESCE(p.user_id = ?, false) AS is_self, p.won AS won
+            FROM match_participants p
+            JOIN match_results r ON r.id = p.match_id
+            LEFT JOIN users u ON u.id = p.user_id
+            WHERE r.game_id = ?
+            ORDER BY COALESCE(p.user_id = ?, false) DESC, p.id
+            """.trimIndent(),
+            { rs, _ ->
+                Seat(rs.getLong("pid"), rs.getString("name"), rs.getBoolean("is_ai"), rs.getBoolean("is_self"), rs.getBoolean("won"))
+            },
+            userId, gameId, userId,
+        )
+        val cardsByPid = cardsForParticipants(seats.map { it.pid })
+        return GameDecks(
+            gameId = gameId,
+            endedAt = header.first,
+            gameMode = header.second,
+            participants = seats.map { seat ->
+                val cards = cardsByPid[seat.pid].orEmpty()
+                GameDeckParticipant(
+                    playerName = seat.name,
+                    isAi = seat.isAi,
+                    isSelf = seat.isSelf,
+                    won = seat.won,
+                    colors = deckProfiler.profile(cards.map { it.cardName }).colors,
+                    cards = cards.sortedWith(compareByDescending<DeckCardEntry> { it.copies }.thenBy { it.cardName }),
+                )
+            },
+        )
+    }
+
+    /**
+     * The creature subtypes (Goblin, Angel, …) the user plays most, by total copies across every
+     * recorded deck. Resolved through the card registry since subtypes aren't stored per card.
+     */
+    fun creatureTypeBreakdown(userId: UUID, limit: Int): List<StatBucket> {
+        val byType = HashMap<String, Long>()
+        for ((name, copies) in cardCopiesForUser(userId)) {
+            val card = lookupCard(name) ?: continue
+            if (!card.typeLine.isCreature) continue
+            for (sub in card.typeLine.subtypes) byType.merge(sub.value, copies, Long::plus)
+        }
+        return byType.entries
+            .sortedWith(compareByDescending<Map.Entry<String, Long>> { it.value }.thenBy { it.key })
+            .take(limit)
+            .map { StatBucket(it.key, it.value) }
+    }
+
+    /**
+     * Distribution of the user's cards across the primary card types (Creature, Instant, Land, …),
+     * by total copies. Each card is bucketed once, by its dominant type, so the slices sum to the
+     * deck size.
+     */
+    fun cardTypeBreakdown(userId: UUID): List<StatBucket> {
+        val byType = HashMap<String, Long>()
+        for ((name, copies) in cardCopiesForUser(userId)) {
+            val card = lookupCard(name) ?: continue
+            byType.merge(primaryTypeLabel(card.typeLine.cardTypes), copies, Long::plus)
+        }
+        return byType.entries
+            .sortedWith(compareByDescending<Map.Entry<String, Long>> { it.value }.thenBy { it.key })
+            .map { StatBucket(it.key, it.value) }
+    }
+
+    /**
+     * Mana-value curve of the user's nonland cards, by total copies, bucketed 0..6 with a final
+     * "7+" bin. Lands are excluded — a curve is about what you cast.
+     */
+    fun manaCurve(userId: UUID): List<StatBucket> {
+        val byMv = LongArray(8)
+        for ((name, copies) in cardCopiesForUser(userId)) {
+            val card = lookupCard(name) ?: continue
+            if (card.typeLine.isLand) continue
+            byMv[card.manaCost.cmc.coerceIn(0, 7)] += copies
+        }
+        return byMv.mapIndexed { mv, n -> StatBucket(if (mv == 7) "7+" else mv.toString(), n) }
+    }
+
+    // ---- Per-user deck-card helpers ----------------------------------------------------------
+
+    /** Card name -> total copies across every recorded deck of [userId]. */
+    private fun cardCopiesForUser(userId: UUID): List<Pair<String, Long>> = jdbc.query(
         """
-        SELECT r.ended_at AS ended_at, r.game_mode AS game_mode, r.format AS format,
-               me.won AS won, me.colors AS colors, r.game_id AS game_id,
-               (gr.id IS NOT NULL) AS has_replay,
-               (SELECT string_agg(COALESCE(u2.display_name, o.player_name), ', ')
-                  FROM match_participants o
-                  LEFT JOIN users u2 ON u2.id = o.user_id
-                  WHERE o.match_id = r.id AND o.id <> me.id) AS opponents
-        FROM match_participants me
-        JOIN match_results r ON r.id = me.match_id
-        LEFT JOIN game_replays gr ON gr.game_id = r.game_id
-        WHERE me.user_id = ?
-        ORDER BY r.ended_at DESC
-        LIMIT ? OFFSET ?
+        SELECT c.card_name AS card_name, sum(c.copies) AS copies
+        FROM match_participant_cards c
+        JOIN match_participants p ON p.id = c.participant_id
+        WHERE p.user_id = ?
+        GROUP BY c.card_name
         """.trimIndent(),
-        { rs, _ ->
-            GameHistoryEntry(
-                endedAt = rs.getTimestamp("ended_at").toInstant().toString(),
-                gameMode = rs.getString("game_mode"),
-                format = rs.getString("format"),
-                colors = rs.getString("colors"),
-                opponents = rs.getString("opponents"),
-                won = rs.getBoolean("won"),
-                gameId = rs.getString("game_id"),
-                hasReplay = rs.getBoolean("has_replay"),
-            )
-        },
-        userId, limit, offset,
+        { rs, _ -> rs.getString("card_name") to rs.getLong("copies") },
+        userId,
     )
 
-    /** The user's most-played cards across all their recorded decks. */
+    /** Per-game (participant) deck lists for [userId], keyed by participant id. */
+    private fun decksByParticipant(userId: UUID): Map<Long, List<DeckCardEntry>> {
+        val out = LinkedHashMap<Long, MutableList<DeckCardEntry>>()
+        jdbc.query(
+            """
+            SELECT c.participant_id AS pid, c.card_name AS card_name, c.copies AS copies
+            FROM match_participant_cards c
+            JOIN match_participants p ON p.id = c.participant_id
+            WHERE p.user_id = ?
+            """.trimIndent(),
+            { rs ->
+                out.getOrPut(rs.getLong("pid")) { mutableListOf() }
+                    .add(DeckCardEntry(rs.getString("card_name"), rs.getInt("copies")))
+            },
+            userId,
+        )
+        return out
+    }
+
+    /** Deck cards for a set of participant ids, keyed by participant id. */
+    private fun cardsForParticipants(pids: List<Long>): Map<Long, List<DeckCardEntry>> {
+        if (pids.isEmpty()) return emptyMap()
+        val placeholders = pids.joinToString(",") { "?" }
+        val out = LinkedHashMap<Long, MutableList<DeckCardEntry>>()
+        jdbc.query(
+            "SELECT participant_id AS pid, card_name, copies FROM match_participant_cards " +
+                "WHERE participant_id IN ($placeholders)",
+            { rs ->
+                out.getOrPut(rs.getLong("pid")) { mutableListOf() }
+                    .add(DeckCardEntry(rs.getString("card_name"), rs.getInt("copies")))
+            },
+            *pids.toTypedArray(),
+        )
+        return out
+    }
+
+    /** Registry lookup tolerant of a "name#collector" pin (mirrors [DeckProfiler]). */
+    private fun lookupCard(name: String) =
+        cardRegistry.getCard(name) ?: cardRegistry.getCard(name.substringBefore('#'))
+
+    /** The single dominant card type used to bucket a card in [cardTypeBreakdown]. */
+    private fun primaryTypeLabel(types: Set<CardType>): String {
+        val order = listOf(
+            CardType.CREATURE, CardType.PLANESWALKER, CardType.INSTANT, CardType.SORCERY,
+            CardType.ARTIFACT, CardType.ENCHANTMENT, CardType.LAND,
+        )
+        return order.firstOrNull { it in types }?.displayName ?: "Other"
+    }
+
+    /**
+     * The user's most-played cards across all their recorded decks. Basic lands are excluded — every
+     * deck runs a pile of them, so they'd otherwise crowd out the cards that actually characterize how
+     * the player builds. Filtering is done after the group-by (the registry knows which names are
+     * basics), so [limit] applies to the non-basic results.
+     */
     fun topCardsForUser(userId: UUID, limit: Int): List<CardStat> = jdbc.query(
         """
         SELECT c.card_name AS card_name, sum(c.copies) AS copies, count(*) AS decks
@@ -209,11 +444,10 @@ class StatsQueryService(private val jdbc: JdbcTemplate) {
         WHERE p.user_id = ?
         GROUP BY c.card_name
         ORDER BY copies DESC, decks DESC
-        LIMIT ?
         """.trimIndent(),
         { rs, _ -> CardStat(rs.getString("card_name"), rs.getLong("copies"), rs.getLong("decks")) },
-        userId, limit,
-    )
+        userId,
+    ).filterNot { lookupCard(it.cardName)?.typeLine?.isBasicLand == true }.take(limit)
 
     /** The user's tournament finishes, newest first. */
     fun tournamentHistory(userId: UUID, limit: Int): List<UserTournamentEntry> = jdbc.query(

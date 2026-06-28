@@ -243,6 +243,36 @@ export interface UserTournamentEntry {
   readonly playerCount: number
 }
 
+/** One card line within a stored deck. */
+export interface DeckCardEntry {
+  readonly cardName: string
+  readonly copies: number
+}
+
+/** One seat's recorded deck within a finished game. */
+export interface GameDeckParticipant {
+  readonly playerName: string
+  readonly isAi: boolean
+  readonly isSelf: boolean
+  readonly won: boolean
+  readonly colors: string
+  readonly cards: DeckCardEntry[]
+}
+
+/** Both seats' decks for a finished game, for the recent-games deck viewer. */
+export interface GameDecks {
+  readonly gameId: string
+  readonly endedAt: string
+  readonly gameMode: string | null
+  readonly participants: GameDeckParticipant[]
+}
+
+/** A page of game history plus the total game count (for the pager). */
+export interface HistoryPage {
+  readonly entries: GameHistoryEntry[]
+  readonly total: number
+}
+
 async function getStats<T>(path: string): Promise<T> {
   const res = await fetch(`/api/stats${path}`, { headers: authHeaders() })
   if (res.status === 401) throw new UnauthorizedError()
@@ -287,3 +317,59 @@ export const fetchTournamentHistory = (limit = 25) =>
   getStats<UserTournamentEntry[]>(`/me/tournaments?limit=${limit}`)
 export const fetchRatings = () => getStats<RatingEntry[]>('/me/ratings')
 export const fetchRatingsHistory = () => getStats<RatingPoint[]>('/me/ratings/history')
+export const fetchCreatureTypes = (limit = 15) =>
+  getStats<StatBucket[]>(`/me/creature-types?limit=${limit}`)
+export const fetchCardTypes = () => getStats<StatBucket[]>('/me/card-types')
+export const fetchManaCurve = () => getStats<StatBucket[]>('/me/curve')
+
+/** Everything a read-only public profile shows for another player, bundled into one response. */
+export interface PublicProfile {
+  readonly userId: string
+  readonly displayName: string
+  readonly stats: AccountStats
+  readonly ratings: RatingEntry[]
+  readonly ratingHistory: RatingPoint[]
+  readonly colors: StatBucket[]
+  readonly cardTypes: StatBucket[]
+  readonly curve: StatBucket[]
+  readonly creatureTypes: StatBucket[]
+  readonly modes: StatBucket[]
+  readonly sets: StatBucket[]
+  readonly topCards: CardStat[]
+  readonly opponents: HeadToHead[]
+  readonly tournaments: UserTournamentEntry[]
+  readonly recentGames: GameHistoryEntry[]
+}
+
+/** Thrown when a requested public profile doesn't exist. */
+export class ProfileNotFoundError extends Error {}
+
+/** Fetch another player's public, read-only profile by user id. */
+export async function fetchPublicProfile(userId: string): Promise<PublicProfile> {
+  const res = await fetch(`/api/stats/users/${encodeURIComponent(userId)}`, { headers: authHeaders() })
+  if (res.status === 404) throw new ProfileNotFoundError()
+  if (!res.ok) throw new Error(`Failed to load profile (${res.status})`)
+  return (await res.json()) as PublicProfile
+}
+
+/** One page of recent games, with the total count read from `X-Total-Count` for the pager. */
+export async function fetchHistoryPage(limit: number, offset: number): Promise<HistoryPage> {
+  const res = await fetch(`/api/stats/me/history?limit=${limit}&offset=${offset}`, {
+    headers: authHeaders(),
+  })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(`Failed to load history (${res.status})`)
+  const entries = (await res.json()) as GameHistoryEntry[]
+  const total = Number(res.headers.get('X-Total-Count') ?? entries.length)
+  return { entries, total: Number.isFinite(total) ? total : entries.length }
+}
+
+/** Both seats' decklists for one of the user's finished games (for the recent-games deck viewer). */
+export async function fetchGameDecks(gameId: string): Promise<GameDecks> {
+  const res = await fetch(`/api/stats/me/history/${encodeURIComponent(gameId)}/decks`, {
+    headers: authHeaders(),
+  })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(`Failed to load decks (${res.status})`)
+  return (await res.json()) as GameDecks
+}

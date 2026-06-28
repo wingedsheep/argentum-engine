@@ -1,49 +1,27 @@
 /**
- * Account profile: shows the signed-in user, lets them rename their display name, shows their
- * win/loss record, and offers a small launcher into the deckbuilder's saved-deck browser (the polished
- * overlay that lists account + browser decks with online badges). Prompts sign-in when anonymous.
+ * Account profile: shows the signed-in user, lets them rename their display name, a compact win/loss
+ * summary (with a link to the full stats dashboard), a launcher into the deckbuilder's saved-deck
+ * browser, and a paginated list of recent games — each of which can be opened to review both players'
+ * decks or watched/shared as a replay. Prompts sign-in when anonymous. The heavy analytics (charts,
+ * head-to-head, colors, mana curve, …) live on the separate /stats page.
  */
 import { useEffect, useState } from 'react'
 import type React from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
-import {
   type AccountStats,
-  type CardStat,
   type DeckSummary,
   type GameHistoryEntry,
-  type HeadToHead,
-  type RankedModeName,
-  type RatingEntry,
-  type RatingPoint,
-  type StatBucket,
-  type UserTournamentEntry,
-  fetchColorStats,
-  fetchHistory,
-  fetchModeStats,
-  fetchOpponents,
-  fetchRatings,
-  fetchRatingsHistory,
-  fetchSetStats,
+  fetchHistoryPage,
   fetchStats,
-  fetchTopCards,
-  fetchTournamentHistory,
   listDecks,
 } from '@/api/account'
 import { LoginModal } from '@/components/auth/LoginModal'
-import { colorLabel } from '@/components/admin/statFormat'
+import { DeckViewModal } from '@/components/profile/DeckViewModal'
+import { colorForIdentity, colorLabel } from '@/components/admin/statFormat'
 import { useAuthStore } from '@/store/authStore'
+
+const PAGE_SIZE = 10
 
 export function ProfilePage() {
   const navigate = useNavigate()
@@ -56,15 +34,9 @@ export function ProfilePage() {
 
   const [stats, setStats] = useState<AccountStats | null>(null)
   const [decks, setDecks] = useState<DeckSummary[]>([])
-  const [colors, setColors] = useState<StatBucket[]>([])
-  const [sets, setSets] = useState<StatBucket[]>([])
-  const [modes, setModes] = useState<StatBucket[]>([])
-  const [opponents, setOpponents] = useState<HeadToHead[]>([])
   const [history, setHistory] = useState<GameHistoryEntry[]>([])
-  const [topCards, setTopCards] = useState<CardStat[]>([])
-  const [tournaments, setTournaments] = useState<UserTournamentEntry[]>([])
-  const [ratings, setRatings] = useState<RatingEntry[]>([])
-  const [ratingHistory, setRatingHistory] = useState<RatingPoint[]>([])
+  const [historyTotal, setHistoryTotal] = useState(0)
+  const [page, setPage] = useState(0)
   const [loginOpen, setLoginOpen] = useState(false)
 
   const [editingName, setEditingName] = useState(false)
@@ -72,6 +44,7 @@ export function ProfilePage() {
   const [nameError, setNameError] = useState<string | null>(null)
   const [savingName, setSavingName] = useState(false)
   const [copiedReplay, setCopiedReplay] = useState<string | null>(null)
+  const [deckModal, setDeckModal] = useState<{ gameId: string; opponent: string } | null>(null)
 
   const shareReplay = (gameId: string) => {
     const url = `${window.location.origin}/replay/${gameId}`
@@ -92,16 +65,20 @@ export function ProfilePage() {
     if (status !== 'authenticated') return
     void fetchStats().then(setStats).catch(() => setStats(null))
     void listDecks().then(setDecks).catch(() => setDecks([]))
-    void fetchColorStats().then(setColors).catch(() => setColors([]))
-    void fetchSetStats().then(setSets).catch(() => setSets([]))
-    void fetchModeStats().then(setModes).catch(() => setModes([]))
-    void fetchOpponents().then(setOpponents).catch(() => setOpponents([]))
-    void fetchHistory(25).then(setHistory).catch(() => setHistory([]))
-    void fetchTopCards(20).then(setTopCards).catch(() => setTopCards([]))
-    void fetchTournamentHistory(15).then(setTournaments).catch(() => setTournaments([]))
-    void fetchRatings().then(setRatings).catch(() => setRatings([]))
-    void fetchRatingsHistory().then(setRatingHistory).catch(() => setRatingHistory([]))
   }, [status])
+
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    void fetchHistoryPage(PAGE_SIZE, page * PAGE_SIZE)
+      .then((p) => {
+        setHistory(p.entries)
+        setHistoryTotal(p.total)
+      })
+      .catch(() => {
+        setHistory([])
+        setHistoryTotal(0)
+      })
+  }, [status, page])
 
   const startEditName = () => {
     setNameDraft(user?.displayName ?? '')
@@ -128,6 +105,9 @@ export function ProfilePage() {
   }
 
   if (status === 'authenticated' && user) {
+    const pageCount = Math.max(1, Math.ceil(historyTotal / PAGE_SIZE))
+    const firstShown = historyTotal === 0 ? 0 : page * PAGE_SIZE + 1
+    const lastShown = Math.min(historyTotal, page * PAGE_SIZE + history.length)
     return (
       <div style={styles.wrap}>
         <div style={styles.container}>
@@ -190,16 +170,13 @@ export function ProfilePage() {
             <Stat label="Win rate" value={stats ? `${Math.round(stats.winRate * 100)}%` : '—'} />
           </div>
 
-          {ratings.length > 0 && (
-            <Section title="Ranked rating">
-              <div style={styles.ratingRow}>
-                {ratings.map((r) => (
-                  <RatingCard key={r.mode} rating={r} />
-                ))}
-              </div>
-              <RatingChart points={ratingHistory} />
-            </Section>
-          )}
+          <button type="button" style={styles.statsLink} onClick={() => navigate('/stats')}>
+            <span style={styles.statsLinkText}>
+              <span style={styles.statsLinkTitle}>View full stats</span>
+              <span style={styles.muted}>Charts, colors, mana curve, head-to-head & more</span>
+            </span>
+            <span style={styles.statsLinkArrow}>→</span>
+          </button>
 
           <h2 style={styles.section}>Decks</h2>
           {/* Small launcher into the deckbuilder's saved-deck browser (the polished overlay that lists
@@ -216,85 +193,43 @@ export function ProfilePage() {
             <span style={styles.deckManagerArrow}>Open deck browser →</span>
           </button>
 
-          {colors.length > 0 && (
-            <Section title="Colors you play">
-              <ResponsiveContainer width="100%" height={Math.max(120, colors.length * 30)}>
-                <BarChart
-                  data={colors.map((c) => ({ label: colorLabel(c.label), count: c.count }))}
-                  layout="vertical"
-                  margin={{ top: 4, right: 16, bottom: 4, left: 8 }}
-                >
-                  <XAxis type="number" stroke="#666" fontSize={11} allowDecimals={false} />
-                  <YAxis type="category" dataKey="label" stroke="#999" fontSize={11} width={90} />
-                  <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#ffffff10' }} />
-                  <Bar dataKey="count" fill="#5b6ee1" radius={[0, 4, 4, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </Section>
-          )}
-
-          {sets.length > 0 && (
-            <Section title="Sets you play">
-              <ChipList items={sets.map((sb) => `${sb.label} · ${sb.count}`)} />
-            </Section>
-          )}
-
-          {modes.length > 0 && (
-            <Section title="Game modes">
-              <ChipList items={modes.map((m) => `${prettyMode(m.label)} · ${m.count}`)} />
-            </Section>
-          )}
-
-          {opponents.length > 0 && (
-            <Section title="Head to head">
-              <SimpleTable head={['Opponent', 'W', 'L']}>
-                {opponents.map((o, i) => (
-                  <tr key={`${o.opponent}-${i}`}>
-                    <td style={styles.td}>
-                      {o.opponent}
-                      {o.isAi ? <span style={styles.aiTag}> AI</span> : null}
-                    </td>
-                    <td style={styles.tdNum}>{o.wins}</td>
-                    <td style={styles.tdNum}>{o.losses}</td>
-                  </tr>
-                ))}
-              </SimpleTable>
-            </Section>
-          )}
-
-          {topCards.length > 0 && (
-            <Section title="Most-played cards">
-              <ChipList items={topCards.map((c) => `${c.cardName} · ${c.copies}`)} />
-            </Section>
-          )}
-
-          {tournaments.length > 0 && (
-            <Section title="Tournaments">
-              <SimpleTable head={['Date', 'Tournament', 'Place']}>
-                {tournaments.map((t, i) => (
-                  <tr key={`${t.endedAt}-${i}`}>
-                    <td style={styles.td}>{t.endedAt.slice(0, 10)}</td>
-                    <td style={styles.td}>{t.name ?? '—'}</td>
-                    <td style={styles.tdNum}>
-                      {t.placement}/{t.playerCount}
-                    </td>
-                  </tr>
-                ))}
-              </SimpleTable>
-            </Section>
-          )}
-
-          {history.length > 0 && (
-            <Section title="Recent games">
-              <SimpleTable head={['Date', 'Mode', 'Colors', 'Opponent', 'Result', 'Replay']}>
+          {(history.length > 0 || historyTotal > 0) && (
+            <div style={styles.sectionBlock}>
+              <div style={styles.recentHead}>
+                <h2 style={{ ...styles.section, margin: 0 }}>Recent games</h2>
+                {historyTotal > 0 && (
+                  <span style={styles.muted}>
+                    {firstShown}–{lastShown} of {historyTotal}
+                  </span>
+                )}
+              </div>
+              <SimpleTable head={['Date', 'Mode', 'Colors', 'Opponent', 'Result', 'Deck', 'Replay']}>
                 {history.map((g, i) => (
                   <tr key={`${g.gameId}-${i}`}>
                     <td style={styles.td}>{g.endedAt.slice(0, 10)}</td>
                     <td style={styles.td}>{prettyMode(g.gameMode)}</td>
-                    <td style={styles.td}>{g.colors ? colorLabel(g.colors) : '—'}</td>
+                    <td style={styles.td}>
+                      {g.colors ? (
+                        <span style={styles.colorsCell}>
+                          <span style={{ ...styles.colorDot, backgroundColor: colorForIdentity(g.colors) }} />
+                          {colorLabel(g.colors)}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
                     <td style={styles.td}>{g.opponents ?? '—'}</td>
                     <td style={{ ...styles.tdNum, color: g.won ? '#5bd16e' : '#e15b6e' }}>
                       {g.won ? 'Win' : 'Loss'}
+                    </td>
+                    <td style={styles.tdNum}>
+                      <button
+                        type="button"
+                        style={styles.link}
+                        onClick={() => setDeckModal({ gameId: g.gameId, opponent: g.opponents ?? 'opponent' })}
+                      >
+                        View
+                      </button>
                     </td>
                     <td style={styles.tdNum}>
                       {g.hasReplay ? (
@@ -313,9 +248,40 @@ export function ProfilePage() {
                   </tr>
                 ))}
               </SimpleTable>
-            </Section>
+              {pageCount > 1 && (
+                <div style={styles.pager}>
+                  <button
+                    type="button"
+                    style={{ ...styles.pagerBtn, ...(page === 0 ? styles.pagerBtnDisabled : {}) }}
+                    disabled={page === 0}
+                    onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  >
+                    ← Newer
+                  </button>
+                  <span style={styles.muted}>
+                    Page {page + 1} of {pageCount}
+                  </span>
+                  <button
+                    type="button"
+                    style={{ ...styles.pagerBtn, ...(page + 1 >= pageCount ? styles.pagerBtnDisabled : {}) }}
+                    disabled={page + 1 >= pageCount}
+                    onClick={() => setPage((p) => p + 1)}
+                  >
+                    Older →
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
+
+        {deckModal && (
+          <DeckViewModal
+            gameId={deckModal.gameId}
+            opponentLabel={deckModal.opponent}
+            onClose={() => setDeckModal(null)}
+          />
+        )}
       </div>
     )
   }
@@ -358,121 +324,6 @@ function Stat({ label, value }: { label: string; value: number | string }) {
   )
 }
 
-const MODE_LABELS: Record<RankedModeName, string> = {
-  LIMITED: 'Limited',
-  CONSTRUCTED: 'Constructed',
-  COMMANDER: 'Commander',
-}
-const MODE_COLORS: Record<RankedModeName, string> = {
-  LIMITED: '#5bd1a0',
-  CONSTRUCTED: '#5b6ee1',
-  COMMANDER: '#d18b5b',
-}
-
-/** Tier badge colour — bands climb from bronze through mythic; Provisional is muted. */
-function tierColor(tier: string): string {
-  switch (tier) {
-    case 'Mythic':
-      return '#e15bd1'
-    case 'Diamond':
-      return '#5bd1d1'
-    case 'Platinum':
-      return '#9ad1e1'
-    case 'Gold':
-      return '#e1c45b'
-    case 'Silver':
-      return '#c0c4cc'
-    case 'Bronze':
-      return '#c08a5b'
-    default:
-      return '#888'
-  }
-}
-
-function RatingCard({ rating }: { rating: RatingEntry }) {
-  const games = rating.gamesPlayed
-  const record =
-    games === 0
-      ? 'Unrated'
-      : rating.provisional
-        ? `${games}/10 placement`
-        : `${rating.wins}–${rating.losses}${rating.draws ? `–${rating.draws}` : ''}`
-  return (
-    <div style={{ ...styles.ratingCard, borderColor: `${MODE_COLORS[rating.mode]}55` }}>
-      <div style={styles.ratingMode}>{MODE_LABELS[rating.mode]}</div>
-      <div style={styles.ratingValue}>{rating.rating}</div>
-      <div style={{ ...styles.ratingTier, color: tierColor(rating.tier) }}>{rating.tier}</div>
-      <div style={styles.ratingRecord}>{record}</div>
-    </div>
-  )
-}
-
-/** Rating over time, one line per mode (each connected across its own games). */
-function RatingChart({ points }: { points: RatingPoint[] }) {
-  if (points.length === 0) {
-    return <p style={styles.muted}>Play ranked games to see your rating over time.</p>
-  }
-  const sorted = [...points].sort((a, b) => a.endedAt.localeCompare(b.endedAt))
-  const data = sorted.map((p, i) => ({
-    idx: i,
-    label: p.endedAt.slice(0, 10),
-    [p.mode]: p.ratingAfter,
-  }))
-  const modes = Array.from(new Set(points.map((p) => p.mode)))
-  return (
-    <div style={{ marginTop: 14 }}>
-      <ResponsiveContainer width="100%" height={240}>
-        <LineChart data={data} margin={{ top: 8, right: 16, bottom: 4, left: -8 }}>
-          <CartesianGrid stroke="#1f1f2e" />
-          <XAxis dataKey="label" stroke="#666" fontSize={11} minTickGap={32} />
-          <YAxis
-            stroke="#666"
-            fontSize={11}
-            domain={['dataMin - 30', 'dataMax + 30']}
-            allowDecimals={false}
-            width={44}
-          />
-          <Tooltip contentStyle={tooltipStyle} />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
-          {modes.map((m) => (
-            <Line
-              key={m}
-              type="monotone"
-              dataKey={m}
-              name={MODE_LABELS[m]}
-              stroke={MODE_COLORS[m]}
-              strokeWidth={2}
-              dot={false}
-              connectNulls
-            />
-          ))}
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={styles.sectionBlock}>
-      <h2 style={styles.section}>{title}</h2>
-      {children}
-    </div>
-  )
-}
-
-function ChipList({ items }: { items: string[] }) {
-  return (
-    <div style={styles.chipRow}>
-      {items.map((it) => (
-        <span key={it} style={styles.chip}>
-          {it}
-        </span>
-      ))}
-    </div>
-  )
-}
-
 function SimpleTable({ head, children }: { head: string[]; children: React.ReactNode }) {
   return (
     <div style={styles.tableWrap}>
@@ -500,14 +351,6 @@ function prettyMode(mode: string | null): string {
     .split('_')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(' ')
-}
-
-const tooltipStyle: React.CSSProperties = {
-  backgroundColor: '#12121e',
-  border: '1px solid #2a2a3e',
-  borderRadius: 6,
-  color: '#ddd',
-  fontSize: 12,
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -583,22 +426,26 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: 12,
     padding: '16px 18px',
   },
-  chipRow: { display: 'flex', flexWrap: 'wrap', gap: 8 },
-  chip: {
-    backgroundColor: '#1d1d2e',
-    border: '1px solid #2a2a3e',
-    borderRadius: 999,
-    padding: '4px 12px',
-    color: '#cdd',
-    fontSize: 13,
-  },
+  recentHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 },
   tableWrap: { overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 13 },
   th: { textAlign: 'left', color: '#888', fontWeight: 600, padding: '6px 8px', borderBottom: '1px solid #2a2a3e' },
   thNum: { textAlign: 'right', color: '#888', fontWeight: 600, padding: '6px 8px', borderBottom: '1px solid #2a2a3e' },
   td: { textAlign: 'left', color: '#ccc', padding: '6px 8px', borderBottom: '1px solid #1f1f2e' },
   tdNum: { textAlign: 'right', color: '#ccc', padding: '6px 8px', borderBottom: '1px solid #1f1f2e' },
-  aiTag: { color: '#888', fontSize: 11 },
+  colorsCell: { display: 'inline-flex', alignItems: 'center', gap: 6 },
+  colorDot: { width: 9, height: 9, borderRadius: 999, display: 'inline-block' },
+  pager: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginTop: 12 },
+  pagerBtn: {
+    background: 'none',
+    border: '1px solid #2a2a3e',
+    borderRadius: 8,
+    color: '#cdd',
+    cursor: 'pointer',
+    fontSize: 13,
+    padding: '6px 12px',
+  },
+  pagerBtnDisabled: { color: '#555', cursor: 'default', borderColor: '#1f1f2e' },
   statsRow: { display: 'flex', gap: 12, marginTop: 12, flexWrap: 'wrap' },
   stat: {
     flex: '1 1 120px',
@@ -610,19 +457,22 @@ const styles: Record<string, React.CSSProperties> = {
   },
   statValue: { color: '#fff', fontSize: 26, fontWeight: 700 },
   statLabel: { color: '#888', fontSize: 12, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
-  ratingRow: { display: 'flex', gap: 12, flexWrap: 'wrap' },
-  ratingCard: {
-    flex: '1 1 140px',
-    backgroundColor: '#1a1a28',
-    border: '1px solid #2a2a3e',
+  statsLink: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    textAlign: 'left',
+    backgroundColor: 'rgba(91,110,225,0.10)',
+    border: '1px solid #2f2f55',
     borderRadius: 12,
-    padding: '14px 12px',
-    textAlign: 'center',
+    padding: '14px 16px',
+    color: '#fff',
+    cursor: 'pointer',
   },
-  ratingMode: { color: '#9aa', fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.5 },
-  ratingValue: { color: '#fff', fontSize: 30, fontWeight: 800, lineHeight: 1.1, marginTop: 4 },
-  ratingTier: { fontSize: 14, fontWeight: 700, marginTop: 2 },
-  ratingRecord: { color: '#888', fontSize: 12, marginTop: 4 },
+  statsLinkText: { display: 'flex', flexDirection: 'column', gap: 3 },
+  statsLinkTitle: { fontSize: 15, fontWeight: 600 },
+  statsLinkArrow: { color: '#8b9bff', fontSize: 18, fontWeight: 700, flexShrink: 0 },
   deckManager: {
     display: 'flex',
     alignItems: 'center',
