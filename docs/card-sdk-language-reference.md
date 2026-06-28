@@ -2216,12 +2216,16 @@ work for abilities-on-stack (which carry no `CardComponent`).
   payoffs that target/choose/sacrifice/return "a creature that crewed/saddled it this turn" (Giant
   Beaver, Rambling Possum, The Gitrog, Calamity). For the *count* of those creatures use
   `DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn` instead.
-- `IsAttachedToBySource` (filter builder `notAttachedToBySource()`, which wraps it in a negation) —
+- `IsAttachedToBySource` (positive filter builder `attachedToBySource()`; negated builder
+  `notAttachedToBySource()`) —
   source-relative: matches the permanent the effect's source is attached to, read from the source's
   `AttachedToComponent.targetId`. Used negated for "other than enchanted/equipped creature"
   exclusions on Aura/Equipment edicts — Sporogenic Infection: "target player sacrifices a creature of
   their choice other than enchanted creature" via
-  `Effects.Sacrifice(GameObjectFilter.Creature.notAttachedToBySource(), 1, targetPlayer)`. Resolves
+  `Effects.Sacrifice(GameObjectFilter.Creature.notAttachedToBySource(), 1, targetPlayer)`. Used
+  positively to scope a static ability on an Aura/Equipment to just its host — Stuck in Summoner's
+  Sanctum: "enchanted permanent's activated abilities can't be activated" via
+  `PreventActivatedAbilities(GameObjectFilter.Permanent.attachedToBySource())`. Resolves
   against `PredicateContext.sourceId`; inert with no source / unattached source, and never matches in
   group-static projection or trigger-gating contexts (no source there).
 - `HasGreatestPower` (filter builder `hasGreatestPower()`) / `HasLeastPower` (filter builder
@@ -5148,6 +5152,11 @@ of `AddMana`. The engine empties pools at end of turn, so:
 - `LIFE_LOST` — life lost this turn.
 - `PLAYER_ATTACKED` — whether/how many times you attacked.
 - `DEALT_COMBAT_DAMAGE` — combat damage dealt.
+- `DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE` — indicator (0/1) that the player was dealt combat
+  damage by a legendary creature this turn (recorded in `CombatDamageManager`, cleared at end of
+  turn). Powers "an opponent was dealt combat damage by a legendary creature this turn" — Blitzball —
+  via `Compare(TurnTracking(EachOpponent, DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE), GTE, 1)`
+  (facade `Conditions.AnOpponentWasDealtCombatDamageByLegendaryCreatureThisTurn`).
 - `COUNTERS_PUT_ON_CREATURE` — counters placed.
 - `LANDS_PLAYED` — lands the player explicitly played this turn (from-hand land drops only,
   derived from `LandDropsComponent`).

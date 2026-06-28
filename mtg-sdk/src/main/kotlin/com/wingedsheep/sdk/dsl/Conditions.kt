@@ -1120,6 +1120,17 @@ object Conditions {
     val OpponentLostLifeThisTurn: ConditionInterface =
         trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_LOST, player = Player.EachOpponent)
 
+    /**
+     * If an opponent was dealt combat damage by a legendary creature this turn.
+     * Used for cards like Blitzball: "Activate only if an opponent was dealt combat damage by a
+     * legendary creature this turn."
+     */
+    val AnOpponentWasDealtCombatDamageByLegendaryCreatureThisTurn: ConditionInterface =
+        trackerAtLeast(
+            com.wingedsheep.sdk.scripting.values.TurnTracker.DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE,
+            player = Player.EachOpponent,
+        )
+
     // =========================================================================
     // Candidate-player target restrictions (CR 115)
     // =========================================================================

@@ -45,6 +45,13 @@ enum class TurnTracker {
     PLAYER_ATTACKED,
     /** Indicator (0 or 1) that the player was dealt combat damage this turn. */
     DEALT_COMBAT_DAMAGE,
+    /**
+     * Indicator (0 or 1) that the player was dealt combat damage by a legendary creature this
+     * turn. Backed by `WasDealtCombatDamageByLegendaryCreatureThisTurnComponent`, set when a
+     * legendary creature deals combat damage to the player and cleared at end of turn. Powers
+     * "if an opponent was dealt combat damage by a legendary creature this turn" (Blitzball).
+     */
+    DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE,
     /** Indicator (0 or 1) that the player put one or more counters on a creature this turn. */
     COUNTERS_PUT_ON_CREATURE,
     /** Number of land cards the player played this turn (derived from `LandDropsComponent`). */
@@ -101,6 +108,8 @@ enum class TurnTracker {
         LIFE_LOST -> "whether ${player.description} lost life this turn"
         PLAYER_ATTACKED -> "whether ${player.description} attacked this turn"
         DEALT_COMBAT_DAMAGE -> "whether ${player.description} were dealt combat damage this turn"
+        DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE ->
+            "whether ${player.description} were dealt combat damage by a legendary creature this turn"
         COUNTERS_PUT_ON_CREATURE -> "whether ${player.description} put a counter on a creature this turn"
         LANDS_PLAYED -> "the number of lands ${player.description} played this turn"
         LANDS_ENTERED_UNDER_CONTROL -> "the number of lands that entered the battlefield under ${player.possessive} control this turn"

@@ -1795,6 +1795,67 @@
     ]
 }
 
+// Blitzball
+{
+    "name": "Blitzball",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add one mana of any color.\nGOOOOAAAALLL! — {T}, Sacrifice this artifact: Draw two cards. Activate only if an opponent was dealt combat damage by a legendary creature this turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "EachOpponent",
+                                "tracker": "DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    }
+                ],
+                "descriptionOverride": "GOOOOAAAALLL! — Draw two cards. Activate only if an opponent was dealt combat damage by a legendary creature this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "artist": "Gas1",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92f4ad73-42bf-45c0-8bb6-0b44043c81ef.jpg?1748706744"
+    },
+    "colorIdentityOverride": []
+}
+
 // Blitzball Shot
 {
     "name": "Blitzball Shot",
@@ -11748,6 +11809,84 @@
     ]
 }
 
+// Reno and Rude
+{
+    "name": "Reno and Rude",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Creature — Human Assassin",
+    "oracleText": "Menace\nWhenever Reno and Rude deals combat damage to a player, exile the top card of that player's library. Then you may sacrifice another creature or artifact. If you do, you may play the exiled card this turn, and mana of any type can be spent to cast it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "exiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.MayPay",
+                                "cost": {
+                                    "type": "Sacrifice",
+                                    "filter": "creature|artifact",
+                                    "excludeSource": true
+                                }
+                            },
+                            "then": {
+                                "type": "GrantMayPlayFromExile",
+                                "from": "exiled",
+                                "withAnyManaType": true
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "UNCOMMON",
+        "artist": "Maji",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5eb0064-c7c4-4e3e-add2-b86269de3fb9.jpg?1748706185"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Resentful Revelation
 {
     "name": "Resentful Revelation",
@@ -14282,6 +14421,63 @@
         "rarity": "UNCOMMON",
         "artist": "Chris Rallis",
         "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d80c511-2f4d-4f77-8143-7b49b2b19fae.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Stuck in Summoner's Sanctum
+{
+    "name": "Stuck in Summoner's Sanctum",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant artifact or creature\nWhen this Aura enters, tap enchanted permanent.\nEnchanted permanent doesn't untap during its controller's untap step and its activated abilities can't be activated.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedPermanent"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            },
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "IsPermanent"
+                    ],
+                    "statePredicates": [
+                        "IsAttachedToBySource"
+                    ]
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|artifact"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Susumu Kuroi",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/6678501e-6349-4e37-ab4c-a31a3d408d52.jpg?1748706046"
     },
     "colorIdentityOverride": [
         "BLUE"

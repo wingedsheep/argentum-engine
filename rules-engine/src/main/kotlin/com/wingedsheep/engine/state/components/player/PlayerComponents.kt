@@ -1021,6 +1021,15 @@ data object PutCounterOnCreatureThisTurnComponent : Component
 data object WasDealtCombatDamageThisTurnComponent : Component
 
 /**
+ * Marks a player as having been dealt combat damage by a legendary creature this turn.
+ * Cleared at end of turn by CleanupPhaseManager.
+ * Backs the DEALT_COMBAT_DAMAGE_BY_LEGENDARY_CREATURE turn tracker
+ * (AnOpponentWasDealtCombatDamageByLegendaryCreatureThisTurn condition — Blitzball).
+ */
+@Serializable
+data object WasDealtCombatDamageByLegendaryCreatureThisTurnComponent : Component
+
+/**
  * Component indicating that a player should skip their entire next [turns] turns.
  * Applied by effects like Last Chance (which gives the opponent an "extra turn" by skipping the
  * other player's turn in a 2-player game) and Ral Zarek, Guest Lecturer's ultimate (skip several

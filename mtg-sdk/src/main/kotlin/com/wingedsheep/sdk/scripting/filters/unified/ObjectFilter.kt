@@ -663,6 +663,16 @@ data class GameObjectFilter(
     )
 
     /**
+     * Must BE the permanent the effect's source is attached to (its enchanted/equipped
+     * permanent). Source-relative — scopes a static ability on an Aura/Equipment to just its
+     * host, e.g. Stuck in Summoner's Sanctum's "enchanted permanent's activated abilities can't
+     * be activated" via [com.wingedsheep.sdk.scripting.PreventActivatedAbilities].
+     */
+    fun attachedToBySource() = copy(
+        statePredicates = statePredicates + StatePredicate.IsAttachedToBySource
+    )
+
+    /**
      * Must be attached to a permanent matching [hostFilter] (general form of attachment matching —
      * the host filter may carry a controller predicate, e.g. "a creature you control"). Used by
      * Stolen Uniform's reflexive "if it's attached to a creature you control" guard.
