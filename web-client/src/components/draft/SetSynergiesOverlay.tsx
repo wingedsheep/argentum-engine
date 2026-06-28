@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import type { SealedCardInfo } from '@/types'
 import { ManaSymbol } from '../ui/ManaSymbols'
+import { getScryfallArtCropUrl } from '@/utils/cardImages'
 
 /**
  * Archetype definition for a set's draft strategy.
@@ -12,6 +13,12 @@ export interface Archetype {
   readonly description: string
   /** Creature subtypes this archetype cares about, e.g. ['Wizard'] */
   readonly creatureTypes?: readonly string[]
+  /**
+   * Exact name of a card that represents this archetype. Its Scryfall art crop
+   * is painted as the tile backdrop. Omit (or use a card that fails to resolve)
+   * to fall back to a color-identity gradient.
+   */
+  readonly keyCard?: string
 }
 
 interface SetSynergies {
@@ -22,6 +29,10 @@ interface SetSynergies {
 
 /**
  * Static synergy data for each supported set.
+ *
+ * Trimmed to the defining archetypes per set — kept in lockstep with the AI
+ * deckbuilder's `SetArchetypes.kt`. `keyCard` only names a card whose exact
+ * Scryfall name is known and representative; otherwise the tile uses a gradient.
  */
 const SET_SYNERGIES: Record<string, SetSynergies> = {
   POR: {
@@ -31,26 +42,31 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       {
         name: 'White Weenie',
         colors: ['W'],
+        keyCard: 'Charging Paladin',
         description: 'Small efficient creatures with combat bonuses. Go wide with cheap soldiers and pump effects to overwhelm before your opponent stabilizes.',
       },
       {
         name: 'Blue Flyers',
         colors: ['U'],
+        keyCard: 'Storm Crow',
         description: 'Evasive flying creatures backed by card draw sorceries. A tempo-oriented strategy that wins in the air.',
       },
       {
         name: 'Black Control',
         colors: ['B'],
+        keyCard: 'Cackling Fiend',
         description: 'Creature removal sorceries and drain effects paired with midrange creatures. Grind opponents out with efficient answers.',
       },
       {
         name: 'Red Aggro',
         colors: ['R'],
+        keyCard: 'Anaba Bodyguard',
         description: 'Aggressive cheap creatures and direct damage sorceries to burn the opponent out before they can set up defenses.',
       },
       {
         name: 'Green Stompy',
         colors: ['G'],
+        keyCard: 'Spined Wurm',
         description: 'Large efficient creatures that overpower opponents through raw stats and size. Simple but effective.',
       },
     ],
@@ -60,56 +76,45 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
     setName: 'Onslaught',
     archetypes: [
       {
-        name: 'Wizards',
-        colors: ['U', 'R'],
-        creatureTypes: ['Wizard'],
-        description: 'Attach auras to Wizards for repeatable removal, and use shapeshifters for extra tribal synergy. A spell-based control deck.',
+        name: 'Goblins',
+        colors: ['B', 'R'],
+        creatureTypes: ['Goblin'],
+        keyCard: 'Sparksmith',
+        description: 'Red aggression paired with black removal. Goblin tribal synergies create explosive starts backed by efficient creature destruction.',
       },
       {
         name: 'Clerics',
         colors: ['W', 'B'],
         creatureTypes: ['Cleric'],
+        keyCard: 'Battlefield Medic',
         description: 'White Clerics defend and heal while black Clerics drain life. The tribe rewards a slow, grinding game plan built on incremental advantages.',
-      },
-      {
-        name: 'Zombies',
-        colors: ['B'],
-        creatureTypes: ['Zombie'],
-        description: 'Recursive threats and strong removal fuel an attrition-based strategy that grinds opponents down relentlessly.',
-      },
-      {
-        name: 'Goblins',
-        colors: ['B', 'R'],
-        creatureTypes: ['Goblin'],
-        description: 'Red aggression paired with black removal. Goblin tribal synergies create explosive starts backed by efficient creature destruction.',
-      },
-      {
-        name: 'Elves',
-        colors: ['G'],
-        creatureTypes: ['Elf'],
-        description: 'Elves generate mana, gain life, and pump each other. The more Elves you draft, the stronger every individual Elf becomes.',
       },
       {
         name: 'Beasts',
         colors: ['R', 'G'],
         creatureTypes: ['Beast'],
+        keyCard: 'Krosan Tusker',
         description: 'Green\'s large beasts combined with red removal create a midrange deck that wins through creature quality and raw combat dominance.',
+      },
+      {
+        name: 'Elves',
+        colors: ['G'],
+        creatureTypes: ['Elf'],
+        keyCard: 'Timberwatch Elf',
+        description: 'Elves generate mana, gain life, and pump each other. The more Elves you draft, the stronger every individual Elf becomes.',
       },
       {
         name: 'Soldiers / Flyers',
         colors: ['W', 'U'],
         creatureTypes: ['Soldier', 'Bird'],
+        keyCard: 'Gustcloak Harrier',
         description: 'Cheap evasive flyers and Soldier tribal put opponents on a fast clock. A tempo-aggro deck that races on the ground and in the air.',
       },
       {
         name: 'Morph',
         colors: ['U', 'G'],
+        keyCard: 'Willbender',
         description: 'Face-down creatures conceal deadly surprises. Keep your opponent guessing while you set up devastating flip triggers and tempo plays.',
-      },
-      {
-        name: 'Cycling',
-        colors: ['W', 'R'],
-        description: 'Cycle through your deck to find answers at the right time. Cycling triggers and payoffs generate incremental value while smoothing draws.',
       },
     ],
   },
@@ -118,45 +123,38 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
     setName: 'Legions',
     archetypes: [
       {
+        name: 'Slivers',
+        colors: ['W', 'U', 'B', 'R', 'G'],
+        creatureTypes: ['Sliver'],
+        keyCard: 'Ward Sliver',
+        description: 'Every Sliver shares its abilities with all others. A risky but powerful tribal strategy — if the pieces come together, the hive is unstoppable.',
+      },
+      {
+        name: 'Goblins',
+        colors: ['B', 'R'],
+        creatureTypes: ['Goblin'],
+        keyCard: 'Gempalm Incinerator',
+        description: 'Morph Goblins provide rare removal in a removal-starved set. Amplify lords reward drafting Goblins aggressively for explosive starts.',
+      },
+      {
         name: 'Soldiers / Flyers',
         colors: ['W', 'U'],
         creatureTypes: ['Soldier', 'Bird'],
+        keyCard: 'Gempalm Avenger',
         description: 'Soldiers and Birds combine for a tempo-evasion strategy. Fly over stalled boards while tribal lords pump your ground forces.',
       },
       {
         name: 'Clerics',
         colors: ['W', 'B'],
         creatureTypes: ['Cleric'],
+        keyCard: 'Daru Spiritualist',
         description: 'The cleric synergy engine continues. In an all-creature set with no removal spells, the lifegain/drain plan is even more dominant.',
-      },
-      {
-        name: 'Goblins',
-        colors: ['B', 'R'],
-        creatureTypes: ['Goblin'],
-        description: 'Morph Goblins provide rare removal in a removal-starved set. Amplify lords reward drafting Goblins aggressively for explosive starts.',
       },
       {
         name: 'Elves',
         colors: ['G', 'W'],
         creatureTypes: ['Elf'],
         description: 'Elf lords that tap to pump make every Elf a threat. Amplify and provoke create an engine of growth that overwhelms with sheer numbers.',
-      },
-      {
-        name: 'Zombies',
-        colors: ['U', 'B'],
-        creatureTypes: ['Zombie'],
-        description: 'Zombie tribal mixed with blue evasion. Morph creatures provide tempo plays with face-down threats that flip into value.',
-      },
-      {
-        name: 'Slivers',
-        colors: ['W', 'U', 'B', 'R', 'G'],
-        creatureTypes: ['Sliver'],
-        description: 'Every Sliver shares its abilities with all others. A risky but powerful tribal strategy — if the pieces come together, the hive is unstoppable.',
-      },
-      {
-        name: 'Morph',
-        colors: ['U', 'G'],
-        description: 'An all-creature set means face-down threats are everywhere. Bluff and outmaneuver your opponent with morph mind games on every turn.',
       },
     ],
   },
@@ -165,43 +163,36 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
     setName: 'Scourge',
     archetypes: [
       {
+        name: 'Dragons',
+        colors: ['R'],
+        creatureTypes: ['Dragon'],
+        keyCard: 'Rorix Bladewing',
+        description: 'Dedicated Dragon tribal support rewards these devastating flying threats. High mana costs are a feature, not a bug.',
+      },
+      {
         name: 'Goblins',
         colors: ['B', 'R'],
         creatureTypes: ['Goblin'],
+        keyCard: 'Goblin Warchief',
         description: 'Black removal plus Goblin tribal synergies. Storm spells can steal games out of nowhere.',
-      },
-      {
-        name: 'Graveyard Value',
-        colors: ['B', 'G'],
-        description: 'Use cycling and self-mill to fill the graveyard, then recur creatures en masse. Landcycling fixes mana while providing late-game bodies.',
-      },
-      {
-        name: 'Clerics / Control',
-        colors: ['W', 'B'],
-        creatureTypes: ['Cleric'],
-        description: 'White landcyclers ensure land drops while black provides efficient removal. A solid control strategy.',
       },
       {
         name: 'Wizards',
         colors: ['U', 'R'],
         creatureTypes: ['Wizard'],
+        keyCard: 'Mistform Ultimus',
         description: 'Draw cards proportional to your highest mana cost for massive card advantage. Wizard synergies from the block still anchor the deck.',
+      },
+      {
+        name: 'Landcycling',
+        colors: ['W', 'G'],
+        keyCard: 'Eternal Dragon',
+        description: 'Landcycling creatures fix your mana early and provide large bodies late. Smooths draws across multiple colors.',
       },
       {
         name: 'Ramp',
         colors: ['U', 'G'],
         description: 'Ramp into large green creatures, then leverage their high mana cost for powerful draw spells. Bury opponents in card advantage.',
-      },
-      {
-        name: 'Dragons',
-        colors: ['R'],
-        creatureTypes: ['Dragon'],
-        description: 'Dedicated Dragon tribal support rewards these devastating flying threats. High mana costs are a feature, not a bug.',
-      },
-      {
-        name: 'Landcycling',
-        colors: ['W', 'G'],
-        description: 'Landcycling creatures fix your mana early and provide large bodies late. Smooths draws across multiple colors.',
       },
     ],
   },
@@ -212,54 +203,39 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       {
         name: 'Historic Fliers',
         colors: ['W', 'U'],
+        keyCard: "Raff Capashen, Ship's Mage",
         description: 'Evasive flying creatures backed by historic synergies. Artifacts, legendaries, and Sagas trigger payoffs while your flyers close the game in the air.',
       },
       {
         name: 'Historic Control',
         colors: ['U', 'B'],
+        keyCard: "Chainer's Torment",
         description: 'Grind opponents out with Sagas, removal, and card advantage. Sagas schedule value over three turns while efficient answers keep the board in check.',
       },
       {
         name: 'Reckless Aggro',
         colors: ['B', 'R'],
+        keyCard: 'Goblin Chainwhirler',
         description: 'Fast creatures with first strike and haste backed by sacrifice synergies. Tokens serve as expendable resources while you race to close the game.',
       },
       {
         name: 'Kicker Ramp',
         colors: ['R', 'G'],
+        keyCard: 'Verix Bladewing',
         description: 'Ramp into large creatures and leverage kicker for late-game flexibility. Cards scale from on-curve plays to devastating threats when you have extra mana.',
       },
       {
-        name: 'Tokens',
-        colors: ['G', 'W'],
-        description: 'Flood the board with Saproling and Knight tokens, then use anthems and equipment to turn your wide board into lethal damage.',
-      },
-      {
-        name: 'Legendary Creatures',
-        colors: ['W', 'B'],
-        description: 'Individually powerful legendary creatures backed by premium removal. A minor Knight tribal subtheme adds synergy to this value-oriented strategy.',
-        creatureTypes: ['Knight'],
+        name: 'Saproling Sacrifice',
+        colors: ['B', 'G'],
+        keyCard: 'Slimefoot, the Stowaway',
+        description: 'Generate Saprolings and sacrifice them for value. Thallids and fungus creatures create a self-sustaining engine of tokens and drain effects.',
       },
       {
         name: 'Wizard Spells',
         colors: ['U', 'R'],
         creatureTypes: ['Wizard'],
+        keyCard: 'Adeliz, the Cinder Wind',
         description: 'Wizards grow stronger with every instant and sorcery you cast. Build a critical mass of spells and Wizards for explosive prowess-style turns.',
-      },
-      {
-        name: 'Saproling Sacrifice',
-        colors: ['B', 'G'],
-        description: 'Generate Saprolings and sacrifice them for value. Thallids and fungus creatures create a self-sustaining engine of tokens and drain effects.',
-      },
-      {
-        name: 'Auras & Equipment',
-        colors: ['R', 'W'],
-        description: 'Cheap creatures augmented by Auras and Equipment for an aggressive voltron strategy. Tiana recovers lost Auras to mitigate card disadvantage.',
-      },
-      {
-        name: 'Ramp',
-        colors: ['G', 'U'],
-        description: 'Green mana acceleration paired with blue card draw and kicker payoffs. Reach expensive threats and draw extra cards off land drops with Tatyova.',
       },
     ],
   },
@@ -270,53 +246,32 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       {
         name: 'Abzan',
         colors: ['W', 'B', 'G'],
+        keyCard: 'Anafenza, the Foremost',
         description: 'Outlast your creatures to grow +1/+1 counters, then share keywords like flying and lifelink across your bolstered army. A grindy, resilient midrange strategy.',
       },
       {
         name: 'Jeskai',
         colors: ['U', 'R', 'W'],
+        keyCard: 'Narset, Enlightened Master',
         description: 'Cast noncreature spells to trigger prowess, turning every instant and sorcery into a combat trick. Combines card selection, burn, and tempo.',
       },
       {
         name: 'Sultai',
         colors: ['B', 'G', 'U'],
+        keyCard: 'Sidisi, Brood Tyrant',
         description: 'Fill your graveyard to fuel powerful delve spells at reduced cost. A midrange-to-control strategy built on exploiting the graveyard as a resource.',
       },
       {
         name: 'Mardu',
         colors: ['R', 'W', 'B'],
+        keyCard: 'Butcher of the Horde',
         description: 'Attack each turn to trigger raid bonuses. Wide board presence with tokens and warriors, backed by removal to clear blockers.',
       },
       {
         name: 'Temur',
         colors: ['G', 'U', 'R'],
+        keyCard: 'Savage Knuckleblade',
         description: 'Ferocious abilities activate when you control a creature with power 4 or greater. Ramp into the biggest threats in the format.',
-      },
-      {
-        name: 'Warriors',
-        colors: ['W', 'B'],
-        creatureTypes: ['Warrior'],
-        description: 'Flood the board with cheap Warriors and pump them with tribal lords for an aggressive, low-curve strategy.',
-      },
-      {
-        name: 'Morph',
-        colors: ['U', 'G'],
-        description: 'Build around face-down creatures for card advantage and tempo. Morph rewards ramping to flip costs first and keeping opponents guessing.',
-      },
-      {
-        name: 'Prowess / Spells',
-        colors: ['U', 'R'],
-        description: 'Spell-heavy tempo deck. Noncreature spells trigger prowess on your creatures and activate enchantments that tax or generate tokens.',
-      },
-      {
-        name: 'Toughness Matters',
-        colors: ['B', 'G'],
-        description: 'Draft high-toughness creatures and defenders, then convert that toughness into offense with spells that create tokens based on toughness.',
-      },
-      {
-        name: 'Token Aggro',
-        colors: ['R', 'W'],
-        description: 'Generate tokens with creature and spell makers, then use mass pump effects to turn a wide board into lethal damage.',
       },
     ],
   },
@@ -351,33 +306,6 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         creatureTypes: ['Dragon'],
         description: "Behold a Dragon to unlock discounts and bonuses, then ramp into the format's biggest fliers. A ferocious ramp-and-Dragons strategy.",
       },
-      {
-        name: 'Warriors',
-        colors: ['W', 'B'],
-        creatureTypes: ['Warrior'],
-        description: 'Aggressive Warriors backed by removal and lifedrain. Mobilize tokens and endure counters keep your board refilling faster than opponents can answer it.',
-      },
-      {
-        name: 'Token Aggro',
-        colors: ['R', 'W'],
-        description: 'Generate tokens with mobilize and other attack triggers, then turn the swarm lethal with anthems and mass pump. A fast, go-wide aggro deck.',
-      },
-      {
-        name: 'Flurry Spells',
-        colors: ['U', 'R'],
-        description: 'A spell-velocity tempo deck. A high density of cheap instants and sorceries triggers flurry payoffs for burst damage and explosive turns.',
-      },
-      {
-        name: 'Behold Ramp',
-        colors: ['G', 'U'],
-        creatureTypes: ['Dragon'],
-        description: 'Ramp and fix into expensive haymakers while beholding Dragons to power up your payoffs. A controlling midrange that out-values the table.',
-      },
-      {
-        name: 'Graveyard Counters',
-        colors: ['B', 'G'],
-        description: 'Self-mill and renew to recur threats from the graveyard, then pile on +1/+1 counters with endure. A grindy value deck that goes long.',
-      },
     ],
   },
   BLB: {
@@ -385,39 +313,24 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
     setName: 'Bloomburrow',
     archetypes: [
       {
-        name: 'Birds',
-        colors: ['W', 'U'],
-        creatureTypes: ['Bird'],
-        description: 'Mix fliers and ground support creatures. Flier payoffs buff your non-flying forces and vice versa, creating a two-axis attack that keeps opponents stretched thin.',
-      },
-      {
         name: 'Bats',
         colors: ['W', 'B'],
         creatureTypes: ['Bat'],
+        keyCard: 'Zoraline, Cosmos Caller',
         description: 'Use life as a resource — white gains it, black spends it. Bats reward you for both gaining and losing life, letting you flip between aggression and defense as needed.',
-      },
-      {
-        name: 'Mice',
-        colors: ['W', 'R'],
-        creatureTypes: ['Mouse'],
-        description: 'Built around Valiant — the first time each turn a creature is targeted by a spell or ability, it gets a bonus. Target your own creatures with spells and abilities for fast, combat-focused aggro.',
-      },
-      {
-        name: 'Rats',
-        colors: ['U', 'B'],
-        creatureTypes: ['Rat'],
-        description: 'Threshold deck that unlocks powerful bonuses once you have 7+ cards in your graveyard. Self-mill fills the yard quickly, and the deck can tilt aggro or control depending on the matchup.',
       },
       {
         name: 'Otters',
         colors: ['U', 'R'],
         creatureTypes: ['Otter'],
+        keyCard: 'Stormsplitter',
         description: 'Cast a high volume of instants and sorceries to trigger Prowess on your Otter creatures. Classic Izzet spell-slinger that gets bigger the more spells you cast.',
       },
       {
         name: 'Frogs',
         colors: ['U', 'G'],
         creatureTypes: ['Frog'],
+        keyCard: 'Helga, Skittish Seer',
         description: 'Value engine built around bouncing and blinking Frogs to re-trigger ETB effects. Mana-intensive but generates enormous card advantage in the late game.',
       },
       {
@@ -430,13 +343,8 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Squirrels',
         colors: ['B', 'G'],
         creatureTypes: ['Squirrel'],
+        keyCard: 'Camellia, the Seedmiser',
         description: 'Grindy midrange built around the Forage mechanic — sacrifice Food tokens or exile cards from graveyards for value. Squirrels synergize with food production and graveyard interactions.',
-      },
-      {
-        name: 'Raccoons',
-        colors: ['R', 'G'],
-        creatureTypes: ['Raccoon'],
-        description: 'Ramp into massive Raccoon threats, all of which have Expend 4 triggered abilities that fire when you spend 4 or more mana in a turn. Play mana dorks into oversized haymakers.',
       },
       {
         name: 'Rabbits',
@@ -475,34 +383,10 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         description: 'Relentless Boggart aggro backed by Wither. Your attackers deal damage as -1/-1 counters, permanently shrinking blockers. Blight provides flexible sacrifice payoffs.',
       },
       {
-        name: 'Giants',
-        colors: ['R', 'G'],
-        creatureTypes: ['Giant'],
-        description: 'Ramp into enormous Giants and close the game with overwhelming power. Green acceleration feeds Red haymakers that are simply too large to deal with.',
-      },
-      {
-        name: 'Elves',
-        colors: ['B', 'G'],
-        creatureTypes: ['Elf'],
-        description: 'Tribal midrange that uses Blight as a resource. Elves build critical mass while Blight costs enable powerful sacrifice synergies and graveyard recursion.',
-      },
-      {
-        name: 'Treefolk',
-        colors: ['W', 'B'],
-        creatureTypes: ['Treefolk'],
-        description: 'High-toughness Treefolk form an impenetrable wall while grinding out advantage. Evoke spells like Emptiness provide burst value and the deck wins through sheer attrition.',
-      },
-      {
         name: 'Elementals',
         colors: ['U', 'R'],
         creatureTypes: ['Elemental'],
         description: 'Flamekin Elementals reward casting instants and sorceries. Evoke provides flexible tempo plays — pay the cheap cost for a burst of value, or go full price for a permanent threat.',
-      },
-      {
-        name: 'Warriors',
-        colors: ['W', 'R'],
-        creatureTypes: ['Warrior'],
-        description: 'Aggressive Warriors with mana-spent payoffs. Hybrid mana costs unlock dual bonuses — spend white for tokens and resilience, red for pump and haste — giving the deck flexible tools to close games.',
       },
       {
         name: 'Changelings',
@@ -533,16 +417,6 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         description: 'Tap your creatures to station up Spacecraft into enormous artifact threats, then back the assault with aggressive bodies. Go fast on the ground while your ships charge toward liftoff.',
       },
       {
-        name: 'Artifact Value',
-        colors: ['U', 'B'],
-        description: "An artifact 'good stuff' value deck. Stock up on two-for-ones and removal, trigger void as permanents leave, and grind the game out before pulling ahead on cards.",
-      },
-      {
-        name: 'Artifact Aggro',
-        colors: ['U', 'R'],
-        description: 'Aggressively deploy artifacts to snowball +1/+1 counters and station triggers. Each artifact entering powers up your team for a fast, synergy-driven beatdown.',
-      },
-      {
         name: 'Lander Ramp',
         colors: ['U', 'G'],
         description: "Crack Lander tokens for mana and fixing, ramping into the format's biggest threats. The premier two-for-one ramp deck that out-resources the table and splashes bombs.",
@@ -551,17 +425,6 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         name: 'Void',
         colors: ['B', 'R'],
         description: 'Sacrifice your own creatures to switch on void payoffs, turning every permanent that dies into value. A grindy sacrifice-aggro deck that controls the board while bleeding the opponent.',
-      },
-      {
-        name: 'Graveyard Midrange',
-        colors: ['B', 'G'],
-        description: 'Fill your graveyard and bring key creatures back, leaning on void and sacrifice for incidental value. A resilient midrange that trades all day and rebuilds from the yard.',
-      },
-      {
-        name: 'Landfall',
-        colors: ['R', 'G'],
-        creatureTypes: ['Lander'],
-        description: 'Lands entering trigger landfall payoffs, and Landers let you set them off on demand. Ramp, sacrifice your Landers, and crash in with an ever-growing board.',
       },
       {
         name: 'Counters',
@@ -580,9 +443,16 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         description: "Plot cards on your turn, then deploy flash creatures and tricks on the opponent's. A tempo deck that always keeps mana up and threatens free spells from exile.",
       },
       {
-        name: 'Outlaw Attrition',
-        colors: ['W', 'B'],
-        description: 'Grind the game out with efficient outlaws, premium removal, and incidental lifegain. A controlling midrange that trades resources and pulls ahead on value.',
+        name: 'Crime',
+        colors: ['U', 'B'],
+        keyCard: 'Tinybones, the Pickpocket',
+        description: 'Commit crimes — target opponents and their stuff — to snowball value and disruption. A tempo-control deck that drains the opponent while answering their threats.',
+      },
+      {
+        name: 'Ramp Plot',
+        colors: ['U', 'G'],
+        keyCard: 'Bonny Pall, Clearcutter',
+        description: "Ramp and discount plot cards to set up powerful future turns, then land the format's biggest threats ahead of schedule. A controlling midrange that out-values the table.",
       },
       {
         name: 'Mercenaries',
@@ -591,35 +461,10 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         description: 'Go wide with Mercenary tokens and aggressive bodies, then convert the swarm to damage with go-wide payoffs and mass pump. A fast, token-fueled aggro deck.',
       },
       {
-        name: 'Crime',
-        colors: ['U', 'B'],
-        description: 'Commit crimes — target opponents and their stuff — to snowball value and disruption. A tempo-control deck that drains the opponent while answering their threats.',
-      },
-      {
-        name: 'Spells Plot',
-        colors: ['U', 'R'],
-        description: 'Cast a high volume of cheap instants and sorceries, plotting spells to fire off multiple per turn. Spell-velocity payoffs reward explosive double-spell turns.',
-      },
-      {
-        name: 'Ramp Plot',
-        colors: ['U', 'G'],
-        description: "Ramp and discount plot cards to set up powerful future turns, then land the format's biggest threats ahead of schedule. A controlling midrange that out-values the table.",
-      },
-      {
         name: 'Outlaws',
         colors: ['B', 'R'],
+        keyCard: 'Rakdos, the Muscle',
         description: 'The dedicated outlaw deck — Assassins, Mercenaries, Pirates, Rogues, and Warlocks trigger aggressive payoffs. Apply relentless pressure backed by burn and removal.',
-      },
-      {
-        name: 'Graveyard Recursion',
-        colors: ['B', 'G'],
-        description: 'Fill your graveyard and bring key creatures back for repeated value. A grindy midrange that trades all day and rebuilds from the yard with desert and recursion payoffs.',
-      },
-      {
-        name: 'Mounts / Ferocious',
-        colors: ['R', 'G'],
-        creatureTypes: ['Mount'],
-        description: 'Ramp into big creatures with power 4 or greater, saddle your Mounts, and crash in. A ferocious aggro-midrange that overpowers opponents through raw size.',
       },
       {
         name: 'Mounts',
@@ -636,31 +481,37 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       {
         name: 'Eerie Enchantments',
         colors: ['W', 'U'],
+        keyCard: 'Overlord of the Mistmoors',
         description: 'Trigger Eerie by playing enchantments and unlocking Rooms. A tempo-value deck that builds an enchantment engine, churning out Glimmer tokens and incremental advantage while flyers close in the air.',
       },
       {
         name: 'Survival',
         colors: ['G', 'W'],
+        keyCard: 'Overlord of the Hauntwoods',
         description: 'Keep creatures untapped through your second main phase to switch on Survival payoffs. A go-tall midrange that piles on +1/+1 counters and rewards a sturdy, defensive board.',
       },
       {
         name: 'Manifest Dread',
         colors: ['U', 'G'],
+        keyCard: 'Overlord of the Floodpits',
         description: 'Manifest dread to flood the board with face-down 2/2s while stocking your graveyard. A value-midrange that converts card selection into board presence and creatures-entering payoffs.',
       },
       {
         name: 'Delirium',
         colors: ['B', 'G'],
+        keyCard: 'Overlord of the Balemurk',
         description: 'Fill your graveyard with four or more card types to unlock Delirium bonuses. A grindy graveyard-value deck that mills, sacrifices, and recurs threats to out-attrition the table.',
       },
       {
         name: 'Sacrifice Aggro',
         colors: ['B', 'R'],
+        keyCard: 'Unstoppable Slasher',
         description: 'Throw expendable creatures and tokens at sacrifice outlets for value and reach. An aggressive deck that drains the opponent and turns dying bodies into damage.',
       },
       {
         name: 'Impending',
         colors: ['R', 'G'],
+        keyCard: 'Overlord of the Boilerbilges',
         description: "Deploy big threats early with Impending time counters, then ramp into the format's largest creatures. A midrange-ramp deck that overpowers opponents once its haymakers come online.",
       },
     ],
@@ -901,7 +752,6 @@ function SetSynergiesOverlay({
               <ArchetypeCard
                 key={archetype.name}
                 archetype={archetype}
-                setCode={activeSynergy.setCode}
                 clickable={onSelectArchetype != null}
                 {...(cardPool != null ? { cardPool } : {})}
                 onClick={() => {
@@ -1031,14 +881,31 @@ function getArchetypeBorderColor(colors: readonly string[]): string {
   return 'rgba(255, 255, 255, 0.08)'
 }
 
-function getArchetypeBgColor(colors: readonly string[]): string {
+/** Saturated identity colors for the fallback backdrop gradient. */
+const COLOR_HEX: Record<string, string> = {
+  W: '#d9d2a6',
+  U: '#2f6fd0',
+  B: '#4a4550',
+  R: '#d6463f',
+  G: '#2f9b50',
+}
+
+/**
+ * A color-identity gradient used as the tile backdrop when no card art is
+ * available (or the art crop fails to load). Mirrors the saved-deck banner look.
+ */
+function getArchetypeGradient(colors: readonly string[]): string {
+  if (colors.length === 0) return 'linear-gradient(135deg, #2c2c38, #17171f)'
   if (colors.length === 1 && colors[0]) {
-    return MANA_COLOR_STYLES[colors[0]]?.bg ?? 'rgba(255, 255, 255, 0.02)'
+    const c = COLOR_HEX[colors[0]] ?? '#555'
+    return `linear-gradient(135deg, ${c} 0%, #16161e 92%)`
   }
-  if (colors.length >= 3) {
-    return 'rgba(252, 186, 3, 0.04)'
-  }
-  return 'rgba(255, 255, 255, 0.02)'
+  const stops = colors.map((c, i) => {
+    const hex = COLOR_HEX[c] ?? '#555'
+    const pct = Math.round((i / (colors.length - 1)) * 100)
+    return `${hex} ${pct}%`
+  })
+  return `linear-gradient(135deg, ${stops.join(', ')})`
 }
 
 const RARITY_COLORS: Record<string, string> = {
@@ -1065,13 +932,28 @@ function RarityBadge({ label, count, color }: { label: string; count: number; co
   )
 }
 
-function getArchetypeImagePath(setCode: string, archetypeName: string): string {
-  const normalized = archetypeName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-  return `/images/archetypes/${setCode.toLowerCase()}-${normalized}.png`
-}
+/**
+ * A single archetype rendered as a polished, full-bleed banner: a representative
+ * card's art crop as the backdrop, a scrim for legibility, and the name, color
+ * pips, description, and (when a pool is supplied) rarity/creature-type counts
+ * laid over it. Falls back to a color-identity gradient when no art is available.
+ */
+function ArchetypeCard({
+  archetype,
+  clickable,
+  onClick,
+  cardPool,
+}: {
+  archetype: Archetype
+  clickable?: boolean
+  onClick?: () => void
+  cardPool?: readonly SealedCardInfo[]
+}) {
+  const [artFailed, setArtFailed] = useState(false)
+  const [hovered, setHovered] = useState(false)
 
-function ArchetypeCard({ archetype, setCode, clickable, onClick, cardPool }: { archetype: Archetype; setCode: string; clickable?: boolean; onClick?: () => void; cardPool?: readonly SealedCardInfo[] }) {
-  const [imageLoaded, setImageLoaded] = useState(false)
+  const artUrl = archetype.keyCard ? getScryfallArtCropUrl(archetype.keyCard) : null
+  const showArt = artUrl != null && !artFailed
 
   const rarities = useMemo(() => {
     if (!cardPool || cardPool.length === 0) return null
@@ -1083,31 +965,89 @@ function ArchetypeCard({ archetype, setCode, clickable, onClick, cardPool }: { a
     return countCreatureTypes(cardPool, archetype.creatureTypes)
   }, [cardPool, archetype])
 
+  const borderColor = getArchetypeBorderColor(archetype.colors)
+
   return (
     <div
       onClick={clickable ? onClick : undefined}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        padding: '14px 16px',
-        borderRadius: 8,
-        backgroundColor: getArchetypeBgColor(archetype.colors),
-        border: `1px solid ${getArchetypeBorderColor(archetype.colors)}`,
-        transition: 'background-color 0.15s',
-        cursor: clickable ? 'pointer' : undefined,
-        display: 'flex',
-        gap: 14,
-        alignItems: 'flex-start',
+        position: 'relative',
+        borderRadius: 10,
+        overflow: 'hidden',
+        minHeight: 120,
+        border: `1px solid ${hovered && clickable ? 'rgba(124, 58, 237, 0.65)' : borderColor}`,
+        boxShadow: hovered
+          ? '0 12px 28px rgba(0, 0, 0, 0.55)'
+          : '0 1px 3px rgba(0, 0, 0, 0.45)',
+        cursor: clickable ? 'pointer' : 'default',
+        transform: hovered && clickable ? 'translateY(-2px)' : 'none',
+        transition: 'box-shadow 0.18s ease, border-color 0.18s ease, transform 0.18s ease',
+        isolation: 'isolate',
       }}
     >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div
+      {/* Backdrop: color-identity gradient, also the art fallback */}
+      <div
+        aria-hidden
+        style={{ position: 'absolute', inset: 0, background: getArchetypeGradient(archetype.colors) }}
+      />
+
+      {/* Backdrop: representative card art crop */}
+      {showArt && (
+        <img
+          src={artUrl}
+          alt=""
+          aria-hidden
+          onError={() => setArtFailed(true)}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            marginBottom: 6,
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center 22%',
+            transform: hovered ? 'scale(1.06)' : 'scale(1)',
+            transition: 'transform 0.4s ease',
           }}
-        >
-          <div style={{ display: 'flex', gap: 3 }}>
+        />
+      )}
+
+      {/* Scrims: darken left (text) and bottom for legibility */}
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background:
+            'linear-gradient(90deg, rgba(10, 10, 15, 0.94) 0%, rgba(10, 10, 15, 0.85) 34%, rgba(10, 10, 15, 0.5) 66%, rgba(10, 10, 15, 0.22) 100%)',
+        }}
+      />
+      <div
+        aria-hidden
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'linear-gradient(0deg, rgba(10, 10, 15, 0.55) 0%, rgba(10, 10, 15, 0) 55%)',
+        }}
+      />
+
+      {/* Content */}
+      <div
+        style={{
+          position: 'relative',
+          zIndex: 2,
+          minHeight: 120,
+          boxSizing: 'border-box',
+          padding: '13px 16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 7,
+          justifyContent: 'center',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', gap: 3, filter: 'drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85))' }}>
             {archetype.colors.map((c) => (
               <ManaSymbol key={c} symbol={c} size={16} />
             ))}
@@ -1115,10 +1055,11 @@ function ArchetypeCard({ archetype, setCode, clickable, onClick, cardPool }: { a
           <span
             style={{
               fontSize: 15,
-              fontWeight: 700,
+              fontWeight: 800,
               color: '#fff',
               textTransform: 'uppercase',
               letterSpacing: '0.04em',
+              textShadow: '0 1px 3px rgba(0, 0, 0, 0.95)',
             }}
           >
             {archetype.name}
@@ -1131,10 +1072,11 @@ function ArchetypeCard({ archetype, setCode, clickable, onClick, cardPool }: { a
                   style={{
                     fontSize: 11,
                     fontWeight: 600,
-                    color: 'rgba(255, 255, 255, 0.55)',
-                    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
                     padding: '1px 6px',
                     borderRadius: 4,
+                    backdropFilter: 'blur(2px)',
                   }}
                   title={`${count} ${type}${count !== 1 ? 's' : ''} in pool`}
                 >
@@ -1150,6 +1092,7 @@ function ArchetypeCard({ archetype, setCode, clickable, onClick, cardPool }: { a
                 display: 'flex',
                 gap: 8,
                 alignItems: 'center',
+                textShadow: '0 1px 2px rgba(0, 0, 0, 0.95)',
               }}
             >
               <RarityBadge label="Mythic" count={rarities.onColor.mythic} color={RARITY_COLORS.mythic!} />
@@ -1162,11 +1105,11 @@ function ArchetypeCard({ archetype, setCode, clickable, onClick, cardPool }: { a
                 </span>
               )}
               {rarities.lands > 0 && (
-                <span style={{ fontSize: 11, fontWeight: 600, color: '#8d6e4a' }} title="Lands">
+                <span style={{ fontSize: 11, fontWeight: 600, color: '#d2a878' }} title="Lands">
                   {rarities.lands}L
                 </span>
               )}
-              <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.35)', marginLeft: 2 }}>
+              <span style={{ fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.55)', marginLeft: 2 }}>
                 ({rarities.onColor.total + rarities.colorless + rarities.lands})
               </span>
             </div>
@@ -1175,28 +1118,16 @@ function ArchetypeCard({ archetype, setCode, clickable, onClick, cardPool }: { a
         <p
           style={{
             margin: 0,
-            color: 'rgba(255, 255, 255, 0.6)',
+            maxWidth: '68%',
+            color: 'rgba(255, 255, 255, 0.85)',
             fontSize: 13,
-            lineHeight: 1.5,
+            lineHeight: 1.45,
+            textShadow: '0 1px 3px rgba(0, 0, 0, 0.95)',
           }}
         >
           {archetype.description}
         </p>
       </div>
-      <img
-        src={getArchetypeImagePath(setCode, archetype.name)}
-        alt={archetype.name}
-        onLoad={() => setImageLoaded(true)}
-        onError={() => setImageLoaded(false)}
-        style={{
-          width: 140,
-          height: 100,
-          objectFit: 'cover',
-          borderRadius: 6,
-          flexShrink: 0,
-          display: imageLoaded ? 'block' : 'none',
-        }}
-      />
     </div>
   )
 }
