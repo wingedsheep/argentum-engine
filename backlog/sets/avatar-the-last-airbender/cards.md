@@ -243,7 +243,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [x] Ozai's Cruelty
 - [ ] Ozai, the Phoenix King
 - [x] Path to Redemption
-- [ ] Phoenix Fleet Airship
+- [x] Phoenix Fleet Airship
 - [x] Pillar Launch
 - [x] Pirate Peddlers
 - [x] Plains

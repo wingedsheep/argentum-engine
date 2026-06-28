@@ -8575,6 +8575,86 @@
     ]
 }
 
+// Phoenix Fleet Airship
+{
+    "name": "Phoenix Fleet Airship",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Flying\nAt the beginning of your end step, if you sacrificed a permanent this turn, create a token that's a copy of this Vehicle.\nAs long as you control eight or more permanents named Phoenix Fleet Airship, this Vehicle is an artifact creature.\nCrew 1",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": "CreateTokenCopyOfSource",
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PERMANENTS_SACRIFICED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "name:Phoenix Fleet Airship"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "MYTHIC",
+        "artist": "Thanh Tuấn",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b51d3259-c41c-4f64-9666-0a9e676c812f.jpg?1764120785"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Pillar Launch
 {
     "name": "Pillar Launch",
