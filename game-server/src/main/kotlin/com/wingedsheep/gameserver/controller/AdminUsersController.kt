@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 /**
  * Admin view of the registered accounts: list everyone with their lifetime record, drill into one
@@ -39,7 +40,7 @@ class AdminUsersController(
 
     /** One account's full profile + stats, for the player detail view. */
     data class UserDetailDto(
-        val id: Long,
+        val id: UUID,
         val email: String,
         val displayName: String,
         val isAdmin: Boolean,
@@ -65,7 +66,7 @@ class AdminUsersController(
 
     @GetMapping("/{id}")
     fun detail(
-        @PathVariable id: Long,
+        @PathVariable id: UUID,
         @RequestHeader("X-Admin-Password", required = false) password: String?,
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
     ): ResponseEntity<Any> = adminAuth.guard(password, authorization) {
@@ -98,7 +99,7 @@ class AdminUsersController(
 
     @PostMapping("/{id}/admin")
     fun setAdmin(
-        @PathVariable id: Long,
+        @PathVariable id: UUID,
         @RequestBody body: SetAdminBody,
         @RequestHeader("X-Admin-Password", required = false) password: String?,
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,

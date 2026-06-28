@@ -9,6 +9,7 @@ import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
 import java.util.Optional
+import java.util.UUID
 
 /**
  * The two ways into the admin dashboard, and the rejections in between. The bootstrap password and the
@@ -19,10 +20,13 @@ class AdminAuthServiceTest : FunSpec({
     fun service(password: String = "secret"): AdminAuthService =
         AdminAuthService(GameProperties(admin = AdminProperties(password = password)))
 
-    fun claims(uid: Long) = AuthClaims(uid = uid, email = "u$uid@test", exp = Long.MAX_VALUE)
+    fun claims(uid: UUID) = AuthClaims(uid = uid.toString(), email = "u$uid@test", exp = Long.MAX_VALUE)
 
-    fun adminUser(uid: Long, isAdmin: Boolean) =
+    fun adminUser(uid: UUID, isAdmin: Boolean) =
         Optional.of(UserRow(id = uid, email = "u$uid@test", displayName = "u$uid", isAdmin = isAdmin))
+
+    val adminId: UUID = UUID.fromString("00000000-0000-0000-0000-000000000005")
+    val plainId: UUID = UUID.fromString("00000000-0000-0000-0000-000000000006")
 
     // ---- Password (bootstrap) path ----
 
@@ -43,16 +47,16 @@ class AdminAuthServiceTest : FunSpec({
 
     test("an admin account's token authorizes") {
         val svc = service().apply {
-            authSupport = mockk { every { userOrNull("Bearer t") } returns claims(5) }
-            users = mockk { every { findById(5) } returns adminUser(5, isAdmin = true) }
+            authSupport = mockk { every { userOrNull("Bearer t") } returns claims(adminId) }
+            users = mockk { every { findById(adminId) } returns adminUser(adminId, isAdmin = true) }
         }
         svc.isAuthorized(password = null, authorization = "Bearer t") shouldBe true
     }
 
     test("a non-admin account's token is rejected") {
         val svc = service().apply {
-            authSupport = mockk { every { userOrNull(any()) } returns claims(6) }
-            users = mockk { every { findById(6) } returns adminUser(6, isAdmin = false) }
+            authSupport = mockk { every { userOrNull(any()) } returns claims(plainId) }
+            users = mockk { every { findById(plainId) } returns adminUser(plainId, isAdmin = false) }
         }
         svc.isAuthorized(password = null, authorization = "Bearer t") shouldBe false
     }

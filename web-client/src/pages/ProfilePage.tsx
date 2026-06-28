@@ -103,9 +103,14 @@ export function ProfilePage() {
             <button type="button" style={styles.link} onClick={() => navigate('/')}>
               ← Home
             </button>
-            <button type="button" style={styles.link} onClick={logout}>
-              Sign out
-            </button>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <button type="button" style={styles.link} onClick={() => navigate('/friends')}>
+                Friends
+              </button>
+              <button type="button" style={styles.link} onClick={logout}>
+                Sign out
+              </button>
+            </div>
           </div>
 
           {editingName ? (

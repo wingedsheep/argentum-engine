@@ -2,6 +2,7 @@ package com.wingedsheep.gameserver.handler
 
 import com.wingedsheep.gameserver.ai.AiGameManager
 import com.wingedsheep.gameserver.auth.AuthSupport
+import com.wingedsheep.gameserver.friends.FriendPresenceBroadcaster
 import org.springframework.beans.factory.ObjectProvider
 import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.protocol.ClientMessage
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.WebSocketSession
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 @Component
@@ -30,13 +32,19 @@ class ConnectionHandler(
     private val aiGameManager: AiGameManager,
     private val boosterGenerator: BoosterGenerator,
     // Present only when accounts are enabled; resolved lazily so this handler stays usable without it.
-    private val authSupport: ObjectProvider<AuthSupport>
+    private val authSupport: ObjectProvider<AuthSupport>,
+    private val friendPresenceBroadcaster: ObjectProvider<FriendPresenceBroadcaster>,
 ) {
     private val logger = LoggerFactory.getLogger(ConnectionHandler::class.java)
 
     /** Resolve the durable account id from a connect message's auth token, or null if absent/invalid. */
-    private fun resolveAccountUserId(authToken: String?): Long? =
-        authToken?.let { authSupport.ifAvailable?.userOrNull(it)?.uid }
+    private fun resolveAccountUserId(authToken: String?): UUID? =
+        authToken?.let { authSupport.ifAvailable?.userOrNull(it)?.userId }
+
+    /** Tell a signed-in identity's friends that its visible-online state changed (no-op for guests). */
+    private fun broadcastFriendPresence(identity: PlayerIdentity) {
+        identity.userId?.let { friendPresenceBroadcaster.ifAvailable?.broadcastOwnPresence(it) }
+    }
 
     /** Client IP captured by [RemoteIpHandshakeInterceptor] into the handshake session attributes. */
     private fun clientIpOf(session: WebSocketSession): String? =
@@ -99,6 +107,7 @@ class ConnectionHandler(
             availableSets = buildAvailableSetsList()
         ))
         broadcastOnlinePlayersCount()
+        broadcastFriendPresence(identity)
     }
 
     private fun broadcastOnlinePlayersCount() {
@@ -220,6 +229,7 @@ class ConnectionHandler(
             availableSets = buildAvailableSetsList()
         ))
         broadcastOnlinePlayersCount()
+        broadcastFriendPresence(identity)
 
         // Quick-game lobby reconnect is independent of the main context: even if the player has
         // a stale `currentGameSessionId` or no other context, we still want to put them back in
@@ -325,6 +335,7 @@ class ConnectionHandler(
                 if (identity.webSocketSession == null || identity.webSocketSession?.id == session.id) {
                     identity.webSocketSession = null
                     broadcastOnlinePlayersCount()
+                    broadcastFriendPresence(identity)
                 } else {
                     logger.info("Player ${identity.playerName} reconnected during disconnect processing (session changed), ignoring stale disconnect")
                     return

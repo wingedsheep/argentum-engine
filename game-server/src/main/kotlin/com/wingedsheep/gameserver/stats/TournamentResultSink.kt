@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.time.Instant
+import java.util.UUID
 
 /** A finished tournament ready to be recorded for stats. */
 data class RecordedTournament(
@@ -26,7 +27,7 @@ data class RecordedTournament(
 
 /** One seat in a finished tournament. [userId] is null for guests and AI. */
 data class RecordedTournamentParticipant(
-    val userId: Long?,
+    val userId: UUID?,
     val playerName: String,
     val isAi: Boolean,
     val placement: Int,

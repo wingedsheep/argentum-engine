@@ -10,7 +10,11 @@ the rules engine is untouched.
 
 ## What it adds
 
-- **Accounts** keyed by email; no passwords (magic link).
+- **Accounts** keyed by email; no passwords (magic link). The account **id is a UUID** (since V4) and
+  doubles as a shareable, non-guessable **friend code** — you invite a friend by their id, never their
+  email.
+- **Friends** — request → accept friendships, an unfriend action, live **online presence**, and a
+  per-account **hide-my-online-status** toggle (see "Friends & presence" below).
 - **Saved decks** stored per account (the deckbuilder's `SharedDeck` JSON), reachable from any device.
 - **Stats** — one row per finished game; per-account win/loss, preferred colors/sets, game modes
   played, head-to-head vs specific opponents, and a game history, all computed on demand.
@@ -97,6 +101,21 @@ Flyway migration `V2__match_stats.sql` extends the stats schema:
 Flyway migration `V3__admin_role.sql` adds `users.is_admin` (boolean, default false) — the per-account
 admin flag (see **Admin access** below).
 
+Flyway migration `V4__user_uuid.sql` switches the account primary key from a `BIGINT` identity to a
+**UUID** (`gen_random_uuid()` default). It backfills every existing row and re-points each foreign key
+(`login_tokens`, `decks`, `match_participants`, `tournament_participants`) — a data-preserving in-place
+migration, not a recreate. The id is now the shareable friend code. (Game/replay ids were already UUIDs
+— `GameSession.sessionId` — so only the account id changed; the other surrogate keys like `decks.id`
+stay `BIGINT` since they're internal and never shared.)
+
+Flyway migration `V5__friends.sql` adds `users.hide_presence` (boolean, default false) and the
+`friendships` table:
+
+| Table / columns | Purpose |
+|-----------------|---------|
+| `friendships` | one directed row per relationship: `requester_id` / `addressee_id` (both → `users(id)`, cascade), `status` (`PENDING` while awaiting the addressee, `ACCEPTED` once mutual), `created_at` / `responded_at`. `CHECK (requester_id <> addressee_id)` + `UNIQUE (requester_id, addressee_id)`. Declining / cancelling / unfriending all delete the row. |
+| `users.hide_presence` | per-account presence opt-out — when true the account appears offline to its friends even while connected. |
+
 ## Auth flow (magic link)
 
 1. `POST /api/auth/request-login { email }` → upsert account, email a single-use link (logged to
@@ -134,7 +153,7 @@ Every admin endpoint (`/api/admin/**` and `/api/stats/admin/**`) accepts either 
 |--------|------|-------|
 | POST | `/api/auth/request-login` | `{ email }` → 200 |
 | POST | `/api/auth/verify` | `{ token }` → `{ authToken, user }` |
-| GET | `/api/auth/me` | Bearer → `user` (includes `isAdmin`) |
+| GET | `/api/auth/me` | Bearer → `user` (includes `isAdmin` + `hidePresence`; `id` is the UUID friend code) |
 | PUT | `/api/auth/me` | Bearer + `{ displayName }` → updated `user` (1–40 chars; duplicates allowed) |
 | GET | `/api/account/decks` | list summaries |
 | GET | `/api/account/decks?full` | every deck in full (one round-trip; powers the unified deck browser) |
@@ -181,6 +200,32 @@ Aggregate queries live in `StatsQueryService` (plain SQL via `JdbcTemplate`). Ge
 (`GeoIpService`) resolves IPs via the free ip-api.com batch endpoint, cached in-process; it's only
 called from the admin `geo` endpoint, never the hot recording path.
 
+## Friends & presence
+
+All under `/api/friends` (Bearer; only mounted with accounts enabled). You always act as the token's
+account — the body never carries "who am I". You add a friend by their **account id** (the UUID friend
+code), so emails stay private.
+
+| Method | Path | Notes |
+|--------|------|-------|
+| GET | `/api/friends` | accepted friends + each one's live `online` flag |
+| GET | `/api/friends/requests` | `{ incoming, outgoing }` pending requests |
+| POST | `/api/friends/requests` | `{ accountId }` → send a request. 400 invalid/self · 404 unknown · 409 already-friends / already-requested / they-requested-you |
+| POST | `/api/friends/requests/{id}/accept` | addressee accepts |
+| DELETE | `/api/friends/requests/{id}` | decline (addressee) or cancel (requester) |
+| DELETE | `/api/friends/{accountId}` | unfriend |
+| PUT | `/api/friends/visibility` | `{ hidden }` → toggle the presence opt-out |
+
+`FriendsService` owns the request → accept lifecycle (a single directed `friendships` row; symmetric
+once `ACCEPTED`). **Presence is derived live, never stored:** `PresenceService` reads the connected
+WebSocket identities from `SessionRegistry` — an account is *visibly online* when it holds an open
+socket **and** hasn't set `hide_presence`. Updates are pushed in real time: `FriendPresenceBroadcaster`
+(hooked into `ConnectionHandler`'s connect/disconnect, plus accept and the visibility toggle) sends
+`ServerMessage.FriendPresence` to a user's currently-connected friends, and `FriendRequestReceived`
+when a request arrives. These carry no game events, so they need no `ClientEvent.kt` branch. The client
+also fetches `/api/friends` on load and on a slow poll as the catch-all for the passive side of an
+accept/unfriend.
+
 ## Frontend
 
 - `authStore` (standalone Zustand) holds the signed-in user; `api/account.ts` is the REST client.
@@ -212,15 +257,26 @@ called from the admin `geo` endpoint, never the hot recording path.
   prompt entirely; the profile page shows an **Admin dashboard** link when `user.isAdmin`.
 - On sign-in, a landing-page prompt (`DeckMigrationPrompt`) offers to copy browser-only decks to the
   account.
+- **Friends** (`/friends`, `pages/FriendsPage.tsx`, `api/friends.ts`, standalone `friendsStore`): your
+  friend code with a copy button, an add-by-code box, incoming/outgoing requests, the friends list with
+  a green/grey online dot + unfriend, and the **Hide my online status** toggle. `AuthWidget` carries a
+  **Friends** nav link with an incoming-request count badge; the `ProfilePage` header links to it too.
+  Live `friendPresence` / `friendRequestReceived` pushes are routed (via the WebSocket message handlers)
+  into `friendsStore`; the store also loads on sign-in and on a slow poll while the page is open.
 
 ## Tests
 
-- `AuthTokenServiceTest` — token sign/verify/expiry/tamper (pure unit).
+- `AuthTokenServiceTest` — token sign/verify/expiry/tamper (pure unit; `uid` is now a UUID string).
 - `MagicLinkServiceTest` — login/verify orchestration with mocked repositories.
-- `FlywayMigrationTest` — applies `V1` + `V2` against a real Postgres via Testcontainers and exercises
-  the account/deck/stats round-trip plus the V2 stats schema and its Postgres-specific aggregate SQL
-  (set-code unnest, card win-rate `FILTER`, games-per-day interval, tournament round-trip, cascade
-  deletes). Self-skips when Docker is unavailable.
+- `FriendsServiceTest` — the request/accept/decline/cancel/unfriend rules (self / unknown / duplicate /
+  reverse-pending), and that `listFriends` online status respects `hide_presence` (mocked repos +
+  presence).
+- `FlywayMigrationTest` — applies the migrations against a real Postgres via Testcontainers and
+  exercises the account/deck/stats round-trip, the V2 stats schema and its Postgres-specific aggregate
+  SQL (set-code unnest, card win-rate `FILTER`, games-per-day interval, tournament round-trip, cascade
+  deletes), the **V4 BIGINT→UUID swap preserving rows + foreign keys** (seed at `target("3")`, migrate,
+  assert data + FK integrity), and the **V5 friends** request/accept round-trip + cascade. Self-skips
+  when Docker is unavailable.
 - `DeckProfilerTest` — deck color-identity (WUBRG order) + set derivation, colorless/fallback/pin cases.
 - `MatchResultSinkTest` — the recording guard: AI-only games skipped, human/guest games recorded with
   their deck cards; same for the tournament sink.

@@ -10,16 +10,20 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 import java.time.Instant
 import java.util.Base64
+import java.util.UUID
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 
 /** The verified contents of an auth token. */
 @Serializable
 data class AuthClaims(
-    val uid: Long,
+    /** Account id as a UUID string (kotlinx-serialized into the token). Use [userId] for the parsed value. */
+    val uid: String,
     val email: String,
     val exp: Long,
-)
+) {
+    val userId: UUID get() = UUID.fromString(uid)
+}
 
 /**
  * Mints and verifies stateless, HMAC-SHA256-signed auth tokens (a minimal JWT-shape:
@@ -51,8 +55,8 @@ class AuthTokenService(props: AccountsProperties) {
         }
 
     /** Issue a signed token for the given user, valid for the configured TTL. */
-    fun issue(userId: Long, email: String, now: Instant = Instant.now()): String {
-        val claims = AuthClaims(uid = userId, email = email, exp = now.epochSecond + ttlSeconds)
+    fun issue(userId: UUID, email: String, now: Instant = Instant.now()): String {
+        val claims = AuthClaims(uid = userId.toString(), email = email, exp = now.epochSecond + ttlSeconds)
         val payload = urlEncoder.encodeToString(json.encodeToString(AuthClaims.serializer(), claims).toByteArray())
         return "$payload.${sign(payload)}"
     }

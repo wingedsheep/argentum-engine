@@ -31,6 +31,8 @@ interface AuthState {
   setSession: (login: LoginResponse) => void
   /** Change the signed-in user's display name (persists to the server, then updates the store). */
   updateDisplayName: (displayName: string) => Promise<void>
+  /** Patch fields of the signed-in user in the store (e.g. after toggling presence visibility). */
+  patchUser: (patch: Partial<AccountUser>) => void
   /** Sign out: drop the token and the user. */
   logout: () => void
 }
@@ -64,6 +66,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     const user = await updateProfile(displayName)
     set({ user })
   },
+
+  patchUser: (patch) => set((s) => (s.user ? { user: { ...s.user, ...patch } } : {})),
 
   logout: () => {
     clearAuthToken()

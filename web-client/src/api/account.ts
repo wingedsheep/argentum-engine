@@ -36,11 +36,14 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
 }
 
 export interface AccountUser {
-  readonly id: number
+  /** UUID. Doubles as the shareable "friend code" — invite friends by this id, not your email. */
+  readonly id: string
   readonly email: string
   readonly displayName: string
   /** True when this account has been granted access to the admin dashboard. */
   readonly isAdmin: boolean
+  /** When true the account appears offline to its friends even while connected. */
+  readonly hidePresence: boolean
 }
 
 export interface LoginResponse {
@@ -207,7 +210,7 @@ export interface StatBucket {
 
 export interface HeadToHead {
   readonly opponent: string
-  readonly opponentUserId: number | null
+  readonly opponentUserId: string | null
   readonly isAi: boolean
   readonly wins: number
   readonly losses: number

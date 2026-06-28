@@ -8,10 +8,11 @@
  * Renders nothing when the server has accounts disabled, so a no-accounts deployment shows no
  * sign-in UI at all (the whole point — a login form there can only fail).
  */
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { useAuthStore } from '@/store/authStore'
+import { useFriendsStore } from '@/store/friendsStore'
 import styles from './AuthWidget.module.css'
 
 export function AuthWidget() {
@@ -20,9 +21,24 @@ export function AuthWidget() {
   const status = useAuthStore((s) => s.status)
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
+  const incomingCount = useFriendsStore((s) => s.incoming.length)
+  const loadFriends = useFriendsStore((s) => s.load)
+  const resetFriends = useFriendsStore((s) => s.reset)
   const [loginOpen, setLoginOpen] = useState(false)
 
+  // Keep the friends data (and the incoming-request badge) populated app-wide once signed in; clear
+  // it on sign-out. Live updates then arrive via the WebSocket push (see friendsStore).
+  useEffect(() => {
+    if (status === 'authenticated') void loadFriends()
+    else if (status === 'anonymous') resetFriends()
+  }, [status, loadFriends, resetFriends])
+
   if (!accountsEnabled) return null
+
+  const signOut = () => {
+    resetFriends()
+    logout()
+  }
 
   return (
     <div className={styles.widget}>
@@ -40,7 +56,36 @@ export function AuthWidget() {
               <span className={styles.name}>{user.displayName}</span>
             </span>
           </button>
-          <button type="button" className={styles.logout} onClick={logout} title="Sign out">
+          <button
+            type="button"
+            className={styles.logout}
+            onClick={() => navigate('/friends')}
+            title="Friends"
+            style={{ position: 'relative' }}
+          >
+            Friends
+            {incomingCount > 0 && (
+              <span
+                aria-label={`${incomingCount} pending friend requests`}
+                style={{
+                  marginLeft: 6,
+                  display: 'inline-block',
+                  minWidth: 16,
+                  padding: '0 5px',
+                  borderRadius: 999,
+                  backgroundColor: '#e15b6e',
+                  color: '#fff',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  lineHeight: '16px',
+                  textAlign: 'center',
+                }}
+              >
+                {incomingCount}
+              </span>
+            )}
+          </button>
+          <button type="button" className={styles.logout} onClick={signOut} title="Sign out">
             Log out
           </button>
         </>

@@ -4,6 +4,7 @@ import com.wingedsheep.gameserver.persistence.UserRepository
 import com.wingedsheep.gameserver.persistence.UserRow
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
+import java.util.UUID
 
 /**
  * Account-administration mutations performed from the admin dashboard. Kept separate from
@@ -14,10 +15,10 @@ import org.springframework.stereotype.Service
 @ConditionalOnProperty(name = ["accounts.enabled"], havingValue = "true")
 class UserAdminService(private val users: UserRepository) {
 
-    fun get(userId: Long): UserRow? = users.findById(userId).orElse(null)
+    fun get(userId: UUID): UserRow? = users.findById(userId).orElse(null)
 
     /** Grant or revoke admin access for an account. Returns the updated account, or null if unknown. */
-    fun setAdmin(userId: Long, isAdmin: Boolean): UserRow? {
+    fun setAdmin(userId: UUID, isAdmin: Boolean): UserRow? {
         val user = users.findById(userId).orElse(null) ?: return null
         if (user.isAdmin == isAdmin) return user
         return users.save(user.copy(isAdmin = isAdmin))

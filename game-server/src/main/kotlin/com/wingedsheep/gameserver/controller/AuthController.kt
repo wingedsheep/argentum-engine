@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
+import java.util.UUID
 
 /**
  * Passwordless magic-link auth. Only mounted when accounts are enabled.
@@ -34,7 +35,19 @@ class AuthController(
     data class RequestLoginBody(val email: String)
     data class VerifyBody(val token: String)
     data class UpdateProfileBody(val displayName: String)
-    data class UserDto(val id: Long, val email: String, val displayName: String, val isAdmin: Boolean)
+
+    /**
+     * The signed-in account as seen by the client. [id] (a UUID) doubles as the shareable "friend
+     * code" — you invite a friend by handing them this id, never your email. [hidePresence] mirrors the
+     * presence opt-out toggled from the friends page.
+     */
+    data class UserDto(
+        val id: UUID,
+        val email: String,
+        val displayName: String,
+        val isAdmin: Boolean,
+        val hidePresence: Boolean,
+    )
     data class LoginResponse(val authToken: String, val user: UserDto)
 
     companion object {
@@ -64,7 +77,7 @@ class AuthController(
     @GetMapping("/me")
     fun me(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?): ResponseEntity<Any> {
         val claims = authSupport.requireUser(authorization)
-        val user = magicLinkService.findUser(claims.uid)
+        val user = magicLinkService.findUser(claims.userId)
             ?: return ResponseEntity.status(401).body(mapOf("error" to "Account no longer exists"))
         return ResponseEntity.ok(user.toDto())
     }
@@ -81,10 +94,11 @@ class AuthController(
             return ResponseEntity.badRequest()
                 .body(mapOf("error" to "Display name must be 1–$MAX_DISPLAY_NAME_LENGTH characters"))
         }
-        val updated = magicLinkService.updateDisplayName(claims.uid, name)
+        val updated = magicLinkService.updateDisplayName(claims.userId, name)
             ?: return ResponseEntity.status(401).body(mapOf("error" to "Account no longer exists"))
         return ResponseEntity.ok(updated.toDto())
     }
 
-    private fun UserRow.toDto() = UserDto(id = id!!, email = email, displayName = displayName, isAdmin = isAdmin)
+    private fun UserRow.toDto() =
+        UserDto(id = id!!, email = email, displayName = displayName, isAdmin = isAdmin, hidePresence = hidePresence)
 }

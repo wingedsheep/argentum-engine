@@ -78,6 +78,9 @@ export type ServerMessage =
   | QuickGameLobbyClosedMessage
   // Presence
   | OnlinePlayersCountMessage
+  // Friends
+  | FriendPresenceMessage
+  | FriendRequestReceivedMessage
   // Liveness
   | PongMessage
   // Session takeover
@@ -2664,6 +2667,20 @@ export interface QuickGameLobbyClosedMessage {
 export interface OnlinePlayersCountMessage {
   readonly type: 'onlinePlayersCount'
   readonly count: number
+}
+
+/** A friend's visible online status changed (connected, disconnected, or toggled their visibility). */
+export interface FriendPresenceMessage {
+  readonly type: 'friendPresence'
+  readonly accountId: string
+  readonly online: boolean
+}
+
+/** Someone sent you a friend request — pushed live so the incoming list / badge updates at once. */
+export interface FriendRequestReceivedMessage {
+  readonly type: 'friendRequestReceived'
+  readonly fromAccountId: string
+  readonly fromName: string
 }
 
 /**

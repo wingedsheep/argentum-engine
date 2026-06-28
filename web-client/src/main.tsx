@@ -38,6 +38,9 @@ const LoginVerifyPage = lazy(() =>
 const ProfilePage = lazy(() =>
   import('./pages/ProfilePage').then(({ ProfilePage }) => ({ default: ProfilePage }))
 )
+const FriendsPage = lazy(() =>
+  import('./pages/FriendsPage').then(({ FriendsPage }) => ({ default: FriendsPage }))
+)
 
 initAnalytics()
 
@@ -61,6 +64,7 @@ createRoot(rootElement).render(
           <Route path="/set-completion" element={<SetCompletionPage />} />
           <Route path="/login/verify" element={<LoginVerifyPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/friends" element={<FriendsPage />} />
           <Route path="/llm-tournament" element={<LlmTournamentPage />} />
           <Route path="/llm-tournament/:id" element={<LlmTournamentPage />} />
           <Route path="*" element={<App />} />

@@ -8,7 +8,7 @@ import { type AdminAuth, adminAuthHeaders } from './adminAuth'
 
 /** A registered account with its lifetime record, for the roster. */
 export interface AdminUserSummary {
-  readonly id: number
+  readonly id: string
   readonly email: string
   readonly displayName: string
   readonly isAdmin: boolean
@@ -27,7 +27,7 @@ export interface AdminUserStats {
 
 /** One account's full profile + stats, for the detail view. */
 export interface AdminUserDetail {
-  readonly id: number
+  readonly id: string
   readonly email: string
   readonly displayName: string
   readonly isAdmin: boolean
@@ -47,14 +47,14 @@ export async function fetchUsers(auth: AdminAuth): Promise<AdminUserSummary[]> {
   return (await res.json()) as AdminUserSummary[]
 }
 
-export async function fetchUserDetail(auth: AdminAuth, id: number): Promise<AdminUserDetail> {
+export async function fetchUserDetail(auth: AdminAuth, id: string): Promise<AdminUserDetail> {
   const res = await fetch(`/api/admin/users/${id}`, { headers: adminAuthHeaders(auth) })
   if (!res.ok) throw new Error(`Failed to load player (${res.status})`)
   return (await res.json()) as AdminUserDetail
 }
 
 /** Grant or revoke admin access for an account. Returns the new admin flag. */
-export async function setUserAdmin(auth: AdminAuth, id: number, isAdmin: boolean): Promise<boolean> {
+export async function setUserAdmin(auth: AdminAuth, id: string, isAdmin: boolean): Promise<boolean> {
   const res = await fetch(`/api/admin/users/${id}/admin`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...adminAuthHeaders(auth) },

@@ -41,7 +41,7 @@ class AdminAuthService(private val gameProperties: GameProperties) {
         if (configured.isNotBlank() && password != null && constantTimeEquals(password, configured)) return true
 
         val claims = authSupport?.userOrNull(authorization) ?: return false
-        val user = users?.findById(claims.uid)?.orElse(null) ?: return false
+        val user = users?.findById(claims.userId)?.orElse(null) ?: return false
         return user.isAdmin
     }
 

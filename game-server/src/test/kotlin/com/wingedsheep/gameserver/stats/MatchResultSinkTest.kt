@@ -12,6 +12,9 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import java.time.Instant
+import java.util.UUID
+
+private val SOME_USER: UUID = UUID.fromString("00000000-0000-0000-0000-0000000000aa")
 
 class MatchResultSinkTest : FunSpec({
 
@@ -39,7 +42,7 @@ class MatchResultSinkTest : FunSpec({
         JdbcMatchResultSink(repo).record(
             match(
                 RecordedParticipant(
-                    userId = 1, playerName = "Alice", won = true, colors = "WU", setCodes = "DSK",
+                    userId = SOME_USER, playerName = "Alice", won = true, colors = "WU", setCodes = "DSK",
                     isAi = false, clientIp = "1.2.3.4", deckCards = mapOf("Plains" to 10, "Island" to 8),
                 ),
                 RecordedParticipant(userId = null, playerName = "AI", won = false, isAi = true),
@@ -73,7 +76,7 @@ class MatchResultSinkTest : FunSpec({
         sink.record(tournament(RecordedTournamentParticipant(null, "Bot", isAi = true, placement = 1, wins = 3, losses = 0, draws = 0)))
         verify(exactly = 0) { repo.save(any()) }
 
-        sink.record(tournament(RecordedTournamentParticipant(7, "Carol", isAi = false, placement = 1, wins = 3, losses = 0, draws = 0)))
+        sink.record(tournament(RecordedTournamentParticipant(SOME_USER, "Carol", isAi = false, placement = 1, wins = 3, losses = 0, draws = 0)))
         verify(exactly = 1) { repo.save(any()) }
         saved.captured.winnerName shouldBe "Carol"
     }

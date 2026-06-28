@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import java.time.Instant
+import java.util.UUID
 
 /** A finished game ready to be recorded for stats. */
 data class RecordedMatch(
@@ -27,7 +28,7 @@ data class RecordedMatch(
 
 /** One seat in a finished game. [userId] is null for guests and AI. */
 data class RecordedParticipant(
-    val userId: Long?,
+    val userId: UUID?,
     val playerName: String,
     val won: Boolean,
     /** Deck color identity, canonical WUBRG order (e.g. "WU"); empty = colorless. Null if unknown. */

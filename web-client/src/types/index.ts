@@ -322,6 +322,8 @@ export type {
   SetQuickGameLobbyPublicMessage,
   SetQuickGameLobbyFormatMessage,
   OnlinePlayersCountMessage,
+  FriendPresenceMessage,
+  FriendRequestReceivedMessage,
   PingMessage,
   PongMessage,
   SessionReplacedMessage,

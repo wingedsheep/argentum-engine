@@ -49,7 +49,7 @@ class AccountDeckController(
 
     @GetMapping
     fun list(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<DeckSummary> {
-        val userId = authSupport.requireUser(auth).uid
+        val userId = authSupport.requireUser(auth).userId
         return decks.findByUserIdOrderByUpdatedAtDesc(userId).map { it.toSummary() }
     }
 
@@ -60,7 +60,7 @@ class AccountDeckController(
      */
     @GetMapping(params = ["full"], produces = [MediaType.APPLICATION_JSON_VALUE])
     fun listFull(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): ResponseEntity<Any> {
-        val userId = authSupport.requireUser(auth).uid
+        val userId = authSupport.requireUser(auth).userId
         val rows = decks.findByUserIdOrderByUpdatedAtDesc(userId)
         val array = buildJsonArray { rows.forEach { add(it.toDetailObject()) } }
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON)
@@ -72,7 +72,7 @@ class AccountDeckController(
         @PathVariable id: Long,
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
     ): ResponseEntity<Any> {
-        val userId = authSupport.requireUser(auth).uid
+        val userId = authSupport.requireUser(auth).userId
         val deck = decks.findByIdAndUserId(id, userId) ?: return ResponseEntity.notFound().build()
         return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(deck.toDetailJson())
     }
@@ -82,7 +82,7 @@ class AccountDeckController(
         @RequestBody body: String,
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
     ): ResponseEntity<Any> {
-        val userId = authSupport.requireUser(auth).uid
+        val userId = authSupport.requireUser(auth).userId
         val parsed = parse(body) ?: return ResponseEntity.badRequest().body(mapOf("error" to "Invalid deck JSON"))
         val now = Instant.now()
         val saved = decks.save(
@@ -97,7 +97,7 @@ class AccountDeckController(
         @RequestBody body: String,
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
     ): ResponseEntity<Any> {
-        val userId = authSupport.requireUser(auth).uid
+        val userId = authSupport.requireUser(auth).userId
         val existing = decks.findByIdAndUserId(id, userId) ?: return ResponseEntity.notFound().build()
         val parsed = parse(body) ?: return ResponseEntity.badRequest().body(mapOf("error" to "Invalid deck JSON"))
         val saved = decks.save(
@@ -111,7 +111,7 @@ class AccountDeckController(
         @PathVariable id: Long,
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
     ): ResponseEntity<Any> {
-        val userId = authSupport.requireUser(auth).uid
+        val userId = authSupport.requireUser(auth).userId
         val removed = decks.deleteByIdAndUserId(id, userId)
         return if (removed > 0) ResponseEntity.noContent().build() else ResponseEntity.notFound().build()
     }

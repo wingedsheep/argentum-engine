@@ -52,6 +52,8 @@ import type {
   QuickGameLobbyStateMessage,
   QuickGameLobbyClosedMessage,
   OnlinePlayersCountMessage,
+  FriendPresenceMessage,
+  FriendRequestReceivedMessage,
 } from '@/types'
 
 /**
@@ -123,6 +125,9 @@ export interface MessageHandlers {
   onQuickGameLobbyClosed: (message: QuickGameLobbyClosedMessage) => void
   // Presence handlers
   onOnlinePlayersCount: (message: OnlinePlayersCountMessage) => void
+  // Friends handlers
+  onFriendPresence: (message: FriendPresenceMessage) => void
+  onFriendRequestReceived: (message: FriendRequestReceivedMessage) => void
   // Liveness handlers
   onPong: () => void
   // Session takeover handlers
@@ -301,6 +306,12 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'onlinePlayersCount':
       handlers.onOnlinePlayersCount(message)
+      break
+    case 'friendPresence':
+      handlers.onFriendPresence(message)
+      break
+    case 'friendRequestReceived':
+      handlers.onFriendRequestReceived(message)
       break
     case 'pong':
       handlers.onPong()

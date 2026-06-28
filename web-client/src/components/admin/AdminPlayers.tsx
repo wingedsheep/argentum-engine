@@ -20,7 +20,7 @@ import { AdminScreen, Panel, StatCard, Table, adminTheme, cellStyle } from './ad
 
 export function AdminPlayers({ auth, onBack }: { auth: AdminAuth; onBack: () => void }) {
   const [users, setUsers] = useState<AdminUserSummary[]>([])
-  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -37,7 +37,7 @@ export function AdminPlayers({ auth, onBack }: { auth: AdminAuth; onBack: () => 
   }, [auth])
 
   /** Reflect an admin-flag change from the detail view back into the roster row. */
-  const applyAdminChange = (id: number, isAdmin: boolean) =>
+  const applyAdminChange = (id: string, isAdmin: boolean) =>
     setUsers((prev) => prev.map((u) => (u.id === id ? { ...u, isAdmin } : u)))
 
   if (selectedId != null) {
@@ -101,9 +101,9 @@ function PlayerDetail({
   onAdminChange,
 }: {
   auth: AdminAuth
-  id: number
+  id: string
   onBack: () => void
-  onAdminChange: (id: number, isAdmin: boolean) => void
+  onAdminChange: (id: string, isAdmin: boolean) => void
 }) {
   const [detail, setDetail] = useState<AdminUserDetail | null>(null)
   const [error, setError] = useState<string | null>(null)

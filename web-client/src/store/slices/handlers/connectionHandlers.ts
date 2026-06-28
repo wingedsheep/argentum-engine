@@ -3,6 +3,7 @@
  */
 import type { MessageHandlers } from '@/network/messageHandlers.ts'
 import { entityId, createJoinLobbyMessage, createSpectateGameMessage } from '@/types'
+import { useFriendsStore } from '@/store/friendsStore'
 import { getWebSocket, clearLobbyId, loadLobbyId } from '../shared'
 import type { SetState, GetState } from './types'
 
@@ -10,6 +11,8 @@ type ConnectionHandlerKeys =
   | 'onConnected'
   | 'onReconnected'
   | 'onOnlinePlayersCount'
+  | 'onFriendPresence'
+  | 'onFriendRequestReceived'
   | 'onPong'
   | 'onSessionReplaced'
 
@@ -78,6 +81,14 @@ export function createConnectionHandlers(set: SetState, get: GetState): Pick<Mes
 
     onOnlinePlayersCount: (msg) => {
       set({ onlinePlayers: msg.count })
+    },
+
+    // Friends presence/requests live in the standalone friends store (orthogonal to the game store).
+    onFriendPresence: (msg) => {
+      useFriendsStore.getState().applyPresence(msg.accountId, msg.online)
+    },
+    onFriendRequestReceived: () => {
+      useFriendsStore.getState().noteIncomingRequest()
     },
 
     // Liveness replies are consumed by GameWebSocket's last-message tracking; nothing

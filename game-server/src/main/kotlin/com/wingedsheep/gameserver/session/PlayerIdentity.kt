@@ -21,7 +21,7 @@ class PlayerIdentity(
 ) {
     /** Account id this identity is signed in as (from magic-link auth), or null for guest play. */
     @Volatile
-    var userId: Long? = null
+    var userId: UUID? = null
 
     /**
      * Connecting client's IP, captured at handshake. Admin-only (used for a geolocation estimate);

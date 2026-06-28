@@ -1119,6 +1119,19 @@ sealed interface ServerMessage {
     @SerialName("onlinePlayersCount")
     data class OnlinePlayersCount(val count: Int) : ServerMessage
 
+    /**
+     * A friend's visible online status changed (they connected, disconnected, or toggled their
+     * presence visibility). Pushed only to that friend's accepted friends who are currently connected.
+     */
+    @Serializable
+    @SerialName("friendPresence")
+    data class FriendPresence(val accountId: String, val online: Boolean) : ServerMessage
+
+    /** Someone sent you a friend request. Pushed live so the incoming-requests list updates at once. */
+    @Serializable
+    @SerialName("friendRequestReceived")
+    data class FriendRequestReceived(val fromAccountId: String, val fromName: String) : ServerMessage
+
     /** Reply to [ClientMessage.Ping] — always sent, regardless of auth or game state. */
     @Serializable
     @SerialName("pong")

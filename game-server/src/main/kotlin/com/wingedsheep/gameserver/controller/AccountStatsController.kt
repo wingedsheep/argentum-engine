@@ -33,7 +33,7 @@ class AccountStatsController(
 
     @GetMapping("/me")
     fun me(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): StatsDto {
-        val userId = authSupport.requireUser(auth).uid
+        val userId = authSupport.requireUser(auth).userId
         val games = matchResults.countGamesForUser(userId)
         val wins = matchResults.countWinsForUser(userId)
         return StatsDto(
@@ -46,19 +46,19 @@ class AccountStatsController(
 
     @GetMapping("/me/colors")
     fun colors(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<StatBucket> =
-        statsQuery.colorBreakdown(authSupport.requireUser(auth).uid)
+        statsQuery.colorBreakdown(authSupport.requireUser(auth).userId)
 
     @GetMapping("/me/sets")
     fun sets(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<StatBucket> =
-        statsQuery.setBreakdown(authSupport.requireUser(auth).uid)
+        statsQuery.setBreakdown(authSupport.requireUser(auth).userId)
 
     @GetMapping("/me/modes")
     fun modes(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<StatBucket> =
-        statsQuery.modeBreakdown(authSupport.requireUser(auth).uid)
+        statsQuery.modeBreakdown(authSupport.requireUser(auth).userId)
 
     @GetMapping("/me/opponents")
     fun opponents(@RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?): List<HeadToHead> =
-        statsQuery.headToHead(authSupport.requireUser(auth).uid)
+        statsQuery.headToHead(authSupport.requireUser(auth).userId)
 
     @GetMapping("/me/history")
     fun history(
@@ -66,19 +66,19 @@ class AccountStatsController(
         @RequestParam(defaultValue = "25") limit: Int,
         @RequestParam(defaultValue = "0") offset: Int,
     ): List<GameHistoryEntry> =
-        statsQuery.recentGames(authSupport.requireUser(auth).uid, limit.coerceIn(1, 100), offset.coerceAtLeast(0))
+        statsQuery.recentGames(authSupport.requireUser(auth).userId, limit.coerceIn(1, 100), offset.coerceAtLeast(0))
 
     @GetMapping("/me/cards")
     fun cards(
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
         @RequestParam(defaultValue = "30") limit: Int,
     ): List<CardStat> =
-        statsQuery.topCardsForUser(authSupport.requireUser(auth).uid, limit.coerceIn(1, 200))
+        statsQuery.topCardsForUser(authSupport.requireUser(auth).userId, limit.coerceIn(1, 200))
 
     @GetMapping("/me/tournaments")
     fun tournaments(
         @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) auth: String?,
         @RequestParam(defaultValue = "25") limit: Int,
     ): List<UserTournamentEntry> =
-        statsQuery.tournamentHistory(authSupport.requireUser(auth).uid, limit.coerceIn(1, 100))
+        statsQuery.tournamentHistory(authSupport.requireUser(auth).userId, limit.coerceIn(1, 100))
 }

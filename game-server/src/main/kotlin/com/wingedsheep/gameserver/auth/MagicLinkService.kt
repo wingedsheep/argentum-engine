@@ -12,6 +12,7 @@ import java.security.MessageDigest
 import java.security.SecureRandom
 import java.time.Instant
 import java.util.Base64
+import java.util.UUID
 
 /** Raised when a magic-link token is missing, expired, already used, or unknown. */
 class InvalidLoginTokenException(message: String) : RuntimeException(message)
@@ -77,14 +78,14 @@ class MagicLinkService(
         return LoginResult(user, authTokenService.issue(user.id!!, user.email, now))
     }
 
-    fun findUser(userId: Long): UserRow? = users.findById(userId).orElse(null)
+    fun findUser(userId: UUID): UserRow? = users.findById(userId).orElse(null)
 
     /**
      * Set a user's chosen display name. The email stays the immutable identity; the display name is a
      * free-form label (duplicates across accounts are allowed). Returns the updated account, or null if
      * it no longer exists. Caller is responsible for trimming/length-validating [displayName].
      */
-    fun updateDisplayName(userId: Long, displayName: String): UserRow? {
+    fun updateDisplayName(userId: UUID, displayName: String): UserRow? {
         val user = users.findById(userId).orElse(null) ?: return null
         return users.save(user.copy(displayName = displayName))
     }
