@@ -7931,6 +7931,56 @@
     ]
 }
 
+// Waterbending Scroll
+{
+    "name": "Waterbending Scroll",
+    "manaCost": "{1}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "{6}, {T}: Draw a card. This ability costs {1} less to activate for each Island you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{6}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land Island"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "UNCOMMON",
+        "artist": "Dee Nguyen",
+        "flavorText": "The scroll taught Katara many useful skills. So did fighting the angry pirates she stole it from.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50d0be73-a2c8-44a0-9178-9949f342f6f9.jpg?1764120553"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // White Lotus Hideout
 {
     "name": "White Lotus Hideout",
