@@ -177,7 +177,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [x] Glider Kids
 - [ ] Glider Staff
 - [x] Gran-Gran
-- [ ] Great Divide Guide
+- [x] Great Divide Guide
 - [ ] Guru Pathik
 - [ ] Hakoda, Selfless Commander
 - [ ] Hama, the Bloodbender

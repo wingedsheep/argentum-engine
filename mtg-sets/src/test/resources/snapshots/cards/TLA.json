@@ -3403,6 +3403,43 @@
     ]
 }
 
+// Great Divide Guide
+{
+    "name": "Great Divide Guide",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Scout Ally",
+    "oracleText": "Each land and Ally you control has \"{T}: Add one mana of any color.\"",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "ability_1",
+                    "cost": "CostTap",
+                    "effect": "AddManaOfChoice"
+                },
+                "filter": {
+                    "baseFilter": "land|Ally ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Song Qijin",
+        "flavorText": "\"Who's ready to cross this here canyon?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc3063ec-5ea6-46c1-8331-c740cbaf6c76.jpg?1764121229"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Haru, Hidden Talent
 {
     "name": "Haru, Hidden Talent",
