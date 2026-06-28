@@ -90,11 +90,19 @@ class CastFromCollectionWithoutPayingCostExecutor(
         val cardComponent = newState.getEntity(cardId)?.get<CardComponent>()
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.cardDefinitionId) }
         val isModalSpell = cardDef?.script?.spellEffect is ModalEffect
-        val targetRequirements = cardDef?.script?.targetRequirements.orEmpty()
+        // Include the aura's enchant target: an Aura carries its target in `auraTarget`, not in
+        // `targetRequirements`, so a free-cast Aura (Pacifism) would otherwise reach CastSpellHandler
+        // with no target — which it rejects ("No valid targets available"), stranding the card in
+        // exile. Mirror CastSpellHandler's own `targetRequirements + auraTarget` union here.
+        val targetRequirements = buildList {
+            addAll(cardDef?.script?.targetRequirements.orEmpty())
+            cardDef?.script?.auraTarget?.let { add(it) }
+        }
 
         // Modal spells route through CastSpellHandler's own target-pause flow after mode
-        // selection. Non-modal targeted spells need us to surface a ChooseTargetsDecision
-        // first because CastSpellHandler.validate rejects `targets = []` for required slots.
+        // selection. Non-modal targeted spells (including Auras) need us to surface a
+        // ChooseTargetsDecision first because CastSpellHandler.validate rejects `targets = []`
+        // for required slots.
         if (!isModalSpell && targetRequirements.isNotEmpty()) {
             val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
             val requirementInfos = targetRequirements.mapIndexed { index, requirement ->

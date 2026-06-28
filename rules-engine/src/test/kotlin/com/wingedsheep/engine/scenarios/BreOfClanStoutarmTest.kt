@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.ManaCost
@@ -185,6 +186,41 @@ class BreOfClanStoutarmTest : ScenarioTestBase() {
                 }
                 withClue("Tiny Bolt went to its owner's graveyard after resolving") {
                     game.isInGraveyard(1, "Tiny Bolt") shouldBe true
+                }
+            }
+
+            test("mana value ≤ life gained: an Aura can be cast for free and select its enchant target") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Bre of Clan Stoutarm")
+                    .withCardInHand(1, "Healing Salve")
+                    .withCardInLibrary(1, "Forest")
+                    .withCardInLibrary(1, "Pacifism")    // an Aura — targets via auraTarget, not targetRequirements
+                    .withCardOnBattlefield(2, "Cheap Ogre") // the creature Pacifism will enchant
+                    .withLandsOnBattlefield(1, "Plains", 2)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Healing Salve").error shouldBe null
+                game.resolveStack()
+
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.resolveStack()
+                // Accept the free cast, then pick what Pacifism enchants (the opponent's Cheap Ogre).
+                game.answerYesNo(true)
+                val ogre = game.findPermanent("Cheap Ogre")
+                    ?: error("Cheap Ogre should be on the battlefield as an enchant target")
+                game.selectTargets(listOf(ogre))
+                game.resolveStack()
+
+                withClue("Pacifism was cast for free and entered the battlefield") {
+                    game.isOnBattlefield("Pacifism") shouldBe true
+                }
+                withClue("Pacifism is attached to the chosen creature") {
+                    val pacifism = game.findPermanent("Pacifism")
+                        ?: error("Pacifism should be on the battlefield")
+                    game.state.getEntity(pacifism)?.get<AttachedToComponent>()?.targetId shouldBe ogre
                 }
             }
 
