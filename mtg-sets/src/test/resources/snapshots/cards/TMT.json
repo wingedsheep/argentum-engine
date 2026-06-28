@@ -4823,6 +4823,7 @@
                                         "amount": 1
                                     }
                                 },
+                                "filter": "nonland",
                                 "storeSelected": "krangChosen",
                                 "prompt": "Choose a card exiled with Krang & Shredder to cast without paying its mana cost"
                             },
@@ -7365,6 +7366,78 @@
     ]
 }
 
+// North Wind Avatar
+{
+    "name": "North Wind Avatar",
+    "manaCost": "{2}{U}{U}{R}",
+    "typeLine": "Creature — Dragon Spirit Avatar",
+    "oracleText": "Flying\nWhen this creature enters, if you cast it, you may put a card you own from outside the game into your hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Sideboard"
+                            },
+                            "storeAs": "wishable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "wishable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "wishableFound"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "wishableFound",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "triggerCondition": "WasCast",
+                "descriptionOverride": "When this creature enters, if you cast it, you may put a card you own from outside the game into your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "MYTHIC",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "Glyph has claimed to be a survivor of an alien war, a deposed minister of weather, and the last of the dinosaurs. Whatever the truth, his origin stories always bear a lesson.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41439cfe-bb3e-42f3-9d81-de9db537ce68.jpg?1769006359"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Northampton Farm
 {
     "name": "Northampton Farm",
@@ -8161,6 +8234,7 @@
                             "from": "Battlefield",
                             "to": "Graveyard"
                         },
+                        "binding": "ANY",
                         "effect": {
                             "type": "DrawCards",
                             "count": {
@@ -12591,6 +12665,101 @@
         "artist": "Jakob Eirich",
         "imageUri": "https://cards.scryfall.io/normal/front/f/c/fce6a8b6-b43c-4045-9378-97b2463f9b4d.jpg?1769006474"
     }
+}
+
+// Turtles Forever
+{
+    "name": "Turtles Forever",
+    "manaCost": "{3}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Search your library and/or outside the game for exactly four legendary creature cards you own with different names, then reveal those cards. An opponent chooses two of them. Put the chosen cards into your hand and shuffle the rest into your library.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromMultipleZones",
+                        "zones": [
+                            "Library",
+                            "Sideboard"
+                        ],
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ]
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search for exactly four legendary creature cards with different names",
+                    "restrictions": [
+                        "OnePerCardName"
+                    ]
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "selected1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "selected1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "Opponent",
+                    "storeSelected": "selected3",
+                    "storeRemainder": "remainder3",
+                    "prompt": "Choose two of those cards to put into their hand",
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library"
+                    }
+                },
+                "ShuffleLibrary"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "RARE",
+        "artist": "Devin Elle Kurtz",
+        "flavorText": "\"See you around the multiverse, bros.\"\n—One Leonardo or another",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0db974a-3289-4727-9aaf-e9cca9113c87.jpg?1760102536"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Turtles in Time

@@ -1374,14 +1374,17 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 
 **Sideboard / wish (`Patterns.Sideboard.*`)**
 
-- `wish(filter = Any, count = 1, destination = HAND)` — the **wish** mechanic (Burning Wish,
+- `wish(filter = Any, count = 1, destination = HAND, revealed = true)` — the **wish** mechanic (Burning Wish,
   Living Wish, Cunning Wish, Death Wish, Glittering Wish, Wish, …): "you may [reveal] a [type] card
   you own from outside the game and put it into your hand." A player's sideboard is modelled as the
   private per-player `Zone.SIDEBOARD` ("outside the game", CR 100.4 / 400.11a; strictly not a zone
   per CR 400.11, but a pseudo-zone lets the wish reuse the ordinary pipeline). The recipe composes
   `GatherCards(FromZone(SIDEBOARD, You, filter)) → SelectFromCollection(ChooseUpTo(count)) →
-  MoveCollection(→ destination, revealed = true)` — **no shuffle** (the sideboard is unordered) and
-  reveal always on. The "may" and "a card" are both the `ChooseUpTo(count)`: declining or having no
+  MoveCollection(→ destination, revealed = revealed)` — **no shuffle** (the sideboard is unordered).
+  `revealed` defaults on per the cycle's "reveal that card" clause (CR 701.20, Reveal); pass
+  `revealed = false` for cards that merely "put a card you own from outside the game into your hand"
+  with no reveal (**North Wind Avatar**: `Patterns.Sideboard.wish(GameObjectFilter.Any, revealed = false)`).
+  The "may" and "a card" are both the `ChooseUpTo(count)`: declining or having no
   legal choice simply moves nothing. The varying axis across the cycle is `filter`
   (`Filters.Sorcery` for Burning Wish, `Filters.Instant` for Cunning Wish, creature-or-land for
   Living Wish, `Any` for Death Wish/Wish); `destination` is `HAND` for every printed wish but is

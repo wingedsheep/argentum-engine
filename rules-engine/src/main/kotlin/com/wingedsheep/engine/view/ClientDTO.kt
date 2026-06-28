@@ -435,7 +435,29 @@ data class ClientCard(
      * show only this face's name (CR 709.3b). Null for normal cards and for Rooms outside the
      * stack.
      */
-    val castFaceIndex: Int? = null
+    val castFaceIndex: Int? = null,
+
+    /**
+     * Impending alternative cost (CR 702.176), derived from the card's `KeywordAbility.Impending`.
+     * Present on any card whose definition has impending, regardless of zone, so the client can
+     * always offer the impending cast option alongside the normal cast — graying out whichever the
+     * player can't currently pay for — and annotate it with a time-counter glyph. Null for cards
+     * without impending.
+     */
+    val impending: ClientImpending? = null
+)
+
+/**
+ * The impending option on a card (CR 702.176): its reduced mana cost and the number of time
+ * counters the permanent enters with when cast this way. Used by the client to render the
+ * impending cast button (with a time-counter glyph showing [time]) even when it's unaffordable.
+ */
+@Serializable
+data class ClientImpending(
+    /** Reduced mana cost paid to cast for impending, e.g. "{2}{W}{W}". */
+    val cost: String,
+    /** Number of time counters the permanent enters with (e.g. 4). */
+    val time: Int
 )
 
 /**

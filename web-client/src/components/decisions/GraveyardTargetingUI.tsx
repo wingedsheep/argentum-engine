@@ -100,22 +100,29 @@ export function GraveyardTargetingUI({
 
   // Derive the action verb from effectHint so the button/text matches the actual effect
   // (e.g., "Exile card in a graveyard" → "Exile"; "Shuffle … into its owner's library" → "Shuffle
-  // into Library"; "Return … to its owner's hand" → "Return to Hand"). Effects can be wrapped
-  // (ForEachTargetEffect, CompositeEffect, etc.) so the keyword may not be at the start — match
-  // anywhere in the hint.
+  // into Library"; "Put … onto the battlefield" → "Put onto Battlefield"; "Return … to its owner's
+  // hand" → "Return to Hand"). Effects can be wrapped (ForEachTargetEffect, CompositeEffect, etc.)
+  // so the keyword may not be at the start — match anywhere in the hint. "Return to Hand" is only
+  // the fallback, so reanimation effects (Shark Shredder) must be detected explicitly or they'd
+  // mislabel as returning the opponent's card to hand.
   const effectHint = decision.context.effectHint?.toLowerCase() ?? ''
   const isExile = effectHint.includes('exile')
+  const isReanimate = effectHint.includes('battlefield')
   const isShuffleIntoLibrary = effectHint.includes('shuffle') && effectHint.includes('library')
-  const optionalConfirmText = isShuffleIntoLibrary
-    ? 'Shuffle into Library'
-    : isExile
-      ? 'Exile'
-      : 'Return to Hand'
-  const actionVerb = isShuffleIntoLibrary
-    ? 'shuffle into your library'
-    : isExile
-      ? 'exile'
-      : 'return to your hand'
+  const optionalConfirmText = isReanimate
+    ? 'Put onto Battlefield'
+    : isShuffleIntoLibrary
+      ? 'Shuffle into Library'
+      : isExile
+        ? 'Exile'
+        : 'Return to Hand'
+  const actionVerb = isReanimate
+    ? 'put onto the battlefield'
+    : isShuffleIntoLibrary
+      ? 'shuffle into your library'
+      : isExile
+        ? 'exile'
+        : 'return to your hand'
 
   const numWord = (n: number): string =>
     ({ 1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five' } as Record<number, string>)[n] ?? String(n)

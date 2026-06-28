@@ -16,7 +16,6 @@ object TeenageMutantNinjaTurtlesSet : MtgSet {
     override val code = "TMT"
     override val displayName = "Teenage Mutant Ninja Turtles"
     override val releaseDate = "2026-03-06"
-    override val incomplete = true
     override val sealedSupported = true
 
     override val cards: List<CardDefinition> by lazy {

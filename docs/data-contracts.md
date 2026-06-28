@@ -457,6 +457,19 @@ demand. Decision ids are minted afresh each run (they are not part of the determ
 recorded `SubmitDecision` is re-bound to the freshly created decision's id during reconstruction;
 the choice payload (entity-id targets/cards) is unchanged, so the outcome is identical.
 
+**How big are they in practice?** `CompactReplaySizeBenchmark` (game-server, disabled by default)
+plays whole games with purely random actions through the real `GameSession` recording path, builds
+the `CompactReplay` each produces, and measures it. A full game's stored form (`ReplayCodec` →
+gzip+base64) lands around **4–10 KB** — roughly **3–4 bytes per recorded action** — which gzip
+shaves ~97% off the raw JSON (the action stream is highly repetitive `"type"` discriminators and
+`eN` entity ids). At that size ~170 games fit in 1 MB. Random play is action-heavy (it passes
+priority constantly and rarely closes out a game), so real AI/human games tend to be *smaller* per
+game. Run it with:
+
+```bash
+./gradlew :game-server:test --tests "*.CompactReplaySizeBenchmark" -Dbenchmark=true -DbenchmarkGames=40 -DbenchmarkSet=BLB
+```
+
 ### "Share frame as scenario" (replay)
 
 The replay viewer can also reproduce an **exact full-state snapshot** — stack, targets, floating

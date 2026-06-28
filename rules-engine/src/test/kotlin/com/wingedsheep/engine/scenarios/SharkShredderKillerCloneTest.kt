@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.CardsRevealedEvent
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
@@ -74,5 +75,14 @@ class SharkShredderKillerCloneTest : FunSpec({
         val attacking = driver.state.getEntity(reanimated)?.get<AttackingComponent>()
         attacking shouldNotBe null
         attacking!!.defenderId shouldBe opponent
+
+        // The reanimation move emits a CardsRevealedEvent whose revealer is the *controller* doing
+        // the reanimation (the attacker), not the card's owner. With revealToSelf = false, that
+        // surfaces the overlay to the opponent (whose card was stolen onto your board), not to you.
+        // Anchoring on owner here would mislabel the move as the opponent reanimating their own card.
+        val reveal = driver.events.filterIsInstance<CardsRevealedEvent>()
+            .last { it.cardIds.contains(bearInGy) }
+        reveal.revealingPlayerId shouldBe player
+        reveal.revealToSelf shouldBe false
     }
 })

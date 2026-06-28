@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.stats
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.core.CardType
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -94,7 +95,9 @@ data class AdminUserStat(
     val id: UUID,
     val email: String,
     val displayName: String,
-    val isAdmin: Boolean,
+    // Pin the wire name (see SetAdminBody) — the admin Players list reads `u.isAdmin` for the ADMIN
+    // badge; without this Jackson emits `admin` and the badge never shows for promoted accounts.
+    @JsonProperty("isAdmin") val isAdmin: Boolean,
     val createdAt: String,
     val games: Long,
     val wins: Long,

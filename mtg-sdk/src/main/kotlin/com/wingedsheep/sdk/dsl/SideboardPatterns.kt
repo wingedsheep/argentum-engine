@@ -41,14 +41,16 @@ object SideboardPatterns {
      * it into your hand." Gathers the controller's [Zone.SIDEBOARD], lets them choose up to [count]
      * (default 1) matching cards, reveals the choice, and moves it to [destination] (default hand).
      *
-     * No shuffle — the sideboard is not a library. Reveal is always on, per the wish cycle's
-     * "reveal that card" clause and CR 701.19j.
+     * No shuffle — the sideboard is not a library. [revealed] defaults on, per the wish cycle's
+     * "reveal that card" clause and CR 701.20 (Reveal); pass `revealed = false` for the cards that simply
+     * "put a card you own from outside the game into your hand" with no reveal (North Wind Avatar).
      */
     fun wish(
         filter: GameObjectFilter = GameObjectFilter.Any,
         count: DynamicAmount = DynamicAmount.Fixed(1),
         destination: SearchDestination = SearchDestination.HAND,
         storeAs: String = "wishable",
+        revealed: Boolean = true,
     ): CompositeEffect {
         val (zone, placement) = when (destination) {
             SearchDestination.HAND -> Zone.HAND to ZonePlacement.Default
@@ -71,7 +73,7 @@ object SideboardPatterns {
                 MoveCollectionEffect(
                     from = selected,
                     destination = CardDestination.ToZone(zone, Player.You, placement),
-                    revealed = true,
+                    revealed = revealed,
                 ),
             )
         )
@@ -82,5 +84,6 @@ object SideboardPatterns {
         filter: GameObjectFilter,
         count: Int,
         destination: SearchDestination = SearchDestination.HAND,
-    ): CompositeEffect = wish(filter, DynamicAmount.Fixed(count), destination)
+        revealed: Boolean = true,
+    ): CompositeEffect = wish(filter, DynamicAmount.Fixed(count), destination, revealed = revealed)
 }

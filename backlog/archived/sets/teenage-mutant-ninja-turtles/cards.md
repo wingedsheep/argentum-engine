@@ -2,7 +2,7 @@
 
 **Set Size:** 190 cards (excluding basic lands)
 **Release Date:** March 6, 2026
-**Implemented:** 188 / 190
+**Implemented:** 190 / 190
 ---
 
 - [x] Action News Crew
@@ -112,7 +112,7 @@
 - [x] New Generation's Technique
 - [x] Ninja Teen
 - [x] Nobody
-- [ ] North Wind Avatar
+- [x] North Wind Avatar
 - [x] Northampton Farm
 - [x] Novel Nunchaku
 - [x] Null Group Biological Assets
@@ -185,7 +185,7 @@
 - [x] Turtle Lair
 - [x] Turtle Power!
 - [x] Turtle Van
-- [ ] Turtles Forever
+- [x] Turtles Forever
 - [x] Turtles in Time
 - [x] Uneasy Alliance
 - [x] Utrom Scientists

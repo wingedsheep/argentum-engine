@@ -83,9 +83,14 @@ val KrangAndShredder = card("Krang & Shredder") {
             Effects.Composite(
                 listOf(
                     GatherCardsEffect(source = CardSource.FromLinkedExile(), storeAs = "krangCastable"),
+                    // "you may CAST a card" — lands are played, not cast (CR 601/305), so the
+                    // exiled lands (Krang exiles down *to* a nonland) can never be chosen here.
+                    // Per the official ruling the chosen card is cast while this ability resolves,
+                    // ignoring timing; only nonland cards are eligible to cast.
                     SelectFromCollectionEffect(
                         from = "krangCastable",
                         selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
+                        filter = GameObjectFilter.Nonland,
                         storeSelected = "krangChosen",
                         prompt = "Choose a card exiled with Krang & Shredder to cast without paying its mana cost"
                     ),

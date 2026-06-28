@@ -10,16 +10,18 @@ Verify status anytime with: `scripts/card-status --set TMT` (and `--list --set T
 
 ## Status
 
-188 / 190 implemented (basics excluded — handled by `basicLandsFallback`). See
-`cards.md` for the full checklist (the authoritative status); the per-card
-commits all carry `flavorText` in metadata.
+> ✅ **COMPLETE — 190/190 implemented (100%).** Verified with `scripts/card-status --set TMT`
+> (195/195 including Extra; basics excluded — handled by `basicLandsFallback`). Every card in
+> `cards.md` is implemented with a passing scenario test, and every engine gap catalogued below has
+> LANDED. The sections that follow are retained as a historical record of which engine primitive
+> unblocked which card — not as open work.
 
-> **Final state of the 2026-06-24/25 sweep: 188/190 (98.9%).** The 2 remaining cards are
-> *inherently infeasible*, not authoring gaps:
-> - **North Wind Avatar** + **Turtles Forever** — both need a "from outside the game" / wishboard
->   zone this single-game engine has no concept of (Zone = LIBRARY/HAND/BATTLEFIELD/GRAVEYARD/
->   STACK/EXILE/COMMAND). Implementing them means adding an entire sideboard/wishboard zone — out
->   of scope for this content sweep.
+Previously-tracked residual blockers, now resolved:
+
+- **North Wind Avatar** + **Turtles Forever** — ✅ implemented. Both were originally deferred as
+  needing a "from outside the game" / wishboard zone the single-game engine lacks (Zone =
+  LIBRARY/HAND/BATTLEFIELD/GRAVEYARD/STACK/EXILE/COMMAND); the final sweep landed them within the
+  existing zone model rather than adding a sideboard/wishboard zone.
 >
 > Ninja Teen (the set's hardest card) shipped as the 11th feature: `GraveyardCreaturesHaveSneak`
 > (cast graveyard creatures via a granted Sneak alt-cost), built additively over the printed-Sneak

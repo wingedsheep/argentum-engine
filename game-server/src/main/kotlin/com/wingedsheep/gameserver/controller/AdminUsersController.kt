@@ -44,7 +44,9 @@ class AdminUsersController(
         val id: UUID,
         val email: String,
         val displayName: String,
-        val isAdmin: Boolean,
+        // Pin the wire name (see SetAdminBody) — the client reads `detail.isAdmin` for the badge
+        // and the promote/revoke toggle; without this Jackson emits `admin` and both misbehave.
+        @JsonProperty("isAdmin") val isAdmin: Boolean,
         val createdAt: String,
         val stats: StatsDto,
         val colors: List<StatBucket>,

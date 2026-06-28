@@ -90,6 +90,61 @@ class KrangAndShredderScenarioTest : ScenarioTestBase() {
                     game.isInExile(2, "Centaur Courser") shouldBe false
                 }
             }
+
+            // Regression: Krang exiles the opponent's library "until they exile a nonland card", so
+            // the linked-exile pile routinely contains LAND cards. "you may CAST a card" — lands are
+            // played, not cast (CR 305/601), so an exiled land must never be offered or playable here.
+            test("a land in the linked-exile pile is never offered — only nonland cards can be cast") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Krang & Shredder")
+                    .withCardInExile(2, "Grizzly Bears")  // nonland — castable
+                    .withCardInExile(2, "Centaur Courser") // nonland — castable
+                    .withCardInExile(2, "Forest")          // land — must NOT be castable
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val krang = game.findPermanent("Krang & Shredder")!!
+                fun exiledId(name: String) = game.state.getExile(game.player2Id).first { id ->
+                    game.state.getEntity(id)?.get<CardComponent>()?.name == name
+                }
+                val grizzly = exiledId("Grizzly Bears")
+                val centaur = exiledId("Centaur Courser")
+                val forest = exiledId("Forest")
+
+                game.state = game.state
+                    .updateEntity(krang) { it.with(LinkedExileComponent(listOf(grizzly, centaur, forest))) }
+                    .updateEntity(game.player1Id) { it.with(PermanentLeftBattlefieldThisTurnComponent(count = 1)) }
+
+                game.passUntilPhase(Phase.ENDING, Step.END)
+                game.resolveStack()
+
+                (game.getPendingDecision() is YesNoDecision) shouldBe true
+                game.answerYesNo(true)
+
+                val select = game.getPendingDecision()
+                (select is SelectCardsDecision) shouldBe true
+                val offered = (select as SelectCardsDecision).cardInfo!!
+                withClue("Both nonland cards are offered to cast") {
+                    offered.values.any { it.name == "Grizzly Bears" } shouldBe true
+                    offered.values.any { it.name == "Centaur Courser" } shouldBe true
+                }
+                withClue("The land is NOT offered — it can't be cast") {
+                    offered.values.any { it.name == "Forest" } shouldBe false
+                }
+
+                game.selectCards(listOf(grizzly))
+                game.resolveStack()
+
+                withClue("The chosen nonland was cast and entered the battlefield") {
+                    game.findPermanent("Grizzly Bears") shouldNotBe null
+                }
+                withClue("The land stays exiled — never played") {
+                    game.isInExile(2, "Forest") shouldBe true
+                    game.isOnBattlefield("Forest") shouldBe false
+                }
+            }
         }
     }
 }

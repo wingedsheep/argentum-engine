@@ -1,12 +1,17 @@
 # Avatar: The Last Airbender — Engine Gap Analysis
 
-Cross-reference of the **280 remaining (unimplemented) TLA cards** against the engine's actual
+Cross-reference of the **242 remaining (unimplemented) TLA cards** against the engine's actual
 capabilities (SDK reference + source verification, June 2026). Generated to scope what must be
 built before the set can be completed.
 
-**Status:** 6 / 286 implemented (2%). Card list from `scripts/card-status --cards TLA`. Oracle text
-pulled from Scryfall (`set:tla`, 286 unique cards). Implemented so far: Ba Sing Se, Badgermole Cub,
-Diligent Zookeeper, Earthbending Lesson, Mai Scornful Striker, Realm of Koh.
+**Status:** 44 / 286 implemented (15%). Card list from `scripts/card-status --cards TLA`. Oracle text
+pulled from Scryfall (`set:tla`, 286 unique cards; full payload in `bolav/tla_full.json`).
+The full per-card checklist lives alongside this file in [`cards.md`](cards.md).
+
+Per signature mechanic (implemented / total): **Earthbend 5/27**, **Firebending 2/21**,
+**Waterbend 1/24**, **Airbend 0/10**, **Exhaust 0/8**, **Vigilance counter 3/15**. The handful of
+Firebending/Waterbend cards already shipped lean on hand-wired approximations or avoid the gated cost —
+the keyword primitives below are still the real work.
 
 ## Bottom line
 

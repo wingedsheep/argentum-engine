@@ -131,16 +131,23 @@ class MoveToZoneEffectExecutor(
         }
 
         // Auto-reveal: when a card moves from a publicly visible zone (graveyard/exile)
-        // back into a hidden zone (hand/library), emit a CardsRevealedEvent so the UI
-        // can show the opponent what card was returned and why. The card was already
-        // public info, so this just surfaces the move in the reveal overlay.
+        // back into a hidden zone (hand/library) or onto the battlefield, emit a
+        // CardsRevealedEvent so the UI can surface what card moved and why. The card was
+        // already public info, so this just surfaces the move in the reveal overlay.
+        //
+        // The "revealer" is the controller performing the move, not the card's owner: a
+        // reanimation can put an opponent's graveyard card onto *your* battlefield under
+        // *your* control (Shark Shredder), and the overlay must read as you doing it, not
+        // as the opponent. controllerId only diverges from ownerId for a controller-override
+        // move onto the battlefield (see above); returns to hand/library never carry an
+        // override, so controllerId == ownerId there and behaviour is unchanged.
         val revealEvents = autoRevealForReturn(
             fromZone = currentZone.zoneType,
             toZone = effect.destination,
             targetId = targetId,
             cardName = cardComponent.name,
             imageUri = cardComponent.imageUri,
-            ownerId = ownerId,
+            controllerId = controllerId,
             sourceId = context.sourceId,
             state = resultState
         )
@@ -214,7 +221,7 @@ class MoveToZoneEffectExecutor(
         targetId: com.wingedsheep.sdk.model.EntityId,
         cardName: String,
         imageUri: String?,
-        ownerId: com.wingedsheep.sdk.model.EntityId,
+        controllerId: com.wingedsheep.sdk.model.EntityId,
         sourceId: com.wingedsheep.sdk.model.EntityId?,
         state: GameState
     ): List<com.wingedsheep.engine.core.GameEvent> {
@@ -227,13 +234,14 @@ class MoveToZoneEffectExecutor(
 
         return listOf(
             CardsRevealedEvent(
-                revealingPlayerId = ownerId,
+                revealingPlayerId = controllerId,
                 cardIds = listOf(targetId),
                 cardNames = listOf(cardName),
                 imageUris = listOf(imageUri),
                 source = sourceName,
-                // The owner moved the card themselves — they already know what/where it is.
-                // Only the opponent needs the reveal overlay to surface the transition.
+                // The controller performed the move themselves — they already know what/where
+                // it is. Only the other player needs the reveal overlay to surface the
+                // transition (e.g. their card being reanimated onto their opponent's board).
                 revealToSelf = false,
                 fromZone = fromZone,
                 toZone = toZone

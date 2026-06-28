@@ -1206,7 +1206,14 @@ class ClientStateTransformer(
             planeswalkerAbilities = buildPlaneswalkerAbilities(cardDef, zoneKey),
             isRoom = cardDef?.isRoom == true,
             cardFaces = buildClientCardFaces(container, cardDef),
-            castFaceIndex = spellOnStack?.faceIndex
+            castFaceIndex = spellOnStack?.faceIndex,
+            // Impending (CR 702.176): expose the reduced cost + time-counter count so the client can
+            // always present the impending cast option (graying it out when unaffordable). Intrinsic
+            // to the card definition, so it's surfaced in every zone.
+            impending = cardDef?.keywordAbilities
+                ?.filterIsInstance<KeywordAbility.Impending>()
+                ?.firstOrNull()
+                ?.let { ClientImpending(cost = it.cost.toString(), time = it.time) }
         )
     }
 

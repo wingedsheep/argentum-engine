@@ -384,6 +384,19 @@ export interface ClientCard {
 
   /** For Rooms on the stack: index into `cardFaces` of the face that was cast. */
   readonly castFaceIndex?: number | null
+
+  /**
+   * Impending alternative cost (CR 702.176), present iff the card definition has impending. Lets
+   * the action menu always offer the impending cast option (reduced `cost`, enters with `time`
+   * time counters) next to the normal cast, graying out whichever the player can't pay for and
+   * annotating impending with a time-counter glyph.
+   */
+  readonly impending?: {
+    /** Reduced mana cost to cast for impending, e.g. "{2}{W}{W}". */
+    readonly cost: string
+    /** Number of time counters the permanent enters with (e.g. 4). */
+    readonly time: number
+  } | null
 }
 
 /** One face of a split-layout card (CR 709). */

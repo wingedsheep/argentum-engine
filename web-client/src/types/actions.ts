@@ -103,6 +103,14 @@ export interface CastSpellAction {
   readonly alternativePayment?: AlternativePaymentChoice
   /** Whether to cast this card face-down (for Morph creatures) */
   readonly castFaceDown?: boolean
+  /** Whether the spell is being cast for an alternative cost (impending, evoke, flashback, …) */
+  readonly useAlternativeCost?: boolean
+  /**
+   * Which alternative cost was chosen, when `useAlternativeCost` is set. Matches the server's
+   * `AlternativeCostType` enum (e.g. "IMPENDING", "EVOKE", "GRANTED", "SELF_ALTERNATIVE",
+   * "MIRACLE"). Used by the action menu to identify the impending cast option.
+   */
+  readonly alternativeCostType?: string
   /** Whether to cast this spell with kicker */
   readonly wasKicked?: boolean
   /** Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount) */

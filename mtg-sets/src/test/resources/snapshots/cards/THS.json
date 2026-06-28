@@ -113,6 +113,41 @@
     ]
 }
 
+// Lightning Strike
+{
+    "name": "Lightning Strike",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Lightning Strike deals 3 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "any target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "any target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bbb03f2e-2b92-4aa1-afae-301ed5d151d3.jpg?1562827848"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Wild Celebrants
 {
     "name": "Wild Celebrants",

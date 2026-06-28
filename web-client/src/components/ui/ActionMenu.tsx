@@ -31,6 +31,12 @@ interface ActionOption {
    * When present, the button renders a mana-font loyalty icon instead of a text prefix.
    */
   loyaltyChange?: number
+  /**
+   * For the impending cast option (CR 702.176): the number of time counters the permanent enters
+   * with. When present, the button renders a time-counter glyph + count to mark the option as
+   * impending. Undefined for every other option.
+   */
+  impendingTime?: number
 }
 
 /**
@@ -102,6 +108,58 @@ function buildActionOptions(
         actionType: 'cast',
       })
     })
+  } else if (cardInfo.impending && castActions.length > 0) {
+    // 1a-bis. Impending (CR 702.176) — an alternative cost the player chooses, so always present
+    // BOTH the normal cast and the impending cast, graying out whichever can't be paid for. The
+    // impending option is marked with a time-counter glyph (the card enters with `time` time
+    // counters and isn't a creature until the last is removed). The server only emits the cast
+    // actions it can afford; we synthesize a disabled placeholder (action: null) for the other.
+    const impendingInfo = cardInfo.impending
+    const impendingCast = castActions.find(
+      (a) => (a.action as { alternativeCostType?: string }).alternativeCostType === 'IMPENDING'
+    ) ?? null
+    const normalCast = castActions.find((a) => a.actionType === 'CastSpell') ?? null
+
+    options.push(
+      normalCast
+        ? {
+            key: 'cast',
+            label: `Cast ${cardInfo.name}`,
+            manaCost: normalCast.manaCostString || cardInfo.manaCost || null,
+            isAvailable: normalCast.isAffordable !== false,
+            action: normalCast,
+            actionType: 'cast',
+          }
+        : {
+            key: 'cast',
+            label: `Cast ${cardInfo.name}`,
+            manaCost: cardInfo.manaCost || null,
+            isAvailable: false,
+            action: null,
+            actionType: 'cast',
+          }
+    )
+    options.push(
+      impendingCast
+        ? {
+            key: 'impending',
+            label: 'Cast for Impending',
+            manaCost: impendingCast.manaCostString || impendingInfo.cost || null,
+            isAvailable: impendingCast.isAffordable !== false,
+            action: impendingCast,
+            actionType: 'cast',
+            impendingTime: impendingInfo.time,
+          }
+        : {
+            key: 'impending',
+            label: 'Cast for Impending',
+            manaCost: impendingInfo.cost || null,
+            isAvailable: false,
+            action: null,
+            actionType: 'cast',
+            impendingTime: impendingInfo.time,
+          }
+    )
   } else if (castActions.length > 1) {
     // 1b. Multiple cast options (e.g., BlightOrPay — blight path vs pay path)
     castActions.forEach((ca, index) => {
@@ -471,6 +529,24 @@ function LoyaltyIcon({ change }: { change: number }) {
 }
 
 /**
+ * Time-counter glyph for the impending cast option (CR 702.176). Mirrors the battlefield
+ * time-counter badge (mana-font `ms ms-counter-time` + count) so the player recognizes that
+ * casting for impending makes the permanent enter with `time` time counters.
+ */
+function ImpendingTimeIcon({ time }: { time: number }) {
+  return (
+    <span
+      aria-label={`Enters with ${time} time counters`}
+      title={`Enters with ${time} time counters`}
+      style={{ display: 'inline-flex', alignItems: 'center', gap: 2, marginRight: 6, flexShrink: 0 }}
+    >
+      <i className="ms ms-counter-time" style={{ fontSize: 18 }} aria-hidden />
+      <span style={{ fontWeight: 700, fontSize: 13 }}>{time}</span>
+    </span>
+  )
+}
+
+/**
  * Get the style class for an action type.
  */
 function getActionStyleClass(actionType: ActionOption['actionType'], isAvailable: boolean): string {
@@ -542,6 +618,9 @@ function ActionOptionButton({
         <span className={styles.actionButtonLeading}>
           {option.loyaltyChange !== undefined && (
             <LoyaltyIcon change={option.loyaltyChange} />
+          )}
+          {option.impendingTime !== undefined && (
+            <ImpendingTimeIcon time={option.impendingTime} />
           )}
           <span className={styles.actionButtonLabel}>
             <AbilityText text={option.label} size={14} />

@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
@@ -42,9 +43,13 @@ val PartyDude = card("Party Dude") {
 
     classLevel(2, "{1}{G}") {
         triggeredAbility {
+            // ANY binding: the artifact leaving is some *other* permanent an opponent controls,
+            // not Party Dude itself. The default SELF binding would only fire on Party Dude's own
+            // departure, so an opponent's sacrificed Food (an artifact) never triggered the draw.
             trigger = Triggers.leavesBattlefield(
                 filter = GameObjectFilter.Artifact.opponentControls(),
-                to = Zone.GRAVEYARD
+                to = Zone.GRAVEYARD,
+                binding = TriggerBinding.ANY
             )
             effect = Effects.DrawCards(1)
             description = "Whenever an artifact an opponent controls is put into a graveyard from the battlefield, draw a card."
