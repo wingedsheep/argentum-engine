@@ -316,7 +316,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [ ] Toph, the Blind Bandit
 - [ ] Toph, the First Metalbender
 - [x] Treetop Freedom Fighters
-- [ ] True Ancestry
+- [x] True Ancestry
 - [ ] Trusty Boomerang
 - [x] Tundra Tank
 - [x] Turtle-Duck

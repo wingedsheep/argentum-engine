@@ -7443,6 +7443,54 @@
     ]
 }
 
+// True Ancestry
+{
+    "name": "True Ancestry",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery — Lesson",
+    "oracleText": "Return up to one target permanent card from your graveyard to your hand.\nCreate a Clue token. (It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "permanent card from your graveyard"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Clue"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "permanent own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "permanent card from your graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "rarity": "UNCOMMON",
+        "artist": "Chibi",
+        "flavorText": "\"Understanding the struggle between your two great-grandfathers can help you better understand the battle within yourself.\"\n—Iroh",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c55b333-dc8b-4332-895b-eec5eb45543f.jpg?1764121352"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Tundra Tank
 {
     "name": "Tundra Tank",
