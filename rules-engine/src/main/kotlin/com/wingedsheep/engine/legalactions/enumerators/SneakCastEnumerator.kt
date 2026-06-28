@@ -8,7 +8,6 @@ import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.mechanics.SneakWindow
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.sdk.scripting.KeywordAbility
 
 /**
  * Enumerates the "cast for its sneak cost" legal action (CR 702.190).
@@ -44,9 +43,10 @@ class SneakCastEnumerator : ActionEnumerator {
             if (context.cantCastSpell(cardId)) continue
 
             val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
+            // Printed Sneak or Ninjutsu — both surface the cost via `ninjutsuStyleCost`.
             val sneakAbility = cardDef.keywordAbilities
-                .filterIsInstance<KeywordAbility.Sneak>()
-                .firstOrNull() ?: continue
+                .firstOrNull { it.ninjutsuStyleCost != null } ?: continue
+            val sneakKeywordName = sneakAbility.keyword?.displayName ?: "Sneak"
 
             // Honor cast restrictions exactly like the normal cast path (CR 601.3).
             if (!context.castPermissionUtils.checkCastRestrictions(
@@ -56,7 +56,7 @@ class SneakCastEnumerator : ActionEnumerator {
 
             // Mana portion of the sneak cost (the bounce is paid separately).
             val sneakMana = context.costCalculator.calculateEffectiveCostWithAlternativeBase(
-                state, cardDef, sneakAbility.cost, playerId
+                state, cardDef, sneakAbility.ninjutsuStyleCost!!, playerId
             )
             if (!context.manaSolver.canPay(state, playerId, sneakMana, precomputedSources = cachedSources)) {
                 continue
@@ -95,7 +95,7 @@ class SneakCastEnumerator : ActionEnumerator {
             result.add(
                 LegalAction(
                     actionType = "CastWithAlternativeCost",
-                    description = "Sneak ${cardComponent.name} ($sneakMana)",
+                    description = "$sneakKeywordName ${cardComponent.name} ($sneakMana)",
                     action = CastSpell(
                         playerId = playerId,
                         cardId = cardId,

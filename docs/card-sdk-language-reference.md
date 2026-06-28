@@ -3785,7 +3785,7 @@ Flying, Menace, Intimidate, Fear, Shadow, Horsemanship, all basic landwalks (Pla
 (`Keyword.NONBASIC_LANDWALK` — unblockable while the defending player controls any non-basic land;
 `LandwalkRule` checks `typeLine.isLand && !isBasicLand`; Trailblazer's Boots), First Strike, Double
 Strike, Trample, Deathtouch, Lifelink, Vigilance, Reach, Provoke, Flanking, Defender, Indestructible, Hexproof, Shroud, Haste,
-Flash, Prowess, Flurry, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Harmonize, Evoke, Sneak, Impending, Conspire, Casualty, Miracle, Hideaway, Cascade, Plot,
+Flash, Prowess, Flurry, Changeling, Convoke, Delve, Affinity, Storm, Flashback, Harmonize, Evoke, Sneak, Ninjutsu, Impending, Conspire, Casualty, Miracle, Hideaway, Cascade, Plot,
 Offspring, Persist, Enduring, Ascend, Wither, Toxic, Eerie, Vivid, Fateful Bite, … (display-only — engine effect lives in handlers or
 composite abilities).
 
@@ -3961,6 +3961,15 @@ composite abilities).
   control an unblocked attacker, with a `BouncePermanent` additional cost listing the returnable attackers; `CastSpellHandler`
   charges the sneak mana, returns the chosen attacker to hand, and stamps the sneak-was-paid flag; `StackResolver` enters a
   resolving permanent tapped and attacking. Read "its sneak cost was paid" via `Conditions.SneakCostWasPaid`.
+- `Ninjutsu(cost)` — `card { ninjutsu("{cost}") }` builder helper (CR 702.49). *"[cost], Return an unblocked attacker you
+  control to hand: Put this card onto the battlefield from your hand tapped and attacking."* **Mechanically identical to
+  `Sneak`** — Ninjutsu is the canonical rules keyword, `Sneak` its reflavor in the custom TMNT set — so both share the
+  engine's declare-blockers alternative-cost pipeline. The two keyword abilities expose their cost through one property,
+  `KeywordAbility.ninjutsuStyleCost`, which `SneakWindow`/`SneakCastEnumerator`/`CastSpellHandler` read; a new reflavor of
+  the mechanic only overrides that property. A card put onto the battlefield this way enters **tapped and attacking** the
+  same defender the returned creature was attacking (CR 506.3a); a card that isn't a creature as it enters (e.g. an
+  un-animated planeswalker) just enters tapped. Used by *Kaito, Bane of Nightmares* (DSK) — a planeswalker with ninjutsu
+  whose own static makes it a creature on your turn, so it can enter attacking.
 - `Suspend` (CR 702.62) — an **exile-zone** mechanic, unlike Impending/Vanishing which live on the battlefield.
   A suspended card sits in exile with **time counters**; at the beginning of its **owner's** upkeep one is removed,
   and when the last is gone its owner **may play it for free**, with **haste** if it's a creature. The lifecycle is
@@ -5746,6 +5755,7 @@ Card authors rarely reference these directly; they are created/updated by the ma
 - **Warp** — `warp = "{1}{R}"`; alt-cost that exiles end of turn.
 - **Evoke** — `evoke = "{U}"`; pay alt cost, sacrifice on ETB.
 - **Sneak** — `sneak("{1}{U}")`; declare-blockers-step alt cost (pay mana + return an unblocked attacker you control to hand); a resolving permanent enters tapped and attacking the same defender. `Conditions.SneakCostWasPaid` reads the rider flag.
+- **Ninjutsu** — `ninjutsu("{1}{U}{B}")`; the canonical CR 702.49 keyword that **Sneak** reflavors. Same declare-blockers alt cost and tapped-and-attacking entry, shared via `KeywordAbility.ninjutsuStyleCost`. *Kaito, Bane of Nightmares* (DSK).
 - **Earthbend** — `Effects.Earthbend` composes AnimateLand + GrantKeyword + AddCounters + granted self-triggers (no fake
   keyword).
 - **Endure N** — `Effects.Endure(amount, target = EffectTarget.Self)` composes a `ModalEffect.chooseOne` of

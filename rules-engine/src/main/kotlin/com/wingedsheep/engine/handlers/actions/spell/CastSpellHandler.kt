@@ -2460,7 +2460,7 @@ class CastSpellHandler(
         // than the card's current zone.
         val wasSneaked = action.useAlternativeCost && cardDef != null &&
             action.altAllows(AlternativeCostType.SNEAK) &&
-            (cardDef.keywordAbilities.any { it is KeywordAbility.Sneak } ||
+            (cardDef.keywordAbilities.any { it.ninjutsuStyleCost != null } ||
                 SneakWindow.graveyardSneakGrantCost(currentState, action.playerId, cardRegistry) != null)
         var sneakAttackDefenderId: EntityId? = null
         if (wasSneaked) {

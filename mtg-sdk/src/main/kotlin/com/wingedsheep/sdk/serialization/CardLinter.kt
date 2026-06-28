@@ -277,6 +277,7 @@ object CardLinter {
     private val slotDeclarers: Map<String, String> = mapOf(
         "Kicker" to "KICKED",
         "Sneak" to "SNEAK",
+        "Ninjutsu" to "SNEAK",
         "BlightVariable" to "BLIGHT_AMOUNT",
         "BlightOrPay" to "BLIGHT_AMOUNT",
         // Resolution-time color choices: ChooseColorThen sets EffectContext.chosenColor for its

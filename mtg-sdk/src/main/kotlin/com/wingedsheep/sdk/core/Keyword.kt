@@ -142,6 +142,21 @@ enum class Keyword(val displayName: String) {
     SNEAK("Sneak"),
 
     /**
+     * Ninjutsu [cost] (CR 702.49).
+     * "[cost], Return an unblocked attacker you control to hand: Put this card onto the
+     * battlefield from your hand tapped and attacking." Activated only during the declare
+     * blockers step (or any later combat step) once blocked/unblocked status is assigned.
+     *
+     * Mechanically identical to [SNEAK] — both are modelled by the same declare-blockers
+     * alternative-cost pipeline (return an unblocked attacker, enter tapped and attacking the
+     * same defender, CR 506.3a). Ninjutsu is the canonical rules keyword; Sneak is its reflavor
+     * in the custom Teenage Mutant Ninja Turtles set. Wired by the `ninjutsu(cost)` DSL helper
+     * on [com.wingedsheep.sdk.dsl.CardBuilder]; the shared behavior keys off
+     * [KeywordAbility.ninjutsuStyleCost].
+     */
+    NINJUTSU("Ninjutsu"),
+
+    /**
      * Impending N—[cost] (CR 702.175, Duskmourn: House of Horror).
      * "If you cast this spell for its impending cost, it enters with N time counters
      * and isn't a creature until the last is removed. At the beginning of your end step,
