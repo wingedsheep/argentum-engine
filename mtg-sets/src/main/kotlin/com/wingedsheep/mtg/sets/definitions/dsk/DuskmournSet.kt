@@ -16,6 +16,7 @@ object DuskmournSet : MtgSet {
     override val code = "DSK"
     override val displayName = "Duskmourn: House of Horror"
     override val releaseDate = "2024-09-27"
+    override val sealedSupported = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
