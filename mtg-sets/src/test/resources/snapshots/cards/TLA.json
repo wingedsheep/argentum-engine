@@ -4149,6 +4149,62 @@
     ]
 }
 
+// Knowledge Seeker
+{
+    "name": "Knowledge Seeker",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Fox Spirit",
+    "oracleText": "Vigilance\nWhenever you draw your second card each turn, put a +1/+1 counter on this creature.\nWhen this creature dies, create a Clue token. (It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you draw your second card each turn, put a +1/+1 counter on this creature."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Clue"
+                },
+                "descriptionOverride": "When this creature dies, create a Clue token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "60",
+        "rarity": "UNCOMMON",
+        "artist": "Shiren",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/8554e862-f78a-42f5-b876-076aac6c9504.jpg?1764120328"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Kyoshi Village
 {
     "name": "Kyoshi Village",

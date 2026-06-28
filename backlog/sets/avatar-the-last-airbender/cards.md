@@ -207,7 +207,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [ ] Katara, Bending Prodigy
 - [ ] Katara, Water Tribe's Hope
 - [ ] Katara, the Fearless
-- [ ] Knowledge Seeker
+- [x] Knowledge Seeker
 - [ ] Koh, the Face Stealer
 - [ ] Kyoshi Battle Fan
 - [ ] Kyoshi Island Plaza
