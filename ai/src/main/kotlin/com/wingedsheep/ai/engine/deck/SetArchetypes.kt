@@ -254,6 +254,58 @@ object SetArchetypes {
                     "Ramp and dig to cast Mutant, Ninja, and Turtle creatures from the top of your library, each entering with a bonus +1/+1 counter. A creature-type value deck that snowballs card advantage."),
             )
         ),
+        "INV" to SetSynergies(
+            setCode = "INV",
+            setName = "Invasion",
+            archetypes = listOf(
+                Archetype("Bird Tempo", listOf(Color.WHITE, Color.BLUE),
+                    "Take to the skies with evasive fliers and kicker-pumped Birds, riding tempo to victory. A flier-centric deck where kicker turns your lord into a finisher."),
+                Archetype("Tempo Control", listOf(Color.BLUE, Color.BLACK),
+                    "Counter spells and bounce threats while bleeding the opponent with discard. A tempo-control deck that answers everything and grinds out the long game."),
+                Archetype("Sacrifice Discard", listOf(Color.BLACK, Color.RED),
+                    "Strip the opponent's hand with discard and evasive damage, then turn dying creatures into reanimation value. An aggressive disruption deck that attacks resources and life total at once."),
+                Archetype("Kicker Aggro", listOf(Color.RED, Color.GREEN),
+                    "Give your creatures haste and ramp into kicker payoffs, swinging the moment threats hit the board. A fast aggro-ramp deck powered by Kavu and big kicked spells."),
+                Archetype("Aura Legends", listOf(Color.GREEN, Color.WHITE),
+                    "Suit up a creature with powerful Auras like Armadillo Cloak and tutor up your best legends. A midrange deck that goes tall and grinds out incremental value."),
+                Archetype("Domain", listOf(Color.WHITE, Color.BLUE, Color.BLACK, Color.RED, Color.GREEN),
+                    "Splash every color to switch on domain and unleash the Coalition Dragons, the format's premier finishers. A greedy five-color goodstuff deck built on mana fixing."),
+            )
+        ),
+        "LTR" to SetSynergies(
+            setCode = "LTR",
+            setName = "The Lord of the Rings: Tales of Middle-earth",
+            archetypes = listOf(
+                Archetype("Spirits", listOf(Color.WHITE, Color.BLACK),
+                    "Phase your Spirits out of removal and back in to spawn flying tokens. A resilient tempo deck that protects its threats and wins through the air."),
+                Archetype("Spellslinger", listOf(Color.BLUE, Color.RED),
+                    "Cast a high volume of instants and sorceries to trigger modal payoffs and recur your spells. A spell-matters tempo-control deck that out-values the table."),
+                Archetype("Orc Army", listOf(Color.BLACK, Color.RED),
+                    "Amass Orc Army and pump your token horde, where every +1/+1 counter lands amplified. A go-wide aggro deck backed by menace and removal that swarms the board."),
+                Archetype("Food Sacrifice", listOf(Color.BLACK, Color.GREEN),
+                    "Turn dying creatures and Spider combat into Food, then sacrifice it for value and reach. A grindy graveyard-and-Food midrange deck that out-attritions the opponent."),
+                Archetype("Rohirrim Aggro", listOf(Color.RED, Color.WHITE),
+                    "Flood the board with aggressive Humans and grant double strike on entry, then swing for the win. A fast go-wide combat deck built on Rohirrim synergies."),
+                Archetype("Ring-bearers", listOf(Color.GREEN, Color.WHITE),
+                    "Lean on legendary creatures and \"the Ring tempts you\" triggers, growing an evasive Ring-bearer into a game-ender. A midrange deck built on legends and steady Ring value."),
+            )
+        ),
+        "SOS" to SetSynergies(
+            setCode = "SOS",
+            setName = "Secrets of Strixhaven",
+            archetypes = listOf(
+                Archetype("Silverquill", listOf(Color.WHITE, Color.BLACK),
+                    "Sling instants and sorceries with casualty, sacrificing a creature to copy each spell while evasive fliers carry the game. A spell-and-sacrifice tempo deck that doubles up on its best cards."),
+                Archetype("Prismari", listOf(Color.BLUE, Color.RED),
+                    "Chain instants and sorceries to fuel storm, copying each spell for every one cast before it that turn. A spell-velocity tempo deck that snowballs into an explosive turn."),
+                Archetype("Witherbloom", listOf(Color.BLACK, Color.GREEN),
+                    "Flood the board with creatures to power affinity, casting your spells at a discount while lifegain and death payoffs grind the opponent down. A creatures-and-spells midrange deck."),
+                Archetype("Lorehold", listOf(Color.RED, Color.WHITE),
+                    "Give your instants and sorceries miracle and reward drawing them off the top, looting to dig for the perfect topdeck. A draw-matters tempo deck that casts spells at a steep discount."),
+                Archetype("Quandrix", listOf(Color.GREEN, Color.BLUE),
+                    "Ramp into expensive instants and sorceries that cascade for free value, snowballing card advantage with Increment counters. A go-big spells-matter ramp deck."),
+            )
+        ),
     )
 
     /** Get archetypes for a specific set code, or null if not found. */

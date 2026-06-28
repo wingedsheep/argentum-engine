@@ -612,6 +612,126 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  INV: {
+    setCode: 'INV',
+    setName: 'Invasion',
+    archetypes: [
+      {
+        name: 'Bird Tempo',
+        colors: ['W', 'U'],
+        keyCard: 'Kangee, Aerie Keeper',
+        description: 'Take to the skies with evasive fliers and kicker-pumped Birds, riding tempo to victory. A flier-centric deck where kicker turns your lord into a finisher.',
+      },
+      {
+        name: 'Tempo Control',
+        colors: ['U', 'B'],
+        keyCard: 'Undermine',
+        description: 'Counter spells and bounce threats while bleeding the opponent with discard. A tempo-control deck that answers everything and grinds out the long game.',
+      },
+      {
+        name: 'Sacrifice Discard',
+        colors: ['B', 'R'],
+        keyCard: 'Blazing Specter',
+        description: 'Strip the opponent\'s hand with discard and evasive damage, then turn dying creatures into reanimation value. An aggressive disruption deck that attacks resources and life total at once.',
+      },
+      {
+        name: 'Kicker Aggro',
+        colors: ['R', 'G'],
+        keyCard: 'Fires of Yavimaya',
+        description: 'Give your creatures haste and ramp into kicker payoffs, swinging the moment threats hit the board. A fast aggro-ramp deck powered by Kavu and big kicked spells.',
+      },
+      {
+        name: 'Aura Legends',
+        colors: ['G', 'W'],
+        keyCard: 'Captain Sisay',
+        description: 'Suit up a creature with powerful Auras like Armadillo Cloak and tutor up your best legends. A midrange deck that goes tall and grinds out incremental value.',
+      },
+      {
+        name: 'Domain',
+        colors: ['W', 'U', 'B', 'R', 'G'],
+        keyCard: 'Darigaaz, the Igniter',
+        description: "Splash every color to switch on domain and unleash the Coalition Dragons, the format's premier finishers. A greedy five-color goodstuff deck built on mana fixing.",
+      },
+    ],
+  },
+  LTR: {
+    setCode: 'LTR',
+    setName: 'The Lord of the Rings: Tales of Middle-earth',
+    archetypes: [
+      {
+        name: 'Spirits',
+        colors: ['W', 'B'],
+        keyCard: 'King of the Oathbreakers',
+        description: 'Phase your Spirits out of removal and back in to spawn flying tokens. A resilient tempo deck that protects its threats and wins through the air.',
+      },
+      {
+        name: 'Spellslinger',
+        colors: ['U', 'R'],
+        keyCard: 'Gandalf the Grey',
+        description: 'Cast a high volume of instants and sorceries to trigger modal payoffs and recur your spells. A spell-matters tempo-control deck that out-values the table.',
+      },
+      {
+        name: 'Orc Army',
+        colors: ['B', 'R'],
+        keyCard: 'Mauhúr, Uruk-hai Captain',
+        description: 'Amass Orc Army and pump your token horde, where every +1/+1 counter lands amplified. A go-wide aggro deck backed by menace and removal that swarms the board.',
+      },
+      {
+        name: 'Food Sacrifice',
+        colors: ['B', 'G'],
+        keyCard: 'Shelob, Child of Ungoliant',
+        description: 'Turn dying creatures and Spider combat into Food, then sacrifice it for value and reach. A grindy graveyard-and-Food midrange deck that out-attritions the opponent.',
+      },
+      {
+        name: 'Rohirrim Aggro',
+        colors: ['R', 'W'],
+        keyCard: 'Théoden, King of Rohan',
+        description: 'Flood the board with aggressive Humans and grant double strike on entry, then swing for the win. A fast go-wide combat deck built on Rohirrim synergies.',
+      },
+      {
+        name: 'Ring-bearers',
+        colors: ['G', 'W'],
+        keyCard: 'Frodo Baggins',
+        description: 'Lean on legendary creatures and "the Ring tempts you" triggers, growing an evasive Ring-bearer into a game-ender. A midrange deck built on legends and steady Ring value.',
+      },
+    ],
+  },
+  SOS: {
+    setCode: 'SOS',
+    setName: 'Secrets of Strixhaven',
+    archetypes: [
+      {
+        name: 'Silverquill',
+        colors: ['W', 'B'],
+        keyCard: 'Silverquill, the Disputant',
+        description: 'Sling instants and sorceries with casualty, sacrificing a creature to copy each spell while evasive fliers carry the game. A spell-and-sacrifice tempo deck that doubles up on its best cards.',
+      },
+      {
+        name: 'Prismari',
+        colors: ['U', 'R'],
+        keyCard: 'Prismari, the Inspiration',
+        description: 'Chain instants and sorceries to fuel storm, copying each spell for every one cast before it that turn. A spell-velocity tempo deck that snowballs into an explosive turn.',
+      },
+      {
+        name: 'Witherbloom',
+        colors: ['B', 'G'],
+        keyCard: 'Witherbloom, the Balancer',
+        description: 'Flood the board with creatures to power affinity, casting your spells at a discount while lifegain and death payoffs grind the opponent down. A creatures-and-spells midrange deck.',
+      },
+      {
+        name: 'Lorehold',
+        colors: ['R', 'W'],
+        keyCard: 'Lorehold, the Historian',
+        description: 'Give your instants and sorceries miracle and reward drawing them off the top, looting to dig for the perfect topdeck. A draw-matters tempo deck that casts spells at a steep discount.',
+      },
+      {
+        name: 'Quandrix',
+        colors: ['G', 'U'],
+        keyCard: 'Quandrix, the Proof',
+        description: 'Ramp into expensive instants and sorceries that cascade for free value, snowballing card advantage with Increment counters. A go-big spells-matter ramp deck.',
+      },
+    ],
+  },
 }
 
 /**
