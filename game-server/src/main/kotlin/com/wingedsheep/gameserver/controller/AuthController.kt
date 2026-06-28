@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.controller
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.wingedsheep.gameserver.auth.AuthSupport
 import com.wingedsheep.gameserver.auth.InvalidLoginTokenException
 import com.wingedsheep.gameserver.auth.MagicLinkService
@@ -45,7 +46,10 @@ class AuthController(
         val id: UUID,
         val email: String,
         val displayName: String,
-        val isAdmin: Boolean,
+        // No jackson-module-kotlin is on the classpath, so Jackson serializes via the JavaBean
+        // `isAdmin()` getter and would emit the key `admin` — but the client reads `user.isAdmin`
+        // (it gates the Admin button). Pin the wire name so a promoted account is seen as admin.
+        @JsonProperty("isAdmin") val isAdmin: Boolean,
         val hidePresence: Boolean,
     )
     data class LoginResponse(val authToken: String, val user: UserDto)
