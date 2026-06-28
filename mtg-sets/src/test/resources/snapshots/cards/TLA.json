@@ -143,6 +143,77 @@
     "colorIdentityOverride": []
 }
 
+// Abandon Attachments
+{
+    "name": "Abandon Attachments",
+    "manaCost": "{1}{U/R}",
+    "typeLine": "Instant — Lesson",
+    "oracleText": "You may discard a card. If you do, draw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": "Gate.MayDecide",
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 1 card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    },
+                    {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "artist": "Shahab Alizadeh",
+        "flavorText": "\"Learn to let her go, or you cannot let the pure cosmic energy flow in from the universe.\"\n—Guru Pathik",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74ca45a4-97ab-4255-9129-884e8b42b984.jpg?1764121430"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Abandoned Air Temple
 {
     "name": "Abandoned Air Temple",
