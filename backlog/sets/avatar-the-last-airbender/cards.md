@@ -303,7 +303,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [ ] The Legend of Kyoshi
 - [ ] The Legend of Roku
 - [ ] The Legend of Yangchen
-- [ ] The Lion-Turtle
+- [x] The Lion-Turtle
 - [ ] The Mechanist, Aerial Artisan
 - [ ] The Rise of Sozin
 - [ ] The Spirit Oasis
