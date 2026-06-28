@@ -289,6 +289,142 @@
     ]
 }
 
+// Accumulate Wisdom
+{
+    "name": "Accumulate Wisdom",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant — Lesson",
+    "oracleText": "Look at the top three cards of your library. Put one of those cards into your hand and the rest on the bottom of your library in any order. Put each of those cards into your hand instead if there are three or more Lesson cards in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "Lesson"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "TopOfLibrary",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        "storeAs": "looked"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "looked",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        "storeSelected": "kept",
+                        "storeRemainder": "rest",
+                        "selectedLabel": "Put in hand",
+                        "remainderLabel": "Put in graveyard"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "kept",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        }
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "rest",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard"
+                        }
+                    }
+                ]
+            },
+            "otherwise": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "TopOfLibrary",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        "storeAs": "looked"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "looked",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "storeSelected": "kept",
+                        "storeRemainder": "rest",
+                        "selectedLabel": "Put in hand",
+                        "remainderLabel": "Put on bottom"
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "kept",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Hand"
+                        }
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "rest",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Library",
+                            "placement": "Bottom"
+                        },
+                        "order": "ControllerChooses"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "UNCOMMON",
+        "artist": "Gemi",
+        "flavorText": "\"To prove your worth as scholars, you have to contribute some worthwhile knowledge.\"\n—Wan Shi Tong",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6335319-6c92-40d4-ab2d-c06c79049c30.jpg?1764120188"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Agna Qel'a
 {
     "name": "Agna Qel'a",
