@@ -296,7 +296,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [x] Teo, Spirited Glider
 - [x] The Boulder, Ready to Rumble
 - [x] The Cave of Two Lovers
-- [ ] The Earth King
+- [x] The Earth King
 - [ ] The Fire Nation Drill
 - [ ] The Last Agni Kai
 - [ ] The Legend of Kuruk
