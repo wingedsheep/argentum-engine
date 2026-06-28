@@ -95,7 +95,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [x] Badgermole Cub
 - [x] Barrels of Blasting Jelly
 - [ ] Beetle-Headed Merchants
-- [ ] Beifong's Bounty Hunters
+- [x] Beifong's Bounty Hunters
 - [ ] Bender's Waterskin
 - [ ] Benevolent River Spirit
 - [ ] Bitter Work
