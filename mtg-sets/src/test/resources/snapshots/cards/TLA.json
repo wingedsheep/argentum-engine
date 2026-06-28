@@ -2313,6 +2313,76 @@
     ]
 }
 
+// Crescent Island Temple
+{
+    "name": "Crescent Island Temple",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Enchantment — Shrine",
+    "oracleText": "When Crescent Island Temple enters, for each Shrine you control, create a 1/1 red Monk creature token with prowess. (Whenever you cast a noncreature spell, it gets +1/+1 until end of turn.)\nWhenever another Shrine you control enters, create a 1/1 red Monk creature token with prowess.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "Shrine"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Monk"
+                    ],
+                    "keywords": [
+                        "PROWESS"
+                    ]
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "Shrine ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Monk"
+                    ],
+                    "keywords": [
+                        "PROWESS"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Luc Courtois",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04c85150-269e-4158-a1b9-bd11bc6b7d79.jpg?1764120888"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Cunning Maneuver
 {
     "name": "Cunning Maneuver",
