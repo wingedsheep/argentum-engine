@@ -1206,6 +1206,59 @@
     ]
 }
 
+// Flexible Waterbender
+{
+    "name": "Flexible Waterbender",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Warrior Ally",
+    "oracleText": "Vigilance\nWaterbend {3}: This creature has base power and toughness 5/2 until end of turn. (While paying a waterbend cost, you can tap your artifacts and creatures to help. Each one pays for {1}.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "SetBaseStats",
+                    "target": "Self",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "duration": "EndOfTurn"
+                },
+                "descriptionOverride": "This creature has base power and toughness 5/2 until end of turn.",
+                "hasWaterbend": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Rafater",
+        "flavorText": "\"Water is the element of change.\"\n—Iroh",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/1447ebce-7e48-4b21-a39c-740920538bdd.jpg?1764120230"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Foggy Bottom Swamp
 {
     "name": "Foggy Bottom Swamp",

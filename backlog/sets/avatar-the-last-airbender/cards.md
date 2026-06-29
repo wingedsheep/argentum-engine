@@ -2,7 +2,7 @@
 
 **Set Size:** 286 draft/booster cards (excluding basic lands beyond the set's own, tokens, and special variants)
 **Release Date:** November 21, 2025
-**Implemented:** 57 / 286  (17%)
+**Implemented:** 58 / 286  (17%)
 **Engine gap analysis:** [`tla-engine-gaps.md`](tla-engine-gaps.md)
 
 ## Mechanics needed to complete the set
@@ -162,7 +162,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [ ] Firebending Lesson
 - [ ] Firebending Student
 - [ ] First-Time Flyer
-- [ ] Flexible Waterbender
+- [x] Flexible Waterbender
 - [ ] Flopsie, Bumi's Buddy
 - [x] Foggy Bottom Swamp
 - [ ] Foggy Swamp Hunters
