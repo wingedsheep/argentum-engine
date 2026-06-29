@@ -456,6 +456,98 @@
     ]
 }
 
+// Aang, the Last Airbender
+{
+    "name": "Aang, the Last Airbender",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Avatar Ally",
+    "oracleText": "Flying\nWhen Aang enters, airbend up to one other target nonland permanent. (Exile it. While it's exiled, its owner may cast it for {2} rather than its mana cost.)\nWhenever you cast a Lesson spell, Aang gains lifelink until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "airbendChosen"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "airbendChosen",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "storeMovedAs": "airbendExiled"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "airbendExiled",
+                            "expiry": "Permanent",
+                            "ownerControls": true,
+                            "fixedAlternativeManaCost": "{2}"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOther",
+                    "baseRequirement": {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "nonland permanent"
+                        }
+                    },
+                    "id": "up to one other target nonland permanent"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Lesson"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "UNCOMMON",
+        "artist": "Yueko",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/245e008c-e073-443f-9592-6f628c0026ec.jpg?1764119893"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Abandon Attachments
 {
     "name": "Abandon Attachments",

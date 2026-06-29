@@ -83,7 +83,7 @@ up by Airbend, not Firebending).
 - [x] Aang's Journey
 - [ ] Aang, Swift Savior
 - [x] Aang, at the Crossroads
-- [ ] Aang, the Last Airbender
+- [x] Aang, the Last Airbender
 - [x] Abandon Attachments
 - [x] Abandoned Air Temple
 - [x] Accumulate Wisdom
