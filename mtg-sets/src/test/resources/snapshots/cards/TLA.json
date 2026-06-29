@@ -3670,6 +3670,94 @@
     ]
 }
 
+// Yue, the Moon Spirit
+{
+    "name": "Yue, the Moon Spirit",
+    "manaCost": "{3}{U}",
+    "typeLine": "Legendary Creature — Spirit Ally",
+    "oracleText": "Flash\nFlying, vigilance\nWaterbend {5}, {T}: You may cast a noncreature spell from your hand without paying its mana cost. (While paying a waterbend cost, you can tap your artifacts and creatures to help. Each one pays for {1}.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland",
+                                        {
+                                            "type": "Not",
+                                            "predicate": "IsCreature"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "yueCandidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "yueCandidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "yueChosen",
+                            "selectedLabel": "Cast without paying its mana cost"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "yueChosen"
+                        }
+                    ]
+                },
+                "descriptionOverride": "You may cast a noncreature spell from your hand without paying its mana cost.",
+                "hasWaterbend": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "RARE",
+        "artist": "Yuumei",
+        "flavorText": "\"You'll save the world again. But you can't give up.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ecdac50f-c639-43fc-a03e-d488fac96ae2.jpg?1764120573"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Yuyan Archers
 {
     "name": "Yuyan Archers",
