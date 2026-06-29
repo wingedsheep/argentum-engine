@@ -878,6 +878,65 @@
     ]
 }
 
+// Earth Kingdom Soldier
+{
+    "name": "Earth Kingdom Soldier",
+    "manaCost": "{4}{G/W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Vigilance\nWhen this creature enters, put a +1/+1 counter on each of up to two target creatures you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "+1/+1",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "up to two target creatures you control"
+                },
+                "descriptionOverride": "When this creature enters, put a +1/+1 counter on each of up to two target creatures you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "artist": "Rafater",
+        "flavorText": "Trained to be steady as the earth beneath their feet.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d543d35-945a-4ffa-beb7-7c5d4f894f79.jpg?1764121553"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Earth Village Ruffians
 {
     "name": "Earth Village Ruffians",
