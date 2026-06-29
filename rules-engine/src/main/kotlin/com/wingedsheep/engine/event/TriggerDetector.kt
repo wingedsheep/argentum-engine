@@ -1378,8 +1378,10 @@ class TriggerDetector(
         attachmentDetector.detectAttachmentTriggers(state, event, triggers, index)
 
         // Handle "when you gain control of this from another player" triggers (e.g., Risky Move)
+        // and "whenever an opponent gains control of a permanent from you" triggers (e.g., Zidane).
         if (event is ControlChangedEvent) {
             detectControlChangeTriggers(state, event, triggers)
+            detectOpponentGainsControlTriggers(state, event, triggers)
         }
 
         // Handle self-cast triggers on the spell currently being cast — both NthSpellCast
@@ -2864,6 +2866,64 @@ class TriggerDetector(
                         triggerContext = TriggerContext(
                             triggeringEntityId = entityId,
                             triggeringPlayerId = event.newControllerId
+                        )
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * Detect resident "whenever an opponent gains control of a permanent from you" triggers
+     * (Zidane, Tantalus Thief) — [EventPattern.ControlChangeEvent] with
+     * [ControlChangeDirection.LOST], `requireOpponent = true`, and [TriggerBinding.ANY].
+     *
+     * Unlike [detectControlChangeTriggers], the ability does not live on the permanent whose control
+     * changed: it lives on any battlefield permanent the *old* controller controlled immediately
+     * before this event (look-back-in-time, CR 603.10), including that very permanent when it is the
+     * ability's own source. The trigger fires once per opponent-gain and belongs to the old
+     * controller (so a stolen permanent still produces its payoff for the player it was taken from).
+     */
+    private fun detectOpponentGainsControlTriggers(
+        state: GameState,
+        event: ControlChangedEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        val oldController = event.oldControllerId
+        val newController = event.newControllerId
+        if (oldController == newController) return
+        // "an opponent" — team-aware (CR 810): a teammate gaining control does not trigger.
+        if (newController !in state.getOpponents(oldController)) return
+
+        for (holderId in state.getBattlefield()) {
+            val container = state.getEntity(holderId) ?: continue
+            // Face-down permanents have no abilities (Rule 708.2).
+            if (container.has<FaceDownComponent>()) continue
+            val cardComponent = container.get<CardComponent>() ?: continue
+
+            // The ability's controller as of immediately before the event: for the permanent that
+            // just changed control that is the *old* controller; every other permanent is unaffected
+            // by this single-permanent control change.
+            val holderControllerBefore =
+                if (holderId == event.permanentId) oldController
+                else state.projectedState.getController(holderId)
+            if (holderControllerBefore != oldController) continue
+
+            val abilities = abilityResolver.getTriggeredAbilities(holderId, cardComponent.cardDefinitionId, state)
+            for (ability in abilities) {
+                val controlTrigger = ability.trigger as? EventPattern.ControlChangeEvent ?: continue
+                if (controlTrigger.direction != com.wingedsheep.sdk.scripting.ControlChangeDirection.LOST) continue
+                if (!controlTrigger.requireOpponent) continue
+                if (ability.binding != TriggerBinding.ANY) continue
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = holderId,
+                        sourceName = cardComponent.name,
+                        controllerId = oldController,
+                        triggerContext = TriggerContext(
+                            triggeringEntityId = event.permanentId,
+                            triggeringPlayerId = newController
                         )
                     )
                 )

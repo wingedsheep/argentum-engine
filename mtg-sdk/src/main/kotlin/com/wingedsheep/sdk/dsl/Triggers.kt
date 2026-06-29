@@ -673,6 +673,18 @@ object Triggers {
         binding = TriggerBinding.SELF
     )
 
+    /**
+     * "Whenever an opponent gains control of a permanent from you …" — a resident, battlefield-wide
+     * watcher (CR 800.4a control change to an opponent). Fires once for each permanent the ability's
+     * controller loses to an opponent, with the trigger belonging to the *old* controller (you) via
+     * look-back-in-time (CR 603.10) — so it still fires for you even when the stolen permanent is the
+     * source of this ability itself (Zidane, Tantalus Thief).
+     */
+    val OpponentGainsControlOfYourPermanent: TriggerSpec = TriggerSpec(
+        event = ControlChangeEvent(ControlChangeDirection.LOST, requireOpponent = true),
+        binding = TriggerBinding.ANY
+    )
+
     // =========================================================================
     // Library-to-Graveyard Batching Triggers
     // =========================================================================

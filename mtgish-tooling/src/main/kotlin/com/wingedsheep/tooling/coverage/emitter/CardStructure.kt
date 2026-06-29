@@ -2806,6 +2806,24 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
     if (jsonContains(trig, "_Trigger", "WhenAPlayerGainsLifeForTheFirstTimeEachTurn") && jsonContains(trig, "_Player", "You"))
         return "Triggers.YouGainLifeFirstTimeEachTurn"
 
+    // "Whenever an opponent gains control of a permanent from you" (Zidane, Tantalus Thief). The IR
+    // scopes the gainer to Opponent, the permanent to an unfiltered IsPermanent, and the losing player
+    // to SinglePlayer(You). Only that exact shape maps to the resident control-change watcher
+    // Triggers.OpponentGainsControlOfYourPermanent; a filtered permanent or a non-Opponent/non-You
+    // scope has no calibrated card yet, so it declines -> SCAFFOLD rather than guess a binding.
+    if (jsonContains(trig, "_Trigger", "WhenAPlayerGainsControlOfAPermanentFromAPlayer")) {
+        val targs = trig["args"].asArr ?: return null
+        val gainer = targs.getOrNull(0) as? JsonObject
+        val perms = targs.getOrNull(1) as? JsonObject
+        val loser = targs.getOrNull(2) as? JsonObject
+        val fromYou = loser?.strField("_Players") == "SinglePlayer" &&
+            jsonContains(loser["args"], "_Player", "You")
+        if (gainer?.strField("_Players") == "Opponent" &&
+            perms?.strField("_Permanents") == "IsPermanent" &&
+            fromYou
+        ) return "Triggers.OpponentGainsControlOfYourPermanent"
+    }
+
     // "Whenever you turn a permanent face up" (You, AnyPermanent) — Growing Dread. The IR scopes the
     // turner to a player and the permanent to a group; only the You scope over an unfiltered
     // AnyPermanent maps to Triggers.CreatureTurnedFaceUp() (in Duskmourn every face-up turn is a

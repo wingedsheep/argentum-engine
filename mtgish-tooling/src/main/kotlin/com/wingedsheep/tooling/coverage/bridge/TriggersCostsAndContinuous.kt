@@ -60,6 +60,7 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     supported("AtTheBeginningOfAPlayersSecondMainPhase", "trigger: your second (postcombat) main phase (Triggers.YourPostcombatMain — Survival ability word)")
     supported("WhenAPlayerGainsLife", "trigger: you gain life (Triggers.YouGainLife — Pest Mascot, Essence Channeler)")
     supported("WhenAPlayerGainsLifeForTheFirstTimeEachTurn", "trigger: you gain life for the first time each turn (Triggers.YouGainLifeFirstTimeEachTurn — Leech Collector)")
+    supported("WhenAPlayerGainsControlOfAPermanentFromAPlayer", "trigger: an opponent gains control of a permanent from you (Triggers.OpponentGainsControlOfYourPermanent — Zidane, Tantalus Thief)")
     supported("WhenAPlayerTurnsAPermanentFaceUp", "trigger: you turn a permanent face up (Triggers.CreatureTurnedFaceUp — Growing Dread)")
     supported("WhenAPermanentIsTurnedFaceUp", "trigger: this or another permanent you control is turned face up (Triggers.CreatureTurnedFaceUp — Cryptid Inspector)")
     // OTJ Plot (CR 718) — "When this card becomes plotted, …" (Triggers.BecomesPlotted, Aloe Alchemist).

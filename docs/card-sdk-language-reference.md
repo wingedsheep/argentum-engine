@@ -2769,9 +2769,18 @@ Triggers.youCastSpell(
   (`CreateDelayedTriggerEffect(trigger = Triggers.LoseControlOfWatched, watchedTarget = …)`): "when you
   lose control of [that permanent] this turn …". It fires on any mid-turn control change of the watched
   permanent *away from* the trigger's controller (the old controller was you). Stolen Uniform pairs it
-  with `DelayedTriggerExpiry.EndOfTurn` + `fireOnce`. `EventPattern.ControlChangeEvent(direction)` is the
-  underlying primitive: `direction` (`ControlChangeDirection.GAINED` default / `LOST`) selects which side
-  of the control change — relative to the ability's controller — the ability watches.
+  with `DelayedTriggerExpiry.EndOfTurn` + `fireOnce`. `EventPattern.ControlChangeEvent(direction,
+  requireOpponent)` is the underlying primitive: `direction` (`ControlChangeDirection.GAINED` default /
+  `LOST`) selects which side of the control change — relative to the ability's controller — the ability
+  watches.
+- `OpponentGainsControlOfYourPermanent` — `ControlChangeEvent(ControlChangeDirection.LOST,
+  requireOpponent = true)` + `TriggerBinding.ANY`: "whenever an opponent gains control of a permanent from
+  you …". A resident, battlefield-wide watcher (not entity-scoped like `LoseControlOfWatched`): it fires
+  once for each permanent the ability's controller loses to an opponent (team-aware, CR 810). The trigger
+  belongs to the *old* controller via look-back-in-time (CR 603.10), so it still fires for you even when the
+  permanent being stolen is the ability's own source (Zidane, Tantalus Thief — a stolen Zidane still makes a
+  Treasure for its old controller). `requireOpponent` (LOST only) adds the "new controller is an opponent"
+  gate on top of the plain LOST direction.
 - `BecomesTarget(filter?)` — source becomes target of spell/ability. The engine emits the
   underlying `BecomesTargetEvent` for both permanent targets and spell targets on the stack, but the
   trigger matches **permanent targets only** by default — "a creature you control" is a battlefield

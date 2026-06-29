@@ -1366,17 +1366,27 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *    of this shape fires on any mid-turn control change away from you (e.g. another player steals
      *    the permanent).
      *
+     * [requireOpponent] (LOST only) additionally requires the *new* controller to be an opponent of
+     * the ability's controller, modelling "whenever an **opponent** gains control of a permanent from
+     * you". Combined with [TriggerBinding.ANY] this is a resident, battlefield-wide watcher: it fires
+     * once for every permanent the ability's controller loses to an opponent — including the source of
+     * the ability itself when that source is the permanent being stolen (look-back-in-time, CR 603.10),
+     * so the *old* controller is still the one who receives the trigger (Zidane, Tantalus Thief).
+     *
      * The default is [ControlChangeDirection.GAINED] so existing GAIN-control self-triggers keep
      * their meaning.
      */
     @SerialName("ControlChangeEvent")
     @Serializable
     data class ControlChangeEvent(
-        val direction: ControlChangeDirection = ControlChangeDirection.GAINED
+        val direction: ControlChangeDirection = ControlChangeDirection.GAINED,
+        val requireOpponent: Boolean = false
     ) : EventPattern {
         override val description: String = when (direction) {
             ControlChangeDirection.GAINED -> "you gain control of this permanent"
-            ControlChangeDirection.LOST -> "you lose control of this permanent"
+            ControlChangeDirection.LOST ->
+                if (requireOpponent) "an opponent gains control of a permanent from you"
+                else "you lose control of this permanent"
         }
     }
 
