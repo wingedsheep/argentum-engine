@@ -10064,6 +10064,72 @@
     ]
 }
 
+// Rabaroo Troop
+{
+    "name": "Rabaroo Troop",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Creature — Rabbit Kangaroo",
+    "oracleText": "Landfall — Whenever a land you control enters, this creature gains flying until end of turn and you gain 1 life.\nPlainscycling {2} ({2}, Discard this card: Search your library for a Plains card, reveal it, put it into your hand, then shuffle.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywordAbilities": [
+        {
+            "type": "Cycling",
+            "cost": "{2}",
+            "searchFilter": {
+                "cardPredicates": [
+                    {
+                        "type": "HasSubtype",
+                        "subtype": "Plains"
+                    }
+                ]
+            },
+            "displayPrefix": "Plainscycling"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "FLYING",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Mizutametori",
+        "flavorText": "Rabaroos are famous enjoyers of hopping and infamous enjoyers of cabbage.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62a983b4-ac73-4949-9317-05a75a8ce164.jpg?1764120104"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Raucous Audience
 {
     "name": "Raucous Audience",
