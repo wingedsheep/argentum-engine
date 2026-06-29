@@ -59,7 +59,10 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setSession: (login) => {
     setAuthToken(login.authToken)
-    set({ user: login.user, status: 'authenticated' })
+    // A successful login means the server runs the accounts subsystem, so flip accountsEnabled on
+    // here too. Otherwise the account UI (AuthWidget, profile) stays hidden until a manual refresh
+    // re-runs init() — the magic-link flow lands on '/' without ever calling init().
+    set({ user: login.user, status: 'authenticated', accountsEnabled: true })
   },
 
   updateDisplayName: async (displayName) => {
