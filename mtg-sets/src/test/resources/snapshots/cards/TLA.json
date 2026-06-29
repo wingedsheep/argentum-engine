@@ -2809,6 +2809,56 @@
     ]
 }
 
+// Sokka, Lateral Strategist
+{
+    "name": "Sokka, Lateral Strategist",
+    "manaCost": "{1}{W/U}{W/U}",
+    "typeLine": "Legendary Creature — Human Warrior Ally",
+    "oracleText": "Vigilance\nWhenever Sokka and at least one other creature attack, draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        {
+                            "type": "AttackerCountAtLeast",
+                            "n": 2
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever Sokka and at least one other creature attack, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "UNCOMMON",
+        "artist": "Axel Sauerwald",
+        "flavorText": "\"That's called Sokka style. Learn it!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/1326c5db-4615-495f-8e30-376243d91352.jpg?1764121782"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Sun-Blessed Peak
 {
     "name": "Sun-Blessed Peak",
