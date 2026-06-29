@@ -2,7 +2,7 @@
 
 **Set Size:** 286 draft/booster cards (excluding basic lands beyond the set's own, tokens, and special variants)
 **Release Date:** November 21, 2025
-**Implemented:** 49 / 286  (17%)
+**Implemented:** 50 / 286  (17%)
 **Engine gap analysis:** [`tla-engine-gaps.md`](tla-engine-gaps.md)
 
 ## Mechanics needed to complete the set
@@ -132,7 +132,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [ ] Earth King's Lieutenant
 - [ ] Earth Kingdom General
 - [ ] Earth Kingdom Jailer
-- [ ] Earth Kingdom Protectors
+- [x] Earth Kingdom Protectors
 - [ ] Earth Kingdom Soldier
 - [ ] Earth Rumble
 - [ ] Earth Rumble Wrestlers

@@ -827,6 +827,57 @@
     ]
 }
 
+// Earth Kingdom Protectors
+{
+    "name": "Earth Kingdom Protectors",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier Ally",
+    "oracleText": "Vigilance\nSacrifice this creature: Another target Ally you control gains indestructible until end of turn. (Damage and effects that say \"destroy\" don't destroy it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another target Ally you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Ally ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another target Ally you control"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "Leonardo Borazio",
+        "flavorText": "\"Stand your ground! The Earth King must be protected!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d263472e-1d75-4cb9-8f7b-986fa22bc841.jpg?1764119985"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Earth Village Ruffians
 {
     "name": "Earth Village Ruffians",
