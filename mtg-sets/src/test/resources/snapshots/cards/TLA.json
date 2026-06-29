@@ -3188,6 +3188,62 @@
     "colorIdentityOverride": []
 }
 
+// Tiger-Seal
+{
+    "name": "Tiger-Seal",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Cat Seal",
+    "oracleText": "Vigilance\nAt the beginning of your upkeep, tap this creature.\nWhenever you draw your second card each turn, untap this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, tap this creature."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 2
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                },
+                "descriptionOverride": "Whenever you draw your second card each turn, untap this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Jinho Bae",
+        "flavorText": "Every creature in the world felt the Avatar's return and paid respects in whatever way it could.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7aef2891-1269-4a1a-acea-0aa37ef544c4.jpg?1764120490"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Treetop Freedom Fighters
 {
     "name": "Treetop Freedom Fighters",

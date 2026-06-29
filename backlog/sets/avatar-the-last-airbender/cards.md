@@ -2,7 +2,7 @@
 
 **Set Size:** 286 draft/booster cards (excluding basic lands beyond the set's own, tokens, and special variants)
 **Release Date:** November 21, 2025
-**Implemented:** 56 / 286  (17%)
+**Implemented:** 57 / 286  (17%)
 **Engine gap analysis:** [`tla-engine-gaps.md`](tla-engine-gaps.md)
 
 ## Mechanics needed to complete the set
@@ -310,7 +310,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [ ] The Unagi of Kyoshi Island
 - [x] The Walls of Ba Sing Se
 - [ ] Tiger-Dillo
-- [ ] Tiger-Seal
+- [x] Tiger-Seal
 - [ ] Tolls of War
 - [ ] Toph, Hardheaded Teacher
 - [ ] Toph, the Blind Bandit
