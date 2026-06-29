@@ -2450,6 +2450,85 @@
     ]
 }
 
+// Cruel Administrator
+{
+    "name": "Cruel Administrator",
+    "manaCost": "{3}{B}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Raid — This creature enters with a +1/+1 counter on it if you attacked this turn.\nWhenever this creature attacks, create a 2/2 red Soldier creature token with firebending 1. (Whenever it attacks, add {R}. This mana lasts until end of combat.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "FIREBENDING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/d/2de43b03-9ac5-4292-ab29-2dc6210ef3d9.jpg?1777982247",
+                    "triggeredAbilities": [
+                        {
+                            "id": "ability_2",
+                            "trigger": "AttackEvent",
+                            "effect": {
+                                "type": "AddMana",
+                                "color": "RED",
+                                "expiry": "END_OF_COMBAT"
+                            },
+                            "descriptionOverride": "Whenever this creature attacks, add {R}. Until end of combat, you don't lose this mana as steps and phases end."
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this creature attacks, create a 2/2 red Soldier creature token with firebending 1."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "selfOnly": true,
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "PLAYER_ATTACKED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "UNCOMMON",
+        "artist": "Norikatsu Miyoshi",
+        "flavorText": "\"You're one mistake away from dying where you stand.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d70707b-2e25-40b1-80a8-9a5492bca7e2.jpg?1764121522"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Cunning Maneuver
 {
     "name": "Cunning Maneuver",

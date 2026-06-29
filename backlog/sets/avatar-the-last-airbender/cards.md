@@ -117,7 +117,7 @@ The set is built around four **"bending" keyword families** plus a returning **E
 - [x] Corrupt Court Official
 - [ ] Crashing Wave
 - [x] Crescent Island Temple
-- [ ] Cruel Administrator
+- [x] Cruel Administrator
 - [x] Cunning Maneuver
 - [x] Curious Farm Animals
 - [x] Cycle of Renewal
