@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.effects.CardDestination
+import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
@@ -126,7 +127,8 @@ private val AangAtTheCrossroadsFront = card("Aang, at the Crossroads") {
                 ),
                 MoveCollectionEffect(
                     from = "rest",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
+                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
+                    order = CardOrder.Random
                 )
             )
         )
