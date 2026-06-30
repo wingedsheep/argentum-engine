@@ -555,8 +555,28 @@ data class SelectManaSourcesDecision(
     val availableSources: List<ManaSourceOption>,
     val requiredCost: String,
     val autoPaySuggestion: List<EntityId>,
-    val canDecline: Boolean = false
+    val canDecline: Boolean = false,
+    /**
+     * For a Ward—Waterbend cost (Avatar: The Last Airbender), the untapped artifacts and
+     * creatures the paying player may tap to help pay the generic portion of [requiredCost] —
+     * each tapped permanent pays {1}. Empty for an ordinary mana payment. The chosen subset is
+     * returned in [ManaSourcesSelectedResponse.waterbendPermanents]; mirrors the activated-ability
+     * waterbend surface (`LegalAction.waterbendPermanents`).
+     */
+    val waterbendPermanents: List<WaterbendPermanentChoice> = emptyList()
 ) : PendingDecision
+
+/**
+ * An untapped artifact/creature offered as a Waterbend tap-to-help for a Ward—Waterbend payment.
+ * [isCreature] lets the client distinguish creatures from artifacts for labelling only; the tap
+ * always pays {1} generic regardless.
+ */
+@Serializable
+data class WaterbendPermanentChoice(
+    val entityId: EntityId,
+    val name: String,
+    val isCreature: Boolean
+)
 
 // =============================================================================
 // Decision Responses
@@ -785,7 +805,12 @@ data class DamageAssignmentResponse(
 data class ManaSourcesSelectedResponse(
     override val decisionId: String,
     val selectedSources: List<EntityId> = emptyList(),
-    val autoPay: Boolean = false
+    val autoPay: Boolean = false,
+    /**
+     * Untapped artifacts/creatures the player taps to help pay a Ward—Waterbend cost (Avatar:
+     * The Last Airbender) — each pays {1} of the generic. Empty for an ordinary mana payment.
+     */
+    val waterbendPermanents: Set<EntityId> = emptySet()
 ) : DecisionResponse
 
 /**

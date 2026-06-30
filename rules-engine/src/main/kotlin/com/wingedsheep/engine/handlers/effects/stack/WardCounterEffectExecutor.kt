@@ -10,6 +10,7 @@ import com.wingedsheep.engine.core.DecisionRequestedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ManaSourceOption
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
+import com.wingedsheep.engine.core.WaterbendPermanentChoice
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
@@ -18,7 +19,9 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.legalactions.utils.CostEnumerationUtils
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.registry.CardRegistry
@@ -145,7 +148,7 @@ class WardCounterEffectExecutor(
             return when (cost) {
                 is WardCost.Mana -> handleManaCost(
                     state, cardRegistry, spellEntityId, container, payingPlayerId,
-                    cost.manaCost, remainingParts, wardSourceId, controllerId
+                    cost.manaCost, cost.waterbend, remainingParts, wardSourceId, controllerId
                 )
                 is WardCost.Life -> handleLifeCost(
                     state, cardRegistry, spellEntityId, container, payingPlayerId,
@@ -333,6 +336,7 @@ class WardCounterEffectExecutor(
             container: ComponentContainer,
             payingPlayerId: EntityId,
             manaCostString: String,
+            waterbend: Boolean,
             remainingParts: List<WardCost>,
             wardSourceId: EntityId?,
             controllerId: EntityId?
@@ -340,7 +344,22 @@ class WardCounterEffectExecutor(
             val manaCost = ManaCost.parse(manaCostString)
 
             val manaSolver = ManaSolver(cardRegistry)
-            if (!manaSolver.canPay(state, payingPlayerId, manaCost)) {
+
+            // Ward—Waterbend (Avatar: The Last Airbender): the controller may tap their untapped
+            // artifacts and creatures to help pay the generic, each paying {1}. Reuse the same
+            // eligibility discovery and affordability check as the activated-ability/spell
+            // waterbend surfaces so the rule stays single-sourced.
+            val costUtils = if (waterbend) costEnumerationUtils(cardRegistry) else null
+            val waterbendPermanents = costUtils?.findWaterbendPermanents(state, payingPlayerId)
+                ?: emptyList()
+
+            val affordable = if (costUtils != null) {
+                manaSolver.canPay(state, payingPlayerId, manaCost) ||
+                    costUtils.canAffordWithWaterbend(state, payingPlayerId, manaCost, waterbendPermanents)
+            } else {
+                manaSolver.canPay(state, payingPlayerId, manaCost)
+            }
+            if (!affordable) {
                 return counterSpellOrAbility(state, cardRegistry, spellEntityId, container)
             }
 
@@ -359,11 +378,20 @@ class WardCounterEffectExecutor(
             val solution = manaSolver.solve(state, payingPlayerId, manaCost)
             val autoPaySuggestion = solution?.sources?.map { it.entityId } ?: emptyList()
 
+            val waterbendOptions = waterbendPermanents.map {
+                WaterbendPermanentChoice(it.entityId, it.name, it.isCreature)
+            }
+
             val decisionId = java.util.UUID.randomUUID().toString()
+            val payPrompt = if (waterbend) {
+                "Pay $manaCost for ward (tap artifacts/creatures to help) or your spell will be countered"
+            } else {
+                "Pay $manaCost for ward or your spell will be countered"
+            }
             val decision = SelectManaSourcesDecision(
                 id = decisionId,
                 playerId = payingPlayerId,
-                prompt = "Pay $manaCost for ward or your spell will be countered",
+                prompt = payPrompt,
                 context = DecisionContext(
                     sourceId = wardSourceId,
                     sourceName = "Ward",
@@ -372,7 +400,8 @@ class WardCounterEffectExecutor(
                 availableSources = sourceOptions,
                 requiredCost = manaCost.toString(),
                 autoPaySuggestion = autoPaySuggestion,
-                canDecline = true
+                canDecline = true,
+                waterbendPermanents = waterbendOptions
             )
 
             val continuation = CounterUnlessPaysManaSelectionContinuation(
@@ -384,7 +413,8 @@ class WardCounterEffectExecutor(
                 autoPaySuggestion = autoPaySuggestion,
                 controllerId = controllerId,
                 remainingWardParts = remainingParts,
-                wardSourceId = wardSourceId
+                wardSourceId = wardSourceId,
+                waterbend = waterbend
             )
 
             val stateWithDecision = state.withPendingDecision(decision)
@@ -461,6 +491,19 @@ class WardCounterEffectExecutor(
                 )
             )
         }
+
+        /**
+         * Build a [CostEnumerationUtils] from a [CardRegistry] — used to reuse the shared
+         * waterbend eligibility discovery / affordability check (the same surface activated-ability
+         * and spell waterbend use) when a Ward—Waterbend cost is being paid.
+         */
+        private fun costEnumerationUtils(cardRegistry: CardRegistry) =
+            CostEnumerationUtils(
+                ManaSolver(cardRegistry),
+                CostCalculator(cardRegistry),
+                PredicateEvaluator(),
+                cardRegistry
+            )
 
         private fun counterSpellOrAbility(
             state: GameState,

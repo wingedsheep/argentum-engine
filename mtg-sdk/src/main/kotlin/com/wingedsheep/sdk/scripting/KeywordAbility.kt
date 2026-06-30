@@ -82,7 +82,8 @@ sealed interface KeywordAbility {
     data class Ward(val cost: WardCost) : KeywordAbility {
         override val keyword: Keyword = Keyword.WARD
         override val description: String = when (cost) {
-            is WardCost.Mana -> "Ward ${cost.manaCost}"
+            is WardCost.Mana ->
+                if (cost.waterbend) "Ward—Waterbend ${cost.manaCost}" else "Ward ${cost.manaCost}"
             is WardCost.Life -> "Ward—Pay ${cost.amount} life"
             is WardCost.DynamicLife -> "Ward—Pay life equal to ${cost.amount.description}"
             is WardCost.Discard -> "Ward—Discard ${cost.description}"
@@ -715,6 +716,14 @@ sealed interface KeywordAbility {
          * Create Ward with mana cost from string.
          */
         fun ward(cost: String): KeywordAbility = Ward(WardCost.Mana(cost))
+
+        /**
+         * Create Ward—Waterbend with mana cost from string (Avatar: The Last Airbender —
+         * The Unagi of Kyoshi Island's "Ward—Waterbend {4}"). Same as [ward] but the {N} may
+         * be paid by tapping the paying player's untapped artifacts and creatures, each paying
+         * {1} of the generic, through the shared waterbend payment machinery.
+         */
+        fun wardWaterbend(cost: String): KeywordAbility = Ward(WardCost.Mana(cost, waterbend = true))
 
         /**
          * Create Ward with a fixed life cost.

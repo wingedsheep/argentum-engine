@@ -161,7 +161,14 @@ data class CounterUnlessPaysManaSelectionContinuation(
      */
     val remainingWardParts: List<WardCost> = emptyList(),
     /** The ward source permanent, carried so a composite cost can re-prompt its next component. */
-    val wardSourceId: EntityId? = null
+    val wardSourceId: EntityId? = null,
+    /**
+     * True when this is a Ward—Waterbend payment (Avatar: The Last Airbender): the resumer first
+     * taps any [ManaSourcesSelectedResponse.waterbendPermanents] the player chose (each paying {1}
+     * of the generic, via the shared waterbend payment machinery) before paying the remainder with
+     * mana sources.
+     */
+    val waterbend: Boolean = false
 ) : ContinuationFrame
 
 /**

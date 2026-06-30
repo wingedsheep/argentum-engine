@@ -4043,6 +4043,18 @@ composite abilities).
   last-known power if the source has left the battlefield (CR 112.7a, via `EntityReference.Source`'s
   last-known-information policy). It resolves down to a fixed `WardCost.Life` in the executor, so it
   composes inside `WardCost.Composite` and uses the same pay-or-counter prompt.
+  **Ward—Waterbend `{N}`** (Avatar: The Last Airbender — The Unagi of Kyoshi Island's
+  "Ward—Waterbend {4}") is `KeywordAbility.wardWaterbend("{4}")` → `WardCost.Mana("{4}", waterbend = true)`.
+  It is an ordinary mana ward, but while paying the `{N}` the controller may tap their untapped
+  artifacts and creatures to help — each tapped permanent pays `{1}` of the generic, reusing the
+  same waterbend payment machinery as the activated-ability / spell waterbend cost
+  (`AlternativePaymentHandler.applyWaterbendForAbility`, `AlternativePaymentChoice.waterbendPermanents`).
+  The ward's `SelectManaSourcesDecision` carries the eligible permanents in
+  `waterbendPermanents`, and the player returns the chosen subset in
+  `ManaSourcesSelectedResponse.waterbendPermanents`; the resumer taps them (reducing the generic owed)
+  before paying any remainder with mana sources. Affordability and eligibility reuse
+  `CostEnumerationUtils.findWaterbendPermanents` / `canAffordWithWaterbend`, so it stays single-sourced
+  with the other waterbend surfaces.
 - `Protection(color)` — protection from a single color.
 - `ProtectionFrom(set)` — protection from a set of colors/types.
 - `Protection(ProtectionScope.Supertype("Legendary"))` / `KeywordAbility.protectionFromSupertype("Legendary")` — protection from a supertype, e.g. "protection from legendary creatures" (Tsabo Tavoc). Enforced across targeting, blocking, and combat damage via projected `PROTECTION_FROM_SUPERTYPE_<X>` keywords.

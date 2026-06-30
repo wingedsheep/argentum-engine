@@ -327,11 +327,21 @@ sealed interface WardCost {
     /** Display string for prompts and oracle text generation. */
     val description: String
 
-    /** Ward with a mana cost — e.g. Ward {1}. */
+    /**
+     * Ward with a mana cost — e.g. Ward {1}.
+     *
+     * When [waterbend] is true the cost is a **Ward—Waterbend** (Avatar: The Last Airbender):
+     * the {N} is still a normal mana cost, but while paying it the spell/ability's controller
+     * may tap their untapped artifacts and creatures to help — each tapped permanent pays {1}
+     * of the generic (a generic-only convoke+improvise, identical to the waterbend additional
+     * cost / activated-ability waterbend). The waterbend taps are surfaced and applied through
+     * the same machinery as those (`AlternativePaymentChoice.waterbendPermanents`).
+     */
     @SerialName("WardCost.Mana")
     @Serializable
-    data class Mana(val manaCost: String) : WardCost {
-        override val description: String = manaCost
+    data class Mana(val manaCost: String, val waterbend: Boolean = false) : WardCost {
+        override val description: String =
+            if (waterbend) "Waterbend $manaCost" else manaCost
     }
 
     /** Ward with a life cost — e.g. Ward—Pay 2 life. */
@@ -424,7 +434,13 @@ data class WardCounterEffect(
     val cost: WardCost
 ) : Effect {
     override val description: String = when (cost) {
-        is WardCost.Mana -> "Counter it unless its controller pays ${cost.manaCost}"
+        is WardCost.Mana ->
+            if (cost.waterbend) {
+                "Counter it unless its controller pays ${cost.manaCost} (they may tap " +
+                    "artifacts and creatures to help; each pays for {1})"
+            } else {
+                "Counter it unless its controller pays ${cost.manaCost}"
+            }
         is WardCost.Life -> "Counter it unless its controller pays ${cost.amount} life"
         is WardCost.DynamicLife -> "Counter it unless its controller pays life equal to ${cost.amount.description}"
         is WardCost.Discard -> "Counter it unless its controller discards ${cost.description}"

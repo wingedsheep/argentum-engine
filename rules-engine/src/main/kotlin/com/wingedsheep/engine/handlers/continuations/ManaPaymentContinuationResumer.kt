@@ -405,8 +405,9 @@ class ManaPaymentContinuationResumer(
             return ExecutionResult.error(state, "Expected mana sources selected response")
         }
 
-        // If the player declined (no sources selected and not auto-pay), counter the spell
-        if (!response.autoPay && response.selectedSources.isEmpty()) {
+        // If the player declined (no mana sources, no auto-pay, and no Ward—Waterbend taps to
+        // help), counter the spell.
+        if (!response.autoPay && response.selectedSources.isEmpty() && response.waterbendPermanents.isEmpty()) {
             val counterResult = if (continuation.exileOnCounter) {
                 services.stackResolver.counterSpellToExile(
                     state, continuation.spellEntityId,
@@ -420,7 +421,29 @@ class ManaPaymentContinuationResumer(
         }
 
         val playerId = continuation.payingPlayerId
-        val playerEntity = state.getEntity(playerId)
+        var currentState = state
+        val events = mutableListOf<GameEvent>()
+
+        // Ward—Waterbend (Avatar: The Last Airbender): tap the chosen artifacts/creatures first,
+        // each paying {1} of the generic, through the shared waterbend payment machinery. The
+        // remaining (reduced) cost is then paid with mana sources exactly as a plain ward {N}.
+        var effectiveCost = continuation.manaCost
+        if (continuation.waterbend && response.waterbendPermanents.isNotEmpty()) {
+            val waterbendResult = com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler()
+                .applyWaterbendForAbility(
+                    currentState,
+                    continuation.manaCost,
+                    com.wingedsheep.sdk.scripting.AlternativePaymentChoice(
+                        waterbendPermanents = response.waterbendPermanents
+                    ),
+                    playerId
+                )
+            currentState = waterbendResult.newState
+            effectiveCost = waterbendResult.reducedCost
+            events.addAll(waterbendResult.events)
+        }
+
+        val playerEntity = currentState.getEntity(playerId)
             ?: return ExecutionResult.error(state, "Paying player not found")
 
         val manaPoolComponent = playerEntity.get<ManaPoolComponent>()
@@ -431,11 +454,9 @@ class ManaPaymentContinuationResumer(
             manaPoolComponent.red, manaPoolComponent.green, manaPoolComponent.colorless
         )
 
-        val partialResult = manaPool.payPartial(continuation.manaCost)
+        val partialResult = manaPool.payPartial(effectiveCost)
         val remainingCost = partialResult.remainingCost
         var currentPool = manaPool
-        var currentState = state
-        val events = mutableListOf<GameEvent>()
 
         if (!remainingCost.isEmpty()) {
             if (response.autoPay) {
@@ -491,7 +512,7 @@ class ManaPaymentContinuationResumer(
                         events,
                         payingPlayerId = playerId,
                         spellEntityId = continuation.spellEntityId,
-                        manaCost = continuation.manaCost,
+                        manaCost = effectiveCost,
                         exileOnCounter = continuation.exileOnCounter,
                         controllerId = continuation.controllerId,
                         pendingSubCostSources = subCostSources,
@@ -505,7 +526,7 @@ class ManaPaymentContinuationResumer(
             }
         }
 
-        val newPool = currentPool.pay(continuation.manaCost)
+        val newPool = currentPool.pay(effectiveCost)
         if (newPool == null) {
             // Payment failed — counter the spell
             val counterResult = if (continuation.exileOnCounter) {
