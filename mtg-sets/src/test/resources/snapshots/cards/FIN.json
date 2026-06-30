@@ -15734,6 +15734,50 @@
     ]
 }
 
+// Summon: G.F. Cerberus
+{
+    "name": "Summon: G.F. Cerberus",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Enchantment Creature — Saga Dog",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Surveil 1. (Look at the top card of your library. You may put it into your graveyard.)\nII — Double — When you next cast an instant or sorcery spell this turn, copy it. You may choose new targets for the copy.\nIII — Triple — When you next cast an instant or sorcery spell this turn, copy it twice. You may choose new targets for the copies.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": "CopyNextSpellCast"
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "CopyNextSpellCast",
+                    "copies": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Kevin Glint",
+        "flavorText": "\"Pretty confident. Let's see how you do.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0e5cbd4-401b-4456-80bf-d90beadfd1f8.jpg?1782686479"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Summon: G.F. Ifrit
 {
     "name": "Summon: G.F. Ifrit",
@@ -16017,6 +16061,129 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Summon: Leviathan
+{
+    "name": "Summon: Leviathan",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Enchantment Creature — Saga Leviathan",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after III.)\nI — Return each creature that isn't a Kraken, Leviathan, Merfolk, Octopus, or Serpent to its owner's hand.\nII, III — Until end of turn, whenever a Kraken, Leviathan, Merfolk, Octopus, or Serpent attacks, draw a card.\nWard {2}",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Kraken"
+                                        },
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Leviathan"
+                                        },
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Merfolk"
+                                        },
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Octopus"
+                                        },
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "Serpent"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "returnAllToHand_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "returnAllToHand_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "AttackEvent",
+                            "filter": "creature Kraken|Leviathan|Merfolk|Octopus|Serpent"
+                        }
+                    }
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "AttackEvent",
+                            "filter": "creature Kraken|Leviathan|Merfolk|Octopus|Serpent"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "RARE",
+        "artist": "OTUMAMI",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea7f26a9-b203-4ee7-88f1-3d9c77a25bcb.jpg?1782686537"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
