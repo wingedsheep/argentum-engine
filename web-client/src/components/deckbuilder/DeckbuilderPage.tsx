@@ -26,6 +26,7 @@ import { HoverCardPreview } from '@/components/ui/HoverCardPreview'
 import { useDfcHoverFlip } from '@/components/ui/useDfcHoverFlip'
 import { SetIcon } from '@/components/ui/SetIcon'
 import { getCardImageUrl, getCdnArtCropUrl, getScryfallArtCropUrl, splitImageRotateDeg } from '@/utils/cardImages'
+import { isUnreleasedSet, todayIso } from '@/utils/setRelease'
 import { rarityColor } from '@/components/draft/RarityBadge'
 import {
   parseQuery,
@@ -3135,6 +3136,22 @@ function SetCombobox({
     if (typeof window !== 'undefined') window.localStorage.setItem('deckbuilder.setSort', sortMode)
   }, [sortMode])
 
+  // Not-yet-released (future release date) sets are hidden by default; opt in with this toggle.
+  const [showUnreleased, setShowUnreleased] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false
+    return window.localStorage.getItem('deckbuilder.showUnreleasedSets') === '1'
+  })
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('deckbuilder.showUnreleasedSets', showUnreleased ? '1' : '0')
+    }
+  }, [showUnreleased])
+  const today = useMemo(() => todayIso(), [])
+  const unreleasedCount = useMemo(
+    () => sets.filter((s) => isUnreleasedSet(s.releaseDate, today)).length,
+    [sets, today],
+  )
+
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [activeIdx, setActiveIdx] = useState(0)
@@ -3168,11 +3185,13 @@ function SetCombobox({
 
   const filtered = useMemo(() => {
     const needle = search.trim().toLowerCase()
-    if (!needle) return sorted
-    return sorted.filter(
-      (s) => s.name.toLowerCase().includes(needle) || s.code.toLowerCase().includes(needle),
-    )
-  }, [sorted, search])
+    return sorted.filter((s) => {
+      // The currently-selected set always stays visible so it can be changed or cleared.
+      if (!showUnreleased && s.code !== value && isUnreleasedSet(s.releaseDate, today)) return false
+      if (!needle) return true
+      return s.name.toLowerCase().includes(needle) || s.code.toLowerCase().includes(needle)
+    })
+  }, [sorted, search, showUnreleased, today, value])
 
   // Close on outside click. mousedown (not click) so a selection inside fires before close.
   // The panel is portaled out of rootRef, so check it separately.
@@ -3311,27 +3330,44 @@ function SetCombobox({
             <span className={styles.setComboCount}>
               {filtered.length} {filtered.length === 1 ? 'set' : 'sets'}
             </span>
-            <div className={styles.modeSegmented} role="tablist" aria-label="Sort sets">
-              <button
-                type="button"
-                role="tab"
-                aria-selected={sortMode === 'name'}
-                className={`${styles.modeButton} ${sortMode === 'name' ? styles.modeButtonActive : ''}`}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setSortMode('name')}
-              >
-                Name
-              </button>
-              <button
-                type="button"
-                role="tab"
-                aria-selected={sortMode === 'date'}
-                className={`${styles.modeButton} ${sortMode === 'date' ? styles.modeButtonActive : ''}`}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => setSortMode('date')}
-              >
-                Release
-              </button>
+            <div className={styles.setComboHeaderControls}>
+              {unreleasedCount > 0 && (
+                <div className={styles.modeSegmented}>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={showUnreleased}
+                    className={`${styles.modeButton} ${showUnreleased ? styles.modeButtonActive : ''}`}
+                    title="Show sets that haven't been released yet"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => setShowUnreleased((v) => !v)}
+                  >
+                    {showUnreleased ? '✓ ' : ''}Unreleased
+                  </button>
+                </div>
+              )}
+              <div className={styles.modeSegmented} role="tablist" aria-label="Sort sets">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={sortMode === 'name'}
+                  className={`${styles.modeButton} ${sortMode === 'name' ? styles.modeButtonActive : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setSortMode('name')}
+                >
+                  Name
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={sortMode === 'date'}
+                  className={`${styles.modeButton} ${sortMode === 'date' ? styles.modeButtonActive : ''}`}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => setSortMode('date')}
+                >
+                  Release
+                </button>
+              </div>
             </div>
           </div>
           <ul

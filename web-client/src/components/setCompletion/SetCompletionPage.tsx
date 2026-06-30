@@ -4,6 +4,7 @@ import { SetIcon } from '../ui/SetIcon'
 import { HoverCardPreview } from '../ui/HoverCardPreview'
 import { ProgressChartOverlay } from './ProgressChartOverlay'
 import { getScryfallFallbackUrl } from '@/utils/cardImages'
+import { isUnreleasedSet, todayIso } from '@/utils/setRelease'
 import {
   fetchSetCoverage,
   fetchCoverageSummary,
@@ -69,6 +70,8 @@ export function SetCompletionPage() {
   const [query, setQuery] = useState('')
   const [sort, setSort] = useState<SortKey>('newest')
   const [filter, setFilter] = useState<Filter>('all')
+  // Not-yet-released (future release date) sets are hidden by default; opt in with this toggle.
+  const [showUnreleased, setShowUnreleased] = useState(false)
   const [openCode, setOpenCode] = useState<string | null>(null)
   const [showProgress, setShowProgress] = useState(false)
 
@@ -99,10 +102,17 @@ export function SetCompletionPage() {
     }
   }, [sets])
 
+  const today = todayIso()
+  const unreleasedCount = useMemo(
+    () => (sets ?? []).filter((s) => isUnreleasedSet(s.releaseDate, today)).length,
+    [sets, today],
+  )
+
   const visible = useMemo(() => {
     if (!sets) return []
     const q = query.trim().toLowerCase()
     const filtered = sets.filter((s) => {
+      if (!showUnreleased && isUnreleasedSet(s.releaseDate, today)) return false
       if (filter === 'standard' && !s.inStandard) return false
       if (filter === 'complete' && s.percent < 100) return false
       if (filter === 'inProgress' && (s.percent >= 100 || s.implemented === 0)) return false
@@ -127,7 +137,7 @@ export function SetCompletionPage() {
         break
     }
     return sorted
-  }, [sets, query, sort, filter])
+  }, [sets, query, sort, filter, showUnreleased, today])
 
   return (
     <div className={styles.page}>
@@ -231,6 +241,18 @@ export function SetCompletionPage() {
             </button>
           ))}
         </div>
+        {unreleasedCount > 0 && (
+          <div className={styles.segmented} role="group" aria-label="Unreleased sets">
+            <button
+              className={showUnreleased ? styles.segmentActive : styles.segment}
+              onClick={() => setShowUnreleased((v) => !v)}
+              aria-pressed={showUnreleased}
+              title="Show sets that haven't been released yet"
+            >
+              {showUnreleased ? '✓ ' : ''}Unreleased ({unreleasedCount})
+            </button>
+          </div>
+        )}
       </div>
 
       {error && <div className={styles.error}>Couldn’t load coverage: {error}</div>}
@@ -275,6 +297,11 @@ function SetCard({ set, onOpen }: { set: SetCoverage; onOpen: () => void }) {
             {set.inStandard && (
               <span className={styles.standardBadge} title="Currently legal in Standard">
                 Standard
+              </span>
+            )}
+            {isUnreleasedSet(set.releaseDate) && (
+              <span className={styles.unreleasedBadge} title="Not yet released">
+                Unreleased
               </span>
             )}
           </span>

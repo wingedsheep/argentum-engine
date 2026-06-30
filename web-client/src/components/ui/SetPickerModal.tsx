@@ -14,6 +14,7 @@
  */
 import { useState } from 'react'
 import type { AvailableSet } from '@/types/messages'
+import { isUnreleasedSet, todayIso } from '@/utils/setRelease'
 import { SetIcon } from './SetIcon'
 import styles from './GameUI.module.css'
 
@@ -75,6 +76,8 @@ export function SetPickerModal({
   const [search, setSearch] = useState('')
   // Partially-implemented sets are hidden by default; the user opts into them with this toggle.
   const [showPartialSets, setShowPartialSets] = useState(false)
+  // Not-yet-released (future spoiler) sets are hidden by default; opt in with this toggle.
+  const [showUnreleasedSets, setShowUnreleasedSets] = useState(false)
   // Hide thin sets (lots of partial sets have only a handful of cards). Defaults to 30.
   const [minCards, setMinCards] = useState(30)
 
@@ -82,13 +85,17 @@ export function SetPickerModal({
   const isSelected = (code: string) => selectedCodes.includes(code)
 
   // Picker visibility rules (an already-selected set always stays visible so it can be changed):
-  //  - partial sets are hidden unless the toggle is flipped, and
+  //  - partial sets are hidden unless the toggle is flipped,
+  //  - unreleased (future release date) sets are hidden unless the toggle is flipped, and
   //  - sets with fewer than `minCards` implemented cards are pruned (kills the long tail of
   //    near-empty sets you'd otherwise see once partial sets are shown).
+  const today = todayIso()
   const partialSetCount = sets.filter((s) => s.partial).length
+  const unreleasedSetCount = sets.filter((s) => isUnreleasedSet(s.releaseDate, today)).length
   const pickerSets = sets.filter((s) => {
     if (isSelected(s.code)) return true
     if (s.partial && !showPartialSets) return false
+    if (isUnreleasedSet(s.releaseDate, today) && !showUnreleasedSets) return false
     if ((s.implementedCount ?? 0) < minCards) return false
     return true
   })
@@ -118,6 +125,7 @@ export function SetPickerModal({
   const renderSetPickerRow = (set: AvailableSet) => {
     const selected = isSelected(set.code)
     const released = formatReleaseDate(set.releaseDate)
+    const unreleased = isUnreleasedSet(set.releaseDate, today)
     return (
       <button
         key={set.code}
@@ -129,6 +137,7 @@ export function SetPickerModal({
         <SetIcon code={set.code} className={styles.setPickerIcon} />
         <span className={styles.setPickerName}>{set.name}</span>
         {set.partial && <span className={styles.setPartialBadge}>partial</span>}
+        {unreleased && <span className={styles.setUnreleasedBadge}>unreleased</span>}
         {released && <span className={styles.setReleaseDate}>{released}</span>}
         {set.implementedCount != null && (
           <span className={styles.setButtonCardCount}>{set.implementedCount} cards</span>
@@ -235,6 +244,23 @@ export function SetPickerModal({
                 )}
               </span>
             </button>
+            {unreleasedSetCount > 0 && (
+              <button
+                type="button"
+                role="switch"
+                aria-checked={showUnreleasedSets}
+                className={`${styles.setPickerSwitch} ${showUnreleasedSets ? styles.setPickerSwitchOn : ''}`}
+                onClick={() => setShowUnreleasedSets((v) => !v)}
+              >
+                <span className={styles.setPickerSwitchTrack} aria-hidden>
+                  <span className={styles.setPickerSwitchThumb} />
+                </span>
+                <span className={styles.setPickerSwitchLabel}>
+                  Show unreleased sets
+                  <span className={styles.setPickerSwitchCount}>{unreleasedSetCount}</span>
+                </span>
+              </button>
+            )}
             <label className={styles.setPickerMinCards}>
               <span className={styles.setPickerMinCardsLabel}>Min cards</span>
               <input
@@ -272,9 +298,11 @@ export function SetPickerModal({
                   No sets match.{' '}
                   {!showPartialSets && partialSetCount > 0
                     ? 'Try enabling partial sets'
-                    : minCards > 0
-                      ? 'Try lowering the minimum card count'
-                      : 'Try a different search'}
+                    : !showUnreleasedSets && unreleasedSetCount > 0
+                      ? 'Try enabling unreleased sets'
+                      : minCards > 0
+                        ? 'Try lowering the minimum card count'
+                        : 'Try a different search'}
                   .
                 </div>
               )

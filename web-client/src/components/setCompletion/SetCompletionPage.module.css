@@ -312,6 +312,17 @@
   padding: 1px 6px;
   border-radius: var(--radius-sm);
 }
+.unreleasedBadge {
+  font-size: var(--font-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.16);
+  border: 1px solid rgba(139, 92, 246, 0.42);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}
 .percent {
   font-size: var(--font-lg);
   font-weight: var(--font-weight-bold);

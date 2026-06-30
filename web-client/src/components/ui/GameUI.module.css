@@ -1790,6 +1790,19 @@
   border-radius: 999px;
 }
 
+.setUnreleasedBadge {
+  flex-shrink: 0;
+  padding: 1px 6px;
+  font-size: 9px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #c4b5fd;
+  background: rgba(139, 92, 246, 0.16);
+  border: 1px solid rgba(139, 92, 246, 0.42);
+  border-radius: 999px;
+}
+
 .setPickerEmpty {
   font-size: var(--font-sm);
   color: var(--text-disabled);
