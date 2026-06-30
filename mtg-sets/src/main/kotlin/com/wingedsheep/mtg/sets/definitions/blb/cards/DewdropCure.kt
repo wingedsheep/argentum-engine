@@ -49,7 +49,7 @@ val DewdropCure = card("Dewdrop Cure") {
             ),
             // Mode 2: Gift a card — opponent draws, return up to 3 creature cards with MV ≤ 2
             Mode(
-                effect = DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent))
+                effect = DrawCardsEffect(1, EffectTarget.PlayerRef(Player.AnOpponent))
                     .then(returnEffect)
                     .then(Effects.GiftGiven()),
                 targetRequirements = listOf(

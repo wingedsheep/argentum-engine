@@ -1415,7 +1415,7 @@
                                 "tokenType": "Treasure",
                                 "controller": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {
@@ -3386,7 +3386,7 @@
                                 },
                                 "target": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {
@@ -3625,7 +3625,7 @@
                                 },
                                 "target": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {
@@ -4072,7 +4072,7 @@
                                 "tokenType": "Food",
                                 "controller": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {
@@ -4523,7 +4523,7 @@
                                 },
                                 "target": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {
@@ -4701,7 +4701,7 @@
                                 },
                                 "target": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {
@@ -10029,7 +10029,7 @@
                                         },
                                         "target": {
                                             "type": "PlayerRef",
-                                            "player": "EachOpponent"
+                                            "player": "AnOpponent"
                                         }
                                     },
                                     {
@@ -10753,7 +10753,7 @@
                                 },
                                 "target": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             "Counter",
@@ -12598,7 +12598,7 @@
                                 "tokenType": "Food",
                                 "controller": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {
@@ -13350,7 +13350,7 @@
                                 },
                                 "target": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {
@@ -15872,7 +15872,7 @@
                                         },
                                         "target": {
                                             "type": "PlayerRef",
-                                            "player": "EachOpponent"
+                                            "player": "AnOpponent"
                                         }
                                     },
                                     {
@@ -17515,7 +17515,7 @@
                                 },
                                 "target": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {
@@ -20678,7 +20678,7 @@
                                 "tokenType": "Food",
                                 "controller": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {
@@ -21596,7 +21596,7 @@
                                 },
                                 "target": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {
@@ -22170,7 +22170,7 @@
                                 },
                                 "target": {
                                     "type": "PlayerRef",
-                                    "player": "EachOpponent"
+                                    "player": "AnOpponent"
                                 }
                             },
                             {

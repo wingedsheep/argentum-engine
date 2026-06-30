@@ -39,7 +39,7 @@ val ValleyRally = card("Valley Rally") {
             ),
             // Mode 2: Gift a Food — opponent creates Food, creatures get +2/+0, target creature gains first strike
             Mode.withTarget(
-                Effects.CreateFood(1, EffectTarget.PlayerRef(Player.EachOpponent))
+                Effects.CreateFood(1, EffectTarget.PlayerRef(Player.AnOpponent))
                     .then(pumpAll)
                     .then(Effects.GrantKeyword(Keyword.FIRST_STRIKE, EffectTarget.ContextTarget(0)))
                     .then(Effects.GiftGiven()),

@@ -43,7 +43,7 @@ val CrumbAndGetIt = card("Crumb and Get It") {
             ),
             // Mode 2: Gift a Food — opponent creates Food, +2/+2 and indestructible until end of turn
             Mode.withTarget(
-                Effects.CreateFood(1, EffectTarget.PlayerRef(Player.EachOpponent))
+                Effects.CreateFood(1, EffectTarget.PlayerRef(Player.AnOpponent))
                     .then(baseEffect)
                     .then(Effects.GrantKeyword(Keyword.INDESTRUCTIBLE, EffectTarget.ContextTarget(0)))
                     .then(Effects.GiftGiven()),

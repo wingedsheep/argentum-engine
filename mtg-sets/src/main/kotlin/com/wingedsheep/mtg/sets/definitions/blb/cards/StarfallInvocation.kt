@@ -43,7 +43,7 @@ val StarfallInvocation = card("Starfall Invocation") {
             // Mode 2: Gift a card — opponent draws, destroy all creatures, then return one of yours
             Mode.noTarget(
                 Effects.Composite(listOf(
-                    DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent)),
+                    DrawCardsEffect(1, EffectTarget.PlayerRef(Player.AnOpponent)),
                     Effects.DestroyAll(GameObjectFilter.Creature, storeDestroyedAs = "destroyed"),
                     SelectFromCollectionEffect(
                         from = "destroyed",

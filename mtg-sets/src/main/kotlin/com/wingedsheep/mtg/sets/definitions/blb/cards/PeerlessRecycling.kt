@@ -43,7 +43,7 @@ val PeerlessRecycling = card("Peerless Recycling") {
             // Mode 1: Gift — opponent draws a card, return 2 target permanent cards to hand
             Mode(
                 effect = Effects.Composite(listOf(
-                    DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent)),
+                    DrawCardsEffect(1, EffectTarget.PlayerRef(Player.AnOpponent)),
                     Effects.ReturnToHand(EffectTarget.ContextTarget(0)),
                     Effects.ReturnToHand(EffectTarget.ContextTarget(1)),
                     Effects.GiftGiven()

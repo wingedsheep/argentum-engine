@@ -41,7 +41,7 @@ val BloomingBlast = card("Blooming Blast") {
             ),
             // Mode 2: Gift a Treasure — opponent creates Treasure, 2 damage to creature, 3 damage to controller
             Mode.withTarget(
-                CreatePredefinedTokenEffect("Treasure", 1, EffectTarget.PlayerRef(Player.EachOpponent))
+                CreatePredefinedTokenEffect("Treasure", 1, EffectTarget.PlayerRef(Player.AnOpponent))
                     .then(Effects.DealDamage(2, EffectTarget.ContextTarget(0)))
                     .then(Effects.DealDamage(3, EffectTarget.TargetController))
                     .then(Effects.GiftGiven()),

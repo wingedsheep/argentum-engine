@@ -46,7 +46,7 @@ val Scrapshooter = card("Scrapshooter") {
             ),
             // Mode 2: Gift a card — opponent draws, destroy target artifact or enchantment
             Mode(
-                effect = DrawCardsEffect(1, EffectTarget.PlayerRef(Player.EachOpponent))
+                effect = DrawCardsEffect(1, EffectTarget.PlayerRef(Player.AnOpponent))
                     .then(Effects.Destroy(EffectTarget.ContextTarget(0)))
                     .then(Effects.GiftGiven()),
                 targetRequirements = listOf(
