@@ -4109,6 +4109,12 @@ composite abilities).
   with [ManaExpiry](#manaexpiry).`END_OF_COMBAT` and discarded by `CombatManager.endCombat`. It is a normal
   triggered ability (not a mana ability): it uses the stack and can be responded to. `n` may be any fixed value;
   "firebending X (X = its power)" is not yet expressible by this helper (the keyword carries only a fixed Int).
+  To **grant** firebending until end of turn ("target creature gains firebending N until end of turn", Fire Nation
+  Palace), use `Effects.GrantFirebending(n, target, duration = EndOfTurn)`. Because firebending has no engine
+  handler, the grant reuses the *exact* attack trigger the printed keyword installs (`firebendingAttackTrigger(n)`,
+  shared with `firebending(n)`) via `GrantTriggeredAbilityEffect`, so the affected creature adds the same N {R}
+  combat-duration mana on attack while the grant is live. The grant rides `GameState.grantedTriggeredAbilities`
+  and is dropped in the cleanup step (EndOfTurn).
 - `Increment` — "Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power
   or toughness, put a +1/+1 counter on this creature." (Secrets of Strixhaven). Display-only; wire the behavior with
   the `card { increment() }` builder helper, which adds the `KeywordAbility.Increment` display marker (surfacing

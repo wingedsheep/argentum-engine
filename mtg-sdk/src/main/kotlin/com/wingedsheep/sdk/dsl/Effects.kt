@@ -3636,6 +3636,23 @@ object Effects {
         )
 
     /**
+     * Grant Firebending N (Avatar: The Last Airbender, CR 702.189) to a target creature until end
+     * of turn (or another [duration]) — "Target creature you control gains firebending 4 until end
+     * of turn." (Fire Nation Palace).
+     *
+     * Firebending has no engine handler: the printed keyword is "display keyword ability + an
+     * attack-triggered combat-duration [AddManaEffect]". So the grant reuses that *exact* attack
+     * trigger ([firebendingAttackTrigger]) via [GrantTriggeredAbilityEffect] — the granted instance
+     * functions identically to the printed one, adding N {R} (kept through combat, discarded when
+     * combat ends) whenever the affected creature attacks while the grant is live.
+     */
+    fun GrantFirebending(
+        n: Int,
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantTriggeredAbilityEffect(firebendingAttackTrigger(n), target, duration)
+
+    /**
      * Endure N (Tarkir: Dragonstorm keyword action) — the enduring permanent's
      * controller chooses one: put N +1/+1 counters on the enduring permanent,
      * or create an N/N white Spirit creature token.
