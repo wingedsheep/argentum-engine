@@ -738,6 +738,73 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  FIN: {
+    setCode: 'FIN',
+    setName: 'Final Fantasy',
+    archetypes: [
+      {
+        name: 'Artifacts',
+        colors: ['W', 'U'],
+        keyCard: 'Cid, Timeless Artificer',
+        description: 'Flood the board with artifacts — Equipment, Treasures, and artifact creatures — then cash in go-wide payoffs while card filtering keeps the gas flowing. A tempo-value deck that snowballs as its trinkets pile up.',
+      },
+      {
+        name: 'Sacrifice',
+        colors: ['W', 'B'],
+        keyCard: 'Judge Magister Gabranth',
+        description: "Feed a steady stream of creatures and tokens to sacrifice outlets, wringing two-for-one value and drain out of everything that dies. A grindy attrition deck built on the set's villains.",
+      },
+      {
+        name: 'Equipment Aggro',
+        colors: ['W', 'R'],
+        keyCard: 'Adelbert Steiner',
+        description: "Suit up aggressive creatures with Equipment — much of it attached to a body already — and push damage through with combat keywords like double strike. A fast go-tall aggro deck that's hard to block profitably.",
+      },
+      {
+        name: 'Go-Wide Tokens',
+        colors: ['W', 'G'],
+        keyCard: 'Rinoa Heartilly',
+        description: 'Summons and lower-rarity Eikons flood the board with tokens, then mass pump and anthem effects close the game before attrition sets in. A go-wide aggro deck that ends games early.',
+      },
+      {
+        name: 'Control',
+        colors: ['U', 'B'],
+        keyCard: "Jill, Shiva's Dominant",
+        description: 'Prolong the game with removal and counters, recurring your spells with flashback before taking over with powerful late-game bombs. A grindy control deck that out-values the table.',
+      },
+      {
+        name: 'Big Spells',
+        colors: ['U', 'R'],
+        keyCard: 'Tellah, Great Sage',
+        description: 'Lean on expensive instants and sorceries, where spending four or more mana on a noncreature spell unlocks extra value. A spell-velocity tempo deck that rewards going big.',
+      },
+      {
+        name: 'Towns Ramp',
+        colors: ['U', 'G'],
+        keyCard: 'Ignis Scientia',
+        description: "Play Towns and other nonbasic lands for repeatable value, ramping into the format's largest threats. A two-for-one ramp deck that out-resources opponents in the late game.",
+      },
+      {
+        name: 'Black Mages',
+        colors: ['B', 'R'],
+        creatureTypes: ['Wizard'],
+        keyCard: 'Black Waltz No. 3',
+        description: 'A cheap removal package spits out Wizard tokens that add reach and combat math, recreating the Black Mage dream of slinging elemental damage. An aggressive tempo deck backed by relentless burn.',
+      },
+      {
+        name: 'Graveyard',
+        colors: ['B', 'G'],
+        keyCard: 'Jenova, Ancient Calamity',
+        description: 'Fill your graveyard, then grind the game out with recursion and graveyard payoffs that flip into game-ending threats. A patient value-midrange that simply refuses to stay dead.',
+      },
+      {
+        name: 'Landfall',
+        colors: ['R', 'G'],
+        keyCard: 'Sazh Katzroy',
+        description: 'Trigger landfall every time a land enters, turning even late-game land draws into damage with angry Chocobos and big beaters. A ramp-and-aggro deck that overwhelms with raw board presence.',
+      },
+    ],
+  },
 }
 
 /**

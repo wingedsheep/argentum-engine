@@ -330,6 +330,33 @@ object SetArchetypes {
                     creatureTypes = listOf("Shapeshifter")),
             )
         ),
+        "FIN" to SetSynergies(
+            setCode = "FIN",
+            setName = "Final Fantasy",
+            archetypes = listOf(
+                Archetype("Artifacts", listOf(Color.WHITE, Color.BLUE),
+                    "Flood the board with artifacts — Equipment, Treasures, and artifact creatures — then cash in go-wide payoffs while card filtering keeps the gas flowing. A tempo-value deck that snowballs as its trinkets pile up."),
+                Archetype("Sacrifice", listOf(Color.WHITE, Color.BLACK),
+                    "Feed a steady stream of creatures and tokens to sacrifice outlets, wringing two-for-one value and drain out of everything that dies. A grindy attrition deck built on the set's villains."),
+                Archetype("Equipment Aggro", listOf(Color.WHITE, Color.RED),
+                    "Suit up aggressive creatures with Equipment — much of it attached to a body already — and push damage through with combat keywords like double strike. A fast go-tall aggro deck that's hard to block profitably."),
+                Archetype("Go-Wide Tokens", listOf(Color.WHITE, Color.GREEN),
+                    "Summons and lower-rarity Eikons flood the board with tokens, then mass pump and anthem effects close the game before attrition sets in. A go-wide aggro deck that ends games early."),
+                Archetype("Control", listOf(Color.BLUE, Color.BLACK),
+                    "Prolong the game with removal and counters, recurring your spells with flashback before taking over with powerful late-game bombs. A grindy control deck that out-values the table."),
+                Archetype("Big Spells", listOf(Color.BLUE, Color.RED),
+                    "Lean on expensive instants and sorceries, where spending four or more mana on a noncreature spell unlocks extra value. A spell-velocity tempo deck that rewards going big."),
+                Archetype("Towns Ramp", listOf(Color.BLUE, Color.GREEN),
+                    "Play Towns and other nonbasic lands for repeatable value, ramping into the format's largest threats. A two-for-one ramp deck that out-resources opponents in the late game."),
+                Archetype("Black Mages", listOf(Color.BLACK, Color.RED),
+                    "A cheap removal package spits out Wizard tokens that add reach and combat math, recreating the Black Mage dream of slinging elemental damage. An aggressive tempo deck backed by relentless burn.",
+                    creatureTypes = listOf("Wizard")),
+                Archetype("Graveyard", listOf(Color.BLACK, Color.GREEN),
+                    "Fill your graveyard, then grind the game out with recursion and graveyard payoffs that flip into game-ending threats. A patient value-midrange that simply refuses to stay dead."),
+                Archetype("Landfall", listOf(Color.RED, Color.GREEN),
+                    "Trigger landfall every time a land enters, turning even late-game land draws into damage with angry Chocobos and big beaters. A ramp-and-aggro deck that overwhelms with raw board presence."),
+            )
+        ),
     )
 
     /** Get archetypes for a specific set code, or null if not found. */
