@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.UntapDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.UntapFilteredDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.UntapLimitPerStep
+import com.wingedsheep.sdk.scripting.UntapSelfDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
@@ -175,6 +176,7 @@ class BeginningPhaseManager(
 
             var untapAll = false
             val filteredUntapFilters = mutableListOf<GameObjectFilter>()
+            val selfUntapIds = mutableListOf<EntityId>()
 
             for (permanentId in projectedForSeedborn.getBattlefieldControlledBy(playerId)) {
                 val card = newState.getEntity(permanentId)?.get<CardComponent>() ?: continue
@@ -183,6 +185,7 @@ class BeginningPhaseManager(
                     when (ability) {
                         is UntapDuringOtherUntapSteps -> untapAll = true
                         is UntapFilteredDuringOtherUntapSteps -> filteredUntapFilters.add(ability.filter)
+                        is UntapSelfDuringOtherUntapSteps -> selfUntapIds.add(permanentId)
                         else -> {}
                     }
                 }
@@ -219,6 +222,19 @@ class BeginningPhaseManager(
                         alreadyUntapped.add(entityId)
                     }
                 }
+            }
+
+            // Self-scoped untap (Bender's Waterskin — "Untap this artifact during each other
+            // player's untap step"). Only the source permanent itself untaps. Guarded on
+            // TappedComponent so it never double-processes a permanent the broad/filtered
+            // branches above already untapped (avoids consuming a second stun counter).
+            for (entityId in selfUntapIds) {
+                val container = newState.getEntity(entityId) ?: continue
+                if (!container.has<TappedComponent>()) continue
+                if (projectedForSeedborn.hasKeyword(entityId, AbilityFlag.DOESNT_UNTAP)) continue
+                val (afterUntap, untapEvents) = untapOrConsumeStun(newState, entityId)
+                newState = afterUntap
+                events.addAll(untapEvents)
             }
         }
 

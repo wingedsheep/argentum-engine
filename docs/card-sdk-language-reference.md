@@ -3363,6 +3363,14 @@ staticAbility {
     the natural untap step (callers pass projected state); explicit "untap target permanent" effects and
     other players' untap steps (Seedborn Muse) pass `projected = null` and never apply it — matching the
     "during **your** untap step" wording. Stacks after the stun-counter replacement (CR 122.1d, checked first).
+- Untap-during-other-players'-untap-steps statics (read by `BeginningPhaseManager.performUntapStep`,
+  which untaps the chosen permanents for each non-active player after the active player's normal untap):
+  - `UntapDuringOtherUntapSteps` — untap **all** permanents you control (Seedborn Muse).
+  - `UntapFilteredDuringOtherUntapSteps(filter)` — untap each permanent you control matching `filter`
+    (Ivorytusk Fortress).
+  - `UntapSelfDuringOtherUntapSteps` — untap **only the source permanent itself** ("Untap this artifact
+    during each other player's untap step" — Bender's Waterskin). Guarded on the source still being tapped,
+    so it never double-untaps / double-consumes a stun counter alongside the broad/filtered variants.
 - `UntapLimitPerStep(filter, max)` — global untap-count cap, "Players can't untap more than `max` `filter`
   during their untap steps" (Damping Field — `filter = GameObjectFilter.Artifact`, `max = 1`). Read by
   `BeginningPhaseManager` for **every** player's untap step regardless of who controls the source: when a

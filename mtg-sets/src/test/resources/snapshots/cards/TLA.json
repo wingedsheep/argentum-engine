@@ -2795,6 +2795,32 @@
     ]
 }
 
+// Bender's Waterskin
+{
+    "name": "Bender's Waterskin",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Untap this artifact during each other player's untap step.\n{T}: Add one mana of any color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "isManaAbility": true
+            }
+        ],
+        "staticAbilities": [
+            "UntapSelfDuringOtherUntapSteps"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "255",
+        "artist": "Dee Nguyen",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d4a1712-d19e-4475-9614-a0b1af4da610.jpg?1764121885"
+    }
+}
+
 // Benevolent River Spirit
 {
     "name": "Benevolent River Spirit",
