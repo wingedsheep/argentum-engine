@@ -10853,47 +10853,6 @@
     ]
 }
 
-// Skirk Prospector
-{
-    "name": "Skirk Prospector",
-    "manaCost": "{R}",
-    "typeLine": "Creature — Goblin",
-    "oracleText": "Sacrifice a Goblin: Add {R}.",
-    "creatureStats": {
-        "power": 1,
-        "toughness": 1
-    },
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": {
-                    "type": "CostAtomWrapper",
-                    "atom": {
-                        "type": "AtomSacrifice",
-                        "filter": "creature Goblin"
-                    }
-                },
-                "effect": {
-                    "type": "AddMana",
-                    "color": "RED"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "144",
-        "artist": "Slawomir Maniak",
-        "flavorText": "\"Deep beneath the ruined continent of Otaria, there's a mine where goblins still work, ignorant of the destruction above.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/1/6/1636d138-aa63-476f-a930-41b1be988032.jpg?1562731846"
-    },
-    "colorIdentityOverride": [
-        "RED"
-    ]
-}
-
 // Skittering Surveyor
 {
     "name": "Skittering Surveyor",
