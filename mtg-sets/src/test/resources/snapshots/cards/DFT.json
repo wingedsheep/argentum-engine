@@ -303,6 +303,93 @@
     ]
 }
 
+// Beastrider Vanguard
+{
+    "name": "Beastrider Vanguard",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "{4}{G}: Look at the top three cards of your library. You may reveal a permanent card from among them and put it into your hand. Put the rest on the bottom of your library in any order.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "permanent",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a permanent card to put into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{4}{G}: Look at the top three cards of your library. You may reveal a permanent card from among them and put it into your hand. Put the rest on the bottom of your library in any order."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "artist": "Andrey Kuzinskiy",
+        "flavorText": "\"She knows what I'm thinking before I do. That is what true partnership means.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4b99a61-49f1-46a2-9eb7-b6c88c236215.jpg?1782687839"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Bestow Greatness
 {
     "name": "Bestow Greatness",
@@ -589,6 +676,84 @@
         "imageUri": "https://cards.scryfall.io/normal/front/b/2/b2c7cacc-f15e-46c1-9c25-b567bb3e8680.jpg"
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Brightglass Gearhulk
+{
+    "name": "Brightglass Gearhulk",
+    "manaCost": "{G}{G}{W}{W}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "First strike, trample\nWhen this creature enters, you may search your library for up to two artifact, creature, and/or enchantment cards with mana value 1 or less, reveal them, put them into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "artifact|creature|enchantment mv<=1"
+                                },
+                                "storeAs": "searchable"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 2
+                                    }
+                                },
+                                "storeSelected": "found"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "MYTHIC",
+        "artist": "José Parodi",
+        "flavorText": "\"A new day dawns for Avishkar, and we shall draw our power from its light.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dea5b45-925c-4732-8e9d-fa8232792736.jpg?1782687811"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
         "WHITE"
     ]
 }
@@ -1095,6 +1260,133 @@
     ]
 }
 
+// Cloudspire Skycycle
+{
+    "name": "Cloudspire Skycycle",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Flying\nWhen this Vehicle enters, distribute two +1/+1 counters among one or two other target Vehicles and/or creatures you control.\nCrew 1",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DistributeCountersAmongTargets",
+                    "totalCounters": 2
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "minCount": 1,
+                    "filter": {
+                        "baseFilter": "creature|Vehicle ctrl:you",
+                        "excludeSelf": true
+                    }
+                },
+                "descriptionOverride": "When this Vehicle enters, distribute two +1/+1 counters among one or two other target Vehicles and/or creatures you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "UNCOMMON",
+        "artist": "Hardy Fowler",
+        "flavorText": "For Team Cloudspire, the track is merely a suggestion.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/881f01a4-a923-4d56-bacb-984a389296fa.jpg?1782687806"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Collision Course
+{
+    "name": "Collision Course",
+    "manaCost": "{1}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Collision Course deals X damage to target creature, where X is the number of permanents you control that are creatures and/or Vehicles.\n• Destroy target artifact.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature|Vehicle"
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Deals X damage to target creature, where X is the number of creatures and/or Vehicles you control"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            }
+                        }
+                    ],
+                    "description": "Destroy target artifact"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "artist": "Konstantin Porubov",
+        "flavorText": "\"These gators are driving like idiots!\"\n—Redshift",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b60da34-b622-42de-a249-79545bcbf30d.jpg?1782687958"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Count on Luck
 {
     "name": "Count on Luck",
@@ -1215,6 +1507,59 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Daring Mechanic
+{
+    "name": "Daring Mechanic",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "{3}{W}: Put a +1/+1 counter on target Mount or Vehicle.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target Mount or Vehicle"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "Mount|Vehicle"
+                        },
+                        "id": "target Mount or Vehicle"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Elizabeth Peiró",
+        "flavorText": "\"Just a few more bolts—SHARK ON YOUR RIGHT—and we should be good to go.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/3382552c-2740-409a-83a1-80b60627beb8.jpg?1782687954"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1753,6 +2098,66 @@
     ]
 }
 
+// Fang Guardian
+{
+    "name": "Fang Guardian",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Ape Druid",
+    "oracleText": "Flash\nWhen this creature enters, another target creature or Vehicle you control gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "another target creature or Vehicle you control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|Vehicle ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "another target creature or Vehicle you control"
+                },
+                "descriptionOverride": "When this creature enters, another target creature or Vehicle you control gets +2/+2 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Jason A. Engle",
+        "flavorText": "Though the Fang Druids desired peace, the Grand Prix's interference threatened to awaken old dangers on Muraganda.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6db483a7-c9f0-449d-be97-77dbd6d3a27a.jpg?1782687833"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Fuel the Flames
 {
     "name": "Fuel the Flames",
@@ -1837,6 +2242,82 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Gastal Blockbuster
+{
+    "name": "Gastal Blockbuster",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Berserker",
+    "oracleText": "When this creature enters, you may sacrifice a creature or Vehicle. When you do, destroy target artifact an opponent controls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature|Vehicle ctrl:you"
+                                    }
+                                },
+                                "storeAs": "toSacrifice"
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "toSacrifice"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact ctrl:opponent"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "You may sacrifice a creature or Vehicle. When you do, destroy target artifact an opponent controls."
+                },
+                "descriptionOverride": "When this creature enters, you may sacrifice a creature or Vehicle. When you do, destroy target artifact an opponent controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "artist": "Bryan Sola",
+        "flavorText": "\"Consider me an accident no longer waiting to happen.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dca41ec6-8f8f-42ef-abac-cc645c6440b7.jpg?1782687857"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -2587,6 +3068,70 @@
     ]
 }
 
+// Lotusguard Disciple
+{
+    "name": "Lotusguard Disciple",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Bird Cleric",
+    "oracleText": "Flying\nWhen this creature enters, target creature or Vehicle gains lifelink and indestructible until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "LIFELINK",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target creature or Vehicle"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target creature or Vehicle"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature|Vehicle"
+                    },
+                    "id": "target creature or Vehicle"
+                },
+                "descriptionOverride": "When this creature enters, target creature or Vehicle gains lifelink and indestructible until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "artist": "Josiah \"Jo\" Cameron",
+        "flavorText": "\"No one dies under my watch.\"\n—Sektem, Lotusguard veteran",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80645651-3804-481f-8f8f-ade762a011e1.jpg?1782687948"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Maximum Overdrive
 {
     "name": "Maximum Overdrive",
@@ -3058,6 +3603,79 @@
     ]
 }
 
+// Plow Through
+{
+    "name": "Plow Through",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Target creature you control fights target creature an opponent controls. (Each deals damage equal to its power to the other.)\n• Destroy target Vehicle.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Fight",
+                        "target1": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "target2": {
+                            "type": "ContextTarget",
+                            "index": 1
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            }
+                        }
+                    ],
+                    "description": "Target creature you control fights target creature an opponent controls"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact Vehicle"
+                            }
+                        }
+                    ],
+                    "description": "Destroy target Vehicle"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Valeza",
+        "flavorText": "Like most goblins, Rocketeers value nothing more than a good old-fashioned near-death experience.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a311d4b3-ab2a-43c2-8480-6c5daac41178.jpg?1782687824"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Prowcatcher Specialist
 {
     "name": "Prowcatcher Specialist",
@@ -3187,6 +3805,89 @@
     ]
 }
 
+// Quag Feast
+{
+    "name": "Quag Feast",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target creature, planeswalker, or Vehicle. Mill two cards, then destroy the chosen permanent if its mana value is less than or equal to the number of cards in your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "isMill": true
+                    },
+                    "storeAs": "milled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "milled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": "Target",
+                                "numericProperty": "ManaValue"
+                            },
+                            "operator": "LTE",
+                            "right": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|Vehicle|planeswalker"
+                },
+                "id": "creature, planeswalker, or Vehicle"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "RARE",
+        "artist": "Loïc Canavaggia",
+        "flavorText": "Speedbrood racers are gregarious while not racing, but everyone must eat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd8b6033-63e6-484e-8efb-a4eb9ca59fbf.jpg?1782687880"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Regal Imperiosaur
 {
     "name": "Regal Imperiosaur",
@@ -3219,6 +3920,56 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ride's End
+{
+    "name": "Ride's End",
+    "manaCost": "{4}{W}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {3} less to cast if it targets a tapped permanent.\nExile target creature or Vehicle.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "creature or Vehicle"
+            },
+            "destination": "Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|Vehicle"
+                },
+                "id": "creature or Vehicle"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 3,
+                        "filter": "permanent tapped"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "artist": "Dmitry Burmak",
+        "flavorText": "Their race ended much the same way it began, walking through a sandstorm on a world that ended long ago.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2f96b33b-c952-45ac-9626-40169b2bd4ef.jpg?1782687944"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3518,6 +4269,99 @@
     "colorIdentityOverride": []
 }
 
+// Run Over
+{
+    "name": "Run Over",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {1} less to cast if it targets a Mount or Vehicle you control.\nTarget creature you control deals damage equal to its power to target creature an opponent controls.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "EntityProperty",
+                "entity": "Target",
+                "numericProperty": "Power"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "creature an opponent controls"
+            },
+            "damageSource": {
+                "type": "BoundVariable",
+                "name": "creature you control"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "creature you control"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "creature an opponent controls"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfAnyTargetMatches",
+                        "amount": 1,
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        {
+                                            "type": "And",
+                                            "predicates": [
+                                                "IsPermanent",
+                                                {
+                                                    "type": "HasSubtype",
+                                                    "subtype": "Vehicle"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "type": "And",
+                                            "predicates": [
+                                                "IsPermanent",
+                                                {
+                                                    "type": "HasSubtype",
+                                                    "subtype": "Mount"
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "artist": "Tuan Duong Chu",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/642f8fdd-6c58-49a3-904c-27f717cae980.jpg?1782687821"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Salvation Engine
 {
     "name": "Salvation Engine",
@@ -3647,6 +4491,59 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Silken Strength
+{
+    "name": "Silken Strength",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature or Vehicle\nWhen this Aura enters, untap enchanted permanent.\nEnchanted permanent gets +1/+2 and has reach.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedPermanent",
+                    "tap": false
+                },
+                "descriptionOverride": "When this Aura enters, untap enchanted permanent."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature|Vehicle"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "artist": "Olivier Bernard",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce0e1ded-9b00-4d7b-884c-70a429783b1f.jpg?1782687820"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -3808,6 +4705,43 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Spin Out
+{
+    "name": "Spin Out",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature or Vehicle.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "creature or Vehicle"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|Vehicle"
+                },
+                "id": "creature or Vehicle"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Adrián Rodríguez Pérez",
+        "flavorText": "\"Good sportsmanship wins the crowd. Bad sportsmanship wins the race.\"\n—Winter",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be722ac5-e8c4-4180-aed0-7c28895afc0d.jpg?1782687877"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4146,6 +5080,136 @@
     ]
 }
 
+// The Last Ride
+{
+    "name": "The Last Ride",
+    "manaCost": "{B}",
+    "typeLine": "Legendary Artifact — Vehicle",
+    "oracleText": "The Last Ride gets -X/-X, where X is your life total.\n{2}{B}, Pay 2 life: Draw a card.\nCrew 2 (Tap any number of creatures you control with total power 2 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 13,
+        "toughness": 13
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "{2}{B}, Pay 2 life: Draw a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "Multiply",
+                    "amount": "YourLifeTotal",
+                    "multiplier": -1
+                },
+                "toughnessBonus": {
+                    "type": "Multiply",
+                    "amount": "YourLifeTotal",
+                    "multiplier": -1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "MYTHIC",
+        "artist": "Michele Giorgi",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9cbb7b4e-bd32-44a0-9396-16738c5e4381.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Thunderhead Gunner
+{
+    "name": "Thunderhead Gunner",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Shark Pirate",
+    "oracleText": "Reach\nDiscard a card: Draw a card. Activate only as a sorcery and only once each turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "Discard a card: Draw a card. Activate only as a sorcery and only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Mirko Failoni",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/ef537868-b2cb-4bbd-a935-b7f73f19bd06.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Trade the Helm
 {
     "name": "Trade the Helm",
@@ -4193,6 +5257,79 @@
         "artist": "Lius Lasahido",
         "flavorText": "\"This looks like a winning vehicle. But you lot ain't a winning team.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb0b5c09-6c21-4080-81c4-a8376deb729f.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Transit Mage
+{
+    "name": "Transit Mage",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, you may search your library for an artifact card with mana value 4 or 5, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "artifact mv>=4 mv<=5"
+                                },
+                                "storeAs": "searchable"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            "ShuffleLibrary"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "flavorText": "\"Remember: You can take the wheel if you want, but I choose the music.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/7/6727169f-c33a-4ca5-889d-a63bcfc5a3f0.jpg?1782687907"
     },
     "colorIdentityOverride": [
         "BLUE"
