@@ -1441,6 +1441,13 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 **Top-deck manipulation**
 
 - `scry(count)` — look at top N, bottom any, rest on top. Also `Effects.Scry(count)`.
+- `scry(count, target)` — **"Target player scries N"** (`Effects.Scry(count, target)`). Player-scoped
+  twin of `scry(count)`: when `target` is the controller it is identical (returns the compact
+  `ScryEffect` macro); otherwise it expands to a `scryPipeline` whose gather + library moves read the
+  **target** player's library and whose top/bottom decision is made by that player
+  (`Chooser.TargetPlayer`) — the scry analogue of `mill(count, target)`. Used by modal "• Target
+  player scries N" modes (Bumi, King of Three Trials), where `target` is the chosen mode's local
+  `EffectTarget.ContextTarget(0)`.
 - `surveil(count)` — look at top N, any to graveyard, rest on top. Also `Effects.Surveil(count)`.
   - **Compact macro effect.** `scry`/`surveil` return a single `ScryEffect`/`SurveilEffect` *marker*
     node (`{"type":"Scry","count":N}`), not the unrolled pipeline. The engine's `ScryExecutor` /
@@ -5483,6 +5490,12 @@ forced to `0` (the player may always decline); `chooseCount` becomes `min(eval, 
 If the evaluated cap is `0` the effect resolves as a no-op. Used by Riku of Many Paths,
 where the cap is `ContextProperty(MODES_CHOSEN_ON_TRIGGERING_SPELL)`. Equivalent raw shape:
 `ModalEffect(modes, chooseCount = modes.size, minChooseCount = 0, dynamicChooseCount = …)`.
+The cap is any `DynamicAmount` — e.g. **Bumi, King of Three Trials** uses
+`DynamicAmount.Count(Player.You, Zone.GRAVEYARD, GameObjectFilter.Any.withSubtype(Subtype.LESSON))`
+("choose up to X, where X is the number of Lesson cards in your graveyard"). Modes may carry their
+own per-mode targets here just as in a fixed modal — each chosen mode's target (referenced as its
+mode-local `EffectTarget.ContextTarget(0)`) is only demanded when that mode is picked (Bumi's scry
+mode targets a player, its Earthbend mode targets a land).
 
 **Cast-time mode-selection UX (Spree / "choose one or more").** A choose-N modal *spell* cast
 by a human is presented as a **single mode-selection panel** (web client), not a sequential

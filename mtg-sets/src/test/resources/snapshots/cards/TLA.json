@@ -3388,6 +3388,210 @@
     ]
 }
 
+// Bumi, King of Three Trials
+{
+    "name": "Bumi, King of Three Trials",
+    "manaCost": "{5}{G}",
+    "typeLine": "Legendary Creature — Human Noble Ally",
+    "oracleText": "When Bumi enters, choose up to X, where X is the number of Lesson cards in your graveyard —\n• Put three +1/+1 counters on Bumi.\n• Target player scries 3.\n• Earthbend 3. (Target land you control becomes a 0/0 creature with haste that's still a land. Put three +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "+1/+1",
+                                "count": 3,
+                                "target": "Self"
+                            },
+                            "description": "Put three +1/+1 counters on Bumi."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            },
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            }
+                                        },
+                                        "storeAs": "scried"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "scried",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            }
+                                        },
+                                        "chooser": "TargetPlayer",
+                                        "storeSelected": "toBottom",
+                                        "storeRemainder": "toTop",
+                                        "selectedLabel": "Put on bottom",
+                                        "remainderLabel": "Put on top"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "toBottom",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            },
+                                            "placement": "Bottom"
+                                        }
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "toTop",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            },
+                                            "placement": "Top"
+                                        },
+                                        "order": "ControllerChooses"
+                                    },
+                                    "EmitScriedEvent"
+                                ]
+                            },
+                            "targetRequirements": [
+                                "TargetPlayer"
+                            ],
+                            "description": "Target player scries 3."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AnimateLand",
+                                        "target": {
+                                            "type": "ContextTarget",
+                                            "index": 0
+                                        },
+                                        "power": 0,
+                                        "toughness": 0,
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": {
+                                            "type": "ContextTarget",
+                                            "index": 0
+                                        },
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "+1/+1",
+                                        "count": 3,
+                                        "target": {
+                                            "type": "ContextTarget",
+                                            "index": 0
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantTriggeredAbility",
+                                        "ability": {
+                                            "id": "ability_2",
+                                            "trigger": {
+                                                "type": "ZoneChangeEvent",
+                                                "from": "Battlefield"
+                                            },
+                                            "effect": {
+                                                "type": "Composite",
+                                                "effects": [
+                                                    {
+                                                        "type": "MoveToZone",
+                                                        "target": "Self",
+                                                        "destination": "Battlefield",
+                                                        "placement": "Tapped",
+                                                        "fromZone": "Graveyard"
+                                                    },
+                                                    {
+                                                        "type": "MoveToZone",
+                                                        "target": "Self",
+                                                        "destination": "Battlefield",
+                                                        "placement": "Tapped",
+                                                        "fromZone": "Exile"
+                                                    }
+                                                ]
+                                            },
+                                            "descriptionOverride": "When this dies or is exiled, return it to the battlefield tapped."
+                                        },
+                                        "target": {
+                                            "type": "ContextTarget",
+                                            "index": 0
+                                        },
+                                        "duration": "Permanent"
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "land ctrl:you"
+                                    }
+                                }
+                            ],
+                            "description": "Earthbend 3. (Target land you control becomes a 0/0 creature with haste that's still a land. Put three +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped.)"
+                        }
+                    ],
+                    "chooseCount": 3,
+                    "minChooseCount": 0,
+                    "dynamicChooseCount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "Lesson"
+                    }
+                },
+                "descriptionOverride": "When Bumi enters, choose up to X, where X is the number of Lesson cards in your graveyard — • Put three +1/+1 counters on Bumi. • Target player scries 3. • Earthbend 3."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Thomas Chamberlain-Keen",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a268697b-22b0-4e1b-a5b6-d9be95025e57.jpg?1764121152"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Buzzard-Wasp Colony
 {
     "name": "Buzzard-Wasp Colony",

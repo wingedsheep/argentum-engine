@@ -430,6 +430,15 @@ object Effects {
     fun Scry(count: Int): Effect = LibraryPatterns.scry(count)
 
     /**
+     * "Target player scries [count]" (CR 701.22): the chosen [target] player looks at the top
+     * [count] cards of *their* library and reorders them. Player-scoped twin of [Scry]`(count)` —
+     * when [target] is the controller it is identical to it; otherwise it expands to a
+     * [LibraryPatterns.scryPipeline] keyed to the target player. Used by modal "• Target player
+     * scries N" modes (Bumi, King of Three Trials).
+     */
+    fun Scry(count: Int, target: EffectTarget): Effect = LibraryPatterns.scry(count, target)
+
+    /**
      * "Surveil [count]" (CR 701.42): look at the top [count] cards of your library, put any number
      * into your graveyard and the rest on top in any order. The surveil twin of [Scry]; see
      * [LibraryPatterns.surveil].
