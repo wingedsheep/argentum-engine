@@ -2033,6 +2033,58 @@
     ]
 }
 
+// Mentor of the Meek
+{
+    "name": "Mentor of the Meek",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever another creature you control with power 2 or less enters, you may pay {1}. If you do, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature pow<=2 ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}"
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "RARE",
+        "artist": "Jana Schirmer & Johannes Voss",
+        "flavorText": "\"In these halls there is no pass or fail. Your true test comes with the first full moon.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd8f179a-f6ab-4d4c-8195-ed077a7770d3.jpg?1782714825"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Midnight Haunting
 {
     "name": "Midnight Haunting",
