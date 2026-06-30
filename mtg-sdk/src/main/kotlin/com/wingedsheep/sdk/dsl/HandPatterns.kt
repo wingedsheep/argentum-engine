@@ -459,14 +459,13 @@ object HandPatterns {
     )
 
     /**
-     * Connive (CR 702.166): draw a card, then discard a card. If the discarded card
-     * is a nonland, put a +1/+1 counter on [target].
-     *
-     * Pipeline: Draw → Gather(hand) → Select(1) → Move(Discard) → ConditionalOnCollection(Nonland).
-     * SelectFromCollection auto-resolves on empty / single-card hands, matching the
-     * old monolithic executor's short-circuit behavior.
+     * Shared connive pipeline (CR 702.166): draw a card, then discard a card; if the discard was a
+     * nonland, run [onNonland]. Draw → Gather(hand) → Select(1) → Move(Discard) →
+     * ConditionalOnCollection(Nonland). SelectFromCollection auto-resolves on empty / single-card
+     * hands, matching the old monolithic executor's short-circuit behavior. [connive] and
+     * [conniveTargeting] differ only in [onNonland], so they share this body.
      */
-    fun connive(target: EffectTarget = EffectTarget.Self): CompositeEffect = CompositeEffect(
+    private fun connivePipeline(onNonland: Effect): CompositeEffect = CompositeEffect(
         listOf(
             DrawCardsEffect(1, EffectTarget.Controller),
             GatherCardsEffect(
@@ -488,14 +487,22 @@ object HandPatterns {
             ConditionalOnCollectionEffect(
                 collection = "connive_discarded",
                 filter = GameObjectFilter.Nonland,
-                ifNotEmpty = AddCountersEffect(
-                    counterType = Counters.PLUS_ONE_PLUS_ONE,
-                    count = 1,
-                    target = target
-                )
+                ifNotEmpty = onNonland
             )
         ),
         descriptionOverride = "Connive"
+    )
+
+    /**
+     * Connive (CR 702.166): draw a card, then discard a card. If the discarded card
+     * is a nonland, put a +1/+1 counter on [target].
+     */
+    fun connive(target: EffectTarget = EffectTarget.Self): CompositeEffect = connivePipeline(
+        AddCountersEffect(
+            counterType = Counters.PLUS_ONE_PLUS_ONE,
+            count = 1,
+            target = target
+        )
     )
 
     /**
@@ -515,41 +522,17 @@ object HandPatterns {
     fun conniveTargeting(
         requirement: TargetRequirement,
         storeAs: String = "connive_counter_target",
-    ): CompositeEffect = CompositeEffect(
-        listOf(
-            DrawCardsEffect(1, EffectTarget.Controller),
-            GatherCardsEffect(
-                source = CardSource.FromZone(Zone.HAND, Player.You),
-                storeAs = "connive_hand"
-            ),
-            SelectFromCollectionEffect(
-                from = "connive_hand",
-                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-                chooser = Chooser.Controller,
-                storeSelected = "connive_discarded",
-                prompt = "Choose a card to discard"
-            ),
-            MoveCollectionEffect(
-                from = "connive_discarded",
-                destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
-                moveType = MoveType.Discard
-            ),
-            ConditionalOnCollectionEffect(
-                collection = "connive_discarded",
-                filter = GameObjectFilter.Nonland,
-                ifNotEmpty = CompositeEffect(
-                    listOf(
-                        SelectTargetEffect(requirement = requirement, storeAs = storeAs),
-                        AddCountersEffect(
-                            counterType = Counters.PLUS_ONE_PLUS_ONE,
-                            count = 1,
-                            target = EffectTarget.PipelineTarget(storeAs)
-                        )
-                    )
+    ): CompositeEffect = connivePipeline(
+        CompositeEffect(
+            listOf(
+                SelectTargetEffect(requirement = requirement, storeAs = storeAs),
+                AddCountersEffect(
+                    counterType = Counters.PLUS_ONE_PLUS_ONE,
+                    count = 1,
+                    target = EffectTarget.PipelineTarget(storeAs)
                 )
             )
-        ),
-        descriptionOverride = "Connive"
+        )
     )
 
     /**

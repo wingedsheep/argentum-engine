@@ -746,7 +746,7 @@ class TriggerMatcher(
                     }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent -> {
                         // LKI-safe permanent check. Anything that left the battlefield was, by
-                        // definition, a permanent — but a *token* is swept from the game by 704.5s
+                        // definition, a permanent — but a *token* is swept from the game by 704.5d
                         // before this matcher runs, so its live CardComponent is gone and the generic
                         // `else` branch below would return false. Read the last-known type line
                         // (captured on the event, like IsCreature/IsLand above) instead. Without this,

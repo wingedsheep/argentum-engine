@@ -24,7 +24,7 @@ import io.kotest.matchers.collections.shouldHaveSize
  * Suki's filter is [GameObjectFilter.Permanent] (carrying [CardPredicate.IsPermanent]). In
  * [TriggerMatcher.matchesZoneChangeTrigger], IsPermanent had no dedicated case and fell into the
  * generic `else` branch, which does `if (cardComponent == null) return false`. A token is swept
- * from the game by CR 704.5s state-based actions in the same pass that puts it in the graveyard,
+ * from the game by CR 704.5d state-based actions in the same pass that puts it in the graveyard,
  * so by trigger-detection time its live CardComponent is gone — the matcher returned false and the
  * trigger never fired. A nontoken permanent's card is still in the graveyard, so it worked; only
  * tokens were affected (exactly the user's "Ally Token died in combat, no new token" report).
@@ -71,7 +71,7 @@ class TriggerMatcherIsPermanentTest : FunSpec({
     test("fires when a TOKEN you control dies — the entity is swept, so LKI must carry the type line") {
         val driver = createDriver()
 
-        // The token has already been removed from the game (CR 704.5s), so it is NOT in state.
+        // The token has already been removed from the game (CR 704.5d), so it is NOT in state.
         // The matcher must rely on the event's last-known info.
         val sweptToken = EntityId.generate()
         val event = ZoneChangeEvent(
