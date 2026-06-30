@@ -124,3 +124,35 @@
         "WHITE"
     ]
 }
+
+// Thrill of Possibility
+{
+    "name": "Thrill of Possibility",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, discard a card.\nDraw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": "AtomDiscard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "artist": "Steve Argyle",
+        "flavorText": "\"Remember all the great heroes who were careful and never did anything risky? Me neither.\"\n—Syr Carah, the Bold",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9021f85-7ab4-4a78-a398-1611fe09cd14.jpg?1782707837"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}

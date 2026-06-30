@@ -21,6 +21,69 @@
     "colorIdentityOverride": []
 }
 
+// Slagstorm
+{
+    "name": "Slagstorm",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Slagstorm deals 3 damage to each creature.\n• Slagstorm deals 3 damage to each player.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "description": "Slagstorm deals 3 damage to each creature"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Players",
+                            "players": "Each"
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": "Controller"
+                        }
+                    },
+                    "description": "Slagstorm deals 3 damage to each player"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"As long as we have the will to fight, we are never without weapons.\"\n—Koth of the Hammer",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e318b03-2aad-462b-a2a9-8b6bdf0e93d6.jpg?1782715224"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Spine of Ish Sah
 {
     "name": "Spine of Ish Sah",

@@ -1,3 +1,65 @@
+// Broken Wings
+{
+    "name": "Broken Wings",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target artifact, enchantment, or creature with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target artifact, enchantment, or creature with flying"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsArtifact",
+                                            "IsEnchantment"
+                                        ]
+                                    },
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "HasKeyword",
+                                                "keyword": "FLYING"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "target artifact, enchantment, or creature with flying"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "artist": "Ekaterina Burmak",
+        "flavorText": "Getting airborne with a kitesail is easy. It's everything afterward that takes focus, skill, and luck.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0fc2dfd-85b0-4add-be18-b39549235921.jpg?1782706246"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Highborn Vampire
 {
     "name": "Highborn Vampire",
