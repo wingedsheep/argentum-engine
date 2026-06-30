@@ -55,6 +55,13 @@ private val CARD_TYPE_NAMES: Set<String> =
     com.wingedsheep.sdk.core.CardType.entries.mapTo(mutableSetOf()) { it.name }
 
 /**
+ * Every official creature type (CR 205.3m), proper-cased to match the subtype strings carried in
+ * [ProjectedState.getSubtypes]. Used by [DynamicAmount.LargestSharedCreatureTypeCount] to keep
+ * non-creature subtypes (Equipment, Vehicle, basic land types, …) from polluting the tribe tally.
+ */
+private val CREATURE_TYPE_NAMES: Set<String> = Subtype.ALL_CREATURE_TYPES.toSet()
+
+/**
  * Evaluates DynamicAmount values against the current game state.
  *
  * DynamicAmount represents values that depend on game state, like
@@ -545,6 +552,35 @@ class DynamicAmountEvaluator(
             }
 
             is DynamicAmount.PermanentsSacrificedThisWay -> context.sacrificedPermanents.size
+
+            // "The greatest number of creatures you control that have a creature type in common"
+            // (White Lotus Tile). For every creature type present among the player's creatures,
+            // tally how many of those creatures have it, then take the max. A creature with several
+            // creature types feeds each of its tribes (a Bird Soldier adds to both the Bird and the
+            // Soldier tally); a Changeling — projected to ALL_CREATURE_TYPES (StateProjector) — feeds
+            // every tribe. Reads projected subtypes so type-changing effects and Changeling are
+            // honored (CLAUDE.md battlefield-projection rule), restricting to actual creature types so
+            // artifact/land subtypes can't inflate the count. Zero when no creature shares a type.
+            is DynamicAmount.LargestSharedCreatureTypeCount -> {
+                val playerIds = resolveUnifiedPlayerIds(state, amount.player, context).toSet()
+                if (playerIds.isEmpty()) return 0
+                val projection = resolveProjection(state, projectedState)
+                val tally = HashMap<String, Int>()
+                for (entityId in state.getBattlefield()) {
+                    if (controllerOf(state, projection, entityId) !in playerIds) continue
+                    if (!projection.isCreature(entityId)) continue
+                    val subtypes = projection.getSubtypes(entityId).ifEmpty {
+                        state.getEntity(entityId)?.get<CardComponent>()?.typeLine?.subtypes
+                            ?.map { it.value }?.toSet() ?: emptySet()
+                    }
+                    for (subtype in subtypes) {
+                        if (subtype in CREATURE_TYPE_NAMES) {
+                            tally[subtype] = (tally[subtype] ?: 0) + 1
+                        }
+                    }
+                }
+                tally.values.maxOrNull() ?: 0
+            }
 
         }
     }

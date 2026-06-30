@@ -19180,6 +19180,37 @@
     ]
 }
 
+// White Lotus Tile
+{
+    "name": "White Lotus Tile",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\n{T}: Add X mana of any one color, where X is the greatest number of creatures you control that have a creature type in common.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddManaOfChoice",
+                    "amount": "LargestSharedCreatureTypeCount"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "262",
+        "rarity": "MYTHIC",
+        "artist": "Dee Nguyen",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d70f9ec-fdc1-4219-b89b-c030d712c1fc.jpg?1764121931"
+    }
+}
+
 // Wolfbat
 {
     "name": "Wolfbat",

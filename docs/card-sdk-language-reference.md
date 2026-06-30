@@ -4971,6 +4971,15 @@ Numbers computed at resolution time.
   composite — the sibling-rider wiring from the sacrifice-snapshot work). Used by "each opponent
   sacrifices a creature … create a Food token for each creature sacrificed this way" (Voracious Fell
   Beast). Evaluates to 0 when nothing was sacrificed.
+- `LargestSharedCreatureTypeCount(player = You)` — the size of the largest creature-type tribe among
+  the creatures `player` controls, i.e. "the greatest number of creatures you control that have a
+  creature type in common." For every creature type present, tally how many of the player's creatures
+  have it, then take the max. A creature with several creature types feeds each of its tribes (a Bird
+  Soldier adds to both the Bird and the Soldier tally); a Changeling — projected to all creature types
+  — feeds every tribe. Reads projected creature subtypes (type-changing effects and Changeling are
+  honored), restricted to actual creature types so artifact/land subtypes never inflate the count.
+  Evaluates to 0 when no creature shares a type. Used by White Lotus Tile ("Add X mana of any one
+  color, where X is …") — pair with `AddManaOfChoiceEffect(ManaColorSet.AnyColor, amount = …)`.
 
 ### Counters
 

@@ -1219,4 +1219,27 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
         override val description: String = "the number of permanents sacrificed this way"
     }
 
+    /**
+     * The size of the largest creature-type tribe among the creatures [player] controls — i.e.
+     * "the greatest number of creatures you control that have a creature type in common."
+     *
+     * For every creature type present, count how many of the player's creatures have that type,
+     * then take the maximum. A creature with several creature types counts toward each of its
+     * tribes (a Bird Soldier contributes to both the Bird tally and the Soldier tally), and a
+     * Changeling counts toward every tribe (it has all creature types). Evaluated against
+     * projected state so type-changing effects are honored. Zero when the player controls no
+     * creatures with a creature type.
+     *
+     * Used by White Lotus Tile — "{T}: Add X mana of any one color, where X is the greatest number
+     * of creatures you control that have a creature type in common."
+     */
+    @SerialName("LargestSharedCreatureTypeCount")
+    @Serializable
+    data class LargestSharedCreatureTypeCount(
+        val player: Player = Player.You
+    ) : DynamicAmount {
+        override val description: String =
+            "the greatest number of creatures ${if (player == Player.You) "you control" else "${player.description} controls"} that have a creature type in common"
+    }
+
 }
