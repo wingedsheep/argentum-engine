@@ -19,8 +19,12 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * card. When you discard a nonland card this way, put a +1/+1 counter on target creature you
  * control.
  *
- * The looting + conditional reflexive +1/+1 counter is exactly connive (CR 702.166), modeled via
- * [Effects.Connive] with the counter recipient as the chosen target creature you control.
+ * The looting + conditional +1/+1 counter is connive-shaped (CR 702.166), but the counter lands on
+ * a *chosen target* creature rather than the source. The "When you discard a nonland card this way"
+ * clause is a reflexive trigger: the target creature is chosen only after a nonland card is actually
+ * discarded, so it's modeled via [Effects.ConniveTargeting] (which selects the recipient at
+ * resolution inside the nonland gate) — not an up-front `target(...)`, which would force the choice
+ * before the player knows whether they discarded a nonland.
  */
 val TeoSpiritedGlider = card("Teo, Spirited Glider") {
     manaCost = "{3}{U}"
@@ -39,8 +43,7 @@ val TeoSpiritedGlider = card("Teo, Spirited Glider") {
         trigger = Triggers.YouAttackWithFilter(
             GameObjectFilter.Creature.youControl().withKeyword(Keyword.FLYING)
         )
-        val creature = target("target creature you control", Targets.CreatureYouControl)
-        effect = Effects.Connive(target = creature)
+        effect = Effects.ConniveTargeting(Targets.CreatureYouControl)
     }
 
     metadata {

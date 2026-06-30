@@ -15605,25 +15605,33 @@
                             "type": "ConditionalOnCollection",
                             "collection": "connive_discarded",
                             "ifNotEmpty": {
-                                "type": "AddCounters",
-                                "counterType": "+1/+1",
-                                "count": 1,
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "target creature you control"
-                                }
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "SelectTarget",
+                                        "requirement": {
+                                            "type": "TargetObject",
+                                            "filter": {
+                                                "baseFilter": "creature ctrl:you"
+                                            }
+                                        },
+                                        "storeAs": "connive_counter_target"
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "+1/+1",
+                                        "count": 1,
+                                        "target": {
+                                            "type": "PipelineTarget",
+                                            "collectionName": "connive_counter_target"
+                                        }
+                                    }
+                                ]
                             },
                             "filter": "nonland"
                         }
                     ],
                     "descriptionOverride": "Connive"
-                },
-                "targetRequirement": {
-                    "type": "TargetObject",
-                    "filter": {
-                        "baseFilter": "creature ctrl:you"
-                    },
-                    "id": "target creature you control"
                 }
             }
         ]

@@ -744,6 +744,17 @@ class TriggerMatcher(
                         val isCreature = isFaceDown || typeLine?.isCreature == true
                         if (!isCreature) return false
                     }
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent -> {
+                        // LKI-safe permanent check. Anything that left the battlefield was, by
+                        // definition, a permanent — but a *token* is swept from the game by 704.5s
+                        // before this matcher runs, so its live CardComponent is gone and the generic
+                        // `else` branch below would return false. Read the last-known type line
+                        // (captured on the event, like IsCreature/IsLand above) instead. Without this,
+                        // "whenever another permanent you control leaves the battlefield" (Suki,
+                        // Courageous Rescuer) silently misses a leaving token.
+                        val isPermanent = isFaceDown || typeLine?.isPermanent == true
+                        if (!isPermanent) return false
+                    }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLand -> {
                         if (typeLine?.isLand != true) return false
                     }

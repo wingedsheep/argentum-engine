@@ -35,6 +35,8 @@ import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.Gate
+import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
@@ -887,7 +889,7 @@ class ManaSolver(
             // actual spend.
             val manaAbilities = if (spellContext != null) {
                 rawManaAbilities.filter { ability ->
-                    val r = extractManaRestriction(ability.effect)
+                    val r = extractManaRestriction(ability.effect, state, entityId, playerId)
                     r == null || r.isSatisfiedBy(spellContext)
                 }
             } else {
@@ -1115,16 +1117,7 @@ class ManaSolver(
                 // separately via colorActivationManaCost / colorlessActivationManaCost,
                 // tapping additional sources to cover them.
                 val effectColors = mutableSetOf<Color>()
-                val manaEffect = when (val effect = ability.effect) {
-                    is CompositeEffect -> effect.effects.firstOrNull {
-                        it is AddManaEffect ||
-                            it is AddColorlessManaEffect ||
-                            it is AddManaOfChoiceEffect ||
-                            it is AddAnyColorManaSpendOnChosenTypeEffect ||
-                            it is AddDynamicManaEffect
-                    } ?: effect
-                    else -> effect
-                }
+                val manaEffect = manaProducingEffect(ability.effect, state, entityId, playerId)
                 val effectRestriction: ManaRestriction? = when (val effect = manaEffect) {
                     is AddManaEffect -> {
                         combinedColors.add(effect.color)
@@ -1388,17 +1381,55 @@ class ManaSolver(
      * mana ability. Used to filter abilities by spell/ability payment context before
      * combining multiple abilities on the same source.
      */
-    private fun extractManaRestriction(effect: com.wingedsheep.sdk.scripting.effects.Effect): ManaRestriction? {
-        val manaEffect = when (effect) {
-            is CompositeEffect -> effect.effects.firstOrNull {
-                it is AddManaEffect ||
-                    it is AddColorlessManaEffect ||
-                    it is AddManaOfChoiceEffect ||
-                    it is AddDynamicManaEffect
-            } ?: effect
+    /**
+     * Unwrap an ability's effect down to the mana-producing leaf the solver should read.
+     *
+     * Two wrappers can hide the mana effect from the structural inspection below:
+     *  - [CompositeEffect] — the mana effect sits alongside bookkeeping effects.
+     *  - [GatedEffect] from `Effects`/`ConditionalEffect` — a *conditional* mana ability
+     *    ("{T}: Add {G}. If you control a creature with power 4 or greater, add {G}{G} instead."
+     *    — Raucous Audience) whose branch is chosen at resolution. The battlefield is stable during
+     *    a single payment, so we evaluate the [Gate.WhenCondition] against the current state and read
+     *    the branch that will actually run. Without this the [GatedEffect] falls through unread, the
+     *    solver never sees the green, and the auto-tapper skips the source entirely.
+     */
+    private fun manaProducingEffect(
+        effect: Effect,
+        state: GameState,
+        sourceId: EntityId,
+        playerId: EntityId,
+    ): Effect = when (effect) {
+        is CompositeEffect -> effect.effects.firstOrNull {
+            it is AddManaEffect ||
+                it is AddColorlessManaEffect ||
+                it is AddManaOfChoiceEffect ||
+                it is AddAnyColorManaSpendOnChosenTypeEffect ||
+                it is AddDynamicManaEffect
+        } ?: effect
+        is GatedEffect -> when (val gate = effect.gate) {
+            is Gate.WhenCondition -> {
+                val context = EffectContext(
+                    sourceId = sourceId,
+                    controllerId = playerId,
+                    targets = emptyList(),
+                    xValue = 0,
+                )
+                val branch = if (conditionEvaluator.evaluate(state, gate.condition, context)) effect.then
+                else effect.otherwise
+                branch?.let { manaProducingEffect(it, state, sourceId, playerId) } ?: effect
+            }
             else -> effect
         }
-        return when (manaEffect) {
+        else -> effect
+    }
+
+    private fun extractManaRestriction(
+        effect: Effect,
+        state: GameState,
+        sourceId: EntityId,
+        playerId: EntityId,
+    ): ManaRestriction? {
+        return when (val manaEffect = manaProducingEffect(effect, state, sourceId, playerId)) {
             is AddManaEffect -> manaEffect.restriction
             is AddColorlessManaEffect -> manaEffect.restriction
             is AddManaOfChoiceEffect -> manaEffect.restriction

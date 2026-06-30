@@ -23,11 +23,13 @@ import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.RepeatDynamicTimesEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.SelectionRestriction
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -490,6 +492,60 @@ object HandPatterns {
                     counterType = Counters.PLUS_ONE_PLUS_ONE,
                     count = 1,
                     target = target
+                )
+            )
+        ),
+        descriptionOverride = "Connive"
+    )
+
+    /**
+     * Connive variant whose +1/+1 counter lands on a *chosen target* rather than the conniving
+     * permanent itself — the "When you discard a nonland card this way, put a +1/+1 counter on
+     * target creature you control" shape (Teo, Spirited Glider).
+     *
+     * Unlike [connive] (counter goes on a fixed [EffectTarget], default Self), the recipient is a
+     * reflexive target: it is selected at resolution via [SelectTargetEffect] *inside* the nonland
+     * gate, so the player only picks a creature once a nonland card has actually been discarded —
+     * never up front, and never when the discard turns out to be a land (or the hand was empty). The
+     * counter then lands on that [EffectTarget.PipelineTarget].
+     *
+     * @param requirement what the chosen counter recipient must satisfy (e.g.
+     *   `Targets.CreatureYouControl`).
+     */
+    fun conniveTargeting(
+        requirement: TargetRequirement,
+        storeAs: String = "connive_counter_target",
+    ): CompositeEffect = CompositeEffect(
+        listOf(
+            DrawCardsEffect(1, EffectTarget.Controller),
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.HAND, Player.You),
+                storeAs = "connive_hand"
+            ),
+            SelectFromCollectionEffect(
+                from = "connive_hand",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                chooser = Chooser.Controller,
+                storeSelected = "connive_discarded",
+                prompt = "Choose a card to discard"
+            ),
+            MoveCollectionEffect(
+                from = "connive_discarded",
+                destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
+                moveType = MoveType.Discard
+            ),
+            ConditionalOnCollectionEffect(
+                collection = "connive_discarded",
+                filter = GameObjectFilter.Nonland,
+                ifNotEmpty = CompositeEffect(
+                    listOf(
+                        SelectTargetEffect(requirement = requirement, storeAs = storeAs),
+                        AddCountersEffect(
+                            counterType = Counters.PLUS_ONE_PLUS_ONE,
+                            count = 1,
+                            target = EffectTarget.PipelineTarget(storeAs)
+                        )
+                    )
                 )
             )
         ),

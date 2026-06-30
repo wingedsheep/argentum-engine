@@ -482,6 +482,19 @@ object Effects {
         HandPatterns.connive(target)
 
     /**
+     * Connive whose +1/+1 counter lands on a *reflexively chosen* target rather than the conniving
+     * permanent — "draw a card, then discard a card. When you discard a nonland card this way, put a
+     * +1/+1 counter on target creature you control" (Teo, Spirited Glider).
+     *
+     * The counter recipient is selected at resolution, *after* a nonland card has actually been
+     * discarded — so the player never picks a target up front or when the discard is a land. Pass the
+     * recipient's [requirement] (e.g. `Targets.CreatureYouControl`); do NOT also declare it as a
+     * cast-time `target(...)` on the ability. See [HandPatterns.conniveTargeting].
+     */
+    fun ConniveTargeting(requirement: TargetRequirement): Effect =
+        HandPatterns.conniveTargeting(requirement)
+
+    /**
      * Each opponent discards N cards.
      * Delegates to the LibraryPatterns/HandPatterns pipeline: ForEachPlayer(EachOpponent) → Gather → Select → Move.
      */
