@@ -1,12 +1,12 @@
 /**
- * The admin dashboard landing page: a hub that routes to the admin areas (Stats, Activity, Replays,
+ * The admin dashboard landing page: a hub that routes to the admin areas (Stats, Activity,
  * Players). It's the starting point a signed-in admin lands on; the bootstrap-password login also
  * arrives here after authenticating.
  */
 import type React from 'react'
 import { AdminScreen, adminTheme } from './adminUi'
 
-export type AdminArea = 'stats' | 'activity' | 'replays' | 'players'
+export type AdminArea = 'stats' | 'activity' | 'players'
 
 interface HubItem {
   area: AdminArea
@@ -18,7 +18,6 @@ interface HubItem {
 const ITEMS: HubItem[] = [
   { area: 'stats', icon: '📊', title: 'Stats', description: 'Global activity, decks, cards, win rates and geography.' },
   { area: 'activity', icon: '🏆', title: 'Activity', description: 'Recent games and tournaments across every player — click through to replays and standings.' },
-  { area: 'replays', icon: '🎞️', title: 'Replays', description: 'Browse and play back every completed game.' },
   { area: 'players', icon: '👥', title: 'Players', description: 'Registered accounts, their games, and admin access.' },
 ]
 

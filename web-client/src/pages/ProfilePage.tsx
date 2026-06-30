@@ -20,6 +20,7 @@ import { LoginModal } from '@/components/auth/LoginModal'
 import { DeckViewModal } from '@/components/profile/DeckViewModal'
 import { EloCell, GameModeCell, OpponentCell } from '@/components/profile/gameHistoryCells'
 import { colorForIdentity, colorLabel } from '@/components/admin/statFormat'
+import { formatDateTime } from '@/utils/datetime'
 import { useAuthStore } from '@/store/authStore'
 
 const PAGE_SIZE = 10
@@ -218,7 +219,7 @@ export function ProfilePage() {
               >
                 {history.map((g, i) => (
                   <tr key={`${g.gameId}-${i}`}>
-                    <td style={styles.td}>{g.endedAt.slice(0, 10)}</td>
+                    <td style={styles.td}>{formatDateTime(g.endedAt)}</td>
                     <td style={styles.td}>
                       <GameModeCell gameMode={g.gameMode} format={g.format} />
                     </td>

@@ -35,6 +35,7 @@ import type {
   UserTournamentEntry,
 } from '@/api/account'
 import { colorForIdentity, colorLabel, splitModeBucket } from '@/components/admin/statFormat'
+import { formatDateTime } from '@/utils/datetime'
 import { HoverCardPreview } from '@/components/ui/HoverCardPreview'
 import { EloCell, GameModeCell, OpponentCell } from '@/components/profile/gameHistoryCells'
 import { TournamentDetailModal } from '@/components/profile/TournamentDetailModal'
@@ -273,7 +274,7 @@ export function StatsDashboard(props: StatsDashboardData) {
           <SimpleTable head={['Date', 'Mode', 'Colors', 'Opponent', { label: 'Elo' }, { label: 'Result', numeric: true }]}>
             {recentGames.map((g, i) => (
               <tr key={`${g.gameId}-${i}`}>
-                <td style={styles.td}>{g.endedAt.slice(0, 10)}</td>
+                <td style={styles.td}>{formatDateTime(g.endedAt)}</td>
                 <td style={styles.td}>
                   <GameModeCell gameMode={g.gameMode} format={g.format} />
                 </td>

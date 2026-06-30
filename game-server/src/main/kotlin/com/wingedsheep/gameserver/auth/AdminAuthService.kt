@@ -20,10 +20,9 @@ import org.springframework.stereotype.Component
  * promotion or demotion takes effect immediately rather than on the next sign-in. Admin endpoints are
  * low-traffic, so the extra lookup is cheap.
  *
- * This component is intentionally NOT gated on `accounts.enabled`: the replay browser
- * ([com.wingedsheep.gameserver.controller.AdminController]) works on a server with no database at all,
- * password-only. When accounts are disabled the account dependencies below are simply absent, leaving
- * the password as the only path.
+ * This component is intentionally NOT gated on `accounts.enabled` so the password path keeps working
+ * on a server with no database at all. When accounts are disabled the account dependencies below are
+ * simply absent, leaving the password as the only path.
  */
 @Component
 class AdminAuthService(private val gameProperties: GameProperties) {

@@ -4,22 +4,20 @@
  *  1. a signed-in account flagged as admin — taken straight in, using its normal auth token, or
  *  2. the bootstrap `X-Admin-Password`, entered once and kept in sessionStorage for the session.
  *
- * Once in, it's a hub that routes to the three admin areas (Stats / Replays / Players). The bootstrap
+ * Once in, it's a hub that routes to the admin areas (Stats / Activity / Players). The bootstrap
  * password is only needed to create the first admin: sign in with it, open Players, and promote an
  * account — that account can then reach the dashboard with its own sign-in.
  */
 import { useCallback, useEffect, useState } from 'react'
 import type React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ReplayViewer, type GameSummary } from './ReplayViewer'
 import { AdminDashboard } from './AdminDashboard'
 import { AdminActivity } from './AdminActivity'
 import { AdminPlayers } from './AdminPlayers'
 import { AdminHub, type AdminArea } from './AdminHub'
 import { adminTheme } from './adminUi'
-import { type AdminAuth, adminAuthHeaders } from '@/api/adminAuth'
+import type { AdminAuth } from '@/api/adminAuth'
 import { useAuthStore } from '@/store/authStore'
-import type { ReplayData } from '@/replay/reconstructSnapshots.ts'
 
 type Access = 'pending' | 'granted' | 'denied'
 
@@ -41,7 +39,7 @@ export function AdminPage() {
   /** Validate a bootstrap password against an admin endpoint. */
   const validatePassword = useCallback(async (pwd: string): Promise<{ ok: boolean; error?: string }> => {
     try {
-      const res = await fetch('/api/admin/games', { headers: { 'X-Admin-Password': pwd } })
+      const res = await fetch('/api/admin/users', { headers: { 'X-Admin-Password': pwd } })
       if (res.status === 401) {
         const data = (await res.json().catch(() => null)) as { error?: string } | null
         return { ok: false, error: data?.error ?? 'Invalid admin password' }
@@ -105,21 +103,6 @@ export function AdminPage() {
     setLoading(false)
   }
 
-  const fetchGames = useCallback(async (): Promise<GameSummary[]> => {
-    const res = await fetch('/api/admin/games', { headers: adminAuthHeaders(auth) })
-    if (!res.ok) throw new Error(`Server error: ${res.status}`)
-    return (await res.json()) as GameSummary[]
-  }, [auth])
-
-  const fetchReplay = useCallback(
-    async (gameId: string): Promise<ReplayData> => {
-      const res = await fetch(`/api/admin/games/${gameId}/replay`, { headers: adminAuthHeaders(auth) })
-      if (!res.ok) throw new Error(`Failed to load replay: ${res.status}`)
-      return (await res.json()) as ReplayData
-    },
-    [auth],
-  )
-
   if (access === 'pending') {
     return (
       <div style={styles.pageContainer}>
@@ -149,9 +132,6 @@ export function AdminPage() {
   }
   if (view === 'players') {
     return <AdminPlayers auth={auth} onBack={() => setView('hub')} />
-  }
-  if (view === 'replays') {
-    return <ReplayViewer fetchGames={fetchGames} fetchReplay={fetchReplay} onBack={() => setView('hub')} />
   }
 
   const authLabel = auth ? 'Signed in with the admin password' : `Signed in as ${user?.displayName ?? 'admin'}`

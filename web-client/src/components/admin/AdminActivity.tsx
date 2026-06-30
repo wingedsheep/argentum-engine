@@ -19,6 +19,7 @@ import {
 } from '@/api/adminStats'
 import type { AdminAuth } from '@/api/adminAuth'
 import { TournamentDetailModal } from '@/components/profile/TournamentDetailModal'
+import { formatDateTime } from '@/utils/datetime'
 import { gameModeLabel } from './statFormat'
 import { AdminScreen, Panel, Table, adminTheme, cellStyle } from './adminUi'
 
@@ -106,7 +107,7 @@ export function AdminActivity({ auth, onBack }: { auth: AdminAuth; onBack: () =>
               const mode = gameModeLabel(g.gameMode, g.format)
               return (
                 <tr key={g.gameId}>
-                  <td style={cellStyle.td}>{g.endedAt.slice(0, 10)}</td>
+                  <td style={cellStyle.td}>{formatDateTime(g.endedAt)}</td>
                   <td style={cellStyle.td}>
                     {mode.primary}
                     {mode.variant ? <span style={styles.variant}> › {mode.variant}</span> : null}

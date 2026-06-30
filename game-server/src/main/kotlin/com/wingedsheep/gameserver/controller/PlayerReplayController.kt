@@ -114,6 +114,19 @@ class PlayerReplayController(
     }
 }
 
+/** Summary projection for a stored compact replay, as listed in the player replay browser. */
+data class GameSummary(
+    val gameId: String,
+    val player1Name: String,
+    val player2Name: String,
+    val startedAt: String,
+    val endedAt: String,
+    val winnerName: String?,
+    val snapshotCount: Int,
+    val tournamentName: String? = null,
+    val tournamentRound: Int? = null
+)
+
 /** Shared summary projection for a stored compact replay. */
 fun CompactReplay.toSummary() = GameSummary(
     gameId = gameId,

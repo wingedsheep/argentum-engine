@@ -2157,6 +2157,7 @@
                     "creatureTypes": [
                         "Bird"
                     ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fbc471d-5948-47fc-b7cc-81cc13a4cd15.jpg?1748704082",
                     "triggeredAbilities": [
                         {
                             "id": "ability_1",
@@ -2601,6 +2602,7 @@
                     "creatureTypes": [
                         "Bird"
                     ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fbc471d-5948-47fc-b7cc-81cc13a4cd15.jpg?1748704082",
                     "triggeredAbilities": [
                         {
                             "id": "ability_1",
@@ -2761,6 +2763,7 @@
                     "creatureTypes": [
                         "Bird"
                     ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fbc471d-5948-47fc-b7cc-81cc13a4cd15.jpg?1748704082",
                     "triggeredAbilities": [
                         {
                             "id": "ability_2",
@@ -2927,6 +2930,7 @@
                     "creatureTypes": [
                         "Wizard"
                     ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/8/187fe54c-7d0c-4225-9d46-3affbead897d.jpg?1782725378",
                     "triggeredAbilities": [
                         {
                             "id": "ability_1",
@@ -3999,6 +4003,7 @@
                     "creatureTypes": [
                         "Wizard"
                     ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/8/187fe54c-7d0c-4225-9d46-3affbead897d.jpg?1782725378",
                     "triggeredAbilities": [
                         {
                             "id": "ability_1",
@@ -6681,6 +6686,7 @@
             "creatureTypes": [
                 "Bird"
             ],
+            "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fbc471d-5948-47fc-b7cc-81cc13a4cd15.jpg?1748704082",
             "triggeredAbilities": [
                 {
                     "id": "ability_1",
@@ -8485,6 +8491,7 @@
                     "creatureTypes": [
                         "Wizard"
                     ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/8/187fe54c-7d0c-4225-9d46-3affbead897d.jpg?1782725378",
                     "triggeredAbilities": [
                         {
                             "id": "ability_2",
@@ -9953,6 +9960,7 @@
                     "creatureTypes": [
                         "Wizard"
                     ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/8/187fe54c-7d0c-4225-9d46-3affbead897d.jpg?1782725378",
                     "triggeredAbilities": [
                         {
                             "id": "ability_2",
@@ -11313,6 +11321,7 @@
                     "creatureTypes": [
                         "Wizard"
                     ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/8/187fe54c-7d0c-4225-9d46-3affbead897d.jpg?1782725378",
                     "triggeredAbilities": [
                         {
                             "id": "ability_3",
