@@ -1370,7 +1370,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 
 - `ModalEffect.chooseOne { mode(...) }` / `ModalEffect.chooseN(n) { ... }` — modal effect block.
 - `ModalEffect.chooseOneNotYetChosen(*modes)` — "choose one that hasn't been chosen"; source remembers used modes across the game (Gandalf the Grey).
-- `ChooseActionEffect(choices)` — player picks from a list of effects.
+- `ChooseActionEffect(choices, player = Controller)` — `player` picks from a list of labeled effects; infeasible options (per each `EffectChoice.feasibilityCheck`) are filtered out, and if one remains it auto-runs. `player` may be any `EffectTarget`, including the state-relational `EffectTarget.TargetController` — routing the choice to the controller of the ability's chosen permanent (a "[do X to target permanent] unless its controller [accepts an avoidance]" choice). Combustion Man: "destroy target permanent unless its controller has Combustion Man deal damage to them equal to his power" — `player = TargetController`, with choices `DealDamage(sourcePower(), target = TargetController, damageSource = Self)` and `Destroy(<the permanent>)`.
 - `GrantProtectionFromColor(color, target, duration)` — grant protection from a **fixed** color to a target (no player choice); a thin recipe over `GrantKeyword("PROTECTION_FROM_<COLOR>")`. "{W}: Target creature gains protection from red until end of turn." (Crimson Acolyte).
 - `GrantPlayerProtection(scope = ProtectionScope.Everything, duration = Duration.UntilYourNextTurn, target = Controller)` — grant a **player** protection from a `ProtectionScope` (CR 702.16); the player-level counterpart of the creature protection statics. For a player only the **D**amage and **T**argeting parts of DEBT apply: a protected player can't be the target of, nor be dealt damage by, a source matching the scope. Adds/merges a `PlayerProtectionComponent` (multiple grants stack their scopes); the targeting validator, target enumerator, and `DamageUtils` all consult the shared `PlayerProtectionRules`. `Duration.UntilYourNextTurn` clears it after the untap step of the player's next turn. "You gain protection from everything until your next turn." (The One Ring).
 - `ChooseColorThenEffect(whenChosen)` — pick a color, then run a function of that color.
@@ -3049,6 +3049,16 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   player sacrifices another creature, put a +1/+1 counter on Zodiark"): the detector then fires the trigger
   once per sacrificing player in the batch, regardless of who controls the source, binding
   `triggeringPlayerId` to that player.
+- `YouSacrificeAnother(filter?)` — the **per-permanent** template "whenever you sacrifice **another**
+  permanent" (Mazirek, Kraul Death Priest; Savra; Zhao, Ruthless Admiral). Built with `binding = OTHER`
+  and `EventPattern.PermanentsSacrificedEvent(filter, perPermanent = true)`. Distinct from
+  `YouSacrificeOneOrMore` on **two** axes: (1) *multiplicity* — it fires once for **each** matching
+  permanent sacrificed, even when several are sacrificed simultaneously (CR 603.2c), so sacrificing three
+  permanents fires it three times; `YouSacrificeOneOrMore` (batch) fires once per event. (2) *exclusion* —
+  `OTHER` excludes the source sacrificing itself; a source sacrificed *alongside* other permanents still
+  reacts to those others (fires once per other), but not to itself. The `perPermanent` flag is the general
+  multiplicity switch on `PermanentsSacrificedEvent` — combine it with `binding = ANY` for the "whenever you
+  sacrifice **a** permanent" wording that also counts the source itself.
 - `Sacrificed` — source is sacrificed.
 - `PlusOneCountersPlacedOnYourCreature` — Hardened Scales shape (+1/+1 only).
 - `countersPlacedOn(filter = Creature.youControl(), counterType = Counters.ANY, firstTimeEachTurn = true, binding = ANY)`
@@ -3328,6 +3338,12 @@ staticAbility {
   so two same-controller permanents renamed to the same name can trigger the legend rule (Witness Protection: "named
   Legitimate Businessperson"). `ClientCard.name` and `LegendRuleCheck` both prefer the projected name over the base
   `CardComponent.name` when one is active.
+- `SetName(name, filter)` — a standalone static that overrides the matching permanents' **name** with a fixed string
+  (Layer 3 / TEXT; CR 612 / 613.1c — setting a name is a text-changing effect). Lowers to the same `Modification.SetName`
+  as `TransformPermanent.setName`, exposed by `ProjectedState.getName` and surfaced to the client by
+  `ClientStateTransformer`. The fixed-name half of the "becomes a 1/1 X **named Y**" composite — pair with
+  `TransformPermanent` + `SetBasePowerToughnessStatic` + `LoseAllAbilities` + `GrantActivatedAbility`. Honest Work:
+  "Enchanted creature ... is a Citizen with base power and toughness 1/1 and '{T}: Add {C}' named Humble Merchant."
 - `ConditionalStaticAbility` — static gated by a runtime `Condition`. A conditional wrapping a *multi-effect* ability
   (e.g. `TransformPermanent`) lowers through the plural converter and gates every resulting effect on the condition.
 - `CantBeTurnedFaceUp(filter)` — matching permanents can't be turned face up (Layer 6; projects a
@@ -4053,6 +4069,18 @@ composite abilities).
   last-known power if the source has left the battlefield (CR 112.7a, via `EntityReference.Source`'s
   last-known-information policy). It resolves down to a fixed `WardCost.Life` in the executor, so it
   composes inside `WardCost.Composite` and uses the same pay-or-counter prompt.
+  **Ward—Waterbend `{N}`** (Avatar: The Last Airbender — The Unagi of Kyoshi Island's
+  "Ward—Waterbend {4}") is `KeywordAbility.wardWaterbend("{4}")` → `WardCost.Mana("{4}", waterbend = true)`.
+  It is an ordinary mana ward, but while paying the `{N}` the controller may tap their untapped
+  artifacts and creatures to help — each tapped permanent pays `{1}` of the generic, reusing the
+  same waterbend payment machinery as the activated-ability / spell waterbend cost
+  (`AlternativePaymentHandler.applyWaterbendForAbility`, `AlternativePaymentChoice.waterbendPermanents`).
+  The ward's `SelectManaSourcesDecision` carries the eligible permanents in
+  `waterbendPermanents`, and the player returns the chosen subset in
+  `ManaSourcesSelectedResponse.waterbendPermanents`; the resumer taps them (reducing the generic owed)
+  before paying any remainder with mana sources. Affordability and eligibility reuse
+  `CostEnumerationUtils.findWaterbendPermanents` / `canAffordWithWaterbend`, so it stays single-sourced
+  with the other waterbend surfaces.
 - `Protection(color)` — protection from a single color.
 - `ProtectionFrom(set)` — protection from a set of colors/types.
 - `Protection(ProtectionScope.Supertype("Legendary"))` / `KeywordAbility.protectionFromSupertype("Legendary")` — protection from a supertype, e.g. "protection from legendary creatures" (Tsabo Tavoc). Enforced across targeting, blocking, and combat damage via projected `PROTECTION_FROM_SUPERTYPE_<X>` keywords.
@@ -5967,8 +5995,12 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
 - `SelectFromCollectionEffect(from, into, selectCount?, allowZero?, alwaysPrompt?, restrictions?)` — let a player pick
   from a collection. `restrictions` (`List<SelectionRestriction>`) cap and trim the picks server-side: `OnePerCardType`,
   `OnePerColor(matchControllerPermanentColors?)`, `OnePerCardName`, `OnePerPower`, `TotalManaValueAtMost(max)`,
-  `OnePerBasicLandType`, `ReducedMinimumIfMatches(reducedMinimum, filter, requiredMatches?)`, and
-  `MaxAffordablePayment(manaPerSelected, payer?)`. `OnePerPower` keeps at most one card of each *printed* power
+  `TotalPowerAtMost(max)`, `OnePerBasicLandType`, `ReducedMinimumIfMatches(reducedMinimum, filter, requiredMatches?)`, and
+  `MaxAffordablePayment(manaPerSelected, payer?)`. `TotalPowerAtMost(max)` caps the sum of selected creatures'
+  **projected** power at `max` (a creature with undefined power contributes 0); it is the power analogue of
+  `TotalManaValueAtMost` and surfaces `maxTotalPower` on `SelectCardsDecision` so the UI shows a running "Total power: X / N"
+  and disables over-cap picks while the server trims oversubmits in response order — used for "choose any number of
+  creatures you control with total power N or less, then sacrifice the rest" (Destined Confrontation). `OnePerPower` keeps at most one card of each *printed* power
   (a card with no fixed power — no printed P/T, or a characteristic-defining `*` — can't be kept and bottoms out,
   like a typeless land under `OnePerBasicLandType`); pair it with the `CreatureOrVehicle` filter for "any number of
   creature and/or Vehicle cards with different powers" (Rip, Spawn Hunter). `OnePerBasicLandType` keeps at most one

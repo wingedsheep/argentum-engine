@@ -429,6 +429,11 @@ class LibraryAndZoneContinuationResumer(
             val claimedLandTypes = mutableSetOf<com.wingedsheep.sdk.core.Subtype>()
             val claimedPowers = mutableSetOf<Int>()
             var runningManaValue = 0
+            var runningPower = 0
+            // A card's projected power (after continuous effects), or 0 if undefined. Used by
+            // TotalPowerAtMost — battlefield P/T must read projection (CLAUDE.md).
+            fun projectedPowerOf(cardId: EntityId): Int =
+                state.projectedState.getPower(cardId) ?: 0
             // A card's fixed (printed) power, or null for cards with no fixed power.
             fun fixedPowerOf(cardId: EntityId): Int? =
                 state.getEntity(cardId)
@@ -468,6 +473,9 @@ class LibraryAndZoneContinuationResumer(
                                 ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
                                 ?.manaValue ?: 0
                             runningManaValue + mv <= restriction.max
+                        }
+                        is SelectionRestriction.TotalPowerAtMost -> {
+                            runningPower + projectedPowerOf(cardId) <= restriction.max
                         }
                         is SelectionRestriction.OnePerBasicLandType -> {
                             val types = basicLandTypesOf(cardId)
@@ -513,6 +521,9 @@ class LibraryAndZoneContinuationResumer(
                                 runningManaValue += state.getEntity(cardId)
                                     ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
                                     ?.manaValue ?: 0
+                            }
+                            is SelectionRestriction.TotalPowerAtMost -> {
+                                runningPower += projectedPowerOf(cardId)
                             }
                             is SelectionRestriction.OnePerBasicLandType -> {
                                 claimedLandTypes += basicLandTypesOf(cardId)

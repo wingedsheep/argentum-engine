@@ -255,6 +255,28 @@ data class LoseAllAbilities(
 }
 
 /**
+ * Sets the affected permanent's name to a fixed string, overriding its printed name.
+ * Used for auras like Honest Work: "Enchanted creature ... named Humble Merchant."
+ *
+ * Setting a name is a text-changing effect (CR 612 / 613.1c), so this projects in Layer 3
+ * (TEXT) via [com.wingedsheep.engine.mechanics.layers.Modification.SetName]. The override is
+ * read through `ProjectedState.getName`. Pair with [TransformPermanent], [LoseAllAbilities],
+ * [SetBasePowerToughnessStatic] and [GrantActivatedAbility] to model the full
+ * "becomes a 1/1 X named Y with '...'" composite.
+ *
+ * @property name The fixed name to set (e.g., "Humble Merchant").
+ * @property filter What this ability applies to (typically AttachedCreature for auras).
+ */
+@SerialName("SetName")
+@Serializable
+data class SetName(
+    val name: String,
+    val filter: GroupFilter = GroupFilter.attachedCreature()
+) : StaticAbility {
+    override val description: String = "is named $name"
+}
+
+/**
  * The affected permanent can't be turned face up.
  * Used for Unable to Scream: "As long as enchanted creature is face down, it can't be turned
  * face up." Only meaningful while the affected permanent is face down (a face-up permanent

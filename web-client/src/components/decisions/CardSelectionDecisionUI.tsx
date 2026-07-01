@@ -195,6 +195,13 @@ export function CardSelectionDecision({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decision.maxTotalManaValue, selectedCards, decision.cardInfo, gameState?.cards])
 
+  // TotalPowerAtMost: running sum of selected creatures' (projected) power.
+  const totalPowerSelected = useMemo(() => {
+    if (decision.maxTotalPower == null) return 0
+    return selectedCards.reduce((sum, id) => sum + (powerForCard(id) ?? 0), 0)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [decision.maxTotalPower, selectedCards, decision.cardInfo, gameState?.cards])
+
   /** Check if a card is disabled by an active selection restriction. */
   const isCardDisabled = (cardId: EntityId): boolean => {
     if (selectedCards.includes(cardId)) return false // already selected — can deselect
@@ -210,6 +217,9 @@ export function CardSelectionDecision({
     }
     if (decision.maxTotalManaValue != null) {
       if (totalManaValueSelected + manaValueForCard(cardId) > decision.maxTotalManaValue) return true
+    }
+    if (decision.maxTotalPower != null) {
+      if (totalPowerSelected + (powerForCard(cardId) ?? 0) > decision.maxTotalPower) return true
     }
     if (decision.onePerBasicLandType) {
       const typeLine = decision.cardInfo?.[cardId]?.typeLine ?? gameState?.cards[cardId]?.typeLine ?? ''
@@ -357,6 +367,18 @@ export function CardSelectionDecision({
           }}
         >
           Total mana value: {totalManaValueSelected} / {decision.maxTotalManaValue}
+        </div>
+      )}
+
+      {decision.maxTotalPower != null && (
+        <div
+          style={{
+            margin: '0 0 8px',
+            fontSize: 12,
+            opacity: 0.85,
+          }}
+        >
+          Total power: {totalPowerSelected} / {decision.maxTotalPower}
         </div>
       )}
 

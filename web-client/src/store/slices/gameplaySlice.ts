@@ -73,7 +73,11 @@ export interface GameplaySliceActions {
   submitDamageAssignmentDecision: (assignments: Record<EntityId, number>) => void
   submitCombatResolutionDecision: (edges: ReadonlyArray<{ edgeId: string; amount: number }>) => void
   submitColorDecision: (color: string) => void
-  submitManaSourcesDecision: (selectedSources: readonly EntityId[], autoPay: boolean) => void
+  submitManaSourcesDecision: (
+    selectedSources: readonly EntityId[],
+    autoPay: boolean,
+    waterbendPermanents?: readonly EntityId[],
+  ) => void
   submitCancelDecision: () => void
   submitSplitPilesDecision: (piles: readonly (readonly EntityId[])[]) => void
   keepHand: () => void
@@ -414,7 +418,11 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
     getWebSocket()?.send(createSubmitActionMessage(action))
   },
 
-  submitManaSourcesDecision: (selectedSources: readonly EntityId[], autoPay: boolean) => {
+  submitManaSourcesDecision: (
+    selectedSources: readonly EntityId[],
+    autoPay: boolean,
+    waterbendPermanents: readonly EntityId[] = [],
+  ) => {
     const { pendingDecision, playerId } = get()
     if (!pendingDecision || !playerId) return
 
@@ -429,6 +437,8 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
         decisionId: pendingDecision.id,
         selectedSources: [...selectedSources],
         autoPay,
+        // Artifacts/creatures tapped to pay {1} each via Waterbend (Ward—Waterbend).
+        waterbendPermanents: [...waterbendPermanents],
       },
     }
     getWebSocket()?.send(createSubmitActionMessage(action))

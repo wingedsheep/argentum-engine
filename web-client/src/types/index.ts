@@ -212,6 +212,7 @@ export type {
   ResolutionTargetKind,
   ChooseColorDecision,
   ManaSourceOption,
+  WaterbendPermanentChoice,
   SelectManaSourcesDecision,
   SplitPilesDecision,
   // Set types

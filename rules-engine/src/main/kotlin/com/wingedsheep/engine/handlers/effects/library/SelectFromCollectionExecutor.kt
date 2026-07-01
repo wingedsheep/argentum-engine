@@ -332,6 +332,22 @@ class SelectFromCollectionExecutor(
                     }
                     picked
                 }
+                is SelectionRestriction.TotalPowerAtMost -> {
+                    // Greedy upper bound on the count: pick the lowest projected powers
+                    // first. Any selection of more cards than this is unsatisfiable. Uses
+                    // projected power (CLAUDE.md: battlefield P/T must read projection).
+                    val sortedPowers = eligibleCards
+                        .map { state.projectedState.getPower(it) ?: 0 }
+                        .sorted()
+                    var running = 0
+                    var picked = 0
+                    for (p in sortedPowers) {
+                        if (running + p > restriction.max) break
+                        running += p
+                        picked++
+                    }
+                    picked
+                }
                 is SelectionRestriction.OnePerBasicLandType -> {
                     // One slot per distinct basic land type present among eligible lands.
                     // Typeless lands contribute nothing (they can't be kept).
@@ -434,6 +450,15 @@ class SelectFromCollectionExecutor(
                 .also {
                     require(it.size <= 1) {
                         "SelectFromCollectionEffect has multiple TotalManaValueAtMost restrictions; " +
+                            "compose a single cap instead."
+                    }
+                }
+                .singleOrNull()?.max,
+            maxTotalPower = effect.restrictions
+                .filterIsInstance<SelectionRestriction.TotalPowerAtMost>()
+                .also {
+                    require(it.size <= 1) {
+                        "SelectFromCollectionEffect has multiple TotalPowerAtMost restrictions; " +
                             "compose a single cap instead."
                     }
                 }

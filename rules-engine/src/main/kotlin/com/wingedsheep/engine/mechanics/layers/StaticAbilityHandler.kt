@@ -59,6 +59,7 @@ import com.wingedsheep.sdk.scripting.GrantColor
 import com.wingedsheep.sdk.scripting.GrantChosenColor
 import com.wingedsheep.sdk.scripting.CantBeTurnedFaceUp
 import com.wingedsheep.sdk.scripting.LoseAllAbilities
+import com.wingedsheep.sdk.scripting.SetName
 import com.wingedsheep.sdk.scripting.TransformPermanent
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessDynamicStatic
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
@@ -712,6 +713,13 @@ class StaticAbilityHandler(
             is LoseAllAbilities -> {
                 ContinuousEffectData(
                     modification = Modification.RemoveAllAbilities,
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is SetName -> {
+                // "named X" — Layer 3 (TEXT) name override (CR 612 / 613.1c).
+                ContinuousEffectData(
+                    modification = Modification.SetName(ability.name),
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

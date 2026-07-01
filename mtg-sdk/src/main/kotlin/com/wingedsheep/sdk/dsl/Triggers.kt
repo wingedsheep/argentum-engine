@@ -1596,6 +1596,23 @@ object Triggers {
     )
 
     /**
+     * Whenever you sacrifice another permanent matching the filter.
+     * Per-permanent trigger — fires once for EACH matching permanent sacrificed, even when several
+     * are sacrificed simultaneously (CR 603.2c). "Another" ([TriggerBinding.OTHER]) excludes the
+     * source, so the source sacrificing itself doesn't fire it.
+     *
+     * Distinct from [YouSacrificeOneOrMore] (batch — fires once per event batch). Template:
+     * Mazirek, Kraul Death Priest; Savra, Queen of the Golgari; Zhao, Ruthless Admiral.
+     *
+     * Example: "Whenever you sacrifice another permanent"
+     * → YouSacrificeAnother(GameObjectFilter.Permanent)
+     */
+    fun YouSacrificeAnother(filter: GameObjectFilter = GameObjectFilter.Any): TriggerSpec = TriggerSpec(
+        event = PermanentsSacrificedEvent(filter = filter, perPermanent = true),
+        binding = TriggerBinding.OTHER
+    )
+
+    /**
      * When you sacrifice this permanent.
      * Distinct from [PutIntoGraveyardFromBattlefield] / [Dies], which fire on any
      * battlefield-to-graveyard transition (including destruction).

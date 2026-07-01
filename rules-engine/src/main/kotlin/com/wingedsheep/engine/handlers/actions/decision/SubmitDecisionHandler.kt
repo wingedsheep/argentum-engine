@@ -59,6 +59,9 @@ class SubmitDecisionHandler(
         val hasContinuation = clearedState.peekContinuation() != null
 
         if (hasContinuation) {
+            // Snapshot the stack before resuming so deferred mid-resolution triggers (below) can be
+            // placed beneath the frames this resume leaves in flight, not between them.
+            val preResumeStack = clearedState.continuationStack
             val result = continuationHandler.resume(clearedState, action.response)
 
             // Handle cleanup step completion
@@ -156,9 +159,11 @@ class SubmitDecisionHandler(
             // stack mid-chain) may fire additional triggers (e.g., Valiant) that the
             // success path's trigger-detection at line 108 would catch — but the paused
             // path returns before reaching it, so those triggers would be lost.
-            // Detect them here and queue as a PendingTriggersContinuation BELOW the
-            // topmost continuation so they fire after the in-flight one resolves.
-            // Mirrors PassPriorityHandler.resolveTopOfStack's mid-resolution handling.
+            // Detect them here and queue as a PendingTriggersContinuation BENEATH the frames
+            // this resume left in flight, so they fire only after the whole in-flight resolution
+            // finishes (CR 603.3 — triggers wait for the next time a player would receive
+            // priority), not between two of its own steps. Mirrors
+            // PassPriorityHandler.resolveTopOfStack's mid-resolution handling.
             if (result.isPaused && !result.triggersAlreadyProcessed) {
                 val deferredTriggers = triggerDetector.detectTriggers(result.state, result.events)
                 if (deferredTriggers.isNotEmpty()) {
@@ -166,12 +171,19 @@ class SubmitDecisionHandler(
                         decisionId = "submit-deferred-triggers-${java.util.UUID.randomUUID()}",
                         remainingTriggers = deferredTriggers
                     )
-                    val stack = result.state.continuationStack
-                    val newStack = if (stack.isNotEmpty()) {
-                        stack.dropLast(1) + pending + stack.last()
-                    } else {
-                        listOf(pending)
-                    }
+                    // Frames untouched by this resume (the identity-equal bottom prefix) are outer
+                    // resolutions the triggers must not jump ahead of; everything above is the
+                    // in-flight resolution's remaining frames, which must drain first. Inserting
+                    // pending just below the top frame (the old behavior) fired the trigger between,
+                    // e.g., a ForEach player's keep decision and that same player's sacrifice —
+                    // orphaning the sacrifice.
+                    val postStack = result.state.continuationStack
+                    var untouched = 0
+                    while (untouched < preResumeStack.size && untouched < postStack.size &&
+                        preResumeStack[untouched] === postStack[untouched]
+                    ) untouched++
+                    val newStack = postStack.subList(0, untouched) + pending +
+                        postStack.subList(untouched, postStack.size)
                     return ExecutionResult.paused(
                         result.state.copy(continuationStack = newStack),
                         result.pendingDecision!!,

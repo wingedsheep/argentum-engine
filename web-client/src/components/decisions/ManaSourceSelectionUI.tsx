@@ -1,7 +1,11 @@
 import { useEffect, useMemo } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import type { DecisionSelectionState } from '@/store/slices'
-import type { EntityId, ManaSourceOption, SelectManaSourcesDecision } from '@/types'
+import type {
+  EntityId,
+  ManaSourceOption,
+  SelectManaSourcesDecision,
+} from '@/types'
 import { parseManaCost } from '@/utils/manaCost'
 import { AbilityText } from '../ui/ManaSymbols'
 import { DraggableBanner } from './DraggableBanner'
@@ -17,12 +21,14 @@ const toPip = (color: string): string => COLOR_NAME_TO_PIP[color] ?? color
 /**
  * Greedy check: do the selected sources produce enough mana to cover `costSymbols`?
  * Mirrors the engine's solver well enough for a UI hint — the server still re-solves
- * on submit. Skips X (variable).
+ * on submit. Skips X (variable). `extraGeneric` folds in non-mana payment (each tapped
+ * Waterbend permanent pays {1} generic).
  */
 function selectionCoversCost(
   selectedIds: readonly EntityId[],
   availableSources: readonly ManaSourceOption[],
   costSymbols: readonly string[],
+  extraGeneric = 0,
 ): boolean {
   const sourceById = new Map(availableSources.map((s) => [s.entityId, s]))
   const coloredReqs: Record<string, number> = {}
@@ -33,6 +39,9 @@ function selectionCoversCost(
     if (!isNaN(num)) genericReq += num
     else coloredReqs[s] = (coloredReqs[s] ?? 0) + 1
   }
+
+  // Waterbend taps pay generic only (CR — each tapped artifact/creature pays {1}).
+  genericReq = Math.max(0, genericReq - extraGeneric)
 
   for (const id of selectedIds) {
     const src = sourceById.get(id)
@@ -71,14 +80,25 @@ export function ManaSourceSelectionUI({
   const cancelDecisionSelection = useGameStore((s) => s.cancelDecisionSelection)
   const submitManaSourcesDecision = useGameStore((s) => s.submitManaSourcesDecision)
 
-  // Start decision selection state when this component mounts
+  const waterbendPermanents = decision.waterbendPermanents ?? []
+  const waterbendIds = useMemo(
+    () => new Set(waterbendPermanents.map((p) => p.entityId)),
+    [waterbendPermanents],
+  )
+
+  // Start decision selection state when this component mounts. Both mana sources and
+  // Waterbend-eligible permanents are clickable on the battlefield; they're partitioned on submit.
   useEffect(() => {
+    const validOptions = [
+      ...decision.availableSources.map((s) => s.entityId),
+      ...waterbendPermanents.map((p) => p.entityId),
+    ]
     const selectionState: DecisionSelectionState = {
       decisionId: decision.id,
-      validOptions: decision.availableSources.map((s) => s.entityId),
+      validOptions,
       selectedOptions: [...decision.autoPaySuggestion],
       minSelections: 1,
-      maxSelections: decision.availableSources.length,
+      maxSelections: validOptions.length,
       prompt: decision.prompt,
     }
     startDecisionSelection(selectionState)
@@ -90,6 +110,16 @@ export function ManaSourceSelectionUI({
 
   const selectedCount = decisionSelectionState?.selectedOptions.length ?? 0
   const selectedOptions = decisionSelectionState?.selectedOptions
+
+  // Partition the clicked permanents: mana sources vs Waterbend taps (each pays {1} generic).
+  const selectedWaterbend = useMemo(
+    () => (selectedOptions ?? []).filter((id) => waterbendIds.has(id)),
+    [selectedOptions, waterbendIds],
+  )
+  const selectedManaSources = useMemo(
+    () => (selectedOptions ?? []).filter((id) => !waterbendIds.has(id)),
+    [selectedOptions, waterbendIds],
+  )
 
   const sacrificedSources = useMemo(() => {
     if (!selectedOptions) return []
@@ -106,11 +136,12 @@ export function ManaSourceSelectionUI({
   const isSelectionSufficient = useMemo(
     () =>
       selectionCoversCost(
-        selectedOptions ?? [],
+        selectedManaSources,
         decision.availableSources,
         costSymbols,
+        selectedWaterbend.length,
       ),
-    [selectedOptions, decision.availableSources, costSymbols],
+    [selectedManaSources, selectedWaterbend, decision.availableSources, costSymbols],
   )
 
   const handleAutoPay = () => {
@@ -120,7 +151,7 @@ export function ManaSourceSelectionUI({
 
   const handleConfirm = () => {
     if (decisionSelectionState && isSelectionSufficient) {
-      submitManaSourcesDecision(decisionSelectionState.selectedOptions, false)
+      submitManaSourcesDecision(selectedManaSources, false, selectedWaterbend)
       cancelDecisionSelection()
     }
   }
@@ -145,6 +176,17 @@ export function ManaSourceSelectionUI({
           ? `${selectedCount} source${selectedCount !== 1 ? 's' : ''} selected`
           : 'Click lands to select'}
       </div>
+      {waterbendPermanents.length > 0 && (
+        <div className={styles.hint}>
+          <AbilityText
+            text="Waterbend: tap artifacts/creatures you control to pay {1} each."
+            size={12}
+          />
+          {selectedWaterbend.length > 0 && (
+            <div>{selectedWaterbend.length} tapped for Waterbend</div>
+          )}
+        </div>
+      )}
       {!isSelectionSufficient && (
         <div className={styles.effectHint}>
           Not enough mana selected

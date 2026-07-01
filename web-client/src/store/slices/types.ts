@@ -846,7 +846,11 @@ export type GameStore = {
   submitDamageAssignmentDecision: (assignments: Record<EntityId, number>) => void
   submitCombatResolutionDecision: (edges: ReadonlyArray<{ edgeId: string; amount: number }>) => void
   submitColorDecision: (color: string) => void
-  submitManaSourcesDecision: (selectedSources: readonly EntityId[], autoPay: boolean) => void
+  submitManaSourcesDecision: (
+    selectedSources: readonly EntityId[],
+    autoPay: boolean,
+    waterbendPermanents?: readonly EntityId[],
+  ) => void
   submitCancelDecision: () => void
   submitSplitPilesDecision: (piles: readonly (readonly EntityId[])[]) => void
   keepHand: () => void

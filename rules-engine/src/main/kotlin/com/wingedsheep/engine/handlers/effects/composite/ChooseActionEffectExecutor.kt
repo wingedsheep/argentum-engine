@@ -38,8 +38,11 @@ class ChooseActionEffectExecutor(
         effect: ChooseActionEffect,
         context: EffectContext
     ): EffectResult {
-        // Resolve who makes the choice
-        val choosingPlayerId = context.resolvePlayerTarget(effect.player)
+        // Resolve who makes the choice. State-aware so relational references such as
+        // EffectTarget.TargetController (the controller of the chosen permanent) resolve — used by
+        // "[do X to a permanent] unless its controller [accepts an avoidance]" choices routed to the
+        // targeted permanent's controller rather than the ability's controller.
+        val choosingPlayerId = context.resolvePlayerTarget(effect.player, state)
             ?: return EffectResult.error(state, "Could not resolve player for ChooseActionEffect")
 
         // Filter to feasible choices

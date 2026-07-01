@@ -26,6 +26,11 @@ import com.wingedsheep.sdk.model.EntityId
  *   (and `then`/`otherwise` branches) must see the collections the action produced.
  *
  * Unknown frame types are left untouched (they don't read pipeline storage).
+ *
+ * The consumer is always the top of the continuation stack here: a deferred
+ * [PendingTriggersContinuation] queued by a mid-resolution trigger is inserted *beneath* the
+ * frames of the in-flight resolution (see `SubmitDecisionHandler`), so it never sits between a
+ * producer and its consumer.
  */
 fun exposeCollectionsToNextFrame(
     state: GameState,

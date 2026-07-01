@@ -291,6 +291,9 @@ internal class EffectApplicator(
                     values.keywords.clear()
                     values.lostAllAbilities = true
                 }
+                is Modification.SetName -> {
+                    values.name = mod.name
+                }
                 is Modification.NoOp -> {
                     // No-op: effect doesn't modify projected state
                 }

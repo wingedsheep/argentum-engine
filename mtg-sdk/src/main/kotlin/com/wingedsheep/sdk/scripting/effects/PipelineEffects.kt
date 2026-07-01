@@ -513,6 +513,23 @@ sealed interface SelectionRestriction {
     }
 
     /**
+     * The sum of selected creatures' **projected** power must not exceed [max]. Power is
+     * read from projected state (CR 613-layer P/T after all continuous effects), not the
+     * printed value, so a pumped or shrunk creature counts at its current power. A creature
+     * whose power is undefined (`*` with no battlefield value) contributes 0. Used for
+     * "any number of creatures … with total power N or less" wording (Destined Confrontation).
+     *
+     * The executor enforces this server-side: any selection whose running total exceeds
+     * [max] has cards trimmed (in response order) until the cap is met. Mirrors
+     * [TotalManaValueAtMost] but over power instead of mana value.
+     */
+    @SerialName("TotalPowerAtMost")
+    @Serializable
+    data class TotalPowerAtMost(val max: Int) : SelectionRestriction {
+        override val description: String = "with total power $max or less"
+    }
+
+    /**
      * At most one land of each basic land type (Plains/Island/Swamp/Mountain/Forest)
      * may be selected. A selected land claims *every* basic land type it has, so a dual
      * land that is both a Plains and an Island consumes both slots (Global Ruin ruling).

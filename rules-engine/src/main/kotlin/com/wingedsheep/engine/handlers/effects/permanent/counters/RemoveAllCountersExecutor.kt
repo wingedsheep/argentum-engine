@@ -25,7 +25,11 @@ class RemoveAllCountersExecutor : EffectExecutor<RemoveAllCountersEffect> {
         effect: RemoveAllCountersEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target)
+        // Use the state-aware overload so relational targets (EnchantedCreature / EquippedCreature /
+        // EnchantedPermanent, resolved via the source's AttachedToComponent) work — e.g. an Aura's
+        // ETB "remove all counters from enchanted creature" (Honest Work). The stateless overload
+        // can't resolve attachment references and would silently no-op.
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.success(state, emptyList())
 
         val targetEntity = state.getEntity(targetId)

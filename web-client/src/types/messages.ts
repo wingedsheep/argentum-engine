@@ -357,6 +357,11 @@ export interface SelectCardsDecision extends PendingDecisionBase {
    * UI tracks the running total and disables cards whose mana value would push it over.
    */
   readonly maxTotalManaValue?: number | null
+  /**
+   * Maximum total (projected) power across selected creatures (Destined Confrontation). When
+   * set, the UI tracks the running total and disables creatures whose power would push it over.
+   */
+  readonly maxTotalPower?: number | null
   /** Conditional lower minimums for choices like "select two unless one matches this subset". */
   readonly conditionalMinimums?: readonly ConditionalSelectionMinimum[]
 }
@@ -548,6 +553,16 @@ export interface ManaSourceOption {
 }
 
 /**
+ * An untapped artifact or creature that can be tapped to pay {1} of a Waterbend cost
+ * (Avatar-set alternative payment: tap artifacts/creatures you control, each paying {1}).
+ */
+export interface WaterbendPermanentChoice {
+  readonly entityId: EntityId
+  readonly name: string
+  readonly isCreature: boolean
+}
+
+/**
  * Player must select mana sources to pay a cost.
  * Includes an "Auto Pay" shortcut.
  */
@@ -557,6 +572,11 @@ export interface SelectManaSourcesDecision extends PendingDecisionBase {
   readonly requiredCost: string
   readonly autoPaySuggestion: readonly EntityId[]
   readonly canDecline?: boolean
+  /**
+   * Untapped artifacts/creatures that may be tapped to pay {1} each toward the cost via
+   * Waterbend (e.g. Ward—Waterbend). Empty for ordinary mana-only costs.
+   */
+  readonly waterbendPermanents?: readonly WaterbendPermanentChoice[]
 }
 
 /**
