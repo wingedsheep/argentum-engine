@@ -20,6 +20,7 @@ import { buildJoinUrl } from '@/utils/joinLink'
 import { labelForFormat } from '@/utils/deckLegality'
 import { useAuthStore } from '@/store/authStore'
 import { AuthWidget } from '@/components/auth/AuthWidget'
+import { LoginModal } from '@/components/auth/LoginModal'
 import { DeckMigrationPrompt } from '@/components/auth/DeckMigrationPrompt'
 import styles from './GameUI.module.css'
 
@@ -126,6 +127,7 @@ function ConnectionOverlay({
   const [playerName, setPlayerName] = useState(() => localStorage.getItem('argentum-player-name') || '')
 
   const [nameConfirmed, setNameConfirmed] = useState(() => !!localStorage.getItem('argentum-player-name'))
+  const [loginOpen, setLoginOpen] = useState(false)
   const [showReplays, setShowReplays] = useState(false)
   const [publicLobbies, setPublicLobbies] = useState<PublicLobbyEntry[]>([])
   const [publicLobbiesError, setPublicLobbiesError] = useState<string | null>(null)
@@ -338,6 +340,20 @@ function ConnectionOverlay({
               >
                 Continue
               </button>
+              {accountsEnabled && authStatus !== 'authenticated' && (
+                <p className={styles.accountNudge}>
+                  Playing as a guest.{' '}
+                  <button
+                    type="button"
+                    onClick={() => setLoginOpen(true)}
+                    className={styles.accountNudgeButton}
+                  >
+                    Create a free account
+                  </button>{' '}
+                  — one magic link, no password — to save decks across devices, track your stats, and
+                  rewatch your games.
+                </p>
+              )}
             </div>
           )}
 
@@ -509,6 +525,7 @@ function ConnectionOverlay({
           Fan-made project. Not affiliated with, endorsed, or sponsored by Wizards of the Coast. Magic: The Gathering is © Wizards of the Coast LLC.
         </span>
       </div>
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
     </div>
   )
 }
