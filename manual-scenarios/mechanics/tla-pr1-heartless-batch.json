@@ -8,12 +8,17 @@
       "Iroh, Tea Master",
       "White Lotus Tile",
       "Earthen Ally",
-      "Secret Tunnel"
+      "Secret Tunnel",
+      "Abigale, Eloquent First-Year"
     ],
     "battlefield": [
+      {"name": "Island"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
       {"name": "Swamp"},
       {"name": "Mountain"},
       {"name": "Plains"},
+      {"name": "Forest"},
       {"name": "Forest"}
     ],
     "graveyard": [],
@@ -37,5 +42,6 @@
   "player1StopAtSteps": [],
   "player2StopAtSteps": [],
   "player1OpponentStopAtSteps": [],
-  "player2OpponentStopAtSteps": []
+  "player2OpponentStopAtSteps": [],
+  "mode": "SELF"
 }
