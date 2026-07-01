@@ -160,7 +160,8 @@
                     },
                     "revealed": true
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         }
     },
@@ -225,7 +226,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }

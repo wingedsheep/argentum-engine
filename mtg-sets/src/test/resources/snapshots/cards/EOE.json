@@ -7160,7 +7160,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -8570,7 +8571,8 @@
                                             "placement": "Tapped"
                                         }
                                     },
-                                    "ShuffleLibrary"
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
                                 ]
                             }
                         ]
@@ -13079,7 +13081,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     },
                     "description": "Search your library for an artifact card, reveal it, put it into your hand, then shuffle"
@@ -13141,7 +13144,8 @@
                                         },
                                         "revealed": true
                                     },
-                                    "ShuffleLibrary"
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
                                 ]
                             },
                             {
@@ -14894,7 +14898,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "descriptionOverride": "When this creature enters, search your library for a basic Plains card or a creature card with mana value 1 or less, reveal it, put it into your hand, then shuffle."
@@ -17387,7 +17392,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "timing": "SorcerySpeed",
@@ -17976,7 +17982,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "descriptionOverride": "When The Seriema enters, search your library for a legendary creature card, reveal it, put it into your hand, then shuffle."

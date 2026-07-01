@@ -3813,7 +3813,8 @@
                                             "placement": "Tapped"
                                         }
                                     },
-                                    "ShuffleLibrary"
+                                    "ShuffleLibrary",
+                                    "EmitLibrarySearchedEvent"
                                 ]
                             }
                         },
@@ -3872,7 +3873,8 @@
                                                 "placement": "Tapped"
                                             }
                                         },
-                                        "ShuffleLibrary"
+                                        "ShuffleLibrary",
+                                        "EmitLibrarySearchedEvent"
                                     ]
                                 }
                             }
@@ -3981,7 +3983,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "activateFromZone": "Graveyard"
@@ -4482,7 +4485,8 @@
                                     "zone": "Battlefield"
                                 }
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     },
                     "description": "+ {1} — Search your library for a basic land card or a Desert card, put it onto the battlefield, then shuffle.",
@@ -8810,7 +8814,8 @@
                                     "zone": "Library",
                                     "placement": "Top"
                                 }
-                            }
+                            },
+                            "EmitLibrarySearchedEvent"
                         ]
                     },
                     "description": "+ {2} — Search your library for a card, then shuffle and put that card on top.",
@@ -10870,7 +10875,8 @@
                                     "zone": "Graveyard"
                                 }
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     },
                     "description": "+ {1} — Search your library for a card, put it into your graveyard, then shuffle.",
@@ -11572,7 +11578,8 @@
                         "placement": "Tapped"
                     }
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         }
     },
@@ -13166,7 +13173,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -16848,7 +16856,8 @@
                                     "zone": "Hand"
                                 }
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 },
@@ -17309,7 +17318,8 @@
                                     "placement": "Top"
                                 },
                                 "revealed": true
-                            }
+                            },
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }
@@ -17897,7 +17907,8 @@
                                     },
                                     "revealed": true
                                 },
-                                "ShuffleLibrary"
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
                             ]
                         },
                         {

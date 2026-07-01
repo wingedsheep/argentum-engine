@@ -76,6 +76,7 @@ enum class TriggerCategory {
     SCRIED,
     SURVEILED,
     MANIFESTED_DREAD,
+    SEARCH_LIBRARY,
     BECAME_SADDLED,
     BECOMES_ATTACHED,
     SAGA_CHAPTER_RESOLVED,
@@ -249,6 +250,7 @@ class TriggerIndex(
                 // finds it; the matcher confirms the event is a scry or a surveil.
                 is SdkGameEvent.ScriedOrSurveiledEvent -> SCRIED_OR_SURVEILED_LIST
                 is SdkGameEvent.ManifestedDreadEvent -> MANIFESTED_DREAD_LIST
+                is SdkGameEvent.SearchLibraryEvent -> SEARCH_LIBRARY_LIST
                 is SdkGameEvent.BecameSaddledEvent -> BECAME_SADDLED_LIST
                 is SdkGameEvent.BecomesAttachedEvent -> BECOMES_ATTACHED_LIST
                 is SdkGameEvent.SagaChapterResolvedEvent -> SAGA_CHAPTER_RESOLVED_LIST
@@ -290,6 +292,7 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.ScriedEvent -> SCRIED_LIST
             is com.wingedsheep.engine.core.SurveiledEvent -> SURVEILED_LIST
             is com.wingedsheep.engine.core.ManifestedDreadEvent -> MANIFESTED_DREAD_LIST
+            is com.wingedsheep.engine.core.LibrarySearchedEvent -> SEARCH_LIBRARY_LIST
             is com.wingedsheep.engine.core.BecameSaddledEvent -> BECAME_SADDLED_LIST
             is com.wingedsheep.engine.core.PermanentAttachedEvent -> BECOMES_ATTACHED_LIST
             is com.wingedsheep.engine.core.SagaChapterResolvedEvent -> SAGA_CHAPTER_RESOLVED_LIST
@@ -324,6 +327,7 @@ class TriggerIndex(
         private val SURVEILED_LIST = listOf(TriggerCategory.SURVEILED)
         private val SCRIED_OR_SURVEILED_LIST = listOf(TriggerCategory.SCRIED, TriggerCategory.SURVEILED)
         private val MANIFESTED_DREAD_LIST = listOf(TriggerCategory.MANIFESTED_DREAD)
+        private val SEARCH_LIBRARY_LIST = listOf(TriggerCategory.SEARCH_LIBRARY)
         private val BECAME_SADDLED_LIST = listOf(TriggerCategory.BECAME_SADDLED)
         private val BECOMES_ATTACHED_LIST = listOf(TriggerCategory.BECOMES_ATTACHED)
         private val SAGA_CHAPTER_RESOLVED_LIST = listOf(TriggerCategory.SAGA_CHAPTER_RESOLVED)

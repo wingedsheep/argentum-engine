@@ -1084,7 +1084,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }
@@ -1909,7 +1910,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -4002,7 +4004,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }
@@ -5641,7 +5644,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }
@@ -6138,7 +6142,8 @@
                         "placement": "Tapped"
                     }
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         }
     },
@@ -6667,7 +6672,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -9726,7 +9732,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }
@@ -11508,7 +11515,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -12967,7 +12975,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }
@@ -17216,7 +17225,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "restrictions": [
@@ -17295,7 +17305,8 @@
                         },
                         "revealed": true
                     },
-                    "ShuffleLibrary"
+                    "ShuffleLibrary",
+                    "EmitLibrarySearchedEvent"
                 ]
             }
         }
@@ -17554,7 +17565,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -17658,7 +17670,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }
@@ -17969,7 +17982,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }

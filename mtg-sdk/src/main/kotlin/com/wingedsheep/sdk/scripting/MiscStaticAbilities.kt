@@ -718,6 +718,21 @@ data class UntapFilteredDuringOtherUntapSteps(
 }
 
 /**
+ * Untap only the source permanent itself during each other player's untap step.
+ * Used for Bender's Waterskin ("Untap this artifact during each other player's untap step")
+ * and similar self-scoped untap permanents.
+ *
+ * The engine checks for this static ability during the untap step. When the active player is not
+ * the controller of a permanent with this ability, only that single permanent untaps — unlike
+ * [UntapDuringOtherUntapSteps], which untaps every permanent its controller controls.
+ */
+@SerialName("UntapSelfDuringOtherUntapSteps")
+@Serializable
+data object UntapSelfDuringOtherUntapSteps : StaticAbility {
+    override val description: String = "Untap this permanent during each other player's untap step"
+}
+
+/**
  * Caps how many permanents matching [filter] a player may untap during their own untap step
  * (CR 502.3 — "effects can keep one or more of a player's permanents from untapping"). A global
  * restriction: it applies to every player's untap step, regardless of who controls the source.

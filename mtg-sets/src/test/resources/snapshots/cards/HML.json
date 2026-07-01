@@ -175,7 +175,8 @@
                     },
                     "revealed": true
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         }
     },

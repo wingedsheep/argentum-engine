@@ -2223,7 +2223,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "timing": "SorcerySpeed"

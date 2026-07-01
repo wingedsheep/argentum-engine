@@ -2266,7 +2266,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 {
@@ -4548,7 +4549,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -6730,7 +6732,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             },
@@ -9699,7 +9702,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -11603,7 +11607,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 {
@@ -14219,7 +14224,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }
@@ -16284,7 +16290,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             },
@@ -21245,7 +21252,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             },
@@ -21298,7 +21306,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }

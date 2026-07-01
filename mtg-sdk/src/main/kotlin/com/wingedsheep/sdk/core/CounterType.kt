@@ -60,7 +60,8 @@ enum class CounterType {
     PAGE,
     REV,
     DOOM,
-    POSSESSION
+    POSSESSION,
+    FIRE
 }
 
 /**
@@ -193,6 +194,15 @@ object Counters {
      * leaves behind. No inherent rule.
      */
     const val POSSESSION = "possession"
+
+    /**
+     * Fire counter (TLA — War Balloon; later Fated Firepower / "Fated" cards). Passive named
+     * counter with no inherent rule of its own — the card referencing it reads the count (e.g.
+     * "As long as this Vehicle has three or more fire counters on it, it's an artifact creature")
+     * via `Conditions.SourceCounterCountAtLeast(...)` / `DynamicAmounts.countersOnSelf(...)`.
+     * NOT a keyword counter, so it is intentionally absent from `StateProjector.KEYWORD_COUNTER_MAP`.
+     */
+    const val FIRE = "fire"
 
     /**
      * Wildcard sentinel for triggers/events that fire on counters of *any* type, e.g.

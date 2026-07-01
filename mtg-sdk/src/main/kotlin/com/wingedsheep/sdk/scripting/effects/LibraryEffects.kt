@@ -103,6 +103,31 @@ data class EmitManifestedDreadEventEffect(
     override val description: String = ""
 }
 
+/**
+ * Emit a `LibrarySearchedEvent` after a library-search pipeline finishes resolving — the search
+ * twin of [EmitScriedEventEffect]. Appended internally by
+ * [com.wingedsheep.sdk.dsl.LibraryPatterns.searchLibrary] /
+ * [com.wingedsheep.sdk.dsl.LibraryPatterns.searchMultipleZones] /
+ * [com.wingedsheep.sdk.dsl.LibraryPatterns.eachPlayerSearchesLibrary] so "Whenever a player
+ * searches their library" triggers ([com.wingedsheep.sdk.dsl.Triggers.WheneverYouSearchYourLibrary],
+ * [com.wingedsheep.sdk.dsl.Triggers.WheneverAnOpponentSearchesTheirLibrary]) fire exactly once per
+ * search (CR 701.23), after the found cards have moved and the library has shuffled.
+ *
+ * The searching player is the effect's controller at resolution time — for a per-player
+ * `ForEachPlayer` search (each player searches their own library) that controller is rebound to
+ * each iterated player, so the event carries the correct searcher. Searching is the act of looking
+ * through the zone (CR 701.23a) and finding a card is not required (CR 701.23b), so the event still
+ * fires when no card was found.
+ *
+ * Card authors should not use this directly; it is wired into the search primitives.
+ */
+@SerialName("EmitLibrarySearchedEvent")
+@Serializable
+data object EmitLibrarySearchedEventEffect : Effect {
+    // Intentionally blank: this is an internal pipeline tail with no player-facing text.
+    override val description: String = ""
+}
+
 
 /**
  * "Scry [count]" (CR 701.18) as a single compact node.

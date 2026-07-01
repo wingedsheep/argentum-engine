@@ -125,7 +125,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "descriptionOverride": "When this artifact enters, search your library for a basic Plains, Swamp, or Forest card, reveal it, put it into your hand, then shuffle."
@@ -4497,7 +4498,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "descriptionOverride": "{2}, {T}: Search your library for a card named Dragonstorm Globe or Boulderborn Dragon, reveal it, put it into your hand, then shuffle."
@@ -4910,7 +4912,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     },
                     "otherwise": {
@@ -4947,7 +4950,8 @@
                                     "placement": "Top"
                                 },
                                 "revealed": true
-                            }
+                            },
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 },
@@ -5009,7 +5013,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "descriptionOverride": "When this enchantment enters, search your library for up to two basic land cards, put them onto the battlefield tapped, then shuffle."
@@ -7808,7 +7813,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "descriptionOverride": "search your library for a basic Island, Mountain, or Plains card, reveal it, put it into your hand, then shuffle."
@@ -9063,6 +9069,7 @@
                                 "zone": "Graveyard"
                             }
                         },
+                        "EmitLibrarySearchedEvent",
                         {
                             "type": "Composite",
                             "effects": [
@@ -9094,7 +9101,8 @@
                                         "type": "ToZone",
                                         "zone": "Graveyard"
                                     }
-                                }
+                                },
+                                "EmitLibrarySearchedEvent"
                             ]
                         },
                         {
@@ -9129,7 +9137,8 @@
                                         "zone": "Graveyard"
                                     }
                                 },
-                                "ShuffleLibrary"
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
                             ]
                         }
                     ]
@@ -9288,7 +9297,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "descriptionOverride": "Search your library for a Dragon card, reveal it, put it into your hand, then shuffle."
@@ -9704,7 +9714,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "descriptionOverride": "When this artifact enters, search your library for a basic Mountain, Plains, or Swamp card, reveal it, put it into your hand, then shuffle."
@@ -10564,7 +10575,8 @@
                         "zone": "Battlefield"
                     }
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         }
     },
@@ -12710,7 +12722,8 @@
                         "placement": "Tapped"
                     }
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         }
     },
@@ -13383,7 +13396,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -15814,7 +15828,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "descriptionOverride": "When this artifact enters, search your library for a basic Swamp, Forest, or Island card, reveal it, put it into your hand, then shuffle."
@@ -16395,7 +16410,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -16572,7 +16588,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "descriptionOverride": "search your library for a basic Forest, Island, or Mountain card, reveal it, put it into your hand, then shuffle."

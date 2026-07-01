@@ -107,7 +107,8 @@
                                 "placement": "Top"
                             },
                             "revealed": true
-                        }
+                        },
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 "optional": true

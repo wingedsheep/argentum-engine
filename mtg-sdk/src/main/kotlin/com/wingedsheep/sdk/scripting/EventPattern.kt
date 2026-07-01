@@ -482,14 +482,22 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     // =========================================================================
 
     /**
-     * When a player would search their library.
+     * Whenever [player] searches their library (CR 701.23). Fires once per search, after the found
+     * cards have moved and the library has shuffled. Searching is the act of looking through the
+     * zone (CR 701.23a) and finding a card is not required (CR 701.23b), so the trigger fires even
+     * when no card was found. Scope it with [Player.EachOpponent] for "Whenever an opponent searches
+     * their library" (Wan Shi Tong, Librarian) or [Player.You] for "Whenever you search your library".
+     *
+     * Emitted automatically by the search primitives ([com.wingedsheep.sdk.dsl.LibraryPatterns
+     * .searchLibrary] / `searchMultipleZones` / `eachPlayerSearchesLibrary`) — every tutor, fetch,
+     * and basic-land search fires it; no card has to opt in.
      */
     @SerialName("SearchLibraryEvent")
     @Serializable
     data class SearchLibraryEvent(
         val player: Player = Player.You
     ) : EventPattern {
-        override val description: String = "${player.description} would search a library"
+        override val description: String = "${player.description} searches their library"
     }
 
     // =========================================================================

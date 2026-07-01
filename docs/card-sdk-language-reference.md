@@ -2963,6 +2963,20 @@ Triggers.youCastSpell(
 - `WheneverYouScryOrSurveil` — the combined look-at-top trigger; fires once per scry **and**
   once per surveil (Matoya, Archon Elder).
 
+### Library search (CR 701.23)
+
+- `WheneverYouSearchYourLibrary` / `WheneverAnOpponentSearchesTheirLibrary` — fire once per
+  library search (CR 701.23), after the found cards have moved and the library has shuffled.
+  Backed by the `SearchLibraryEvent(player)` pattern + the engine `LibrarySearchedEvent`, emitted
+  automatically by every search primitive (`Patterns.Library.searchLibrary` / `searchMultipleZones`
+  / `eachPlayerSearchesLibrary`) via the internal `EmitLibrarySearchedEventEffect` tail — so every
+  tutor, fetch, and basic-land search drives it; no card has to opt in. Under a `ForEachPlayer`
+  search the tail's controller is rebound to each iterated player, so the event names the correct
+  searcher. Since searching is the act of looking through the zone (CR 701.23a) and finding a card is
+  not required (CR 701.23b), the trigger fires even when no card was found. The opponent-scoped
+  variant is used by **Wan Shi Tong, Librarian** ("Whenever an opponent searches their library, put a
+  +1/+1 counter on him and draw a card").
+
 ### Manifest Dread
 
 - `WheneverYouManifestDread` — fires once per manifest-dread resolution (CR 701.60), after the
@@ -3363,6 +3377,14 @@ staticAbility {
     the natural untap step (callers pass projected state); explicit "untap target permanent" effects and
     other players' untap steps (Seedborn Muse) pass `projected = null` and never apply it — matching the
     "during **your** untap step" wording. Stacks after the stun-counter replacement (CR 122.1d, checked first).
+- Untap-during-other-players'-untap-steps statics (read by `BeginningPhaseManager.performUntapStep`,
+  which untaps the chosen permanents for each non-active player after the active player's normal untap):
+  - `UntapDuringOtherUntapSteps` — untap **all** permanents you control (Seedborn Muse).
+  - `UntapFilteredDuringOtherUntapSteps(filter)` — untap each permanent you control matching `filter`
+    (Ivorytusk Fortress).
+  - `UntapSelfDuringOtherUntapSteps` — untap **only the source permanent itself** ("Untap this artifact
+    during each other player's untap step" — Bender's Waterskin). Guarded on the source still being tapped,
+    so it never double-untaps / double-consumes a stun counter alongside the broad/filtered variants.
 - `UntapLimitPerStep(filter, max)` — global untap-count cap, "Players can't untap more than `max` `filter`
   during their untap steps" (Damping Field — `filter = GameObjectFilter.Artifact`, `max = 1`). Read by
   `BeginningPhaseManager` for **every** player's untap step regardless of who controls the source: when a
@@ -4109,6 +4131,21 @@ composite abilities).
   with [ManaExpiry](#manaexpiry).`END_OF_COMBAT` and discarded by `CombatManager.endCombat`. It is a normal
   triggered ability (not a mana ability): it uses the stack and can be responded to. `n` may be any fixed value;
   "firebending X (X = its power)" is not yet expressible by this helper (the keyword carries only a fixed Int).
+  To **grant** firebending until end of turn ("target creature gains firebending N until end of turn", Fire Nation
+  Palace), use `Effects.GrantFirebending(n, target, duration = EndOfTurn)`. Because firebending has no engine
+  handler, the grant reuses the *exact* attack trigger the printed keyword installs (`firebendingAttackTrigger(n)`,
+  shared with `firebending(n)`) via `GrantTriggeredAbilityEffect`, so the affected creature adds the same N {R}
+  combat-duration mana on attack while the grant is live. The grant rides `GameState.grantedTriggeredAbilities`
+  and is dropped in the cleanup step (EndOfTurn).
+  For a **conditional static** "this creature has firebending N as long as `<condition>`" (Fire Nation Cadets —
+  "… as long as there's a Lesson card in your graveyard"), wrap a *self-scoped* `GrantTriggeredAbility` in a
+  `ConditionalStaticAbility`: `staticAbility { ability = ConditionalStaticAbility(GrantTriggeredAbility(
+  firebendingAttackTrigger(n), filter = GroupFilter.source()), Conditions.GraveyardContainsSubtype(Subtype.LESSON)) }`.
+  `GroupFilter.source()` (i.e. `Scope.Self`) grants the firebending attack trigger to the source itself; the
+  `TriggerAbilityResolver` re-evaluates the gating condition each time triggers are computed, so the trigger
+  toggles live — it fires on attack while the condition holds and not while it's false. (Self-scoped
+  `GrantTriggeredAbility`, plain or conditional, is consulted by `TriggerAbilityResolver.getSelfGrantedTriggeredAbilities`
+  alongside the existing battlefield-scope/lord and attached-aura grant paths.)
 - `Increment` — "Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power
   or toughness, put a +1/+1 counter on this creature." (Secrets of Strixhaven). Display-only; wire the behavior with
   the `card { increment() }` builder helper, which adds the `KeywordAbility.Increment` display marker (surfacing
@@ -5836,6 +5873,10 @@ substitution.
   entering / fully unlocking a Room) each accumulate one and whose dies trigger reads the total counter count via
   `DynamicAmount.ContextProperty(ContextPropertyKey.LAST_KNOWN_TOTAL_COUNTER_COUNT)` to size the X/X Spirit token it
   leaves behind — another pure passive counter with no inherent rule.)
+  `fire` (`Counters.FIRE`): TLA — War Balloon (a `{1}` ability accumulates one; a `ConditionalStaticAbility`
+  gated on `Conditions.SourceCounterCountAtLeast(Counters.FIRE, 3)` grants `GrantCardType("CREATURE")` so the
+  Vehicle is an artifact creature at 3+); reused by later Fated/Fated-Firepower cards — another pure passive
+  counter with no inherent rule.
 - `stun` — CR 122.1d, a built-in replacement: "If a permanent with a stun counter on it would become untapped,
   instead remove a stun counter from it." Engine-wired through `untapOrConsumeStun` (`rules-engine/core/UntapHelpers.kt`),
   which is invoked from the untap step (`BeginningPhaseManager`), from `TapUntapExecutor`'s untap branch, and from the

@@ -1199,6 +1199,7 @@ is PermanentsSacrificedEvent -> {
             is ScriedEvent,
             is SurveiledEvent,
             is ManifestedDreadEvent,
+            is LibrarySearchedEvent,
             is TurnedFaceDownEvent,
             is CreatureTypeChangedEvent,
             is BecomesTargetEvent,

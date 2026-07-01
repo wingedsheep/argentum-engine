@@ -527,7 +527,10 @@ class TriggerMatcher(
                 event is CardsDiscardedEvent &&
                     matchingDiscardCount(trigger, event, sourceId, controllerId, state) > 0
             }
-            is EventPattern.SearchLibraryEvent -> false
+            is EventPattern.SearchLibraryEvent -> {
+                event is com.wingedsheep.engine.core.LibrarySearchedEvent &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId)
+            }
             // ExtraTurnEvent is only used as a replacement effect filter, not a trigger
             is EventPattern.ExtraTurnEvent -> false
             // Batching trigger — handled in detectLibraryToGraveyardBatchTriggers

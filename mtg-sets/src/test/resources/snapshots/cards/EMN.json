@@ -338,7 +338,8 @@
                         "zone": "Battlefield"
                     }
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         },
         "additionalCosts": [

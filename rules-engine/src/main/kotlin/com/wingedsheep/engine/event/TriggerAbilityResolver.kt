@@ -72,6 +72,11 @@ class TriggerAbilityResolver(
         // (e.g., Hunter Sliver granting provoke to all Slivers)
         val staticGrantedAbilities = getStaticGrantedTriggeredAbilities(entityId, state)
         val attachedGrantedAbilities = getAttachedGrantedTriggeredAbilities(entityId, state)
+        // "This creature has '<triggered ability>' [as long as …]" — a Scope.Self GrantTriggeredAbility
+        // on the permanent's own definition, optionally gated by a ConditionalStaticAbility.
+        val selfGrantedAbilities =
+            if (state.projectedState.hasLostAllAbilities(entityId)) emptyList()
+            else getSelfGrantedTriggeredAbilities(entityId, state)
 
         // Generate ward triggered abilities from intrinsic keyword abilities and GrantWard
         val wardAbilities = getWardTriggeredAbilities(entityId, cardDefinitionId, state)
@@ -85,7 +90,7 @@ class TriggerAbilityResolver(
         val paradigmAbilities = getParadigmTriggeredAbilities(entityId, state)
 
         val allGranted = grantedAbilities + staticGrantedAbilities + attachedGrantedAbilities +
-            wardAbilities + ringBearerAbilities + suspendAbilities + paradigmAbilities
+            selfGrantedAbilities + wardAbilities + ringBearerAbilities + suspendAbilities + paradigmAbilities
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
         // Apply text replacement if the entity has one
@@ -219,6 +224,11 @@ class TriggerAbilityResolver(
             emptyList()
         }
         val attachedGrantedAbilities = getAttachedGrantedTriggeredAbilities(entityId, state)
+        // "This creature has '<triggered ability>' [as long as …]" — a Scope.Self
+        // GrantTriggeredAbility on the permanent's own definition (Fire Nation Cadets installs
+        // firebendingAttackTrigger(2) this way while a Lesson is in the graveyard).
+        val selfGrantedAbilities = if (hasLostAbilities) emptyList()
+            else getSelfGrantedTriggeredAbilities(entityId, state)
 
         // Generate ward triggered abilities from intrinsic keyword abilities and GrantWard
         val wardAbilities = if (hasLostAbilities) emptyList()
@@ -232,7 +242,7 @@ class TriggerAbilityResolver(
         val paradigmAbilities = getParadigmTriggeredAbilities(entityId, state)
 
         val allGranted = grantedAbilities + staticGrantedAbilities + attachedGrantedAbilities +
-            wardAbilities + ringBearerAbilities + suspendAbilities + paradigmAbilities
+            selfGrantedAbilities + wardAbilities + ringBearerAbilities + suspendAbilities + paradigmAbilities
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
         val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
@@ -348,6 +358,50 @@ class TriggerAbilityResolver(
             }
         }
 
+        return result
+    }
+
+    /**
+     * Triggered abilities a permanent grants to *itself* through a [Scope.Self]
+     * [GrantTriggeredAbility] static ability on its own definition — i.e. "this creature has
+     * '<triggered ability>'". When the grant is wrapped in a [ConditionalStaticAbility]
+     * ("… as long as <condition>"), the ability is contributed only while the gating condition
+     * holds, evaluated with this permanent as the source. Fire Nation Cadets uses this to carry
+     * [firebendingAttackTrigger] only while a Lesson card is in its controller's graveyard.
+     *
+     * Unlike [getStaticGrantedTriggeredAbilities] (battlefield-scoped lord/sliver grants) and
+     * [getAttachedGrantedTriggeredAbilities] (Aura/Equipment grants), this reads the source's own
+     * static abilities and toggles with the condition each time triggers are computed, so the grant
+     * appears and disappears live as the condition changes.
+     */
+    private fun getSelfGrantedTriggeredAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> {
+        val container = state.getEntity(entityId) ?: return emptyList()
+        if (container.has<FaceDownComponent>()) return emptyList()
+        val card = container.get<CardComponent>() ?: return emptyList()
+        val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return emptyList()
+        val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+        val staticAbilities = cardDef.script.effectiveStaticAbilities(classLevel)
+        if (staticAbilities.isEmpty()) return emptyList()
+
+        val result = mutableListOf<TriggeredAbility>()
+        for (ability in staticAbilities) {
+            when (ability) {
+                is GrantTriggeredAbility ->
+                    if (ability.filter.scope is Scope.Self) result.add(ability.ability)
+
+                is ConditionalStaticAbility -> {
+                    val grant = ability.ability as? GrantTriggeredAbility ?: continue
+                    if (grant.filter.scope !is Scope.Self) continue
+                    val controllerId = state.projectedState.getController(entityId) ?: continue
+                    val context = EffectContext(sourceId = entityId, controllerId = controllerId)
+                    if (ConditionEvaluator().evaluate(state, ability.condition, context)) {
+                        result.add(grant.ability)
+                    }
+                }
+
+                else -> {}
+            }
+        }
         return result
     }
 

@@ -149,6 +149,7 @@ import com.wingedsheep.sdk.scripting.SuppressWardForGroup
 import com.wingedsheep.sdk.scripting.UntapDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.UntapFilteredDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.UntapLimitPerStep
+import com.wingedsheep.sdk.scripting.UntapSelfDuringOtherUntapSteps
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureHasSubtype
 import com.wingedsheep.sdk.scripting.conditions.EnchantedCreatureIsLegendary
 import com.wingedsheep.sdk.scripting.conditions.Exists
@@ -840,6 +841,7 @@ class StaticAbilityHandler(
             is PreventManaPoolEmptying,
             is UntapDuringOtherUntapSteps,
             is UntapFilteredDuringOtherUntapSteps,
+            is UntapSelfDuringOtherUntapSteps,
             is UntapLimitPerStep,
 
             // Visibility / information (ClientStateTransformer / DrawCardPrimitive):

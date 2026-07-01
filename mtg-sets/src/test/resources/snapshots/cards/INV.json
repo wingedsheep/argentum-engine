@@ -2405,7 +2405,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -4604,7 +4605,8 @@
                                     },
                                     "revealed": true
                                 },
-                                "ShuffleLibrary"
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
                             ]
                         }
                     },
@@ -5428,7 +5430,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             ]
@@ -9430,7 +9433,8 @@
                                 "zone": "Hand"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -10301,7 +10305,8 @@
                                     "placement": "Tapped"
                                 }
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }
@@ -13669,7 +13674,8 @@
                                 "placement": "Top"
                             },
                             "revealed": true
-                        }
+                        },
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }

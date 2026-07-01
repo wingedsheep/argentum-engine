@@ -217,7 +217,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 },
@@ -2795,6 +2796,32 @@
     ]
 }
 
+// Bender's Waterskin
+{
+    "name": "Bender's Waterskin",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Untap this artifact during each other player's untap step.\n{T}: Add one mana of any color.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "isManaAbility": true
+            }
+        ],
+        "staticAbilities": [
+            "UntapSelfDuringOtherUntapSteps"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "255",
+        "artist": "Dee Nguyen",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d4a1712-d19e-4475-9614-a0b1af4da610.jpg?1764121885"
+    }
+}
+
 // Benevolent River Spirit
 {
     "name": "Benevolent River Spirit",
@@ -4122,7 +4149,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             ]
@@ -5702,7 +5730,8 @@
                                         "placement": "Tapped"
                                     }
                                 },
-                                "ShuffleLibrary"
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
                             ]
                         }
                     ]
@@ -6790,6 +6819,85 @@
     ]
 }
 
+// Fire Nation Cadets
+{
+    "name": "Fire Nation Cadets",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "This creature has firebending 2 as long as there's a Lesson card in your graveyard. (Whenever this creature attacks, add {R}{R}. This mana lasts until end of combat.)\n{2}: This creature gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "ability_2",
+                        "trigger": "AttackEvent",
+                        "effect": {
+                            "type": "AddMana",
+                            "color": "RED",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "expiry": "END_OF_COMBAT"
+                        },
+                        "descriptionOverride": "Whenever this creature attacks, add {R}{R}. Until end of combat, you don't lose this mana as steps and phases end."
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": "Lesson"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Rafater",
+        "flavorText": "Fire Nation training ensures that even the smallest flame burns into a raging inferno.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a3a862c-9c9a-41cd-94d1-2d0cff22a6cd.jpg?1764120921"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Fire Nation Engineer
 {
     "name": "Fire Nation Engineer",
@@ -6852,6 +6960,94 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Fire Nation Palace
+{
+    "name": "Fire Nation Palace",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "This land enters tapped unless you control a basic land.\n{T}: Add {R}.\n{1}{R}, {T}: Target creature you control gains firebending 4 until end of turn. (Whenever it attacks, add {R}{R}{R}{R}. This mana lasts until end of combat.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "ability_3",
+                        "trigger": "AttackEvent",
+                        "effect": {
+                            "type": "AddMana",
+                            "color": "RED",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 4
+                            },
+                            "expiry": "END_OF_COMBAT"
+                        },
+                        "descriptionOverride": "Whenever this creature attacks, add {R}{R}{R}{R}. Until end of combat, you don't lose this mana as steps and phases end."
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "target creature you control"
+                    }
+                ]
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersTapped",
+                "unlessCondition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "basicland"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "268",
+        "rarity": "RARE",
+        "artist": "Awanqi (Angela Wang)",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c91ac3f2-9fcd-4b41-a168-ae7f70b67d3c.jpg?1764121966"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -10242,7 +10438,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             },
@@ -10287,7 +10484,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -14678,7 +14876,8 @@
                         "placement": "Tapped"
                     }
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         }
     },
@@ -16209,7 +16408,8 @@
                             },
                             "revealed": true
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             },
@@ -16384,7 +16584,8 @@
                                 "placement": "Tapped"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -18613,7 +18814,8 @@
                                             "zone": "Battlefield",
                                             "placement": "Tapped"
                                         }
-                                    }
+                                    },
+                                    "EmitLibrarySearchedEvent"
                                 ]
                             },
                             {
@@ -18830,6 +19032,94 @@
     ]
 }
 
+// Wan Shi Tong, Librarian
+{
+    "name": "Wan Shi Tong, Librarian",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Legendary Creature — Bird Spirit",
+    "oracleText": "Flash\nFlying, vigilance\nWhen Wan Shi Tong enters, put X +1/+1 counters on him. Then draw half X cards, rounded down.\nWhenever an opponent searches their library, put a +1/+1 counter on Wan Shi Tong and draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "+1/+1",
+                            "amount": "XValue",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Divide",
+                                "numerator": "XValue",
+                                "denominator": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "roundUp": false
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Put X +1/+1 counters on Wan Shi Tong. Then draw half X cards, rounded down."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "SearchLibraryEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Put a +1/+1 counter on Wan Shi Tong and draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "MYTHIC",
+        "artist": "Ryota Murayama",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e20da6b5-1057-4a28-9e85-07de714e262f.jpg?1764120524"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Wandering Musicians
 {
     "name": "Wandering Musicians",
@@ -18877,6 +19167,86 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "RED"
+    ]
+}
+
+// War Balloon
+{
+    "name": "War Balloon",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Flying\n{1}: Put a fire counter on this Vehicle.\nAs long as this Vehicle has three or more fire counters on it, it's an artifact creature.\nCrew 3 (Tap any number of creatures you control with total power 3 or more: This Vehicle becomes an artifact creature until end of turn.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 3
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "fire",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantCardType",
+                    "cardType": "CREATURE"
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Source",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": {
+                                "type": "Named",
+                                "name": "fire"
+                            }
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Matteo Bassini",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/6829b20d-c2fa-41a6-89ca-f21c522d8866.jpg?1764121090"
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }

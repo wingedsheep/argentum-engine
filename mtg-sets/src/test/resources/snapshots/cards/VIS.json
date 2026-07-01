@@ -245,7 +245,8 @@
                         "zone": "Battlefield"
                     }
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         },
         "additionalCosts": [
@@ -671,7 +672,8 @@
                                 "zone": "Library",
                                 "placement": "Top"
                             }
-                        }
+                        },
+                        "EmitLibrarySearchedEvent"
                     ]
                 },
                 {

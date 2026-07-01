@@ -350,7 +350,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -1651,7 +1652,8 @@
                         "placement": "Top"
                     },
                     "revealed": true
-                }
+                },
+                "EmitLibrarySearchedEvent"
             ]
         }
     },
@@ -2041,7 +2043,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -2319,7 +2322,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -2852,7 +2856,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -2935,7 +2940,8 @@
                         "placement": "Top"
                     },
                     "revealed": true
-                }
+                },
+                "EmitLibrarySearchedEvent"
             ]
         }
     },
@@ -3392,7 +3398,8 @@
                         "placement": "Tapped"
                     }
                 },
-                "ShuffleLibrary"
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
             ]
         }
     },
@@ -3495,7 +3502,8 @@
                                 "zone": "Battlefield"
                             }
                         },
-                        "ShuffleLibrary"
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
                     ]
                 }
             }
@@ -5204,7 +5212,8 @@
                         "placement": "Top"
                     },
                     "revealed": true
-                }
+                },
+                "EmitLibrarySearchedEvent"
             ]
         }
     },

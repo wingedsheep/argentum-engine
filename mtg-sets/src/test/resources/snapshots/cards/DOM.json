@@ -5061,7 +5061,8 @@
                             "zone": "Battlefield"
                         }
                     },
-                    "ShuffleLibrary"
+                    "ShuffleLibrary",
+                    "EmitLibrarySearchedEvent"
                 ]
             },
             "otherwise": {
@@ -5096,7 +5097,8 @@
                             "zone": "Battlefield"
                         }
                     },
-                    "ShuffleLibrary"
+                    "ShuffleLibrary",
+                    "EmitLibrarySearchedEvent"
                 ]
             }
         }
@@ -10907,7 +10909,8 @@
                                 },
                                 "revealed": true
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }
