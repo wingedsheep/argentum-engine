@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 109 / 312
+**Implemented:** 110 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -20,7 +20,7 @@
 - [ ] Academy Manufactor
 - [x] Adarkar Wastes
 - [ ] Aether Channeler
-- [ ] Aetherize
+- [x] Aetherize
 - [ ] Agate Instigator
 - [x] Alchemist's Talent
 - [ ] An Offer You Can't Refuse

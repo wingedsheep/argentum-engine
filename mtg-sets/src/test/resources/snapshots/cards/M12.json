@@ -1,3 +1,44 @@
+// Adaptive Automaton
+{
+    "name": "Adaptive Automaton",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "As this creature enters, choose a creature type.\nThis creature is the chosen type in addition to its other types.\nOther creatures you control of the chosen type get +1/+1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            "GrantChosenSubtype",
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true,
+                    "chosenSubtypeKey": "chosenCreatureType"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Such loyalty can only be made.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/79e42ead-df6e-4181-ae2b-a2abfc3f1d7c.jpg?1782714857"
+    },
+    "colorIdentityOverride": []
+}
+
 // Grand Abolisher
 {
     "name": "Grand Abolisher",

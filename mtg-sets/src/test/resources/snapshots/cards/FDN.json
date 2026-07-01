@@ -5321,6 +5321,50 @@
     ]
 }
 
+// Uncharted Voyage
+{
+    "name": "Uncharted Voyage",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature's owner puts it on their choice of the top or bottom of their library.\nSurveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "PutOnLibraryPositionOfChoice",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Julian Kok Joon Wen",
+        "flavorText": "As his ship passed the waterlogged wrecks, Markos realized he wasn't the first person to try sailing out of the Underworld.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e0846820-e595-4743-8a28-29c57d728677.jpg?1782689218"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Vampire Gourmand
 {
     "name": "Vampire Gourmand",

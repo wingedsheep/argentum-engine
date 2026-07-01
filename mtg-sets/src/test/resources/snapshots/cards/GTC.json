@@ -1,3 +1,44 @@
+// Aetherize
+{
+    "name": "Aetherize",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Return all attacking creatures to their owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature attacking"
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Barger",
+        "flavorText": "\"You can come back once you've learned some manners—and figured out how to reconstitute your physical forms.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33303859-c6e0-4ebd-bb5f-44be7f5d7459.jpg?1782714145"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Angelic Edict
 {
     "name": "Angelic Edict",
