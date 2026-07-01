@@ -1656,19 +1656,27 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * Batching trigger — fires at most once per event batch regardless of how many
      * permanents were sacrificed.
      *
+     * By default the trigger watches only the controller's own sacrifices ("Whenever *you*
+     * sacrifice…"). Set [byAnyPlayer] = true for the "Whenever *a player* sacrifices…" scope
+     * (Zodiark, Umbral God) — then the ANY-binding detector fires the trigger once per player
+     * who sacrificed a matching permanent in the batch, regardless of who controls the source.
+     *
      * Examples:
      *   → PermanentsSacrificedEvent(filter = GameObjectFilter.Food)
      *     "Whenever you sacrifice one or more Foods"
      *   → PermanentsSacrificedEvent()
      *     "Whenever you sacrifice a permanent"
+     *   → PermanentsSacrificedEvent(filter = GameObjectFilter.Creature, byAnyPlayer = true)
+     *     "Whenever a player sacrifices a creature"
      */
     @SerialName("PermanentsSacrificedEvent")
     @Serializable
     data class PermanentsSacrificedEvent(
-        val filter: GameObjectFilter = GameObjectFilter.Any
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val byAnyPlayer: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
-            append("you sacrifice one or more ")
+            append(if (byAnyPlayer) "a player sacrifices one or more " else "you sacrifice one or more ")
             if (filter != GameObjectFilter.Any) {
                 append(filter.cardPredicates.joinToString(" ") { it.description })
                 append("s")

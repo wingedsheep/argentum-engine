@@ -210,6 +210,38 @@ data object GrantHexproofToController : StaticAbility {
 }
 
 /**
+ * You have protection from [scope] (CR 702.16).
+ *
+ * Grants player-level protection to the permanent's controller — the continuous, static
+ * counterpart of the one-shot [com.wingedsheep.sdk.scripting.effects.GrantPlayerProtectionEffect]
+ * (The One Ring). For a player only the **D**amage and **T**argeting legs of DEBT apply: while
+ * this permanent is on the battlefield its controller can't be dealt damage by, nor be the target
+ * of spells/abilities from, a source matching [scope]. When the permanent leaves the battlefield
+ * the protection goes with it — no cleanup needed.
+ *
+ * General-purpose over any [ProtectionScope]: `EachOpponent` (Absolute Virtue —
+ * "You have protection from each of your opponents."), a single color, `Everything`, etc.
+ *
+ * @property scope The quality the controller is protected from.
+ */
+@SerialName("GrantProtectionToController")
+@Serializable
+data class GrantProtectionToController(
+    val scope: ProtectionScope = ProtectionScope.EachOpponent
+) : StaticAbility {
+    override val description: String =
+        "You have protection from " + when (val s = scope) {
+            is ProtectionScope.Color -> s.color.displayName.lowercase()
+            is ProtectionScope.Colors -> s.colors.joinToString(" and ") { it.displayName.lowercase() }
+            is ProtectionScope.CardType -> s.cardType.lowercase() + "s"
+            is ProtectionScope.Subtype -> s.subtype + "s"
+            is ProtectionScope.Supertype -> s.supertype.lowercase() + " permanents"
+            ProtectionScope.Everything -> "everything"
+            ProtectionScope.EachOpponent -> "each of your opponents"
+        }
+}
+
+/**
  * This permanent can't be the target of abilities your opponents control.
  * Unlike hexproof, this does NOT prevent targeting by spells — only by activated
  * and triggered abilities.

@@ -396,6 +396,7 @@ val engineSerializersModule = SerializersModule {
         subclass(GrantsCantLoseGameComponent::class)
         subclass(GrantsCantLoseGameFromLifeComponent::class)
         subclass(GrantsControllerHexproofComponent::class)
+        subclass(GrantsControllerProtectionComponent::class)
         subclass(GrantsControllerShroudComponent::class)
         subclass(GrantsStationUsingToughnessComponent::class)
         subclass(SuppressesHexproofForGroupComponent::class)

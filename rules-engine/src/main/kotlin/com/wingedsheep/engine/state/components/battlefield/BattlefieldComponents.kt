@@ -692,6 +692,21 @@ data object GrantsControllerShroudComponent : Component
 data object GrantsControllerHexproofComponent : Component
 
 /**
+ * Marks a permanent as granting its controller player-level protection from one or more
+ * [com.wingedsheep.sdk.scripting.ProtectionScope]s (Absolute Virtue:
+ * "You have protection from each of your opponents.").
+ *
+ * Stamped from [com.wingedsheep.sdk.scripting.GrantProtectionToController] static abilities and
+ * read by [com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules], which scans the
+ * battlefield for permanents carrying this component under the queried player's control. When the
+ * permanent leaves the battlefield the component goes with it — no cleanup needed.
+ */
+@Serializable
+data class GrantsControllerProtectionComponent(
+    val scopes: List<com.wingedsheep.sdk.scripting.ProtectionScope>
+) : Component
+
+/**
  * Marks a permanent as granting "can't lose the game" to its controller.
  * Used for Lich's Mastery: "You can't lose the game."
  * When the permanent leaves the battlefield, the component goes with it — no cleanup needed.

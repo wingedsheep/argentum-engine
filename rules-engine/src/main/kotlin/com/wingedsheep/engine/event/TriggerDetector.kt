@@ -1782,33 +1782,44 @@ class TriggerDetector(
                 if (trigger !is EventPattern.PermanentsSacrificedEvent) continue
                 if (ability.binding != TriggerBinding.ANY) continue
 
-                // This trigger watches the controller's own sacrifices
+                // By default the trigger watches only the source controller's own sacrifices
+                // ("Whenever you sacrifice…"). When byAnyPlayer is set it watches every player's
+                // ("Whenever a player sacrifices…", Zodiark) — fire once per sacrificing player.
                 val controllerId = entry.controllerId
-                val controllerEvents = sacrificeByController[controllerId] ?: continue
-
-                // Find the matching sacrificed permanents. The first match is bound as the
-                // triggering entity so payoffs can read "its mana value / power" off the
-                // sacrificed creature (e.g. Rakdos, the Muscle — "exile cards equal to its mana
-                // value"). Characteristics like mana value survive in the graveyard via the
-                // card's CardComponent; P/T payoffs should use a captured snapshot instead.
-                val matchingSacrificed = controllerEvents.flatMap { event ->
-                    event.permanentIds.filter { permanentId ->
-                        sacrificedPermanentMatchesFilter(state, permanentId, trigger.filter)
-                    }
+                val watchedPlayers = if (trigger.byAnyPlayer) {
+                    sacrificeByController.keys.toList()
+                } else {
+                    if (sacrificeByController.containsKey(controllerId)) listOf(controllerId) else emptyList()
                 }
 
-                if (matchingSacrificed.isNotEmpty()) {
-                    triggers.add(
-                        PendingTrigger(
-                            ability = ability,
-                            sourceId = entry.entityId,
-                            sourceName = entry.cardComponent.name,
-                            controllerId = controllerId,
-                            triggerContext = TriggerContext(
-                                triggeringEntityId = matchingSacrificed.first()
+                for (sacrificingPlayerId in watchedPlayers) {
+                    val playerEvents = sacrificeByController[sacrificingPlayerId] ?: continue
+
+                    // Find the matching sacrificed permanents. The first match is bound as the
+                    // triggering entity so payoffs can read "its mana value / power" off the
+                    // sacrificed creature (e.g. Rakdos, the Muscle — "exile cards equal to its mana
+                    // value"). Characteristics like mana value survive in the graveyard via the
+                    // card's CardComponent; P/T payoffs should use a captured snapshot instead.
+                    val matchingSacrificed = playerEvents.flatMap { event ->
+                        event.permanentIds.filter { permanentId ->
+                            sacrificedPermanentMatchesFilter(state, permanentId, trigger.filter)
+                        }
+                    }
+
+                    if (matchingSacrificed.isNotEmpty()) {
+                        triggers.add(
+                            PendingTrigger(
+                                ability = ability,
+                                sourceId = entry.entityId,
+                                sourceName = entry.cardComponent.name,
+                                controllerId = controllerId,
+                                triggerContext = TriggerContext(
+                                    triggeringEntityId = matchingSacrificed.first(),
+                                    triggeringPlayerId = sacrificingPlayerId
+                                )
                             )
                         )
-                    )
+                    }
                 }
             }
         }

@@ -3003,6 +3003,12 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   of it) resolves against its last-known information in the graveyard. This is exactly the wording "whenever you
   sacrifice this permanent or another <filter>" (Esoteric Duplicator) as well as the plain "whenever you sacrifice
   a <filter>" (Mayhem Devil). For the "another" exclusion use an `OTHER`-binding trigger instead.
+  By default the ANY-binding form watches only the source *controller's* sacrifices ("whenever **you**
+  sacrifice…"). For the "whenever **a player** sacrifices…" scope set
+  `EventPattern.PermanentsSacrificedEvent(filter, byAnyPlayer = true)` (Zodiark, Umbral God — "Whenever a
+  player sacrifices another creature, put a +1/+1 counter on Zodiark"): the detector then fires the trigger
+  once per sacrificing player in the batch, regardless of who controls the source, binding
+  `triggeringPlayerId` to that player.
 - `Sacrificed` — source is sacrificed.
 - `PlusOneCountersPlacedOnYourCreature` — Hardened Scales shape (+1/+1 only).
 - `countersPlacedOn(filter = Creature.youControl(), counterType = Counters.ANY, firstTimeEachTurn = true, binding = ANY)`
@@ -3592,6 +3598,15 @@ staticAbility {
   less life" alongside its "if you have no cards in hand, you lose the game" clause, which still fires).
   Projected to `GrantsCantLoseGameFromLifeComponent`, read only by `PlayerLifeLossCheck` (controller-
   scoped, not a team-wide grant).
+- `GrantProtectionToController(scope = ProtectionScope.EachOpponent)` — controller "has protection from
+  [scope]" while this permanent is on the battlefield (Absolute Virtue: "You have protection from each
+  of your opponents."). The continuous, static counterpart of the one-shot `GrantPlayerProtection`
+  (The One Ring) — for a player only the **D**amage and **T**argeting legs of DEBT apply. Projected to
+  `GrantsControllerProtectionComponent(scopes)`; `PlayerProtectionRules.isProtectedFromSource` unions
+  these battlefield-sourced scopes with any one-shot `PlayerProtectionComponent` on the player, so the
+  protection appears/disappears with the permanent (no cleanup). General over any `ProtectionScope`
+  (single color, `Everything`, `EachOpponent`, …), mirroring the controller-grant statics
+  `GrantHexproofToController` / `GrantShroudToController`.
 - `SetMaximumHandSize(player, amount)` — sets the maximum hand size of a `player` scope (`You` /
   `EachOpponent` / `Each`, resolved relative to the source's controller) to a `DynamicAmount`, read at
   cleanup. Most restrictive (smallest) value wins when several apply; a `NoMaximumHandSize` controlled

@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.mechanics.targeting
 
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.GrantsControllerProtectionComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.PlayerProtectionComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -30,8 +31,19 @@ object PlayerProtectionRules {
         sourceId: EntityId?,
         casterId: EntityId?
     ): Boolean {
-        val component = state.getEntity(playerId)?.get<PlayerProtectionComponent>() ?: return false
-        return component.scopes.any { scopeMatchesSource(state, playerId, it, sourceId, casterId) }
+        // Player-level protection comes from two sources, unioned:
+        //  1. A one-shot [PlayerProtectionComponent] on the player (e.g. The One Ring).
+        //  2. Continuous statics ([GrantProtectionToController]) on permanents the player
+        //     controls, stamped as [GrantsControllerProtectionComponent] (Absolute Virtue).
+        val ownScopes = state.getEntity(playerId)?.get<PlayerProtectionComponent>()?.scopes.orEmpty()
+        if (ownScopes.any { scopeMatchesSource(state, playerId, it, sourceId, casterId) }) return true
+
+        return state.getBattlefield().any { entityId ->
+            val container = state.getEntity(entityId) ?: return@any false
+            if (container.get<ControllerComponent>()?.playerId != playerId) return@any false
+            container.get<GrantsControllerProtectionComponent>()?.scopes
+                ?.any { scopeMatchesSource(state, playerId, it, sourceId, casterId) } == true
+        }
     }
 
     private fun scopeMatchesSource(

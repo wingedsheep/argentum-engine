@@ -34,6 +34,37 @@
     ]
 }
 
+// Absolute Virtue
+{
+    "name": "Absolute Virtue",
+    "manaCost": "{6}{W}{U}",
+    "typeLine": "Legendary Creature — Avatar Warrior",
+    "oracleText": "This spell can't be countered.\nFlying\nYou have protection from each of your opponents. (You can't be dealt damage, enchanted, or targeted by anything controlled by your opponents.)",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            "GrantProtectionToController"
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "MYTHIC",
+        "artist": "Toni Infante",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aa192912-c9ee-403f-8a46-a338c9edb4b9.jpg?1782686436"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Adelbert Steiner
 {
     "name": "Adelbert Steiner",
@@ -10814,6 +10845,98 @@
     ]
 }
 
+// Omega, Heartless Evolution
+{
+    "name": "Omega, Heartless Evolution",
+    "manaCost": "{5}{G}{U}",
+    "typeLine": "Legendary Artifact Creature — Robot",
+    "oracleText": "Wave Cannon — When Omega enters, for each opponent, tap up to one target nonland permanent that opponent controls. Put X stun counters on each of those permanents and you gain X life, where X is the number of nonbasic lands you control. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "permanent"
+                            }
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "stun",
+                            "amount": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsLand",
+                                        {
+                                            "type": "Not",
+                                            "predicate": "IsBasicLand"
+                                        }
+                                    ]
+                                }
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "permanent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Count",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsLand",
+                                        {
+                                            "type": "Not",
+                                            "predicate": "IsBasicLand"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "nonland permanent ctrl:opponent"
+                    },
+                    "id": "permanent"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "UNCOMMON",
+        "artist": "Josu Solano",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a8eb7e6-0c0b-42d0-aa90-2d3d29bc15aa.jpg?1782686412"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Opera Love Song
 {
     "name": "Opera Love Song",
@@ -21320,5 +21443,99 @@
     "colorIdentityOverride": [
         "WHITE",
         "RED"
+    ]
+}
+
+// Zodiark, Umbral God
+{
+    "name": "Zodiark, Umbral God",
+    "manaCost": "{B}{B}{B}{B}{B}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Indestructible\nWhen Zodiark enters, each player sacrifices half the non-God creatures they control of their choice, rounded down.\nWhenever a player sacrifices another creature, put a +1/+1 counter on Zodiark.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "INDESTRUCTIBLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "ForceSacrifice",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "God"
+                                }
+                            ]
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "You"
+                        },
+                        "dynamicCount": {
+                            "type": "Divide",
+                            "numerator": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotSubtype",
+                                            "subtype": "God"
+                                        }
+                                    ]
+                                }
+                            },
+                            "denominator": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "roundUp": false
+                        }
+                    }
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "creature",
+                    "byAnyPlayer": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "128",
+        "rarity": "RARE",
+        "artist": "AKAGI",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9ba292d5-5139-42ea-950d-0a638445277f.jpg?1782686502"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }

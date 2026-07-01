@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.battlefield.GrantCantBeBlockedToS
 import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameFromLifeComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerHexproofComponent
+import com.wingedsheep.engine.state.components.battlefield.GrantsControllerProtectionComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsStationUsingToughnessComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
@@ -68,6 +69,7 @@ import com.wingedsheep.sdk.scripting.CantBeTargetedByOpponentAbilities
 import com.wingedsheep.sdk.scripting.CantBeSacrificed
 import com.wingedsheep.sdk.scripting.CantReceiveCounters
 import com.wingedsheep.sdk.scripting.GrantHexproofToController
+import com.wingedsheep.sdk.scripting.GrantProtectionToController
 import com.wingedsheep.sdk.scripting.GrantShroudToController
 import com.wingedsheep.sdk.scripting.StationUsingToughness
 import com.wingedsheep.sdk.scripting.AdditionalAttackTriggers
@@ -229,6 +231,12 @@ class StaticAbilityHandler(
         }
         if (allStaticAbilities.any { it is GrantHexproofToController }) {
             result = result.with(GrantsControllerHexproofComponent)
+        }
+        val controllerProtectionScopes = allStaticAbilities
+            .filterIsInstance<GrantProtectionToController>()
+            .map { it.scope }
+        if (controllerProtectionScopes.isNotEmpty()) {
+            result = result.with(GrantsControllerProtectionComponent(controllerProtectionScopes))
         }
 
         // Add tag component for "you can't lose the game"
@@ -848,6 +856,7 @@ class StaticAbilityHandler(
             is GrantCantLoseGame,
             is com.wingedsheep.sdk.scripting.GrantCantLoseGameFromLife,
             is GrantHexproofToController,
+            is GrantProtectionToController,
             is GrantShroudToController,
             is StationUsingToughness,
             is SuppressHexproofForGroup,
