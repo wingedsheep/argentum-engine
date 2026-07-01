@@ -20417,9 +20417,10 @@
                 "id": "ability_2",
                 "trigger": {
                     "type": "PermanentsSacrificedEvent",
-                    "filter": "permanent"
+                    "filter": "permanent",
+                    "perPermanent": true
                 },
-                "binding": "ANY",
+                "binding": "OTHER",
                 "effect": {
                     "type": "ForEach",
                     "space": {

@@ -1661,35 +1661,46 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
 
     /**
      * Whenever you sacrifice one or more permanents matching a filter.
-     * Batching trigger — fires at most once per event batch regardless of how many
-     * permanents were sacrificed.
+     *
+     * Two multiplicity shapes, selected by [perPermanent] — the templating axis matters (CR 603.2c:
+     * "an ability… can trigger repeatedly if one event contains multiple occurrences"):
+     *  - [perPermanent] = false (default): the *batch* template "Whenever you sacrifice **one or
+     *    more** permanents" — fires at most once per event batch regardless of how many permanents
+     *    were sacrificed (Scavenger's Talent, Zodiark).
+     *  - [perPermanent] = true: the *per-permanent* template "Whenever you sacrifice **a/another**
+     *    permanent" — fires once for EACH matching permanent sacrificed, even when several are
+     *    sacrificed simultaneously (Mazirek, Savra, Zhao). Combine with [TriggerBinding.OTHER] for
+     *    "another" (excludes the source) or [TriggerBinding.ANY] for "a" (includes the source).
      *
      * By default the trigger watches only the controller's own sacrifices ("Whenever *you*
      * sacrifice…"). Set [byAnyPlayer] = true for the "Whenever *a player* sacrifices…" scope
-     * (Zodiark, Umbral God) — then the ANY-binding detector fires the trigger once per player
-     * who sacrificed a matching permanent in the batch, regardless of who controls the source.
+     * (Zodiark, Umbral God) — then the detector fires the trigger once per player (batch) or once
+     * per that player's matching permanent (per-permanent), regardless of who controls the source.
      *
      * Examples:
      *   → PermanentsSacrificedEvent(filter = GameObjectFilter.Food)
      *     "Whenever you sacrifice one or more Foods"
-     *   → PermanentsSacrificedEvent()
-     *     "Whenever you sacrifice a permanent"
+     *   → PermanentsSacrificedEvent(perPermanent = true)  // with OTHER binding
+     *     "Whenever you sacrifice another permanent"
      *   → PermanentsSacrificedEvent(filter = GameObjectFilter.Creature, byAnyPlayer = true)
-     *     "Whenever a player sacrifices a creature"
+     *     "Whenever a player sacrifices one or more creatures"
      */
     @SerialName("PermanentsSacrificedEvent")
     @Serializable
     data class PermanentsSacrificedEvent(
         val filter: GameObjectFilter = GameObjectFilter.Any,
-        val byAnyPlayer: Boolean = false
+        val byAnyPlayer: Boolean = false,
+        val perPermanent: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
-            append(if (byAnyPlayer) "a player sacrifices one or more " else "you sacrifice one or more ")
+            val who = if (byAnyPlayer) "a player sacrifices " else "you sacrifice "
+            append(who)
+            append(if (perPermanent) "another " else "one or more ")
             if (filter != GameObjectFilter.Any) {
                 append(filter.cardPredicates.joinToString(" ") { it.description })
-                append("s")
+                if (!perPermanent) append("s")
             } else {
-                append("permanents")
+                append(if (perPermanent) "permanent" else "permanents")
             }
         }
 

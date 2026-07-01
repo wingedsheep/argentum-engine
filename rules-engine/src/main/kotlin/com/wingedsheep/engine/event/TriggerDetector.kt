@@ -1780,7 +1780,10 @@ class TriggerDetector(
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
                 if (trigger !is EventPattern.PermanentsSacrificedEvent) continue
-                if (ability.binding != TriggerBinding.ANY) continue
+                // ANY ("a permanent, incl. itself") and OTHER ("another permanent", excl. itself)
+                // both watch sacrifices while the source is on the battlefield. SELF is handled by
+                // the self-sacrifice pass below (the source has left the battlefield by then).
+                if (ability.binding != TriggerBinding.ANY && ability.binding != TriggerBinding.OTHER) continue
 
                 // By default the trigger watches only the source controller's own sacrifices
                 // ("Whenever you sacrifice…"). When byAnyPlayer is set it watches every player's
@@ -1804,9 +1807,23 @@ class TriggerDetector(
                         event.permanentIds.filter { permanentId ->
                             sacrificedPermanentMatchesFilter(state, permanentId, trigger.filter)
                         }
+                    }.let { matches ->
+                        // "another" (OTHER) excludes the source sacrificing itself. The source is on
+                        // the battlefield in this pass, so it won't be in the batch — but guard anyway.
+                        if (ability.binding == TriggerBinding.OTHER) matches.filter { it != entry.entityId }
+                        else matches
                     }
 
-                    if (matchingSacrificed.isNotEmpty()) {
+                    if (matchingSacrificed.isEmpty()) continue
+
+                    // Per-permanent template ("a/another permanent") fires once for EACH matching
+                    // permanent (CR 603.2c); batch template ("one or more permanents") fires once.
+                    // The triggering entity is bound so payoffs can read "its mana value / power"
+                    // off the sacrificed permanent (e.g. Rakdos, the Muscle); characteristics like
+                    // mana value survive in the graveyard via the card's CardComponent.
+                    val triggeringPermanents =
+                        if (trigger.perPermanent) matchingSacrificed else listOf(matchingSacrificed.first())
+                    for (triggeringPermanentId in triggeringPermanents) {
                         triggers.add(
                             PendingTrigger(
                                 ability = ability,
@@ -1814,7 +1831,7 @@ class TriggerDetector(
                                 sourceName = entry.cardComponent.name,
                                 controllerId = controllerId,
                                 triggerContext = TriggerContext(
-                                    triggeringEntityId = matchingSacrificed.first(),
+                                    triggeringEntityId = triggeringPermanentId,
                                     triggeringPlayerId = sacrificingPlayerId
                                 )
                             )
@@ -1824,14 +1841,15 @@ class TriggerDetector(
             }
         }
 
-        // Self-sacrifice: when a permanent with a sacrifice-batch trigger is itself sacrificed it
-        // has already left the battlefield, so it isn't in the index and the ANY-binding loop above
-        // (which iterates the battlefield index) can't catch it. Look up triggered abilities
-        // directly from each sacrificed permanent instead. Both SELF ("whenever you sacrifice this
-        // permanent") and ANY ("whenever you sacrifice this permanent or another <filter>" /
-        // "whenever you sacrifice a <filter>") bindings include the source sacrificing itself
-        // (only an OTHER binding — "another" exactly — excludes it), so accept SELF and ANY here.
+        // Self-sacrifice: when a permanent with a sacrifice trigger is itself sacrificed it has
+        // already left the battlefield, so it isn't in the index and the loop above (which iterates
+        // the battlefield index) can't catch it. Look up triggered abilities directly from each
+        // sacrificed permanent instead. SELF ("whenever you sacrifice this permanent") and ANY
+        // ("whenever you sacrifice a <filter>") include the source sacrificing itself; OTHER
+        // ("another") excludes it but a source sacrificed *alongside* other permanents still reacts
+        // to those others (Mazirek/Zhao sacrificed in the same batch as its fodder).
         for ((controllerId, controllerEvents) in sacrificeByController) {
+            val batchPermanentIds = controllerEvents.flatMap { it.permanentIds }
             for (event in controllerEvents) {
                 for (permanentId in event.permanentIds) {
                     val container = state.getEntity(permanentId) ?: continue
@@ -1842,12 +1860,42 @@ class TriggerDetector(
                         permanentId, cardComponent.cardDefinitionId, state
                     )
                     for (ability in abilities) {
-                        if (ability.binding != TriggerBinding.SELF &&
-                            ability.binding != TriggerBinding.ANY
-                        ) continue
                         val trigger = ability.trigger
                         if (trigger !is EventPattern.PermanentsSacrificedEvent) continue
                         if (ability.activeZone != Zone.BATTLEFIELD) continue
+
+                        if (trigger.perPermanent) {
+                            // Per-permanent template ("a/another permanent") where the source is
+                            // itself among the simultaneously-sacrificed permanents. Fire once per
+                            // matching batch member (CR 603.2c): ANY counts itself, OTHER excludes
+                            // it, SELF only itself.
+                            val eligible = batchPermanentIds.filter { pid ->
+                                sacrificedPermanentMatchesFilter(state, pid, trigger.filter) &&
+                                    when (ability.binding) {
+                                        TriggerBinding.SELF -> pid == permanentId
+                                        TriggerBinding.OTHER -> pid != permanentId
+                                        else -> true
+                                    }
+                            }
+                            for (triggeringPermanentId in eligible) {
+                                triggers.add(
+                                    PendingTrigger(
+                                        ability = ability,
+                                        sourceId = permanentId,
+                                        sourceName = cardComponent.name,
+                                        controllerId = controllerId,
+                                        triggerContext = TriggerContext(triggeringEntityId = triggeringPermanentId)
+                                    )
+                                )
+                            }
+                            continue
+                        }
+
+                        // Batch template ("one or more permanents"): SELF and ANY include the
+                        // source sacrificing itself; fires once.
+                        if (ability.binding != TriggerBinding.SELF &&
+                            ability.binding != TriggerBinding.ANY
+                        ) continue
                         if (!sacrificedPermanentMatchesFilter(state, permanentId, trigger.filter)) continue
 
                         triggers.add(

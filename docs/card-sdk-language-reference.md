@@ -3049,6 +3049,16 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   player sacrifices another creature, put a +1/+1 counter on Zodiark"): the detector then fires the trigger
   once per sacrificing player in the batch, regardless of who controls the source, binding
   `triggeringPlayerId` to that player.
+- `YouSacrificeAnother(filter?)` — the **per-permanent** template "whenever you sacrifice **another**
+  permanent" (Mazirek, Kraul Death Priest; Savra; Zhao, Ruthless Admiral). Built with `binding = OTHER`
+  and `EventPattern.PermanentsSacrificedEvent(filter, perPermanent = true)`. Distinct from
+  `YouSacrificeOneOrMore` on **two** axes: (1) *multiplicity* — it fires once for **each** matching
+  permanent sacrificed, even when several are sacrificed simultaneously (CR 603.2c), so sacrificing three
+  permanents fires it three times; `YouSacrificeOneOrMore` (batch) fires once per event. (2) *exclusion* —
+  `OTHER` excludes the source sacrificing itself; a source sacrificed *alongside* other permanents still
+  reacts to those others (fires once per other), but not to itself. The `perPermanent` flag is the general
+  multiplicity switch on `PermanentsSacrificedEvent` — combine it with `binding = ANY` for the "whenever you
+  sacrifice **a** permanent" wording that also counts the source itself.
 - `Sacrificed` — source is sacrificed.
 - `PlusOneCountersPlacedOnYourCreature` — Hardened Scales shape (+1/+1 only).
 - `countersPlacedOn(filter = Creature.youControl(), counterType = Counters.ANY, firstTimeEachTurn = true, binding = ANY)`

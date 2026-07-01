@@ -23,13 +23,14 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * `firebending(2)` is the Avatar set keyword helper (CR 702.189): an attack-triggered combat-duration
  * "add {R}{R}" ability ([com.wingedsheep.sdk.dsl.firebendingAttackTrigger]).
  *
- * The sacrifice payoff is the same shape as Pirate Peddlers — the batching
- * [Triggers.YouSacrificeOneOrMore] (ANY binding) over any permanent. The engine's sacrifice-batch
- * detector only fires ANY-binding triggers; an exact OTHER ("another") binding isn't supported
- * there. The only behavioral gap is Zhao's own sacrifice firing the trigger; in that case Zhao has
- * already left the battlefield, so it pumps only the remaining creatures you control. The team pump
- * is a [Effects.ForEachInGroup] over [GroupFilter.AllCreaturesYouControl] applying a +1/+0
- * [ModifyStatsEffect] to each ([EffectTarget.Self] = current iteration creature) until end of turn.
+ * The sacrifice payoff is the per-permanent [Triggers.YouSacrificeAnother] (OTHER binding) over any
+ * permanent — the Mazirek/Savra template: it fires once for EACH permanent sacrificed, even when
+ * several are sacrificed simultaneously (CR 603.2c), so sacrificing three permanents pumps the team
+ * +3/+0. "Another" excludes Zhao sacrificing itself; when Zhao is sacrificed alongside other
+ * permanents it still reacts to those others, pumping only the creatures you control that remain.
+ * The team pump is a [Effects.ForEachInGroup] over [GroupFilter.AllCreaturesYouControl] applying a
+ * +1/+0 [ModifyStatsEffect] to each ([EffectTarget.Self] = current iteration creature) until end of
+ * turn.
  */
 val ZhaoRuthlessAdmiral = card("Zhao, Ruthless Admiral") {
     manaCost = "{2}{B/R}{B/R}"
@@ -44,7 +45,7 @@ val ZhaoRuthlessAdmiral = card("Zhao, Ruthless Admiral") {
 
     // Whenever you sacrifice another permanent, creatures you control get +1/+0 until end of turn.
     triggeredAbility {
-        trigger = Triggers.YouSacrificeOneOrMore(GameObjectFilter.Permanent)
+        trigger = Triggers.YouSacrificeAnother(GameObjectFilter.Permanent)
         effect = Effects.ForEachInGroup(
             filter = GroupFilter.AllCreaturesYouControl,
             effect = ModifyStatsEffect(
