@@ -8,7 +8,8 @@
       "The Last Agni Kai",
       "Fated Firepower",
       "Zhao, the Moon Slayer",
-      "Sozin's Comet"
+      "Sozin's Comet",
+      "Karplusan Forest"
     ],
     "battlefield": [
       {"name": "Forest"},
@@ -25,7 +26,7 @@
   },
   "player2": {
     "lifeTotal": 20,
-    "hand": ["Opt"],
+    "hand": ["Opt", "Karplusan Forest"],
     "battlefield": [
       {"name": "Mountain"},
       {"name": "Mountain"},
@@ -42,5 +43,6 @@
   "player1StopAtSteps": [],
   "player2StopAtSteps": [],
   "player1OpponentStopAtSteps": [],
-  "player2OpponentStopAtSteps": []
+  "player2OpponentStopAtSteps": [],
+  "mode": "SELF"
 }

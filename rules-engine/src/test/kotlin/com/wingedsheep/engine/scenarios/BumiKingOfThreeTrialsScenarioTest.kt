@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.support.ScenarioTestBase
@@ -9,6 +10,7 @@ import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
  * Bumi, King of Three Trials (TLA) — {5}{G} Legendary Creature 4/4.
@@ -103,6 +105,56 @@ class BumiKingOfThreeTrialsScenarioTest : ScenarioTestBase() {
             projected.hasType(land, "CREATURE") shouldBe true
             projected.getPower(land) shouldBe 3
             projected.getToughness(land) shouldBe 3
+            projected.hasKeyword(land, Keyword.HASTE) shouldBe true
+        }
+
+        test("regression: choosing scry then Earthbend — the scry's mid-resolution pause must not drop the Earthbend mode") {
+            // The bug: with scry chosen before Earthbend, the scry mode paused mid-resolution for
+            // its reorder decision, and the remaining Earthbend mode was silently dropped — the
+            // player never got to target a land. A ModalChosenModeTailContinuation now sits beneath
+            // the scry's pause so the queue resumes afterward.
+            val game = scenario()
+                .withPlayers("Alice", "Bob")
+                .withCardInHand(1, "Bumi, King of Three Trials")
+                .withLandsOnBattlefield(1, "Forest", 7)
+                .withCardInGraveyard(1, "Firebending Lesson")
+                .withCardInGraveyard(1, "Earthbending Lesson")
+                // Non-empty library so "scry 3" actually pauses for a reorder decision.
+                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(1, "Forest")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Bumi, King of Three Trials").error shouldBe null
+            if (game.hasPendingDecision()) game.submitManaSourcesAutoPay()
+            game.resolveStack()
+
+            // X = 2 → two picks. Choose scry FIRST, then Earthbend.
+            game.chooseModeContaining(scryMode)
+            game.chooseModeContaining(earthbendMode)
+
+            // Scry mode's player target (two players → an explicit target decision).
+            game.selectTargets(listOf(game.player1Id)).error shouldBe null
+
+            // Scry pauses to reorder the top of the library; keep everything on top.
+            game.getPendingDecision().shouldNotBeNull()
+            game.skipSelection()
+
+            // The Earthbend mode survived the scry pause and now demands its land target.
+            val afterScry = game.getPendingDecision()
+            afterScry.shouldNotBeNull()
+            afterScry.shouldBeInstanceOf<ChooseTargetsDecision>()
+
+            val land = game.findPermanents("Forest").first()
+            game.selectTargets(listOf(land)).error shouldBe null
+            game.resolveStack()
+
+            // Earthbend applied: the chosen land is now a 3/3 creature-land with haste.
+            val projected = projector.project(game.state)
+            projected.hasType(land, "LAND") shouldBe true
+            projected.hasType(land, "CREATURE") shouldBe true
+            projected.getPower(land) shouldBe 3
             projected.hasKeyword(land, Keyword.HASTE) shouldBe true
         }
 
