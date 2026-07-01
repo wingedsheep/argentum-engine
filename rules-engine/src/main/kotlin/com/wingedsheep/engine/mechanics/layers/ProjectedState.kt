@@ -55,7 +55,15 @@ data class ProjectedValues(
     val cantBeBlockedExceptByFilters: List<com.wingedsheep.sdk.scripting.GameObjectFilter> = emptyList(),
     val canOnlyBlockCreaturesWithFilters: List<com.wingedsheep.sdk.scripting.GameObjectFilter> = emptyList(),
     val additionalBlockCount: Int = 0,
-    val lostAllAbilities: Boolean = false
+    val lostAllAbilities: Boolean = false,
+    /**
+     * True when a continuous effect SET this permanent's basic land types (Blood Moon,
+     * Zhao's "nonbasic lands are Mountains", Spreading Seas, …). Such effects grant the
+     * new type's intrinsic mana ability (CR 305.7), which survives even a lose-all-abilities
+     * effect from the same source — unlike the intrinsic mana of a land's printed subtype,
+     * which Imprisoned in the Moon does remove.
+     */
+    val basicLandTypesSetByEffect: Boolean = false
 )
 
 /**
@@ -194,6 +202,10 @@ class ProjectedState(
 
     fun hasLostAllAbilities(entityId: EntityId): Boolean =
         projectedValues[entityId]?.lostAllAbilities == true
+
+    /** See [ProjectedValues.basicLandTypesSetByEffect]. */
+    fun hasBasicLandTypesSetByEffect(entityId: EntityId): Boolean =
+        projectedValues[entityId]?.basicLandTypesSetByEffect == true
 
     fun getController(entityId: EntityId): EntityId? = projectedValues[entityId]?.controllerId
 

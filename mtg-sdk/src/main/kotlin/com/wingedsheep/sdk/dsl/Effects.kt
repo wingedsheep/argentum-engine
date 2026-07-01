@@ -262,9 +262,17 @@ object Effects {
 
     /**
      * Two creatures fight — each deals damage equal to its power to the other.
+     *
+     * [excessDamageVariable], when set, stores the excess damage (CR 120.4a) that [target1]
+     * dealt to [target2] into a pipeline number variable for a following effect to read via
+     * `DynamicAmount.VariableReference` (The Last Agni Kai).
      */
-    fun Fight(target1: EffectTarget, target2: EffectTarget): Effect =
-        FightEffect(target1, target2)
+    fun Fight(
+        target1: EffectTarget,
+        target2: EffectTarget,
+        excessDamageVariable: String? = null
+    ): Effect =
+        FightEffect(target1, target2, excessDamageVariable)
 
     /**
      * "Damage can't be prevented this turn." Turn-scoped shutoff of all damage prevention
@@ -428,6 +436,15 @@ object Effects {
      * card serializes as one `{"type":"Scry"}` node — see [LibraryPatterns.scry]).
      */
     fun Scry(count: Int): Effect = LibraryPatterns.scry(count)
+
+    /**
+     * "Target player scries [count]" (CR 701.22): the chosen [target] player looks at the top
+     * [count] cards of *their* library and reorders them. Player-scoped twin of [Scry]`(count)` —
+     * when [target] is the controller it is identical to it; otherwise it expands to a
+     * [LibraryPatterns.scryPipeline] keyed to the target player. Used by modal "• Target player
+     * scries N" modes (Bumi, King of Three Trials).
+     */
+    fun Scry(count: Int, target: EffectTarget): Effect = LibraryPatterns.scry(count, target)
 
     /**
      * "Surveil [count]" (CR 701.42): look at the top [count] cards of your library, put any number
@@ -1611,6 +1628,14 @@ object Effects {
      */
     fun AddColorlessMana(amount: Int, restriction: ManaRestriction? = null): Effect =
         AddColorlessManaEffect(amount, restriction)
+
+    /**
+     * "Until end of turn, you don't lose unspent mana of [colors] as steps and phases end."
+     * A colour-filtered, turn-scoped, single-player retention (The Last Agni Kai) — the
+     * one-shot cousin of the permanent-static [PreventManaPoolEmptying] (Upwelling).
+     */
+    fun RetainUnspentMana(vararg colors: Color): Effect =
+        com.wingedsheep.sdk.scripting.effects.RetainUnspentManaEffect(colors.toSet())
 
     /**
      * Add a dynamic amount of colorless mana.

@@ -35,6 +35,7 @@ class LegalActionEnumerator(
         SneakCastEnumerator(),
         CyclingEnumerator(),
         PlotEnumerator(),
+        ForetellEnumerator(),
         CastFromZoneEnumerator(),
         ManaAbilityEnumerator(),
         TurnFaceUpEnumerator(),

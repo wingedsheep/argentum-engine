@@ -161,7 +161,17 @@ data class DividedDamageEffect(
 @Serializable
 data class FightEffect(
     val target1: EffectTarget,
-    val target2: EffectTarget
+    val target2: EffectTarget,
+    /**
+     * When set, the executor stores the *excess* damage (CR 120.4a — damage past lethal,
+     * deathtouch-aware) that [target1] dealt to [target2] into this pipeline number variable,
+     * so a following effect can read it via `DynamicAmount.VariableReference`. Only the damage
+     * dealt **to [target2]** is captured (the "creature an opponent controls" half of the fight),
+     * not the excess dealt back to [target1]. `null` (the default) records nothing — every
+     * ordinary fight card leaves it unset. Built for The Last Agni Kai: "If the creature the
+     * opponent controls is dealt excess damage this way, add that much {R}."
+     */
+    val excessDamageVariable: String? = null
 ) : Effect {
     override val description: String = "${target1.description} fights ${target2.description}"
 }

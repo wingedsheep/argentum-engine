@@ -11,6 +11,7 @@ import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -83,6 +84,7 @@ object DamageUtils {
 
     private val predicateEvaluator = PredicateEvaluator()
     private val conditionEvaluator = ConditionEvaluator()
+    private val dynamicAmountEvaluator = DynamicAmountEvaluator()
     lateinit var cardRegistry: CardRegistry
 
     /**
@@ -1354,6 +1356,18 @@ object DamageUtils {
                 // Check if the damage source matches the source filter
                 val sourceMatches = when (val sourceFilter = damageEvent.source) {
                     is SourceFilter.Any -> true
+                    is SourceFilter.YouControl -> {
+                        // "A source you control" — any source (permanent, spell, ability) whose
+                        // controller is this replacement's controller. Read projected control for
+                        // battlefield permanents; fall back to the base ControllerComponent for
+                        // spells/abilities on the stack.
+                        if (sourceId == null) false
+                        else {
+                            val srcController = projected.getController(sourceId)
+                                ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                            srcController == sourceControllerId
+                        }
+                    }
                     is SourceFilter.Matching -> {
                         if (sourceId == null) false
                         else {
@@ -1368,6 +1382,17 @@ object DamageUtils {
                 // Check if the target matches the recipient filter
                 val recipientMatches = when (val recipient = damageEvent.recipient) {
                     is RecipientFilter.Any -> true
+                    is RecipientFilter.OpponentOrPermanentTheyControl -> {
+                        if (targetId in state.turnOrder) {
+                            // An opponent player of the replacement's controller.
+                            targetId != sourceControllerId
+                        } else {
+                            // A permanent an opponent controls.
+                            val ctrl = projected.getController(targetId)
+                                ?: state.getEntity(targetId)?.get<ControllerComponent>()?.playerId
+                            ctrl != null && ctrl != sourceControllerId
+                        }
+                    }
                     is RecipientFilter.Matching -> {
                         val context = PredicateContext(controllerId = sourceControllerId)
                         predicateEvaluator.matches(state, projected, targetId, recipient.filter, context)
@@ -1381,7 +1406,17 @@ object DamageUtils {
                 }
                 if (!recipientMatches) continue
 
-                amplifiedAmount += effect.modifier
+                // Additive bonus: a dynamic amount (evaluated against the replacement's source
+                // permanent — e.g. Fated Firepower's fire-counter count) when present, else the
+                // flat modifier (Valley Flamecaller).
+                amplifiedAmount += effect.dynamicModifier?.let { dyn ->
+                    dynamicAmountEvaluator.evaluate(
+                        state,
+                        dyn,
+                        EffectContext(sourceId = entityId, controllerId = sourceControllerId),
+                        projected
+                    )
+                } ?: effect.modifier
             }
         }
 

@@ -17,6 +17,7 @@ class AbilityModule(private val services: EngineServices) : ActionHandlerModule 
         ActivateAbilityHandler.create(services),
         CycleCardHandler.create(services),
         PlotCardHandler.create(services),
+        ForetellCardHandler.create(services),
         TypecycleCardHandler.create(services),
         CrewVehicleHandler.create(services),
         SaddleMountHandler.create(services)

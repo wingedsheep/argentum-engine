@@ -55,6 +55,7 @@ import com.wingedsheep.sdk.scripting.GrantHexproofFromOwnColorsToGroup
 import com.wingedsheep.sdk.scripting.GrantHexproofFromMonocoloredToGroup
 import com.wingedsheep.sdk.scripting.AnimateLandGroup
 import com.wingedsheep.sdk.scripting.GrantAdditionalTypesToGroup
+import com.wingedsheep.sdk.scripting.SetLandTypesForGroup
 import com.wingedsheep.sdk.scripting.GrantColor
 import com.wingedsheep.sdk.scripting.GrantChosenColor
 import com.wingedsheep.sdk.scripting.CantBeTurnedFaceUp
@@ -311,6 +312,7 @@ class StaticAbilityHandler(
         return when (ability) {
             is AnimateLandGroup -> convertAnimateLandGroup(ability)
             is GrantAdditionalTypesToGroup -> convertGrantAdditionalTypesToGroup(ability)
+            is SetLandTypesForGroup -> convertSetLandTypesForGroup(ability)
             is TransformPermanent -> convertTransformPermanent(ability)
             // A ConditionalStaticAbility wrapping a multi-effect ability (e.g. TransformPermanent)
             // must lower through the plural converter too, then gate every resulting effect on the
@@ -384,6 +386,29 @@ class StaticAbilityHandler(
         }
 
         return effects
+    }
+
+    /**
+     * Convert SetLandTypesForGroup to two continuous effects, realizing CR 305.7 for a whole
+     * group of lands (Blood Moon / Magus of the Moon / Zhao's "nonbasic lands are Mountains").
+     * - Layer 4 (TYPE): SetBasicLandTypes replaces the old basic land subtypes with the new ones.
+     * - Layer 6 (ABILITY): RemoveAllAbilities strips the lands' printed abilities. The new type's
+     *   intrinsic mana ability (Mountain → "{T}: Add {R}") is derived from the projected subtypes
+     *   by IntrinsicManaAbilities and survives the ability suppression, so the lands still tap for
+     *   the appropriate color.
+     */
+    private fun convertSetLandTypesForGroup(ability: SetLandTypesForGroup): List<ContinuousEffectData> {
+        val filter = convertGroupFilter(ability.filter)
+        return listOf(
+            ContinuousEffectData(
+                modification = Modification.SetBasicLandTypes(ability.landTypes),
+                affectsFilter = filter
+            ),
+            ContinuousEffectData(
+                modification = Modification.RemoveAllAbilities,
+                affectsFilter = filter
+            ),
+        )
     }
 
     /**
@@ -744,6 +769,7 @@ class StaticAbilityHandler(
             // this function is reached:
             is AnimateLandGroup,
             is GrantAdditionalTypesToGroup,
+            is SetLandTypesForGroup,
             is TransformPermanent,
 
             // Trigger system (TriggerDetector / TriggerAbilityResolver / TriggerIndex):
@@ -962,6 +988,9 @@ class StaticAbilityHandler(
             // "Lands you control enter untapped" (The Wandering Minstrel): a static effect
             // consulted from the battlefield against OTHER permanents as they enter.
             is com.wingedsheep.sdk.scripting.EntersUntapped,
+            // "Nonbasic lands enter tapped" (Zhao, the Moon Slayer): the global counterpart of
+            // the self-only EntersTapped, consulted from the battlefield against OTHER permanents.
+            is com.wingedsheep.sdk.scripting.PermanentsEnterTapped,
             // Zone changes and turns:
             is com.wingedsheep.sdk.scripting.RedirectZoneChange,
             is com.wingedsheep.sdk.scripting.RedirectZoneChangeWithEffect,

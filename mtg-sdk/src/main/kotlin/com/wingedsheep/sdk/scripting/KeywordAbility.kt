@@ -475,6 +475,29 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Foretell
+    // =========================================================================
+
+    /**
+     * Foretell (CR 702.143, Kaldheim).
+     * "Foretell [cost]" — special action: any time you have priority during your turn,
+     * pay {2} and exile this card from your hand *face down*. It becomes foretold. On a
+     * later turn (after the turn it was foretold has ended) you may cast it from exile by
+     * paying [cost] — the foretell cost — rather than its mana cost.
+     *
+     * Per CR 702.143 / 116.2h: foretelling is a special action (does not use the stack)
+     * and a foretold card cannot be cast the same turn it was foretold. [cost] is the
+     * foretell cost paid to cast it later; the {2} setup cost is fixed by the rules and
+     * is not stored here.
+     */
+    @SerialName("Foretell")
+    @Serializable
+    data class Foretell(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.FORETELL
+        override val description: String = "Foretell $cost"
+    }
+
+    // =========================================================================
     // Conspire
     // =========================================================================
 
@@ -835,6 +858,12 @@ sealed interface KeywordAbility {
          * Create Plot with mana cost from a string.
          */
         fun plot(cost: String): KeywordAbility = Plot(ManaCost.parse(cost))
+
+        /**
+         * Create Foretell with its foretell cost from a string (CR 702.143).
+         * The {2} setup cost is fixed by the rules; [cost] is the cost to cast it later.
+         */
+        fun foretell(cost: String): KeywordAbility = Foretell(ManaCost.parse(cost))
 
         /**
          * Create Morph with mana cost from string.

@@ -810,12 +810,18 @@ object ZoneTransitionService {
         // permanent onto the battlefield tapped (ramp/fetch). Checked after the entity is fully
         // placed so its controller/type are visible to the filter. (tappedAndAttacking — combat
         // tokens — is intentionally not overridden; its filter never matches a land anyway.)
-        val withTapResolved = if (options.tapped && !options.tappedAndAttacking &&
-            EnterUntappedReplacements.entersUntapped(withEntity, entityId, controllerId)
-        ) {
-            withEntity.updateEntity(entityId) { it.without<TappedComponent>() }
-        } else {
-            withEntity
+        val entersUntapped = EnterUntappedReplacements.entersUntapped(withEntity, entityId, controllerId)
+        val withTapResolved = when {
+            // A tapped entry (ramp/fetch) overridden by "enters untapped" (The Wandering Minstrel).
+            options.tapped && !options.tappedAndAttacking && entersUntapped ->
+                withEntity.updateEntity(entityId) { it.without<TappedComponent>() }
+            // An untapped entry forced tapped by a global "[filter] enter tapped" (Zhao, the Moon
+            // Slayer's "Nonbasic lands enter tapped"). Gated on !entersUntapped so an "enters
+            // untapped" replacement still wins (CR 614).
+            !options.tapped && !entersUntapped &&
+                EnterTappedReplacements.entersTapped(withEntity, entityId, controllerId) ->
+                withEntity.updateEntity(entityId) { it.with(TappedComponent) }
+            else -> withEntity
         }
 
         // Track "a permanent entered the battlefield face down under your control this turn"

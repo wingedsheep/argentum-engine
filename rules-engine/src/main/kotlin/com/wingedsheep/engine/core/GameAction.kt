@@ -287,6 +287,28 @@ data class PlotCard(
 ) : GameAction
 
 /**
+ * Player foretells a card from their hand (Kaldheim, CR 702.143).
+ *
+ * Foretell is a special action — does not use the stack, taken any time the player has
+ * priority during their turn. The player pays the fixed {2} foretell setup cost and
+ * exiles the card from their hand *face down*. The exiled card is marked foretold
+ * (see [com.wingedsheep.engine.state.components.identity.ForetoldComponent]) and may be
+ * cast from exile for its foretell cost — carried by the card's
+ * [KeywordAbility.Foretell][com.wingedsheep.sdk.scripting.KeywordAbility.Foretell] — on a
+ * later turn (not the turn it was foretold).
+ *
+ * @property playerId The player foretelling the card
+ * @property cardId The card being foretold
+ */
+@Serializable
+@SerialName("ForetellCard")
+data class ForetellCard(
+    override val playerId: EntityId,
+    val cardId: EntityId,
+    val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay
+) : GameAction
+
+/**
  * Player typecycles a card from their hand.
  *
  * Typecycling (e.g., Swampcycling, Wizardcycling) is an activated ability from hand.

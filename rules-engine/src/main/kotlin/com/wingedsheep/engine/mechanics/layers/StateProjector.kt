@@ -315,7 +315,8 @@ class StateProjector(
                 cantBeBlockedExceptByFilters = v.cantBeBlockedExceptByFilters.toList(),
                 canOnlyBlockCreaturesWithFilters = v.canOnlyBlockCreaturesWithFilters.toList(),
                 additionalBlockCount = v.additionalBlockCount,
-                lostAllAbilities = v.lostAllAbilities
+                lostAllAbilities = v.lostAllAbilities,
+                basicLandTypesSetByEffect = v.basicLandTypesSetByEffect
             )
         }
 

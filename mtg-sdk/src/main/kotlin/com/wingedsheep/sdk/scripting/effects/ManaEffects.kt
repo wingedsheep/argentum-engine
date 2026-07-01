@@ -255,6 +255,34 @@ data class AddAnyColorManaSpendOnChosenTypeEffect(
 }
 
 /**
+ * "Until end of turn, you don't lose unspent [colors] mana as steps and phases end."
+ *
+ * The colour-filtered, single-player, turn-scoped counterpart of the permanent-static
+ * [com.wingedsheep.sdk.scripting.PreventManaPoolEmptying] (Upwelling). Where that ability,
+ * while its permanent is on the battlefield, stops *every* player from emptying *any* mana,
+ * this one-shot effect protects only the resolving controller's mana of the named [colors]
+ * for the rest of the turn — every other colour (and other players) empties as usual.
+ *
+ * Built for The Last Agni Kai's "Until end of turn, you don't lose unspent red mana as steps
+ * and phases end" ([colors] = `{RED}`). The engine empties pools at end-of-turn cleanup, so the
+ * retention manifests there: the retained colours survive that emptying once, then the turn-scoped
+ * marker is cleared.
+ *
+ * @property colors Mana colours the controller keeps through mana-pool emptying this turn.
+ */
+@SerialName("RetainUnspentMana")
+@Serializable
+data class RetainUnspentManaEffect(
+    val colors: Set<Color>
+) : Effect {
+    override val description: String = buildString {
+        append("Until end of turn, you don't lose unspent ")
+        append(colors.joinToString(" and ") { "{${it.symbol}}" })
+        append(" mana as steps and phases end")
+    }
+}
+
+/**
  * Add one mana of each color found among permanents matching a filter.
  * "{T}: For each color among permanents you control, add one mana of that color."
  *

@@ -100,6 +100,12 @@ class ManaAbilityEnumerator : ActionEnumerator {
             // back to the intrinsic-subtype inference.
             val classLevel = container.get<com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent>()?.currentLevel
             val ownManaAbilities = when {
+                // Blood Moon / Zhao ("nonbasic lands are Mountains"): an effect that SET this
+                // land's basic types also grants the type's intrinsic mana ability (CR 305.7),
+                // which survives the same effect's ability removal — so the land still taps for
+                // its new color. Intrinsic mana from a printed/unchanged subtype does NOT survive
+                // (Imprisoned in the Moon), which the plain `entityLostAllAbilities` branch keeps.
+                entityLostAllAbilities && projected.hasBasicLandTypesSetByEffect(entityId) -> intrinsicManaAbilities
                 entityLostAllAbilities -> emptyList()
                 intrinsicManaAbilities.isNotEmpty() -> intrinsicManaAbilities
                 cardDef == null -> emptyList()

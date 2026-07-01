@@ -61,7 +61,8 @@ enum class CounterType {
     REV,
     DOOM,
     POSSESSION,
-    FIRE
+    FIRE,
+    CONQUEROR
 }
 
 /**
@@ -203,6 +204,15 @@ object Counters {
      * NOT a keyword counter, so it is intentionally absent from `StateProjector.KEYWORD_COUNTER_MAP`.
      */
     const val FIRE = "fire"
+
+    /**
+     * Conqueror counter (TLA — Zhao, the Moon Slayer). Passive named counter with no inherent
+     * rule of its own — the card referencing it reads the count (e.g. "As long as Zhao has a
+     * conqueror counter on him, nonbasic lands are Mountains") via
+     * `Conditions.SourceCounterCountAtLeast(...)` / `DynamicAmounts.countersOnSelf(...)`.
+     * NOT a keyword counter, so it is intentionally absent from `StateProjector.KEYWORD_COUNTER_MAP`.
+     */
+    const val CONQUEROR = "conqueror"
 
     /**
      * Wildcard sentinel for triggers/events that fire on counters of *any* type, e.g.

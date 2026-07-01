@@ -265,6 +265,13 @@ class StackResolver(
             }
             updated = updated.without<com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent>()
             updated = updated.without<com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent>()
+            // A card cast face up is revealed as it goes on the stack. Foretold cards (and any
+            // other hidden-in-exile card) carry a FaceDownComponent for opponent masking while
+            // exiled; strip it here so the spell isn't masked on the stack (CR 702.143 — casting a
+            // foretold card reveals it). Morph/manifest casts (castFaceDown) re-add it on resolve.
+            if (!castFaceDown) {
+                updated = updated.without<FaceDownComponent>()
+            }
             updated
         }
         // Drop this card from one-shot may-play grants. Permanent grants survive

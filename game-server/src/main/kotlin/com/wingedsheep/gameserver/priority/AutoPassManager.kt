@@ -93,6 +93,7 @@ class AutoPassManager(
             "CycleCard",
             "TypecycleCard",
             "PlotCard",
+            "ForetellCard",
             // Crew is an activated ability (CR 702.122a) with no timing restriction, so it can be
             // activated any time you have priority (CR 117.1b) — making it a valid instant-speed
             // response (e.g. crewing during the opponent's declare-attackers window). Saddle is
@@ -334,7 +335,8 @@ class AutoPassManager(
             }
 
             // Cycling/typecycling is meaningful only if the player can afford it
-            if (action.actionType == "CycleCard" || action.actionType == "TypecycleCard" || action.actionType == "PlotCard") {
+            if (action.actionType == "CycleCard" || action.actionType == "TypecycleCard" ||
+                action.actionType == "PlotCard" || action.actionType == "ForetellCard") {
                 return@filter action.isAffordable
             }
 

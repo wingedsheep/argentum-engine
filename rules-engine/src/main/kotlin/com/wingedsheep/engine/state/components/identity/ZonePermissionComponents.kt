@@ -55,6 +55,29 @@ data class PlottedComponent(
 ) : Component
 
 /**
+ * Marks a card in exile as "foretold" (CR 702.143, Kaldheim).
+ *
+ * Applied when a player pays {2} and exiles a card face down from their hand via the
+ * Foretell keyword's special action. Carries [turnForetold] = `state.turnNumber` at the
+ * moment the card was foretold, so the `SourceForetoldOnPriorTurn` condition gating the
+ * cast-from-exile permission can enforce "cast it on a later turn" (CR 702.143a — the
+ * card may only be cast after the turn it was foretold has ended).
+ *
+ * The card is also stamped with a [FaceDownComponent] (hidden from opponents in exile,
+ * visible to its owner) and a
+ * [PlayWithFixedAlternativeManaCostComponent] carrying the foretell cost, so the existing
+ * cast-from-exile machinery lets the owner cast it for its foretell cost later.
+ *
+ * @param controllerId The player who foretold the card (may cast it later).
+ * @param turnForetold The `GameState.turnNumber` on which the card was foretold.
+ */
+@Serializable
+data class ForetoldComponent(
+    val controllerId: EntityId,
+    val turnForetold: Int,
+) : Component
+
+/**
  * Marks a card in hand as having an open miracle window (CR 702.94): it was the first card its owner
  * drew this turn and it has miracle (printed or granted in hand), so its controller may cast it for
  * its miracle cost this turn. Cleared at end of turn by [com.wingedsheep.engine.core.CleanupPhaseManager].

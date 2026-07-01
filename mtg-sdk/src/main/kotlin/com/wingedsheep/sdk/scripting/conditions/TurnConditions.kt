@@ -450,6 +450,21 @@ data object SourcePlottedOnPriorTurn : Condition {
     override val description: String = "if this card was plotted on a prior turn"
 }
 
+/**
+ * Gate condition for the cast-from-exile permission granted by foretell (CR 702.143).
+ *
+ * True when the source card carries a `ForetoldComponent` whose `turnForetold` is
+ * strictly less than the current `state.turnNumber` — i.e. the foretold card was
+ * foretold on a prior turn. Used as the `MayPlayPermission.condition` so foretold
+ * cards cannot be cast on the same turn they were foretold (CR 702.143a: "after the
+ * current turn has ended").
+ */
+@SerialName("SourceForetoldOnPriorTurn")
+@Serializable
+data object SourceForetoldOnPriorTurn : Condition {
+    override val description: String = "if this card was foretold on a prior turn"
+}
+
 // =============================================================================
 // City's Blessing (Ixalan, CR 702.131 / 700.5)
 // =============================================================================

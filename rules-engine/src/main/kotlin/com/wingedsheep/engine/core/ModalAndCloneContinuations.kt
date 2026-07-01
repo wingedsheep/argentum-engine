@@ -106,6 +106,39 @@ data class ModalPreChosenContinuation(
 ) : ContinuationFrame
 
 /**
+ * Auto-resumed continuation that drains the remaining chosen modes of a
+ * resolution-time modal ability (rule 603.3c — modal triggered/activated abilities
+ * that pick modes as they resolve, e.g. Bumi's "choose up to X" ETB).
+ *
+ * The resolution-time path
+ * ([com.wingedsheep.engine.handlers.continuations.ModalAndCloneContinuationResumer.processChosenModeQueue])
+ * executes each chosen mode in pick order. A mode's own effect can itself pause for a
+ * nested decision (a targeted [com.wingedsheep.sdk.dsl.Effects.Scry]'s reorder prompt,
+ * a ChooseAction, a reflexive trigger, …). Before executing each mode this frame is
+ * pushed BELOW that mode's nested decision so, once the inner chain resolves, the
+ * remaining modes resume automatically via
+ * [com.wingedsheep.engine.handlers.continuations.CoreAutoResumerModule] — the
+ * resolution-time twin of [ModalPreChosenContinuation].
+ *
+ * Without it, a nested pause mid-mode drops every not-yet-executed mode (Bumi:
+ * choosing "scry 3" then "earthbend 3" never reached the earthbend land target).
+ */
+@Serializable
+data class ModalChosenModeTailContinuation(
+    override val decisionId: String,
+    val controllerId: EntityId,
+    val sourceId: EntityId?,
+    val sourceName: String?,
+    val xValue: Int? = null,
+    val triggeringEntityId: EntityId? = null,
+    val remainingChosenModes: List<@Serializable Mode>,
+    /** Outer-scope targets propagated to any remaining no-target modes. See
+     *  [ModalContinuation.outerTargets]. */
+    val outerTargets: List<ChosenTarget> = emptyList(),
+    val outerNamedTargets: Map<String, ChosenTarget> = emptyMap()
+) : ContinuationFrame
+
+/**
  * Resume after player selects targets for a chosen mode of a modal spell.
  *
  * After mode selection, if the chosen mode requires targets, this continuation

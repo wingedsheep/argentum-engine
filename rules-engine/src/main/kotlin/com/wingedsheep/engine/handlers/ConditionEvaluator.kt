@@ -131,8 +131,10 @@ import com.wingedsheep.sdk.scripting.conditions.ControlledCreatureDiedThisTurnCo
 import com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn
 import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
 import com.wingedsheep.sdk.scripting.conditions.SourcePlottedOnPriorTurn
+import com.wingedsheep.sdk.scripting.conditions.SourceForetoldOnPriorTurn
 import com.wingedsheep.engine.handlers.triggers.CreatureDiedThisTurnConditionEvaluator
 import com.wingedsheep.engine.state.components.identity.PlottedComponent
+import com.wingedsheep.engine.state.components.identity.ForetoldComponent
 import com.wingedsheep.sdk.scripting.conditions.YouWereAttackedThisStep
 import com.wingedsheep.sdk.scripting.conditions.VoidCondition
 import com.wingedsheep.engine.state.components.player.PlayerCitysBlessingComponent
@@ -228,6 +230,12 @@ class ConditionEvaluator(
                 val sourceId = ctx.sourceId
                 val plotted = sourceId?.let { state.getEntity(it)?.get<PlottedComponent>() }
                 plotted != null && plotted.turnPlotted < state.turnNumber
+            }
+
+            is SourceForetoldOnPriorTurn -> {
+                val sourceId = ctx.sourceId
+                val foretold = sourceId?.let { state.getEntity(it)?.get<ForetoldComponent>() }
+                foretold != null && foretold.turnForetold < state.turnNumber
             }
 
             is SourceCastForImpending -> {

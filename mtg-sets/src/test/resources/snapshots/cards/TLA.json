@@ -3388,6 +3388,210 @@
     ]
 }
 
+// Bumi, King of Three Trials
+{
+    "name": "Bumi, King of Three Trials",
+    "manaCost": "{5}{G}",
+    "typeLine": "Legendary Creature — Human Noble Ally",
+    "oracleText": "When Bumi enters, choose up to X, where X is the number of Lesson cards in your graveyard —\n• Put three +1/+1 counters on Bumi.\n• Target player scries 3.\n• Earthbend 3. (Target land you control becomes a 0/0 creature with haste that's still a land. Put three +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "+1/+1",
+                                "count": 3,
+                                "target": "Self"
+                            },
+                            "description": "Put three +1/+1 counters on Bumi."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            },
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            }
+                                        },
+                                        "storeAs": "scried"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "scried",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 3
+                                            }
+                                        },
+                                        "chooser": "TargetPlayer",
+                                        "storeSelected": "toBottom",
+                                        "storeRemainder": "toTop",
+                                        "selectedLabel": "Put on bottom",
+                                        "remainderLabel": "Put on top"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "toBottom",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            },
+                                            "placement": "Bottom"
+                                        }
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "toTop",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Library",
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            },
+                                            "placement": "Top"
+                                        },
+                                        "order": "ControllerChooses"
+                                    },
+                                    "EmitScriedEvent"
+                                ]
+                            },
+                            "targetRequirements": [
+                                "TargetPlayer"
+                            ],
+                            "description": "Target player scries 3."
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AnimateLand",
+                                        "target": {
+                                            "type": "ContextTarget",
+                                            "index": 0
+                                        },
+                                        "power": 0,
+                                        "toughness": 0,
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "HASTE",
+                                        "target": {
+                                            "type": "ContextTarget",
+                                            "index": 0
+                                        },
+                                        "duration": "Permanent"
+                                    },
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "+1/+1",
+                                        "count": 3,
+                                        "target": {
+                                            "type": "ContextTarget",
+                                            "index": 0
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantTriggeredAbility",
+                                        "ability": {
+                                            "id": "ability_2",
+                                            "trigger": {
+                                                "type": "ZoneChangeEvent",
+                                                "from": "Battlefield"
+                                            },
+                                            "effect": {
+                                                "type": "Composite",
+                                                "effects": [
+                                                    {
+                                                        "type": "MoveToZone",
+                                                        "target": "Self",
+                                                        "destination": "Battlefield",
+                                                        "placement": "Tapped",
+                                                        "fromZone": "Graveyard"
+                                                    },
+                                                    {
+                                                        "type": "MoveToZone",
+                                                        "target": "Self",
+                                                        "destination": "Battlefield",
+                                                        "placement": "Tapped",
+                                                        "fromZone": "Exile"
+                                                    }
+                                                ]
+                                            },
+                                            "descriptionOverride": "When this dies or is exiled, return it to the battlefield tapped."
+                                        },
+                                        "target": {
+                                            "type": "ContextTarget",
+                                            "index": 0
+                                        },
+                                        "duration": "Permanent"
+                                    }
+                                ]
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "land ctrl:you"
+                                    }
+                                }
+                            ],
+                            "description": "Earthbend 3. (Target land you control becomes a 0/0 creature with haste that's still a land. Put three +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped.)"
+                        }
+                    ],
+                    "chooseCount": 3,
+                    "minChooseCount": 0,
+                    "dynamicChooseCount": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "Lesson"
+                    }
+                },
+                "descriptionOverride": "When Bumi enters, choose up to X, where X is the number of Lesson cards in your graveyard — • Put three +1/+1 counters on Bumi. • Target player scries 3. • Earthbend 3."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "UNCOMMON",
+        "artist": "Thomas Chamberlain-Keen",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a268697b-22b0-4e1b-a5b6-d9be95025e57.jpg?1764121152"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Buzzard-Wasp Colony
 {
     "name": "Buzzard-Wasp Colony",
@@ -6726,6 +6930,57 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Fated Firepower
+{
+    "name": "Fated Firepower",
+    "manaCost": "{X}{R}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Flash\nThis enchantment enters with X fire counters on it.\nIf a source you control would deal damage to an opponent or a permanent an opponent controls, it deals that much damage plus an amount of damage equal to the number of fire counters on this enchantment instead.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "counterType": {
+                    "type": "Named",
+                    "name": "fire"
+                },
+                "count": "XValue"
+            },
+            {
+                "type": "ModifyDamageAmount",
+                "dynamicModifier": {
+                    "type": "EntityProperty",
+                    "entity": "Source",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": {
+                            "type": "Named",
+                            "name": "fire"
+                        }
+                    }
+                },
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": "OpponentOrPermanentTheyControl",
+                    "source": "SourceYouControl"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "MYTHIC",
+        "artist": "Takayama Toshiaki",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/1/51352127-1f86-42e9-b4ca-2fd58b14e86b.jpg?1768375955"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -15776,6 +16031,61 @@
     ]
 }
 
+// Sozin's Comet
+{
+    "name": "Sozin's Comet",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each creature you control gains firebending 5 until end of turn. (Whenever it attacks, add {R}{R}{R}{R}{R}. This mana lasts until end of combat.)\nForetell {2}{R} (During your turn, you may pay {2} and exile this card from your hand face down. Cast it on a later turn for its foretell cost.)",
+    "keywords": [
+        "FORETELL"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Foretell",
+            "cost": "{2}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "GrantTriggeredAbility",
+                "ability": {
+                    "id": "ability_1",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "RED",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "expiry": "END_OF_COMBAT"
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, add {R}{R}{R}{R}{R}. Until end of combat, you don't lose this mana as steps and phases end."
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "MYTHIC",
+        "artist": "Salvatorre Zee Yazzie",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/649e50e5-299b-4191-87a8-36e9378795be.jpg?1764121059"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Sparring Dummy
 {
     "name": "Sparring Dummy",
@@ -16932,6 +17242,73 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// The Last Agni Kai
+{
+    "name": "The Last Agni Kai",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature you control fights target creature an opponent controls. If the creature the opponent controls is dealt excess damage this way, add that much {R}.\nUntil end of turn, you don't lose unspent red mana as steps and phases end.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "target creature you control"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "target creature an opponent controls"
+                    },
+                    "excessDamageVariable": "excess"
+                },
+                {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "amount": {
+                        "type": "VariableReference",
+                        "variableName": "excess"
+                    }
+                },
+                {
+                    "type": "RetainUnspentMana",
+                    "colors": [
+                        "RED"
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "target creature you control"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "target creature an opponent controls"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "rarity": "RARE",
+        "artist": "Pablo Rivera",
+        "flavorText": "Zuko's journey began when he refused to duel his father, but it would end dueling his sister.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61eaebc6-7575-48ed-b212-ff8b0c7ae694.jpg?1764120987"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -20455,6 +20832,109 @@
     },
     "colorIdentityOverride": [
         "BLACK",
+        "RED"
+    ]
+}
+
+// Zhao, the Moon Slayer
+{
+    "name": "Zhao, the Moon Slayer",
+    "manaCost": "{1}{R}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Menace\nNonbasic lands enter tapped.\n{7}: Put a conqueror counter on Zhao.\nAs long as Zhao has a conqueror counter on him, nonbasic lands are Mountains. (They lose all other land types and abilities and have \"{T}: Add {R}.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{7}"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "conqueror",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "SetLandTypesForGroup",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsLand",
+                                {
+                                    "type": "Not",
+                                    "predicate": "IsBasicLand"
+                                }
+                            ]
+                        }
+                    },
+                    "landTypes": [
+                        "Mountain"
+                    ]
+                },
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Source",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": {
+                                "type": "Named",
+                                "name": "conqueror"
+                            }
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsLand",
+                            {
+                                "type": "Not",
+                                "predicate": "IsBasicLand"
+                            }
+                        ]
+                    },
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "RARE",
+        "artist": "Toraji",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1015bf5-de98-41f3-b6b1-ed95f7465944.jpg?1764121109"
+    },
+    "colorIdentityOverride": [
         "RED"
     ]
 }

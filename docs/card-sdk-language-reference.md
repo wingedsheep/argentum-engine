@@ -377,7 +377,11 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   additively. Read at damage time by the engine's static-amplification path, then cleaned up at end of
   turn. Distinct from the opponent-only, permanent-tied `NoncombatDamageBonus` static. Taii Wakeen,
   Perfect Shot: `{X}, {T}: … it deals that much damage plus X instead.`
-- `Fight(target1, target2)` — two creatures each deal damage equal to their power to each other (CR 701.12).
+- `Fight(target1, target2, excessDamageVariable?)` — two creatures each deal damage equal to their power
+  to each other (CR 701.14). When `excessDamageVariable` is set, the excess damage (CR 120.4a, deathtouch-
+  and marked-damage-aware) that `target1` deals **to `target2`** is stored into that pipeline number
+  variable for a following effect to read via `DynamicAmount.VariableReference` — e.g. The Last Agni Kai:
+  `Fight(yours, theirs, "excess") then AddMana(RED, VariableReference("excess"))`.
 - `DividedDamageEffect(totalDamage, minTargets, maxTargets, dynamicTotal?)` — "N damage divided as you
   choose among target ..." The targets come from the ability's target requirement; pair with
   `TargetCreature(count, minCount)` (Forked Lightning, Skirk Volcanist) or, for "any number of target"
@@ -714,6 +718,12 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   `AnySpend` restricted entry (so it spends like any other mana) and cleared by
   `CombatManager.endCombat`. See [ManaExpiry](#manaexpiry).
 - `AddColorlessMana(amount, restriction?)` — add colorless.
+- `RetainUnspentMana(vararg colors)` — "Until end of turn, you don't lose unspent mana of these colours
+  as steps and phases end." The colour-filtered, single-player, turn-scoped one-shot cousin of the
+  permanent-static `PreventManaPoolEmptying` (Upwelling, which stops *all* emptying for *everyone*).
+  Confers a `RetainUnspentManaComponent` on the resolving controller; at the end-of-turn mana-empty step
+  (`CleanupPhaseManager`) the kept colours survive `ManaPoolComponent.emptyExcept(...)` once, then the
+  marker clears. The Last Agni Kai (`RetainUnspentMana(Color.RED)`).
 - `AddManaOfChoice(colorSet, amount?, restriction?, riders?)` — **unified primitive.** Add N mana of one color the controller picks from a resolved [ManaColorSet](#manacolorset). All "any-color from a constrained pool" cards (any color, commander identity, among permanents, lands could produce, source-chosen color) are expressed as this effect plus a different `ManaColorSet`. `riders` is a `Set<ManaSpellRider>` consumed when the mana pays for a spell (e.g. Path of Ancestry tags its mana with `ScryOnSharedTypeWithCommander`); when riders are set without a `restriction`, the engine stores the entries under `ManaRestriction.AnySpend` to preserve the rider through the pool.
 - `AddAnyColorMana(amount?, restriction?)` — sugar for `AddManaOfChoice(ManaColorSet.AnyColor, amount)`. "Add N mana of any **one** color" (Gilded Lotus): one chosen color, N of it. For "any **combination** of colors" use `AddManaInAnyCombination`.
 - `AddManaOfChosenColor(amount?)` — sugar for `AddManaOfChoice(ManaColorSet.SourceChosenColor, amount)`.
@@ -1441,6 +1451,13 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
 **Top-deck manipulation**
 
 - `scry(count)` — look at top N, bottom any, rest on top. Also `Effects.Scry(count)`.
+- `scry(count, target)` — **"Target player scries N"** (`Effects.Scry(count, target)`). Player-scoped
+  twin of `scry(count)`: when `target` is the controller it is identical (returns the compact
+  `ScryEffect` macro); otherwise it expands to a `scryPipeline` whose gather + library moves read the
+  **target** player's library and whose top/bottom decision is made by that player
+  (`Chooser.TargetPlayer`) — the scry analogue of `mill(count, target)`. Used by modal "• Target
+  player scries N" modes (Bumi, King of Three Trials), where `target` is the chosen mode's local
+  `EffectTarget.ContextTarget(0)`.
 - `surveil(count)` — look at top N, any to graveyard, rest on top. Also `Effects.Surveil(count)`.
   - **Compact macro effect.** `scry`/`surveil` return a single `ScryEffect`/`SurveilEffect` *marker*
     node (`{"type":"Scry","count":N}`), not the unrolled pipeline. The engine's `ScryExecutor` /
@@ -3279,6 +3296,17 @@ staticAbility {
 - `AddCreatureTypeByCounter` — subtype based on counters present.
 - `SetEnchantedLandType(landType)` — "Enchanted land is an Island" — replaces the enchanted
   land's basic land types with a fixed type (Rule 305.7). (Sea's Claim)
+- `SetLandTypesForGroup(filter, landTypes)` — the **group** counterpart of `SetEnchantedLandType`
+  (and the "set/replace" counterpart of `GrantAdditionalTypesToGroup`, which *adds* and keeps
+  abilities): "[filter] are [types]. (They lose all other land types and abilities and have the new
+  type's mana ability.)" Realizes CR 305.7 over a whole group of lands as two continuous effects —
+  Layer 4 `SetBasicLandTypes` (replace the basic land subtypes) + Layer 6 `RemoveAllAbilities`
+  (strip printed abilities). The new type's **intrinsic** mana ability (Mountain → "{T}: Add {R}")
+  is derived from the projected subtype by `IntrinsicManaAbilities` and survives the ability
+  suppression, so the lands still tap for the appropriate color. Gate behind a
+  `ConditionalStaticAbility` for conditional variants. Blood Moon / Magus of the Moon
+  (`filter = GroupFilter(GameObjectFilter.NonbasicLand)`, `landTypes = setOf("Mountain")`); Zhao,
+  the Moon Slayer gates the same on `Conditions.SourceCounterCountAtLeast(Counters.CONQUEROR, 1)`.
 - `SetEnchantedLandTypeFromChosen` — "Enchanted land is the chosen type" — same, but reads the
   type from the source's `ChosenLandTypeComponent` (paired with
   `EntersWithChoice(ChoiceType.BASIC_LAND_TYPE)`). Chosen-value counterpart to
@@ -4229,6 +4257,7 @@ composite abilities).
 - `BasicLandcycling(cost)` — cycling that fetches a basic land type.
 - `Typecycling(type, cost)` — cycling that fetches a card type.
 - `Plot(cost)` — `KeywordAbility.plot(cost)`. Special action available during your main phase while the stack is empty: pay [cost] and exile the card from your hand. It becomes plotted (stamped with a `PlottedComponent`). On a later turn you may cast it from exile without paying its mana cost, as a sorcery (CR 718). Cast permission is granted via the engine's standard `MayPlayPermission` + `PlayWithoutPayingCostComponent`, gated by `Conditions.SourcePlottedOnPriorTurn`. No card-side wiring needed — declare the keyword ability on the card and the engine handles the rest.
+- `Foretell(cost)` — `KeywordAbility.foretell(cost)` (Kaldheim, CR 702.143). A sorcery-speed **special action** available while you have priority during your own turn: pay the fixed **{2}** setup cost and exile the card from your hand **face down** (`ForetoldComponent` + `FaceDownComponent` — hidden from opponents in exile, visible to its owner). On a **later** turn (not the turn it was foretold) you may cast it from exile by paying its **foretell cost** `[cost]` rather than its mana cost. Cast permission is a standard permanent `MayPlayPermission` gated by `Conditions.SourceForetoldOnPriorTurn`, plus a `PlayWithFixedAlternativeManaCostComponent` carrying `[cost]` — the same fixed-alternative-cast machinery **Airbend** uses, honored by `CastFromZoneEnumerator` + `CastSpellHandler` and stripped on leaving exile by `StackResolver` (which also strips the `FaceDownComponent` as the card is cast face up). Structurally Plot's paid cousin (`ForetellCardHandler` / `ForetellEnumerator` mirror `PlotCardHandler` / `PlotEnumerator`): plot is free to set up and free to cast later, foretell costs {2} to exile and has a distinct foretell cost to cast. No card-side wiring needed — declare the keyword ability and the engine handles the rest.
 - `Hideaway(n)` — `KeywordAbility.hideaway(n)`; display tag rendered "Hideaway N". Mechanic is composed manually via `MoveCollectionEffect(faceDown = FaceDownMode.HIDDEN, linkToSource = true)` + `CardSource.FromLinkedExile()` — the keyword itself carries no engine behavior.
 - `Harmonize(cost)` — `KeywordAbility.harmonize(cost)` (Tarkir: Dragonstorm). An alternative cost to cast an instant/sorcery **from your graveyard**, like Flashback, then exile it as it resolves. As you cast it you may tap **a single** untapped creature you control to reduce the **generic** portion of the harmonize cost by that creature's (projected) power — a Convoke-style reduction, but one creature paying generic-equal-to-power instead of one mana per creature. No card-side wiring: declare the keyword ability and the engine handles graveyard-cast enumeration (`CastWithHarmonize`), the per-creature reduction (routed through `AlternativePaymentChoice.harmonizeCreature`), and the exile-on-resolution. The chosen creature and its power are surfaced to the client via `LegalAction.harmonizeCreatures` / `hasHarmonize`; the client offers an on-battlefield single-creature tap step (the `harmonize` pipeline phase + `HarmonizeSelector` HUD, mirroring Convoke). **Harmonize {X}** (e.g. Nature's Rhythm `{X}{G}{G}{G}{G}`): the `CastWithHarmonize` action surfaces `hasXCost`/`maxAffordableX` (max X folds in the best single-creature tap reduction) so the client prompts for X. {X} is generic mana, so the tap reduces the mana paid *for X* — `CastSpellHandler.harmonizePaymentXValue` lowers the X mana once `reduceGeneric` has consumed any printed generic — while the chosen X stamped onto `SpellOnStackComponent.xValue` (and read by the effect, e.g. "mana value X or less") is unchanged. Colored pips are never reduced. **Granting harmonize at runtime:** harmonize can also be granted to a graveyard card that doesn't print it via `Effects.GrantHarmonize(target, cost?, duration)` (Songcrafter Mage). The grant is a `GrantedKeywordAbility` record keyed to the card entity; every harmonize read site consults printed-**or**-granted harmonize through the `HarmonizeGrants.effectiveHarmonize` resolver, so a granted harmonize is castable, reducible, and exiled exactly like a printed one. The grant survives the graveyard → stack move (so exile-on-resolution still fires) and is cleared in the cleanup step.
 - **Waterbend** (Avatar: The Last Airbender) — *not a keyword ability*; a cost flag on an activated ability. Set `hasWaterbend = true` in the `activatedAbility { }` block (alongside a `cost = Costs.Mana("{N}")`). It means "Waterbend {N}: pay {N}, but for each generic mana in that cost you may tap an untapped **artifact or creature** you control instead." It is Convoke widened to artifacts and restricted to generic-only payment — a tapped permanent never covers a colored pip, and the number of taps is bounded by the generic mana in the cost (CR; you can tap a permanent that just came under your control, no summoning-sickness gate). Routed through `AlternativePaymentChoice.waterbendPermanents` (a `Set<EntityId>`), mirroring `hasConvoke`: the activated-ability handler applies it via `AlternativePaymentHandler.applyWaterbendForAbility`, the enumerator surfaces `LegalAction.hasWaterbend` / `waterbendPermanents` (via `CostEnumerationUtils.findWaterbendPermanents` + `canAffordWithWaterbend`), and the client offers an on-battlefield tap step (the `waterbend` pipeline phase + `WaterbendSelector` HUD, generic-only). The ability's `description` auto-prefixes "Waterbend " before the cost.
@@ -5483,6 +5512,12 @@ forced to `0` (the player may always decline); `chooseCount` becomes `min(eval, 
 If the evaluated cap is `0` the effect resolves as a no-op. Used by Riku of Many Paths,
 where the cap is `ContextProperty(MODES_CHOSEN_ON_TRIGGERING_SPELL)`. Equivalent raw shape:
 `ModalEffect(modes, chooseCount = modes.size, minChooseCount = 0, dynamicChooseCount = …)`.
+The cap is any `DynamicAmount` — e.g. **Bumi, King of Three Trials** uses
+`DynamicAmount.Count(Player.You, Zone.GRAVEYARD, GameObjectFilter.Any.withSubtype(Subtype.LESSON))`
+("choose up to X, where X is the number of Lesson cards in your graveyard"). Modes may carry their
+own per-mode targets here just as in a fixed modal — each chosen mode's target (referenced as its
+mode-local `EffectTarget.ContextTarget(0)`) is only demanded when that mode is picked (Bumi's scry
+mode targets a player, its Earthbend mode targets a land).
 
 **Cast-time mode-selection UX (Spree / "choose one or more").** A choose-N modal *spell* cast
 by a human is presented as a **single mode-selection panel** (web client), not a sequential
@@ -5682,8 +5717,16 @@ replacementEffect {
   SourceFilter.Matching(GameObjectFilter.Any.youControl()), damageType = DamageType.NonCombat))` — a
   delirium-gated "double all noncombat damage from sources you control". The doubled damage stays
   attributed to the original source (the engine scales the amount in place).
-- `ModifyDamageAmount(modifier, appliesTo)` — add a flat `modifier` to matching damage (Valley
-  Flamecaller: "deals that much damage plus 1").
+- `ModifyDamageAmount(modifier = 0, dynamicModifier = null, appliesTo)` — add an amount to matching
+  damage. Pass a flat `modifier` (Valley Flamecaller: "deals that much damage plus 1") or a
+  `dynamicModifier: DynamicAmount?` evaluated at damage time against the replacement's **source**
+  permanent (so `DynamicAmount.EntityProperty(Source, …)` / `DynamicAmounts.countersOnSelf(…)` reads
+  the source's own characteristics/counters). Fated Firepower: `dynamicModifier =
+  DynamicAmounts.countersOnSelf(CounterTypeFilter.Named("fire"))` with `appliesTo = DamageEvent(source =
+  SourceFilter.YouControl, recipient = RecipientFilter.OpponentOrPermanentTheyControl)` — "a source you
+  control deals that much damage plus the number of fire counters on this enchantment to an opponent or
+  a permanent an opponent controls". Applied in `DamageUtils.applyStaticDamageAmplification` (both the
+  general and combat damage paths), once per damage event, after `DoubleDamage`.
 - `RedirectDamage(redirectTo, appliesTo, condition = null)` — redirect matching damage to another
   recipient. Now wired as a continuous static replacement (each source applies at most once per damage
   event). `redirectTo` supports `EffectTarget.ControllerOfDamageSource` (the controller of the damaging
@@ -5707,6 +5750,10 @@ replacementEffect {
   predicates: `GameObjectFilter.sharingColorWithRecipient()` (`CardPredicate.SharesColorWithRecipient`,
   Well-Laid Plans — "another creature that shares a color") and `sharingChosenColorWithSource()`
   (`CardPredicate.SharesChosenColorWithSource`, reads the replacement source's `ChosenColorComponent`).
+  `source = SourceFilter.YouControl` matches any source (permanent, spell, ability) controlled by the
+  replacement's controller — "a source you control" (Fated Firepower) — without enumerating a
+  `GameObjectFilter`. `recipient = RecipientFilter.OpponentOrPermanentTheyControl` matches an opponent
+  player **or** any permanent an opponent controls — "an opponent or a permanent an opponent controls".
 - `EntersTapped(unlessCondition?, payLifeCost?)` — "this permanent enters tapped" (`unlessCondition = null`),
   or "enters tapped unless `<condition>`" when an `unlessCondition` is supplied. The "slow land" cycle
   (Deathcap Glade, Dreamroot Cascade, Sundown Pass — "enters tapped unless you control two or more other
@@ -5729,6 +5776,17 @@ replacementEffect {
   untapped regardless). Edge not covered: a same-event simultaneous mass-entry where the source itself is
   among the entering permanents (the source isn't yet consulted), and a land tapped via a generic
   `OnEnterRunEffect` self-tap (e.g. Game Trail) is not overridden.
+- `PermanentsEnterTapped(appliesTo = ZoneChangeEvent(filter, to = Zone.BATTLEFIELD))` — the global/group
+  counterpart of the self-only `EntersTapped`: "[filter] enter the battlefield tapped" (Zhao, the Moon
+  Slayer — "Nonbasic lands enter tapped", `filter = GameObjectFilter.NonbasicLand`; also expresses
+  Imposing Sovereign / Authority of the Consuls "creatures your opponents control enter tapped"). Like
+  `EntersUntapped`, it is a *runtime* replacement stamped into the source's `ReplacementEffectSourceComponent`
+  and consulted from the battlefield against OTHER permanents as they enter, so `appliesTo.filter` describes
+  the *affected* permanents. The entry paths (`PlayLandHandler`, `ZoneTransitionService`) call
+  `EnterTappedReplacements.entersTapped(...)` and mark the permanent tapped — **after** consulting
+  `EnterUntappedReplacements`, so per CR 614 an applicable `EntersUntapped` still wins. (Creature ETBs via
+  the stack are not yet wired to the global scan — `StackResolver` only consults the entering card's own
+  `EntersTapped` — so the opponent-creature variants would additionally need that hook.)
 - `RedirectZoneChange(newDestination, appliesTo, linkToSource = false)` — redirect a zone change to a
   different destination (Rest in Peace / Leyline of the Void: graveyard → exile). `appliesTo` is an
   `EventPattern.ZoneChangeEvent(filter, from?, to?)`; the `filter`'s `controllerPredicate` scopes it
@@ -5918,6 +5976,9 @@ substitution.
   gated on `Conditions.SourceCounterCountAtLeast(Counters.FIRE, 3)` grants `GrantCardType("CREATURE")` so the
   Vehicle is an artifact creature at 3+); reused by later Fated/Fated-Firepower cards — another pure passive
   counter with no inherent rule.
+  `conqueror` (`Counters.CONQUEROR`): TLA — Zhao, the Moon Slayer (a `{7}` ability accumulates one; a
+  `ConditionalStaticAbility` gated on `Conditions.SourceCounterCountAtLeast(Counters.CONQUEROR, 1)` switches on a
+  `SetLandTypesForGroup` making all nonbasic lands Mountains) — another pure passive counter with no inherent rule.
 - `stun` — CR 122.1d, a built-in replacement: "If a permanent with a stun counter on it would become untapped,
   instead remove a stun counter from it." Engine-wired through `untapOrConsumeStun` (`rules-engine/core/UntapHelpers.kt`),
   which is invoked from the untap step (`BeginningPhaseManager`), from `TapUntapExecutor`'s untap branch, and from the

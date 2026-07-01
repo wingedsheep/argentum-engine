@@ -300,6 +300,28 @@ object LibraryPatterns {
     fun scry(count: Int): ScryEffect = ScryEffect(count)
 
     /**
+     * "Target player scries [count]" (CR 701.22) — a *player-scoped* scry. When [target] is the
+     * effect's own controller this is identical to [scry] (returns the compact [ScryEffect] macro);
+     * otherwise it expands to a [scryPipeline] whose gather/library-moves read the *target* player's
+     * library and whose top/bottom decision is made by that player ([Chooser.TargetPlayer]) — the
+     * scry twin of [mill]`(count, target)`. Used by modal "• Target player scries N" modes (Bumi,
+     * King of Three Trials), where the player is the chosen mode's local [EffectTarget.ContextTarget].
+     */
+    fun scry(count: Int, target: EffectTarget): Effect = when (target) {
+        EffectTarget.Controller -> ScryEffect(count)
+        else -> scryPipeline(count, scryPlayer(target), Chooser.TargetPlayer)
+    }
+
+    /** Map a scry [target] to the [Player] reference whose library is looked at (mirrors [mill]). */
+    private fun scryPlayer(target: EffectTarget): Player = when (target) {
+        EffectTarget.Controller -> Player.You
+        is EffectTarget.ContextTarget -> Player.ContextPlayer(target.index)
+        is EffectTarget.BoundVariable -> Player.ContextPlayer(0)
+        is EffectTarget.PlayerRef -> target.player
+        else -> Player.You
+    }
+
+    /**
      * "Surveil [count]" (CR 701.42). Returns the compact [SurveilEffect] macro node; the engine
      * expands it to [surveilPipeline] at execution time (see [SurveilEffect]).
      */
@@ -325,15 +347,20 @@ object LibraryPatterns {
      * so the engine's scry macro executor can build and delegate to it; card definitions should use
      * [scry] / [com.wingedsheep.sdk.dsl.Effects.Scry] instead.
      */
-    fun scryPipeline(count: Int): CompositeEffect = CompositeEffect(
+    fun scryPipeline(
+        count: Int,
+        player: Player = Player.You,
+        chooser: Chooser = Chooser.Controller
+    ): CompositeEffect = CompositeEffect(
         listOfNotNull(
             GatherCardsEffect(
-                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
+                source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count), player),
                 storeAs = "scried"
             ),
             SelectFromCollectionEffect(
                 from = "scried",
                 selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(count)),
+                chooser = chooser,
                 storeSelected = "toBottom",
                 storeRemainder = "toTop",
                 selectedLabel = "Put on bottom",
@@ -341,11 +368,11 @@ object LibraryPatterns {
             ),
             MoveCollectionEffect(
                 from = "toBottom",
-                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)
+                destination = CardDestination.ToZone(Zone.LIBRARY, player, placement = ZonePlacement.Bottom)
             ),
             MoveCollectionEffect(
                 from = "toTop",
-                destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Top),
+                destination = CardDestination.ToZone(Zone.LIBRARY, player, placement = ZonePlacement.Top),
                 order = CardOrder.ControllerChooses
             ),
             // Fire "Whenever you scry" triggers (CR 701.18) after the pipeline finishes.
