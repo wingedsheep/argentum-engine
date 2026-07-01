@@ -473,6 +473,19 @@ function ConnectionOverlay({
                   Game Replays
                 </button>
               </div>
+
+              {accountsEnabled && authStatus !== 'authenticated' && (
+                <p className={styles.accountNudge}>
+                  <button
+                    type="button"
+                    onClick={() => setLoginOpen(true)}
+                    className={styles.accountNudgeButton}
+                  >
+                    Create a free account
+                  </button>{' '}
+                  to save your decks and track your stats — one magic link, no password.
+                </p>
+              )}
             </div>
           )}
 
