@@ -39,6 +39,7 @@ import { formatDateTime } from '@/utils/datetime'
 import { HoverCardPreview } from '@/components/ui/HoverCardPreview'
 import { EloCell, GameModeCell, OpponentCell } from '@/components/profile/gameHistoryCells'
 import { TournamentDetailModal } from '@/components/profile/TournamentDetailModal'
+import { TournamentStatusBadge } from '@/components/tournament/TournamentStatusBadge'
 
 export interface StatsDashboardData {
   stats: AccountStats | null
@@ -247,7 +248,9 @@ export function StatsDashboard(props: StatsDashboardData) {
         {tournaments.length > 0 && (
           <Panel title="Tournaments">
             <p style={styles.subtle}>Open a tournament to see its final standings and every game’s replay.</p>
-            <SimpleTable head={['Date', 'Tournament', { label: 'Mode' }, { label: 'Place', numeric: true }]}>
+            <SimpleTable
+              head={['Date', 'Tournament', { label: 'Mode' }, { label: 'Status' }, { label: 'Place', numeric: true }]}
+            >
               {tournaments.map((t, i) => (
                 <tr
                   key={`${t.id}-${i}`}
@@ -259,9 +262,10 @@ export function StatsDashboard(props: StatsDashboardData) {
                   <td style={styles.td}>
                     <GameModeCell gameMode={t.gameMode} format={t.format} />
                   </td>
-                  <td style={styles.tdNum}>
-                    {t.placement}/{t.playerCount}
+                  <td style={styles.td}>
+                    <TournamentStatusBadge status={t.status} />
                   </td>
+                  <td style={styles.tdNum}>{t.status === 'COMPLETED' ? `${t.placement}/${t.playerCount}` : '—'}</td>
                 </tr>
               ))}
             </SimpleTable>

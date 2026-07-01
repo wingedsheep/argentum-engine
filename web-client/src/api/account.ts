@@ -250,15 +250,21 @@ export interface CardStat {
   readonly imageUri: string | null
 }
 
+/** Tournament lifecycle status, mirroring the server's `TournamentStatus`. */
+export type TournamentStatus = 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED'
+
 export interface UserTournamentEntry {
   /** Opens the full tournament detail (standings + games). */
   readonly id: number
+  /** Completion time, or the start time while still in progress. */
   readonly endedAt: string
   readonly name: string | null
   readonly format: string | null
   readonly gameMode: string | null
+  /** Final placement (1 = winner); 0 while the tournament is still in progress. */
   readonly placement: number
   readonly playerCount: number
+  readonly status: TournamentStatus
 }
 
 /** One player's final standing in a tournament. */
@@ -298,6 +304,7 @@ export interface TournamentDetail {
   readonly playerCount: number
   readonly winnerName: string | null
   readonly endedAt: string
+  readonly status: TournamentStatus
   readonly standings: TournamentStanding[]
   readonly games: TournamentGame[]
 }

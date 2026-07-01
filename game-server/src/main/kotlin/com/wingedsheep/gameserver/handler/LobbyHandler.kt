@@ -52,7 +52,8 @@ class LobbyHandler(
     private val spectatingHandler: SpectatingHandler,
     private val tournamentMatchHandler: TournamentMatchHandler,
     private val freeForAllHandler: FreeForAllHandler,
-    private val deckValidator: DeckValidator
+    private val deckValidator: DeckValidator,
+    private val tournamentResultSink: com.wingedsheep.gameserver.stats.TournamentResultSink
 ) {
     private val logger = LoggerFactory.getLogger(LobbyHandler::class.java)
 
@@ -1779,6 +1780,7 @@ class LobbyHandler(
         logger.info("Player ${identity.playerName} left lobby $lobbyId (cannot rejoin)")
 
         if (lobby.playerCount == 0) {
+            tournamentResultSink.recordAbandoned(lobbyId)
             lobbyRepository.removeLobby(lobbyId)
             logger.info("Lobby $lobbyId removed (empty)")
         } else {
@@ -1808,6 +1810,7 @@ class LobbyHandler(
         logger.info("Player ${identity.playerName} auto-left lobby $lobbyId")
 
         if (lobby.playerCount == 0) {
+            tournamentResultSink.recordAbandoned(lobbyId)
             lobbyRepository.removeLobby(lobbyId)
             logger.info("Lobby $lobbyId removed (empty)")
         } else {
@@ -1865,6 +1868,7 @@ class LobbyHandler(
         }
 
         // Remove the lobby
+        tournamentResultSink.recordAbandoned(lobbyId)
         lobbyRepository.removeLobby(lobbyId)
     }
 

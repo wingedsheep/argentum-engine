@@ -285,4 +285,45 @@ class FlywayMigrationTest : FunSpec({
             postgres.stop()
         }
     }
+
+    test("V9 adds tournament status and allows null ended_at for in-progress rows").config(enabled = dockerAvailable) {
+        val postgres = PostgreSQLContainer<Nothing>(DockerImageName.parse("postgres:16-alpine"))
+        postgres.start()
+        try {
+            migrateAll(postgres)
+
+            DriverManager.getConnection(postgres.jdbcUrl, postgres.username, postgres.password).use { conn ->
+                conn.createStatement().use { st ->
+                    // An insert that omits status backfills status=COMPLETED (the column default).
+                    st.execute(
+                        "INSERT INTO tournaments(id, lobby_id, name, player_count, ended_at) " +
+                            "VALUES (300, 'done', 'Finished', 4, now())"
+                    )
+                    st.executeQuery("SELECT status FROM tournaments WHERE id = 300").use { rs ->
+                        rs.next(); rs.getString(1) shouldBe "COMPLETED"
+                    }
+
+                    // An in-progress tournament: null ended_at, explicit status and started_at.
+                    st.execute(
+                        "INSERT INTO tournaments(id, lobby_id, name, player_count, status, started_at, ended_at) " +
+                            "VALUES (301, 'live', 'Running', 4, 'IN_PROGRESS', now(), NULL)"
+                    )
+                    st.executeQuery("SELECT status, ended_at FROM tournaments WHERE id = 301").use { rs ->
+                        rs.next(); rs.getString(1) shouldBe "IN_PROGRESS"; rs.getTimestamp(2) shouldBe null
+                    }
+
+                    // Ordering by COALESCE(ended_at, started_at) surfaces both, newest first.
+                    st.executeQuery(
+                        "SELECT id FROM tournaments ORDER BY COALESCE(ended_at, started_at, now()) DESC"
+                    ).use { rs ->
+                        rs.next(); val first = rs.getLong(1)
+                        rs.next(); val second = rs.getLong(1)
+                        setOf(first, second) shouldBe setOf(300L, 301L)
+                    }
+                }
+            }
+        } finally {
+            postgres.stop()
+        }
+    }
 })

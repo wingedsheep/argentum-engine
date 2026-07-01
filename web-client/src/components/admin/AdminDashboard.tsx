@@ -38,6 +38,7 @@ import {
 import type { AdminAuth } from '@/api/adminAuth'
 import type { StatBucket } from '@/api/account'
 import { TournamentDetailModal } from '@/components/profile/TournamentDetailModal'
+import { TournamentStatusBadge } from '@/components/tournament/TournamentStatusBadge'
 import { colorLabel } from './statFormat'
 import { GeoMap } from './GeoMap'
 import { AdminScreen, Panel, StatCard, Table, adminTheme, cellStyle, chartTooltipStyle } from './adminUi'
@@ -161,12 +162,15 @@ export function AdminDashboard({ auth, onBack }: { auth: AdminAuth; onBack: () =
         {tournaments.length === 0 ? (
           <p style={cellStyle.muted}>No tournaments recorded yet.</p>
         ) : (
-          <Table head={['Date', 'Name', 'Mode', 'Players', 'Winner']}>
+          <Table head={['Date', 'Name', 'Mode', 'Status', 'Players', 'Winner']}>
             {tournaments.map((t) => (
               <tr key={t.id} style={styles.clickableRow} onClick={() => setOpenTournament(t.id)}>
                 <td style={cellStyle.td}>{t.endedAt.slice(0, 10)}</td>
                 <td style={cellStyle.td}>{t.name ?? '—'}</td>
                 <td style={cellStyle.td}>{t.gameMode ?? '—'}</td>
+                <td style={cellStyle.td}>
+                  <TournamentStatusBadge status={t.status} />
+                </td>
                 <td style={cellStyle.tdNum}>{t.playerCount}</td>
                 <td style={cellStyle.td}>{t.winnerName ?? '—'}</td>
               </tr>

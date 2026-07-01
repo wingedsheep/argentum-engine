@@ -598,6 +598,7 @@ class TournamentMatchHandler(
 
             val tournament = TournamentManager(lobby.lobbyId, players, lobby.gamesPerMatch)
             ctx.lobbyRepository.saveTournament(lobby.lobbyId, tournament)
+            recordTournamentStarted(lobby)
 
             tournament
         }
@@ -705,6 +706,7 @@ class TournamentMatchHandler(
 
         val tournament = TournamentManager(lobby.lobbyId, players, lobby.gamesPerMatch)
         ctx.lobbyRepository.saveTournament(lobby.lobbyId, tournament)
+        recordTournamentStarted(lobby)
 
         val connectedIds = lobby.players.values
             .filter { it.identity.isConnected }
@@ -906,15 +908,14 @@ class TournamentMatchHandler(
         }
 
         // Record the finished tournament for durable stats. No-op unless accounts are enabled, and
-        // only when at least one seat is a human (AI-only / LLM tournaments use a separate path).
+        // only when at least one seat is a human (AI-only / LLM tournaments use a separate path). This
+        // upserts the in-progress row recorded when the bracket went live, flipping it to COMPLETED.
         run {
             val standings = tournament.getRankedStandings()
-            val name = lobby.setNames.joinToString(" / ") + " " +
-                lobby.format.name.lowercase().replaceFirstChar { it.uppercase() }
-            tournamentResultSink.record(
+            tournamentResultSink.recordCompleted(
                 com.wingedsheep.gameserver.stats.RecordedTournament(
                     lobbyId = lobbyId,
-                    name = name,
+                    name = tournamentDisplayName(lobby),
                     format = lobby.format.name,
                     gameMode = lobby.gameMode.name,
                     setCodes = lobby.setCodes.joinToString(","),
@@ -939,6 +940,46 @@ class TournamentMatchHandler(
                 )
             )
         }
+    }
+
+    /** Human-readable tournament name, e.g. "Bloomburrow / Duskmourn Sealed". */
+    private fun tournamentDisplayName(lobby: TournamentLobby): String =
+        lobby.setNames.joinToString(" / ") + " " +
+            lobby.format.name.lowercase().replaceFirstChar { it.uppercase() }
+
+    /**
+     * Record that a tournament has gone live, so it shows in the admin dashboard and player profiles
+     * while it is still being played. Idempotent per lobby (the sink skips if a row already exists) and
+     * a no-op unless accounts are enabled with at least one human seat. Placements are recorded as 0
+     * (unknown) until [completeTournament] fills in the final standings.
+     */
+    private fun recordTournamentStarted(lobby: TournamentLobby) {
+        tournamentResultSink.recordStarted(
+            com.wingedsheep.gameserver.stats.RecordedTournament(
+                lobbyId = lobby.lobbyId,
+                name = tournamentDisplayName(lobby),
+                format = lobby.format.name,
+                gameMode = lobby.gameMode.name,
+                setCodes = lobby.setCodes.joinToString(","),
+                playerCount = lobby.playerCount,
+                rounds = 0,
+                gamesPerMatch = lobby.gamesPerMatch,
+                winnerName = null,
+                startedAt = java.time.Instant.now(),
+                endedAt = null,
+                participants = lobby.players.values.map { ps ->
+                    com.wingedsheep.gameserver.stats.RecordedTournamentParticipant(
+                        userId = ps.identity.userId,
+                        playerName = ps.identity.playerName,
+                        isAi = ps.identity.isAi,
+                        placement = 0,
+                        wins = 0,
+                        losses = 0,
+                        draws = 0,
+                    )
+                },
+            )
+        )
     }
 
     /**

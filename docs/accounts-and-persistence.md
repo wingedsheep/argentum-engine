@@ -20,7 +20,10 @@ the rules engine is untouched.
   played, head-to-head vs specific opponents, and a game history, all computed on demand.
 - **Deck contents** of every recorded game are stored card-by-card, so we can compute the most-played
   cards and per-card win rates.
-- **Tournaments** are recorded on completion (settings + final standings).
+- **Tournaments** are recorded across their whole lifecycle: an `IN_PROGRESS` row is written when the
+  bracket goes live, flipped to `COMPLETED` (with final standings) when it finishes, or `ABANDONED` if
+  the lobby is torn down first. This means the admin dashboard and player profiles see running and
+  abandoned tournaments, not only finished ones. The row is keyed by lobby id and upserted in place.
 - **Admin dashboard** — global totals, games-per-day, mode/color distributions, top cards, recorded
   tournaments, and an IP-based geolocation estimate of where players connect from.
 - **Guest play still works** — login is optional. Per-account stats need an account, but guest games
@@ -95,8 +98,8 @@ Flyway migration `V2__match_stats.sql` extends the stats schema:
 | `match_results.game_mode / frame_count / turn_count` | matchmaking mode + activity measures (the recording gate, games-per-day, mode distribution) |
 | `match_participants.colors / set_codes / is_ai / client_ip` | per-seat deck color identity + sets, AI flag (distinguishes AI from guests), and raw client IP (**admin-only**, never sent to clients) |
 | `match_participant_cards` | each seat's deck card-by-card (`card_name`, `copies`) — backs most-played-cards + per-card win rate |
-| `tournaments` | finished tournaments + settings (format, mode, set codes, player count, rounds, winner) |
-| `tournament_participants` | a seat in a tournament with final placement + W/L/D |
+| `tournaments` | tournaments + settings (format, mode, set codes, player count, rounds, winner) and a `status` (`IN_PROGRESS` / `COMPLETED` / `ABANDONED`); `ended_at` is null while in progress |
+| `tournament_participants` | a seat in a tournament with placement (0 until it finishes) + W/L/D |
 
 Flyway migration `V3__admin_role.sql` adds `users.is_admin` (boolean, default false) — the per-account
 admin flag (see **Admin access** below).

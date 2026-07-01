@@ -8,6 +8,7 @@ import type React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { type TournamentDetail, fetchTournamentDetail } from '@/api/account'
 import { gameModeLabel } from '@/components/admin/statFormat'
+import { TournamentStatusBadge } from '@/components/tournament/TournamentStatusBadge'
 
 export function TournamentDetailModal({
   tournamentId,
@@ -46,7 +47,10 @@ export function TournamentDetailModal({
     <div style={styles.backdrop} onClick={onClose} role="presentation">
       <div style={styles.modal} onClick={(e) => e.stopPropagation()} role="dialog" aria-modal>
         <div style={styles.header}>
-          <h2 style={styles.title}>{title}</h2>
+          <span style={styles.titleRow}>
+            <h2 style={styles.title}>{title}</h2>
+            {detail && detail.status !== 'COMPLETED' && <TournamentStatusBadge status={detail.status} />}
+          </span>
           <button type="button" style={styles.close} onClick={onClose} aria-label="Close">
             ✕
           </button>
@@ -66,7 +70,7 @@ export function TournamentDetailModal({
           <p style={styles.muted}>Loading…</p>
         ) : (
           <>
-            <h3 style={styles.section}>Final standings</h3>
+            <h3 style={styles.section}>{detail.status === 'COMPLETED' ? 'Final standings' : 'Standings so far'}</h3>
             <div style={styles.tableWrap}>
               <table style={styles.table}>
                 <thead>
@@ -191,6 +195,7 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '20px 22px',
   },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
+  titleRow: { display: 'inline-flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   title: { margin: 0, color: '#fff', fontSize: 20 },
   close: { background: 'none', border: 'none', color: '#999', cursor: 'pointer', fontSize: 18 },
   muted: { margin: '4px 0 0', color: '#888', fontSize: 13 },

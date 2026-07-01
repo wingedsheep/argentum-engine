@@ -9,7 +9,10 @@ import org.springframework.stereotype.Component
 import java.time.Instant
 import java.util.UUID
 
-/** A finished tournament ready to be recorded for stats. */
+/** Lifecycle state of a recorded tournament. Mirrors the `status` column on the `tournaments` table. */
+enum class TournamentStatus { IN_PROGRESS, COMPLETED, ABANDONED }
+
+/** A tournament ready to be recorded for stats — at start (partial) or on completion (final). */
 data class RecordedTournament(
     val lobbyId: String,
     val name: String?,
@@ -21,7 +24,8 @@ data class RecordedTournament(
     val gamesPerMatch: Int,
     val winnerName: String?,
     val startedAt: Instant?,
-    val endedAt: Instant,
+    /** Null while the tournament is still in progress; set when it completes. */
+    val endedAt: Instant?,
     val participants: List<RecordedTournamentParticipant>,
 )
 
@@ -37,54 +41,94 @@ data class RecordedTournamentParticipant(
 )
 
 /**
- * Records finished tournaments for durable stats. The completion path calls this unconditionally;
- * which implementation is wired depends on whether accounts are enabled, mirroring [MatchResultSink].
+ * Records tournaments for durable stats across their whole lifecycle, so the admin dashboard and
+ * player profiles see in-progress and abandoned tournaments, not only finished ones. All three calls
+ * are safe no-ops when accounts are disabled (mirroring [MatchResultSink]); the JDBC implementation is
+ * keyed on lobby id so start/complete/abandon upsert a single row.
  */
 interface TournamentResultSink {
-    fun record(tournament: RecordedTournament)
+    /** Record that a tournament has gone live. Idempotent per lobby; skipped when no seat is human. */
+    fun recordStarted(tournament: RecordedTournament)
+
+    /** Record a tournament's final result, flipping it to COMPLETED. Upserts the in-progress row. */
+    fun recordCompleted(tournament: RecordedTournament)
+
+    /** Mark a torn-down tournament as ABANDONED. No-op unless an in-progress row exists for the lobby. */
+    fun recordAbandoned(lobbyId: String)
 }
 
 /** Default: accounts disabled — tournaments are not persisted. */
 @Component
 @ConditionalOnProperty(name = ["accounts.enabled"], havingValue = "false", matchIfMissing = true)
 class NoOpTournamentResultSink : TournamentResultSink {
-    override fun record(tournament: RecordedTournament) = Unit
+    override fun recordStarted(tournament: RecordedTournament) = Unit
+    override fun recordCompleted(tournament: RecordedTournament) = Unit
+    override fun recordAbandoned(lobbyId: String) = Unit
 }
 
-/** Accounts enabled: persist the tournament, but only when at least one seat is a human. */
+/** Accounts enabled: persist the tournament lifecycle, but only when at least one seat is a human. */
 @Component
 @ConditionalOnProperty(name = ["accounts.enabled"], havingValue = "true")
 class JdbcTournamentResultSink(private val tournaments: TournamentRepository) : TournamentResultSink {
     private val logger = LoggerFactory.getLogger(JdbcTournamentResultSink::class.java)
 
-    override fun record(tournament: RecordedTournament) {
+    override fun recordStarted(tournament: RecordedTournament) {
         if (tournament.participants.none { !it.isAi }) return
+        // Idempotent: startTournament and the eager-creation path may both fire for one lobby.
+        if (tournaments.findFirstByLobbyIdOrderByIdDesc(tournament.lobbyId) != null) return
+        tournaments.save(tournament.toRow(TournamentStatus.IN_PROGRESS))
+        logger.debug("Recorded tournament {} as in progress ({} seats)", tournament.lobbyId, tournament.participants.size)
+    }
+
+    override fun recordCompleted(tournament: RecordedTournament) {
+        if (tournament.participants.none { !it.isAi }) return
+        val existing = tournaments.findFirstByLobbyIdOrderByIdDesc(tournament.lobbyId)
         tournaments.save(
-            TournamentRow(
-                lobbyId = tournament.lobbyId,
-                name = tournament.name,
-                format = tournament.format,
-                gameMode = tournament.gameMode,
-                setCodes = tournament.setCodes,
-                playerCount = tournament.playerCount,
-                rounds = tournament.rounds,
-                gamesPerMatch = tournament.gamesPerMatch,
-                winnerName = tournament.winnerName,
-                startedAt = tournament.startedAt,
-                endedAt = tournament.endedAt,
-                participants = tournament.participants.map {
-                    TournamentParticipantRow(
-                        userId = it.userId,
-                        playerName = it.playerName,
-                        isAi = it.isAi,
-                        placement = it.placement,
-                        wins = it.wins,
-                        losses = it.losses,
-                        draws = it.draws,
-                    )
-                }.toSet(),
+            tournament.toRow(
+                status = TournamentStatus.COMPLETED,
+                id = existing?.id,
+                // Keep the start time captured when the bracket went live.
+                startedAt = tournament.startedAt ?: existing?.startedAt,
             )
         )
-        logger.debug("Recorded tournament {} for stats ({} seats)", tournament.lobbyId, tournament.participants.size)
+        logger.debug("Recorded tournament {} as completed ({} seats)", tournament.lobbyId, tournament.participants.size)
     }
+
+    override fun recordAbandoned(lobbyId: String) {
+        val existing = tournaments.findFirstByLobbyIdOrderByIdDesc(lobbyId) ?: return
+        if (existing.status != TournamentStatus.IN_PROGRESS.name) return
+        tournaments.save(existing.copy(status = TournamentStatus.ABANDONED.name, endedAt = Instant.now()))
+        logger.debug("Recorded tournament {} as abandoned", lobbyId)
+    }
+
+    private fun RecordedTournament.toRow(
+        status: TournamentStatus,
+        id: Long? = null,
+        startedAt: Instant? = this.startedAt,
+    ) = TournamentRow(
+        id = id,
+        lobbyId = lobbyId,
+        name = name,
+        format = format,
+        gameMode = gameMode,
+        setCodes = setCodes,
+        playerCount = playerCount,
+        rounds = rounds,
+        gamesPerMatch = gamesPerMatch,
+        winnerName = winnerName,
+        status = status.name,
+        startedAt = startedAt,
+        endedAt = endedAt,
+        participants = participants.map {
+            TournamentParticipantRow(
+                userId = it.userId,
+                playerName = it.playerName,
+                isAi = it.isAi,
+                placement = it.placement,
+                wins = it.wins,
+                losses = it.losses,
+                draws = it.draws,
+            )
+        }.toSet(),
+    )
 }

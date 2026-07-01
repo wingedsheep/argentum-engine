@@ -32,6 +32,7 @@ class ConnectionHandler(
     private val sender: MessageSender,
     private val aiGameManager: AiGameManager,
     private val boosterGenerator: BoosterGenerator,
+    private val tournamentResultSink: com.wingedsheep.gameserver.stats.TournamentResultSink,
     // Present only when accounts are enabled; resolved lazily so this handler stays usable without it.
     private val authSupport: ObjectProvider<AuthSupport>,
     private val magicLinkService: ObjectProvider<MagicLinkService>,
@@ -443,6 +444,7 @@ class ConnectionHandler(
                     LobbyState.WAITING_FOR_PLAYERS, LobbyState.DRAFTING, LobbyState.DECK_BUILDING -> {
                         lobby.removePlayer(identity.playerId)
                         if (lobby.playerCount == 0) {
+                            tournamentResultSink.recordAbandoned(lobbyId)
                             lobbyRepository.removeLobby(lobbyId)
                             lobbyRepository.removeTournament(lobbyId)
                         } else {

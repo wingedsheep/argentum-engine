@@ -41,15 +41,20 @@ export interface CardWinRate {
   readonly winRate: number
 }
 
+/** Tournament lifecycle status, mirroring the server's `TournamentStatus`. */
+export type TournamentStatus = 'IN_PROGRESS' | 'COMPLETED' | 'ABANDONED'
+
 export interface TournamentSummary {
   /** Opens the full tournament detail (standings + games). */
   readonly id: number
+  /** Completion time, or the start time while still in progress. */
   readonly endedAt: string
   readonly name: string | null
   readonly format: string | null
   readonly gameMode: string | null
   readonly playerCount: number
   readonly winnerName: string | null
+  readonly status: TournamentStatus
 }
 
 /** Coarse connection origin for a seat, resolved from its IP server-side (raw IP never sent). */

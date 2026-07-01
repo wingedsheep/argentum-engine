@@ -12,12 +12,16 @@ import {
   type AccountStats,
   type DeckSummary,
   type GameHistoryEntry,
+  type UserTournamentEntry,
   fetchHistoryPage,
   fetchStats,
+  fetchTournamentHistory,
   listDecks,
 } from '@/api/account'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { DeckViewModal } from '@/components/profile/DeckViewModal'
+import { TournamentDetailModal } from '@/components/profile/TournamentDetailModal'
+import { TournamentStatusBadge } from '@/components/tournament/TournamentStatusBadge'
 import { EloCell, GameModeCell, OpponentCell } from '@/components/profile/gameHistoryCells'
 import { colorForIdentity, colorLabel } from '@/components/admin/statFormat'
 import { formatDateTime } from '@/utils/datetime'
@@ -39,6 +43,8 @@ export function ProfilePage() {
   const [history, setHistory] = useState<GameHistoryEntry[]>([])
   const [historyTotal, setHistoryTotal] = useState(0)
   const [page, setPage] = useState(0)
+  const [tournaments, setTournaments] = useState<UserTournamentEntry[]>([])
+  const [openTournament, setOpenTournament] = useState<number | null>(null)
   const [loginOpen, setLoginOpen] = useState(false)
 
   const [editingName, setEditingName] = useState(false)
@@ -67,6 +73,7 @@ export function ProfilePage() {
     if (status !== 'authenticated') return
     void fetchStats().then(setStats).catch(() => setStats(null))
     void listDecks().then(setDecks).catch(() => setDecks([]))
+    void fetchTournamentHistory(25).then(setTournaments).catch(() => setTournaments([]))
   }, [status])
 
   useEffect(() => {
@@ -293,6 +300,43 @@ export function ProfilePage() {
               )}
             </div>
           )}
+          {tournaments.length > 0 && (
+            <div style={styles.sectionBlock}>
+              <div style={styles.recentHead}>
+                <h2 style={{ ...styles.section, margin: 0 }}>Recent tournaments</h2>
+                <span style={styles.muted}>Open one for its standings and every game’s replay</span>
+              </div>
+              <SimpleTable
+                head={[
+                  'Date',
+                  'Tournament',
+                  'Mode',
+                  'Status',
+                  { label: 'Place', numeric: true },
+                ]}
+              >
+                {tournaments.map((t, i) => (
+                  <tr
+                    key={`${t.id}-${i}`}
+                    style={styles.clickableRow}
+                    onClick={() => setOpenTournament(t.id)}
+                  >
+                    <td style={styles.td}>{formatDateTime(t.endedAt)}</td>
+                    <td style={styles.tdLink}>{t.name?.trim() || 'Tournament'}</td>
+                    <td style={styles.td}>
+                      <GameModeCell gameMode={t.gameMode} format={t.format} />
+                    </td>
+                    <td style={styles.td}>
+                      <TournamentStatusBadge status={t.status} />
+                    </td>
+                    <td style={styles.tdNum}>
+                      {t.status === 'COMPLETED' ? `${t.placement}/${t.playerCount}` : '—'}
+                    </td>
+                  </tr>
+                ))}
+              </SimpleTable>
+            </div>
+          )}
         </div>
 
         {deckModal && (
@@ -301,6 +345,9 @@ export function ProfilePage() {
             opponentLabel={deckModal.opponent}
             onClose={() => setDeckModal(null)}
           />
+        )}
+        {openTournament != null && (
+          <TournamentDetailModal tournamentId={openTournament} onClose={() => setOpenTournament(null)} />
         )}
       </div>
     )
@@ -449,7 +496,9 @@ const styles: Record<string, React.CSSProperties> = {
   th: { textAlign: 'left', color: '#888', fontWeight: 600, padding: '6px 8px', borderBottom: '1px solid #2a2a3e' },
   thNum: { textAlign: 'right', color: '#888', fontWeight: 600, padding: '6px 8px', borderBottom: '1px solid #2a2a3e' },
   td: { textAlign: 'left', color: '#ccc', padding: '6px 8px', borderBottom: '1px solid #1f1f2e' },
+  tdLink: { textAlign: 'left', color: '#8b9bff', padding: '6px 8px', borderBottom: '1px solid #1f1f2e' },
   tdNum: { textAlign: 'right', color: '#ccc', padding: '6px 8px', borderBottom: '1px solid #1f1f2e' },
+  clickableRow: { cursor: 'pointer' },
   colorsCell: { display: 'inline-flex', alignItems: 'center', gap: 6 },
   colorDot: { width: 9, height: 9, borderRadius: 999, display: 'inline-block' },
   pager: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginTop: 12 },

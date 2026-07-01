@@ -144,8 +144,12 @@ data class TournamentRow(
     val rounds: Int = 0,
     val gamesPerMatch: Int = 0,
     val winnerName: String? = null,
+    /** Lifecycle status: IN_PROGRESS while the bracket is live, COMPLETED when it finishes, or ABANDONED
+     *  if the lobby is torn down before completing. See [com.wingedsheep.gameserver.stats.TournamentStatus]. */
+    val status: String = "COMPLETED",
     val startedAt: Instant? = null,
-    val endedAt: Instant = Instant.now(),
+    /** Null while [status] is IN_PROGRESS; set when the tournament completes or is abandoned. */
+    val endedAt: Instant? = null,
     @MappedCollection(idColumn = "tournament_id")
     val participants: Set<TournamentParticipantRow> = emptySet(),
 )

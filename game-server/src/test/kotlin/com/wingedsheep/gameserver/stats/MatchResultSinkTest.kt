@@ -67,18 +67,67 @@ class MatchResultSinkTest : FunSpec({
         verify(exactly = 1) { repo.save(any()) }
     }
 
-    test("tournaments with at least one human seat are recorded; AI-only are skipped") {
+    test("recordStarted persists an in-progress row for a human seat but skips AI-only") {
         val repo = mockk<TournamentRepository>(relaxed = true)
+        every { repo.findFirstByLobbyIdOrderByIdDesc(any()) } returns null
         val saved = slot<TournamentRow>()
         every { repo.save(capture(saved)) } answers { saved.captured }
         val sink = JdbcTournamentResultSink(repo)
 
-        sink.record(tournament(RecordedTournamentParticipant(null, "Bot", isAi = true, placement = 1, wins = 3, losses = 0, draws = 0)))
+        sink.recordStarted(tournament(RecordedTournamentParticipant(null, "Bot", isAi = true, placement = 0, wins = 0, losses = 0, draws = 0)))
         verify(exactly = 0) { repo.save(any()) }
 
-        sink.record(tournament(RecordedTournamentParticipant(SOME_USER, "Carol", isAi = false, placement = 1, wins = 3, losses = 0, draws = 0)))
+        sink.recordStarted(tournament(RecordedTournamentParticipant(SOME_USER, "Carol", isAi = false, placement = 0, wins = 0, losses = 0, draws = 0)))
         verify(exactly = 1) { repo.save(any()) }
+        saved.captured.status shouldBe TournamentStatus.IN_PROGRESS.name
+    }
+
+    test("recordStarted is idempotent — a second start for the same lobby does not insert again") {
+        val repo = mockk<TournamentRepository>(relaxed = true)
+        every { repo.findFirstByLobbyIdOrderByIdDesc(any()) } returns
+            TournamentRow(id = 1, lobbyId = "l", status = "IN_PROGRESS")
+        JdbcTournamentResultSink(repo).recordStarted(
+            tournament(RecordedTournamentParticipant(SOME_USER, "Carol", isAi = false, placement = 0, wins = 0, losses = 0, draws = 0))
+        )
+        verify(exactly = 0) { repo.save(any()) }
+    }
+
+    test("recordCompleted upserts the in-progress row, preserving its id and start time") {
+        val repo = mockk<TournamentRepository>(relaxed = true)
+        val startedAt = Instant.now()
+        every { repo.findFirstByLobbyIdOrderByIdDesc("l") } returns
+            TournamentRow(id = 7, lobbyId = "l", status = "IN_PROGRESS", startedAt = startedAt)
+        val saved = slot<TournamentRow>()
+        every { repo.save(capture(saved)) } answers { saved.captured }
+
+        JdbcTournamentResultSink(repo).recordCompleted(
+            tournament(RecordedTournamentParticipant(SOME_USER, "Carol", isAi = false, placement = 1, wins = 3, losses = 0, draws = 0))
+        )
+        saved.captured.id shouldBe 7
+        saved.captured.status shouldBe TournamentStatus.COMPLETED.name
+        saved.captured.startedAt shouldBe startedAt
         saved.captured.winnerName shouldBe "Carol"
+    }
+
+    test("recordAbandoned flips only in-progress rows to ABANDONED") {
+        val repo = mockk<TournamentRepository>(relaxed = true)
+        val saved = slot<TournamentRow>()
+        every { repo.save(capture(saved)) } answers { saved.captured }
+
+        // No row recorded yet → nothing to abandon.
+        every { repo.findFirstByLobbyIdOrderByIdDesc("l") } returns null
+        JdbcTournamentResultSink(repo).recordAbandoned("l")
+        verify(exactly = 0) { repo.save(any()) }
+
+        // Already completed → left untouched.
+        every { repo.findFirstByLobbyIdOrderByIdDesc("l") } returns TournamentRow(id = 1, lobbyId = "l", status = "COMPLETED")
+        JdbcTournamentResultSink(repo).recordAbandoned("l")
+        verify(exactly = 0) { repo.save(any()) }
+
+        // In progress → marked abandoned.
+        every { repo.findFirstByLobbyIdOrderByIdDesc("l") } returns TournamentRow(id = 1, lobbyId = "l", status = "IN_PROGRESS")
+        JdbcTournamentResultSink(repo).recordAbandoned("l")
+        saved.captured.status shouldBe TournamentStatus.ABANDONED.name
     }
 })
 

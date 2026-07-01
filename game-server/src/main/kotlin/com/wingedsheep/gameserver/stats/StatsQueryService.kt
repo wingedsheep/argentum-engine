@@ -122,12 +122,16 @@ data class CardWinRate(val cardName: String, val decks: Long, val wins: Long, va
 /** One tournament in a user's tournament history. [id] opens the full tournament detail. */
 data class UserTournamentEntry(
     val id: Long,
+    /** Completion time, or the start time while the tournament is still in progress. */
     val endedAt: String,
     val name: String?,
     val format: String?,
     val gameMode: String?,
+    /** Final placement (1 = winner); 0 while the tournament is still in progress. */
     val placement: Int,
     val playerCount: Int,
+    /** IN_PROGRESS / COMPLETED / ABANDONED — see [TournamentStatus]. */
+    val status: String,
 )
 
 /** One player's final standing in a tournament. */
@@ -171,7 +175,10 @@ data class TournamentDetail(
     val setCodes: String?,
     val playerCount: Int,
     val winnerName: String?,
+    /** Completion time, or the start time while the tournament is still in progress. */
     val endedAt: String,
+    /** IN_PROGRESS / COMPLETED / ABANDONED — see [TournamentStatus]. */
+    val status: String,
     val standings: List<TournamentStanding>,
     val games: List<TournamentGame>,
 )
@@ -193,12 +200,15 @@ data class AdminUserStat(
 /** A recorded tournament for the admin list. The [id] opens the shared tournament detail view. */
 data class TournamentSummary(
     val id: Long,
+    /** Completion time, or the start time while the tournament is still in progress. */
     val endedAt: String,
     val name: String?,
     val format: String?,
     val gameMode: String?,
     val playerCount: Int,
     val winnerName: String?,
+    /** IN_PROGRESS / COMPLETED / ABANDONED — see [TournamentStatus]. */
+    val status: String,
 )
 
 /** One seat in a recorded game, for the admin global game list. */
@@ -671,15 +681,16 @@ class StatsQueryService(
     private fun imageUriFor(name: String): String? =
         lookupCard(name)?.let { printingRegistry.defaultPrinting(it.name)?.imageUri ?: it.metadata.imageUri }
 
-    /** The user's tournament finishes, newest first. */
+    /** The user's tournaments, newest first — including any in-progress or abandoned ones. */
     fun tournamentHistory(userId: UUID, limit: Int): List<UserTournamentEntry> = jdbc.query(
         """
-        SELECT t.id AS id, t.ended_at AS ended_at, t.name AS name, t.format AS format,
-               t.game_mode AS game_mode, tp.placement AS placement, t.player_count AS player_count
+        SELECT t.id AS id, COALESCE(t.ended_at, t.started_at, now()) AS ended_at, t.name AS name,
+               t.format AS format, t.game_mode AS game_mode, tp.placement AS placement,
+               t.player_count AS player_count, t.status AS status
         FROM tournament_participants tp
         JOIN tournaments t ON t.id = tp.tournament_id
         WHERE tp.user_id = ?
-        ORDER BY t.ended_at DESC
+        ORDER BY COALESCE(t.ended_at, t.started_at, now()) DESC
         LIMIT ?
         """.trimIndent(),
         { rs, _ ->
@@ -691,6 +702,7 @@ class StatsQueryService(
                 gameMode = rs.getString("game_mode"),
                 placement = rs.getInt("placement"),
                 playerCount = rs.getInt("player_count"),
+                status = rs.getString("status"),
             )
         },
         userId, limit,
@@ -705,7 +717,8 @@ class StatsQueryService(
     fun tournamentDetail(id: Long): TournamentDetail? {
         val header = jdbc.query(
             """
-            SELECT id, lobby_id, name, format, game_mode, set_codes, player_count, winner_name, ended_at
+            SELECT id, lobby_id, name, format, game_mode, set_codes, player_count, winner_name,
+                   COALESCE(ended_at, started_at, now()) AS ended_at, status
             FROM tournaments WHERE id = ?
             """.trimIndent(),
             { rs, _ ->
@@ -718,6 +731,7 @@ class StatsQueryService(
                     playerCount = rs.getInt("player_count"),
                     winnerName = rs.getString("winner_name"),
                     endedAt = rs.getTimestamp("ended_at").toInstant().toString(),
+                    status = rs.getString("status"),
                     standings = emptyList(),
                     games = emptyList(),
                 ) to rs.getString("lobby_id")
@@ -937,12 +951,13 @@ class StatsQueryService(
         minDecks,
     ).filterNot { lookupCard(it.cardName)?.typeLine?.isBasicLand == true }.take(limit)
 
-    /** Recorded tournaments, newest first. */
+    /** Recorded tournaments, newest first — including in-progress and abandoned ones. */
     fun recentTournaments(limit: Int): List<TournamentSummary> = jdbc.query(
         """
-        SELECT id, ended_at, name, format, game_mode, player_count, winner_name
+        SELECT id, COALESCE(ended_at, started_at, now()) AS ended_at, name, format, game_mode,
+               player_count, winner_name, status
         FROM tournaments
-        ORDER BY ended_at DESC
+        ORDER BY COALESCE(ended_at, started_at, now()) DESC
         LIMIT ?
         """.trimIndent(),
         { rs, _ ->
@@ -954,6 +969,7 @@ class StatsQueryService(
                 gameMode = rs.getString("game_mode"),
                 playerCount = rs.getInt("player_count"),
                 winnerName = rs.getString("winner_name"),
+                status = rs.getString("status"),
             )
         },
         limit,
