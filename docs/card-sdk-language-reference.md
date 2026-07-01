@@ -2319,6 +2319,14 @@ work for abilities-on-stack (which carry no `CardComponent`).
   ability controller) it never matches — it is only meaningful in target/condition contexts. Used by
   Stolen Uniform's "if it's attached to a creature you control" guard
   (`Conditions.EntityMatches(EffectTarget.TriggeringEntity, GameObjectFilter.Any.attachedTo(GameObjectFilter.Creature.youControl()))`).
+- `ExiledWithSource` (filter builder `exiledWithSource()`) — source-relative: the candidate card is
+  one the effect's source permanent exiled, i.e. its id is recorded in the source's
+  `LinkedExileComponent` (the same linkage set by `RedirectZoneChange(linkToSource = true)`,
+  `RedirectZoneChangeWithEffect(linkToSource = true)`, `MoveToZoneEffect(linkToSource = true)`, and the
+  `FromLinkedExile` pipeline source). Backs "target creature card exiled with ~" reanimation — The
+  Darkness Crystal: `TargetObject(filter = TargetFilter(GameObjectFilter.Creature.exiledWithSource(),
+  zone = Zone.EXILE))`. Resolves against `PredicateContext.sourceId`; inert with no source, and never
+  matches in group-static projection or trigger-gating contexts.
 - `IsWarpExiled` (filter builder `warpExiled()`) — card in exile via warp's
   end-of-turn delayed trigger (CR 702.185b).
 - `WasCastForWarp` (filter builder `castForWarp()`) — battlefield permanent that
@@ -5628,6 +5636,20 @@ replacementEffect {
   listOf(CardPredicate.IsNontoken), controllerPredicate = ControllerPredicate.And(listOf(OwnedByOpponent,
   Not(ControlledByYou))))))`. The redirect (and link) is honored across every graveyard path: SBA deaths,
   mill/discard/destroy (`ZoneTransitionService`), spell resolution, counters, and fizzles (`StackResolver`).
+- `RedirectZoneChangeWithEffect(newDestination, additionalEffect, selfOnly = false, linkToSource = false,
+  appliesTo)` — like `RedirectZoneChange` but also runs `additionalEffect` when the replacement fires.
+  The additional effect is applied through a small executor whitelist (not the full pipeline) —
+  `TakeExtraTurnEffect` (Ugin's Nexus), `AddCountersEffect` on the redirected card (Darigaaz
+  Reincarnated), and `GainLifeEffect` (fixed amount, gained by the replacement source's controller;
+  emits `LifeChangedEvent` so life-gain triggers fire). `selfOnly = true` restricts it to the source
+  permanent itself; `linkToSource = true` (exile destination only) adds the redirected card to the
+  source's `LinkedExileComponent` exactly like `RedirectZoneChange.linkToSource`. The Darkness Crystal's
+  "If a nontoken creature an opponent controls would die, instead exile it and you gain 2 life" is
+  `RedirectZoneChangeWithEffect(newDestination = Zone.EXILE, additionalEffect = GainLifeEffect(2),
+  linkToSource = true, appliesTo = ZoneChangeEvent(filter = GameObjectFilter.Creature.nontoken().opponentControls(),
+  from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD))` — the linked cards are then retrieved by a
+  `Creature.exiledWithSource()` target (see §7 state predicates). Honored across the same graveyard
+  paths as `RedirectZoneChange`.
 - `ReplacementEffect.IfYouDoBranchEffect(...)` — branch on "if you do" replacement.
 - `OnEnterRunEffect(effect)` — generic "as ~ enters the battlefield, run [effect]". The wrapped effect
   executes via the normal effect-executor pipeline at entry time (so `EffectTarget.Self` resolves to

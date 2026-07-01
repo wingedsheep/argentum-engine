@@ -1672,9 +1672,11 @@ class StackResolver(
                 }
 
                 pausedRedirect.additionalEffect?.let { extra ->
-                    pausedState = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
+                    val (updatedState, extraEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
                         pausedState, extra, pausedRedirect.effectControllerId, spellId
                     )
+                    pausedState = updatedState
+                    pausedCounterEvents.addAll(extraEvents)
                 }
 
                 // Include the zone change event along with effect events
@@ -1824,9 +1826,11 @@ class StackResolver(
         }
 
         redirect.additionalEffect?.let { extra ->
-            newState = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
+            val (updatedState, extraEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
                 newState, extra, redirect.effectControllerId, spellId
             )
+            newState = updatedState
+            events.addAll(extraEvents)
         }
 
         events.add(

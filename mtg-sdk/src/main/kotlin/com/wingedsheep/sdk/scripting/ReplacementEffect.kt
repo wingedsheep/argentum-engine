@@ -1443,6 +1443,12 @@ data class PreventExtraTurns(
  * @param newDestination The zone to redirect to (e.g., Exile)
  * @param additionalEffect The effect to execute when replacement fires (e.g., TakeExtraTurnEffect)
  * @param selfOnly When true, only applies when the entity being moved IS this permanent
+ * @param linkToSource When true and [newDestination] is [Zone.EXILE], the redirected card is linked
+ *        to this replacement's source permanent via its `LinkedExileComponent`, so the source can
+ *        later reference the cards it exiled (mirrors [RedirectZoneChange.linkToSource]). Enables
+ *        "if a creature an opponent controls would die, instead exile it and ...; {cost}: return a
+ *        creature card exiled with ~" recursion (The Darkness Crystal). Ignored for non-exile
+ *        destinations.
  * @param appliesTo The zone change event this replacement intercepts
  */
 @SerialName("RedirectZoneChangeWithEffect")
@@ -1451,6 +1457,7 @@ data class RedirectZoneChangeWithEffect(
     val newDestination: Zone,
     val additionalEffect: Effect,
     val selfOnly: Boolean = false,
+    val linkToSource: Boolean = false,
     override val appliesTo: EventPattern
 ) : ReplacementEffect {
     override val description: String =

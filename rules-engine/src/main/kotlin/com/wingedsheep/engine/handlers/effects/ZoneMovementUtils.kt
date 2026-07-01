@@ -545,11 +545,15 @@ object ZoneMovementUtils {
                         if (event.from != null && event.from != fromZone) continue
                         if (!effect.selfOnly && !matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId)) continue
 
-                        // Match found — redirect AND return additional effect
+                        // Match found — redirect AND return additional effect. When the replacement
+                        // links its exiled cards to the source (The Darkness Crystal), carry the
+                        // source id so the mover attaches the card to its LinkedExileComponent.
+                        val linkSource = if (effect.linkToSource && effect.newDestination == Zone.EXILE) permanentId else null
                         return ZoneChangeRedirectResult(
                             effect.newDestination,
                             effect.additionalEffect,
-                            sourceControllerId
+                            sourceControllerId,
+                            linkSourceId = linkSource
                         )
                     }
                     else -> continue
@@ -640,7 +644,12 @@ object ZoneMovementUtils {
 
     /**
      * Apply the additional effect from a RedirectZoneChangeWithEffect replacement.
-     * Supports TakeExtraTurnEffect (Ugin's Nexus) and AddCountersEffect (Darigaaz Reincarnated).
+     * Supports TakeExtraTurnEffect (Ugin's Nexus), AddCountersEffect (Darigaaz Reincarnated),
+     * and GainLifeEffect (The Darkness Crystal — "instead exile it and you gain 2 life").
+     *
+     * Returns the updated state plus any events the effect emitted (e.g. LifeGainedEvent, so
+     * "whenever you gain life" triggers see the rider). Callers must fold the events into their
+     * own event stream.
      *
      * @param entityId The entity that was redirected (for effects that target it, like adding counters)
      */
@@ -649,18 +658,19 @@ object ZoneMovementUtils {
         effect: com.wingedsheep.sdk.scripting.effects.Effect,
         controllerId: EntityId?,
         entityId: EntityId? = null
-    ): GameState {
+    ): Pair<GameState, List<EngineGameEvent>> {
         if (effect is com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect) {
             // Check if extra turns are prevented by any permanent on the battlefield
-            if (ReplacementEffectUtils.isExtraTurnPrevented(state)) return state
+            if (ReplacementEffectUtils.isExtraTurnPrevented(state)) return state to emptyList()
 
-            val cid = controllerId ?: return state
-            return state.getOpponents(cid).fold(state) { acc, opponentId ->
+            val cid = controllerId ?: return state to emptyList()
+            val newState = state.getOpponents(cid).fold(state) { acc, opponentId ->
                 acc.updateEntity(opponentId) { container ->
                     val existing = container.get<SkipNextTurnComponent>()?.turns ?: 0
                     container.with(SkipNextTurnComponent(existing + 1))
                 }
             }
+            return newState to emptyList()
         }
         if (effect is com.wingedsheep.sdk.scripting.effects.AddCountersEffect && entityId != null) {
             val counterType = try {
@@ -675,11 +685,21 @@ object ZoneMovementUtils {
                 com.wingedsheep.sdk.core.CounterType.PLUS_ONE_PLUS_ONE
             }
             val current = state.getEntity(entityId)?.get<CountersComponent>() ?: CountersComponent()
-            return state.updateEntity(entityId) { container ->
+            val newState = state.updateEntity(entityId) { container ->
                 container.with(current.withAdded(counterType, effect.count))
             }
+            return newState to emptyList()
         }
-        return state
+        if (effect is com.wingedsheep.sdk.scripting.effects.GainLifeEffect) {
+            // The rider's controller (the replacement's source controller) gains the life. Only a
+            // fixed amount is meaningful here — there is no full effect context at replacement time.
+            val cid = controllerId ?: return state to emptyList()
+            val amount = (effect.amount as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount
+                ?: return state to emptyList()
+            val (newState, event) = DamageUtils.gainLife(state, cid, amount)
+            return newState to listOfNotNull(event)
+        }
+        return state to emptyList()
     }
 
     /**

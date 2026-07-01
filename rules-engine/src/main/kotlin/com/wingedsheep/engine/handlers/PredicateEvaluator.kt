@@ -1098,6 +1098,16 @@ class PredicateEvaluator {
                 attachedTo == entityId
             }
 
+            // Source-relative: the candidate card was exiled by the effect's source permanent, i.e.
+            // its id is recorded in the source's LinkedExileComponent. Backs "target card exiled
+            // with ~" reanimation (The Darkness Crystal). Inert with no source context.
+            StatePredicate.ExiledWithSource -> {
+                val sourceId = context?.sourceId ?: return false
+                state.getEntity(sourceId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent>()
+                    ?.exiledIds?.contains(entityId) == true
+            }
+
             // Saddled marker — set by BecomeSaddledExecutor when a Saddle ability resolves
             // (CR 702.171b). Cleared at end-of-turn cleanup or when the permanent leaves play.
             StatePredicate.IsSaddled -> container.has<SaddledComponent>()

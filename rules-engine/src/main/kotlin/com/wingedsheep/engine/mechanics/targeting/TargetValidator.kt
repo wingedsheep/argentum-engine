@@ -759,7 +759,7 @@ class TargetValidator {
             Zone.GRAVEYARD -> validateGraveyardTarget(state, target, filter, casterId, sourceId, xValue, targetPlayerId)
             Zone.BATTLEFIELD -> validatePermanentTarget(state, target, filter, casterId, sourceId, xValue)
             Zone.STACK -> validateSpellTarget(state, target, filter, casterId, xValue, sourceId)
-            else -> validateCardInZoneTarget(state, target, filter, casterId, xValue)
+            else -> validateCardInZoneTarget(state, target, filter, casterId, xValue, sourceId)
         }
     }
 
@@ -812,7 +812,8 @@ class TargetValidator {
         target: ChosenTarget,
         filter: TargetFilter,
         casterId: EntityId,
-        xValue: Int? = null
+        xValue: Int? = null,
+        sourceId: EntityId? = null
     ): String? {
         if (target !is ChosenTarget.Card) {
             return "Target must be a card"
@@ -829,7 +830,9 @@ class TargetValidator {
             return "Target not found in ${filter.zone.displayName}"
         }
 
-        val predicateContext = PredicateContext(controllerId = casterId, ownerId = target.ownerId, xValue = xValue)
+        // sourceId lets source-relative predicates evaluate (e.g. ExiledWithSource — "target card
+        // exiled with ~"). Mirrors the graveyard/spell validation paths.
+        val predicateContext = PredicateContext(controllerId = casterId, ownerId = target.ownerId, xValue = xValue, sourceId = sourceId)
         val matches = predicateEvaluator.matches(state, state.projectedState, target.cardId, filter.baseFilter, predicateContext)
         if (!matches) {
             return "Target does not match filter: ${filter.description}"

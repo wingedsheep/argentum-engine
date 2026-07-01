@@ -465,6 +465,7 @@ class BeginningPhaseManager(
         StatePredicate.IsWarpExiled,
         StatePredicate.NotTargetedByAbilityFromSameNamedSource,
         StatePredicate.IsAttachedToBySource,
+        StatePredicate.ExiledWithSource,
         StatePredicate.WasCastForWarp -> true
         is StatePredicate.AttachedToCardType -> true
         is StatePredicate.AttachedTo -> true

@@ -792,6 +792,15 @@ data class GameObjectFilter(
     )
 
     /**
+     * Must be a card exiled by the effect's source permanent (recorded in the source's
+     * `LinkedExileComponent`). Source-relative — use when filtering candidates in the exile zone
+     * for "target card exiled with ~" reanimation abilities (The Darkness Crystal).
+     */
+    fun exiledWithSource() = copy(
+        statePredicates = statePredicates + StatePredicate.ExiledWithSource
+    )
+
+    /**
      * Must be a permanent on the battlefield that was cast for its warp cost
      * (CR 702.185) — i.e., the engine wrote a `WarpedComponent` when the
      * warped spell resolved. Use this to gate effects on warp-cast permanents,

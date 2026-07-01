@@ -586,9 +586,11 @@ object ZoneTransitionService {
 
         // 9. Apply redirect additional effects if any
         if (redirectResult.additionalEffect != null) {
-            newState = ZoneMovementUtils.applyReplacementAdditionalEffect(
+            val (updatedState, extraEvents) = ZoneMovementUtils.applyReplacementAdditionalEffect(
                 newState, redirectResult.additionalEffect, redirectResult.effectControllerId, entityId
             )
+            newState = updatedState
+            events.addAll(extraEvents)
         }
 
         return ZoneTransitionResult(

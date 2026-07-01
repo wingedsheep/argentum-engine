@@ -507,6 +507,23 @@ sealed interface StatePredicate {
         override val description: String = "that the source is attached to"
     }
 
+    /**
+     * The candidate card is one this effect's source permanent exiled — i.e. its entity id is
+     * recorded in the source's `LinkedExileComponent` (the same linkage set by
+     * `RedirectZoneChange(linkToSource = true)`, `RedirectZoneChangeWithEffect(linkToSource = true)`,
+     * `MoveToZoneEffect(linkToSource = true)`, and the `FromLinkedExile` pipeline source).
+     * Source-relative: resolves against the source supplied in the evaluation context, and is false
+     * if the source has no linked exile or there is no source context.
+     *
+     * Backs "target creature card exiled with ~" reanimation abilities (The Darkness Crystal), where
+     * the ability retrieves a specific card from among those its own permanent banished.
+     */
+    @SerialName("ExiledWithSource")
+    @Serializable
+    data object ExiledWithSource : Entity {
+        override val description: String = "exiled with this permanent"
+    }
+
     // =============================================================================
     // Composite / Logical Combinators
     // =============================================================================

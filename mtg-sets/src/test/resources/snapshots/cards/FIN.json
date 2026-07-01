@@ -17459,6 +17459,136 @@
     ]
 }
 
+// The Darkness Crystal
+{
+    "name": "The Darkness Crystal",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Black spells you cast cost {1} less to cast.\nIf a nontoken creature an opponent controls would die, instead exile it and you gain 2 life.\n{4}{B}{B}, {T}: Put target creature card exiled with The Darkness Crystal onto the battlefield tapped under your control with two additional +1/+1 counters on it.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{B}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target creature card exiled with The Darkness Crystal"
+                            },
+                            "destination": "Battlefield",
+                            "placement": "Tapped",
+                            "controllerOverride": "Controller",
+                            "fromZone": "Exile"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 2,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target creature card exiled with The Darkness Crystal"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "ExiledWithSource"
+                                ]
+                            },
+                            "zone": "Exile"
+                        },
+                        "id": "target creature card exiled with The Darkness Crystal"
+                    }
+                ]
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "black"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChangeWithEffect",
+                "newDestination": "Exile",
+                "additionalEffect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "linkToSource": true,
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:opponent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "96",
+        "rarity": "RARE",
+        "artist": "Pablo Mendoza",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f93b6ac-54ce-45d0-8549-19307406e6e5.jpg?1782686526",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "The cost reduction applies only to generic mana in the total cost of black spells you cast."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "If a creature token an opponent controls dies, it goes to that player's graveyard as normal before ceasing to exist."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "While you control The Darkness Crystal, abilities that trigger whenever a nontoken creature an opponent controls dies won't trigger because that card is exiled instead."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "If The Darkness Crystal leaves the battlefield at the same time as one or more nontoken creatures an opponent controls would die, those creature cards will be exiled and you'll gain 2 life for each of them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // The Earth Crystal
 {
     "name": "The Earth Crystal",

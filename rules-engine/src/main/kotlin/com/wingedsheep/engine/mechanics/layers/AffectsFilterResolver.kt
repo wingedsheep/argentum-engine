@@ -399,6 +399,10 @@ internal class AffectsFilterResolver {
         // permanent, absent in group-static projection. Only meaningful in target/gather-filter
         // contexts via PredicateEvaluator. Never match here.
         StatePredicate.IsAttachedToBySource -> false
+        // Source-relative exile linkage (LinkedExileComponent on the effect source). Only
+        // meaningful in target/gather-filter contexts via PredicateEvaluator; never match in
+        // group-static projection.
+        StatePredicate.ExiledWithSource -> false
         StatePredicate.EnteredThisTurn -> container.has<EnteredThisTurnComponent>()
         StatePredicate.WasDealtDamageThisTurn -> container.has<WasDealtDamageThisTurnComponent>()
         StatePredicate.HasDealtDamage -> container.has<HasDealtDamageComponent>()

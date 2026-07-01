@@ -132,11 +132,14 @@ object SbaZoneMovementHelper {
             newState = ZoneMovementUtils.linkExiledToSource(newState, entityId, redirectResult.linkSourceId)
         }
 
-        // Apply additional replacement effect (e.g., Ugin's Nexus extra turn, Darigaaz egg counters)
+        // Apply additional replacement effect (e.g., Ugin's Nexus extra turn, Darigaaz egg
+        // counters, The Darkness Crystal's "you gain 2 life").
         if (redirectResult.additionalEffect != null) {
-            newState = ZoneMovementUtils.applyReplacementAdditionalEffect(
+            val (updatedState, extraEvents) = ZoneMovementUtils.applyReplacementAdditionalEffect(
                 newState, redirectResult.additionalEffect, redirectResult.effectControllerId, entityId
             )
+            newState = updatedState
+            events.addAll(extraEvents)
         }
 
         return ExecutionResult.success(newState, events)
