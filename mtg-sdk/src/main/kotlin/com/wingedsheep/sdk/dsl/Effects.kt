@@ -1933,9 +1933,12 @@ object Effects {
      *
      * @param count Number of tokens to create
      * @param tapped Whether the tokens enter the battlefield tapped
+     * @param controller Who controls the tokens (null = effect controller); pass
+     *   `EffectTarget.TargetController` for "its controller creates two Treasure tokens"
+     *   (An Offer You Can't Refuse)
      */
-    fun CreateTreasure(count: Int = 1, tapped: Boolean = false): Effect =
-        CreatePredefinedTokenEffect("Treasure", count, tapped = tapped)
+    fun CreateTreasure(count: Int = 1, tapped: Boolean = false, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Treasure", count, controller, tapped = tapped)
 
     /**
      * Create a dynamic number of Treasure tokens — the count is evaluated at resolution

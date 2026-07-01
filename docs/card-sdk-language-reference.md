@@ -824,9 +824,11 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   path for a bare `CardDefinition`, sibling to the in-zone token-copy path). If no creature has that
   mana value, nothing is created (the cost was still paid). The minted token's own `{X}` reads 0 — it
   never went on the stack. Pass `DynamicAmount.XValue` for "mana value X".
-- `CreateTreasure(count?, tapped?)` — Treasure tokens. `count` accepts an `Int` or a `DynamicAmount`
+- `CreateTreasure(count?, tapped?, controller?)` — Treasure tokens. `count` accepts an `Int` or a `DynamicAmount`
   (the latter evaluated at resolution, e.g. `CreateTreasure(DynamicAmounts.sourcePower(), tapped = true)`
-  for Goldvein Hydra's "create a number of tapped Treasure tokens equal to its power").
+  for Goldvein Hydra's "create a number of tapped Treasure tokens equal to its power"). `controller`
+  (Int overload) redirects the tokens, e.g. `EffectTarget.TargetController` for "its controller creates
+  two Treasure tokens" (An Offer You Can't Refuse).
 - `CreateFood(count?, controller?)` — Food tokens.
 - `CreateBlood(count?, controller?)` — Blood tokens (artifact with "{1}, {T}, Discard a card, Sacrifice this artifact: Draw a card.").
 - `CreateClue(count?, controller?)` / `Investigate(count?, controller?)` — Clue tokens (artifact with
