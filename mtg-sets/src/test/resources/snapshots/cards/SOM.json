@@ -1,0 +1,23 @@
+// Exsanguinate
+{
+    "name": "Exsanguinate",
+    "manaCost": "{X}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Each opponent loses X life. You gain life equal to the life lost this way.",
+    "script": {
+        "spellEffect": {
+            "type": "DrainLife",
+            "amount": "XValue"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Carl Critchlow",
+        "flavorText": "Vampires don't consider patience a virtue nor gluttony a sin.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/8/0878b541-a730-49db-b062-5a01656e269d.jpg?1782715331"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}

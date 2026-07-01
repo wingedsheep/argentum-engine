@@ -754,7 +754,9 @@ object DamageUtils {
         val toRemove = mutableListOf<Int>()
 
         if (updatedEffects.any {
-                it.effect.modification is SerializableModification.PreventAllDamageTo &&
+                val mod = it.effect.modification
+                mod is SerializableModification.PreventAllDamageTo &&
+                    (!mod.combatOnly || isCombatDamage) &&
                     targetId in it.effect.affectedEntities
             }) {
             return state to 0

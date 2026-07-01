@@ -11,6 +11,7 @@ class LifeExecutors(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
 ) : ExecutorModule {
     override fun executors(): List<EffectExecutor<*>> = listOf(
+        DrainLifeExecutor(amountEvaluator),
         ExchangeLifeAndPowerExecutor(),
         GainLifeExecutor(amountEvaluator),
         LoseLifeExecutor(amountEvaluator),

@@ -314,6 +314,26 @@ object Effects {
         LoseLifeEffect(amount, target)
 
     /**
+     * Life drain: each player in [from] loses [amount] life, then [to] gains life equal to
+     * the total life actually lost this way, as a single life-gain event ("Each opponent
+     * loses X life. You gain life equal to the life lost this way." — Exsanguinate).
+     */
+    fun DrainLife(
+        amount: DynamicAmount,
+        from: EffectTarget = EffectTarget.PlayerRef(Player.EachOpponent),
+        to: EffectTarget = EffectTarget.Controller
+    ): Effect = com.wingedsheep.sdk.scripting.effects.DrainLifeEffect(amount, from, to)
+
+    /**
+     * Life drain with a fixed amount — see [DrainLife].
+     */
+    fun DrainLife(
+        amount: Int,
+        from: EffectTarget = EffectTarget.PlayerRef(Player.EachOpponent),
+        to: EffectTarget = EffectTarget.Controller
+    ): Effect = com.wingedsheep.sdk.scripting.effects.DrainLifeEffect(amount, from, to)
+
+    /**
      * Target player loses the game.
      */
     fun LoseGame(target: EffectTarget = EffectTarget.Controller, message: String? = null): Effect =
@@ -1942,9 +1962,12 @@ object Effects {
      *
      * @param count Number of tokens to create
      * @param tapped Whether the tokens enter the battlefield tapped
+     * @param controller Who controls the tokens (null = effect controller); pass
+     *   `EffectTarget.TargetController` for "its controller creates two Treasure tokens"
+     *   (An Offer You Can't Refuse)
      */
-    fun CreateTreasure(count: Int = 1, tapped: Boolean = false): Effect =
-        CreatePredefinedTokenEffect("Treasure", count, tapped = tapped)
+    fun CreateTreasure(count: Int = 1, tapped: Boolean = false, controller: EffectTarget? = null): Effect =
+        CreatePredefinedTokenEffect("Treasure", count, controller, tapped = tapped)
 
     /**
      * Create a dynamic number of Treasure tokens — the count is evaluated at resolution
@@ -3269,6 +3292,12 @@ object Effects {
      */
     fun PreventAllCombatDamage(): Effect =
         PreventDamageEffect(scope = PreventionScope.CombatOnly)
+
+    /**
+     * Prevent all combat damage that would be dealt to [target] this turn (Fleeting Flight).
+     */
+    fun PreventAllCombatDamageTo(target: EffectTarget, duration: Duration = Duration.EndOfTurn): Effect =
+        PreventDamageEffect(target = target, scope = PreventionScope.CombatOnly, duration = duration)
 
     /**
      * Prevent all combat damage that would be dealt by creatures matching a filter.

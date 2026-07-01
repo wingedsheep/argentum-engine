@@ -2583,6 +2583,59 @@
     ]
 }
 
+// Mischievous Pup
+{
+    "name": "Mischievous Pup",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Dog",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nWhen this creature enters, return up to one other target permanent you control to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "other permanent you control"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "permanent ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "other permanent you control"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Devin Platts",
+        "flavorText": "\"Either he made a gnome very angry when he took that, or he'll make one very happy when he brings it back.\"\n—Ihio, Oteclan market vendor",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c219861-f808-456f-b551-37512764062d.jpg?1782694591"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Nurturing Bristleback
 {
     "name": "Nurturing Bristleback",

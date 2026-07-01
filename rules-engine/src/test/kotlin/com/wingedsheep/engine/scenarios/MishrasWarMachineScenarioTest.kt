@@ -104,7 +104,7 @@ class MishrasWarMachineScenarioTest : ScenarioTestBase() {
                         id = shieldId,
                         effect = FloatingEffectData(
                             layer = Layer.ABILITY,
-                            modification = SerializableModification.PreventAllDamageTo,
+                            modification = SerializableModification.PreventAllDamageTo(),
                             affectedEntities = setOf(player1),
                         ),
                         duration = Duration.EndOfTurn,

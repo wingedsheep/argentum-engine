@@ -1,3 +1,49 @@
+// Bake into a Pie
+{
+    "name": "Bake into a Pie",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature. Create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Zoltan Boros",
+        "flavorText": "\"My secret ingredient? Well, I can't tell you that. But here's a hint. It's not love.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42a4d090-1bb7-4334-ab22-e2527391e79b.jpg?1782707883"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Raging Redcap
 {
     "name": "Raging Redcap",

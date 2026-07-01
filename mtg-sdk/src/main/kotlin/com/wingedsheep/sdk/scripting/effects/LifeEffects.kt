@@ -61,6 +61,39 @@ data class LoseLifeEffect(
 }
 
 /**
+ * Life drain composite: each player in [from] loses [amount] life, then [to] gains life
+ * equal to the total life actually lost this way ("Each opponent loses X life. You gain
+ * life equal to the life lost this way." — Exsanguinate, Gray Merchant of Asphodel).
+ *
+ * The gain is keyed to the life *actually* lost — each loss honors `ModifyLifeLoss`
+ * replacements individually — and lands as a single life-gain event after all losses
+ * (one lifegain trigger, not one per opponent).
+ */
+@SerialName("DrainLife")
+@Serializable
+data class DrainLifeEffect(
+    val amount: DynamicAmount,
+    val from: EffectTarget = EffectTarget.PlayerRef(Player.EachOpponent),
+    val to: EffectTarget = EffectTarget.Controller
+) : Effect {
+    /** Convenience constructor for fixed amounts */
+    constructor(
+        amount: Int,
+        from: EffectTarget = EffectTarget.PlayerRef(Player.EachOpponent),
+        to: EffectTarget = EffectTarget.Controller
+    ) : this(DynamicAmount.Fixed(amount), from, to)
+
+    override val description: String =
+        "${from.description.replaceFirstChar { it.uppercase() }} loses ${amount.description} life. " +
+            "${to.description.replaceFirstChar { it.uppercase() }} gains life equal to the life lost this way"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newAmount !== amount) copy(amount = newAmount) else this
+    }
+}
+
+/**
  * Pay life cost effect.
  * Used as a cost in OptionalCostEffect.
  */

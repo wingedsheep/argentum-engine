@@ -1,3 +1,45 @@
+// An Offer You Can't Refuse
+{
+    "name": "An Offer You Can't Refuse",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target noncreature spell. Its controller creates two Treasure tokens. (They're artifacts with \"{T}, Sacrifice this token: Add one mana of any color.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure",
+                    "count": 2,
+                    "controller": "TargetController"
+                },
+                "Counter"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "noncreature",
+                    "zone": "Stack"
+                },
+                "id": "target noncreature spell"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "UNCOMMON",
+        "artist": "Dallas Williams",
+        "flavorText": "Elspeth wanted answers. Xander needed a spy. Their paths were destined to cross.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9d349f3-5be2-4b1f-a4c3-ba94822cf0cf.jpg?1782701632"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Fake Your Own Death
 {
     "name": "Fake Your Own Death",

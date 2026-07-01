@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.PreventDamageEffect
 import com.wingedsheep.sdk.scripting.effects.PreventionDirection
 import com.wingedsheep.sdk.scripting.effects.PreventionScope
@@ -199,14 +200,30 @@ class PreventDamageExecutor(
                 )
             }
 
-            // Global combat damage prevention (no specific target)
+            // Global combat damage prevention ("prevent all combat damage this turn", Fog).
+            // The Effects.PreventAllCombatDamage() facade leaves `target` at its
+            // EffectTarget.Controller default; an explicit target means the targeted
+            // combat-only shield below.
+            effect.scope == PreventionScope.CombatOnly &&
+            effect.direction == PreventionDirection.ToTarget &&
+            effect.sourceFilter is PreventionSourceFilter.AnySource &&
+            effect.amount == null &&
+            effect.target == EffectTarget.Controller -> {
+                affectedEntities = emptySet()
+                modification = SerializableModification.PreventAllCombatDamage
+            }
+
+            // Targeted combat-only prevention ("prevent all combat damage that would be
+            // dealt to it this turn", Fleeting Flight).
             effect.scope == PreventionScope.CombatOnly &&
             effect.direction == PreventionDirection.ToTarget &&
             effect.sourceFilter is PreventionSourceFilter.AnySource &&
             effect.amount == null -> {
-                // "Prevent all combat damage this turn"
-                affectedEntities = emptySet()
-                modification = SerializableModification.PreventAllCombatDamage
+                val targetId = context.resolveTarget(effect.target)
+                    ?: return EffectResult.error(state, "Could not resolve target for PreventDamageEffect")
+                state.getEntity(targetId) ?: return EffectResult.success(state)
+                affectedEntities = setOf(targetId)
+                modification = SerializableModification.PreventAllDamageTo(combatOnly = true)
             }
 
             // Prevent combat damage from a group (e.g., non-Soldier creatures)
@@ -262,7 +279,7 @@ class PreventDamageExecutor(
                     ?: return EffectResult.error(state, "Could not resolve target for PreventDamageEffect")
                 state.getEntity(targetId) ?: return EffectResult.success(state)
                 affectedEntities = setOf(targetId)
-                modification = SerializableModification.PreventAllDamageTo
+                modification = SerializableModification.PreventAllDamageTo()
             }
 
             else -> {

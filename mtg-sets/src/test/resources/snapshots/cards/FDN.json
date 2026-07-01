@@ -1948,6 +1948,64 @@
     ]
 }
 
+// Fleeting Flight
+{
+    "name": "Fleeting Flight",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Put a +1/+1 counter on target creature. It gains flying until end of turn. Prevent all combat damage that would be dealt to it this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    },
+                    "scope": "CombatOnly"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Leonardo Santanna",
+        "flavorText": "On that fateful day, Sir Brilbury's fear of heights was outmatched by his sense of duty.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55139100-9342-41fd-b10a-8e9932e605d4.jpg?1782689255"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Gatekeeper of Malakir
 {
     "name": "Gatekeeper of Malakir",

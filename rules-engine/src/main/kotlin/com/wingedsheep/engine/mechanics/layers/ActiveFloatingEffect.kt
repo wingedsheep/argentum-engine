@@ -252,9 +252,11 @@ sealed interface SerializableModification {
 
     /**
      * Damage prevention: prevent all damage that would be dealt to the affected entities.
+     * With [combatOnly] set, only combat damage is prevented ("prevent all combat damage
+     * that would be dealt to it this turn" — Fleeting Flight).
      */
     @Serializable
-    data object PreventAllDamageTo : SerializableModification
+    data class PreventAllDamageTo(val combatOnly: Boolean = false) : SerializableModification
 
     /**
      * Regeneration shield: the next time the target permanent would be destroyed this turn,
