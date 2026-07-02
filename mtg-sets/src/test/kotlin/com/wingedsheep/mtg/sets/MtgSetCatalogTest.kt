@@ -89,6 +89,35 @@ class MtgSetCatalogTest : FunSpec({
         }
     }
 
+    // The duplicate-canonical trap (the Giant Growth bug): a card's full `card(...)` CardDefinition
+    // is the *canonical* the rules engine keys on, and CardRegistry stores it by name with
+    // last-write-wins. Sets register chronologically, so a second canonical for the same name in a
+    // later set silently overwrites the earlier one — the drafted early-print card then resolves to
+    // the later set's art/oracle. Only a card's *earliest* real printing may carry a canonical
+    // `card(...)`; every later set must contribute a `Printing(...)` row instead. Basic lands are the
+    // one legitimate multi-set canonical (each set defines its own art variants) and are excluded.
+    test("no card name has a canonical CardDefinition in more than one set") {
+        val canonicalsByName = MtgSetCatalog.all
+            .flatMap { set -> set.cards.map { set.code to it } }
+            .filterNot { (_, card) -> card.typeLine.isBasicLand }
+            .groupBy({ (_, card) -> card.name }, { (code, _) -> code })
+
+        val duplicates = canonicalsByName
+            .filterValues { it.distinct().size > 1 }
+            .toSortedMap()
+
+        withClue(
+            "Card name(s) with a canonical CardDefinition in >1 set — only the earliest printing " +
+                "may carry a `card(...)`; later sets must use a `Printing(...)` row (CLAUDE.md " +
+                "\"Reprints\"):\n" +
+                duplicates.entries.joinToString("\n") { (name, codes) ->
+                    "  $name -> ${codes.distinct().sorted()}"
+                }
+        ) {
+            duplicates.keys.shouldBeEmpty()
+        }
+    }
+
     test("release dates, when present, are parseable ISO YYYY-MM-DD") {
         assertSoftly {
             for (set in MtgSetCatalog.all) {

@@ -9856,55 +9856,6 @@
     ]
 }
 
-// Sage of Lat-Nam
-{
-    "name": "Sage of Lat-Nam",
-    "manaCost": "{1}{U}",
-    "typeLine": "Creature — Human Artificer",
-    "oracleText": "{T}, Sacrifice an artifact: Draw a card.",
-    "creatureStats": {
-        "power": 1,
-        "toughness": 2
-    },
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": {
-                    "type": "CostComposite",
-                    "costs": [
-                        "CostTap",
-                        {
-                            "type": "CostAtomWrapper",
-                            "atom": {
-                                "type": "AtomSacrifice",
-                                "filter": "artifact"
-                            }
-                        }
-                    ]
-                },
-                "effect": {
-                    "type": "DrawCards",
-                    "count": {
-                        "type": "Fixed",
-                        "amount": 1
-                    }
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "64",
-        "rarity": "UNCOMMON",
-        "artist": "Matt Stewart",
-        "flavorText": "\"Though it was laid to waste by the brothers, many schools of magic trace their origins to the College of Lat-Nam, including the first Tolarian Academy.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7395b77-f7f7-404b-8639-9db6dc28d558.jpg?1562745828"
-    },
-    "colorIdentityOverride": [
-        "BLUE"
-    ]
-}
-
 // Sanctum Spirit
 {
     "name": "Sanctum Spirit",
@@ -10322,32 +10273,6 @@
     ]
 }
 
-// Serra Angel
-{
-    "name": "Serra Angel",
-    "manaCost": "{3}{W}{W}",
-    "typeLine": "Creature — Angel",
-    "oracleText": "Flying, vigilance",
-    "creatureStats": {
-        "power": 4,
-        "toughness": 4
-    },
-    "keywords": [
-        "FLYING",
-        "VIGILANCE"
-    ],
-    "metadata": {
-        "collectorNumber": "33",
-        "rarity": "UNCOMMON",
-        "artist": "Donato Giancola",
-        "flavorText": "The angel remembers her past lives like dreams. Her song held up meadows. Her blade drove back darkness. Her wings carried her across the ages.",
-        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b56b9131-4f7e-4912-ba47-63ed82f21d1b.jpg?1562741601"
-    },
-    "colorIdentityOverride": [
-        "WHITE"
-    ]
-}
-
 // Serra Disciple
 {
     "name": "Serra Disciple",
@@ -10757,102 +10682,6 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb79a623-21c3-4310-bc76-310935511d45.jpg?1592322777"
     },
     "colorIdentityOverride": []
-}
-
-// Siege-Gang Commander
-{
-    "name": "Siege-Gang Commander",
-    "manaCost": "{3}{R}{R}",
-    "typeLine": "Creature — Goblin",
-    "oracleText": "When this creature enters, create three 1/1 red Goblin creature tokens.\n{1}{R}, Sacrifice a Goblin: This creature deals 2 damage to any target.",
-    "creatureStats": {
-        "power": 2,
-        "toughness": 2
-    },
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "ability_1",
-                "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "to": "Battlefield"
-                },
-                "effect": {
-                    "type": "CreateToken",
-                    "count": {
-                        "type": "Fixed",
-                        "amount": 3
-                    },
-                    "power": 1,
-                    "toughness": 1,
-                    "colors": [
-                        "RED"
-                    ],
-                    "creatureTypes": [
-                        "Goblin"
-                    ],
-                    "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd79264f-0734-48b7-8333-4035e518d46c.jpg?1562702307"
-                }
-            }
-        ],
-        "activatedAbilities": [
-            {
-                "id": "ability_2",
-                "cost": {
-                    "type": "CostComposite",
-                    "costs": [
-                        {
-                            "type": "CostAtomWrapper",
-                            "atom": {
-                                "type": "AtomMana",
-                                "cost": "{1}{R}"
-                            }
-                        },
-                        {
-                            "type": "CostAtomWrapper",
-                            "atom": {
-                                "type": "AtomSacrifice",
-                                "filter": "creature Goblin"
-                            }
-                        }
-                    ]
-                },
-                "effect": {
-                    "type": "DealDamage",
-                    "amount": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "any"
-                    }
-                },
-                "targetRequirements": [
-                    {
-                        "type": "AnyTarget",
-                        "id": "any"
-                    }
-                ]
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "143",
-        "rarity": "RARE",
-        "artist": "Aaron Miller",
-        "flavorText": "\"Ready . . . uh . . . fire!\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f59ff087-97e7-4946-871f-1833abb2558a.jpg?1562745696",
-        "rulings": [
-            {
-                "date": "2022-12-08",
-                "text": "You can sacrifice any Goblin you control to activate Siege-Gang Commander's activated ability, including Siege-Gang Commander itself."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "RED"
-    ]
 }
 
 // Skittering Surveyor
@@ -13400,59 +13229,6 @@
     },
     "colorIdentityOverride": [
         "BLACK"
-    ]
-}
-
-// Tragic Poet
-{
-    "name": "Tragic Poet",
-    "manaCost": "{W}",
-    "typeLine": "Creature — Human",
-    "oracleText": "{T}, Sacrifice this creature: Return target enchantment card from your graveyard to your hand.",
-    "creatureStats": {
-        "power": 1,
-        "toughness": 1
-    },
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": {
-                    "type": "CostComposite",
-                    "costs": [
-                        "CostTap",
-                        "CostSacrificeSelf"
-                    ]
-                },
-                "effect": {
-                    "type": "MoveToZone",
-                    "target": {
-                        "type": "BoundVariable",
-                        "name": "target"
-                    },
-                    "destination": "Hand"
-                },
-                "targetRequirements": [
-                    {
-                        "type": "TargetObject",
-                        "filter": {
-                            "baseFilter": "enchantment own:you",
-                            "zone": "Graveyard"
-                        },
-                        "id": "target"
-                    }
-                ]
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "37",
-        "artist": "Anthony Palumbo",
-        "flavorText": "\"In a healing world I write—I, who will never be healed. Let my last gift be one of memory: from a thousand lost thoughts, choose one, and remember my name.\"",
-        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f957b353-7765-4c16-9645-d41000154130.jpg?1562746021"
-    },
-    "colorIdentityOverride": [
-        "WHITE"
     ]
 }
 

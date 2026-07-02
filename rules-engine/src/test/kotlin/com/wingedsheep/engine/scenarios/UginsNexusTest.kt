@@ -3,7 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.mtg.sets.definitions.ktk.cards.Shatter
+import com.wingedsheep.mtg.sets.definitions.lea.cards.Shatter
 import com.wingedsheep.mtg.sets.definitions.ktk.cards.UginsNexus
 import com.wingedsheep.mtg.sets.definitions.por.cards.LastChance
 import com.wingedsheep.sdk.core.Color

@@ -3814,42 +3814,6 @@
     ]
 }
 
-// Erase
-{
-    "name": "Erase",
-    "manaCost": "{W}",
-    "typeLine": "Instant",
-    "oracleText": "Exile target enchantment.",
-    "script": {
-        "spellEffect": {
-            "type": "MoveToZone",
-            "target": {
-                "type": "BoundVariable",
-                "name": "target"
-            },
-            "destination": "Exile"
-        },
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "enchantment"
-                },
-                "id": "target"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "9",
-        "artist": "Zack Stella",
-        "flavorText": "\"Truth is hard enough to see, let alone understand. We must remove all distractions to find clarity.\" —Zogye, wandering sage",
-        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1dd0e10-2ad7-467f-8d4b-c70b95bf2e9c.jpg?1562793960"
-    },
-    "colorIdentityOverride": [
-        "WHITE"
-    ]
-}
-
 // Feat of Resistance
 {
     "name": "Feat of Resistance",
@@ -10667,43 +10631,6 @@
     ]
 }
 
-// Shatter
-{
-    "name": "Shatter",
-    "manaCost": "{1}{R}",
-    "typeLine": "Instant",
-    "oracleText": "Destroy target artifact.",
-    "script": {
-        "spellEffect": {
-            "type": "MoveToZone",
-            "target": {
-                "type": "BoundVariable",
-                "name": "target"
-            },
-            "destination": "Graveyard",
-            "byDestruction": true
-        },
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "artifact"
-                },
-                "id": "target"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "120",
-        "artist": "Zoltan Boros",
-        "flavorText": "The ogre's mind snapped. The bow was next. The archer followed quickly after.",
-        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c4ecaa0-a85f-4771-a829-1ab440b29165.jpg?1562784251"
-    },
-    "colorIdentityOverride": [
-        "RED"
-    ]
-}
-
 // Sidisi's Pet
 {
     "name": "Sidisi's Pet",
@@ -10999,43 +10926,6 @@
     },
     "colorIdentityOverride": [
         "BLUE"
-    ]
-}
-
-// Smite the Monstrous
-{
-    "name": "Smite the Monstrous",
-    "manaCost": "{3}{W}",
-    "typeLine": "Instant",
-    "oracleText": "Destroy target creature with power 4 or greater.",
-    "script": {
-        "spellEffect": {
-            "type": "MoveToZone",
-            "target": {
-                "type": "BoundVariable",
-                "name": "target"
-            },
-            "destination": "Graveyard",
-            "byDestruction": true
-        },
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "creature pow>=4"
-                },
-                "id": "target"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "24",
-        "artist": "Greg Staples",
-        "flavorText": "\"The dragons thought they were too strong to be tamed, too large to fall. And where are they now?\" —Khibat the Revered",
-        "imageUri": "https://cards.scryfall.io/normal/front/1/4/1405bb2e-2204-43ab-82a3-5d0c8537325a.jpg?1562782881"
-    },
-    "colorIdentityOverride": [
-        "WHITE"
     ]
 }
 
@@ -12960,46 +12850,6 @@
     ]
 }
 
-// Trumpet Blast
-{
-    "name": "Trumpet Blast",
-    "manaCost": "{2}{R}",
-    "typeLine": "Instant",
-    "oracleText": "Attacking creatures get +2/+0 until end of turn.",
-    "script": {
-        "spellEffect": {
-            "type": "ForEach",
-            "space": {
-                "type": "IterationSpace.Group",
-                "filter": {
-                    "baseFilter": "creature attacking"
-                }
-            },
-            "body": {
-                "type": "ModifyStats",
-                "powerModifier": {
-                    "type": "Fixed",
-                    "amount": 2
-                },
-                "toughnessModifier": {
-                    "type": "Fixed",
-                    "amount": 0
-                },
-                "target": "Self"
-            }
-        }
-    },
-    "metadata": {
-        "collectorNumber": "124",
-        "artist": "Steve Prescott",
-        "flavorText": "\"Do you hear that, Sarkhan? The glory of the horde! I made a legend from what you abandoned.\"\n—Zurgo, khan of the Mardu",
-        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb6deef5-876f-4c81-8af5-6e91e0c4656a.jpg?1562795504"
-    },
-    "colorIdentityOverride": [
-        "RED"
-    ]
-}
-
 // Tusked Colossodon
 {
     "name": "Tusked Colossodon",
@@ -13768,79 +13618,6 @@
     ]
 }
 
-// Windswept Heath
-{
-    "name": "Windswept Heath",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "{T}, Pay 1 life, Sacrifice Windswept Heath: Search your library for a Forest or Plains card, put it onto the battlefield, then shuffle.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": {
-                    "type": "CostComposite",
-                    "costs": [
-                        "CostTap",
-                        {
-                            "type": "CostAtomWrapper",
-                            "atom": {
-                                "type": "AtomPayLife",
-                                "amount": 1
-                            }
-                        },
-                        "CostSacrificeSelf"
-                    ]
-                },
-                "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Library",
-                                "filter": "land Forest|Plains"
-                            },
-                            "storeAs": "searchable"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "searchable",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "found"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "found",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Battlefield"
-                            }
-                        },
-                        "ShuffleLibrary",
-                        "EmitLibrarySearchedEvent"
-                    ]
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "248",
-        "rarity": "RARE",
-        "artist": "Yeong-Hao Han",
-        "flavorText": "Where dragons once roared, their bones now keen.",
-        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7b28650-cddc-4878-b1d1-b5a764f4df49.jpg?1707235002"
-    },
-    "colorIdentityOverride": []
-}
-
 // Wingmate Roc
 {
     "name": "Wingmate Roc",
@@ -14060,79 +13837,6 @@
         "artist": "Izzy",
         "flavorText": "It strode through the clash of dragons, the fall of Ugin, and the rise of the khans.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/6/763ac4c4-af2d-4b71-9fb3-244c96f93860.jpg?1562788742"
-    },
-    "colorIdentityOverride": []
-}
-
-// Wooded Foothills
-{
-    "name": "Wooded Foothills",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "{T}, Pay 1 life, Sacrifice Wooded Foothills: Search your library for a Mountain or Forest card, put it onto the battlefield, then shuffle.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": {
-                    "type": "CostComposite",
-                    "costs": [
-                        "CostTap",
-                        {
-                            "type": "CostAtomWrapper",
-                            "atom": {
-                                "type": "AtomPayLife",
-                                "amount": 1
-                            }
-                        },
-                        "CostSacrificeSelf"
-                    ]
-                },
-                "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Library",
-                                "filter": "land Mountain|Forest"
-                            },
-                            "storeAs": "searchable"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "searchable",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "storeSelected": "found"
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "found",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Battlefield"
-                            }
-                        },
-                        "ShuffleLibrary",
-                        "EmitLibrarySearchedEvent"
-                    ]
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "249",
-        "rarity": "RARE",
-        "artist": "Jonas De Ro",
-        "flavorText": "Where dragons' breath once burned, their bones now freeze.",
-        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8503cca-7e7d-44c4-8587-81376b396398.jpg?1707234996"
     },
     "colorIdentityOverride": []
 }

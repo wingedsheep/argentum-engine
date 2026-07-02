@@ -7,7 +7,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
-import com.wingedsheep.mtg.sets.definitions.blc.cards.TempleOfMystery
+import com.wingedsheep.mtg.sets.definitions.ths.cards.TempleOfMystery
 import com.wingedsheep.mtg.sets.definitions.ltr.cards.GaladrielOfLothlorien
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
