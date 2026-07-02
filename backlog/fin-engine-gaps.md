@@ -245,9 +245,10 @@ so a land // spell Adventure offers *both* "play the land" (PlayLandEnumerator) 
 ## Tier 3 — One-off complex cards (each needs unique new functionality)
 
 - **Meld** (Vanille, Cheerful l'Cie + Fang, Fearless l'Cie → Ragnarok, Divine Deliverance) — ❌ GAP. No `MELD`
-  layout or paired-card exile-and-combine logic. Fang is already implemented as a normal creature; meld is a distinct
-  DFC-combine mechanic. Needs a meld layout + the "exile both, return the combined back face" flow. *(Ragnarok itself
-  is castable/returnable today; only the meld path is missing.)*
+  layout or paired-card exile-and-combine logic. All three cards are now implemented as normal creatures with their
+  non-meld abilities (Fang's graveyard-leave trigger, Vanille's mill-and-return ETB, Ragnarok's dies trigger);
+  following the Brisela precedent, each omits its meld linkage and documents it. Meld remains a distinct DFC-combine
+  mechanic: still needs a meld layout + the "exile both, return the combined back face" flow to wire the trio together.
 - **"Damage you'd deal is doubled" / stagger** (Lightning, Army of One; Kuja's Flare Star; The Earth Crystal counter
   doubling; The Wind Crystal lifegain doubling) — replacement effects that **scale
   outgoing damage / counters / life / mill**. The counter-doubling and damage-doubling one-shots exist; confirm
