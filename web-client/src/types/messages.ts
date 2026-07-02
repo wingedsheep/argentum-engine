@@ -2402,7 +2402,7 @@ export function createCreateTournamentLobbyMessage(
   boosterCount: number = 6,
   maxPlayers: number = 8,
   pickTimeSeconds: number = 45,
-  isPublic: boolean = false,
+  isPublic: boolean = true,
   gameMode: LobbyGameMode = 'TOURNAMENT'
 ): CreateTournamentLobbyMessage {
   return { type: 'createTournamentLobby', setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic, gameMode }
