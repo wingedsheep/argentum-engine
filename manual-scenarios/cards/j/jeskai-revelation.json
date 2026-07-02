@@ -1,0 +1,39 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Jeskai Revelation"],
+    "battlefield": [
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Mountain", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Champion of Dusan"],
+    "battlefield": [
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Nightblade Brigade"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "SELF"
+}
