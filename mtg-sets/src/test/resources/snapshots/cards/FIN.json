@@ -1132,6 +1132,126 @@
     ]
 }
 
+// Balamb Garden, SeeD Academy
+{
+    "name": "Balamb Garden, SeeD Academy",
+    "manaCost": "",
+    "typeLine": "Land — Town",
+    "oracleText": "This land enters tapped.\n{T}: Add {G} or {U}.\n{5}{G}{U}, {T}: Transform this land. This ability costs {1} less to activate for each other Town you control.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}{G}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "Transform",
+                "genericCostReduction": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land Town",
+                    "excludeSelf": true
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "backFace": {
+        "name": "Balamb Garden, Airborne",
+        "manaCost": "",
+        "typeLine": "Legendary Artifact — Vehicle",
+        "oracleText": "Flying\nWhenever Balamb Garden attacks, draw a card.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 4
+        },
+        "keywords": [
+            "FLYING",
+            "CREW"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Numeric",
+                "keyword": "CREW",
+                "n": 1
+            }
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_4",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "272",
+            "rarity": "RARE",
+            "artist": "Jonas De Ro",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/0/001e9f20-5b15-41cb-bf82-46172decc235.jpg?1782686387"
+        },
+        "colorIdentityOverride": [
+            "GREEN",
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "272",
+        "rarity": "RARE",
+        "artist": "Jonas De Ro",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/001e9f20-5b15-41cb-bf82-46172decc235.jpg?1782686387",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "Town is a land type with no special meaning. It doesn't grant the land any intrinsic abilities. Other cards may care about which lands are Towns."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Balamb T-Rexaur
 {
     "name": "Balamb T-Rexaur",
@@ -4677,6 +4797,220 @@
     ]
 }
 
+// Dion, Bahamut's Dominant
+{
+    "name": "Dion, Bahamut's Dominant",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Noble Knight",
+    "oracleText": "Dragonfire Dive — During your turn, Dion and other Knights you control have flying.\nWhen Dion enters, create a 2/2 white Knight creature token.\n{4}{W}{W}, {T}: Exile Dion, then return it to the battlefield transformed under its owner's control. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Knight"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7758a0b-9e85-4b4a-bf1c-ffcc6761dbad.jpg?1782725381"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{W}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "ExileAndReturnTransformed",
+                "timing": "SorcerySpeed"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "creature Knight ctrl:you",
+                        "excludeSelf": true
+                    }
+                },
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Bahamut, Warden of Light",
+        "manaCost": "",
+        "typeLine": "Legendary Enchantment Creature — Saga Dragon",
+        "oracleText": "(As this Saga enters and after your draw step, add a lore counter.)\nI, II — Wings of Light — Put a +1/+1 counter on each other creature you control. Those creatures gain flying until end of turn.\nIII — Gigaflare — Destroy target permanent. Exile Bahamut, then return it to the battlefield (front face up).\nFlying",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 5
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "sagaChapters": [
+                {
+                    "chapter": 1,
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you",
+                                "excludeSelf": true
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "AddCounters",
+                                    "counterType": "+1/+1",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "FLYING",
+                                    "target": "Self"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "chapter": 2,
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you",
+                                "excludeSelf": true
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "AddCounters",
+                                    "counterType": "+1/+1",
+                                    "count": 1,
+                                    "target": "Self"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "FLYING",
+                                    "target": "Self"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "chapter": 3,
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "permanent"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            },
+                            {
+                                "type": "ExileAndReturnTransformed",
+                                "returnAs": "FRONT"
+                            }
+                        ]
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent"
+                        },
+                        "id": "permanent"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "16",
+            "rarity": "RARE",
+            "artist": "Kevin Glint",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/c/8c0f9306-2058-476d-a711-bd37a6e15e42.jpg?1782686587",
+            "rulings": [
+                {
+                    "date": "2025-06-06",
+                    "text": "If the target permanent is an illegal target when Bahamut's third chapter ability tries to resolve, it won't resolve and none of its effects will happen. You won't exile Bahamut and return it to the battlefield front face up."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "RARE",
+        "artist": "Kevin Glint",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c0f9306-2058-476d-a711-bd37a6e15e42.jpg?1782686587",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "Dion's first ability will still give it flying during your turn even if Dion somehow isn't a Knight."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dragoon's Lance
 {
     "name": "Dragoon's Lance",
@@ -6050,6 +6384,104 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Garland, Knight of Cornelia
+{
+    "name": "Garland, Knight of Cornelia",
+    "manaCost": "{B}{R}",
+    "typeLine": "Legendary Creature — Human Knight",
+    "oracleText": "Whenever you cast a noncreature spell, surveil 1. (Look at the top card of your library. You may put it into your graveyard.)\n{3}{B}{B}{R}{R}: Return this card from your graveyard to the battlefield transformed. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{B}{B}{R}{R}"
+                    }
+                },
+                "effect": "ReturnSelfFromZoneTransformed",
+                "timing": "SorcerySpeed",
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Chaos, the Endless",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Demon",
+        "oracleText": "Flying\nWhen Chaos dies, put it on the bottom of its owner's library.",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 5
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_3",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "from": "Battlefield",
+                        "to": "Graveyard"
+                    },
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": "Self",
+                        "destination": "Library",
+                        "placement": "Bottom"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "221",
+            "rarity": "UNCOMMON",
+            "artist": "Billy Christian",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/d/dd463dbe-5f2c-4d4f-86f8-ad8ff407af62.jpg?1782686428"
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "rarity": "UNCOMMON",
+        "artist": "Billy Christian",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd463dbe-5f2c-4d4f-86f8-ad8ff407af62.jpg?1782686428"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -8717,6 +9149,147 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Kuja, Genome Sorcerer
+{
+    "name": "Kuja, Genome Sorcerer",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Legendary Creature — Human Mutant Wizard",
+    "oracleText": "At the beginning of your end step, create a tapped 0/1 black Wizard creature token with \"Whenever you cast a noncreature spell, this token deals 1 damage to each opponent.\" Then if you control four or more Wizards, transform Kuja.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 0,
+                            "toughness": 1,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Wizard"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/1/8/187fe54c-7d0c-4225-9d46-3affbead897d.jpg?1782725378",
+                            "tapped": true,
+                            "triggeredAbilities": [
+                                {
+                                    "id": "ability_2",
+                                    "trigger": {
+                                        "type": "SpellCastEvent",
+                                        "spellFilter": {
+                                            "cardPredicates": [
+                                                "IsNoncreature"
+                                            ]
+                                        }
+                                    },
+                                    "binding": "ANY",
+                                    "effect": {
+                                        "type": "DealDamage",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": {
+                                            "type": "PlayerRef",
+                                            "player": "EachOpponent"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature Wizard"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    }
+                                }
+                            },
+                            "then": "Transform"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Trance Kuja, Fate Defied",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Avatar Wizard",
+        "oracleText": "Flare Star — If a Wizard you control would deal damage to a permanent or player, it deals double that damage instead.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 6
+        },
+        "script": {
+            "replacementEffects": [
+                {
+                    "type": "DoubleDamage",
+                    "appliesTo": {
+                        "type": "DamageEvent",
+                        "source": {
+                            "type": "SourceMatching",
+                            "filter": "creature Wizard ctrl:you"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "232",
+            "rarity": "RARE",
+            "artist": "Joshua Raphael",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/0/008782d2-72b0-4554-b1ce-2db99969a4d8.jpg?1782686418"
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "RARE",
+        "artist": "Joshua Raphael",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/008782d2-72b0-4554-b1ce-2db99969a4d8.jpg?1782686418",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "The Wizard token's ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "The damage is dealt by the same source as the original source of damage. The doubled damage isn't dealt by Trance Kuja unless it was the original source of damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -14643,6 +15216,150 @@
     "colorIdentityOverride": [
         "BLUE",
         "BLACK"
+    ]
+}
+
+// Serah Farron
+{
+    "name": "Serah Farron",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Human Citizen",
+    "oracleText": "The first legendary creature spell you cast each turn costs {2} less to cast.\nAt the beginning of combat on your turn, if you control two or more other legendary creatures, you may transform Serah Farron.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "Transform"
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ]
+                        },
+                        "excludeSelf": true
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ]
+                    }
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 2
+                },
+                "gating": {
+                    "type": "NthOfTypePerTurn",
+                    "n": 1
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Crystallized Serah",
+        "manaCost": "",
+        "typeLine": "Legendary Artifact",
+        "oracleText": "The first legendary creature spell you cast each turn costs {2} less to cast.\nLegendary creatures you control get +2/+2.",
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "ModifySpellCost",
+                    "target": {
+                        "type": "YouCast",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ]
+                        }
+                    },
+                    "modification": {
+                        "type": "ReduceGeneric",
+                        "amount": 2
+                    },
+                    "gating": {
+                        "type": "NthOfTypePerTurn",
+                        "n": 1
+                    }
+                },
+                {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ],
+                            "controllerPredicate": "ControlledByYou"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "240",
+            "rarity": "RARE",
+            "artist": "Carissa Susilo",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/2/62fa74c0-43ae-445c-8039-ca9d00e9709a.jpg?1782686410"
+        },
+        "colorIdentityOverride": [
+            "GREEN",
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "RARE",
+        "artist": "Carissa Susilo",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62fa74c0-43ae-445c-8039-ca9d00e9709a.jpg?1782686410",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "The cost reduction applies only to generic mana in the total cost of legendary creature spells you cast."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "Serah Farron's last ability checks at the moment it would trigger to see if you control two or more other legendary creatures. If you don't, the ability won't trigger at all. If it does trigger, the ability will check again as it tries to resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
     ]
 }
 

@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
@@ -81,4 +82,28 @@ data class ExileAndReturnTransformedEffect(
 data object ReturnSelfFromExileTransformedEffect : Effect {
     override val description: String =
         "Return this card to the battlefield transformed under its owner's control"
+}
+
+/**
+ * Return the source **card** from a non-battlefield zone to the battlefield with its back face
+ * up — "Return this card from your graveyard to the battlefield transformed" (Garland, Knight
+ * of Cornelia). Typically the resolution of an activated ability with
+ * `activateFromZone = fromZone`.
+ *
+ * A double-faced card in a non-battlefield zone has only its front face's characteristics;
+ * entering "transformed" means the new battlefield object has its back face up. As with the
+ * other off-battlefield return-transformed effects (and unlike [TransformEffect]), no transform
+ * triggers fire — the card was never turned over on the battlefield; enters-the-battlefield
+ * triggers of the back face fire normally. Per the official ruling ("If you are instructed to
+ * put a card that isn't a double-faced card onto the battlefield transformed, it will not enter
+ * at all"), the executor no-ops when the source is not a double-faced card, and it also no-ops
+ * if the source has already left [fromZone] by the time the ability resolves.
+ */
+@SerialName("ReturnSelfFromZoneTransformed")
+@Serializable
+data class ReturnSelfFromZoneTransformedEffect(
+    val fromZone: Zone = Zone.GRAVEYARD,
+) : Effect {
+    override val description: String =
+        "Return this card from your ${fromZone.displayName.lowercase()} to the battlefield transformed"
 }

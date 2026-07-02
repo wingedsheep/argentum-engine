@@ -127,6 +127,7 @@ import com.wingedsheep.sdk.scripting.effects.ReturnOneFromLinkedExileEffect
 import com.wingedsheep.sdk.scripting.effects.ExileAndReturnTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnFace
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromExileTransformedEffect
+import com.wingedsheep.sdk.scripting.effects.ReturnSelfFromZoneTransformedEffect
 import com.wingedsheep.sdk.scripting.effects.ReturnSelfToBattlefieldAttachedEffect
 import com.wingedsheep.sdk.scripting.effects.DrawUpToEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveFromCombatEffect
@@ -781,6 +782,15 @@ object Effects {
      * as the activated ability's effect; see CR 702.167a.
      */
     val ReturnSelfFromExileTransformed: Effect = ReturnSelfFromExileTransformedEffect
+
+    /**
+     * Return the source card from your graveyard to the battlefield with its back face up —
+     * "Return this card from your graveyard to the battlefield transformed" (Garland, Knight
+     * of Cornelia). Pair with `activateFromZone = Zone.GRAVEYARD` on the owning ability. No-ops
+     * if the source left the graveyard before resolution or is not a double-faced card.
+     */
+    fun ReturnSelfFromGraveyardTransformed(): Effect =
+        ReturnSelfFromZoneTransformedEffect(Zone.GRAVEYARD)
 
     /**
      * Exile a double-faced permanent, then return it to the battlefield as a new object on the

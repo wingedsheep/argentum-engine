@@ -524,6 +524,14 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   (the opposite face — front→back), `FRONT` ("return it front face up" — the eikon Saga's final chapter flips
   back to the legend), or `BACK`. The front face's activated ability is sorcery-speed
   (`timing = TimingRule.SorcerySpeed`); Jecht uses it from a "may" combat-damage trigger instead.
+- `ReturnSelfFromGraveyardTransformed()` — "Return this card from your graveyard to the battlefield
+  transformed" (Garland, Knight of Cornelia). Returns the *source card* from the graveyard to the
+  battlefield with its back face up; pair with `activateFromZone = Zone.GRAVEYARD` on the owning
+  activated ability. No transform triggers fire (the card was never turned over on the battlefield);
+  the back face's ETB triggers fire normally. No-ops if the source left the graveyard before
+  resolution, or if it isn't a double-faced card (a single-faced card instructed to enter transformed
+  doesn't move at all). Raw type `ReturnSelfFromZoneTransformedEffect(fromZone)` generalizes to other
+  source zones.
 - `ReturnCreaturesPutInGraveyardThisTurn(player)` — Patriarch's Bidding shape.
 - `ReturnSameNamedFromGraveyard(target = ContextTarget(0))` — return the target graveyard card and
   **every other card with the same name** in the controller's graveyard to the battlefield **tapped**
