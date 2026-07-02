@@ -34,6 +34,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.RingBearerComponent
+import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalEndStepComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
 import com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent
@@ -41,6 +42,7 @@ import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTu
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
@@ -64,6 +66,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Exists
 import com.wingedsheep.sdk.scripting.conditions.IsInPhase
 import com.wingedsheep.sdk.scripting.conditions.IsInStep
+import com.wingedsheep.sdk.scripting.conditions.IsFirstCombatPhaseOfTurn
 import com.wingedsheep.sdk.scripting.conditions.IsFirstEndStepOfTurn
 import com.wingedsheep.sdk.scripting.conditions.IsNotYourTurn
 import com.wingedsheep.sdk.scripting.conditions.IsYourTurn
@@ -211,6 +214,17 @@ class ConditionEvaluator(
                 state.step == Step.END &&
                     state.activePlayerId?.let {
                         state.getEntity(it)?.has<InAdditionalEndStepComponent>()
+                    } != true
+            }
+
+            // True while we're in the turn's *natural* combat phase — i.e. a combat phase the active
+            // player hasn't yet marked as an inserted extra (AddCombatPhaseEffect). Board-derived, so
+            // it reads the same at resolution and under projection. The loop guard for the
+            // "additional combat phase" riders (Balthier and Fran, Genji Glove, Raph & Leo).
+            is IsFirstCombatPhaseOfTurn -> {
+                state.phase == Phase.COMBAT &&
+                    state.activePlayerId?.let {
+                        state.getEntity(it)?.has<InAdditionalCombatPhaseComponent>()
                     } != true
             }
 

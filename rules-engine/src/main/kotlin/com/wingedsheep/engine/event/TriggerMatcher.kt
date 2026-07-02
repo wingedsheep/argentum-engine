@@ -1662,6 +1662,7 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsSaddled,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.CrewedOrSaddledSourceThisTurn,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.CrewedOrSaddledBySourceThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsWarpExiled,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.NotTargetedByAbilityFromSameNamedSource,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttachedToBySource,

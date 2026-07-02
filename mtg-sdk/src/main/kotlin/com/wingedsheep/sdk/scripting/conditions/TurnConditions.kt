@@ -98,6 +98,25 @@ data object IsFirstEndStepOfTurn : Condition {
 // =============================================================================
 
 /**
+ * Condition: "If it's the first combat phase of the turn."
+ *
+ * True while the active player is in a combat phase that is *not* an extra combat phase inserted by
+ * [com.wingedsheep.sdk.scripting.effects.AddCombatPhaseEffect]. This is the intervening-if / loop
+ * guard for "after this phase, there is an additional combat phase" riders (Balthier and Fran, Éomer,
+ * Genji Glove, Raph & Leo): the rider only adds an extra combat phase during the first one, so the
+ * additional combat phase it spawns doesn't spawn another. The combat analog of
+ * [IsFirstEndStepOfTurn].
+ *
+ * Board-derived (reads `state.phase` and the active player's "in an additional combat phase" marker),
+ * so it evaluates identically at resolution and under projection.
+ */
+@SerialName("IsFirstCombatPhaseOfTurn")
+@Serializable
+data object IsFirstCombatPhaseOfTurn : Condition {
+    override val description: String = "if it's the first combat phase of the turn"
+}
+
+/**
  * Condition: "If you've been attacked this step"
  * Used for cards like Defiant Stand and Harsh Justice that can only be cast
  * during the declare attackers step if you've been attacked.

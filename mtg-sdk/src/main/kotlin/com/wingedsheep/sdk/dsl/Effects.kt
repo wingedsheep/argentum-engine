@@ -262,6 +262,19 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.AmplifyNoncombatDamageThisTurnEffect(bonus)
 
     /**
+     * Install a duration-bounded replacement that doubles all damage — any source, combat or
+     * noncombat — dealt to [target] (a player) and to any permanent that player controls, for
+     * [duration]. The player is captured at resolution, so the doubling outlives the source that
+     * created it. Backs the "Stagger" ability word — Lightning, Army of One:
+     * `DoubleDamageToPlayer(EffectTarget.PlayerRef(Player.TriggeringPlayer))`.
+     */
+    fun DoubleDamageToPlayer(
+        target: EffectTarget,
+        duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.UntilYourNextTurn
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.DoubleDamageToPlayerEffect(target, duration)
+
+    /**
      * Two creatures fight — each deals damage equal to its power to the other.
      *
      * [excessDamageVariable], when set, stores the excess damage (CR 120.4a) that [target1]

@@ -969,9 +969,22 @@ data object FreeFirstEquipEachTurn : StaticAbility {
  * Controller-scoped: it applies to every equip ability the controller of the granting permanent
  * activates, regardless of which permanent bears the equip ability. Gate it with a
  * [ConditionalStaticAbility] for a "during your turn"-style restriction.
+ *
+ * When [onlyIfTargetIsSource] is true, the reduction applies only to equip abilities that target
+ * the permanent bearing this static ability — i.e. "Equip abilities you activate **that target
+ * ~** cost {N} less to activate" (Cloud, Planet's Champion). The engine matches the equip's chosen
+ * target against the source permanent: at payment time the exact target is known and the reduction
+ * applies only when they match; at enumeration time (before the target is chosen) the discounted
+ * cost is offered optimistically whenever the source is a creature the controller could equip, so
+ * the ability is never withheld for want of the discount.
  */
 @SerialName("ReduceEquipCost")
 @Serializable
-data class ReduceEquipCost(val amount: Int) : StaticAbility {
-    override val description: String = "Equip abilities you activate cost {$amount} less to activate"
+data class ReduceEquipCost(
+    val amount: Int,
+    val onlyIfTargetIsSource: Boolean = false
+) : StaticAbility {
+    override val description: String =
+        if (onlyIfTargetIsSource) "Equip abilities you activate that target this permanent cost {$amount} less to activate"
+        else "Equip abilities you activate cost {$amount} less to activate"
 }

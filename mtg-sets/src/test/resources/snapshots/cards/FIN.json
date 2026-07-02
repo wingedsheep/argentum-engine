@@ -1309,6 +1309,96 @@
     ]
 }
 
+// Balthier and Fran
+{
+    "name": "Balthier and Fran",
+    "manaCost": "{1}{R}{G}",
+    "typeLine": "Legendary Creature — Human Rabbit",
+    "oracleText": "Reach\nVehicles you control get +1/+1 and have vigilance and reach.\nWhenever a Vehicle crewed by Balthier and Fran this turn attacks, if it's the first combat phase of the turn, you may pay {1}{R}{G}. If you do, after this phase, there is an additional combat phase.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Vehicle"
+                                    }
+                                ]
+                            }
+                        ],
+                        "statePredicates": [
+                            "CrewedOrSaddledBySourceThisTurn"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}{R}{G}"
+                        }
+                    },
+                    "then": "AddCombatPhase"
+                },
+                "triggerCondition": "IsFirstCombatPhaseOfTurn",
+                "descriptionOverride": "Whenever a Vehicle crewed by Balthier and Fran this turn attacks, if it's the first combat phase of the turn, you may pay {1}{R}{G}. If you do, after this phase, there is an additional combat phase."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "Vehicle ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "Vehicle ctrl:you"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH",
+                "filter": {
+                    "baseFilter": "Vehicle ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "RARE",
+        "artist": "Arif Wijaya",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/f/afcaed7d-7ea3-4f2a-a7f5-ee3315226369.jpg?1782686436"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Bard's Bow
 {
     "name": "Bard's Bow",
@@ -3795,6 +3885,90 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Cloud, Planet's Champion
+{
+    "name": "Cloud, Planet's Champion",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Legendary Creature — Human Soldier Mercenary",
+    "oracleText": "During your turn, as long as Cloud is equipped, it has double strike and indestructible. (This creature deals both first-strike and regular combat damage. Damage and effects that say \"destroy\" don't destroy this creature.)\nEquip abilities you activate that target Cloud cost {2} less to activate.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOUBLE_STRIKE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        "IsYourTurn",
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "IsEquipped"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "All",
+                    "conditions": [
+                        "IsYourTurn",
+                        {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": {
+                                "statePredicates": [
+                                    "IsEquipped"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "ReduceEquipCost",
+                "amount": 2,
+                "onlyIfTargetIsSource": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "552",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"It's not over yet... this isn't the end!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6d58067-337d-43dc-b4a3-c6acc701d450.jpg?1782686131"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 
@@ -9414,6 +9588,53 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Lightning, Army of One
+{
+    "name": "Lightning, Army of One",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "First strike, trample, lifelink\nStagger — Whenever Lightning deals combat damage to a player, until your next turn, if a source would deal damage to that player or a permanent that player controls, it deals double that damage instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "TRAMPLE",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "DoubleDamageToPlayer",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "MYTHIC",
+        "artist": "Shiyu",
+        "flavorText": "\"Lightning. It flashes bright, then fades away. It can't protect. It only destroys.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/1103da9c-300c-406b-997d-9e5bb7cd02d6.jpg?1782686417"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
     ]
 }
 

@@ -505,23 +505,30 @@ class CastPermissionUtils(
      * every controlled [ReduceEquipCost] grant whose condition (if any) currently holds
      * (Éowyn, Lady of Rohan). Multiple sources stack additively. Returns 0 when none apply.
      */
-    fun equipCostReduction(state: GameState, playerId: EntityId): Int =
-        sumActiveEquipReductions(state, playerId)
+    fun equipCostReduction(state: GameState, playerId: EntityId, equipTargetId: EntityId? = null): Int =
+        sumActiveEquipReductions(state, playerId, equipTargetId)
 
     /**
      * Reduce the generic portion of [cost] when [ability] is an equip ability and [playerId] has
      * one or more active [ReduceEquipCost] grants. Floors at {0} and leaves colored pips intact.
      * Shared by the enumerator (offered/displayed cost) and [ActivateAbilityHandler] (paid cost)
      * so the two always agree. Applied before [applyFreeFirstEquipDiscount].
+     *
+     * [equipTargetId] is the creature the equip ability targets, when known. A target-restricted
+     * grant ([ReduceEquipCost.onlyIfTargetIsSource]) only reduces the cost when the equip targets
+     * the permanent bearing the grant. Pass the chosen target at payment time so the paid cost is
+     * exact; pass `null` at enumeration (before the target is chosen) to offer the discount
+     * optimistically.
      */
     fun applyEquipCostReduction(
         cost: AbilityCost,
         ability: ActivatedAbility,
         state: GameState,
-        playerId: EntityId
+        playerId: EntityId,
+        equipTargetId: EntityId? = null
     ): AbilityCost {
         if (!ability.isEquipAbility) return cost
-        val reduction = equipCostReduction(state, playerId)
+        val reduction = equipCostReduction(state, playerId, equipTargetId)
         if (reduction <= 0) return cost
         return when (cost) {
             is AbilityCost.Atom -> cost.manaCostOrNull
@@ -604,7 +611,7 @@ class CastPermissionUtils(
      * [ConditionalStaticAbility] and evaluating its condition against the granting permanent.
      * Mirrors [hasActiveEquipPermission] but accumulates an amount instead of short-circuiting.
      */
-    private fun sumActiveEquipReductions(state: GameState, playerId: EntityId): Int {
+    private fun sumActiveEquipReductions(state: GameState, playerId: EntityId, equipTargetId: EntityId?): Int {
         var total = 0
         for (entityId in state.getBattlefield(playerId)) {
             val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
@@ -615,18 +622,40 @@ class CastPermissionUtils(
                 when (ability) {
                     is com.wingedsheep.sdk.scripting.ConditionalStaticAbility -> {
                         val inner = ability.ability as? com.wingedsheep.sdk.scripting.ReduceEquipCost ?: continue
+                        if (!equipReductionApplies(state, entityId, inner, equipTargetId)) continue
                         val context = com.wingedsheep.engine.handlers.EffectContext(
                             sourceId = entityId,
                             controllerId = playerId
                         )
                         if (conditionEvaluator.evaluate(state, ability.condition, context)) total += inner.amount
                     }
-                    is com.wingedsheep.sdk.scripting.ReduceEquipCost -> total += ability.amount
+                    is com.wingedsheep.sdk.scripting.ReduceEquipCost ->
+                        if (equipReductionApplies(state, entityId, ability, equipTargetId)) total += ability.amount
                     else -> {}
                 }
             }
         }
         return total
+    }
+
+    /**
+     * Whether a [ReduceEquipCost] grant borne by [sourceId] applies to an equip activation.
+     * Unrestricted grants (Éowyn) always apply. A target-restricted grant
+     * ([ReduceEquipCost.onlyIfTargetIsSource], Cloud) applies only when the equip targets the
+     * source permanent: at payment ([equipTargetId] known) the ids must match; at enumeration
+     * ([equipTargetId] null) it applies optimistically whenever the source is currently a
+     * creature — i.e. a permanent the controller could legally choose as the equip's target — so
+     * the discounted cost is never withheld before the target is chosen.
+     */
+    private fun equipReductionApplies(
+        state: GameState,
+        sourceId: EntityId,
+        grant: com.wingedsheep.sdk.scripting.ReduceEquipCost,
+        equipTargetId: EntityId?
+    ): Boolean {
+        if (!grant.onlyIfTargetIsSource) return true
+        return if (equipTargetId != null) equipTargetId == sourceId
+        else state.projectedState.isCreature(sourceId)
     }
 
     /**

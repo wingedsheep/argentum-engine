@@ -377,6 +377,17 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   additively. Read at damage time by the engine's static-amplification path, then cleaned up at end of
   turn. Distinct from the opponent-only, permanent-tied `NoncombatDamageBonus` static. Taii Wakeen,
   Perfect Shot: `{X}, {T}: … it deals that much damage plus X instead.`
+- `DoubleDamageToPlayer(target, duration = UntilYourNextTurn)` — install a duration-bounded replacement
+  (CR 616) that *doubles* all damage — any source, combat or noncombat — dealt to `target` (a player,
+  e.g. `EffectTarget.PlayerRef(Player.TriggeringPlayer)`) and to any permanent that player controls. The
+  player is resolved once at resolution and baked into a floating effect scoped to that player, so the
+  doubling outlives the source that created it (CR 611.2) and lasts the whole `duration`. Read at damage
+  time by the engine's static-amplification path — combat damage is doubled per already-assigned recipient
+  (assignment/division happens before doubling) and stays attributed to the original source. Two installs
+  on the same player each double once (⇒ ×4). Backs the "Stagger" ability word — Lightning, Army of One:
+  "Whenever Lightning deals combat damage to a player, until your next turn, if a source would deal damage
+  to that player or a permanent that player controls, it deals double that damage instead." Distinct from
+  the permanent-hosted, "you"/"opponent"-relative `DoubleDamage` replacement (Furnace of Rath).
 - `Fight(target1, target2, excessDamageVariable?)` — two creatures each deal damage equal to their power
   to each other (CR 701.14). When `excessDamageVariable` is set, the excess damage (CR 120.4a, deathtouch-
   and marked-damage-aware) that `target1` deals **to `target2`** is stored into that pipeline number
@@ -2254,6 +2265,10 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   (CR 702.171) the effect's source permanent this turn; backed by
   `StatePredicate.CrewedOrSaddledSourceThisTurn` (see Object-state predicates). For
   "target/choose/return a creature that crewed/saddled it this turn".
+- `.crewedOrSaddledBySourceThisTurn()` — source-relative **mirror** of the above: the candidate is a
+  Vehicle/Mount that the effect's source *creature* crewed/saddled this turn (source is the crewer,
+  candidate is the Vehicle); backed by `StatePredicate.CrewedOrSaddledBySourceThisTurn`. For
+  "whenever a Vehicle crewed by this creature this turn attacks" (Balthier and Fran).
 - `.nontoken()` / `.token()` — token vs printed.
 - `.monocolored()` — restrict to monocolored objects (exactly one color, CR 105.2); colorless objects don't match. ("for each color among monocolored permanents you control" — Tarnation Vista.)
 - `.faceDown()` — face-down state.
@@ -2343,6 +2358,13 @@ work for abilities-on-stack (which carry no `CardComponent`).
   payoffs that target/choose/sacrifice/return "a creature that crewed/saddled it this turn" (Giant
   Beaver, Rambling Possum, The Gitrog, Calamity). For the *count* of those creatures use
   `DynamicAmount.CreaturesThatCrewedOrSaddledThisTurn` instead.
+- `CrewedOrSaddledBySourceThisTurn` (filter builder `crewedOrSaddledBySourceThisTurn()`) — the
+  source-relative **mirror** of the above (CR 702.122 / 702.171): matches a Vehicle/Mount that the
+  effect's source *creature* crewed or saddled this turn (source is the crewer, candidate is the
+  Vehicle). Resolves by reading the *candidate's* `CrewSaddleContributorsComponent` and asking
+  whether `PredicateContext.sourceId` is among the recorded crewers; inert with no source context.
+  Used as a per-attacker attack-trigger filter for "whenever a Vehicle crewed by this creature this
+  turn attacks" (Balthier and Fran).
 - `IsAttachedToBySource` (positive filter builder `attachedToBySource()`; negated builder
   `notAttachedToBySource()`) —
   source-relative: matches the permanent the effect's source is attached to, read from the source's
@@ -3818,15 +3840,21 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   cost (colored pips included) of the turn's first equip while the per-player
   `EquipActivationsThisTurnComponent.count == 0`, and increments that counter on every equip
   activation (reset at turn start by `TurnManager`).
-- `ReduceEquipCost(amount)` — the controller's equip abilities cost `{amount}` generic mana less to
-  activate (Éowyn, Lady of Rohan: "Equip abilities you activate cost {1} less to activate"). The
-  engine reduces only the generic portion of the equip cost (floored at {0}); colored pips are
-  untouched, and multiple sources stack additively. Controller-scoped — it applies to every equip
-  ability the controller activates, regardless of which permanent bears the equip ability. Consulted
-  by `CastPermissionUtils.applyEquipCostReduction` from both the enumerator (displayed cost) and
-  `ActivateAbilityHandler` (paid cost), keyed on `ActivatedAbility.isEquipAbility` and applied before
-  the `FreeFirstEquipEachTurn` discount. Wrap in a `ConditionalStaticAbility` for a "during your
-  turn"-style gate.
+- `ReduceEquipCost(amount, onlyIfTargetIsSource = false)` — the controller's equip abilities cost
+  `{amount}` generic mana less to activate (Éowyn, Lady of Rohan: "Equip abilities you activate cost
+  {1} less to activate"). The engine reduces only the generic portion of the equip cost (floored at
+  {0}); colored pips are untouched, and multiple sources stack additively. Controller-scoped — it
+  applies to every equip ability the controller activates, regardless of which permanent bears the
+  equip ability. Consulted by `CastPermissionUtils.applyEquipCostReduction` from both the enumerator
+  (displayed cost) and `ActivateAbilityHandler` (paid cost), keyed on
+  `ActivatedAbility.isEquipAbility` and applied before the `FreeFirstEquipEachTurn` discount. Wrap in
+  a `ConditionalStaticAbility` for a "during your turn"-style gate. Set `onlyIfTargetIsSource = true`
+  for the target-restricted form — "Equip abilities you activate **that target ~** cost `{amount}`
+  less to activate" (Cloud, Planet's Champion): the reduction applies only when the equip's chosen
+  target is the permanent bearing this static. The exact per-target cost is enforced at payment
+  (the chosen target is threaded into `applyEquipCostReduction`); at enumeration, before a target is
+  chosen, the discount is offered optimistically whenever the source is currently a creature, so the
+  ability is never withheld for want of the discount.
 - `ReduceActivatedAbilityCost(filter, amount, manaFloor = 0)` — the activated abilities of permanents
   matching `filter` cost `{amount}` generic mana less to activate, with the mana in each cost floored
   at `manaFloor` *total* mana (generic + colored). The activated-ability sibling of `ReduceEquipCost`,
@@ -4740,6 +4768,13 @@ that works in both resolution and static-ability (projection) contexts.
   projection. The loop guard for "there is an additional end step after this step" riders: gate the
   `Effects.AddAdditionalEndSteps` call on it so the spawned end step doesn't spawn another (Y'shtola
   Rhul).
+- `IsFirstCombatPhaseOfTurn` — the combat analog of `IsFirstEndStepOfTurn`: it's the turn's first
+  (natural) combat phase, i.e. *not* an extra combat phase inserted by `Effects.AddCombatPhase`.
+  Board-derived (reads `state.phase == COMBAT` + the active player's "in an inserted combat phase"
+  marker), so it evaluates identically at resolution and under projection. The intervening-if / loop
+  guard for "after this phase, there is an additional combat phase" riders: use it as
+  `triggerCondition` so the spawned combat phase doesn't spawn another (Balthier and Fran; also the
+  faithful replacement for the `oncePerTurn = true` approximation on Genji Glove / Raph & Leo).
 - `ControllerTurnsTakenAtMost(n)` — the controller has taken at most N turns so far
   (1-indexed once they're partway through their first turn). Reads
   `PlayerTurnsTakenComponent` set by `TurnManager.startTurn`. Used by Starting Town

@@ -395,6 +395,9 @@ internal class AffectsFilterResolver {
         // source permanent, absent in group-static projection. Only meaningful in target/count
         // contexts via PredicateEvaluator / DynamicAmountEvaluator. Never match here.
         StatePredicate.CrewedOrSaddledSourceThisTurn -> false
+        // Mirror source-relative predicate: needs the ability's source crewer, absent in
+        // group-static projection. Only meaningful in trigger-filter contexts via PredicateEvaluator.
+        StatePredicate.CrewedOrSaddledBySourceThisTurn -> false
         // Source-relative: "the permanent the source is attached to" needs the ability's source
         // permanent, absent in group-static projection. Only meaningful in target/gather-filter
         // contexts via PredicateEvaluator. Never match here.

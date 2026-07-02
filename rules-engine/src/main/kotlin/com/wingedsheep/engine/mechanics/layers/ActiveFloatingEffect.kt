@@ -553,6 +553,18 @@ sealed interface SerializableModification {
     data class AmplifyNoncombatDamage(val bonus: Int) : SerializableModification
 
     /**
+     * Duration-bounded damage-doubling scoped to a single player (CR 616): all damage — any source,
+     * combat or noncombat — that would be dealt to [playerId] or to any permanent [playerId] controls
+     * is doubled. Read directly during damage resolution by `DamageUtils.applyStaticDamageAmplification`
+     * (not a layer modification). The effect's [ActiveFloatingEffect.controllerId] identifies whose
+     * turn ends it (so `Duration.UntilYourNextTurn` expires it after that player's untap step); it is
+     * independent of the source that installed it, which may have since left the battlefield.
+     * Installed by Lightning, Army of One's "Stagger" trigger with [playerId] = the just-damaged player.
+     */
+    @Serializable
+    data class DoubleDamageToPlayer(val playerId: EntityId) : SerializableModification
+
+    /**
      * Display-only card-image override: while this floating effect is active, the affected
      * permanent is rendered with [imageUri] instead of its own art. Purely cosmetic — it maps to
      * [Modification.NoOp] and so changes no projected characteristic; it is read directly by
@@ -667,6 +679,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventNextDamageInstanceFromSource -> Modification.NoOp
     // AmplifyNoncombatDamage doesn't map to a layer modification - it's read during damage resolution directly
     is SerializableModification.AmplifyNoncombatDamage -> Modification.NoOp
+    // DoubleDamageToPlayer doesn't map to a layer modification - it's read during damage resolution directly
+    is SerializableModification.DoubleDamageToPlayer -> Modification.NoOp
     // OverrideImage is display-only - it changes no characteristic, read directly by ClientStateTransformer
     is SerializableModification.OverrideImage -> Modification.NoOp
     is SerializableModification.RemoveAllAbilities -> Modification.RemoveAllAbilities

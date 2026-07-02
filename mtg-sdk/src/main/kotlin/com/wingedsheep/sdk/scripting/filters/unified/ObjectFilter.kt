@@ -722,6 +722,15 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.CrewedOrSaddledSourceThisTurn
     )
 
+    /**
+     * Must be a Vehicle/Mount that the effect's source creature crewed (CR 702.122) or saddled
+     * (CR 702.171) this turn. Source-relative mirror of [crewedOrSaddledSourceThisTurn] — see
+     * [StatePredicate.CrewedOrSaddledBySourceThisTurn].
+     */
+    fun crewedOrSaddledBySourceThisTurn() = copy(
+        statePredicates = statePredicates + StatePredicate.CrewedOrSaddledBySourceThisTurn
+    )
+
     /** Must be face-down */
     fun faceDown() = copy(
         statePredicates = statePredicates + StatePredicate.IsFaceDown

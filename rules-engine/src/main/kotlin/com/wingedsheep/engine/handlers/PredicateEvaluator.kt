@@ -941,6 +941,14 @@ class PredicateEvaluator {
                     ?.let { state.getEntity(it)?.get<CrewSaddleContributorsComponent>() }
                 contributors != null && entityId in contributors.creatureIds
             }
+            StatePredicate.CrewedOrSaddledBySourceThisTurn -> {
+                // Mirror of CrewedOrSaddledSourceThisTurn: the candidate (entityId) is the Vehicle,
+                // the source is the crewer. Read the candidate's contributors and ask whether the
+                // source is among them.
+                val sourceId = context?.sourceId
+                val contributors = state.getEntity(entityId)?.get<CrewSaddleContributorsComponent>()
+                sourceId != null && contributors != null && sourceId in contributors.creatureIds
+            }
 
             // Summoning sickness / ETB
             StatePredicate.EnteredThisTurn -> {

@@ -18,6 +18,7 @@ class DamageExecutors(
         DividedDamageExecutor(decisionHandler),
         FightEffectExecutor(),
         AmplifyNoncombatDamageThisTurnExecutor(amountEvaluator),
+        DoubleDamageToPlayerExecutor(),
         DamageCantBePreventedThisTurnExecutor()
     )
 }

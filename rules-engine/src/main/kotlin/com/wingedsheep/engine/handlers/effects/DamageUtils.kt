@@ -1343,6 +1343,20 @@ object DamageUtils {
             }
         }
 
+        // Floating player-scoped damage-doubling (Lightning, Army of One's "Stagger"): a
+        // duration-bounded [SerializableModification.DoubleDamageToPlayer] doubles all damage — combat
+        // or noncombat, any source — dealt to the scoped player or to any permanent that player
+        // controls. Each install is a separate replacement, so two of them on the same player quadruple
+        // (each doubles once, CR 616). Independent of the source that created it (which may have left).
+        for (floating in state.floatingEffects) {
+            val mod = floating.effect.modification
+            if (mod !is com.wingedsheep.engine.mechanics.layers.SerializableModification.DoubleDamageToPlayer) continue
+            val recipientMatches = targetId == mod.playerId ||
+                projected.getController(targetId) == mod.playerId
+            if (!recipientMatches) continue
+            amplifiedAmount *= 2
+        }
+
         // Check for ModifyDamageAmount replacement effects (Valley Flamecaller)
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue

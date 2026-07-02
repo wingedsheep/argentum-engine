@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -104,6 +105,42 @@ data class AmplifyNoncombatDamageThisTurnEffect(
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newBonus = bonus.applyTextReplacement(replacer)
         return if (newBonus !== bonus) copy(bonus = newBonus) else this
+    }
+}
+
+/**
+ * Install a duration-bounded replacement effect that doubles *all* damage — from any source, combat
+ * or noncombat — that would be dealt to a chosen player and to any permanent that player controls
+ * (CR 616, a damage-amount replacement). The affected player is resolved once at resolution from
+ * [target] (a player reference) and baked into a floating effect scoped to that player, so it keeps
+ * doubling every damage instance to them and their permanents for the whole [duration], even if the
+ * source that installed it has since left the battlefield.
+ *
+ * Lightning, Army of One — "Stagger — Whenever Lightning deals combat damage to a player, until your
+ * next turn, if a source would deal damage to that player or a permanent that player controls, it
+ * deals double that damage instead." ([target] = [Player.TriggeringPlayer], the just-damaged player;
+ * [duration] = [Duration.UntilYourNextTurn].)
+ *
+ * Modelled as its own effect rather than the permanent-tied static [com.wingedsheep.sdk.scripting.DoubleDamage]
+ * replacement because it (a) is created by a resolving ability and outlives its source, (b) is
+ * duration-bounded, and (c) is scoped to a *specific* player captured at resolution — not "you" / "an
+ * opponent" relative to a battlefield host. Read directly during damage resolution by
+ * `DamageUtils.applyStaticDamageAmplification`, which runs for both combat (per already-assigned
+ * recipient, so trample/assignment happens before doubling) and noncombat damage.
+ */
+@SerialName("DoubleDamageToPlayer")
+@Serializable
+data class DoubleDamageToPlayerEffect(
+    val target: EffectTarget,
+    val duration: Duration = Duration.UntilYourNextTurn
+) : Effect {
+    override val description: String = buildString {
+        if (duration.description.isNotEmpty()) {
+            append(duration.description.replaceFirstChar { it.uppercase() })
+            append(", ")
+        }
+        append("if a source would deal damage to ${target.description} or a permanent that player ")
+        append("controls, it deals double that damage instead")
     }
 }
 

@@ -225,6 +225,7 @@ class ActivateAbilityHandler(
         // "{X} less, where X is this creature's power"). Per Scryfall ruling, the reduced
         // cost is locked in here, before costs are paid. Then apply generic equip-cost reduction
         // (Éowyn) and finally Forge Anew's free-first-equip.
+        val equipTargetIdForCost = action.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()?.entityId
         val effectiveCost = castPermissionUtils.relaxAbilityCostColorsIfAny(
             state, action.sourceId,
             castPermissionUtils.applyFreeFirstEquipDiscount(
@@ -233,7 +234,7 @@ class ActivateAbilityHandler(
                         applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId, action.targets),
                         state, action.sourceId
                     ),
-                    ability, state, action.playerId
+                    ability, state, action.playerId, equipTargetIdForCost
                 ),
                 ability, state, action.playerId
             )
@@ -472,6 +473,7 @@ class ActivateAbilityHandler(
         // "{X} less, where X is this creature's power"). Locked in before payment. Then apply
         // generic equip-cost reduction (Éowyn) and Forge Anew's free-first-equip discount.
         // Finally relax colored requirements when "mana of any type can be spent" applies (Sharkey).
+        val equipTargetIdForCost = action.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()?.entityId
         val effectiveCost = castPermissionUtils.relaxAbilityCostColorsIfAny(
             state, action.sourceId,
             castPermissionUtils.applyFreeFirstEquipDiscount(
@@ -480,7 +482,7 @@ class ActivateAbilityHandler(
                         applyGenericCostReduction(rawCost, ability, state, action.sourceId, action.playerId, action.targets),
                         state, action.sourceId
                     ),
-                    ability, state, action.playerId
+                    ability, state, action.playerId, equipTargetIdForCost
                 ),
                 ability, state, action.playerId
             )

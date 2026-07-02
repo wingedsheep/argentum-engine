@@ -1328,6 +1328,14 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.IsFirstEndStepOfTurn
 
     /**
+     * If it's the first combat phase of the turn (not an extra combat phase inserted by
+     * [Effects.AddCombatPhase]). The intervening-if / loop guard for "after this phase, there is an
+     * additional combat phase" riders — see Balthier and Fran, Genji Glove, Raph & Leo.
+     */
+    val IsFirstCombatPhaseOfTurn: ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.IsFirstCombatPhaseOfTurn
+
+    /**
      * If it's your turn.
      */
     val IsYourTurn: ConditionInterface =

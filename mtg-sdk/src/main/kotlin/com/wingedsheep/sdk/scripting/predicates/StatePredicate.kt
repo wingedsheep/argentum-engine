@@ -456,6 +456,22 @@ sealed interface StatePredicate {
         override val description: String = "that crewed or saddled it this turn"
     }
 
+    /**
+     * Vehicle/Mount that was crewed (CR 702.122) or saddled (CR 702.171) *by* the effect's source
+     * creature this turn — i.e. the source was one of the creatures tapped to pay this permanent's
+     * Crew/Saddle cost. The mirror image of [CrewedOrSaddledSourceThisTurn]: there the source is the
+     * Vehicle and the candidate is the crewer; here the source is the crewer and the candidate is
+     * the Vehicle. Source-relative — resolves against the *candidate's*
+     * `CrewSaddleContributorsComponent`, asking whether the source entity is recorded in it. Yields
+     * false with no source context. Used for "a Vehicle crewed by this creature this turn" payoffs
+     * (Balthier and Fran).
+     */
+    @SerialName("CrewedOrSaddledBySourceThisTurn")
+    @Serializable
+    data object CrewedOrSaddledBySourceThisTurn : Entity {
+        override val description: String = "crewed or saddled by it this turn"
+    }
+
     // =============================================================================
     // Zone-Specific Markers (Entity)
     // =============================================================================
