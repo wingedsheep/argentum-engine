@@ -181,6 +181,23 @@ class GameTestDriver {
         return result
     }
 
+    // Lazily-built enumerator; stateless (takes current state), shared across calls.
+    private val legalActionEnumerator by lazy {
+        val services = com.wingedsheep.engine.core.EngineServices(cardRegistry)
+        com.wingedsheep.engine.legalactions.LegalActionEnumerator(
+            services.cardRegistry, services.manaSolver, services.costCalculator,
+            services.predicateEvaluator, services.conditionEvaluator, services.turnManager
+        )
+    }
+
+    /**
+     * Enumerate the raw engine legal actions available to [playerId] right now — the same
+     * computation the server offers the client. Use to assert what a player is (or isn't)
+     * offered, distinct from [submitSuccess] which drives the handler directly.
+     */
+    fun legalActions(playerId: EntityId): List<com.wingedsheep.engine.legalactions.LegalAction> =
+        legalActionEnumerator.enumerate(_state, playerId)
+
     /**
      * Submit an action and expect it to fail.
      */

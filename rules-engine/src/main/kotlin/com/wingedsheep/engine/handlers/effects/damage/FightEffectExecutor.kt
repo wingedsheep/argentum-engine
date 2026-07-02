@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.damage
 
+import com.wingedsheep.engine.core.DamageDealtEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.handlers.EffectContext
@@ -38,10 +39,20 @@ class FightEffectExecutor : EffectExecutor<FightEffect> {
         var currentState = state
         val allEvents = mutableListOf<GameEvent>()
 
+        // Excess damage (CR 120.4a) that target1 deals to target2 — the "creature an opponent
+        // controls" half of the fight. Captured from the actual DamageDealtEvent (deathtouch- and
+        // marked-damage-aware) so a following effect can read it as a pipeline number (The Last
+        // Agni Kai). Stays 0 when target1 has no power or deals only lethal/sub-lethal damage.
+        var excessToTarget2 = 0
+
         if (power1 > 0) {
             val result1 = dealDamageToTarget(currentState, target2Id, power1, target1Id)
             currentState = result1.newState
             allEvents.addAll(result1.events)
+            excessToTarget2 = result1.events
+                .filterIsInstance<DamageDealtEvent>()
+                .filter { it.targetId == target2Id }
+                .sumOf { it.excessAmount }
         }
 
         // Creature 2 deals damage equal to its power to creature 1
@@ -51,6 +62,11 @@ class FightEffectExecutor : EffectExecutor<FightEffect> {
             allEvents.addAll(result2.events)
         }
 
+        val storedNumbers = effect.excessDamageVariable
+            ?.let { mapOf(it to excessToTarget2) }
+            ?: emptyMap()
+
         return EffectResult.success(currentState, allEvents)
+            .copy(updatedStoredNumbers = storedNumbers)
     }
 }

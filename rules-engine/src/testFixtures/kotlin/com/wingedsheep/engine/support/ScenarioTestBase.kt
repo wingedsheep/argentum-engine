@@ -1001,6 +1001,17 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Resolve a pending [ReorderLibraryDecision] (e.g. a Scry reorder prompt) by keeping
+         * the cards in their current order. A reorder decision requires an [OrderedResponse];
+         * [skipSelection] submits the wrong response type and would be rejected.
+         */
+        fun keepLibraryOrder(): ExecutionResult {
+            val decision = state.pendingDecision as? ReorderLibraryDecision
+                ?: error("No pending ReorderLibraryDecision to respond to")
+            return submitDecision(OrderedResponse(decision.id, decision.cards))
+        }
+
+        /**
          * Submit a number choice decision.
          */
         fun chooseNumber(number: Int): ExecutionResult {

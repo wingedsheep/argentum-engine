@@ -357,6 +357,18 @@ class PlayLandHandler(
             }
         }
 
+        // Global "[filter] enter tapped" from another battlefield permanent (Zhao, the Moon
+        // Slayer's "Nonbasic lands enter tapped"). Consulted after the land's own EntersTapped
+        // replacement and gated on !landEntersUntapped so an EntersUntapped effect wins (CR 614).
+        // Idempotent with a permission-forced / self tapland tap above (re-adding TappedComponent
+        // is a no-op).
+        if (!landEntersUntapped &&
+            com.wingedsheep.engine.handlers.effects.EnterTappedReplacements
+                .entersTapped(newState, action.cardId, action.playerId)
+        ) {
+            newState = newState.updateEntity(action.cardId) { c -> c.with(TappedComponent) }
+        }
+
         // Check for "as enters, choose X" replacement effect (color or creature type)
         // Process first choice in priority order: COLOR → CREATURE_TYPE
         // Continuations handle chaining to subsequent choices.

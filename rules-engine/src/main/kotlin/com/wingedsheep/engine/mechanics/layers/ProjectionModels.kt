@@ -640,5 +640,7 @@ internal data class MutableProjectedValues(
     val cantBeBlockedExceptByFilters: MutableList<GameObjectFilter> = mutableListOf(),
     val canOnlyBlockCreaturesWithFilters: MutableList<GameObjectFilter> = mutableListOf(),
     var additionalBlockCount: Int = 0,
-    var lostAllAbilities: Boolean = false
+    var lostAllAbilities: Boolean = false,
+    /** See [com.wingedsheep.engine.mechanics.layers.ProjectedValues.basicLandTypesSetByEffect]. */
+    var basicLandTypesSetByEffect: Boolean = false
 )

@@ -7494,40 +7494,6 @@
     ]
 }
 
-// White Knight
-{
-    "name": "White Knight",
-    "manaCost": "{W}{W}",
-    "typeLine": "Creature — Human Knight",
-    "oracleText": "First strike, protection from black",
-    "creatureStats": {
-        "power": 2,
-        "toughness": 2
-    },
-    "keywords": [
-        "FIRST_STRIKE"
-    ],
-    "keywordAbilities": [
-        {
-            "type": "Protection",
-            "scope": {
-                "type": "ProtectionScope.Color",
-                "color": "BLACK"
-            }
-        }
-    ],
-    "metadata": {
-        "collectorNumber": "27",
-        "rarity": "UNCOMMON",
-        "artist": "Edward P. Beard, Jr.",
-        "flavorText": "In the wretched depths of the Grand Coliseum, his soul shines like a single torch blazing in the night.",
-        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb9cb8ed-7abb-4e71-b42f-5041dd0c0394.jpg?1562935895"
-    },
-    "colorIdentityOverride": [
-        "WHITE"
-    ]
-}
-
 // Willbender
 {
     "name": "Willbender",

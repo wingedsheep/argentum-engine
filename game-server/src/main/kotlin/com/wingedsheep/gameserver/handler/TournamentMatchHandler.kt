@@ -124,6 +124,8 @@ class TournamentMatchHandler(
             ctx.lobbyRepository.saveTournament(lobbyId, tournament)
 
             handleMatchComplete(lobbyId, gameSessionId)
+            // Persist the freshly-updated standings so profiles/dashboard show live results.
+            recordTournamentProgress(lobbyId)
             spectatingHandler.broadcastActiveMatchesToWaitingPlayers(lobbyId)
 
             val lobby = ctx.lobbyRepository.findLobbyById(lobbyId)
@@ -146,6 +148,10 @@ class TournamentMatchHandler(
             val tournament = ctx.lobbyRepository.findTournamentById(lobbyId) ?: return
             tournament.recordAbandon(playerId)
             ctx.lobbyRepository.saveTournament(lobbyId, tournament)
+
+            // Freeze the standings as they stand after the forfeit; the row keeps these if it later
+            // flips to ABANDONED on teardown.
+            recordTournamentProgress(lobbyId)
 
             spectatingHandler.broadcastActiveMatchesToWaitingPlayers(lobbyId)
 
@@ -910,36 +916,60 @@ class TournamentMatchHandler(
         // Record the finished tournament for durable stats. No-op unless accounts are enabled, and
         // only when at least one seat is a human (AI-only / LLM tournaments use a separate path). This
         // upserts the in-progress row recorded when the bracket went live, flipping it to COMPLETED.
-        run {
-            val standings = tournament.getRankedStandings()
-            tournamentResultSink.recordCompleted(
-                com.wingedsheep.gameserver.stats.RecordedTournament(
-                    lobbyId = lobbyId,
-                    name = tournamentDisplayName(lobby),
-                    format = lobby.format.name,
-                    gameMode = lobby.gameMode.name,
-                    setCodes = lobby.setCodes.joinToString(","),
-                    playerCount = lobby.playerCount,
-                    rounds = tournament.getRoundsForPersistence().size,
-                    gamesPerMatch = lobby.gamesPerMatch,
-                    winnerName = standings.firstOrNull { it.rank == 1 }?.standing?.playerName,
-                    startedAt = null,
-                    endedAt = java.time.Instant.now(),
-                    participants = standings.map { rs ->
-                        val identity = lobby.players[rs.standing.playerId]?.identity
-                        com.wingedsheep.gameserver.stats.RecordedTournamentParticipant(
-                            userId = identity?.userId,
-                            playerName = rs.standing.playerName,
-                            isAi = identity?.isAi == true,
-                            placement = rs.rank,
-                            wins = rs.standing.wins,
-                            losses = rs.standing.losses,
-                            draws = rs.standing.draws,
-                        )
-                    },
+        tournamentResultSink.recordCompleted(
+            buildRecordedTournament(lobby, tournament, endedAt = java.time.Instant.now())
+        )
+    }
+
+    /**
+     * Persist the current standings of a still-running tournament, so player profiles and the admin
+     * dashboard show live results (wins/losses/draws and provisional placement) rather than the zeroed
+     * seed written at start. A no-op unless accounts are enabled with a human seat, and the sink only
+     * touches rows still marked IN_PROGRESS. Called after each match result and after an abandon; an
+     * abandoned tournament then keeps these last-known standings when its row flips to ABANDONED.
+     */
+    private fun recordTournamentProgress(lobbyId: String) {
+        val lobby = ctx.lobbyRepository.findLobbyById(lobbyId) ?: return
+        val tournament = ctx.lobbyRepository.findTournamentById(lobbyId) ?: return
+        tournamentResultSink.recordProgress(buildRecordedTournament(lobby, tournament, endedAt = null))
+    }
+
+    /**
+     * Build a [RecordedTournament][com.wingedsheep.gameserver.stats.RecordedTournament] snapshot from the
+     * live tournament's ranked standings. [endedAt] is null while in progress and set on completion; the
+     * winner is only named once the tournament has ended.
+     */
+    private fun buildRecordedTournament(
+        lobby: TournamentLobby,
+        tournament: TournamentManager,
+        endedAt: java.time.Instant?,
+    ): com.wingedsheep.gameserver.stats.RecordedTournament {
+        val standings = tournament.getRankedStandings()
+        return com.wingedsheep.gameserver.stats.RecordedTournament(
+            lobbyId = lobby.lobbyId,
+            name = tournamentDisplayName(lobby),
+            format = lobby.format.name,
+            gameMode = lobby.gameMode.name,
+            setCodes = lobby.setCodes.joinToString(","),
+            playerCount = lobby.playerCount,
+            rounds = tournament.getRoundsForPersistence().size,
+            gamesPerMatch = lobby.gamesPerMatch,
+            winnerName = if (endedAt != null) standings.firstOrNull { it.rank == 1 }?.standing?.playerName else null,
+            startedAt = null,
+            endedAt = endedAt,
+            participants = standings.map { rs ->
+                val identity = lobby.players[rs.standing.playerId]?.identity
+                com.wingedsheep.gameserver.stats.RecordedTournamentParticipant(
+                    userId = identity?.userId,
+                    playerName = rs.standing.playerName,
+                    isAi = identity?.isAi == true,
+                    placement = rs.rank,
+                    wins = rs.standing.wins,
+                    losses = rs.standing.losses,
+                    draws = rs.standing.draws,
                 )
-            )
-        }
+            },
+        )
     }
 
     /** Human-readable tournament name, e.g. "Bloomburrow / Duskmourn Sealed". */

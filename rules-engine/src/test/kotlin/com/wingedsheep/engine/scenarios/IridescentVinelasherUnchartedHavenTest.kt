@@ -5,7 +5,7 @@ import com.wingedsheep.engine.core.ColorChosenResponse
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.blb.cards.IridescentVinelasher
-import com.wingedsheep.mtg.sets.definitions.blb.cards.UnchartedHaven
+import com.wingedsheep.mtg.sets.definitions.neo.cards.UnchartedHaven
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck

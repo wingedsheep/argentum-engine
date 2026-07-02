@@ -109,6 +109,55 @@ class MatchResultSinkTest : FunSpec({
         saved.captured.winnerName shouldBe "Carol"
     }
 
+    test("recordProgress refreshes an in-progress row's standings, keeping its id and start time") {
+        val repo = mockk<TournamentRepository>(relaxed = true)
+        val startedAt = Instant.now()
+        every { repo.findFirstByLobbyIdOrderByIdDesc("l") } returns
+            TournamentRow(id = 7, lobbyId = "l", status = "IN_PROGRESS", startedAt = startedAt)
+        val saved = slot<TournamentRow>()
+        every { repo.save(capture(saved)) } answers { saved.captured }
+
+        JdbcTournamentResultSink(repo).recordProgress(
+            progress(RecordedTournamentParticipant(SOME_USER, "Carol", isAi = false, placement = 1, wins = 2, losses = 1, draws = 0))
+        )
+        saved.captured.id shouldBe 7
+        saved.captured.status shouldBe TournamentStatus.IN_PROGRESS.name
+        saved.captured.startedAt shouldBe startedAt
+        val carol = saved.captured.participants.first { it.playerName == "Carol" }
+        carol.wins shouldBe 2
+        carol.losses shouldBe 1
+        carol.placement shouldBe 1
+    }
+
+    test("recordProgress does not resurrect a completed or abandoned tournament, nor create a missing one") {
+        val repo = mockk<TournamentRepository>(relaxed = true)
+        every { repo.save(any()) } answers { firstArg() }
+        val sink = JdbcTournamentResultSink(repo)
+        val human = progress(RecordedTournamentParticipant(SOME_USER, "Carol", isAi = false, placement = 1, wins = 1, losses = 0, draws = 0))
+
+        // No row yet → nothing to refresh (start hasn't been recorded).
+        every { repo.findFirstByLobbyIdOrderByIdDesc("l") } returns null
+        sink.recordProgress(human)
+
+        // Already completed → left untouched.
+        every { repo.findFirstByLobbyIdOrderByIdDesc("l") } returns TournamentRow(id = 1, lobbyId = "l", status = "COMPLETED")
+        sink.recordProgress(human)
+
+        // Already abandoned → left untouched.
+        every { repo.findFirstByLobbyIdOrderByIdDesc("l") } returns TournamentRow(id = 1, lobbyId = "l", status = "ABANDONED")
+        sink.recordProgress(human)
+
+        verify(exactly = 0) { repo.save(any()) }
+    }
+
+    test("recordProgress skips AI-only tournaments") {
+        val repo = mockk<TournamentRepository>(relaxed = true)
+        JdbcTournamentResultSink(repo).recordProgress(
+            progress(RecordedTournamentParticipant(null, "Bot", isAi = true, placement = 1, wins = 1, losses = 0, draws = 0))
+        )
+        verify(exactly = 0) { repo.save(any()) }
+    }
+
     test("recordAbandoned flips only in-progress rows to ABANDONED") {
         val repo = mockk<TournamentRepository>(relaxed = true)
         val saved = slot<TournamentRow>()
@@ -135,4 +184,11 @@ private fun tournament(vararg p: RecordedTournamentParticipant) = RecordedTourna
     lobbyId = "l", name = "Test", format = "SEALED", gameMode = "TOURNAMENT", setCodes = "DSK",
     playerCount = p.size, rounds = 3, gamesPerMatch = 1, winnerName = "Carol",
     startedAt = null, endedAt = Instant.now(), participants = p.toList(),
+)
+
+/** An in-progress snapshot: no end time and no winner yet, as [TournamentMatchHandler] builds it. */
+private fun progress(vararg p: RecordedTournamentParticipant) = RecordedTournament(
+    lobbyId = "l", name = "Test", format = "SEALED", gameMode = "TOURNAMENT", setCodes = "DSK",
+    playerCount = p.size, rounds = 1, gamesPerMatch = 1, winnerName = null,
+    startedAt = null, endedAt = null, participants = p.toList(),
 )

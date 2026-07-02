@@ -123,7 +123,49 @@ data class ManaPoolComponent(
      * Empty the mana pool.
      */
     fun empty(): ManaPoolComponent = ManaPoolComponent()
+
+    /**
+     * Empty the pool except for mana of [keep] colours, which is retained. Used by the
+     * colour-filtered, turn-scoped retention ([RetainUnspentManaComponent], The Last Agni Kai):
+     * at end-of-turn cleanup the kept colours' plain counters and any same-colour restricted
+     * entries survive, while every other colour, colorless, treasure, and off-colour restricted
+     * mana empties as normal. An empty [keep] set is identical to [empty].
+     */
+    fun emptyExcept(keep: Set<Color>): ManaPoolComponent =
+        ManaPoolComponent(
+            white = if (Color.WHITE in keep) white else 0,
+            blue = if (Color.BLUE in keep) blue else 0,
+            black = if (Color.BLACK in keep) black else 0,
+            red = if (Color.RED in keep) red else 0,
+            green = if (Color.GREEN in keep) green else 0,
+            colorless = 0,
+            restrictedMana = restrictedMana.filter { it.color != null && it.color in keep },
+            treasureMana = 0
+        )
 }
+
+/**
+ * "Until end of turn, you don't lose unspent mana of [colors] as steps and phases end."
+ *
+ * Turn-scoped, single-player, colour-filtered mana retention conferred directly on a player by
+ * [com.wingedsheep.sdk.scripting.effects.RetainUnspentManaEffect] (The Last Agni Kai). The
+ * one-shot, source-independent cousin of the permanent-static
+ * [com.wingedsheep.sdk.scripting.PreventManaPoolEmptying] (Upwelling): rather than stopping all
+ * emptying for everyone while a permanent is in play, it spares only this player's [colors] mana.
+ *
+ * Read by [com.wingedsheep.engine.core.CleanupPhaseManager] during the end-of-turn mana-emptying
+ * step (the engine's only mana-pool-emptying point): the player's pool is emptied via
+ * [ManaPoolComponent.emptyExcept] keeping [colors], then the component is removed if its
+ * [removeOn] is [PlayerEffectRemoval.EndOfTurn] (the default).
+ *
+ * @property colors Mana colours kept through this turn's pool emptying.
+ * @property removeOn When this component is removed.
+ */
+@Serializable
+data class RetainUnspentManaComponent(
+    val colors: Set<Color> = emptySet(),
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
+) : Component
 
 /**
  * A single unit of mana with a spending restriction.

@@ -197,10 +197,18 @@ class ActivateAbilityHandler(
                 // by Imprisoned in the Moon keeps its land subtype (only card types/abilities
                 // are overwritten, not subtypes) but per ruling loses the mana ability that
                 // subtype would otherwise imply.
+                //
+                // Exception: when an effect SET this land's basic types (Blood Moon / Zhao's
+                // "nonbasic lands are Mountains"), the new type's intrinsic mana ability is
+                // granted by that same effect (CR 305.7) and survives its ability removal —
+                // so it stays activatable. Mirrors ManaAbilityEnumerator's `ownManaAbilities`.
+                val isIntrinsicMana = IntrinsicManaAbilities.lookup(action.abilityId) != null
+                val intrinsicSurvives = isIntrinsicMana &&
+                    state.projectedState.hasBasicLandTypesSetByEffect(action.sourceId)
                 val isOwnAbility = (cardDef?.script?.effectiveActivatedAbilities(classLevel)?.any { it.id == action.abilityId } == true)
                     || action.abilityId.value.startsWith("class_level_up_")
-                    || IntrinsicManaAbilities.lookup(action.abilityId) != null
-                if (isOwnAbility) {
+                    || isIntrinsicMana
+                if (isOwnAbility && !intrinsicSurvives) {
                     return "This permanent has lost all abilities"
                 }
             }

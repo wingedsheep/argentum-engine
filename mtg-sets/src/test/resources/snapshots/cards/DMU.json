@@ -193,36 +193,6 @@
     ]
 }
 
-// Essence Scatter
-{
-    "name": "Essence Scatter",
-    "manaCost": "{1}{U}",
-    "typeLine": "Instant",
-    "oracleText": "Counter target creature spell.",
-    "script": {
-        "spellEffect": "Counter",
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "creature",
-                    "zone": "Stack"
-                },
-                "id": "creature spell"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "49",
-        "artist": "Anastasia Ovchinnikova",
-        "flavorText": "\"Phyrexians pollute everything they touch, so the solution is simple: don't let them touch anything.\"\n—Teferi",
-        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7ad4441-e300-4267-bedb-4ae6a64f59cd.jpg?1673306711"
-    },
-    "colorIdentityOverride": [
-        "BLUE"
-    ]
-}
-
 // Haughty Djinn
 {
     "name": "Haughty Djinn",

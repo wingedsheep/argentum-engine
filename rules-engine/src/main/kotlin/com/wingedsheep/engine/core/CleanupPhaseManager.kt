@@ -41,6 +41,7 @@ import com.wingedsheep.engine.state.components.player.CantGainLifeComponent
 import com.wingedsheep.engine.state.components.player.DamageBonusComponent
 import com.wingedsheep.engine.state.components.player.DamageReceivedFromArtifactsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.RetainUnspentManaComponent
 import com.wingedsheep.engine.state.components.player.FlashGrantsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PlayerCantPlayFromHandComponent
 import com.wingedsheep.engine.state.components.player.PlayerProtectionComponent
@@ -453,13 +454,20 @@ class CleanupPhaseManager(
             newState = newState.copy(activeCounterPlacementModifiers = remainingCounterModifiers)
         }
 
-        // 2. Empty mana pools for all players (unless prevented by a static ability like Upwelling)
+        // 2. Empty mana pools for all players (unless prevented by a static ability like Upwelling).
+        // A player carrying a RetainUnspentManaComponent (The Last Agni Kai) keeps mana of the
+        // named colours through this emptying; the marker itself is cleared in step 4 below.
         if (!isManaPoolEmptyingPrevented(newState)) {
             for (playerId in newState.turnOrder) {
                 newState = newState.updateEntity(playerId) { container ->
                     val manaPool = container.get<ManaPoolComponent>()
                     if (manaPool != null && !manaPool.isEmpty) {
-                        container.with(manaPool.empty())
+                        val retained = container.get<RetainUnspentManaComponent>()?.colors
+                        if (retained != null && retained.isNotEmpty()) {
+                            container.with(manaPool.emptyExcept(retained))
+                        } else {
+                            container.with(manaPool.empty())
+                        }
                     } else {
                         container
                     }
@@ -541,6 +549,12 @@ class CleanupPhaseManager(
                 val flashGrants = result.get<FlashGrantsThisTurnComponent>()
                 if (flashGrants?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<FlashGrantsThisTurnComponent>()
+                }
+                // Colour-filtered mana retention (The Last Agni Kai): the kept mana already
+                // survived the step-2 emptying above; drop the now-spent marker here.
+                val retainMana = result.get<RetainUnspentManaComponent>()
+                if (retainMana?.removeOn == PlayerEffectRemoval.EndOfTurn) {
+                    result = result.without<RetainUnspentManaComponent>()
                 }
                 val graveyardForage = result.get<MayCastCreaturesFromGraveyardWithForageComponent>()
                 if (graveyardForage?.removeOn == PlayerEffectRemoval.EndOfTurn) {

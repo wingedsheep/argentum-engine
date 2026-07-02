@@ -217,6 +217,22 @@ enum class Keyword(val displayName: String) {
      */
     PLOT("Plot"),
 
+    /**
+     * Foretell (CR 702.143, Kaldheim). "Foretell [cost]" — a keyword ability that functions while
+     * the card is in a player's hand. Special action (CR 116.2h): any time you have priority during
+     * your turn you may pay {2} and exile the card from your hand *face down* (CR 708). It becomes
+     * foretold; you may look at it while it stays exiled. After the turn it was foretold has ended,
+     * you may cast it from exile by paying its foretell cost rather than its mana cost.
+     *
+     * Structurally a paid cousin of [PLOT]: both exile from hand and cast-later-from-exile, but plot
+     * is free to set up ({0}-ish printed cost) and free to cast later, whereas foretell always costs
+     * {2} to exile and has a distinct per-card foretell cost to cast. The keyword itself is
+     * display-only; cast/exile wiring lives in [com.wingedsheep.sdk.scripting.KeywordAbility.Foretell]
+     * and the engine's foretell action handler + enumerator (which reuse the fixed-alternative-cost
+     * cast-from-exile machinery that Airbend uses).
+     */
+    FORETELL("Foretell"),
+
     // ── Creature mechanics ────────────────────────────────
     OFFSPRING("Offspring"),
     PERSIST("Persist"),

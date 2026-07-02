@@ -44,6 +44,7 @@ val engineSerializersModule = SerializersModule {
         subclass(SaddleMount::class)
         subclass(CycleCard::class)
         subclass(PlotCard::class)
+        subclass(ForetellCard::class)
         subclass(TurnFaceUp::class)
         subclass(TypecycleCard::class)
         subclass(UnlockRoomDoor::class)
@@ -228,6 +229,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChooseDoorContinuation::class)
         subclass(ModalTargetContinuation::class)
         subclass(ModalPreChosenContinuation::class)
+        subclass(ModalChosenModeTailContinuation::class)
         subclass(CloneEntersContinuation::class)
         subclass(EntersWithChoiceSpellContinuation::class)
         subclass(EntersWithChoiceOnBattlefieldContinuation::class)
@@ -361,6 +363,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PlayWithoutPayingCostComponent::class)
         subclass(WarpExiledComponent::class)
         subclass(PlottedComponent::class)
+        subclass(ForetoldComponent::class)
         subclass(MiracleWindowComponent::class)
 
         // Battlefield components
@@ -510,6 +513,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PermanentsEnteredUnderControlThisTurnComponent::class)
         subclass(SpellsCantBeCounteredComponent::class)
         subclass(FlashGrantsThisTurnComponent::class)
+        subclass(RetainUnspentManaComponent::class)
         subclass(PutCounterOnCreatureThisTurnComponent::class)
         subclass(SkipNextTurnComponent::class)
         subclass(PlayerTurnHijackedComponent::class)

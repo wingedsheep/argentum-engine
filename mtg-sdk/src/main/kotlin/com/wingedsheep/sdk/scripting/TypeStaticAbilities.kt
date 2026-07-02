@@ -360,6 +360,48 @@ data class GrantAdditionalTypesToGroup(
 }
 
 /**
+ * Sets the basic land type(s) of a *group* of lands, replacing all of their existing land
+ * subtypes and stripping the abilities those subtypes / their rules text granted (CR 305.7).
+ * The group counterpart of the single-target [SetEnchantedLandType], and the "set/replace"
+ * counterpart of [GrantAdditionalTypesToGroup] (which *adds* types and keeps abilities).
+ *
+ * Used for Blood Moon / Magus of the Moon: "Nonbasic lands are Mountains. (They lose all other
+ * land types and abilities and have '{T}: Add {R}.')". Gate behind a [ConditionalStaticAbility]
+ * for conditional variants (e.g. Zhao, the Moon Slayer — active only while it has a conqueror
+ * counter).
+ *
+ * This lowers to two continuous effects (see `StaticAbilityHandler.convertSetLandTypesForGroup`):
+ * - Layer 4 (TYPE): [com.wingedsheep.engine.mechanics.layers.Modification.SetBasicLandTypes] —
+ *   removes the old basic land subtypes and adds [landTypes] (CR 305.7).
+ * - Layer 6 (ABILITY): [com.wingedsheep.engine.mechanics.layers.Modification.RemoveAllAbilities] —
+ *   removes the lands' printed abilities. The new basic land type's intrinsic mana ability
+ *   (e.g. "{T}: Add {R}" for Mountain) is *not* removed: it is derived from the projected
+ *   subtypes by `IntrinsicManaAbilities`, which takes priority over ability suppression.
+ *
+ * @property filter Which lands are affected (e.g. all nonbasic lands — [GroupFilter] over
+ *   `GameObjectFilter.NonbasicLand`, both players' lands).
+ * @property landTypes The basic land type(s) to set (e.g. {"Mountain"}), replacing all others.
+ */
+@SerialName("SetLandTypesForGroup")
+@Serializable
+data class SetLandTypesForGroup(
+    val filter: GroupFilter,
+    val landTypes: Set<String>
+) : StaticAbility {
+    override val description: String = buildString {
+        append(filter.description)
+        append(" are ")
+        append(landTypes.joinToString(" "))
+        append(" (they lose all other land types and abilities)")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Animates a group of lands into creatures while keeping them as lands.
  * Used for Ambush Commander: "Forests you control are 1/1 green Elf creatures that are still lands."
  *

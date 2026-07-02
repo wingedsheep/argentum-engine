@@ -46,11 +46,16 @@ class CardDiscoveryTest : FunSpec({
             "Bloodstained Mire",
             "Cancel",
             "Crippling Chill",
+            "Erase",
             "Flooded Strand",
             "Incremental Growth",
             "Naturalize",
             "Polluted Delta",
             "Shatter",
+            "Smite the Monstrous",
+            "Trumpet Blast",
+            "Windswept Heath",
+            "Wooded Foothills",
         )
         ktkPrintings.forEach { it.setCode shouldBe "KTK" }
     }

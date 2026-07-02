@@ -78,6 +78,19 @@ sealed interface RecipientFilter {
         override val description = "a permanent"
     }
 
+    /**
+     * An opponent (player) of the effect's controller, or a permanent that an opponent
+     * controls. Models the common damage-recipient template "an opponent or a permanent
+     * an opponent controls" (Fated Firepower). Unlike [Opponent] (player only) or
+     * [CreatureOpponentControls] (creature only), this matches both the opponent player
+     * and every permanent type they control.
+     */
+    @SerialName("OpponentOrPermanentTheyControl")
+    @Serializable
+    data object OpponentOrPermanentTheyControl : RecipientFilter {
+        override val description = "an opponent or a permanent an opponent controls"
+    }
+
     @SerialName("RecipientSelf")
     @Serializable
     data object Self : RecipientFilter {
@@ -166,6 +179,18 @@ sealed interface SourceFilter {
     @Serializable
     data object Creature : SourceFilter {
         override val description = "a creature"
+    }
+
+    /**
+     * A source (of any kind — permanent, spell, or ability) controlled by the effect's
+     * controller. Models "a source you control" (Fated Firepower). The source's controller
+     * is compared against the replacement's controller, so it covers attacking creatures,
+     * burn spells on the stack, and ability sources alike.
+     */
+    @SerialName("SourceYouControl")
+    @Serializable
+    data object YouControl : SourceFilter {
+        override val description = "a source you control"
     }
 
     @SerialName("SourceMatching")

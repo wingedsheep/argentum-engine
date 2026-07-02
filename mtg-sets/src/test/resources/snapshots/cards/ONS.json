@@ -15315,49 +15315,6 @@
     ]
 }
 
-// Swat
-{
-    "name": "Swat",
-    "manaCost": "{1}{B}{B}",
-    "typeLine": "Instant",
-    "oracleText": "Destroy target creature with power 2 or less.\nCycling {2}",
-    "keywordAbilities": [
-        {
-            "type": "Cycling",
-            "cost": "{2}"
-        }
-    ],
-    "script": {
-        "spellEffect": {
-            "type": "MoveToZone",
-            "target": {
-                "type": "BoundVariable",
-                "name": "target"
-            },
-            "destination": "Graveyard",
-            "byDestruction": true
-        },
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "creature pow<=2"
-                },
-                "id": "target"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "174",
-        "artist": "rk post",
-        "flavorText": "Few who cross Phage have the chance to repeat the mistake.",
-        "imageUri": "https://cards.scryfall.io/normal/front/c/e/cec3a260-6c50-401d-a0ff-bf49a973e1a1.jpg?1562943805"
-    },
-    "colorIdentityOverride": [
-        "BLACK"
-    ]
-}
-
 // Symbiotic Beast
 {
     "name": "Symbiotic Beast",

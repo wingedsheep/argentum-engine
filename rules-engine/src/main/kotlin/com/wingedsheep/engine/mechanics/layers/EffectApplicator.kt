@@ -175,6 +175,9 @@ internal class EffectApplicator(
                     values.types.removeAll { it in basicLandTypes }
                     values.subtypes.addAll(mod.subtypes)
                     values.types.addAll(mod.subtypes)
+                    // The new type's intrinsic mana ability survives a same-source lose-all-
+                    // abilities effect (Blood Moon / Zhao). See ProjectedValues.basicLandTypesSetByEffect.
+                    values.basicLandTypesSetByEffect = true
                 }
                 is Modification.SetBasicLandTypesFromChosen -> {
                     val chosenLandType = state.getEntity(effect.sourceId)
@@ -185,6 +188,7 @@ internal class EffectApplicator(
                         values.types.removeAll { it in basicLandTypes }
                         values.subtypes.add(chosenLandType)
                         values.types.add(chosenLandType)
+                        values.basicLandTypesSetByEffect = true
                     }
                 }
                 is Modification.SetCardTypes -> {

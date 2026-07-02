@@ -50,6 +50,14 @@ interface TournamentResultSink {
     /** Record that a tournament has gone live. Idempotent per lobby; skipped when no seat is human. */
     fun recordStarted(tournament: RecordedTournament)
 
+    /**
+     * Refresh an in-progress tournament's standings (wins/losses/draws and current placement) so
+     * player profiles and the admin dashboard reflect results as they happen, not only at the end.
+     * No-op unless an IN_PROGRESS row already exists for the lobby; never resurrects a
+     * completed/abandoned tournament.
+     */
+    fun recordProgress(tournament: RecordedTournament)
+
     /** Record a tournament's final result, flipping it to COMPLETED. Upserts the in-progress row. */
     fun recordCompleted(tournament: RecordedTournament)
 
@@ -62,6 +70,7 @@ interface TournamentResultSink {
 @ConditionalOnProperty(name = ["accounts.enabled"], havingValue = "false", matchIfMissing = true)
 class NoOpTournamentResultSink : TournamentResultSink {
     override fun recordStarted(tournament: RecordedTournament) = Unit
+    override fun recordProgress(tournament: RecordedTournament) = Unit
     override fun recordCompleted(tournament: RecordedTournament) = Unit
     override fun recordAbandoned(lobbyId: String) = Unit
 }
@@ -78,6 +87,22 @@ class JdbcTournamentResultSink(private val tournaments: TournamentRepository) : 
         if (tournaments.findFirstByLobbyIdOrderByIdDesc(tournament.lobbyId) != null) return
         tournaments.save(tournament.toRow(TournamentStatus.IN_PROGRESS))
         logger.debug("Recorded tournament {} as in progress ({} seats)", tournament.lobbyId, tournament.participants.size)
+    }
+
+    override fun recordProgress(tournament: RecordedTournament) {
+        if (tournament.participants.none { !it.isAi }) return
+        val existing = tournaments.findFirstByLobbyIdOrderByIdDesc(tournament.lobbyId) ?: return
+        // Only refresh a live tournament; never overwrite a completed or abandoned one.
+        if (existing.status != TournamentStatus.IN_PROGRESS.name) return
+        tournaments.save(
+            tournament.toRow(
+                status = TournamentStatus.IN_PROGRESS,
+                id = existing.id,
+                // Keep the start time captured when the bracket went live.
+                startedAt = existing.startedAt,
+            )
+        )
+        logger.debug("Refreshed in-progress standings for tournament {} ({} seats)", tournament.lobbyId, tournament.participants.size)
     }
 
     override fun recordCompleted(tournament: RecordedTournament) {

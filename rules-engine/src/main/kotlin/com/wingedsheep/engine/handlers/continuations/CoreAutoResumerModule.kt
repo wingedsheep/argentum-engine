@@ -141,6 +141,27 @@ class CoreAutoResumerModule(
             mergeAndContinue(result, events, checkForMore)
         },
 
+        autoResumer(ModalChosenModeTailContinuation::class, canResume = { it.remainingChosenModes.isNotEmpty() }) { state, continuation, events, checkForMore ->
+            // A resolution-time modal ability (Bumi's "choose up to X") paused inside one
+            // chosen mode (e.g. a targeted Scry's reorder prompt); drain the remaining
+            // chosen modes now that the inner chain has resolved.
+            processChosenModeQueue(
+                services = services,
+                state = state,
+                queue = continuation.remainingChosenModes,
+                controllerId = continuation.controllerId,
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                xValue = continuation.xValue,
+                triggeringEntityId = continuation.triggeringEntityId,
+                allowCancelBackToModesList = null,
+                outerTargets = continuation.outerTargets,
+                outerNamedTargets = continuation.outerNamedTargets,
+                accumulatedEvents = events,
+                checkForMore = checkForMore
+            )
+        },
+
         autoResumer(ReflexiveTriggerTargetContinuation::class) { state, continuation, events, checkForMore ->
             // After the action completes, present target selection for the reflexive effect
             val executor = com.wingedsheep.engine.handlers.effects.composite.ReflexiveTriggerEffectExecutor(

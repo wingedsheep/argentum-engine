@@ -15518,47 +15518,6 @@
     ]
 }
 
-// Tranquility
-{
-    "name": "Tranquility",
-    "manaCost": "{2}{G}",
-    "typeLine": "Sorcery",
-    "oracleText": "Destroy all enchantments.",
-    "script": {
-        "spellEffect": {
-            "type": "Composite",
-            "effects": [
-                {
-                    "type": "GatherCards",
-                    "source": {
-                        "type": "BattlefieldMatching",
-                        "filter": "enchantment"
-                    },
-                    "storeAs": "destroyAll_gathered"
-                },
-                {
-                    "type": "MoveCollection",
-                    "from": "destroyAll_gathered",
-                    "destination": {
-                        "type": "ToZone",
-                        "zone": "Graveyard"
-                    },
-                    "moveType": "Destroy"
-                }
-            ]
-        }
-    },
-    "metadata": {
-        "collectorNumber": "217",
-        "artist": "Rob Alexander",
-        "flavorText": "The plagues robbed Dominaria of all but its dreams. Eladamri hoped dreams were enough.",
-        "imageUri": "https://cards.scryfall.io/normal/front/9/7/97019ba5-ce2a-460c-8a4e-2b22053ced65.jpg?1562925426"
-    },
-    "colorIdentityOverride": [
-        "GREEN"
-    ]
-}
-
 // Traveler's Cloak
 {
     "name": "Traveler's Cloak",

@@ -348,6 +348,38 @@ data class EntersUntapped(
 }
 
 /**
+ * "Permanents matching [appliesTo] enter the battlefield tapped" — the global/group counterpart
+ * of the self-only [EntersTapped]. Models a *static* effect carried by a permanent that taps
+ * OTHER permanents it cares about as they enter (e.g. Zhao, the Moon Slayer's "Nonbasic lands
+ * enter tapped"; also Imposing Sovereign / Authority of the Consuls / Thalia, Heretic Cathar
+ * "creatures your opponents control enter tapped").
+ *
+ * Unlike [EntersTapped] — a self-replacement consumed once as the source itself enters — this is
+ * a runtime replacement stamped into the source's replacement component and consulted from the
+ * battlefield whenever some *other* permanent would enter, so the [appliesTo] filter describes
+ * the *affected* permanents (e.g. `GameObjectFilter.NonbasicLand`).
+ *
+ * Per CR 614 (replacement-effect ordering), an [EntersUntapped] effect that also matches the
+ * entering permanent wins — the engine's entry paths consult [EntersUntapped] first and only
+ * apply this tap when no untapped replacement applies.
+ */
+@SerialName("PermanentsEnterTapped")
+@Serializable
+data class PermanentsEnterTapped(
+    override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
+        filter = GameObjectFilter.Any,
+        to = Zone.BATTLEFIELD
+    )
+) : ReplacementEffect {
+    override val description: String = "If ${appliesTo.description}, it enters tapped"
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+    }
+}
+
+/**
  * Permanent/creature enters with counters.
  * Example: Master Biomancer, Metallic Mimic
  *
@@ -529,23 +561,43 @@ data class DoubleDamage(
 }
 
 /**
- * Modify damage dealt by a fixed amount.
- * Example: Valley Flamecaller ("If a Lizard, Mouse, Otter, or Raccoon you control would deal
- * damage to a permanent or player, it deals that much damage plus 1 instead.")
+ * Modify damage dealt by an additive amount — either a fixed [modifier] or, when
+ * [dynamicModifier] is supplied, an amount computed at damage time against the
+ * replacement's *source* permanent.
+ *
+ * Examples:
+ * - Valley Flamecaller ("If a Lizard, Mouse, Otter, or Raccoon you control would deal
+ *   damage to a permanent or player, it deals that much damage plus 1 instead.") →
+ *   `ModifyDamageAmount(modifier = 1, appliesTo = …)`.
+ * - Fated Firepower ("If a source you control would deal damage to an opponent or a
+ *   permanent an opponent controls, it deals that much damage plus an amount of damage
+ *   equal to the number of fire counters on this enchantment instead.") →
+ *   `ModifyDamageAmount(dynamicModifier = DynamicAmounts.countersOnSelf(CounterTypeFilter.Named("fire")),
+ *                       appliesTo = DamageEvent(source = SourceFilter.YouControl,
+ *                                               recipient = RecipientFilter.OpponentOrPermanentTheyControl))`.
+ *
+ * When [dynamicModifier] is non-null it is evaluated with the replacement's source
+ * permanent as the resolution source (so `DynamicAmount.EntityProperty(Source, …)` reads
+ * the source's own characteristics/counters); otherwise the flat [modifier] is added.
  */
 @SerialName("ModifyDamageAmount")
 @Serializable
 data class ModifyDamageAmount(
-    val modifier: Int,
+    val modifier: Int = 0,
+    val dynamicModifier: DynamicAmount? = null,
     override val appliesTo: EventPattern
 ) : ReplacementEffect {
     override val description: String = buildString {
-        append("If ${appliesTo.description}, it deals that much damage plus $modifier instead")
+        val bonus = dynamicModifier?.description ?: "$modifier"
+        append("If ${appliesTo.description}, it deals that much damage plus $bonus instead")
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)
-        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
+        val newDynamic = dynamicModifier?.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo || newDynamic !== dynamicModifier)
+            copy(appliesTo = newAppliesTo, dynamicModifier = newDynamic)
+        else this
     }
 }
 
