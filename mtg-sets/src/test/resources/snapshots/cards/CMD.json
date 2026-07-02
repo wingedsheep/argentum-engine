@@ -40,3 +40,88 @@
     },
     "colorIdentityOverride": []
 }
+
+// Scavenging Ooze
+{
+    "name": "Scavenging Ooze",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Ooze",
+    "oracleText": "{G}: Exile target card from a graveyard. If it was a creature card, put a +1/+1 counter on this creature and you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target card in a graveyard"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": "TargetIsCreatureCard"
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "+1/+1",
+                                        "count": 1,
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GainLife",
+                                        "amount": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "target card in a graveyard"
+                    }
+                ],
+                "descriptionOverride": "{G}: Exile target card from a graveyard. If it was a creature card, put a +1/+1 counter on this creature and you gain 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "RARE",
+        "artist": "Austin Hsu",
+        "flavorText": "In nature, not a single bone or scrap of flesh goes to waste.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/371ceb58-f498-4616-a7f0-eb118fe2e4ff.jpg?1782715022"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

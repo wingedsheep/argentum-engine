@@ -43,6 +43,42 @@
     ]
 }
 
+// Dryad Militant
+{
+    "name": "Dryad Militant",
+    "manaCost": "{G/W}",
+    "typeLine": "Creature — Dryad Soldier",
+    "oracleText": "({G/W} can be paid with either {G} or {W}.)\nIf an instant or sorcery card would be put into a graveyard from anywhere, exile it instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "instant|sorcery",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "UNCOMMON",
+        "artist": "Terese Nielsen",
+        "flavorText": "\"We will defend the Worldsoul from Izzet 'progress' at any cost.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2bb8cb8c-0d03-4cbf-b7f2-a97324817698.jpg?1782714188"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Fencing Ace
 {
     "name": "Fencing Ace",
