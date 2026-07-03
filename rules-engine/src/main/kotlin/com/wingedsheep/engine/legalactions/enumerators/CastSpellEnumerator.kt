@@ -633,7 +633,9 @@ class CastSpellEnumerator : ActionEnumerator {
             // folded in above).
             val hasXCost = effectiveCost.hasX
             val maxAffordableX: Int? = if (hasXCost) {
-                val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = cachedSources)
+                // Pass the spell context so floating restricted mana this spell may spend
+                // (e.g. "only to cast instant and sorcery spells") raises the X ceiling.
+                val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = cachedSources, spellContext = spellContext)
                 // Each delve card pays for one generic mana, so it raises the
                 // X ceiling exactly like an additional mana source would.
                 val delveAvailable = if (hasDelve && delveCards != null) delveCards.size else 0
@@ -1850,7 +1852,7 @@ class CastSpellEnumerator : ActionEnumerator {
             // xValue, which "create X tokens" reads via DynamicAmount.XValue.
             val kickedHasXCost = kickedCost.hasX
             val kickedMaxAffordableX: Int? = if (kickedHasXCost) {
-                val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources)
+                val availableSources = context.manaSolver.getAvailableManaCount(state, playerId, precomputedSources = context.availableManaSources, spellContext = kickedSpellContext)
                 val fixedCost = kickedCost.cmc  // X contributes 0 to CMC
                 val xSymbolCount = kickedCost.xCount.coerceAtLeast(1)
                 ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)

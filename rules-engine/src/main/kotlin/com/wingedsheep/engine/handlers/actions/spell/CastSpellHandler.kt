@@ -930,7 +930,14 @@ class CastSpellHandler(
                 )
                 val partial = pool.payPartial(effectiveCost, spellCtx)
                 val remainingCost = partial.remainingCost
-                if (remainingCost.isEmpty() && xValue == 0) {
+                // Floating mana also covers the {X} portion (execution — explicitPay → autoPay —
+                // spends it before tapping anything), so only ask the chosen sources for the X
+                // the pool can't pay. Eligible restricted mana counts via ManaPool.xCoverage.
+                val xSymbolCount = effectiveCost.xCount.coerceAtLeast(1)
+                val totalXMana = xValue * xSymbolCount
+                val xRemaining = totalXMana -
+                    partial.newPool.xCoverage(totalXMana, xManaRestriction, spellCtx)
+                if (remainingCost.isEmpty() && xRemaining == 0) {
                     null
                 } else {
                     val chosen = action.paymentStrategy.manaAbilitiesToActivate.toSet()
@@ -938,7 +945,7 @@ class CastSpellHandler(
                         .map { it.entityId }
                         .filter { it !in chosen }
                         .toSet()
-                    if (manaSolver.solve(state, action.playerId, remainingCost, xValue, excludeSources = excluded, spellContext = spellCtx) == null) {
+                    if (manaSolver.solve(state, action.playerId, remainingCost, xRemaining, excludeSources = excluded, spellContext = spellCtx, xManaRestriction = xManaRestriction) == null) {
                         "Selected mana sources cannot pay this spell's cost"
                     } else null
                 }

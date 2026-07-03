@@ -1766,15 +1766,13 @@ class ManaSolver(
         val remainingCost = partialResult.remainingCost
         val poolAfterPartial = partialResult.newPool
 
-        // Calculate how much X mana is needed (multiply by X symbol count for XX costs)
+        // Calculate how much X mana is needed (multiply by X symbol count for XX costs).
+        // Eligible restricted floating mana counts toward X exactly like the payment path
+        // (CastPaymentProcessor.autoPay) spends it; only allowed-color mana counts toward a
+        // color-restricted X.
         val xSymbolCount = cost.xCount.coerceAtLeast(1)
         val totalXMana = xValue * xSymbolCount
-        // Only allowed-color pool mana counts toward a color-restricted X.
-        val xPaidFromPool = if (xManaRestriction.isEmpty()) {
-            poolAfterPartial.total.coerceAtMost(totalXMana)
-        } else {
-            xManaRestriction.sumOf { poolAfterPartial.get(it) }.coerceAtMost(totalXMana)
-        }
+        val xPaidFromPool = poolAfterPartial.xCoverage(totalXMana, xManaRestriction, spellContext)
         val xRemainingToPay = totalXMana - xPaidFromPool
 
         // If nothing remains after using pool (including X), we can pay
@@ -1808,11 +1806,11 @@ class ManaSolver(
                 // Also add colorless bonus mana
                 if (bonus.colorlessMana > 0) p.addColorless(bonus.colorlessMana) else p
             }
-        val augmentedResult = augmentedPool.payPartial(cost)
+        val augmentedResult = augmentedPool.payPartial(cost, spellContext)
         val augmentedRemaining = augmentedResult.remainingCost
         val augmentedPoolAfter = augmentedResult.newPool
 
-        val augmentedXPaid = augmentedPoolAfter.total.coerceAtMost(totalXMana)
+        val augmentedXPaid = augmentedPoolAfter.xCoverage(totalXMana, xManaRestriction, spellContext)
         val augmentedXRemaining = totalXMana - augmentedXPaid
 
         if (augmentedRemaining.isEmpty() && augmentedXRemaining == 0) return true
@@ -1821,13 +1819,26 @@ class ManaSolver(
 
     /**
      * Gets the total available mana for a player (floating mana + untapped sources).
+     *
+     * When [spellContext] is provided, floating restricted mana whose restriction the context
+     * satisfies is counted too (it is spendable on that payment). Without a context restricted
+     * entries are ignored — the conservative choice, since eligibility can't be judged.
      */
-    fun getAvailableManaCount(state: GameState, playerId: EntityId, precomputedSources: List<ManaSource>? = null): Int {
-        // Count floating mana
+    fun getAvailableManaCount(
+        state: GameState,
+        playerId: EntityId,
+        precomputedSources: List<ManaSource>? = null,
+        spellContext: SpellPaymentContext? = null
+    ): Int {
+        // Count floating mana (plus restricted entries eligible for this payment)
         val poolComponent = state.getEntity(playerId)?.get<ManaPoolComponent>()
         val floatingMana = if (poolComponent != null) {
+            val eligibleRestricted = if (spellContext != null) {
+                poolComponent.restrictedMana.count { it.restriction.isSatisfiedBy(spellContext) }
+            } else 0
             poolComponent.white + poolComponent.blue + poolComponent.black +
-                poolComponent.red + poolComponent.green + poolComponent.colorless
+                poolComponent.red + poolComponent.green + poolComponent.colorless +
+                eligibleRestricted
         } else {
             0
         }

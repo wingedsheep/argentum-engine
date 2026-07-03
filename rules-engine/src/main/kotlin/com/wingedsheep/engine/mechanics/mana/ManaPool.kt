@@ -241,6 +241,25 @@ data class ManaPool(
     }
 
     /**
+     * How much of an {X} amount of [xAmount] this pool can cover: eligible restricted mana first
+     * (entries whose restriction is satisfied by [spellContext] and — for a color-restricted X —
+     * whose color is allowed), then unrestricted mana per [xCoveragePlan]. Mirrors the spending
+     * order of `CastPaymentProcessor.autoPay`, so validation counting with this method never
+     * accepts an X the payment path can't actually cover from the pool.
+     */
+    fun xCoverage(xAmount: Int, xManaRestriction: Set<Color>, spellContext: SpellPaymentContext?): Int {
+        if (xAmount <= 0) return 0
+        val eligibleRestricted = if (spellContext == null) 0 else restrictedMana.count { entry ->
+            entry.restriction.isSatisfiedBy(spellContext) &&
+                // A color-restricted X can't be paid with off-color or colorless restricted mana.
+                (xManaRestriction.isEmpty() || (entry.color != null && entry.color in xManaRestriction))
+        }
+        val fromRestricted = minOf(xAmount, eligibleRestricted)
+        val fromUnrestricted = xCoveragePlan(xAmount - fromRestricted, xManaRestriction).size
+        return fromRestricted + fromUnrestricted
+    }
+
+    /**
      * Check if this pool can pay a mana cost.
      * When [spellContext] is provided, eligible restricted mana is considered (spent first).
      */
