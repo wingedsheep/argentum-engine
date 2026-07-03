@@ -83,3 +83,47 @@
         "BLUE"
     ]
 }
+
+// Taurean Mauler
+{
+    "name": "Taurean Mauler",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "Changeling (This card is every creature type.)\nWhenever an opponent casts a spell, you may put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "CHANGELING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "optional": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "RARE",
+        "artist": "Dominick Domingo",
+        "flavorText": "The power of a waterfall. The fury of an avalanche. The intellect of a gale-force wind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d50b5df1-b658-4df0-900e-79c44599b93e.jpg?1782716218"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}

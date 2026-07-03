@@ -221,6 +221,63 @@
     ]
 }
 
+// Midnight Reaper
+{
+    "name": "Midnight Reaper",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie Knight",
+    "oracleText": "Whenever a nontoken creature you control dies, this creature deals 1 damage to you and you draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Controller",
+                            "damageSource": "Self"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "RARE",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "No one welcomes his visit, yet all must grant him tribute.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e122fe0-51c5-404d-a7b9-3d161a426c35.jpg?1782709131"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Swiftblade Vindicator
 {
     "name": "Swiftblade Vindicator",
