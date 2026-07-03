@@ -361,6 +361,27 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         keyCard: 'Finneas, Ace Archer',
         description: 'Flood the board with Rabbit tokens, then use mass pump and anthem effects to swing for lethal all at once. One of the most popular and powerful archetypes in the format.',
       },
+      {
+        name: 'Birds',
+        colors: ['W', 'U'],
+        creatureTypes: ['Bird'],
+        keyCard: 'Kastral, the Windcrested',
+        description: 'Take to the skies with evasive Birds backed by tempo and card selection. Payoffs reward flyers connecting in combat, letting a small aerial force close out games while you hold the ground.',
+      },
+      {
+        name: 'Mice',
+        colors: ['R', 'W'],
+        creatureTypes: ['Mouse'],
+        keyCard: 'Mabel, Heir to Cragflame',
+        description: 'Aggressive go-wide Mice that reward attacking with a swarm of small creatures. Valiant triggers fire when you target your own attackers with combat tricks and Equipment, turning cheap creatures into real threats.',
+      },
+      {
+        name: 'Raccoons',
+        colors: ['R', 'G'],
+        creatureTypes: ['Raccoon'],
+        keyCard: 'Muerra, Trash Tactician',
+        description: 'Ramp-fueled midrange built on the Expend mechanic — spend mana across a turn to unlock escalating payoffs, then overwhelm the board with oversized Raccoons and big green threats.',
+      },
     ],
   },
   ECL: {
@@ -401,6 +422,13 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         creatureTypes: ['Elemental'],
         keyCard: 'Ashling, Rekindled',
         description: 'Flamekin Elementals reward casting instants and sorceries. Evoke provides flexible tempo plays — pay the cheap cost for a burst of value, or go full price for a permanent threat.',
+      },
+      {
+        name: 'Elves',
+        colors: ['B', 'G'],
+        creatureTypes: ['Elf'],
+        keyCard: 'High Perfect Morcant',
+        description: 'Grindy self-mill midrange that treats the graveyard as a resource. A high Elf count powers kindred payoffs while Blight and recursion let you out-value every other midrange deck in the format.',
       },
       {
         name: 'Changelings',
