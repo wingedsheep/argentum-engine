@@ -165,7 +165,7 @@ sealed interface ClientMessage {
         val boosterCount: Int = 6,         // Sealed: boosters in pool, Draft: packs per player
         val maxPlayers: Int = 8,
         val pickTimeSeconds: Int = 45,     // Draft only
-        val isPublic: Boolean = true,      // Created lobbies are public by default; host can make private in the lobby.
+        val isPublic: Boolean = false,     // Created lobbies are private by default; host can make public in the lobby.
         /** Master switch for in-app AI assistance (Suggest Pick / Auto-build). Defaults off. */
         val aiAssistEnabled: Boolean = false,
         /** Lobby mode axis: "TOURNAMENT" (default) or "FREE_FOR_ALL" (one multiplayer game, 2-6 players). */
@@ -475,8 +475,8 @@ sealed interface ClientMessage {
     data class CreateQuickGameLobby(
         val vsAi: Boolean = false,
         val setCode: String? = null,
-        // Created lobbies are public by default; host can make private in the lobby. AI lobbies stay private (see handler).
-        val isPublic: Boolean = true,
+        // Created lobbies are private by default; host can make public in the lobby. AI lobbies stay private (see handler).
+        val isPublic: Boolean = false,
         val format: com.wingedsheep.sdk.core.DeckFormat? = null,
         /**
          * When true the lobby plays the Momir Basic Vanguard format: no deckbuilding (fixed 60

@@ -73,7 +73,7 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
   disconnectedPlayers: {},
 
   // Actions
-  createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45, isPublic = true, gameMode = 'TOURNAMENT') => {
+  createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45, isPublic = false, gameMode = 'TOURNAMENT') => {
     clearDeckState()
     set({ deckBuildingState: null })
     trackEvent('tournament_lobby_created', { set_codes: setCodes, format, booster_count: boosterCount, max_players: maxPlayers, is_public: isPublic, game_mode: gameMode })
