@@ -1296,6 +1296,14 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
     "{2}, {T}: Target opponent gains control of another target permanent you control. If they do, you
     draw a card" → `IfYouDoEffect(GiveControlToTargetPlayer(permanent, opponent), DrawCards(1),
     successCriterion = ControlChanged)`.
+    `GiveControlToTargetPlayer.newController` accepts any player reference, not just a declared target:
+    combat-derived refs like `Player.DefendingPlayer` ("that player" in a "deals combat damage to a
+    player" trigger), chosen-opponent slots, and owner/controller lookups all resolve. Kain,
+    Traitorous Dragoon: "Whenever Kain deals combat damage to a player, that player gains control of
+    Kain. If they do, you draw that many cards, create that many tapped Treasure tokens, then lose that
+    much life" → `IfYouDoEffect(GiveControlToTargetPlayer(Self, PlayerRef(DefendingPlayer)),
+    Composite(DrawCards(TRIGGER_DAMAGE_AMOUNT), CreateTreasure(TRIGGER_DAMAGE_AMOUNT, tapped), LoseLife(...)),
+    successCriterion = ControlChanged)`.
     `CollectionNonEmpty` gates on the action's actual pipeline collection
     (`storedCollections[name].size >= min` after the action runs) — the collections propagate onto
     the gate frame via `exposeCollectionsToNextFrame`, in both the synchronous and the

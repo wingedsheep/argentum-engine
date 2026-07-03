@@ -38,7 +38,11 @@ class GiveControlToTargetPlayerExecutor : EffectExecutor<GiveControlToTargetPlay
         val cardComponent = targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
 
-        val newControllerId = context.resolvePlayerTarget(effect.newController)
+        // State-aware resolution so relational player references resolve too — not just declared
+        // targets (Stiltzkin/Custody Battle) but also combat-derived ones like
+        // Player.DefendingPlayer ("that player" in a "deals combat damage to a player" trigger, e.g.
+        // Kain, Traitorous Dragoon), chosen-opponent slots, and owner/controller lookups.
+        val newControllerId = context.resolvePlayerTarget(effect.newController, state)
             ?: return EffectResult.error(state, "No valid player target for control change")
 
         // Use projected controller so floating-effect-based control changes are respected
