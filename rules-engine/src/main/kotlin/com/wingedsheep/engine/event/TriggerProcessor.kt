@@ -740,9 +740,24 @@ class TriggerProcessor(
 
         return stackResolver.putTriggeredAbility(
             state, abilityComponent, targets,
-            targetRequirements = listOfNotNull(ability.targetRequirement)
+            targetRequirements = listOfNotNull(ability.targetRequirement),
+            causedByAttack = isAttackCausedTrigger(trigger)
         )
     }
+
+    /**
+     * True when [trigger] is a creature's own "whenever this creature attacks" ability — a
+     * SELF-bound per-attacker [com.wingedsheep.sdk.scripting.EventPattern.AttackEvent]. Used to
+     * stamp `causedByAttack` on the emitted `AbilityTriggeredEvent` so Firebender Ascension's
+     * "a creature you control attacking causes a triggered ability of that creature to trigger"
+     * meta-trigger fires only for genuine attack triggers, not other in-combat triggers (deals
+     * damage, dies, etc.). The SELF binding is what ties the ability to "that [attacking] creature":
+     * an anthem-style ANY-bound "whenever a creature you control attacks" ability lives on a
+     * different permanent and is deliberately excluded.
+     */
+    private fun isAttackCausedTrigger(trigger: PendingTrigger): Boolean =
+        trigger.ability.trigger is com.wingedsheep.sdk.scripting.EventPattern.AttackEvent &&
+            trigger.ability.binding == com.wingedsheep.sdk.scripting.TriggerBinding.SELF
 
     /**
      * Convenience method to detect and process triggers in one call.

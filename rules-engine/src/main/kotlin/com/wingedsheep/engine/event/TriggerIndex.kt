@@ -219,6 +219,7 @@ class TriggerIndex(
                 is SdkGameEvent.ExpendEvent -> listOf(TriggerCategory.SPELL_CAST)
                 is SdkGameEvent.SpellOrAbilityOnStackEvent -> listOf(TriggerCategory.SPELL_OR_ABILITY)
                 is SdkGameEvent.AbilityActivatedEvent -> listOf(TriggerCategory.SPELL_OR_ABILITY)
+                is SdkGameEvent.AbilityTriggeredEvent -> listOf(TriggerCategory.SPELL_OR_ABILITY)
                 is SdkGameEvent.CycleEvent -> listOf(TriggerCategory.CARD_CYCLED)
                 is SdkGameEvent.TapEvent -> listOf(TriggerCategory.TAPPED)
                 is SdkGameEvent.UntapEvent -> listOf(TriggerCategory.UNTAPPED)

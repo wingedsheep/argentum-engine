@@ -8529,6 +8529,125 @@
     ]
 }
 
+// Firebender Ascension
+{
+    "name": "Firebender Ascension",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create a 2/2 red Soldier creature token with firebending 1.\nWhenever a creature you control attacking causes a triggered ability of that creature to trigger, put a quest counter on this enchantment. Then if it has four or more quest counters on it, you may copy that ability. You may choose new targets for the copy.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "RED"
+                    ],
+                    "creatureTypes": [
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "FIREBENDING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/2/d/2de43b03-9ac5-4292-ab29-2dc6210ef3d9.jpg?1777982247",
+                    "triggeredAbilities": [
+                        {
+                            "id": "ability_2",
+                            "trigger": "AttackEvent",
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddMana",
+                                        "color": "RED",
+                                        "expiry": "END_OF_COMBAT"
+                                    },
+                                    {
+                                        "type": "EmitBendEvent",
+                                        "bendType": "FIRE"
+                                    }
+                                ]
+                            },
+                            "descriptionOverride": "Whenever this creature attacks, add {R}. Until end of combat, you don't lose this mana as steps and phases end."
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this enchantment enters, create a 2/2 red Soldier creature token with firebending 1."
+            },
+            {
+                "id": "ability_3",
+                "trigger": {
+                    "type": "AbilityTriggeredEvent",
+                    "requireAttackCause": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "quest",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": {
+                                                "type": "Named",
+                                                "name": "quest"
+                                            }
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 4
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "CopyTargetTriggeredAbility",
+                                    "target": "TriggeringEntity"
+                                },
+                                "descriptionOverride": "Copy that triggered ability? You may choose new targets for the copy."
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a creature you control attacking causes a triggered ability of that creature to trigger, put a quest counter on this enchantment. Then if it has four or more quest counters on it, you may copy that ability. You may choose new targets for the copy."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Tetsuko",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/2929b702-03c6-4cf0-a3f7-61b27f4803be.jpg?1764120940"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Firebending Lesson
 {
     "name": "Firebending Lesson",

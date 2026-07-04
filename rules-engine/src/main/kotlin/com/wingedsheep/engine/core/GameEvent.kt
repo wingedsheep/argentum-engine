@@ -461,7 +461,16 @@ data class AbilityTriggeredEvent(
     val sourceName: String,
     val controllerId: EntityId,
     val description: String,
-    val abilityEntityId: EntityId? = null
+    val abilityEntityId: EntityId? = null,
+    /**
+     * True when this ability was put on the stack because its own source creature was declared as
+     * an attacker — a per-attacker "whenever this creature attacks" ability (SELF-bound
+     * [com.wingedsheep.sdk.scripting.EventPattern.AttackEvent]). Read by the
+     * [com.wingedsheep.sdk.scripting.EventPattern.AbilityTriggeredEvent] `requireAttackCause`
+     * pattern (Firebender Ascension). Defaults false for every other trigger and for ability copies
+     * (which don't re-fire the meta-trigger).
+     */
+    val causedByAttack: Boolean = false
 ) : GameEvent
 
 /**

@@ -454,7 +454,14 @@ class StackResolver(
         state: GameState,
         ability: TriggeredAbilityOnStackComponent,
         targets: List<ChosenTarget> = emptyList(),
-        targetRequirements: List<TargetRequirement> = emptyList()
+        targetRequirements: List<TargetRequirement> = emptyList(),
+        /**
+         * True when this ability fired because its own source creature was declared as an attacker
+         * (a SELF-bound attacks trigger). Stamped onto the emitted [AbilityTriggeredEvent] so
+         * Firebender Ascension's "attacking causes a triggered ability of that creature to trigger"
+         * meta-trigger can key on it.
+         */
+        causedByAttack: Boolean = false
     ): ExecutionResult {
         // Create a new entity for the ability on the stack
         val (abilityId, stateWithId) = state.newEntity()
@@ -474,7 +481,8 @@ class StackResolver(
                 ability.sourceName,
                 ability.controllerId,
                 ability.description,
-                abilityEntityId = abilityId
+                abilityEntityId = abilityId,
+                causedByAttack = causedByAttack
             )
         )
 

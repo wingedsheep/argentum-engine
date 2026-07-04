@@ -2914,6 +2914,17 @@ Named sugar for the common type-primitive cases; reach for `youCastSpell(...)` p
   `EffectTarget.PlayerRef(Player.TriggeringPlayer)` (the activator); the **ATTACHED** form uses
   `EffectTarget.ControllerOfTriggeringEntity` (the enchanted artifact's controller, exposed by
   `AttachmentTriggerDetector`).
+- `AttackCausesYourCreaturesTriggeredAbility` — **a creature you control attacking causes a triggered ability of that
+  creature to trigger** (Firebender Ascension). Backed by `EventPattern.AbilityTriggeredEvent(player, requireAttackCause,
+  sourceFilter?)`, which matches the engine's `AbilityTriggeredEvent` when a triggered ability is put on the stack.
+  With `requireAttackCause = true` it fires only for a creature's **own** "whenever this creature attacks" ability — a
+  SELF-bound `AttackEvent`. The engine stamps `causedByAttack` on the event in `StackResolver.putTriggeredAbility` (from
+  `TriggerProcessor.isAttackCausedTrigger`) so unrelated in-combat triggers (deals damage, dies, ETB) never match; the
+  SELF binding is what ties the ability to "that [attacking] creature", excluding anthem-style ANY-bound
+  "whenever a creature you control attacks" abilities on other permanents. The triggering ability is exposed as
+  `EffectTarget.TriggeringEntity` (`AbilityTriggeredEvent` sets the triggering entity to the ability on the stack), so a
+  `Effects.CopyTargetTriggeredAbility(EffectTarget.TriggeringEntity)` can copy it and reprompt for new targets (CR
+  707.10c). `sourceFilter` optionally restricts which permanent's ability counts; `player` scopes whose ability it is.
 
 **Other casters.** The same shape, scoped to a different caster via the runtime
 `Player.Each` / `Player.EachOpponent` matching on `SpellCastEvent`. Bind the payoff to the

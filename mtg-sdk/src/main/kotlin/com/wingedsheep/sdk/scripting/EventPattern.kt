@@ -1549,6 +1549,55 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * When a triggered ability is put onto the stack (CR 603.3), scoped by whose ability it is and
+     * — optionally — by what caused it to trigger.
+     *
+     * [player] scopes whose triggered ability counts (its controller): [Player.You] for your own,
+     * [Player.EachOpponent] for an opponent's, etc.
+     *
+     * [requireAttackCause] narrows to the Firebender Ascension clause "a creature you control
+     * attacking causes a triggered ability of that creature to trigger": the ability must be a
+     * per-attacker "whenever this creature attacks" ability (a SELF-bound [AttackEvent]) whose own
+     * source creature was just declared as an attacker. The engine stamps `causedByAttack` on the
+     * emitted `AbilityTriggeredEvent` when it puts such an ability on the stack; a non-attack
+     * trigger (an ETB, a dies, a "deals combat damage") never matches. The triggering ability is
+     * exposed as the triggering entity, so a copy effect can target it via
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity].
+     *
+     * [sourceFilter] optionally restricts which permanent the triggered ability must belong to.
+     * Null = any source (the [player] scope alone applies).
+     */
+    @SerialName("AbilityTriggeredEvent")
+    @Serializable
+    data class AbilityTriggeredEvent(
+        val player: Player = Player.You,
+        val requireAttackCause: Boolean = false,
+        val sourceFilter: GameObjectFilter? = null
+    ) : EventPattern {
+        override val description: String = buildString {
+            if (requireAttackCause) {
+                append("a creature ")
+                append(player.description)
+                append(" control attacking causes a triggered ability of that creature to trigger")
+            } else {
+                append(player.description)
+                append(" put a triggered ability ")
+                if (sourceFilter != null) {
+                    append("of a ")
+                    append(sourceFilter.description)
+                    append(" ")
+                }
+                append("onto the stack")
+            }
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = sourceFilter?.applyTextReplacement(replacer)
+            return if (newFilter !== sourceFilter) copy(sourceFilter = newFilter) else this
+        }
+    }
+
+    /**
      * When a card is revealed from the first draw of a turn.
      * Triggered by the RevealFirstDrawEachTurn static ability.
      *

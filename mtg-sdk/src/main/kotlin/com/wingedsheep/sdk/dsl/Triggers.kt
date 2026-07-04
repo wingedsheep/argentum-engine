@@ -1100,6 +1100,19 @@ object Triggers {
     )
 
     /**
+     * Whenever a creature you control attacking causes a triggered ability of that creature to
+     * trigger — Firebender Ascension. Fires when a per-attacker "whenever this creature attacks"
+     * ability (a SELF-bound [EventPattern.AttackEvent]) of a creature you control is put on the
+     * stack. The triggering ability is exposed as
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity], so a
+     * [com.wingedsheep.sdk.dsl.Effects.CopyTargetTriggeredAbility] can copy it.
+     */
+    val AttackCausesYourCreaturesTriggeredAbility: TriggerSpec = TriggerSpec(
+        event = AbilityTriggeredEvent(player = Player.You, requireAttackCause = true),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
      * Whenever [player] activates the ability of a permanent matching [sourceFilter] **without
      * {T} in its activation cost** (the Antiquities "tap/activate an artifact" punisher template —
      * Haunting Wind, Powerleech, Artifact Possession).

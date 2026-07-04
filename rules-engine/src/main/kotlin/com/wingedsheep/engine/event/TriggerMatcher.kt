@@ -315,6 +315,26 @@ class TriggerMatcher(
                     matchesAbilityTargetConstraint(event.abilityEntityId, targetMatch, sourceId, controllerId, state)
                 } else true
             }
+            is EventPattern.AbilityTriggeredEvent -> {
+                if (event !is AbilityTriggeredEvent) return false
+                if (!matchesPlayer(trigger.player, event.controllerId, controllerId)) return false
+                // "attacking causes a triggered ability of that creature to trigger": only fire for
+                // abilities the engine stamped as attack-caused (SELF-bound attacks triggers).
+                if (trigger.requireAttackCause && !event.causedByAttack) return false
+                // sourceFilter: the permanent whose ability triggered must match (null = any).
+                val sourceFilter = trigger.sourceFilter
+                if (sourceFilter != null) {
+                    val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                        controllerId = controllerId,
+                        sourceId = sourceId
+                    )
+                    if (!PredicateEvaluator().matches(
+                            state, state.projectedState, event.sourceId, sourceFilter, predicateContext
+                        )
+                    ) return false
+                }
+                true
+            }
             is EventPattern.CycleEvent -> {
                 event is CardCycledEvent &&
                     matchesPlayer(trigger.player, event.playerId, controllerId) &&
