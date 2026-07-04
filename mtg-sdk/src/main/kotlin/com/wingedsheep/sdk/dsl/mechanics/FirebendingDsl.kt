@@ -1,9 +1,12 @@
 package com.wingedsheep.sdk.dsl
 
+import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.EmitBendEventEffect
 import com.wingedsheep.sdk.scripting.effects.ManaExpiry
 
 /**
@@ -22,7 +25,12 @@ fun firebendingAttackTrigger(n: Int): TriggeredAbility =
     TriggeredAbility.create(
         trigger = Triggers.Attacks.event,
         binding = Triggers.Attacks.binding,
-        effect = AddManaEffect(Color.RED, n, expiry = ManaExpiry.END_OF_COMBAT),
+        // CR 702.189b: firebending fires "whenever you firebend" when this ability resolves —
+        // the red mana and the bend notification resolve together as one triggered ability.
+        effect = CompositeEffect(listOf(
+            AddManaEffect(Color.RED, n, expiry = ManaExpiry.END_OF_COMBAT),
+            EmitBendEventEffect(BendType.FIRE),
+        )),
         descriptionOverride = "Whenever this creature attacks, add ${"{R}".repeat(n)}. " +
             "Until end of combat, you don't lose this mana as steps and phases end."
     )

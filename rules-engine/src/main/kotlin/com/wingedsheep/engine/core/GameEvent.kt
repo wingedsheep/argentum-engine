@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.TypeLine
@@ -294,6 +295,24 @@ data class SurveiledEvent(
     val playerId: EntityId,
     val count: Int,
     val sourceName: String
+) : GameEvent
+
+/**
+ * A player just performed one of the four elemental bending keyword actions (CR 701.65b Airbend /
+ * 701.66b Earthbend / 701.67c Waterbend / 702.189b Firebending). Fires once per bend so
+ * [com.wingedsheep.sdk.scripting.EventPattern.BendPerformedEvent] triggers
+ * ([com.wingedsheep.sdk.dsl.Triggers.YouBend]) match. Emitted alongside a fold of [bendType] into
+ * the player's `BendsThisTurnComponent` (see `BendEvents.record`). Internal-only: dropped from the
+ * client log (`ClientEventTransformer`).
+ *
+ * @property playerId The player who bent.
+ * @property bendType Which of the four elemental actions was performed.
+ */
+@Serializable
+@SerialName("BendPerformedEvent")
+data class BendPerformedEvent(
+    val playerId: EntityId,
+    val bendType: BendType
 ) : GameEvent
 
 /**

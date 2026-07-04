@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.dsl
 
+import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
@@ -1574,7 +1575,8 @@ object Triggers {
      * Whenever an opponent loses life. Fires once per life-loss event of any opponent
      * (CR "whenever" per-event templating). The lost amount is exposed via
      * [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TRIGGER_LIFE_LOST].
-     * Used by cards like Bloodthirsty Conqueror.
+     * Used by cards like Bloodthirsty Conqueror and Kefka, Ruler of Ruin (pair with a
+     * `triggerCondition = Conditions.IsYourTurn` gate for "during your turn" riders).
      */
     val AnOpponentLosesLife: TriggerSpec = TriggerSpec(
         event = LifeLossEvent(Player.EachOpponent),
@@ -1860,6 +1862,21 @@ object Triggers {
      */
     val WheneverYouScryOrSurveil: TriggerSpec = TriggerSpec(
         event = ScriedOrSurveiledEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * "Whenever you waterbend, earthbend, firebend, or airbend, …" (CR 701.65b / 701.66b /
+     * 701.67c / 702.189b). Fires once for each bend [player] performs whose type is in [types].
+     * The default matches all four (Avatar Aang); pass a narrower set for a single-element variant
+     * (e.g. `YouBend(setOf(BendType.EARTH))` for "whenever you earthbend, …"). Backed by
+     * [com.wingedsheep.sdk.scripting.EventPattern.BendPerformedEvent].
+     */
+    fun YouBend(
+        types: Set<BendType> = BendType.ALL,
+        player: Player = Player.You
+    ): TriggerSpec = TriggerSpec(
+        event = BendPerformedEvent(player = player, types = types),
         binding = TriggerBinding.ANY
     )
 

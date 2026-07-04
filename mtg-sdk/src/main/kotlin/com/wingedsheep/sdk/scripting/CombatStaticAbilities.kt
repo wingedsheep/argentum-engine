@@ -85,11 +85,20 @@ data class MustBlock(
 @SerialName("MustBeBlockedStatic")
 @Serializable
 data class MustBeBlocked(
-    val allCreatures: Boolean = false
+    val allCreatures: Boolean = false,
+    val filter: GroupFilter? = null
 ) : StaticAbility {
-    override val description: String =
-        if (allCreatures) "This creature must be blocked by all creatures able to block it"
-        else "This creature must be blocked each combat if able"
+    override val description: String = buildString {
+        append(if (filter == null) "This creature" else filter.description)
+        append(
+            if (allCreatures) " must be blocked by all creatures able to block it"
+            else " must be blocked each combat if able"
+        )
+    }
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter?.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**

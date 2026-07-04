@@ -473,6 +473,11 @@ class TriggerMatcher(
                     matchesPlayer(trigger.player, event.playerId, controllerId)
                 else -> false
             }
+            is EventPattern.BendPerformedEvent -> {
+                event is com.wingedsheep.engine.core.BendPerformedEvent &&
+                    event.bendType in trigger.types &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId)
+            }
             is EventPattern.ManifestedDreadEvent -> {
                 event is com.wingedsheep.engine.core.ManifestedDreadEvent &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)

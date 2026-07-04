@@ -77,8 +77,9 @@ class AirbendScenarioTest : FunSpec({
             )
             effect = ConditionalEffect(
                 condition = Conditions.TargetIsSpellOnStack(0),
-                // Spell branch: airbend "exiles it" (not a counter) — Effects.ExileTargetSpell.
-                effect = Effects.ExileTargetSpell(fixedAlternativeManaCost = ManaCost.parse("{2}")),
+                // Spell branch: airbend "exiles it" (not a counter) — Effects.AirbendSpell, which
+                // also fires "whenever you airbend" once the spell is exiled (CR 701.65b).
+                effect = Effects.AirbendSpell(ManaCost.parse("{2}")),
                 elseEffect = Effects.Airbend()
             )
         }

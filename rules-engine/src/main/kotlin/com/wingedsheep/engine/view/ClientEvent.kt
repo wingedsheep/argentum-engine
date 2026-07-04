@@ -1198,6 +1198,7 @@ is PermanentsSacrificedEvent -> {
             is RingTemptedEvent,
             is ScriedEvent,
             is SurveiledEvent,
+            is BendPerformedEvent,
             is ManifestedDreadEvent,
             is LibrarySearchedEvent,
             is TurnedFaceDownEvent,

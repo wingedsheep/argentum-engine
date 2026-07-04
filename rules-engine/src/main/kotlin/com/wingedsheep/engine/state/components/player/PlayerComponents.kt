@@ -1,9 +1,11 @@
 package com.wingedsheep.engine.state.components.player
 
 import com.wingedsheep.engine.state.Component
+import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.scripting.effects.HijackScope
 import com.wingedsheep.sdk.scripting.effects.ManaExpiry
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
@@ -1035,6 +1037,18 @@ data object SacrificedFoodThisTurnComponent : Component
 data class PermanentsSacrificedThisTurnComponent(val count: Int = 0) : Component
 
 /**
+ * The set of distinct elemental bending keyword actions ([BendType]: waterbend, earthbend,
+ * firebend, airbend) this player has performed this turn (CR 701.65–701.67 / 702.189). Folded in by
+ * `BendEvents.record` whenever the player bends, and reset to empty for every player at the start of
+ * each turn by `TurnManager`.
+ *
+ * Read via `TurnTracker.DISTINCT_BENDS` (the set's size, 0–4); `Compare(TurnTracking(You,
+ * DISTINCT_BENDS), GTE, Fixed(4))` backs "if you've done all four this turn" (Avatar Aang).
+ */
+@Serializable
+data class BendsThisTurnComponent(val types: Set<BendType> = emptySet()) : Component
+
+/**
  * Tracks whether a permanent entered the battlefield face down under this player's control during
  * the current turn (morph, manifest, disguise, cloak, or any face-down entry). Incremented in
  * `ZoneTransitionService` at the moment of a face-down battlefield entry and cleared at the turn
@@ -1221,27 +1235,35 @@ data class SkipNextTurnComponent(val turns: Int = 1) : Component
 data class EndTheTurnRequestedComponent(val sourceId: EntityId? = null) : Component
 
 /**
- * Tracks a Mindslaver-style "you control target opponent during their next turn" effect.
+ * Tracks a Mindslaver-style "you control target opponent" effect, scoped to either the
+ * affected player's next whole turn or just their next combat phase (see [scope]).
  *
- * Lifecycle:
+ * Lifecycle (both scopes share [SCHEDULED] → [ACTIVE] → removed):
  *  - Created with [HijackState.SCHEDULED] when [HijackNextTurnEffect] resolves.
- *  - At the start of the affected player's next turn (after any [SkipNextTurnComponent]
- *    skipping resolves) the component transitions to [HijackState.ACTIVE] in
- *    [TurnManager.startTurn].
- *  - Removed at end-of-turn cleanup of the controlled turn.
+ *  - [HijackScope.NextTurn]: transitions to [HijackState.ACTIVE] at the start of the
+ *    affected player's next turn (after any [SkipNextTurnComponent] skipping resolves) in
+ *    [TurnManager.startTurn], and is removed at end-of-turn cleanup of the controlled turn.
+ *  - [HijackScope.NextCombatPhase]: transitions to [HijackState.ACTIVE] when the affected
+ *    player (as active player) enters their beginning-of-combat step, and is removed when
+ *    they leave the end-of-combat step (that one combat phase ends) — both in [TurnManager].
+ *
+ * A scheduled hijack of either scope waits through skipped turns/combat phases and engages
+ * on the next one the affected player actually takes.
  *
  * Per the Scryfall rulings on The Dominion Bracelet: multiple hijacks affecting the same
  * player overwrite each other (latest wins). The affected player is still the rules
  * controller of their own permanents/spells; only input authority moves to [controllerId]
  * for the duration of the [ACTIVE] window.
  *
- * @property controllerId The player making decisions during the controlled turn
- * @property state Whether this hijack is queued for a future turn or actively in effect
+ * @property controllerId The player making decisions during the controlled window
+ * @property state Whether this hijack is queued for a future window or actively in effect
+ * @property scope Whether control covers the next whole turn or only the next combat phase
  */
 @Serializable
 data class PlayerTurnHijackedComponent(
     val controllerId: EntityId,
-    val state: HijackState = HijackState.SCHEDULED
+    val state: HijackState = HijackState.SCHEDULED,
+    val scope: HijackScope = HijackScope.NextTurn
 ) : Component {
     @Serializable
     enum class HijackState { SCHEDULED, ACTIVE }

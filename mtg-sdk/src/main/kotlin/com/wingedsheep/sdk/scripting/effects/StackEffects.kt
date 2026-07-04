@@ -229,12 +229,18 @@ data class CounterEffect(
  *   primitive the permanent [com.wingedsheep.sdk.dsl.Effects.Airbend] uses; mutually exclusive with
  *   [makePlotted]. Because this is "exile it", not "counter it", it works on spells that can't be
  *   countered (see [exileSpell]'s non-counter semantics).
+ * @property emitAirbend When true, exiling the spell counts as an **airbend** (CR 701.65b): the
+ *   executor records a [com.wingedsheep.sdk.core.BendType.AIR] bend for the controller and fires
+ *   [com.wingedsheep.sdk.dsl.Triggers.YouBend], but only if the spell was actually exiled (a target
+ *   that already left the stack exiles nothing → no bend). Set via [com.wingedsheep.sdk.dsl.Effects.AirbendSpell];
+ *   left false for a plain non-airbend exile-spell (Aven Interrupter).
  */
 @SerialName("ExileTargetSpell")
 @Serializable
 data class ExileTargetSpellEffect(
     val makePlotted: Boolean = false,
-    val fixedAlternativeManaCost: ManaCost? = null
+    val fixedAlternativeManaCost: ManaCost? = null,
+    val emitAirbend: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append("Exile target spell")

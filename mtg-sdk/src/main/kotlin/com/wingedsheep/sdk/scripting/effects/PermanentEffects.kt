@@ -453,6 +453,27 @@ data object MarkEnduringReturnEffect : Effect {
     override val description: String = "It's an enchantment. It's not a creature."
 }
 
+/**
+ * Records the card most recently selected from the source's linked-exile pile as its "last chosen
+ * card", stamping a `ChosenLinkedExileComponent` on the source. Reads the *first* entry of the
+ * pipeline collection named [from] (populated by a preceding
+ * [com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect]) and remembers that entity id.
+ *
+ * Backs the choose-from-your-exile step of Koh, the Face Stealer ("Pay 1 life: Choose a creature
+ * card exiled with Koh"): a later [com.wingedsheep.sdk.scripting.HasAbilitiesOfChosenLinkedExiledCard]
+ * static ability reads that stamp to grant the source the chosen card's activated and triggered
+ * abilities. No-op if the source has left the battlefield or the collection is empty.
+ *
+ * @property from Name of the pipeline collection holding the selected card (its first element is used).
+ */
+@SerialName("RecordChosenLinkedExile")
+@Serializable
+data class RecordChosenLinkedExileEffect(
+    val from: String,
+) : Effect {
+    override val description: String = "Note the chosen card"
+}
+
 // =============================================================================
 // Explore
 // =============================================================================

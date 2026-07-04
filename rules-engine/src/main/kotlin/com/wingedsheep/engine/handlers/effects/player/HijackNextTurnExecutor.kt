@@ -14,9 +14,10 @@ import kotlin.reflect.KClass
  * Executor for HijackNextTurnEffect.
  *
  * Attaches a [PlayerTurnHijackedComponent] to the targeted player in [SCHEDULED]
- * state. [TurnManager] transitions it to [ACTIVE] when that player's next real
- * turn begins (skipped turns wait per the Scryfall ruling), and removes it during
- * end-of-turn cleanup of the controlled turn.
+ * state, carrying the effect's [HijackNextTurnEffect.scope]. [TurnManager] transitions
+ * it to [ACTIVE] when that player's next real turn (NextTurn scope) or next combat phase
+ * (NextCombatPhase scope) begins — skipped turns/phases wait per the Scryfall ruling —
+ * and removes it when that window ends.
  *
  * Multiple hijacks affecting the same player overwrite each other (latest wins);
  * we replace any existing component unconditionally.
@@ -44,7 +45,8 @@ class HijackNextTurnExecutor : EffectExecutor<HijackNextTurnEffect> {
             container.with(
                 PlayerTurnHijackedComponent(
                     controllerId = context.controllerId,
-                    state = PlayerTurnHijackedComponent.HijackState.SCHEDULED
+                    state = PlayerTurnHijackedComponent.HijackState.SCHEDULED,
+                    scope = effect.scope
                 )
             )
         }

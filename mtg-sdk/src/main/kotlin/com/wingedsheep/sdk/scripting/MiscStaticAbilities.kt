@@ -949,6 +949,56 @@ data class AdditionalAttackTriggers(
 }
 
 /**
+ * If a creature dying causes a triggered ability within the doubler's *scope* to trigger, that
+ * ability triggers an additional time. The **death-cause** analogue of [AdditionalAttackTriggers]:
+ * where that doubles triggers caused by an attack being declared, this doubles triggers caused by a
+ * creature being put into a graveyard from the battlefield (CR 603.2d, CR 700.4 "dies").
+ *
+ * Concrete shapes:
+ *  - **Teysa Karlov** ("If a creature dying causes a triggered ability of a permanent you control to
+ *    trigger, that ability triggers an additional time") ->
+ *    `AdditionalDeathTriggers(permanentsYouControl = GameObjectFilter.Any)`.
+ *  - **The Masamune** ("Equipped creature has 'If a creature dying causes a triggered ability of
+ *    this creature or an emblem you own to trigger, that ability triggers an additional time.'") ->
+ *    modelled as an equipment-level doubler scoped to the attached creature and emblems:
+ *    `AdditionalDeathTriggers(attachedCreature = true, includeEmblems = true)`.
+ *
+ * Only the *death/leave-the-battlefield* triggered abilities of scoped sources are doubled - those
+ * that respond to a creature being put into a graveyard from the battlefield ("dies", "leaves the
+ * battlefield" by dying). Abilities that respond to the *event that caused* the death (e.g. "whenever
+ * you sacrifice a creature") are **not** doubled, per the printed rulings.
+ *
+ * Multiple copies are additive: N doublers add N extra firings of each affected trigger (N+1 total).
+ *
+ * @property attachedCreature When true, the scope includes the creature this permanent is attached
+ *   to ("this creature" on an Equipment/Aura). Resolved via the doubler source's attachment.
+ * @property permanentsYouControl When non-null, the scope includes battlefield permanents the
+ *   doubler's controller controls whose projected state matches this filter (Teysa: `Any`).
+ * @property includeEmblems When true, the scope also includes emblems owned by the doubler's
+ *   controller ("an emblem you own"). No emblem in the engine currently carries a *triggered*
+ *   ability (emblems are modelled as static floating effects), so this clause is presently inert
+ *   but faithfully modelled and honoured by the detector should a triggered-ability emblem land.
+ *
+ * The "cause" is always **a creature dying** (a creature being put into a graveyard from the
+ * battlefield, continuous effects included - an animated land that dies counts), the printed wording
+ * of every card using this ability, so it isn't parameterised.
+ */
+@SerialName("AdditionalDeathTriggers")
+@Serializable
+data class AdditionalDeathTriggers(
+    val attachedCreature: Boolean = false,
+    val permanentsYouControl: GameObjectFilter? = null,
+    val includeEmblems: Boolean = false,
+    override val description: String =
+        "If a creature dying causes a triggered ability of a permanent you control to trigger, that ability triggers an additional time"
+) : StaticAbility {
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newControlled = permanentsYouControl?.applyTextReplacement(replacer)
+        return if (newControlled !== permanentsYouControl) copy(permanentsYouControl = newControlled) else this
+    }
+}
+
+/**
  * You may play additional lands on each of your turns.
  * Used for permanents like Hugs, Grisly Guardian and Oracle of Mul Daya.
  *

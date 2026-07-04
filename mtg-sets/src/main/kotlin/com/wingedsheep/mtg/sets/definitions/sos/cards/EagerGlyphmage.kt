@@ -33,7 +33,8 @@ val EagerGlyphmage = card("Eager Glyphmage") {
             toughness = 1,
             colors = setOf(Color.WHITE, Color.BLACK),
             creatureTypes = setOf("Inkling"),
-            keywords = setOf(Keyword.FLYING)
+            keywords = setOf(Keyword.FLYING),
+            imageUri = "https://cards.scryfall.io/normal/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.jpg?1782741478"
         )
     }
     metadata {

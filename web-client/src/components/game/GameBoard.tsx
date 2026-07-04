@@ -223,9 +223,17 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
     ? false
     : hotseat
       ? gameState.priorityPlayerId != null
-      : (gameState.priorityPlayerId === viewingPlayer?.playerId)
+      : (gameState.priorityPlayerId === viewingPlayer?.playerId ||
+        // Mindslaver-style hijack: this client drives the controlled opponent, so it holds
+        // priority whenever that opponent does (enables Pass, casting, ability activation).
+        (youAreHijacking != null && gameState.priorityPlayerId === youAreHijacking))
   const canAct = hasPriority && !opponentDecisionStatus
-  const isMyTurn = spectatorMode ? false : (gameState.activePlayerId === viewingPlayer?.playerId)
+  const isMyTurn = spectatorMode
+    ? false
+    : (gameState.activePlayerId === viewingPlayer?.playerId ||
+      // During a hijack of the opponent's turn, treat it as "my turn" so the active-player
+      // controls (combat declaration, sorcery-speed plays) light up for the driving client.
+      (youAreHijacking != null && gameState.activePlayerId === youAreHijacking))
   const isInCombatMode = spectatorMode ? false : (combatState !== null)
   const isInDistributeMode = !spectatorMode && distributeState !== null
   const distributeTotalAllocated = distributeState
@@ -800,10 +808,14 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
               onClick={() => {
                 submitAction({
                   type: 'PassPriority',
-                  // In hotseat, pass for whichever seat currently holds priority.
+                  // In hotseat, pass for whichever seat currently holds priority. During a
+                  // Mindslaver-style hijack, pass for the controlled opponent (whose priority
+                  // window this is), not our own seat.
                   playerId: hotseat
                     ? (gameState.priorityPlayerId ?? viewingPlayer.playerId)
-                    : viewingPlayer.playerId,
+                    : (youAreHijacking != null && gameState.priorityPlayerId === youAreHijacking
+                      ? youAreHijacking
+                      : viewingPlayer.playerId),
                 })
               }}
               style={{

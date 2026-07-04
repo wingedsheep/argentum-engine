@@ -43,6 +43,7 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.effects.bend.BendEvents
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaPool
@@ -56,6 +57,7 @@ import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
@@ -2545,19 +2547,28 @@ class CastSpellHandler(
         // Apply waterbend (Avatar): tap the chosen artifacts/creatures, each paying {1} of the
         // waterbend generic, bounded by the waterbend amount. Sums the spell-level `waterbend {N}`
         // additional cost and Hama's fixed-alternative waterbend cost (only one is ever non-zero).
-        if (action.alternativePayment != null &&
+        // > 0 exactly when a waterbend cost is actually being paid on this cast (an optional
+        // "you may waterbend" that was declined yields 0).
+        val waterbendPaidAmount = (if (cardDef != null) spellWaterbendAmount(cardDef, action) else 0) +
+            fixedAltWaterbendAmount(currentState, action, playForFreeInExecute)
+        if (waterbendPaidAmount > 0 &&
+            action.alternativePayment != null &&
             action.alternativePayment.waterbendPermanents.isNotEmpty()
         ) {
-            val waterbendAmount = (if (cardDef != null) spellWaterbendAmount(cardDef, action) else 0) +
-                fixedAltWaterbendAmount(currentState, action, playForFreeInExecute)
-            if (waterbendAmount > 0) {
-                val waterbendResult = alternativePaymentHandler.applyWaterbendForSpell(
-                    currentState, effectiveCost, action.alternativePayment, action.playerId, waterbendAmount
-                )
-                effectiveCost = waterbendResult.reducedCost
-                currentState = waterbendResult.newState
-                events.addAll(waterbendResult.events)
-            }
+            val waterbendResult = alternativePaymentHandler.applyWaterbendForSpell(
+                currentState, effectiveCost, action.alternativePayment, action.playerId, waterbendPaidAmount
+            )
+            effectiveCost = waterbendResult.reducedCost
+            currentState = waterbendResult.newState
+            events.addAll(waterbendResult.events)
+        }
+        // CR 701.67c: paying a spell's waterbend cost (however paid — taps above and/or plain mana)
+        // fires "whenever you waterbend". A later payment failure rolls the cast (and this event)
+        // back, so emitting here is safe.
+        if (waterbendPaidAmount > 0) {
+            val (bendState, bendEvent) = BendEvents.record(currentState, action.playerId, BendType.WATER)
+            currentState = bendState
+            events.add(bendEvent)
         }
 
         // Build spell context for conditional mana restrictions

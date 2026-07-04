@@ -51,7 +51,8 @@ val ArtisticProcess = card("Artistic Process") {
                         toughness = 3,
                         colors = setOf(Color.BLUE, Color.RED),
                         creatureTypes = setOf("Elemental"),
-                        keywords = setOf(Keyword.FLYING)
+                        keywords = setOf(Keyword.FLYING),
+                        imageUri = "https://cards.scryfall.io/normal/front/b/5/b5b2df9c-228f-4441-a962-46b335bb356e.jpg?1782723481"
                     ),
                     Effects.GrantKeyword(Keyword.HASTE, EffectTarget.PipelineTarget(CREATED_TOKENS, 0))
                 )

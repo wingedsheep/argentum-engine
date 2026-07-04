@@ -98,3 +98,45 @@ data class HasAllActivatedAbilitiesOfLinkedExiledCard(
         return if (newFilter !== filter) copy(filter = newFilter) else this
     }
 }
+
+/**
+ * Grants the source permanent the **activated and/or triggered abilities of the single card it most
+ * recently *chose*** from its linked-exile pile — the "last chosen card" of a
+ * choose-from-your-exile mechanic (Koh, the Face Stealer: "Pay 1 life: Choose a creature card exiled
+ * with Koh. Koh has all activated and triggered abilities of the last chosen card").
+ *
+ * Unlike [HasAllActivatedAbilitiesOfLinkedExiledCard] — which surfaces the abilities of *every* card
+ * in the pile — this reads the source's `ChosenLinkedExileComponent` (stamped by
+ * [com.wingedsheep.sdk.scripting.effects.RecordChosenLinkedExileEffect]) and contributes only the
+ * abilities of that one chosen card. It is always self-scoped ("this permanent has …"); use the two
+ * flags to grant activated abilities, triggered abilities, or both.
+ *
+ * Resolution is dynamic and re-reads the chosen card on every query, so re-choosing a different
+ * exiled card live-swaps which abilities the source has. The granted abilities use the source as
+ * their own source, so `{T}`/self-references bind to the granting permanent (CR-faithful to the
+ * "gains abilities of another object" rulings). It grants only *activated* and *triggered*
+ * abilities — never static, keyword, or replacement abilities.
+ *
+ * @property grantActivated When true, the chosen card's activated abilities are surfaced on the source.
+ * @property grantTriggered When true, the chosen card's triggered abilities fire from the source.
+ */
+@SerialName("HasAbilitiesOfChosenLinkedExiledCard")
+@Serializable
+data class HasAbilitiesOfChosenLinkedExiledCard(
+    val grantActivated: Boolean = true,
+    val grantTriggered: Boolean = true,
+) : StaticAbility {
+    override val description: String = buildString {
+        append("This permanent has all ")
+        append(
+            when {
+                grantActivated && grantTriggered -> "activated and triggered"
+                grantActivated -> "activated"
+                else -> "triggered"
+            }
+        )
+        append(" abilities of the last chosen card exiled with it")
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility = this
+}

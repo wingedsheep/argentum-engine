@@ -34,7 +34,8 @@ val GarrisonExcavator = card("Garrison Excavator") {
             power = 2,
             toughness = 2,
             colors = setOf(Color.RED, Color.WHITE),
-            creatureTypes = setOf("Spirit")
+            creatureTypes = setOf("Spirit"),
+            imageUri = "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1782723476"
         )
     }
     metadata {

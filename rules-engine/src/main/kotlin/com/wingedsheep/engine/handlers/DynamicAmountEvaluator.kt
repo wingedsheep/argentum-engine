@@ -227,6 +227,20 @@ class DynamicAmountEvaluator(
                     .size
             }
 
+            is DynamicAmount.DistinctCardTypesInCollections -> {
+                // Union the card types across every card in the named collections (read by entity
+                // id, so still correct after the cards moved to a graveyard). Mirrors the
+                // LINKED_EXILE_DISTINCT_CARD_TYPE_COUNT counting logic.
+                val cardTypes = mutableSetOf<com.wingedsheep.sdk.core.CardType>()
+                for (collectionName in amount.collections) {
+                    for (cardId in context.pipeline.storedCollections[collectionName].orEmpty()) {
+                        val card = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+                        cardTypes.addAll(card.typeLine.cardTypes)
+                    }
+                }
+                cardTypes.size
+            }
+
             is DynamicAmount.ManaValueSumOfCollection -> {
                 val cards = context.pipeline.storedCollections[amount.collectionName] ?: return 0
                 cards.sumOf { cardId ->
@@ -491,6 +505,11 @@ class DynamicAmountEvaluator(
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.PermanentsSacrificedThisTurnComponent>()
                             ?.count ?: 0
+                    }
+                    TurnTracker.DISTINCT_BENDS -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.BendsThisTurnComponent>()
+                            ?.types?.size ?: 0
                     }
                 }
             }

@@ -259,6 +259,15 @@ object DynamicAmounts {
         DynamicAmount.DistinctEntitiesInCollections(collections.toList())
 
     /**
+     * Number of distinct card types among the cards in the named pipeline collections (union,
+     * de-duplicated by card type). For "draw a card for each card type among cards discarded this
+     * way" style payoffs spread over several discard/gather collections — see
+     * [DynamicAmount.DistinctCardTypesInCollections].
+     */
+    fun distinctCardTypesIn(vararg collections: String): DynamicAmount =
+        DynamicAmount.DistinctCardTypesInCollections(collections.toList())
+
+    /**
      * Total mana value of every card in a named pipeline collection (e.g. the cards just milled
      * into a "milled" collection). Reads each card by entity id, so it stays correct after the
      * collection has moved zones. See [DynamicAmount.ManaValueSumOfCollection].

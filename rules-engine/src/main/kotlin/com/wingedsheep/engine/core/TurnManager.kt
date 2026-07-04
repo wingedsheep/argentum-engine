@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.player.AdditionalUpkeepStepsCompo
 import com.wingedsheep.engine.state.components.player.InAdditionalUpkeepStepComponent
 import com.wingedsheep.engine.state.components.player.AdditionalEndStepsComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalEndStepComponent
+import com.wingedsheep.engine.state.components.player.BendsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsPutIntoExileThisTurnComponent
 import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
@@ -38,6 +39,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.HijackScope
 
 /**
  * Manages turn-based game flow: phases, steps, and turn transitions.
@@ -139,6 +141,8 @@ class TurnManager(
                     .with(CardsPutIntoExileThisTurnComponent(count = 0))
                     .with(ManaSpentOnSpellsThisTurnComponent(totalSpent = 0))
                     .with(EquipActivationsThisTurnComponent(count = 0))
+                    // Distinct bends reset each turn for every player ("this turn" is per game-turn).
+                    .with(BendsThisTurnComponent(types = emptySet()))
             }
         }
 
@@ -164,11 +168,15 @@ class TurnManager(
 
         val events = mutableListOf<GameEvent>(TurnChangedEvent(newState.turnNumber, playerId))
 
-        // Activate a Mindslaver-style hijack scheduled on this player. Per Scryfall ruling,
-        // a scheduled hijack waits through any skipped turns and engages on the next turn
-        // the affected player actually takes.
+        // Activate a Mindslaver-style *turn*-scoped hijack scheduled on this player. Per Scryfall
+        // ruling, a scheduled hijack waits through any skipped turns and engages on the next turn
+        // the affected player actually takes. Combat-phase-scoped hijacks (Secret of Bloodbending)
+        // are ignored here — they engage at beginning of combat (see advanceStep) instead.
         val scheduledHijack = newState.getEntity(playerId)?.get<PlayerTurnHijackedComponent>()
-        if (scheduledHijack != null && scheduledHijack.state == PlayerTurnHijackedComponent.HijackState.SCHEDULED) {
+        if (scheduledHijack != null &&
+            scheduledHijack.state == PlayerTurnHijackedComponent.HijackState.SCHEDULED &&
+            scheduledHijack.scope == HijackScope.NextTurn
+        ) {
             newState = newState.updateEntity(playerId) { container ->
                 container.with(
                     scheduledHijack.copy(state = PlayerTurnHijackedComponent.HijackState.ACTIVE)
@@ -244,10 +252,25 @@ class TurnManager(
         // Firebending (END_OF_COMBAT) mana is preserved and handled by CombatManager.endCombat.
         advanceStepFromEndedStep(cleanupPhaseManager.emptyManaPools(state))
 
-    private fun advanceStepFromEndedStep(state: GameState): ExecutionResult {
-        val currentStep = state.step
-        val activePlayer = state.activePlayerId
-            ?: return ExecutionResult.error(state, "No active player")
+    private fun advanceStepFromEndedStep(incomingState: GameState): ExecutionResult {
+        val currentStep = incomingState.step
+        val activePlayer = incomingState.activePlayerId
+            ?: return ExecutionResult.error(incomingState, "No active player")
+
+        // End a combat-phase-scoped hijack (Secret of Bloodbending) as its combat phase closes:
+        // the affected player is leaving their end-of-combat step, so input authority reverts.
+        // Done here (rather than on entry to postcombat main) so it also fires when an *additional*
+        // combat phase follows — "their next combat phase" is a single phase, never the extra ones.
+        var state = incomingState
+        if (currentStep == Step.END_COMBAT) {
+            val combatHijack = state.getEntity(activePlayer)?.get<PlayerTurnHijackedComponent>()
+            if (combatHijack != null &&
+                combatHijack.state == PlayerTurnHijackedComponent.HijackState.ACTIVE &&
+                combatHijack.scope == HijackScope.NextCombatPhase
+            ) {
+                state = state.updateEntity(activePlayer) { it.without<PlayerTurnHijackedComponent>() }
+            }
+        }
 
         // Check if we're wrapping to next turn
         if (currentStep == Step.CLEANUP) {
@@ -494,6 +517,29 @@ class TurnManager(
                     events.add(PhaseChangedEvent(Phase.POSTCOMBAT_MAIN))
                     events.add(StepChangedEvent(Step.POSTCOMBAT_MAIN))
                     return ExecutionResult.success(newState, events)
+                }
+                // Engage a combat-phase-scoped hijack (Secret of Bloodbending) scheduled on the
+                // active player: their combat phase is now beginning, so input authority moves to
+                // the hijacker for the duration of this phase. A hijack scheduled while combat was
+                // skipped stays SCHEDULED and waits for a combat phase they actually reach here.
+                val combatHijack = newState.getEntity(activePlayer)?.get<PlayerTurnHijackedComponent>()
+                if (combatHijack != null &&
+                    combatHijack.state == PlayerTurnHijackedComponent.HijackState.SCHEDULED &&
+                    combatHijack.scope == HijackScope.NextCombatPhase
+                ) {
+                    newState = newState.updateEntity(activePlayer) { container ->
+                        container.with(
+                            combatHijack.copy(state = PlayerTurnHijackedComponent.HijackState.ACTIVE)
+                        )
+                    }
+                    events.add(
+                        TurnHijackedEvent(
+                            controllerId = combatHijack.controllerId,
+                            hijackedPlayerId = activePlayer,
+                            sourceId = activePlayer,
+                            sourceName = "Combat hijack engaged"
+                        )
+                    )
                 }
                 newState = newState.withPriority(activePlayer)
             }

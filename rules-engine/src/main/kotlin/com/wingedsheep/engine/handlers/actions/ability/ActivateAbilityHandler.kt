@@ -19,6 +19,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
+import com.wingedsheep.engine.handlers.effects.bend.BendEvents
 import com.wingedsheep.engine.mechanics.mana.AlternativePaymentHandler
 import com.wingedsheep.engine.mechanics.mana.IntrinsicManaAbilities
 import com.wingedsheep.engine.mechanics.mana.ManaPool
@@ -46,6 +47,7 @@ import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComp
 import com.wingedsheep.engine.state.components.stack.captureEntitySnapshots
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.AbilityCost
@@ -767,6 +769,15 @@ class ActivateAbilityHandler(
             effectiveManaCost = waterbendResult.reducedCost
             currentState = waterbendResult.newState
             events.addAll(waterbendResult.events)
+        }
+        // CR 701.67c: paying an ability's waterbend cost (however paid — taps above and/or the mana
+        // paid below) fires "whenever you waterbend". The waterbend cost is applied before mana
+        // payment, so this reaches every hasWaterbend activation; a later mana failure rolls the
+        // whole activation (and this event) back.
+        if (ability.hasWaterbend) {
+            val (bendState, bendEvent) = BendEvents.record(currentState, action.playerId, BendType.WATER)
+            currentState = bendState
+            events.add(bendEvent)
         }
 
         val manaCost = effectiveManaCost
@@ -2314,6 +2325,19 @@ class ActivateAbilityHandler(
                     }
                     if (receives) {
                         for (granted in com.wingedsheep.engine.legalactions.utils.linkedExiledActivatedAbilities(state, permanentId, cardRegistry, ability.creatureCardsOnly)) {
+                            result.add(granted to entityId)
+                        }
+                    }
+                    continue
+                }
+                // "This permanent has all activated and triggered abilities of the last chosen card
+                // exiled with it" (Koh, the Face Stealer). Self-scoped: only the source receives the
+                // chosen card's *activated* abilities here (triggered ones flow through
+                // TriggerAbilityResolver), with the source recorded as granter so `{T}`/self-references
+                // bind to it.
+                if (ability is com.wingedsheep.sdk.scripting.HasAbilitiesOfChosenLinkedExiledCard) {
+                    if (ability.grantActivated && permanentId == entityId) {
+                        for (granted in com.wingedsheep.engine.legalactions.utils.chosenLinkedExiledActivatedAbilities(state, permanentId, cardRegistry)) {
                             result.add(granted to entityId)
                         }
                     }

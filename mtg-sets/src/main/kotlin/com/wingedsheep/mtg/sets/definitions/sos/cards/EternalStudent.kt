@@ -34,7 +34,8 @@ val EternalStudent = card("Eternal Student") {
             colors = setOf(Color.WHITE, Color.BLACK),
             creatureTypes = setOf("Inkling"),
             keywords = setOf(Keyword.FLYING),
-            count = 2
+            count = 2,
+            imageUri = "https://cards.scryfall.io/display/front/b/a/bab52920-9d67-4cd4-9015-6e645ff9764f.webp?1782723480"
         )
     }
 

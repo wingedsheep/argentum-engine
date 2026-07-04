@@ -310,19 +310,48 @@ data class SkipNextTurnEffect(
 }
 
 /**
- * The ability's controller controls the target player during that player's next turn.
+ * The ability's controller controls the target player during a scoped future window —
+ * either that player's next **turn** ([HijackScope.NextTurn]) or their next **combat
+ * phase** ([HijackScope.NextCombatPhase]).
  *
- * Used for Mindslaver-style effects (e.g., The Dominion Bracelet). PR 1 ships this effect
- * as a no-op that emits a TurnHijackedEvent only — full input/visibility routing is
- * delivered in a follow-up PR.
+ * Used for Mindslaver-style effects: The Dominion Bracelet ("during their next turn")
+ * and Secret of Bloodbending ("during their next combat phase", or their next turn if
+ * the waterbend cost was paid). Both windows move only *input authority* to the
+ * controller — resource ownership (mana, cards, life, controllership of permanents and
+ * spells) stays with the affected player.
+ *
+ * The [SerialName] is historical ("HijackNextTurn" — the effect predates the combat-phase
+ * scope). The wire tag is a stable serialization contract, so it is kept even though the
+ * effect now covers more than a whole turn.
  */
 @SerialName("HijackNextTurn")
 @Serializable
 data class HijackNextTurnEffect(
-    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent)
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetOpponent),
+    val scope: HijackScope = HijackScope.NextTurn
 ) : Effect {
-    override val description: String =
-        "Controller controls ${target.description} during their next turn"
+    override val description: String = when (scope) {
+        HijackScope.NextTurn ->
+            "Controller controls ${target.description} during their next turn"
+        HijackScope.NextCombatPhase ->
+            "Controller controls ${target.description} during their next combat phase"
+    }
+}
+
+/**
+ * The future window during which a [HijackNextTurnEffect] hands input authority for the
+ * affected player to the ability's controller.
+ *
+ * A scheduled hijack of either scope waits through any skipped turns/combat phases and
+ * engages on the next one the affected player actually takes.
+ */
+@Serializable
+enum class HijackScope {
+    /** The affected player's whole next turn (The Dominion Bracelet). */
+    NextTurn,
+
+    /** The affected player's next combat phase only (Secret of Bloodbending, base mode). */
+    NextCombatPhase
 }
 
 /**

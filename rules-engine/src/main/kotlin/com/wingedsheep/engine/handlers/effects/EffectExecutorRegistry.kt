@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.chain.ChainExecutors
 import com.wingedsheep.engine.handlers.effects.combat.CombatExecutors
+import com.wingedsheep.engine.handlers.effects.bend.BendExecutors
 import com.wingedsheep.engine.handlers.effects.composite.CompositeExecutors
 import com.wingedsheep.engine.handlers.effects.damage.DamageExecutors
 import com.wingedsheep.engine.handlers.effects.drawing.DrawingExecutors
@@ -70,6 +71,7 @@ class EffectExecutorRegistry(
         registerModule(ZonesExecutors(cardRegistry))
         registerModule(LinkedExileExecutors())
         registerModule(RegenerationExecutors())
+        registerModule(BendExecutors())
 
         // Deferred initialization for recursive executors. They recurse through [recurse], which
         // deepens [EffectContext.resolutionDepth] by one per nested sub-effect so [execute] can cap

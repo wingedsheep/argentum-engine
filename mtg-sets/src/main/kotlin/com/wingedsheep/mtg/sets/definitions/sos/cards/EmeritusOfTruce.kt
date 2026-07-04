@@ -54,6 +54,7 @@ val EmeritusOfTruce = card("Emeritus of Truce") {
             creatureTypes = setOf("Inkling"),
             keywords = setOf(Keyword.FLYING),
             controller = recipient,
+            imageUri = "https://cards.scryfall.io/display/front/b/a/bab52920-9d67-4cd4-9015-6e645ff9764f.webp?1782723480"
         ) then ConditionalEffect(
             condition = Conditions.OpponentControlsMoreCreatures,
             effect = Effects.BecomePrepared(EffectTarget.Self),

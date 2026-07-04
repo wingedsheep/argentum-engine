@@ -9933,6 +9933,285 @@
     ]
 }
 
+// Kefka, Court Mage
+{
+    "name": "Kefka, Court Mage",
+    "manaCost": "{2}{U}{B}{R}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Whenever Kefka enters or attacks, each player discards a card. Then you draw a card for each card type among cards discarded this way.\n{8}: Each opponent sacrifices a permanent of their choice. Transform Kefka. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "kefkaSelfHand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "kefkaSelfHand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kefkaSelfDiscard",
+                            "prompt": "Choose a card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kefkaSelfDiscard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "AnOpponent"
+                            },
+                            "storeAs": "kefkaOppHand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "kefkaOppHand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "Opponent",
+                            "storeSelected": "kefkaOppDiscard",
+                            "prompt": "Choose a card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kefkaOppDiscard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "AnOpponent"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "DistinctCardTypesInCollections",
+                                "collections": [
+                                    "kefkaSelfDiscard",
+                                    "kefkaOppDiscard"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Kefka enters, each player discards a card. Then you draw a card for each card type among cards discarded this way."
+            },
+            {
+                "id": "ability_2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "kefkaSelfHand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "kefkaSelfHand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kefkaSelfDiscard",
+                            "prompt": "Choose a card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kefkaSelfDiscard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": "AnOpponent"
+                            },
+                            "storeAs": "kefkaOppHand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "kefkaOppHand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "Opponent",
+                            "storeSelected": "kefkaOppDiscard",
+                            "prompt": "Choose a card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kefkaOppDiscard",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "AnOpponent"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "DistinctCardTypesInCollections",
+                                "collections": [
+                                    "kefkaSelfDiscard",
+                                    "kefkaOppDiscard"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Kefka attacks, each player discards a card. Then you draw a card for each card type among cards discarded this way."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{8}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": {},
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        },
+                        "Transform"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{8}: Each opponent sacrifices a permanent of their choice. Transform Kefka. Activate only as a sorcery."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Kefka, Ruler of Ruin",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Avatar Wizard",
+        "oracleText": "Flying\nWhenever an opponent loses life during your turn, you draw that many cards.",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 7
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_4",
+                    "trigger": {
+                        "type": "LifeLossEvent",
+                        "player": "EachOpponent"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "ContextProperty",
+                            "key": "TRIGGER_LIFE_LOST"
+                        }
+                    },
+                    "triggerCondition": "IsYourTurn",
+                    "descriptionOverride": "Whenever an opponent loses life during your turn, you draw that many cards."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "231",
+            "rarity": "MYTHIC",
+            "artist": "Xui Ton",
+            "imageUri": "https://cards.scryfall.io/normal/back/8/f/8fcf3fbb-1ddd-437e-81c1-f5a3133f5ee8.jpg?1782686419"
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "BLACK",
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "MYTHIC",
+        "artist": "Xui Ton",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8fcf3fbb-1ddd-437e-81c1-f5a3133f5ee8.jpg?1782686419",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "The card types in Magic include artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, and sorcery. Legendary, basic, and snow are supertypes, not card types; Hero and Saga are subtypes, not card types."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "While resolving Kefka, Court Mage's last ability, the next opponent in turn order chooses a permanent they control, then each other opponent in turn order does the same. Then each of the chosen permanents are sacrificed simultaneously."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Kuja, Genome Sorcerer
 {
     "name": "Kuja, Genome Sorcerer",
@@ -21143,6 +21422,98 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// The Masamune
+{
+    "name": "The Masamune",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "As long as equipped creature is attacking, it has first strike and must be blocked if able.\nEquipped creature has \"If a creature dying causes a triggered ability of this creature or an emblem you own to trigger, that ability triggers an additional time.\"\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EquippedCreature",
+                    "filter": "attacking"
+                }
+            },
+            {
+                "type": "MustBeBlockedStatic",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "AdditionalDeathTriggers",
+                "attachedCreature": true,
+                "includeEmblems": true
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "264",
+        "rarity": "RARE",
+        "artist": "Masateru Ikeda",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc408575-8ef7-4043-b6b7-b38cef7c97d1.jpg?1782686391",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "An ability that triggers on an event that causes a creature to die doesn't trigger twice. For example, an ability that triggers \"whenever you sacrifice a creature\" triggers only once."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "The granted ability's effect doesn't copy the triggered ability; it just causes the ability to trigger twice. Choices such as modes and targets are made separately for each instance of the ability."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "An ability of the equipped creature or an emblem you own that triggers when a creature \"leaves the battlefield\" will trigger twice if that creature leaves by dying."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "If you control two of The Masamune and they're equipped to creatures you control, a creature dying causes abilities of emblems you own to trigger three times, not four."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // The Prima Vista

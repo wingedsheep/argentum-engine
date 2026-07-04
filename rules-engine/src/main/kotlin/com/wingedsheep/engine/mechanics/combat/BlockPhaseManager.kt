@@ -36,7 +36,9 @@ import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.CantBlockUnless
 import com.wingedsheep.sdk.scripting.CantBlockUnlessCoBlocker
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import java.util.UUID
 
 /**
@@ -863,24 +865,88 @@ internal class BlockPhaseManager(
      */
     private fun attackersWithMustBeBlockedStatic(state: GameState, allCreatures: Boolean): List<EntityId> {
         val attackers = state.findEntitiesWith<AttackingComponent>().map { it.first }
-        return attackers.filter { attackerId ->
-            val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.cardDefinitionId ?: return@filter false
+        if (attackers.isEmpty()) return emptyList()
+        val projected = state.projectedState
+        val attackerSet = attackers.toSet()
+        val result = mutableSetOf<EntityId>()
+
+        // (a) An attacker's own source-scoped MustBeBlocked static (filter == null), including the
+        // conditional form (Frodo Baggins, gated on SourceIsRingBearer).
+        for (attackerId in attackers) {
+            val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.cardDefinitionId ?: continue
             val statics = cardRegistry.getCard(cardName)?.staticAbilities.orEmpty()
-            statics.any { ability ->
+            val active = statics.any { ability ->
                 val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
-                if (unwrapped !is MustBeBlocked || unwrapped.allCreatures != allCreatures) return@any false
+                if (unwrapped !is MustBeBlocked || unwrapped.filter != null || unwrapped.allCreatures != allCreatures) {
+                    return@any false
+                }
                 if (ability is ConditionalStaticAbility) {
-                    val controller = state.projectedState.getController(attackerId) ?: return@any false
+                    val controller = projected.getController(attackerId) ?: return@any false
                     conditionEvaluator.evaluate(
                         state,
                         ability.condition,
-                        EffectContext(
-                            sourceId = attackerId,
-                            controllerId = controller
-                        )
+                        EffectContext(sourceId = attackerId, controllerId = controller)
                     )
                 } else true
             }
+            if (active) result.add(attackerId)
+        }
+
+        // (b) A battlefield permanent projecting MustBeBlocked onto a *different* creature via a
+        // filter - e.g. an Equipment granting "equipped creature ... must be blocked if able"
+        // (The Masamune, filter = GroupFilter.attachedCreature()). The filter is resolved relative
+        // to the permanent carrying the static.
+        for (sourceId in state.getBattlefield()) {
+            val container = state.getEntity(sourceId) ?: continue
+            if (container.has<FaceDownComponent>()) continue
+            val cardName = container.get<CardComponent>()?.cardDefinitionId ?: continue
+            val statics = cardRegistry.getCard(cardName)?.staticAbilities.orEmpty()
+            for (ability in statics) {
+                val unwrapped = if (ability is ConditionalStaticAbility) ability.ability else ability
+                if (unwrapped !is MustBeBlocked || unwrapped.allCreatures != allCreatures) continue
+                val filter = unwrapped.filter ?: continue
+                val controller = projected.getController(sourceId) ?: continue
+                if (ability is ConditionalStaticAbility &&
+                    !conditionEvaluator.evaluate(
+                        state, ability.condition, EffectContext(sourceId = sourceId, controllerId = controller)
+                    )
+                ) continue
+                result.addAll(
+                    resolveFilteredMustBeBlockedAttackers(state, projected, sourceId, controller, filter, attackerSet)
+                )
+            }
+        }
+
+        return result.toList()
+    }
+
+    /**
+     * Resolve which declared attackers a filtered [MustBeBlocked] static (carried by [sourceId])
+     * applies to. Source-relative scopes resolve against [sourceId]: `AttachedTo` -> the creature it
+     * is attached to (equipped creature), `Self` -> the source, `Specific` -> the bound entity;
+     * `Battlefield` matches every attacker against the base filter. Only attackers pass, and each
+     * must also satisfy the base filter (evaluated with the static's source as context).
+     */
+    private fun resolveFilteredMustBeBlockedAttackers(
+        state: GameState,
+        projected: ProjectedState,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        filter: GroupFilter,
+        attackerSet: Set<EntityId>,
+    ): List<EntityId> {
+        val candidates: List<EntityId> = when (val scope = filter.scope) {
+            is Scope.AttachedTo -> listOfNotNull(state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId)
+            is Scope.Self -> listOf(sourceId)
+            is Scope.Specific -> listOf(scope.entityId)
+            is Scope.Battlefield -> attackerSet.toList()
+        }
+        return candidates.filter { id ->
+            id in attackerSet &&
+                predicateEvaluator.matches(
+                    state, projected, id, filter.baseFilter,
+                    PredicateContext(sourceId = sourceId, controllerId = controllerId)
+                )
         }
     }
 

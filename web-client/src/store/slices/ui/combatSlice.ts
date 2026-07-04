@@ -26,7 +26,10 @@ function combatActingSeat(
   connectionSeat: EntityId,
   gameState: ClientGameState | null,
 ): EntityId {
-  if (!gameState?.hotseat) return connectionSeat
+  // A Mindslaver-style hijack also drives another seat's combat: this connection declares
+  // for the controlled opponent, not for itself. Same routing as hotseat — use the
+  // server-recorded acting seat / active player rather than our own connection seat.
+  if (!gameState?.hotseat && !gameState?.youAreHijacking) return connectionSeat
   if (combatState.actingSeat) return combatState.actingSeat
   if (combatState.mode === 'declareAttackers') return gameState.activePlayerId
   return (

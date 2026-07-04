@@ -95,7 +95,15 @@ enum class TurnTracker {
      * `GameState.permanentsSacrificedThisTurn` cost-reduction counter. Powers "if you sacrificed
      * one or more permanents this turn, ... deals that much damage" (Sawblade Skinripper).
      */
-    PERMANENTS_SACRIFICED;
+    PERMANENTS_SACRIFICED,
+    /**
+     * Number of *distinct* elemental bending keyword actions ([com.wingedsheep.sdk.core.BendType]:
+     * waterbend, earthbend, firebend, airbend) the player has performed this turn — 0 through 4.
+     * Backed by `BendsThisTurnComponent`, reset to empty for every player at the start of each
+     * turn. `Compare(TurnTracking(You, DISTINCT_BENDS), GTE, Fixed(4))` powers "if you've done all
+     * four this turn" (Avatar Aang, CR 701.65–701.67 / 702.189).
+     */
+    DISTINCT_BENDS;
 
     fun descriptionFor(player: Player): String = when (this) {
         CREATURES_DIED -> "the number of creatures that died under ${player.possessive} control this turn"
@@ -119,6 +127,7 @@ enum class TurnTracker {
         CARDS_DRAWN -> "the number of cards ${player.description} have drawn this turn"
         CARDS_PUT_INTO_EXILE -> "the number of cards put into exile this turn"
         PERMANENTS_SACRIFICED -> "the number of permanents ${player.description} sacrificed this turn"
+        DISTINCT_BENDS -> "the number of different ways ${player.description} bent this turn"
     }
 }
 
@@ -539,6 +548,25 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     @Serializable
     data class DistinctEntitiesInCollections(val collections: List<String>) : DynamicAmount {
         override val description: String = "the number of distinct selected permanents"
+    }
+
+    /**
+     * Number of distinct *card types* among the cards in the named pipeline collections (the
+     * union of every collection, de-duplicated by card type). An artifact creature contributes
+     * both "artifact" and "creature". Cards are read by entity id, so the value is correct even
+     * after the collection has been moved to another zone — e.g. after being discarded into a
+     * graveyard.
+     *
+     * Used for "draw a card for each card type among cards discarded this way" (Kefka, Court Mage):
+     * multiple players each discard into a separate collection and the payoff counts distinct card
+     * types across all of them. This is the collection-scoped sibling of
+     * [ContextPropertyKey.LINKED_EXILE_DISTINCT_CARD_TYPE_COUNT] (which reads linked-exile cards)
+     * and of [SpellsCastThisTurn] with `countDistinctCardTypes = true` (which reads cast history).
+     */
+    @SerialName("DistinctCardTypesInCollections")
+    @Serializable
+    data class DistinctCardTypesInCollections(val collections: List<String>) : DynamicAmount {
+        override val description: String = "the number of card types among those cards"
     }
 
     /**

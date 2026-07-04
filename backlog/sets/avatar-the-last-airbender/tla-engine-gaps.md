@@ -35,6 +35,13 @@ Generated to scope what must be built before the set can be completed.
 >   (`Effects.ExileTargetSpell(fixedAlternativeManaCost)`). The 3 remaining Airbend cards are each
 >   blocked by a *different* gap (cast-zone restriction, each-player-choose Saga chapter, four-bend
 >   events + {WUBRG} reduction), not by airbend itself.
+> - ✅ **Four-bend events** — `Triggers.YouBend(types)` ("Whenever you waterbend, earthbend, firebend,
+>   or airbend, …") + `TurnTracker.DISTINCT_BENDS` ("if you've done all four this turn"). Each keyword
+>   action emits a `BendPerformedEvent` and folds into the per-turn `BendsThisTurnComponent`
+>   (earthbend/airbend/firebend via `Effects.EmitBend` in their composites — including the
+>   airbend-a-spell stack branch `Effects.AirbendSpell`, CR 701.65b; waterbend engine-side at
+>   cost payment, CR 701.67c). This + the existing `{WUBRG}` reduction
+>   (`CostModification.ReduceColoredPerUnit`) unblocks **Avatar Aang // Aang, Master of Elements**.
 > - ✅ **Exhaust** keyword (8 cards) — `isExhaust = true` → `ActivationRestriction.Once` (per-object,
 >   CR 702.177 "Activate only once"; *not* once-per-game). Plus a strip-on-leave fix so the once-ever
 >   record resets on a new object (CR 400.7). All 8 exhaust cards implemented.
@@ -373,8 +380,10 @@ RemoveAllAbilities + SetStats + SetCreatureSubtypes + grant-mana-ability composi
 **Done since this analysis** (✅ no longer on the list): Earthbend (incl. dynamic X), Firebending (§2),
 Vigilance counter (§5), Nth-card-drawn (§6), Surveil (§7), sacrificed-this-turn count (§8),
 activated-ability Waterbend (§1), and spell-level Waterbend additional cost incl. waterbend {X} (the §1
-spell half), plus **Airbend** (§3, keyword + stack branch) and **Exhaust** (§4). The set is now at
-**248/286**; the order below covers only what's left.
+spell half), plus **Airbend** (§3, keyword + stack branch), **Exhaust** (§4), and the **four-bend event
+system** (`Triggers.YouBend` + `TurnTracker.DISTINCT_BENDS`, which with `ReduceColoredPerUnit` completed
+**Avatar Aang**). The set is now at **283/286** — only **3 cards remain** (Firebender Ascension, Koh the
+Face Stealer, Secret of Bloodbending), each blocked by a *non-bending* gap noted below.
 
 0. ~~**Now-unblocked recent batch**~~ — ✅ **done**: **North Pole Patrol** (activated Waterbend) and
    **Firebending Student** (Firebending X = power + prowess) were plain `add-card`; **Trusty Boomerang**
@@ -382,20 +391,30 @@ spell half), plus **Airbend** (§3, keyword + stack branch) and **Exhaust** (§4
    Shaw** added `removeLegendary` on the self-copy token + `CardsInGraveyardMatchingAtLeast`.
 
 1. ~~**Airbend** (§3)~~ — ✅ **done**: fixed-alternative-cost may-play (`Effects.Airbend` /
-   `Effects.AirbendAll`) + stack-spell exile branch (`Effects.ExileTargetSpell`). 8 of 11 cards built;
-   the 3 leftovers are blocked by *other* gaps (cast-zone restriction, each-player-choose Saga chapter,
-   four-bend events + {WUBRG} reduction), not by airbend.
-2. **Remaining Waterbend cost shapes** (the §1 leftovers) — Ward — Waterbend, in-resolution "may pay
-   a waterbend cost", and waterbend-as-alternative-cast (Hama). **~7 cards.** (Exhaust — Waterbend done.)
+   `Effects.AirbendAll`) + stack-spell exile branch (`Effects.ExileTargetSpell`). All 11 cards built
+   (Avatar's Wrath's cast-zone restriction, Yangchen's Saga chapter, and Avatar Aang's four-bend events
+   have all since been resolved).
+2. ~~**Four-bend events** (Avatar Aang)~~ — ✅ **done**: `Triggers.YouBend` + `BendPerformedEvent` emitted
+   at each keyword action (earthbend/airbend/firebend via `EmitBend`; waterbend at cost payment) +
+   `TurnTracker.DISTINCT_BENDS` for "all four this turn". Paired with the existing `{W}{U}{B}{R}{G}`
+   reduction (`CostModification.ReduceColoredPerUnit`).
 3. ~~**Exhaust** (§4)~~ — ✅ **done**: `isExhaust` → per-object `ActivationRestriction.Once` (CR
    702.177) + strip-on-leave reset (CR 400.7). All 8 exhaust cards implemented.
 4. **Granting / conditional Firebending** — "gains firebending N until EOT" / "has firebending as long
    as …" (the §2 leftover); plus the **Fire counter** type (§B + War Balloon) and **Foretell** (§G).
-5. **Tier-3 one-offs** (§A–I) and the assorted dynamic-amount / selection-restriction primitives surfaced
+   *(No longer blocks a specific remaining card, but still an open primitive.)*
+5. **Remaining Waterbend cost shapes** — Ward — Waterbend, in-resolution "may pay a waterbend cost", and
+   waterbend-as-alternative-cast (Hama). *(Open primitives; the last waterbend card, Secret of
+   Bloodbending, is actually blocked by its take-control payoff, not by waterbend.)*
+6. **Tier-3 one-offs** (§A–I) and the assorted dynamic-amount / selection-restriction primitives surfaced
    during implementation (capped counter-removal, total-power & total-mana-value selection caps,
    largest-shared-creature-type count, owner≠controller count, keyword-projection onto stack spells,
    self-scoped untap, shared-creature-type cross-target, flash-rider on play-from-exile) — as the
    relevant legendaries / rares come up.
 
-With Airbend and Exhaust now done, the **remaining Waterbend cost shapes** plus the granting/conditional
-Firebending and Tier-3 one-offs gate the bulk of the remaining 38 cards.
+Only **3 cards** now remain, each gated by a *non-bending* engine primitive: **Secret of Bloodbending**
+(control target opponent during their next turn), **Koh, the Face Stealer** (gain all activated/triggered
+abilities of a chosen exiled creature card), and **Firebender Ascension** (copy an attacker's triggered
+ability once four quest counters accrue). The broader open primitives above (granting/conditional
+Firebending, remaining Waterbend cost shapes, Foretell, Fire counter, Tier-3 one-offs) no longer block a
+specific TLA card but remain useful engine work.

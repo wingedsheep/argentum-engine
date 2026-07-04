@@ -3,10 +3,12 @@ package com.wingedsheep.engine.handlers.effects.stack
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.bend.BendEvents
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.scripting.effects.ExileTargetSpellEffect
 import kotlin.reflect.KClass
 
@@ -39,7 +41,7 @@ class ExileTargetSpellExecutor(
         if (spellId !in state.stack) return EffectResult.success(state)
 
         val resolver = StackResolver(cardRegistry = cardRegistry)
-        return EffectResult.from(
+        val exiled = EffectResult.from(
             resolver.exileSpell(
                 state,
                 spellId,
@@ -47,5 +49,10 @@ class ExileTargetSpellExecutor(
                 fixedAlternativeManaCost = effect.fixedAlternativeManaCost
             )
         )
+        // CR 701.65b: airbending a spell fires "whenever you airbend" — but only once the spell is
+        // actually exiled (the early returns above already skip a target that left the stack).
+        if (!effect.emitAirbend || !exiled.isSuccess) return exiled
+        val (bendState, bendEvent) = BendEvents.record(exiled.state, context.controllerId, BendType.AIR)
+        return exiled.copy(state = bendState, events = exiled.events + bendEvent)
     }
 }

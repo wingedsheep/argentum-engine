@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting
 
+import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -409,6 +410,26 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val player: Player = Player.You
     ) : EventPattern {
         override val description: String = "${player.description} scries or surveils"
+    }
+
+    /**
+     * Whenever [player] performs one of the four elemental bending keyword actions in [types]
+     * (CR 701.65b Airbend / 701.66b Earthbend / 701.67c Waterbend / 702.189b Firebending). Fires
+     * once per bend. The default [types] set is all four, backing "Whenever you waterbend,
+     * earthbend, firebend, or airbend, …" (Avatar Aang); pass a narrower set for a single-element
+     * variant ("whenever you earthbend, …"). See [com.wingedsheep.sdk.dsl.Triggers.YouBend].
+     */
+    @SerialName("BendPerformedEvent")
+    @Serializable
+    data class BendPerformedEvent(
+        val player: Player = Player.You,
+        val types: Set<BendType> = BendType.ALL
+    ) : EventPattern {
+        override val description: String = "${player.description} " + when {
+            types == BendType.ALL -> "waterbends, earthbends, firebends, or airbends"
+            types.size == 1 -> "${types.first().oracleVerb}s"
+            else -> types.joinToString(", ") { "${it.oracleVerb}s" }
+        }
     }
 
     /**

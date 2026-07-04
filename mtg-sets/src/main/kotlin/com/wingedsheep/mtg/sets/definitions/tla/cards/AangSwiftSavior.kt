@@ -102,7 +102,9 @@ private val AangSwiftSaviorFront = card("Aang, Swift Savior") {
             // Spell branch: airbend "exiles it" — this is NOT a counter (so it works on spells that
             // can't be countered and fires no "spell was countered" trigger). Exile the spell from
             // the stack; its owner may recast it for {2} via the same fixed-alternative-cost grant.
-            effect = Effects.ExileTargetSpell(fixedAlternativeManaCost = ManaCost.parse("{2}")),
+            // AirbendSpell also fires "whenever you airbend" once the spell is exiled (CR 701.65b),
+            // so this counts toward Avatar Aang's four-bend trigger.
+            effect = Effects.AirbendSpell(ManaCost.parse("{2}")),
             // Permanent branch: the normal airbend exile + {2}-recast-to-owner.
             elseEffect = Effects.Airbend()
         )

@@ -410,6 +410,18 @@ class TriggerAbilityResolver(
                     }
                 }
 
+                // "This permanent has all activated and triggered abilities of the last chosen card
+                // exiled with it" (Koh, the Face Stealer): the chosen card's triggered abilities fire
+                // from this permanent, so it gains e.g. the chosen creature's attack/ETB/dies triggers.
+                is com.wingedsheep.sdk.scripting.HasAbilitiesOfChosenLinkedExiledCard ->
+                    if (ability.grantTriggered) {
+                        result.addAll(
+                            com.wingedsheep.engine.legalactions.utils.chosenLinkedExiledTriggeredAbilities(
+                                state, entityId, cardRegistry
+                            )
+                        )
+                    }
+
                 else -> {}
             }
         }

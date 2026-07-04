@@ -27,6 +27,7 @@ import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredEverComponent
 import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.EmblemSourceComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -315,6 +316,10 @@ class TriggerDetector(
         // Duplicate triggers caused by a creature being declared as an attacker (Windcrag Siege's
         // Mardu mode). The attack-cause analogue of duplicateETBTriggers.
         duplicateAttackTriggers(state, events, triggers)
+
+        // Duplicate death/leave-the-battlefield triggers caused by a creature dying (Teysa Karlov;
+        // The Masamune's granted ability). The death-cause analogue of duplicateAttackTriggers.
+        duplicateDeathTriggers(state, events, triggers)
 
         // Duplicate triggers for "all triggers from a filtered source trigger again" static
         // abilities (e.g., Twinflame Travelers). For each pending trigger whose source matches
@@ -2778,6 +2783,131 @@ class TriggerDetector(
         }
 
         triggers.addAll(duplicates)
+    }
+
+    /**
+     * Duplicate death/leave-the-battlefield triggers for [AdditionalDeathTriggers] static abilities
+     * (Teysa Karlov; The Masamune's granted ability). The death-cause analogue of
+     * [duplicateAttackTriggers]: for each creature put into a graveyard from the battlefield this
+     * batch, a scoped source's triggered ability that fired *from that death* triggers an additional
+     * time per doubler.
+     *
+     * Only *death/leave-the-battlefield* triggers are doubled ("dies", "leaves the battlefield" by
+     * dying) - abilities responding to the event that *caused* the death (e.g. "whenever you
+     * sacrifice a creature") are not doubled, per the printed rulings. That falls out naturally:
+     * their EventPattern is not a battlefield-exit [EventPattern.ZoneChangeEvent], so
+     * [isDeathCausedTrigger] rejects them.
+     *
+     * Multiple copies are additive: N doublers add N extra firings of each affected trigger (N+1
+     * total), matching the rulings (two Masamunes on emblems -> three firings, not four).
+     *
+     * Known limitation: a scoped source's own "when this creature dies" trigger fired by *that same
+     * source* dying is not doubled - once the source is in the graveyard the doubler's attachment to
+     * it is no longer exposed to the (post-death) trigger pipeline. See [AdditionalDeathTriggers].
+     */
+    private fun duplicateDeathTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        if (triggers.isEmpty()) return
+
+        // Creatures put into a graveyard from the battlefield this batch, taking continuous effects
+        // into account via last-known type line (an animated land that dies counts, CR 700.4).
+        val dyingCreatures = events.filterIsInstance<ZoneChangeEvent>()
+            .filter { it.fromZone == Zone.BATTLEFIELD && it.toZone == Zone.GRAVEYARD }
+            .filter { it.lastKnown?.typeLine?.isCreature == true }
+            .map { it.entityId }
+            .toSet()
+        if (dyingCreatures.isEmpty()) return
+
+        val registry = cardRegistry
+        val projected = state.projectedState
+
+        data class DeathDoubler(
+            val sourceId: EntityId,
+            val controllerId: EntityId,
+            val ability: AdditionalDeathTriggers,
+        )
+        val doublers = mutableListOf<DeathDoubler>()
+        for (permanentId in state.getBattlefield()) {
+            val container = state.getEntity(permanentId) ?: continue
+            val card = container.get<CardComponent>() ?: continue
+            if (container.has<FaceDownComponent>()) continue
+            val controllerId = projected.getController(permanentId) ?: continue
+            val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
+            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+            for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
+                val unwrapped: AdditionalDeathTriggers? = when (ability) {
+                    is AdditionalDeathTriggers -> ability
+                    is ConditionalStaticAbility ->
+                        (ability.ability as? AdditionalDeathTriggers)?.takeIf {
+                            conditionEvaluator.evaluate(
+                                state, ability.condition,
+                                EffectContext(sourceId = permanentId, controllerId = controllerId)
+                            )
+                        }
+                    else -> null
+                }
+                if (unwrapped != null) doublers.add(DeathDoubler(permanentId, controllerId, unwrapped))
+            }
+        }
+        if (doublers.isEmpty()) return
+
+        val duplicates = mutableListOf<PendingTrigger>()
+        val originals = triggers.toList()
+        for (doubler in doublers) {
+            val attachedCreatureId =
+                if (doubler.ability.attachedCreature) {
+                    state.getEntity(doubler.sourceId)?.get<AttachedToComponent>()?.targetId
+                } else null
+            val controlledFilter = doubler.ability.permanentsYouControl
+            for (trigger in originals) {
+                if (trigger.controllerId != doubler.controllerId) continue
+                if (!isDeathCausedTrigger(trigger, dyingCreatures)) continue
+                val src = trigger.sourceId
+                val inScope = when {
+                    attachedCreatureId != null && src == attachedCreatureId -> true
+                    controlledFilter != null && src in state.getBattlefield() &&
+                        predicateEvaluator.matches(
+                            state, projected, src, controlledFilter,
+                            PredicateContext(controllerId = doubler.controllerId, sourceId = doubler.sourceId)
+                        ) -> true
+                    doubler.ability.includeEmblems && isEmblemOwnedBy(state, src, doubler.controllerId) -> true
+                    else -> false
+                }
+                if (inScope) duplicates.add(trigger)
+            }
+        }
+        triggers.addAll(duplicates)
+    }
+
+    /**
+     * A pending trigger is "death-caused" when its [EventPattern] responds to a permanent being put
+     * into a graveyard from the battlefield (dies / leaves-the-battlefield-by-dying) and the specific
+     * triggering entity is one of the creatures that died this batch. Batch "creatures you control
+     * died" triggers are inherently death-caused. Sacrifice/destroy triggers use non-battlefield-exit
+     * patterns and so never match here.
+     */
+    private fun isDeathCausedTrigger(trigger: PendingTrigger, dyingCreatures: Set<EntityId>): Boolean {
+        return when (val pattern = trigger.ability.trigger) {
+            is EventPattern.ZoneChangeEvent -> {
+                if (pattern.from != Zone.BATTLEFIELD) return false
+                if (pattern.to != null && pattern.to != Zone.GRAVEYARD) return false
+                trigger.triggerContext.triggeringEntityId in dyingCreatures
+            }
+            is EventPattern.CreatureDealtDamageBySourceDiesEvent ->
+                trigger.triggerContext.triggeringEntityId in dyingCreatures
+            is EventPattern.CreaturesYouControlDiedEvent -> true
+            else -> false
+        }
+    }
+
+    /** True if [entityId] is an emblem (synthetic [EmblemSourceComponent] source) owned by [controllerId]. */
+    private fun isEmblemOwnedBy(state: GameState, entityId: EntityId, controllerId: EntityId): Boolean {
+        val container = state.getEntity(entityId) ?: return false
+        if (container.get<EmblemSourceComponent>() == null) return false
+        return container.get<ControllerComponent>()?.playerId == controllerId
     }
 
     /**

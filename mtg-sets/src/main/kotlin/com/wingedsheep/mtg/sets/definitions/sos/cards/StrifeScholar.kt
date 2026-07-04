@@ -45,7 +45,8 @@ val StrifeScholar = card("Strife Scholar") {
                 toughness = 2,
                 colors = setOf(Color.RED, Color.WHITE),
                 creatureTypes = setOf("Spirit"),
-                count = 2
+                count = 2,
+                imageUri = "https://cards.scryfall.io/normal/front/8/7/877f7ddb-ed70-41a0-b845-d9bf8ac65f9b.jpg?1775828448"
             )
         }
     }
