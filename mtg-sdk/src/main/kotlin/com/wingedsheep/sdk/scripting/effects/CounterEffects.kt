@@ -46,6 +46,33 @@ data class AddDynamicCountersEffect(
 }
 
 /**
+ * Put a player-chosen number (0 up to [max]) of a single kind of counter on a target.
+ * "Put up to three lore counters on it." (Esper Terra) — "Put up to two +1/+1 counters on
+ * target creature."
+ *
+ * The additive, single-kind mirror of [RemoveAnyNumberOfCountersEffect]: at resolution the
+ * executor prompts the effect's controller with one `ChooseNumberDecision` (0..[max], evaluated
+ * once at resolution) and then places that many [counterType] counters on the target through the
+ * standard counter-placement chokepoint — so counter-placement replacement effects (Hardened
+ * Scales) and downstream triggers (Saga chapter abilities off lore counters) fire normally.
+ * No-op when the target can't receive counters or [max] resolves to <= 0. Choosing 0 places none.
+ *
+ * @property counterType Which counter kind to place (e.g. [com.wingedsheep.sdk.core.Counters.LORE]).
+ * @property max Ceiling on the controller's choice (a [DynamicAmount] so "up to X" is expressible).
+ * @property target The permanent to put counters on.
+ */
+@SerialName("AddCountersUpTo")
+@Serializable
+data class AddCountersUpToEffect(
+    val counterType: String,
+    val max: DynamicAmount,
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String =
+        "Put up to ${max.description} $counterType counter${if (max is DynamicAmount.Fixed && max.amount == 1) "" else "s"} on ${target.description}"
+}
+
+/**
  * Put all counters that were on the triggering source onto a target.
  * "When this creature dies, put its counters on target creature you control."
  *

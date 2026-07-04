@@ -30,6 +30,7 @@ class MiscContinuationResumer(
         resumer(CopyActivatedAbilityTargetContinuation::class, ::resumeCopyActivatedAbilityTarget),
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
         resumer(RemoveAnyNumberOfCountersContinuation::class, ::resumeRemoveAnyNumberOfCounters),
+        resumer(AddCountersUpToContinuation::class, ::resumeAddCountersUpTo),
         resumer(ConvertCountersToTokensContinuation::class, ::resumeConvertCountersToTokens),
         resumer(MoveChosenCountersToTargetContinuation::class, ::resumeMoveChosenCountersToTarget),
         resumer(ProliferateContinuation::class, ::resumeProliferate),
@@ -110,6 +111,41 @@ class MiscContinuationResumer(
         if (!stackResult.isSuccess) return stackResult
 
         return checkForMore(stackResult.newState, stackResult.events)
+    }
+
+    private fun resumeAddCountersUpTo(
+        state: GameState,
+        continuation: AddCountersUpToContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number chosen response for AddCountersUpTo")
+        }
+
+        val chosen = response.number
+        if (chosen <= 0) {
+            return checkForMore(state, emptyList())
+        }
+
+        // Place the chosen counters through the standard AddCountersEffect path so
+        // counter-placement replacement effects and downstream (Saga chapter) triggers fire.
+        val addEffect = com.wingedsheep.sdk.scripting.effects.AddCountersEffect(
+            counterType = continuation.counterType,
+            count = chosen,
+            target = com.wingedsheep.sdk.scripting.targets.EffectTarget.SpecificEntity(continuation.targetId)
+        )
+        val addContext = EffectContext(
+            sourceId = continuation.sourceId,
+            controllerId = continuation.controllerId,
+        )
+        val result = services.effectExecutorRegistry.execute(state, addEffect, addContext).toExecutionResult()
+
+        if (result.isPaused) {
+            return result
+        }
+
+        return checkForMore(result.state, result.events.toList())
     }
 
     private fun resumeDrawUpTo(

@@ -117,6 +117,7 @@ class PermanentExecutors(
         // counters
         AddCountersExecutor(),
         AddDynamicCountersExecutor(),
+        com.wingedsheep.engine.handlers.effects.permanent.counters.AddCountersUpToExecutor(),
         MoveAllLastKnownCountersExecutor(),
         AddCountersToCollectionExecutor(),
         DoubleCountersExecutor(),

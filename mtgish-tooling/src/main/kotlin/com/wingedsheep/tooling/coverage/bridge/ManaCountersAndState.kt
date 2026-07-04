@@ -46,6 +46,12 @@ internal fun BridgeBuilder.manaCountersAndState() {
     envelope("PutCounters", "put-counter envelope — the real action is the nested _PutCountersAction variant")
     // "Put a / N +1/+1 (or keyword) counter(s) on <permanent>" -> AddCounters / AddDynamicCounters.
     effects("ACounterOfTypeOnPermanent", "NumberCountersOfTypeOnPermanent", tag = "AddCounters", note = UNIVERSAL)
+    // "Put up to N counters of a type on <permanent>" (Esper Terra's lore chapters) -> AddCountersUpTo,
+    // the additive/player-chosen mirror of the RemoveAnyNumberOfCounters family. Capability-only: the
+    // put-up-to-N shape is a value-selection prompt the emitter declines to render (-> SCAFFOLD), per
+    // the module's "chosen values" policy.
+    effect("UptoNumberCountersOfTypeOnPermanent", "AddCountersUpTo",
+        "put up to N counters of a type on a permanent — player chooses 0..N (Esper Terra)")
     // "Put a / N counter(s) on each <filter>" — the mass form, ForEachInGroup(AddCounters) over the
     // recovered group filter or the just-created tokens (Bounding Felidar, Germination Practicum).
     composed("ACounterOfTypeOnEachPermanent", "ForEachInGroup(AddCounters) over a group filter",

@@ -186,6 +186,26 @@ data class RemoveAnyNumberOfCountersContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller picks how many counters (0..max) to put on a target, for
+ * `AddCountersUpToEffect` ("Put up to N [counterType] counters on target" — Esper Terra's lore
+ * chapters). The chosen count is placed through the standard `AddCountersEffect` path so
+ * counter-placement replacements and downstream (Saga chapter) triggers fire. Choosing 0 is a no-op.
+ *
+ * @property targetId The permanent to put counters on
+ * @property controllerId The player who made the choice
+ * @property counterType The counter kind to place
+ * @property sourceId Source emitting the effect (for the placement context)
+ */
+@Serializable
+data class AddCountersUpToContinuation(
+    override val decisionId: String,
+    val targetId: EntityId,
+    val controllerId: EntityId,
+    val counterType: String,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
  * Resume after the controller picks how many counters of one kind to move from a
  * [sourceId] permanent onto a [destinationId] permanent. The executor for
  * `MoveChosenCountersToTargetEffect` issues one decision per counter kind on the source;

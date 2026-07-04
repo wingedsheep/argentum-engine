@@ -654,6 +654,14 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 
 - `AddCounters(type, count, target)` — add N counters of `type`.
 - `AddDynamicCounters(type, amount, target)` — count is computed at resolution.
+- `AddCountersUpTo(type, max, target)` — the effect's controller **chooses** how many (0 up to `max`, a
+  `DynamicAmount` so "up to X" works) counters of `type` to put on the target, via one `ChooseNumberDecision`
+  at resolution. The additive, single-kind mirror of `RemoveAnyNumberOfCounters` / `RemoveCountersUpTo`;
+  placement goes through the normal `AddCounters` chokepoint, so counter-placement replacements (Hardened
+  Scales) and downstream triggers (Saga chapter abilities off lore counters) fire. No-op when the target
+  can't receive counters or `max` ≤ 0; choosing 0 places none. Esper Terra's "if it's a Saga, put up to three
+  lore counters on it" = `ConditionalEffect(CollectionContainsMatch(CREATED_TOKENS, Enchantment.withSubtype(SAGA)),
+  AddCountersUpTo(Counters.LORE, 3, PipelineTarget(CREATED_TOKENS)))`.
 - **Stat counters and the layer system.** Counters whose `type` is a P/T stat counter modify power/toughness in
   layer 7c (CR 613.4c) via `EffectApplicator.applyCounters`. The symmetric pair is `Counters.PLUS_ONE_PLUS_ONE` /
   `Counters.MINUS_ONE_MINUS_ONE`; the asymmetric counters `Counters.PLUS_ONE_PLUS_ZERO` (`+1/+0`),

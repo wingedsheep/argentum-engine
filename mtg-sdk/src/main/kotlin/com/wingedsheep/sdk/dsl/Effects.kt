@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.AddCardTypeEffect
 import com.wingedsheep.sdk.scripting.effects.CantBeRegeneratedEffect
 import com.wingedsheep.sdk.scripting.effects.OpenLifeBidEffect
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
+import com.wingedsheep.sdk.scripting.effects.AddCountersUpToEffect
 import com.wingedsheep.sdk.scripting.effects.AddDynamicCountersEffect
 import com.wingedsheep.sdk.scripting.effects.MoveAllLastKnownCountersEffect
 import com.wingedsheep.sdk.scripting.effects.AddSubtypeEffect
@@ -1441,6 +1442,18 @@ object Effects {
      */
     fun AddDynamicCounters(counterType: String, amount: DynamicAmount, target: EffectTarget): Effect =
         AddDynamicCountersEffect(counterType, amount, target)
+
+    /**
+     * Put a player-chosen number (0 up to [max]) of a single kind of counter on a target.
+     * "Put up to N [counterType] counters on target" — the additive mirror of
+     * [Effects.RemoveCountersUpTo] / [RemoveAnyNumberOfCountersEffect].
+     */
+    fun AddCountersUpTo(counterType: String, max: Int, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        AddCountersUpToEffect(counterType, DynamicAmount.Fixed(max), target)
+
+    /** [AddCountersUpTo] with a dynamic ceiling ("put up to X counters"). */
+    fun AddCountersUpTo(counterType: String, max: DynamicAmount, target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        AddCountersUpToEffect(counterType, max, target)
 
     /**
      * Put every counter that was on the triggering source onto a target.

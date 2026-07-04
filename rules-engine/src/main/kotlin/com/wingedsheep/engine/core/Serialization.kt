@@ -271,6 +271,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TypecycleSearchContinuation::class)
         subclass(DistributeCountersContinuation::class)
         subclass(RemoveAnyNumberOfCountersContinuation::class)
+        subclass(AddCountersUpToContinuation::class)
         subclass(MoveChosenCountersToTargetContinuation::class)
         subclass(ProliferateContinuation::class)
         subclass(RingTemptContinuation::class)
