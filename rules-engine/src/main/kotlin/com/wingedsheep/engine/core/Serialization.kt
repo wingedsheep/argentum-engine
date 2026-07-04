@@ -411,6 +411,7 @@ val engineSerializersModule = SerializersModule {
         subclass(GraveyardPlayPermissionUsedComponent::class)
         subclass(ExileEntryTurnComponent::class)
         subclass(LinkedExileComponent::class)
+        subclass(com.wingedsheep.engine.state.components.battlefield.ChosenLinkedExileComponent::class)
         subclass(com.wingedsheep.engine.state.components.battlefield.NotedExileComponent::class)
         subclass(CraftedFromExiledComponent::class)
         subclass(MayCastFromLinkedExileUsedThisTurnComponent::class)

@@ -2330,6 +2330,19 @@ class ActivateAbilityHandler(
                     }
                     continue
                 }
+                // "This permanent has all activated and triggered abilities of the last chosen card
+                // exiled with it" (Koh, the Face Stealer). Self-scoped: only the source receives the
+                // chosen card's *activated* abilities here (triggered ones flow through
+                // TriggerAbilityResolver), with the source recorded as granter so `{T}`/self-references
+                // bind to it.
+                if (ability is com.wingedsheep.sdk.scripting.HasAbilitiesOfChosenLinkedExiledCard) {
+                    if (ability.grantActivated && permanentId == entityId) {
+                        for (granted in com.wingedsheep.engine.legalactions.utils.chosenLinkedExiledActivatedAbilities(state, permanentId, cardRegistry)) {
+                            result.add(granted to entityId)
+                        }
+                    }
+                    continue
+                }
                 if (ability !is GrantActivatedAbility) continue
                 when (ability.filter.scope) {
                     is Scope.Battlefield -> {

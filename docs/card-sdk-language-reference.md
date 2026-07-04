@@ -516,6 +516,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `ExileUntilLeaves(target)` — linked exile; returns when source leaves the battlefield.
 - `ExileWithAurasNotingCounters(target = ContextTarget(0))` / `ReturnNotedExileTappedWithAuras()` — the state-preserving "blink that remembers counters and Auras" pair (Tawnos's Coffin). The exile half exiles the target creature **and all Auras attached to it** (all linked to the source via `LinkedExileComponent`) and records the creature's identity + its `kind→count` counter snapshot on the source via `NotedExileComponent` (captures the Auras *before* exiling the creature, so the unattached-Aura SBA can't pre-empt them). The return half (a no-op when nothing is noted, so it's safe to fire from **both** a `LeavesBattlefield` and a `BecomesUntapped` trigger — whichever fires first returns the cards) returns the noted creature **tapped under its owner's control** with the noted counters restored, then returns the linked Auras attached to it; Auras that can't legally re-attach go to their owners' graveyards via the CR 704.5m unattached-Aura SBA (the "If you don't …" fallback). `NotedExileComponent` is preserved across the source's own zone change (like `LinkedExileComponent`) so the leaves-the-battlefield return still reads it, and stripped on battlefield re-entry (Rule 400.7).
 - `ExileLinkedToSource(target)` — exile a target **permanently** and record it in the source's linked-exile pile (`LinkedExileComponent`). Unlike `ExileUntilLeaves` there's no automatic return — the link just lets later abilities reference the exiled card (Territory Forge's "this permanent has all activated abilities of the exiled card").
+- `RecordChosenLinkedExile(from)` — stamp the source's `ChosenLinkedExileComponent` with the first card in the pipeline collection `from` (its "last chosen card"). Pair after a `SelectFromCollection` over `CardSource.FromLinkedExile()` so a `HasAbilitiesOfChosenLinkedExiledCard` static ability grants the source that card's activated and triggered abilities (Koh, the Face Stealer's "Pay 1 life: Choose a creature card exiled with Koh").
 - `ExileGroupAndLink(filter, storeAs?)` — exile all matching permanents into source's linked exile pile.
 - `ExileFromTopRepeating(count, repeatCondition)` — keep exiling top cards while a condition holds.
 - `ExileLibraryUntilManaValue(manaValue)` — exile from library until mana value ≤ N.
@@ -3794,6 +3795,19 @@ staticAbility {
       `HasAllActivatedAbilitiesOfLinkedExiledCard(GroupFilter.AllCreaturesYouControl.withCounter(Counters.PLUS_ONE_PLUS_ONE), creatureCardsOnly = true)`).
     - `creatureCardsOnly = true` restricts the source pile to *creature* cards (the exiled card's
       printed type), for the "all **creature** cards exiled with" wording.
+- `HasAbilitiesOfChosenLinkedExiledCard(grantActivated = true, grantTriggered = true)` — the source
+  permanent has all **activated and/or triggered abilities of the single card it most recently *chose***
+  from its linked-exile pile (its "last chosen card", stamped by
+  `Effects.RecordChosenLinkedExile(from)`). The self-scoped, one-card, activated-**and**-triggered
+  sibling of `HasAllActivatedAbilitiesOfLinkedExiledCard`: it reads the source's
+  `ChosenLinkedExileComponent` and re-reads it live, so re-choosing a different exiled card swaps which
+  abilities the source has. Granted abilities use the source as their own source (`{T}`/self-references
+  bind to it). Use the two flags to grant activated abilities, triggered abilities, or both; it never
+  grants static, keyword, or replacement abilities. Pair with `Effects.ExileLinkedToSource(target)` to
+  fill the pile, then a `SelectFromCollection` over `CardSource.FromLinkedExile()` +
+  `Effects.RecordChosenLinkedExile(...)` to choose. (Koh, the Face Stealer — "Pay 1 life: Choose a
+  creature card exiled with Koh. Koh has all activated and triggered abilities of the last chosen card"
+  → `HasAbilitiesOfChosenLinkedExiledCard()`.)
 - `SuppressEntersTriggers(filter = GameObjectFilter.Creature)` — permanents matching `filter`
   entering the battlefield don't cause abilities to trigger (CR 603.6 enters-the-battlefield
   triggers). Suppresses both the entering permanent's *own* ETB triggers and any other permanent's

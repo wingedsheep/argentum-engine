@@ -983,6 +983,17 @@ class CastPermissionUtils(
                     }
                     continue
                 }
+                // "This permanent has all activated and triggered abilities of the last chosen card
+                // exiled with it" (Koh, the Face Stealer): self-scoped grant of the chosen card's
+                // *activated* abilities to the source, which is recorded as granter.
+                if (ability is com.wingedsheep.sdk.scripting.HasAbilitiesOfChosenLinkedExiledCard) {
+                    if (ability.grantActivated && permanentId == entityId) {
+                        for (granted in chosenLinkedExiledActivatedAbilities(state, permanentId, cardRegistry)) {
+                            result.add(StaticGrantedAbility(granted, entityId))
+                        }
+                    }
+                    continue
+                }
                 if (ability !is com.wingedsheep.sdk.scripting.GrantActivatedAbility) continue
                 when (val scope = ability.filter.scope) {
                     is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield -> {
@@ -1203,3 +1214,43 @@ fun linkedExiledActivatedAbilities(
         cardDef?.script?.activatedAbilities ?: emptyList()
     }
 }
+
+/**
+ * The [com.wingedsheep.sdk.model.CardDefinition] of the single card the source most recently chose
+ * from its linked-exile pile — its "last chosen card" per [ChosenLinkedExileComponent] — or null if
+ * it has never chosen, or the chosen card is no longer in exile (last-known safety guard). Backs
+ * [com.wingedsheep.sdk.scripting.HasAbilitiesOfChosenLinkedExiledCard] (Koh, the Face Stealer).
+ */
+fun chosenLinkedExiledCardDef(
+    state: GameState,
+    sourceId: EntityId,
+    cardRegistry: CardRegistry
+): com.wingedsheep.sdk.model.CardDefinition? {
+    val chosenId = state.getEntity(sourceId)
+        ?.get<com.wingedsheep.engine.state.components.battlefield.ChosenLinkedExileComponent>()
+        ?.chosenId ?: return null
+    // The chosen card must still be in exile — nothing normally removes it from Koh's pile, but
+    // guard so a card that somehow left doesn't keep lending abilities.
+    val stillExiled = state.zones.any { (zone, cards) ->
+        zone.zoneType == com.wingedsheep.sdk.core.Zone.EXILE && chosenId in cards
+    }
+    if (!stillExiled) return null
+    val card = state.getEntity(chosenId)?.get<CardComponent>() ?: return null
+    return cardRegistry.getCard(card.cardDefinitionId)
+}
+
+/** The activated abilities of the source's last chosen linked-exiled card (empty if none). */
+fun chosenLinkedExiledActivatedAbilities(
+    state: GameState,
+    sourceId: EntityId,
+    cardRegistry: CardRegistry
+): List<com.wingedsheep.sdk.scripting.ActivatedAbility> =
+    chosenLinkedExiledCardDef(state, sourceId, cardRegistry)?.script?.activatedAbilities ?: emptyList()
+
+/** The triggered abilities of the source's last chosen linked-exiled card (empty if none). */
+fun chosenLinkedExiledTriggeredAbilities(
+    state: GameState,
+    sourceId: EntityId,
+    cardRegistry: CardRegistry
+): List<com.wingedsheep.sdk.scripting.TriggeredAbility> =
+    chosenLinkedExiledCardDef(state, sourceId, cardRegistry)?.script?.triggeredAbilities ?: emptyList()

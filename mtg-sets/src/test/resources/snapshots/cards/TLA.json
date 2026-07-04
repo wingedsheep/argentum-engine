@@ -11897,6 +11897,122 @@
     ]
 }
 
+// Koh, the Face Stealer
+{
+    "name": "Koh, the Face Stealer",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Creature — Shapeshifter Spirit",
+    "oracleText": "When Koh enters, exile up to one other target creature.\nWhenever another nontoken creature dies, you may exile it.\nPay 1 life: Choose a creature card exiled with Koh.\nKoh has all activated and triggered abilities of the last chosen card.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "up to one other target creature"
+                    },
+                    "destination": "Exile",
+                    "linkToSource": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true
+                    },
+                    "id": "up to one other target creature"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "inlineOnTrigger": true
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Exile",
+                        "linkToSource": true
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomPayLife",
+                        "amount": 1
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "koh_exile"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "koh_exile",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature",
+                            "storeSelected": "koh_chosen",
+                            "prompt": "Choose a creature card exiled with Koh"
+                        },
+                        {
+                            "type": "RecordChosenLinkedExile",
+                            "from": "koh_chosen"
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            "HasAbilitiesOfChosenLinkedExiledCard"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "MYTHIC",
+        "artist": "Eduardo Francisco",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28f6fa32-5058-4c29-9ba8-9d8f2057eb6d.jpg?1764120741"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Kyoshi Battle Fan
 {
     "name": "Kyoshi Battle Fan",

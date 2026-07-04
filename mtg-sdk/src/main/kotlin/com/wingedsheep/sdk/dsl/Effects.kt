@@ -866,6 +866,16 @@ object Effects {
         MoveToZoneEffect(target, Zone.EXILE, linkToSource = true)
 
     /**
+     * Record the card selected into the pipeline collection [from] as the source's "last chosen
+     * card" (stamps `ChosenLinkedExileComponent`). Pair after a [SelectFromCollection] over the
+     * source's linked-exile pile so a [com.wingedsheep.sdk.scripting.HasAbilitiesOfChosenLinkedExiledCard]
+     * static ability can grant the source that card's activated and triggered abilities
+     * (Koh, the Face Stealer).
+     */
+    fun RecordChosenLinkedExile(from: String): Effect =
+        com.wingedsheep.sdk.scripting.effects.RecordChosenLinkedExileEffect(from)
+
+    /**
      * Exile all permanents matching a filter that the controller controls and link
      * them to the source permanent. Used for Day of the Dragons-style effects.
      * The count is available as DynamicAmount.VariableReference("{storeAs}_count").

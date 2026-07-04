@@ -15,6 +15,7 @@ class LinkedExileExecutors : ExecutorModule {
         MarkExileOnDeathExecutor(),
         MarkExileControllerGraveyardOnDeathExecutor(),
         ReturnOneFromLinkedExileExecutor(),
-        ReturnNotedExileTappedWithAurasExecutor()
+        ReturnNotedExileTappedWithAurasExecutor(),
+        RecordChosenLinkedExileExecutor()
     )
 }

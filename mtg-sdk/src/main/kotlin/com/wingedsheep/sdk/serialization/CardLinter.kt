@@ -196,7 +196,7 @@ object CardLinter {
             "GrantPlayWithAdditionalCost", "GrantPlayWithCostIncrease", "FilterCollection",
             "StoreCardName", "CastFromCollectionWithoutPayingCost",
             "CastAnyNumberFromCollectionWithoutPayingCost", "ExileFromStorage",
-            "CopyCollectionIntoCollection",
+            "CopyCollectionIntoCollection", "RecordChosenLinkedExile",
         )) put(type to "from", read(Space.COLLECTION))
         put("ChoosePile" to "pileA", read(Space.COLLECTION))
         put("ChoosePile" to "pileB", read(Space.COLLECTION))

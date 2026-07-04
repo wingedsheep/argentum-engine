@@ -864,6 +864,7 @@ class StaticAbilityHandler(
             is ExtraLoyaltyActivation,
             is GrantActivatedAbility,
             is HasAllActivatedAbilitiesOfLinkedExiledCard,
+            is com.wingedsheep.sdk.scripting.HasAbilitiesOfChosenLinkedExiledCard,
             is GainActivatedAbilitiesOfPermanents,
             is SpendAnyManaTypeForActivatedAbilities,
             is PreventActivatedAbilities,

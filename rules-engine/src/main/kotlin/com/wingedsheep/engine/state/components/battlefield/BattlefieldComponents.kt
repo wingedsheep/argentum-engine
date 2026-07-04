@@ -793,6 +793,23 @@ data class LinkedExileComponent(
 ) : Component
 
 /**
+ * The single card the source permanent most recently *chose* out of its [LinkedExileComponent] pile
+ * — the "last chosen card" of a choose-from-your-exile mechanic (Koh, the Face Stealer: "Pay 1 life:
+ * Choose a creature card exiled with Koh"). Stamped by
+ * [com.wingedsheep.engine.handlers.effects.linkedexile.RecordChosenLinkedExileExecutor] and read by a
+ * [com.wingedsheep.sdk.scripting.HasAbilitiesOfChosenLinkedExiledCard] static ability to grant the
+ * source that card's activated and triggered abilities. Re-choosing replaces [chosenId], live-swapping
+ * which abilities the source has.
+ *
+ * Not stripped on zone change; harmless if it lingers, since the granting static only reads it while
+ * the source is on the battlefield and the chosen card is still in exile.
+ */
+@Serializable
+data class ChosenLinkedExileComponent(
+    val chosenId: EntityId
+) : Component
+
+/**
  * State-preserving exile bookkeeping for "exile a creature, note its counters, re-attach its
  * Auras on return" effects (Tawnos's Coffin). Stored on the *source* permanent alongside its
  * [LinkedExileComponent] (which holds the principal + Aura entity ids).
