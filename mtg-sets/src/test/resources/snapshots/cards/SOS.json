@@ -1007,7 +1007,8 @@
                                 ],
                                 "keywords": [
                                     "FLYING"
-                                ]
+                                ],
+                                "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5b2df9c-228f-4441-a962-46b335bb356e.jpg?1782723481"
                             },
                             {
                                 "type": "GrantKeyword",
@@ -1940,7 +1941,8 @@
                     ],
                     "keywords": [
                         "FLYING"
-                    ]
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5b2df9c-228f-4441-a962-46b335bb356e.jpg?1782723481"
                 }
             }
         }
@@ -3573,7 +3575,8 @@
                     ],
                     "keywords": [
                         "FLYING"
-                    ]
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9deae5c-80d4-4701-b425-91853b7ee03b.jpg?1782741478"
                 }
             }
         ]
@@ -4294,6 +4297,7 @@
                             "keywords": [
                                 "FLYING"
                             ],
+                            "imageUri": "https://cards.scryfall.io/display/front/b/a/bab52920-9d67-4cd4-9015-6e645ff9764f.webp?1782723480",
                             "controller": {
                                 "type": "BoundVariable",
                                 "name": "target player"
@@ -4518,7 +4522,8 @@
                             ],
                             "creatureTypes": [
                                 "Fractal"
-                            ]
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b5f1fdb-04df-4224-acb4-7819c37565f5.jpg?1782723480"
                         },
                         {
                             "type": "AddCountersToCollection",
@@ -5074,7 +5079,8 @@
                     ],
                     "keywords": [
                         "FLYING"
-                    ]
+                    ],
+                    "imageUri": "https://cards.scryfall.io/display/front/b/a/bab52920-9d67-4cd4-9015-6e645ff9764f.webp?1782723480"
                 },
                 "activateFromZone": "Graveyard"
             }
@@ -6190,7 +6196,8 @@
                     ],
                     "creatureTypes": [
                         "Spirit"
-                    ]
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/0/d0f3bd3d-08cf-4783-ae31-03770c8be69c.jpg?1782723476"
                 }
             }
         ]
@@ -7125,6 +7132,7 @@
                     "keywords": [
                         "FLYING"
                     ],
+                    "imageUri": "https://cards.scryfall.io/display/front/b/a/bab52920-9d67-4cd4-9015-6e645ff9764f.webp?1782723480",
                     "controller": "TargetController"
                 }
             ]
@@ -7776,7 +7784,8 @@
                     ],
                     "keywords": [
                         "FLYING"
-                    ]
+                    ],
+                    "imageUri": "https://cards.scryfall.io/display/front/b/a/bab52920-9d67-4cd4-9015-6e645ff9764f.webp?1782723480"
                 }
             }
         ]
@@ -8102,7 +8111,8 @@
                             ],
                             "creatureTypes": [
                                 "Fractal"
-                            ]
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/d/e/de564776-9d88-4533-8717-842eecdd0594.jpg?1775828279"
                         },
                         {
                             "type": "ForEach",
@@ -10267,7 +10277,8 @@
                     ],
                     "keywords": [
                         "FLYING"
-                    ]
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5b2df9c-228f-4441-a962-46b335bb356e.jpg?1782723481"
                 },
                 {
                     "type": "Surveil",
@@ -15973,7 +15984,8 @@
                     ],
                     "creatureTypes": [
                         "Spirit"
-                    ]
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/8/7/877f7ddb-ed70-41a0-b845-d9bf8ac65f9b.jpg?1775828448"
                 }
             }
         }
