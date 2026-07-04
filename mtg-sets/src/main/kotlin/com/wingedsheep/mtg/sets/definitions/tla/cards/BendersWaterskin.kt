@@ -32,6 +32,7 @@ val BendersWaterskin = card("Bender's Waterskin") {
         rarity = Rarity.COMMON
         collectorNumber = "255"
         artist = "Dee Nguyen"
+        flavorText = "Katara's waterskin ensured that she would always have water for bending, healing, or drinking."
         imageUri = "https://cards.scryfall.io/normal/front/6/d/6d4a1712-d19e-4475-9614-a0b1af4da610.jpg?1764121885"
     }
 }

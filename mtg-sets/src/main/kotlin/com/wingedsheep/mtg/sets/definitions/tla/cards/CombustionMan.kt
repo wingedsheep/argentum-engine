@@ -69,6 +69,7 @@ val CombustionMan = card("Combustion Man") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "127"
         artist = "Pisukev"
+        flavorText = "\"The Avatar's alive. I want you to find him, and end him.\"\n—Zuko"
         imageUri = "https://cards.scryfall.io/normal/front/8/6/86f7399d-6876-4e85-ba34-ff1f97dc144a.jpg?1764120875"
     }
 }

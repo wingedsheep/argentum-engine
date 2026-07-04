@@ -72,6 +72,7 @@ private val AvatarKyoshi = card("Avatar Kyoshi") {
         rarity = Rarity.MYTHIC
         collectorNumber = "186"
         artist = "Thanh Tuấn"
+        flavorText = "\"Only justice will bring peace.\""
         imageUri = "https://cards.scryfall.io/normal/back/4/8/4887ce64-7c98-4bd7-95db-0c43ab71cc6e.jpg?1764846544"
     }
 }

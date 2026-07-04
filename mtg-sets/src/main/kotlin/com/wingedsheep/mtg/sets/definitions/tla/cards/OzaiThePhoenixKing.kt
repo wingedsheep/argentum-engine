@@ -37,8 +37,7 @@ val OzaiThePhoenixKing = card("Ozai, the Phoenix King") {
     typeLine = "Legendary Creature — Human Noble"
     power = 7
     toughness = 7
-    oracleText = "Trample, firebending 4, haste (Whenever this creature attacks, add {R}{R}{R}{R}. " +
-        "This mana lasts until end of combat.)\n" +
+    oracleText = "Trample, firebending 4, haste\n" +
         "If you would lose unspent mana, that mana becomes red instead.\n" +
         "Ozai has flying and indestructible as long as you have six or more unspent mana."
 

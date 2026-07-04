@@ -60,6 +60,7 @@ val HeartlessAct = card("Heartless Act") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "103"
         artist = "Sylvain Sarrailh"
+        flavorText = "\"Put a muzzle on him!\"\n—Si Wong Sandbender"
         imageUri = "https://cards.scryfall.io/normal/front/b/5/b57c57a8-d72b-4c6c-a2db-a7ef61190f42.jpg?1764120715"
     }
 }

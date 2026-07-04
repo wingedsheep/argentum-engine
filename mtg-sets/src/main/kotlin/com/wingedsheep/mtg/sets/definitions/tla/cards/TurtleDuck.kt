@@ -36,7 +36,7 @@ val TurtleDuck = card("Turtle-Duck") {
         rarity = Rarity.COMMON
         collectorNumber = "200"
         artist = "Sylvain Sarrailh"
-        flavorText = "\"A turtle-duckling's greatest defense comes not from their shell, but from their mother.\""
+        flavorText = "A turtle-duckling's greatest defense comes not from their shell, but from their mother."
         imageUri = "https://cards.scryfall.io/normal/front/a/e/aefcd734-3916-4c77-9d98-3ea2c2795658.jpg?1764121358"
     }
 }

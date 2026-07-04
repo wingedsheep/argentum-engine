@@ -40,6 +40,7 @@ val MaiJadedEdge = card("Mai, Jaded Edge") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "147"
         artist = "Toraji"
+        flavorText = "\"Finally, something to do.\""
         imageUri = "https://cards.scryfall.io/normal/front/7/3/732e6bc9-0798-4c00-aea0-5ef4298b45f5.jpg?1764121013"
     }
 }

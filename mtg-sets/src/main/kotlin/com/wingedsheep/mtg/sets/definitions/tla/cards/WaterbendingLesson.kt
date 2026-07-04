@@ -36,6 +36,7 @@ val WaterbendingLesson = card("Waterbending Lesson") {
         rarity = Rarity.COMMON
         collectorNumber = "80"
         artist = "Sylvain Sarrailh"
+        flavorText = "\"Just push and pull the water—like this.\"\n—Katara"
         imageUri = "https://cards.scryfall.io/normal/front/4/f/4f81e3b5-a0a9-4764-8c2d-b499ce1740b4.jpg?1764120543"
     }
 }

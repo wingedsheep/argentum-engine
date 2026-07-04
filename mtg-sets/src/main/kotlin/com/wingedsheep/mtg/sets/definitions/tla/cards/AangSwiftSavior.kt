@@ -68,6 +68,7 @@ private val AangAndLaOceansFury = card("Aang and La, Ocean's Fury") {
         rarity = Rarity.RARE
         collectorNumber = "204"
         artist = "Tetsuko"
+        flavorText = "With the death of the moon spirit, the Avatar's tides of vengeance crashed over the Fire Nation fleet."
         imageUri = "https://cards.scryfall.io/normal/back/8/2/82866a0e-485a-4f7e-8c49-f7d9ff3f4ad4.jpg?1778914119"
     }
 }

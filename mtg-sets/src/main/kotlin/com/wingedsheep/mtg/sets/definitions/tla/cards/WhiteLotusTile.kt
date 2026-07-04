@@ -47,6 +47,7 @@ val WhiteLotusTile = card("White Lotus Tile") {
         rarity = Rarity.MYTHIC
         collectorNumber = "262"
         artist = "Dee Nguyen"
+        flavorText = "\"Most people think the lotus tile insignificant, but it is essential for the unusual strategy that I employ.\"\n—Iroh"
         imageUri = "https://cards.scryfall.io/normal/front/1/d/1d70f9ec-fdc1-4219-b89b-c030d712c1fc.jpg?1764121931"
     }
 }

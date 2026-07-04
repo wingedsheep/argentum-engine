@@ -30,8 +30,7 @@ val IrohGrandLotus = card("Iroh, Grand Lotus") {
     typeLine = "Legendary Creature — Human Noble Ally"
     power = 5
     toughness = 5
-    oracleText = "Firebending 2 (Whenever this creature attacks, add {R}{R}. Until end of combat, " +
-        "you don't lose this mana as steps and phases end.)\n" +
+    oracleText = "Firebending 2\n" +
         "During your turn, each non-Lesson instant and sorcery card in your graveyard has flashback. " +
         "The flashback cost is equal to that card's mana cost. (You may cast a card from your " +
         "graveyard for its flashback cost. Then exile it.)\n" +

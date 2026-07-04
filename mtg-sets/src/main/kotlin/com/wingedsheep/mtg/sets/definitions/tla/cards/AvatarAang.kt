@@ -97,7 +97,7 @@ private val AangMasterOfElements = card("Aang, Master of Elements") {
 
 private val AvatarAangFront = card("Avatar Aang") {
     manaCost = "{R}{G}{W}{U}"
-    colorIdentity = "RGWU"
+    colorIdentity = "WUBRG"
     typeLine = "Legendary Creature — Human Avatar Ally"
     oracleText = "Flying, firebending 2\n" +
         "Whenever you waterbend, earthbend, firebend, or airbend, draw a card. Then if you've done " +
@@ -132,6 +132,7 @@ private val AvatarAangFront = card("Avatar Aang") {
         rarity = Rarity.MYTHIC
         collectorNumber = "207"
         artist = "Fahmi Fauzi"
+        flavorText = "When the world needed him most, the Avatar returned."
         imageUri = "https://cards.scryfall.io/normal/front/f/e/fe29e909-50e9-4f04-b1a3-2cc5d7e3efe8.jpg?1778914169"
     }
 }

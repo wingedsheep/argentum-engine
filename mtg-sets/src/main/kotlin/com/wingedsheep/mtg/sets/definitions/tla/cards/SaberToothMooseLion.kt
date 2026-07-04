@@ -21,7 +21,8 @@ val SaberToothMooseLion = card("Saber-Tooth Moose-Lion") {
     typeLine = "Creature — Elk Cat"
     power = 7
     toughness = 7
-    oracleText = "Reach\nForestcycling {2}"
+    oracleText = "Reach\nForestcycling {2} ({2}, Discard this card: Search your library for a " +
+        "Forest card, reveal it, put it into your hand, then shuffle.)"
 
     keywords(Keyword.REACH)
     keywordAbility(KeywordAbility.typecycling("Forest", ManaCost.parse("{2}")))

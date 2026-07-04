@@ -36,9 +36,7 @@ val BumiUnleashed = card("Bumi, Unleashed") {
     power = 5
     toughness = 4
     oracleText = "Trample\n" +
-        "When Bumi enters, earthbend 4. (Target land you control becomes a 0/0 creature with haste " +
-        "that's still a land. Put four +1/+1 counters on it. When it dies or is exiled, return it to " +
-        "the battlefield tapped.)\n" +
+        "When Bumi enters, earthbend 4.\n" +
         "Whenever Bumi deals combat damage to a player, untap all lands you control. After this " +
         "phase, there is an additional combat phase. Only land creatures can attack during that " +
         "combat phase."
