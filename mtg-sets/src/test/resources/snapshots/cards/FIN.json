@@ -5897,6 +5897,234 @@
     "colorIdentityOverride": []
 }
 
+// Emet-Selch, Unsundered
+{
+    "name": "Emet-Selch, Unsundered",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Legendary Creature — Elder Wizard",
+    "oracleText": "Vigilance\nWhenever Emet-Selch enters or attacks, draw a card, then discard a card.\nAt the beginning of your upkeep, if there are fourteen or more cards in your graveyard, you may transform Emet-Selch.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "ability_3",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": "Transform"
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 14
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Hades, Sorcerer of Eld",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Avatar",
+        "oracleText": "Vigilance\nEcho of the Lost — During your turn, you may play cards from your graveyard.\nIf a card or token would be put into your graveyard from anywhere, exile it instead.",
+        "creatureStats": {
+            "power": 6,
+            "toughness": 6
+        },
+        "keywords": [
+            "VIGILANCE"
+        ],
+        "script": {
+            "staticAbilities": [
+                "MayPlayLandsFromGraveyard",
+                {
+                    "type": "MayCastFromGraveyard",
+                    "filter": "nonland",
+                    "duringYourTurnOnly": true
+                }
+            ],
+            "replacementEffects": [
+                {
+                    "type": "RedirectZoneChange",
+                    "newDestination": "Exile",
+                    "appliesTo": {
+                        "type": "ZoneChangeEvent",
+                        "filter": "own:you",
+                        "to": "Graveyard"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "218",
+            "rarity": "MYTHIC",
+            "artist": "Néstor Ossandón Leal",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/5/75cf4eb8-33e7-4dfc-b890-a7e3b5c1b9d5.jpg?1782686432",
+            "rulings": [
+                {
+                    "date": "2025-06-06",
+                    "text": "While you control Hades, Sorcerer of Eld, abilities that trigger whenever a permanent you own is put into your graveyard from the battlefield (for example, \"When this creature dies . . .\") won't trigger."
+                },
+                {
+                    "date": "2025-06-06",
+                    "text": "If you discard a card while you control Hades, Sorcerer of Eld, abilities that function when a card is discarded (such as madness) still work, even though that card never reaches your graveyard. Spells or abilities that check the characteristics of a discarded card can find that card in exile."
+                },
+                {
+                    "date": "2025-06-06",
+                    "text": "You pay all costs and follow all timing rules for cards played with the permission granted by Hades, Sorcerer of Eld's second ability."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "MYTHIC",
+        "artist": "Néstor Ossandón Leal",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75cf4eb8-33e7-4dfc-b890-a7e3b5c1b9d5.jpg?1782686432",
+        "rulings": [
+            {
+                "date": "2025-06-06",
+                "text": "Emet-Selch's last ability checks your graveyard at the moment it would trigger to see if you have fourteen or more cards in your graveyard. If you don't, the ability won't trigger at all. If it does trigger, the ability will check again as it tries to resolve. If you don't have fourteen or more cards in your graveyard at that time, the ability won't resolve and none of its effects will happen."
+            },
+            {
+                "date": "2025-06-06",
+                "text": "The mana value of a nonmodal double-faced card is the mana value of its front face, no matter which face is up."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Ether
 {
     "name": "Ether",
