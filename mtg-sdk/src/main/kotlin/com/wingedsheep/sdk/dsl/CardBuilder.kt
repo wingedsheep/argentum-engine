@@ -1370,6 +1370,10 @@ class ActivatedAbilityBuilder {
     var genericCostReduction: DynamicAmount? = null
     /** Colors that may be spent on the `{X}` portion of this ability's cost (empty = any). */
     var xManaRestriction: Set<Color> = emptySet()
+    /** Minimum legal value for `{X}` in this ability's cost (set to 1 for "X can't be 0"). */
+    var minimumXValue: Int = 0
+    /** When true, this ability can't be copied by copy-ability effects (CR 707.10e). */
+    var cantBeCopied: Boolean = false
 
     // Named target bindings (for multi-target abilities)
     private val namedTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()
@@ -1419,7 +1423,9 @@ class ActivatedAbilityBuilder {
             isExhaust = isExhaust,
             holdPriority = holdPriority,
             genericCostReduction = genericCostReduction,
-            xManaRestriction = xManaRestriction
+            xManaRestriction = xManaRestriction,
+            minimumXValue = minimumXValue,
+            cantBeCopied = cantBeCopied
         )
     }
 }

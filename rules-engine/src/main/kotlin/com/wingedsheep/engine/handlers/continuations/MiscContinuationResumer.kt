@@ -28,6 +28,7 @@ class MiscContinuationResumer(
         resumer(CopyEachSpellContinuation::class, ::resumeCopyEachSpell),
         resumer(CopyTriggeredAbilityTargetContinuation::class, ::resumeCopyTriggeredAbilityTarget),
         resumer(CopyActivatedAbilityTargetContinuation::class, ::resumeCopyActivatedAbilityTarget),
+        resumer(CopyAbilityTargetContinuation::class, ::resumeCopyAbilityTarget),
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
         resumer(RemoveAnyNumberOfCountersContinuation::class, ::resumeRemoveAnyNumberOfCounters),
         resumer(AddCountersUpToContinuation::class, ::resumeAddCountersUpTo),
@@ -111,6 +112,56 @@ class MiscContinuationResumer(
         if (!stackResult.isSuccess) return stackResult
 
         return checkForMore(stackResult.newState, stackResult.events)
+    }
+
+    /**
+     * Resume the "copy target activated or triggered ability X times" loop (Gogo, Master of
+     * Mimicry) after the copier chooses new targets for one copy. Pushes that copy, then drives the
+     * remaining copies — which may pause again for the next copy's targets.
+     */
+    private fun resumeCopyAbilityTarget(
+        state: GameState,
+        continuation: CopyAbilityTargetContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is TargetsResponse) {
+            return ExecutionResult.error(state, "Expected target selection response for ability copy")
+        }
+
+        val selectedTargets = response.selectedTargets.entries
+            .sortedBy { it.key }
+            .flatMap { (_, targetIds) ->
+                targetIds.map { entityId -> entityIdToChosenTarget(state, entityId) }
+            }
+
+        // Push the copy whose targets were just chosen.
+        val push = com.wingedsheep.engine.handlers.effects.stack.CopyTargetSpellOrAbilityExecutor
+            .cloneAndPush(
+                state = state,
+                stackResolver = services.stackResolver,
+                abilityEntityId = continuation.abilityEntityId,
+                controllerId = continuation.controllerId,
+                targets = selectedTargets,
+                targetRequirements = continuation.targetRequirements
+            )
+        if (!push.isSuccess) return push
+
+        // Continue the loop for the remaining copies (may pause again for the next copy's targets).
+        val driveResult = com.wingedsheep.engine.handlers.effects.stack.CopyTargetSpellOrAbilityExecutor
+            .driveAbilityCopies(
+                state = push.newState,
+                stackResolver = services.stackResolver,
+                targetFinder = services.targetFinder,
+                abilityEntityId = continuation.abilityEntityId,
+                controllerId = continuation.controllerId,
+                copierSourceId = continuation.copierSourceId,
+                remainingCopies = continuation.remainingCopies - 1,
+                totalCopies = continuation.totalCopies,
+                priorEvents = push.events
+            )
+        return if (driveResult.isPaused) driveResult
+        else checkForMore(driveResult.newState, driveResult.events)
     }
 
     private fun resumeAddCountersUpTo(

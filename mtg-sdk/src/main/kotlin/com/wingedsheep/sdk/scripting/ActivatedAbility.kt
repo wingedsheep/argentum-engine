@@ -76,7 +76,21 @@ data class ActivatedAbility(
      * Master ("Spend only white mana on X"). Honored by the mana solver and the
      * activated-ability payment path.
      */
-    val xManaRestriction: Set<Color> = emptySet()
+    val xManaRestriction: Set<Color> = emptySet(),
+    /**
+     * Minimum legal value for the `{X}` in this ability's cost (CR 601.2b analogue for activated
+     * abilities). Defaults to 0. Set to 1 for "X can't be 0" abilities (Gogo, Master of Mimicry:
+     * "{X}{X}, {T}: … X can't be 0."). The activated-ability X-choice decision clamps its lower
+     * bound to this value.
+     */
+    val minimumXValue: Int = 0,
+    /**
+     * When true, this activated ability can't be copied by effects that copy abilities (CR 707.10e).
+     * The engine tags the ability instance on the stack with a can't-be-copied marker so a
+     * copy-ability effect (e.g. another Gogo, Master of Mimicry) produces no copy of it. Models
+     * "This ability can't be copied."
+     */
+    val cantBeCopied: Boolean = false
 ) : TextReplaceable<ActivatedAbility> {
     /** Backward-compatible secondary constructor for single-target abilities. */
     constructor(

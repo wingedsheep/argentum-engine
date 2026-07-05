@@ -714,14 +714,25 @@ data class CopyTargetTriggeredAbilityEffect(
  * legal (e.g. [com.wingedsheep.sdk.dsl.Targets.InstantSorcerySpellOrAbility]); this effect copies
  * whichever one the player chose.
  *
+ * [copies] is the number of copies to create (CR 707.10 — each is an independent instance created
+ * on the stack). It defaults to a single copy (Return the Favor); a [DynamicAmount] such as
+ * [DynamicAmount.XValue] models "copy … X times" (Gogo, Master of Mimicry: "{X}{X}, {T}: Copy
+ * target activated or triggered ability you control X times"). When more than one copy is made and
+ * the source ability has targets, the controller may choose new targets independently for every
+ * copy. Only the ability branches honor [copies] > 1; the spell branch always makes a single copy.
+ *
  * @property target The effect target referencing the spell or ability to copy (typically ContextTarget(0))
+ * @property copies How many copies to create (defaults to a single copy)
  */
 @SerialName("CopyTargetSpellOrAbility")
 @Serializable
 data class CopyTargetSpellOrAbilityEffect(
-    val target: EffectTarget = EffectTarget.ContextTarget(0)
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val copies: DynamicAmount = DynamicAmount.Fixed(1)
 ) : Effect {
-    override val description: String = "Copy target spell or ability"
+    override val description: String =
+        if (copies == DynamicAmount.Fixed(1)) "Copy target spell or ability"
+        else "Copy target spell or ability ${copies.description} times"
 }
 
 /**

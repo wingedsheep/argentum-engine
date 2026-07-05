@@ -3040,9 +3040,17 @@ object Effects {
      * permits both (e.g. [com.wingedsheep.sdk.dsl.Targets.InstantSorcerySpellOrAbility]) — the
      * "copy target instant/sorcery spell, activated ability, or triggered ability" clause
      * (Return the Favor).
+     *
+     * [copies] copies of the chosen object are created; it defaults to a single copy. Pass a
+     * [DynamicAmount] (e.g. [DynamicAmount.XValue]) to copy an ability multiple times — "Copy target
+     * activated or triggered ability you control X times" (Gogo, Master of Mimicry). New targets may
+     * be chosen independently for each copy. Only the ability branches honor [copies] > 1.
      */
-    fun CopyTargetSpellOrAbility(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
-        com.wingedsheep.sdk.scripting.effects.CopyTargetSpellOrAbilityEffect(target)
+    fun CopyTargetSpellOrAbility(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        copies: DynamicAmount = DynamicAmount.Fixed(1)
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.CopyTargetSpellOrAbilityEffect(target, copies)
 
     /**
      * When you next cast a spell matching [spellFilter] this turn, copy that spell.

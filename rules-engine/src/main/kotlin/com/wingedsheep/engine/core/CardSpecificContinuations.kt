@@ -335,6 +335,33 @@ data class CopyActivatedAbilityTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume the "copy target activated or triggered ability [N] times" loop after the copier chooses
+ * new targets for one copy (CR 707.10 / 707.10c). Backs [Effects.CopyTargetSpellOrAbility] with
+ * `copies > 1` — Gogo, Master of Mimicry ("Copy target activated or triggered ability you control X
+ * times. You may choose new targets for the copies."). Each pause handles a single copy; after its
+ * copy is pushed, [remainingCopies] drives whether the loop prompts again for the next copy.
+ * Handles both the activated and triggered branches — the resumer reads the kind off the source
+ * ability entity.
+ *
+ * @property abilityEntityId The ability being copied (still on the stack)
+ * @property controllerId The player controlling the copies (also the target-chooser)
+ * @property targetRequirements Target requirements inherited from the source ability
+ * @property remainingCopies Copies still to create, including the one whose targets were just chosen
+ * @property totalCopies Total copies requested (for the "copy i of N" prompt label)
+ */
+@Serializable
+data class CopyAbilityTargetContinuation(
+    override val decisionId: String,
+    val abilityEntityId: EntityId,
+    val controllerId: EntityId,
+    /** The copier's source (e.g. Gogo) — used to validate the new targets for each copy. */
+    val copierSourceId: EntityId?,
+    val targetRequirements: List<TargetRequirement>,
+    val remainingCopies: Int,
+    val totalCopies: Int
+) : ContinuationFrame
+
+/**
  * Resume creating Storm copies after the player selects targets for a copy.
  *
  * When a Storm spell has targets, we pause to ask for target selection for each copy.

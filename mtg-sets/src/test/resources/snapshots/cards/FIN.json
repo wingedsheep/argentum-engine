@@ -7942,6 +7942,75 @@
     ]
 }
 
+// Gogo, Master of Mimicry
+{
+    "name": "Gogo, Master of Mimicry",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Creature — Wizard",
+    "oracleText": "{X}{X}, {T}: Copy target activated or triggered ability you control X times. You may choose new targets for the copies. This ability can't be copied and X can't be 0. (Mana abilities can't be targeted.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetSpellOrAbility",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target activated or triggered ability you control"
+                    },
+                    "copies": "XValue"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsActivatedOrTriggeredAbility"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "target activated or triggered ability you control"
+                    }
+                ],
+                "descriptionOverride": "{X}{X}, {T}: Copy target activated or triggered ability you control X times. You may choose new targets for the copies. This ability can't be copied and X can't be 0.",
+                "holdPriority": true,
+                "minimumXValue": 1,
+                "cantBeCopied": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "MYTHIC",
+        "artist": "Thea Dumitriu",
+        "flavorText": "\"I see... so, you seek to save the world. Then I guess that means I shall save the world as well. Lead on! I will copy your every move.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cce4eb99-d960-4ab7-911a-bb4ea74d1775.jpg?1782686556"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Gohn, Town of Ruin
 {
     "name": "Gohn, Town of Ruin",

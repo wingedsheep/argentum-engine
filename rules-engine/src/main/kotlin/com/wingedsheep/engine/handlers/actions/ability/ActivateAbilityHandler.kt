@@ -465,6 +465,16 @@ class ActivateAbilityHandler(
             ?: return ExecutionResult.error(state, "Ability not found")
         val staticGranterId = staticGrantMatch?.second
 
+        // "X can't be 0" abilities (Gogo, Master of Mimicry): reject an engine-direct activation that
+        // pre-fills an X below the ability's minimum. The legal-actions submission path enforces the
+        // same bound via the X-choice decision's lower value.
+        if (action.xValue != null && action.xValue < ability.minimumXValue) {
+            return ExecutionResult.error(
+                state,
+                "X must be at least ${ability.minimumXValue} for ${cardComponent.name}"
+            )
+        }
+
         // Apply text-changing effects to cost
         val textReplacement = container.get<TextReplacementComponent>()
         val rawCost = if (textReplacement != null) {
@@ -579,17 +589,20 @@ class ActivateAbilityHandler(
         if (manaXCost?.hasX == true && action.xValue == null && tapXCost == null) {
             val fixedMana = manaXCost.cmc // the non-X portion ({X} alone is 0; {1}{X} is 1)
             val maxX = (manaSolver.getAvailableManaCount(state, action.playerId) - fixedMana).coerceAtLeast(0)
+            // "X can't be 0" abilities (Gogo, Master of Mimicry) set a minimum; clamp it to what the
+            // player can actually pay so the decision bounds stay valid.
+            val minX = ability.minimumXValue.coerceAtMost(maxX)
             val decisionId = java.util.UUID.randomUUID().toString()
             val decision = com.wingedsheep.engine.core.ChooseNumberDecision(
                 id = decisionId,
                 playerId = action.playerId,
-                prompt = "Choose X for ${cardComponent.name} (0-$maxX)",
+                prompt = "Choose X for ${cardComponent.name} ($minX-$maxX)",
                 context = com.wingedsheep.engine.core.DecisionContext(
                     sourceId = action.sourceId,
                     sourceName = cardComponent.name,
                     phase = com.wingedsheep.engine.core.DecisionPhase.CASTING
                 ),
-                minValue = 0,
+                minValue = minX,
                 maxValue = maxX
             )
             val continuation = com.wingedsheep.engine.core.ActivateAbilityChooseManaXContinuation(
@@ -1367,7 +1380,8 @@ class ActivateAbilityHandler(
         var stackResult = stackResolver.putActivatedAbility(
             currentState, abilityOnStack, action.targets,
             targetRequirements = effectiveTargetReqs,
-            costsTap = hasTapCost(effectiveCost)
+            costsTap = hasTapCost(effectiveCost),
+            cantBeCopied = ability.cantBeCopied
         )
         currentState = stackResult.newState
         events.addAll(stackResult.events)

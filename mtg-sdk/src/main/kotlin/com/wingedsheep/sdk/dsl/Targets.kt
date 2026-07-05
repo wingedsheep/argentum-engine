@@ -356,6 +356,16 @@ object Targets {
     )
 
     /**
+     * Target activated or triggered ability you control on the stack (mana abilities never use the
+     * stack, so they're excluded automatically). The "copy target activated or triggered ability
+     * you control" clause — Gogo, Master of Mimicry. Pair with
+     * [com.wingedsheep.sdk.dsl.Effects.CopyTargetSpellOrAbility].
+     */
+    val ActivatedOrTriggeredAbilityYouControl: TargetRequirement = TargetObject(
+        filter = TargetFilter.ActivatedOrTriggeredAbilityOnStack.youControl()
+    )
+
+    /**
      * Target spell or ability with a single target.
      * The single-target restriction is enforced at resolution time by the executor.
      */

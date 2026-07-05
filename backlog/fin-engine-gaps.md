@@ -258,9 +258,12 @@ so a land // spell Adventure offers *both* "play the land" (PlayLandEnumerator) 
   mills that many cards plus four instead" is the additive `ModifyMillAmount` replacement (twin of `ModifyDrawAmount`),
   applied at the mill announcement in `GatherCardsExecutor` via the new `CardSource.TopOfLibrary.isMill` flag +
   `EventPattern.MillEvent`.
-- **Y'shtola / Gogo copy-an-ability** — Gogo, Master of Mimicry ("Copy target activated or triggered ability you
-  control X times") needs ability-on-stack copying with X. Verify `CopyAbility` support; likely a gap for the
-  targeted-ability-copy-X-times shape.
+- **Y'shtola / Gogo copy-an-ability** — ✅ **DONE.** Gogo, Master of Mimicry ("Copy target activated or triggered
+  ability you control X times") implemented by generalizing `CopyTargetSpellOrAbilityEffect` with a
+  `copies: DynamicAmount` (pass `DynamicAmount.XValue`); the executor makes N independent copies of the chosen
+  ability, pausing per copy that has targets for CR 707.10c retargeting, and copies no-target abilities too.
+  Added `Targets.ActivatedOrTriggeredAbilityYouControl`, `ActivatedAbility.minimumXValue` ("X can't be 0") and
+  `ActivatedAbility.cantBeCopied` ("This ability can't be copied", reusing the `CantBeCopiedComponent` marker).
 - **"This ability triggers an additional time"** (Cloud, Midgar Mercenary; The Masamune) — a static that makes a
   permanent's/equipment's triggered abilities trigger one extra time. Check for an existing "trigger doubling"
   primitive (Panharmonicon-style); likely a gap scoped to "triggers of this creature and Equipment attached to it."
@@ -475,5 +478,5 @@ stale on both:
   `Conditions.TriggeringPlayerIs(Player.ChosenOpponent)` + `Effects.WinGame()`. Also fixed
   `TriggerMatcher.filterByTriggerCondition` to thread `triggeringPlayerId` into the intervening-if
   context (previously null). Covered by `ZenosYaeGalvusScenarioTest` (incl. a 3-player win-con pod).
-- Remaining missing FIN cards (4): Emet-Selch, Unsundered; Esper Origins; Gogo, Master of Mimicry;
-  Ultima, Origin of Oblivion — all still `add-feature` scope (see Tier-3 above).
+- Remaining missing FIN cards (2): Esper Origins; Ultima, Origin of Oblivion — both still `add-feature`
+  scope (see Tier-3 above). (Emet-Selch, Unsundered and Gogo, Master of Mimicry are now implemented.)

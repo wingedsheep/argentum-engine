@@ -623,13 +623,21 @@ class StackResolver(
         targets: List<ChosenTarget> = emptyList(),
         targetRequirements: List<TargetRequirement> = emptyList(),
         emitActivationEvent: Boolean = true,
-        costsTap: Boolean = false
+        costsTap: Boolean = false,
+        cantBeCopied: Boolean = false
     ): ExecutionResult {
         val (abilityId, stateWithId) = state.newEntity()
 
         var container = ComponentContainer.of(ability)
         if (targets.isNotEmpty()) {
             container = container.with(TargetsComponent(targets, targetRequirements))
+        }
+        // CR 707.10e — "This ability can't be copied": tag the ability instance on the stack so a
+        // copy-ability effect (e.g. Gogo, Master of Mimicry) makes no copy of it.
+        if (cantBeCopied) {
+            container = container.with(
+                com.wingedsheep.engine.state.components.identity.CantBeCopiedComponent
+            )
         }
 
         var newState = stateWithId.withEntity(abilityId, container)
