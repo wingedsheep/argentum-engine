@@ -1,0 +1,291 @@
+# The Lost Caverns of Ixalan (LCI) - Card Checklist
+
+**Set Size:** 286 booster cards (excluding basic lands and tokens)
+**Release Date:** November 17, 2023
+**Implemented:** 91 / 286
+- [x] Abrade
+- [ ] Abuelo's Awakening
+- [x] Abuelo, Ancestral Echo
+- [ ] Abyssal Gorestalker
+- [ ] Aclazotz, Deepest Betrayal
+- [x] Acolyte of Aclazotz
+- [x] Acrobatic Leap
+- [ ] Adaptive Gemguard
+- [ ] Akal Pakal, First Among Equals
+- [ ] Akawalli, the Seething Tower
+- [ ] Amalia Benavides Aguirre
+- [x] Ancestors' Aid
+- [x] Ancestral Reminiscence
+- [ ] Anim Pakal, Thousandth Moon
+- [ ] Another Chance
+- [ ] Armored Kincaller
+- [x] Attentive Sunscribe
+- [x] Bartolomé del Presidio
+- [ ] Basking Capybara
+- [ ] Bat Colony
+- [ ] Bedrock Tortoise
+- [ ] Belligerent Yearling
+- [x] Bitter Triumph
+- [x] Bloodletter of Aclazotz
+- [ ] Bloodthorn Flail
+- [ ] Bonehoard Dracosaur
+- [ ] Brackish Blunder
+- [ ] Braided Net
+- [ ] Brass's Tunnel-Grinder
+- [ ] Brazen Blademaster
+- [ ] Breeches, Eager Pillager
+- [x] Bringer of the Last Gift
+- [ ] Broodrage Mycoid
+- [ ] Buried Treasure
+- [ ] Burning Sun Cavalry
+- [ ] Calamitous Cave-In
+- [ ] Canonized in Blood
+- [ ] Caparocti Sunborn
+- [ ] Captain Storm, Cosmium Raider
+- [x] Captivating Cave
+- [x] Careening Mine Cart
+- [x] Cartographer's Companion
+- [ ] Cavern Stomper
+- [x] Cavern of Souls
+- [ ] Cavernous Maw
+- [x] Cenote Scout
+- [x] Chart a Course
+- [ ] Child of the Volcano
+- [ ] Chimil, the Inner Sun
+- [x] Chupacabra Echo
+- [ ] Clay-Fired Bricks
+- [ ] Coati Scavenger
+- [x] Cogwork Wrestler
+- [x] Colossadactyl
+- [x] Compass Gnome
+- [x] Confounding Riddle
+- [ ] Contested Game Ball
+- [ ] Corpses of the Lost
+- [x] Cosmium Blast
+- [ ] Cosmium Confluence
+- [ ] Council of Echoes
+- [ ] Curator of Sun's Creation
+- [ ] Daring Discovery
+- [ ] Dauntless Dismantler
+- [x] Dead Weight
+- [x] Deathcap Marionette
+- [ ] Deconstruction Hammer
+- [x] Deep Goblin Skulltaker
+- [x] Deep-Cavern Bat
+- [ ] Deepfathom Echo
+- [ ] Deeproot Pilgrimage
+- [ ] Defossilize
+- [ ] Diamond Pick-Axe
+- [ ] Didact Echo
+- [ ] Digsite Conservator
+- [x] Dinotomaton
+- [ ] Dire Flail
+- [x] Disruptor Wanderglyph
+- [ ] Disturbed Slumber
+- [ ] Dowsing Device
+- [ ] Dreadmaw's Ire
+- [x] Dusk Rose Reliquary
+- [x] Earthshaker Dreadmaw
+- [ ] Eaten by Piranhas
+- [ ] Echo of Dusk
+- [ ] Echoing Deeps
+- [x] Enterprising Scallywag
+- [x] Envoy of Okinec Ahau
+- [ ] Etali's Favor
+- [ ] Explorer's Cache
+- [ ] Fabrication Foundry
+- [x] Family Reunion
+- [ ] Fanatical Offering
+- [x] Forgotten Monument
+- [ ] Frilled Cave-Wurm
+- [ ] Fungal Fortitude
+- [ ] Gargantuan Leech
+- [ ] Geological Appraiser
+- [ ] Get Lost
+- [x] Ghalta, Stampede Tyrant
+- [x] Gishath, Sun's Avatar
+- [ ] Glimpse the Core
+- [ ] Glorifier of Suffering
+- [ ] Glowcap Lantern
+- [ ] Goblin Tomb Raider
+- [ ] Goldfury Strider
+- [ ] Grasping Shadows
+- [x] Greedy Freebooter
+- [ ] Growing Rites of Itlimoc
+- [ ] Guardian of the Great Door
+- [ ] Helping Hand
+- [x] Hermitic Nautilus
+- [ ] Hidden Cataract
+- [ ] Hidden Courtyard
+- [ ] Hidden Necropolis
+- [ ] Hidden Nursery
+- [ ] Hidden Volcano
+- [ ] Hit the Mother Lode
+- [x] Hotfoot Gnome
+- [x] Hoverstone Pilgrim
+- [x] Huatli's Final Strike
+- [ ] Huatli, Poet of Unity
+- [ ] Hulking Raptor
+- [ ] Hunter's Blowgun
+- [ ] Hurl into History
+- [ ] Idol of the Deep King
+- [ ] In the Presence of Ages
+- [ ] Inti, Seneschal of the Sun
+- [ ] Intrepid Paleontologist
+- [ ] Inverted Iceberg
+- [x] Ironpaw Aspirant
+- [ ] Itzquinth, Firstborn of Gishath
+- [ ] Ixalli's Lorekeeper
+- [ ] Jade Seedstones
+- [ ] Jadelight Spelunker
+- [ ] Join the Dead
+- [ ] Kaslem's Stonetree
+- [ ] Kellan, Daring Traveler
+- [x] Kinjalli's Dawnrunner
+- [ ] Kitesail Larcenist
+- [ ] Kutzil's Flanker
+- [ ] Kutzil, Malamet Exemplar
+- [ ] Lodestone Needle
+- [ ] Magmatic Galleon
+- [ ] Malamet Battle Glyph
+- [x] Malamet Brawler
+- [x] Malamet Scythe
+- [ ] Malamet Veteran
+- [x] Malamet War Scribe
+- [x] Malcolm, Alluring Scoundrel
+- [ ] Malicious Eclipse
+- [x] Marauding Brinefang
+- [ ] Market Gnome
+- [ ] Master's Guide-Mural
+- [ ] Matzalantli, the Great Door
+- [x] Mephitic Draught
+- [ ] Merfolk Cave-Diver
+- [x] Might of the Ancestors
+- [x] Miner's Guidewing
+- [x] Mineshaft Spider
+- [x] Mischievous Pup
+- [ ] Molten Collapse
+- [ ] Nicanzil, Current Conductor
+- [x] Nurturing Bristleback
+- [ ] Oaken Siren
+- [ ] Ojer Axonil, Deepest Might
+- [ ] Ojer Kaslem, Deepest Growth
+- [ ] Ojer Pakpatiq, Deepest Epoch
+- [ ] Ojer Taq, Deepest Foundation
+- [x] Oltec Archaeologists
+- [x] Oltec Cloud Guard
+- [x] Orazca Puzzle-Door
+- [ ] Oteclan Landmark
+- [ ] Out of Air
+- [ ] Over the Edge
+- [x] Palani's Hatcher
+- [x] Panicked Altisaur
+- [x] Pathfinding Axejaw
+- [ ] Petrify
+- [ ] Pirate Hat
+- [ ] Pit of Offerings
+- [x] Plundering Pirate
+- [ ] Poetic Ingenuity
+- [x] Poison Dart Frog
+- [ ] Preacher of the Schism
+- [ ] Primordial Gnawer
+- [x] Promising Vein
+- [ ] Pugnacious Hammerskull
+- [ ] Queen's Bay Paladin
+- [x] Quicksand Whirlpool
+- [ ] Quintorius Kand
+- [x] Rampaging Ceratops
+- [x] Rampaging Spiketail
+- [ ] Ray of Ruin
+- [ ] Relic's Roar
+- [ ] Resplendent Angel
+- [ ] Restless Anchorage
+- [ ] Restless Prairie
+- [ ] Restless Reef
+- [ ] Restless Ridgeline
+- [ ] Restless Vents
+- [x] River Herald Guide
+- [x] River Herald Scout
+- [ ] Roaming Throne
+- [x] Ruin-Lurker Bat
+- [x] Rumbling Rockslide
+- [x] Runaway Boulder
+- [ ] Sage of Days
+- [x] Saheeli's Lattice
+- [ ] Saheeli, the Sun's Brilliance
+- [ ] Sanguine Evangelist
+- [x] Scampering Surveyor
+- [x] Screaming Phantom
+- [ ] Scytheclaw Raptor
+- [x] Seeker of Sunlight
+- [x] Seismic Monstrosaur
+- [x] Self-Reflection
+- [x] Sentinel of the Nameless City
+- [ ] Shipwreck Sentry
+- [ ] Sinuous Benthisaur
+- [ ] Skullcap Snail
+- [x] Soaring Sandwing
+- [ ] Song of Stupefaction
+- [ ] Sorcerous Spyglass
+- [x] Soulcoil Viper
+- [ ] Souls of the Lost
+- [ ] Sovereign Okinec Ahau
+- [ ] Spelunking
+- [ ] Spring-Loaded Sawblades
+- [x] Spyglass Siren
+- [ ] Squirming Emergence
+- [x] Staggering Size
+- [ ] Stalactite Stalker
+- [ ] Starving Revenant
+- [x] Staunch Crewmate
+- [ ] Stinging Cave Crawler
+- [ ] Subterranean Schooner
+- [ ] Sunbird Standard
+- [ ] Sunfire Torch
+- [ ] Sunken Citadel
+- [ ] Sunshot Militia
+- [ ] Swashbuckler's Whip
+- [ ] Synapse Necromage
+- [ ] Tarrian's Journal
+- [ ] Tarrian's Soulcleaver
+- [ ] Tectonic Hazard
+- [ ] Tendril of the Mycotyrant
+- [x] Terror Tide
+- [ ] The Ancient One
+- [ ] The Belligerent
+- [ ] The Enigma Jewel
+- [ ] The Everflowing Well
+- [ ] The Millennium Calendar
+- [ ] The Mycotyrant
+- [ ] The Skullspore Nexus
+- [ ] Thousand Moons Crackshot
+- [ ] Thousand Moons Infantry
+- [ ] Thousand Moons Smithy
+- [x] Thrashing Brontodon
+- [ ] Threefold Thunderhulk
+- [ ] Throne of the Grim Captain
+- [ ] Tinker's Tote
+- [ ] Tishana's Tidebinder
+- [ ] Tithing Blade
+- [ ] Treasure Map
+- [ ] Triumphant Chomp
+- [ ] Trumpeting Carnosaur
+- [ ] Twists and Turns
+- [ ] Uchbenbak, the Great Mistake
+- [ ] Unlucky Drop
+- [ ] Unstable Glyphbridge
+- [x] Vanguard of the Rose
+- [ ] Visage of Dread
+- [x] Vito's Inquisitor
+- [ ] Vito, Fanatic of Aclazotz
+- [ ] Volatile Fault
+- [x] Volatile Wanderglyph
+- [ ] Wail of the Forgotten
+- [ ] Walk with the Ancestors
+- [ ] Warden of the Inner Sky
+- [ ] Waterlogged Hulk
+- [x] Waterwind Scout
+- [x] Waylaying Pirates
+- [ ] Zoetic Glyph
+- [ ] Zoyowa Lava-Tongue
+- [ ] Zoyowa's Justice

@@ -742,6 +742,76 @@
     "colorIdentityOverride": []
 }
 
+// Cartographer's Companion
+{
+    "name": "Cartographer's Companion",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Gnome",
+    "oracleText": "When this creature enters, create a Map token. (It's an artifact with \"{1}, {T}, Sacrifice this token: Target creature you control explores. Activate only as a sorcery.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Map"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "artist": "Chuck Lukacs",
+        "flavorText": "Ever since the Fomori's attempt long ago to extinguish Chimil's light, the Oltec have taken extensive measures to never get lost in the Core.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/b/dbd8115e-4cb3-49b6-b74f-8fcfa28c6404.jpg?1782694413"
+    }
+}
+
+// Cenote Scout
+{
+    "name": "Cenote Scout",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Merfolk Scout",
+    "oracleText": "When this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "rarity": "UNCOMMON",
+        "artist": "Caroline Gariba",
+        "flavorText": "\"If you're afraid to dive into the unknown, how will you ever find anything new?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4ce4b7bc-636b-4723-a7c1-2c859f333492.jpg?1782694467"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Chupacabra Echo
 {
     "name": "Chupacabra Echo",
@@ -1187,6 +1257,61 @@
     ]
 }
 
+// Deep Goblin Skulltaker
+{
+    "name": "Deep Goblin Skulltaker",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Menace\nAt the beginning of your end step, if you descended this turn, put a +1/+1 counter on this creature. (You descended if a permanent card was put into your graveyard from anywhere.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "DESCENDED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"Go away! I found it first!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b24bb7c-6b34-48b6-af94-f312ebdbb759.jpg?1782694530"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deep-Cavern Bat
 {
     "name": "Deep-Cavern Bat",
@@ -1488,6 +1613,147 @@
         "rarity": "UNCOMMON",
         "artist": "Samuel Araya",
         "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5f231ef-4167-4b0a-b54c-a098b2eb2f6f.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Earthshaker Dreadmaw
+{
+    "name": "Earthshaker Dreadmaw",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Trample\nWhen this creature enters, draw a card for each other Dinosaur you control.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature Dinosaur",
+                        "excludeSelf": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"I suggest we leave this cavern for someone else to conquer.\" —Amalia, master cartographer",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdcbba6f-aa54-44be-a3b0-f712fa8bd5ad.jpg?1782694463"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Enterprising Scallywag
+{
+    "name": "Enterprising Scallywag",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Pirate",
+    "oracleText": "At the beginning of your end step, if you descended this turn, create a Treasure token. (You descended if a permanent card was put into your graveyard from anywhere.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "DESCENDED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "UNCOMMON",
+        "artist": "Denman Rooke",
+        "flavorText": "\"He would've wanted me to have it!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44420f52-2ed8-4f81-93e4-5decc77bed01.jpg?1782694491"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Envoy of Okinec Ahau
+{
+    "name": "Envoy of Okinec Ahau",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Cat Advisor",
+    "oracleText": "{4}{W}: Create a 1/1 colorless Gnome artifact creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Gnome"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Zoltan Boros",
+        "flavorText": "Though wary of each other at first, the Malamet and the Oltec found a common enemy in the mycoids. They began to share glyph knowledge and other crafting secrets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96de0741-9270-4118-bb8e-f3480c75a582.jpg?1782694605"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -2016,6 +2282,45 @@
     ]
 }
 
+// Kinjalli's Dawnrunner
+{
+    "name": "Kinjalli's Dawnrunner",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Double strike\nWhen this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "UNCOMMON",
+        "artist": "Arash Radkia",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc4c527c-6963-47f4-bcad-841d06bb2211.jpg?1782694597"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Malamet Brawler
 {
     "name": "Malamet Brawler",
@@ -2522,6 +2827,56 @@
     ]
 }
 
+// Miner's Guidewing
+{
+    "name": "Miner's Guidewing",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying, vigilance\nWhen this creature dies, target creature you control explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on that creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature you control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "target creature you control"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "artist": "Allen Douglas",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/9048cd9d-df3f-4705-a5f4-e5b09760c631.jpg?1782694591"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Mineshaft Spider
 {
     "name": "Mineshaft Spider",
@@ -2756,6 +3111,51 @@
     ]
 }
 
+// Oltec Cloud Guard
+{
+    "name": "Oltec Cloud Guard",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Flying\nWhen this creature enters, create a 1/1 colorless Gnome artifact creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Gnome"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Evyn Fong",
+        "flavorText": "Many Oltec youth dream of one day joining the elite bat-riding cavalry of the Thousand Moons military force.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/02d68a38-2e0b-401b-b67d-a55e2af5b18d.jpg?1782694589"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Orazca Puzzle-Door
 {
     "name": "Orazca Puzzle-Door",
@@ -2983,6 +3383,42 @@
     ]
 }
 
+// Pathfinding Axejaw
+{
+    "name": "Pathfinding Axejaw",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "When this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "artist": "Raoul Vitale",
+        "flavorText": "When you don't know what dangers you'll face, bring the biggest danger with you.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f619075-ca5d-4e09-bd84-31e6b61eaa7e.jpg?1782694444"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Plundering Pirate
 {
     "name": "Plundering Pirate",
@@ -3205,6 +3641,36 @@
     ]
 }
 
+// Rampaging Ceratops
+{
+    "name": "Rampaging Ceratops",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "This creature can't be blocked except by three or more creatures.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByFewerThan",
+                "minBlockers": 3
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "flavorText": "Anticipating tight spaces and trivial fauna, the first Dusk Legion expeditions were small, mobile, and lightly armored. Hundreds of casualties later, they started sending plate-clad platoons.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8bab3f8f-cb06-466d-a35d-0b5e1a2b524c.jpg?1782694479"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Rampaging Spiketail
 {
     "name": "Rampaging Spiketail",
@@ -3286,6 +3752,80 @@
     ]
 }
 
+// River Herald Guide
+{
+    "name": "River Herald Guide",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Merfolk Scout",
+    "oracleText": "Vigilance\nWhen this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "artist": "David Astruga",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9ea7e323-f329-4928-b25a-c0b44c5ac058.jpg?1782694442"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// River Herald Scout
+{
+    "name": "River Herald Scout",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Merfolk Scout",
+    "oracleText": "When this creature enters, it explores. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Josu Hernaiz",
+        "flavorText": "\"Don't worry, little swimmers. I'm here for the ruins, not you.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8ae8ab66-5840-4b2e-bd4e-94ead0c79b61.jpg?1782694553"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ruin-Lurker Bat
 {
     "name": "Ruin-Lurker Bat",
@@ -3352,6 +3892,47 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Rumbling Rockslide
+{
+    "name": "Rumbling Rockslide",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Rumbling Rockslide deals damage to target creature equal to the number of lands you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Battlefield",
+                "filter": "land"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target creature"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "163",
+        "artist": "Johann Bodin",
+        "flavorText": "Sometimes an expedition reaches a natural conclusion. Sometimes it all just comes crashing down.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f06b53f-ec82-4d7f-bee3-6ca04583f023.jpg?1782694478"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -3623,6 +4204,103 @@
         "imageUri": "https://cards.scryfall.io/normal/front/a/f/afcb2a90-d4c0-4c83-8ee7-2ac3a23b4402.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Screaming Phantom
+{
+    "name": "Screaming Phantom",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nWhenever this creature attacks, mill a card. (Put the top card of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "artist": "Halil Ural",
+        "flavorText": "After a slow death in darkness, she flies into a rage at the slightest glimpse of light.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc2f3efb-1526-48c0-842a-374af63ea467.jpg?1782694518"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Seeker of Sunlight
+{
+    "name": "Seeker of Sunlight",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Merfolk Scout",
+    "oracleText": "{2}{G}: This creature explores. Activate only as a sorcery. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on this creature, then put the card back or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Explore",
+                    "target": "Self"
+                },
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "artist": "Randy Vargas",
+        "flavorText": "\"We weren't fleeing a broken world. We were running toward paradise!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffcdb10f-4bad-4f89-8e7c-daa5c0c69230.jpg?1782694440"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Seismic Monstrosaur
@@ -3919,6 +4597,45 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Spyglass Siren
+{
+    "name": "Spyglass Siren",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Siren Pirate",
+    "oracleText": "Flying\nWhen this creature enters, create a Map token. (It's an artifact with \"{1}, {T}, Sacrifice this token: Target creature you control explores. Activate only as a sorcery.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Map"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "David Astruga",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41e54343-95e5-4dc4-9f18-e4a415fe5e0a.jpg?1782694547"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4320,6 +5037,44 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Waterwind Scout
+{
+    "name": "Waterwind Scout",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Merfolk Scout",
+    "oracleText": "Flying\nWhen this creature enters, create a Map token. (It's an artifact with \"{1}, {T}, Sacrifice this token: Target creature you control explores. Activate only as a sorcery.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Map"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Alix Branwyn",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a7738fb-0a1b-4010-b8c0-e1129739c765.jpg?1782694543"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
