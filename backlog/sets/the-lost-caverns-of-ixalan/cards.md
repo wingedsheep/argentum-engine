@@ -89,7 +89,7 @@
 - [ ] Eaten by Piranhas
 - [ ] Echo of Dusk
 - [ ] Echoing Deeps
-- [ ] Enterprising Scallywag
+- [x] Enterprising Scallywag
 - [x] Envoy of Okinec Ahau
 - [ ] Etali's Favor
 - [ ] Explorer's Cache

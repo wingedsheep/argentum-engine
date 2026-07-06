@@ -1664,6 +1664,57 @@
     ]
 }
 
+// Enterprising Scallywag
+{
+    "name": "Enterprising Scallywag",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Pirate",
+    "oracleText": "At the beginning of your end step, if you descended this turn, create a Treasure token. (You descended if a permanent card was put into your graveyard from anywhere.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "DESCENDED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "UNCOMMON",
+        "artist": "Denman Rooke",
+        "flavorText": "\"He would've wanted me to have it!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44420f52-2ed8-4f81-93e4-5decc77bed01.jpg?1782694491"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Envoy of Okinec Ahau
 {
     "name": "Envoy of Okinec Ahau",
