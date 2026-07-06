@@ -194,7 +194,7 @@
 - [ ] Queen's Bay Paladin
 - [x] Quicksand Whirlpool
 - [ ] Quintorius Kand
-- [ ] Rampaging Ceratops
+- [x] Rampaging Ceratops
 - [x] Rampaging Spiketail
 - [ ] Ray of Ruin
 - [ ] Relic's Roar

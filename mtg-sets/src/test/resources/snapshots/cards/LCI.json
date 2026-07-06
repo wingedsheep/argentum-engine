@@ -3400,6 +3400,36 @@
     ]
 }
 
+// Rampaging Ceratops
+{
+    "name": "Rampaging Ceratops",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "This creature can't be blocked except by three or more creatures.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByFewerThan",
+                "minBlockers": 3
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "162",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "flavorText": "Anticipating tight spaces and trivial fauna, the first Dusk Legion expeditions were small, mobile, and lightly armored. Hundreds of casualties later, they started sending plate-clad platoons.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8bab3f8f-cb06-466d-a35d-0b5e1a2b524c.jpg?1782694479"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Rampaging Spiketail
 {
     "name": "Rampaging Spiketail",
