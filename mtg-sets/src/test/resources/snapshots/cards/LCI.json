@@ -1257,6 +1257,61 @@
     ]
 }
 
+// Deep Goblin Skulltaker
+{
+    "name": "Deep Goblin Skulltaker",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Menace\nAt the beginning of your end step, if you descended this turn, put a +1/+1 counter on this creature. (You descended if a permanent card was put into your graveyard from anywhere.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "DESCENDED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "artist": "Cristi Balanescu",
+        "flavorText": "\"Go away! I found it first!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b24bb7c-6b34-48b6-af94-f312ebdbb759.jpg?1782694530"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Deep-Cavern Bat
 {
     "name": "Deep-Cavern Bat",

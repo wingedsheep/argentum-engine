@@ -70,7 +70,7 @@
 - [x] Dead Weight
 - [x] Deathcap Marionette
 - [ ] Deconstruction Hammer
-- [ ] Deep Goblin Skulltaker
+- [x] Deep Goblin Skulltaker
 - [x] Deep-Cavern Bat
 - [ ] Deepfathom Echo
 - [ ] Deeproot Pilgrimage
