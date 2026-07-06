@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 96 / 286
+**Implemented:** 97 / 286
 - [x] Abrade
 - [ ] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -118,7 +118,7 @@
 - [x] Hidden Cataract
 - [x] Hidden Courtyard
 - [x] Hidden Necropolis
-- [ ] Hidden Nursery
+- [x] Hidden Nursery
 - [ ] Hidden Volcano
 - [ ] Hit the Mother Lode
 - [x] Hotfoot Gnome
