@@ -4141,6 +4141,45 @@
     ]
 }
 
+// Spyglass Siren
+{
+    "name": "Spyglass Siren",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Siren Pirate",
+    "oracleText": "Flying\nWhen this creature enters, create a Map token. (It's an artifact with \"{1}, {T}, Sacrifice this token: Target creature you control explores. Activate only as a sorcery.\")",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Map"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "UNCOMMON",
+        "artist": "David Astruga",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/41e54343-95e5-4dc4-9f18-e4a415fe5e0a.jpg?1782694547"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Staggering Size
 {
     "name": "Staggering Size",

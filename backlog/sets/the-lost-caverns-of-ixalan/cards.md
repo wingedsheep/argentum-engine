@@ -232,7 +232,7 @@
 - [ ] Sovereign Okinec Ahau
 - [ ] Spelunking
 - [ ] Spring-Loaded Sawblades
-- [ ] Spyglass Siren
+- [x] Spyglass Siren
 - [ ] Squirming Emergence
 - [x] Staggering Size
 - [ ] Stalactite Stalker
