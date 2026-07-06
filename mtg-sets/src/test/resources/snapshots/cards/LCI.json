@@ -1564,6 +1564,51 @@
     ]
 }
 
+// Earthshaker Dreadmaw
+{
+    "name": "Earthshaker Dreadmaw",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Trample\nWhen this creature enters, draw a card for each other Dinosaur you control.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature Dinosaur",
+                        "excludeSelf": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Ejsing",
+        "flavorText": "\"I suggest we leave this cavern for someone else to conquer.\" —Amalia, master cartographer",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cdcbba6f-aa54-44be-a3b0-f712fa8bd5ad.jpg?1782694463"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Envoy of Okinec Ahau
 {
     "name": "Envoy of Okinec Ahau",

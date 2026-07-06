@@ -85,7 +85,7 @@
 - [ ] Dowsing Device
 - [ ] Dreadmaw's Ire
 - [x] Dusk Rose Reliquary
-- [ ] Earthshaker Dreadmaw
+- [x] Earthshaker Dreadmaw
 - [ ] Eaten by Piranhas
 - [ ] Echo of Dusk
 - [ ] Echoing Deeps
