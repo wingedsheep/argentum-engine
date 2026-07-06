@@ -3,6 +3,13 @@
 **Set Size:** 261 booster cards (excluding basic lands)
 **Release Date:** August 1, 2025
 **Implemented:** 261 / 261
+
+> **Status (July 2026): complete — the set is done.** All 261 booster cards below are implemented.
+> Counting the set's 5 basic lands, `scripts/card-status --set EOE` reports 266 / 266; the engine
+> features that unblocked the final batch and all playtest bugs are resolved. See
+> [`missing-effects.md`](missing-effects.md) for the features shipped, [`problem-cards.md`](problem-cards.md)
+> for the (now-empty) blocker list, and [`bugs.md`](bugs.md) for the closed bug log.
+
 ---
 
 - [x] Adagia, Windswept Bastion
