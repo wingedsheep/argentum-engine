@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 91 / 286
+**Implemented:** 92 / 286
 - [x] Abrade
 - [ ] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -65,7 +65,7 @@
 - [ ] Cosmium Confluence
 - [ ] Council of Echoes
 - [ ] Curator of Sun's Creation
-- [ ] Daring Discovery
+- [x] Daring Discovery
 - [ ] Dauntless Dismantler
 - [x] Dead Weight
 - [x] Deathcap Marionette

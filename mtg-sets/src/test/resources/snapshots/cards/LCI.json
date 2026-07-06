@@ -1196,6 +1196,58 @@
     ]
 }
 
+// Daring Discovery
+{
+    "name": "Daring Discovery",
+    "manaCost": "{4}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Up to three target creatures can't block this turn.\nDiscover 4.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "CantBlockTargetCreatures",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                {
+                    "type": "Discover",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "up to three target creatures"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "artist": "Michele Giorgi",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d95018a4-be10-4c46-b14d-4b1eba838bc0.jpg?1782694496"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Deathcap Marionette
 {
     "name": "Deathcap Marionette",
