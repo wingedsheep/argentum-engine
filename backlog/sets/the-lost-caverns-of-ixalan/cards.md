@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 141 / 286
+**Implemented:** 146 / 286
 - [x] Abrade
 - [ ] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -87,18 +87,18 @@
 - [x] Dusk Rose Reliquary
 - [x] Earthshaker Dreadmaw
 - [x] Eaten by Piranhas
-- [ ] Echo of Dusk
+- [x] Echo of Dusk
 - [ ] Echoing Deeps
 - [x] Enterprising Scallywag
 - [x] Envoy of Okinec Ahau
 - [x] Etali's Favor
-- [ ] Explorer's Cache
+- [x] Explorer's Cache
 - [ ] Fabrication Foundry
 - [x] Family Reunion
-- [ ] Fanatical Offering
+- [x] Fanatical Offering
 - [x] Forgotten Monument
-- [ ] Frilled Cave-Wurm
-- [ ] Fungal Fortitude
+- [x] Frilled Cave-Wurm
+- [x] Fungal Fortitude
 - [ ] Gargantuan Leech
 - [x] Geological Appraiser
 - [ ] Get Lost
