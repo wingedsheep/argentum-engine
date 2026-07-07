@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 151 / 286
+**Implemented:** 156 / 286
 - [x] Abrade
 - [ ] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -108,12 +108,12 @@
 - [x] Glorifier of Suffering
 - [ ] Glowcap Lantern
 - [x] Goblin Tomb Raider
-- [ ] Goldfury Strider
+- [x] Goldfury Strider
 - [ ] Grasping Shadows
 - [x] Greedy Freebooter
 - [ ] Growing Rites of Itlimoc
-- [ ] Guardian of the Great Door
-- [ ] Helping Hand
+- [x] Guardian of the Great Door
+- [x] Helping Hand
 - [x] Hermitic Nautilus
 - [x] Hidden Cataract
 - [x] Hidden Courtyard
@@ -125,8 +125,8 @@
 - [x] Hoverstone Pilgrim
 - [x] Huatli's Final Strike
 - [ ] Huatli, Poet of Unity
-- [ ] Hulking Raptor
-- [ ] Hunter's Blowgun
+- [x] Hulking Raptor
+- [x] Hunter's Blowgun
 - [x] Hurl into History
 - [ ] Idol of the Deep King
 - [ ] In the Presence of Ages

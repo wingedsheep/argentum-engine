@@ -5074,6 +5074,69 @@
     ]
 }
 
+// Goldfury Strider
+{
+    "name": "Goldfury Strider",
+    "manaCost": "{4}{R}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Trample\nTap two untapped artifacts and/or creatures you control: Target creature gets +2/+0 until end of turn. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 2,
+                        "filter": "artifact|creature"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "UNCOMMON",
+        "artist": "José Parodi",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/1/415904fe-b77f-4c1a-850f-688484d629e6.jpg?1782694487"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Greedy Freebooter
 {
     "name": "Greedy Freebooter",
@@ -5117,6 +5180,80 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Guardian of the Great Door
+{
+    "name": "Guardian of the Great Door",
+    "manaCost": "{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "As an additional cost to cast this spell, tap four untapped artifacts, creatures, and/or lands you control.\nFlying",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomTapPermanents",
+                    "count": 4,
+                    "filter": "artifact|creature|land"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Justyna Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a86f3cb2-7822-4c19-bd84-cea177e5b6e9.jpg?1782694599"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Helping Hand
+{
+    "name": "Helping Hand",
+    "manaCost": "{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card with mana value 3 or less from your graveyard to the battlefield tapped.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target creature card with mana value 3 or less from your graveyard"
+            },
+            "destination": "Battlefield",
+            "placement": "Tapped"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature mv<=3 own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "target creature card with mana value 3 or less from your graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "UNCOMMON",
+        "artist": "Aldo Domínguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/8/b8aa7126-5df3-42dd-b4a3-0d0ea59eeebd.jpg?1782694598"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -5692,6 +5829,129 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Hulking Raptor
+{
+    "name": "Hulking Raptor",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Ward {2}\nAt the beginning of your first main phase, add {G}{G}.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "191",
+        "rarity": "RARE",
+        "artist": "Néstor Ossandón Leal",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45f763af-5a6a-404c-8e8c-4dbed71277bc.jpg?1782694456"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Hunter's Blowgun
+{
+    "name": "Hunter's Blowgun",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\nEquipped creature has deathtouch during your turn. Otherwise, it has reach.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "DEATHTOUCH"
+                },
+                "condition": "IsYourTurn"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "REACH"
+                },
+                "condition": "IsNotYourTurn"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "255",
+        "artist": "Hector Ortiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/3348abe7-6aa3-47f7-8203-a15f75007e33.jpg?1782694408"
+    },
+    "colorIdentityOverride": []
 }
 
 // Hurl into History
