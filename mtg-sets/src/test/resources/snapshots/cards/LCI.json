@@ -4639,6 +4639,56 @@
     ]
 }
 
+// Gargantuan Leech
+{
+    "name": "Gargantuan Leech",
+    "manaCost": "{7}{B}",
+    "typeLine": "Creature — Leech",
+    "oracleText": "This spell costs {1} less to cast for each Cave you control and each Cave card in your graveyard.\nLifelink",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "PermanentsYouControlMatching",
+                        "filter": "land Cave"
+                    }
+                }
+            },
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "CardsInGraveyardMatchingFilter",
+                        "filter": "land Cave"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "UNCOMMON",
+        "artist": "Piotr Foksowicz",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/4/94724efb-4785-4751-9fe1-07f243dd6008.jpg?1782694526"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Geological Appraiser
 {
     "name": "Geological Appraiser",
@@ -4676,6 +4726,54 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Get Lost
+{
+    "name": "Get Lost",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature, enchantment, or planeswalker. Its controller creates two Map tokens. (They're artifacts with \"{1}, {T}, Sacrifice this token: Target creature you control explores. Activate only as a sorcery.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature, enchantment, or planeswalker"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Map",
+                    "count": 2,
+                    "controller": "TargetController"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|enchantment|planeswalker"
+                },
+                "id": "target creature, enchantment, or planeswalker"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "RARE",
+        "artist": "Eli Minaya",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/522aa72b-2b8c-484c-872b-f082101cee35.jpg?1782694599"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4740,6 +4838,239 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Glimpse the Core
+{
+    "name": "Glimpse the Core",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one —\n• Search your library for a basic Forest card, put that card onto the battlefield tapped, then shuffle.\n• Return target Cave card from your graveyard to the battlefield tapped.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "basicland Forest"
+                                },
+                                "storeAs": "searchable"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "placement": "Tapped"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    },
+                    "description": "Search your library for a basic Forest card, put that card onto the battlefield tapped, then shuffle"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target Cave card from your graveyard"
+                        },
+                        "destination": "Battlefield",
+                        "placement": "Tapped"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "land Cave own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "target Cave card from your graveyard"
+                        }
+                    ],
+                    "description": "Return target Cave card from your graveyard to the battlefield tapped"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "UNCOMMON",
+        "artist": "Francisco Miyara",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de7d6aed-3dc8-417d-a190-1660cfc8ee4a.jpg?1782694459"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Glorifier of Suffering
+{
+    "name": "Glorifier of Suffering",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Vampire Soldier",
+    "oracleText": "When this creature enters, you may sacrifice another creature or artifact. When you do, put a +1/+1 counter on each of up to two target creatures.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectTarget",
+                                "requirement": {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature|artifact ctrl:you",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "storeAs": "toSacrifice"
+                            },
+                            {
+                                "type": "SacrificeTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "toSacrifice"
+                                }
+                            }
+                        ]
+                    },
+                    "reflexiveEffect": {
+                        "type": "ForEach",
+                        "space": "IterationSpace.Targets",
+                        "body": {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "count": 2,
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "You may sacrifice another creature or artifact. When you do, put a +1/+1 counter on each of up to two target creatures."
+                },
+                "descriptionOverride": "When this creature enters, you may sacrifice another creature or artifact. When you do, put a +1/+1 counter on each of up to two target creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Lauren K. Cannon",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/7580ad36-7362-4dee-9511-d119173b70e8.jpg?1782694599"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Goblin Tomb Raider
+{
+    "name": "Goblin Tomb Raider",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goblin Pirate",
+    "oracleText": "As long as you control an artifact, this creature gets +1/+0 and has haste.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantDynamicStats",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    },
+                    "powerBonus": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessBonus": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "artifact"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "artifact"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "artist": "Kevin Sidharta",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/018160fe-f602-43f5-8495-241a08eaa69c.jpg?1782694488"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

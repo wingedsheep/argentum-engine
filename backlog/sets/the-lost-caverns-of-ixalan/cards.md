@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 146 / 286
+**Implemented:** 151 / 286
 - [x] Abrade
 - [ ] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -99,15 +99,15 @@
 - [x] Forgotten Monument
 - [x] Frilled Cave-Wurm
 - [x] Fungal Fortitude
-- [ ] Gargantuan Leech
+- [x] Gargantuan Leech
 - [x] Geological Appraiser
-- [ ] Get Lost
+- [x] Get Lost
 - [x] Ghalta, Stampede Tyrant
 - [x] Gishath, Sun's Avatar
-- [ ] Glimpse the Core
-- [ ] Glorifier of Suffering
+- [x] Glimpse the Core
+- [x] Glorifier of Suffering
 - [ ] Glowcap Lantern
-- [ ] Goblin Tomb Raider
+- [x] Goblin Tomb Raider
 - [ ] Goldfury Strider
 - [ ] Grasping Shadows
 - [x] Greedy Freebooter

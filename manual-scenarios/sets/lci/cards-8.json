@@ -1,0 +1,54 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Gargantuan Leech",
+      "Get Lost",
+      "Glimpse the Core",
+      "Glorifier of Suffering",
+      "Goblin Tomb Raider"
+    ],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Grizzly Bears"},
+      {"name": "Millstone"}      
+    ],
+    "graveyard": [],
+    "library": ["Captivating Cave", "Captivating Cave", "Captivating Cave", "Captivating Cave", "Swamp", "Plains", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Grizzly Bears"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Plains", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "SELF"
+}
