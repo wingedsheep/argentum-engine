@@ -11935,6 +11935,340 @@
     ]
 }
 
+// The Belligerent
+{
+    "name": "The Belligerent",
+    "manaCost": "{2}{U}{R}",
+    "typeLine": "Legendary Artifact — Vehicle",
+    "oracleText": "Whenever The Belligerent attacks, create a Treasure token. Until end of turn, you may look at the top card of your library any time, and you may play lands and cast spells from the top of your library.\nCrew 3",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": "LookAtTopOfLibrary",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "AttackedThisTurn"
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "PlayLandsAndCastFilteredFromTopOfLibrary",
+                    "spellFilter": {}
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "AttackedThisTurn"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "225",
+        "rarity": "RARE",
+        "artist": "Bruce Brenneise",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/1454af8c-bce9-47d3-890f-283e2fea2cf2.jpg?1782694429"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// The Mycotyrant
+{
+    "name": "The Mycotyrant",
+    "manaCost": "{1}{B}{G}",
+    "typeLine": "Legendary Creature — Elder Fungus",
+    "oracleText": "Trample\nThe Mycotyrant's power and toughness are each equal to the number of creatures you control that are Fungi and/or Saprolings.\nAt the beginning of your end step, create X 1/1 black Fungus creature tokens with \"This token can't block,\" where X is the number of times you descended this turn. (You descend each time a permanent card is put into your graveyard from anywhere.)",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature Fungus|Saproling"
+            }
+        },
+        "toughness": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature Fungus|Saproling"
+            }
+        }
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "DESCENDED"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Fungus"
+                    ],
+                    "staticAbilities": [
+                        "CantBlock"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "MYTHIC",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/caef93cc-70d0-4cce-9aaa-13c0931b2ef7.jpg?1782694423",
+        "rulings": [
+            {
+                "date": "2023-11-10",
+                "text": "The Mycotyrant's last ability counts the number of times you descended this turn, not just whether you descended. Each permanent card put into your graveyard from anywhere this turn counts once."
+            },
+            {
+                "date": "2023-11-10",
+                "text": "A permanent card is an artifact, battle, creature, enchantment, land, or planeswalker card. Tokens are not cards, so a token being put into your graveyard doesn't count as you descending."
+            },
+            {
+                "date": "2023-11-10",
+                "text": "The Mycotyrant's power and toughness are each equal to the number of creatures you control that are Fungi and/or Saprolings, including The Mycotyrant itself if it's a Fungus. This is a characteristic-defining ability and applies in all zones, though it's only relevant on the battlefield."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Thousand Moons Crackshot
+{
+    "name": "Thousand Moons Crackshot",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature attacks, you may pay {2}{W}. When you do, tap target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "PayManaCost",
+                        "cost": "{2}{W}"
+                    },
+                    "reflexiveEffect": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "reflexiveTargetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "artist": "Marie Magny",
+        "flavorText": "The Thousand Moons practice every maneuver thousands of times, allowing them to strike flawlessly without hesitation in the heat of battle.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/741a7439-965d-49f2-b43e-053f29196e6b.jpg?1782694581"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Thousand Moons Infantry
+{
+    "name": "Thousand Moons Infantry",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Untap this creature during each other player's untap step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            "UntapSelfDuringOtherUntapSteps"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Manuel Castañón",
+        "flavorText": "The Thousand Moons train and fight in tight-knit squads of ten. Every tenth Moon functions as an officer, every hundredth as a captain, and the thousandth, Anim Pakal, as supreme commander.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1974a8c-3328-4ff5-9a00-cb79ebb8ccf6.jpg?1782694580"
+    }
+}
+
+// Threefold Thunderhulk
+{
+    "name": "Threefold Thunderhulk",
+    "manaCost": "{7}",
+    "typeLine": "Artifact Creature — Gnome",
+    "oracleText": "This creature enters with three +1/+1 counters on it.\nWhenever this creature enters or attacks, create a number of 1/1 colorless Gnome artifact creature tokens equal to its power.\n{2}, Sacrifice another artifact: Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "EntityProperty",
+                        "entity": "Source",
+                        "numericProperty": "Power"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Gnome"
+                    ],
+                    "artifactToken": true
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "EntityProperty",
+                        "entity": "Source",
+                        "numericProperty": "Power"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Gnome"
+                    ],
+                    "artifactToken": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "count": 3,
+                "selfOnly": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "265",
+        "rarity": "RARE",
+        "artist": "Xavier Ribeiro",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/1917c62f-d463-43eb-87ad-89ffbc88b6fe.jpg?1782694400"
+    }
+}
+
 // Trumpeting Carnosaur
 {
     "name": "Trumpeting Carnosaur",

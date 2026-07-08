@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 196 / 286
+**Implemented:** 201 / 286
 - [x] Abrade
 - [ ] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -252,17 +252,17 @@
 - [x] Tendril of the Mycotyrant
 - [x] Terror Tide
 - [ ] The Ancient One
-- [ ] The Belligerent
+- [x] The Belligerent
 - [ ] The Enigma Jewel
 - [ ] The Everflowing Well
 - [ ] The Millennium Calendar
-- [ ] The Mycotyrant
+- [x] The Mycotyrant
 - [ ] The Skullspore Nexus
-- [ ] Thousand Moons Crackshot
-- [ ] Thousand Moons Infantry
+- [x] Thousand Moons Crackshot
+- [x] Thousand Moons Infantry
 - [ ] Thousand Moons Smithy
 - [x] Thrashing Brontodon
-- [ ] Threefold Thunderhulk
+- [x] Threefold Thunderhulk
 - [ ] Throne of the Grim Captain
 - [ ] Tinker's Tote
 - [ ] Tishana's Tidebinder

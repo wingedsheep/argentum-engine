@@ -1,0 +1,60 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "The Belligerent",
+      "The Mycotyrant",
+      "Thousand Moons Crackshot",
+      "Thousand Moons Infantry",
+      "Threefold Thunderhulk"
+    ],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Tarrian's Soulcleaver"}
+    ],
+    "graveyard": [],
+    "library": ["Grizzly Bears", "Forest", "Grizzly Bears", "Plains", "Mountain", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Grizzly Bears", "Island"],
+    "battlefield": [
+      {"name": "Cenote Scout"},
+      {"name": "Grizzly Bears"},
+      {"name": "Basking Capybara"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Swamp", "Forest", "Mountain", "Island", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["END"],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "SELF"
+}
