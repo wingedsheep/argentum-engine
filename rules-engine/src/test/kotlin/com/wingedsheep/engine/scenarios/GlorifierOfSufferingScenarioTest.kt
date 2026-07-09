@@ -71,12 +71,10 @@ class GlorifierOfSufferingScenarioTest : FunSpec({
         driver.submitTargetSelection(me, listOf(target1, target2))
         driver.bothPass() // resolve reflexive trigger
 
-        // Fodder was sacrificed.
-        driver.findPermanent(me, "Grizzly Bears")?.let { id ->
-            // At least one Bear should still be alive (target1 or target2).
-            id shouldBe target1
-        }
+        // Fodder was sacrificed; the two targets stay on the battlefield.
         driver.getGraveyard(me).contains(fodder) shouldBe true
+        driver.state.getBattlefield(me).contains(target1) shouldBe true
+        driver.state.getBattlefield(me).contains(target2) shouldBe true
 
         // Both targets received a +1/+1 counter.
         counterCount(driver, target1) shouldBe 1
