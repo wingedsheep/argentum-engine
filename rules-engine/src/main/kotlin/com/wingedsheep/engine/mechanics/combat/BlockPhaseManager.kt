@@ -746,20 +746,44 @@ internal class BlockPhaseManager(
             }
         }
 
-        // 2. "Must be blocked if able" (Gaea's Protector): at least one creature must block it
+        // 2. "Must be blocked if able" (Gaea's Protector): at least one creature must block it.
+        // Rule 509.1c only demands the maximum satisfiable number of requirements: a blocker
+        // that is the sole blocker of another must-be-blocked attacker (or is pinned to its
+        // current block by provoke) cannot be moved here without abandoning that requirement,
+        // so it doesn't count as "able". Two must-be-blocked attackers and one blocker means
+        // blocking either of them is legal.
         val mustBeBlockedIfAbleAttackers = findMustBeBlockedIfAbleAttackers(state)
-        for (attackerId in mustBeBlockedIfAbleAttackers) {
-            val blockersAssigned = attackerToBlockers[attackerId] ?: emptySet()
-            if (blockersAssigned.isNotEmpty()) continue
+        if (mustBeBlockedIfAbleAttackers.isNotEmpty()) {
+            val requiredAttackers = mustBeBlockedByAllAttackers.toSet() + mustBeBlockedIfAbleAttackers
+            val provokePins = state.floatingEffects
+                .filter { it.effect.modification is SerializableModification.MustBlockSpecificAttacker }
+                .flatMap { floatingEffect ->
+                    val modification =
+                        floatingEffect.effect.modification as SerializableModification.MustBlockSpecificAttacker
+                    floatingEffect.effect.affectedEntities.map { it to modification.attackerId }
+                }
+                .toSet()
 
-            // Check if any potential blocker can actually block this attacker
-            val canBeBlocked = potentialBlockers.any { blockerId ->
-                canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)
+            for (attackerId in mustBeBlockedIfAbleAttackers) {
+                val blockersAssigned = attackerToBlockers[attackerId] ?: emptySet()
+                if (blockersAssigned.isNotEmpty()) continue
+
+                // A potential blocker only counts if moving it onto this attacker abandons no
+                // other requirement it is currently satisfying.
+                val canBeBlocked = potentialBlockers.any { blockerId ->
+                    if (!canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)) {
+                        return@any false
+                    }
+                    blockers[blockerId].orEmpty().none { blocked ->
+                        (blocked in requiredAttackers && (attackerToBlockers[blocked]?.size ?: 0) <= 1) ||
+                            (blockerId to blocked) in provokePins
+                    }
+                }
+                if (!canBeBlocked) continue
+
+                val attackerName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
+                return "$attackerName must be blocked if able"
             }
-            if (!canBeBlocked) continue
-
-            val attackerName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
-            return "$attackerName must be blocked if able"
         }
 
         return null

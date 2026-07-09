@@ -94,6 +94,84 @@ class DisturbedSlumberScenarioTest : FunSpec({
         driver.declareBlockers(p2, mapOf(bears to listOf(forest))).isSuccess shouldBe true
     }
 
+    test("two must-be-blocked attackers, one blocker — blocking either is legal (Rule 509.1c)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 40),
+            startingLife = 20
+        )
+
+        val p1 = driver.activePlayer!!
+        val p2 = driver.getOpponent(p1)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val forest = driver.putLandOnBattlefield(p1, "Forest")
+        val swamp = driver.putLandOnBattlefield(p1, "Swamp")
+        driver.putCreatureOnBattlefield(p2, "Grizzly Bears")
+
+        val spell1 = driver.putCardInHand(p1, "Disturbed Slumber")
+        val spell2 = driver.putCardInHand(p1, "Disturbed Slumber")
+        driver.giveMana(p1, Color.GREEN, 4)
+
+        driver.castSpell(p1, spell1, targets = listOf(forest)).isSuccess shouldBe true
+        driver.bothPass()
+        driver.castSpell(p1, spell2, targets = listOf(swamp)).isSuccess shouldBe true
+        driver.bothPass()
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(p1, listOf(forest, swamp), p2).isSuccess shouldBe true
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+
+        val bears = driver.findPermanent(p2, "Grizzly Bears")!!
+
+        // Declining to block is still illegal — the Bears must block one of them.
+        driver.declareBlockers(p2, emptyMap()).isSuccess shouldBe false
+
+        // One blocker can only satisfy one requirement: blocking either attacker is legal.
+        driver.declareBlockers(p2, mapOf(bears to listOf(forest))).isSuccess shouldBe true
+    }
+
+    test("two must-be-blocked attackers, two blockers — both must be blocked") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Forest" to 40),
+            startingLife = 20
+        )
+
+        val p1 = driver.activePlayer!!
+        val p2 = driver.getOpponent(p1)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val forest = driver.putLandOnBattlefield(p1, "Forest")
+        val swamp = driver.putLandOnBattlefield(p1, "Swamp")
+        val bears1 = driver.putCreatureOnBattlefield(p2, "Grizzly Bears")
+        val bears2 = driver.putCreatureOnBattlefield(p2, "Grizzly Bears")
+
+        val spell1 = driver.putCardInHand(p1, "Disturbed Slumber")
+        val spell2 = driver.putCardInHand(p1, "Disturbed Slumber")
+        driver.giveMana(p1, Color.GREEN, 4)
+
+        driver.castSpell(p1, spell1, targets = listOf(forest)).isSuccess shouldBe true
+        driver.bothPass()
+        driver.castSpell(p1, spell2, targets = listOf(swamp)).isSuccess shouldBe true
+        driver.bothPass()
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(p1, listOf(forest, swamp), p2).isSuccess shouldBe true
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+
+        // Both requirements can be satisfied, so leaving one attacker unblocked is illegal —
+        // whether by blocking only one attacker or by stacking both blockers on one.
+        driver.declareBlockers(p2, mapOf(bears1 to listOf(forest))).isSuccess shouldBe false
+        driver.declareBlockers(p2, mapOf(bears1 to listOf(forest), bears2 to listOf(forest))).isSuccess shouldBe false
+
+        // Covering both attackers is legal.
+        driver.declareBlockers(
+            p2,
+            mapOf(bears1 to listOf(forest), bears2 to listOf(swamp))
+        ).isSuccess shouldBe true
+    }
+
     test("animated land reverts to a non-creature land at end of turn") {
         val driver = createDriver()
         driver.initMirrorMatch(
