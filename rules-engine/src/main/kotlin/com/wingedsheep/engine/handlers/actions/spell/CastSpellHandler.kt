@@ -789,6 +789,37 @@ class CastSpellHandler(
      * so validation, payment, and the actual tap stay consistent.
      */
     /**
+     * Sacrifice a permanent paid as an additional cost of casting, routing the zone move through
+     * the canonical [ZoneTransitionService] (the single source of truth for zone transitions).
+     *
+     * This is the *cost* analogue of [com.wingedsheep.engine.handlers.effects.zones.SacrificeExecutor]
+     * (the *effect* "Sacrifice a creature: …"). Both must go through [ZoneTransitionService.moveToZone]
+     * so the emitted [ZoneChangeEvent] carries the last-known-information snapshot (CR 603.10 /
+     * 608.2h) *and* the full exit cleanup + graveyard-replacement redirect run. Dies/leaves triggers
+     * that read the dying permanent's counters, power/toughness, keywords, or token-ness (e.g.
+     * Explorer's Cache: "Whenever a creature you control with a +1/+1 counter on it dies …") only
+     * fire when that snapshot is present — a hand-built `ZoneChangeEvent(lastKnown = null)` silently
+     * drops them. [ZoneTransitionService.trackPermanentSacrifice] first marks the permanent so the
+     * resulting event is tagged `wasSacrificed = true` (CR 701.21), honoring "if it wasn't
+     * sacrificed" triggers.
+     */
+    private fun sacrificePermanentAsCost(
+        state: GameState,
+        permId: EntityId,
+        sacrificingPlayerId: EntityId,
+        events: MutableList<GameEvent>,
+    ): GameState {
+        val permName = state.getEntity(permId)?.get<CardComponent>()?.name
+        val tracked = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+            .trackPermanentSacrifice(state, listOf(permId), sacrificingPlayerId)
+        events.add(PermanentsSacrificedEvent(sacrificingPlayerId, listOf(permId), listOfNotNull(permName)))
+        val transition = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+            .moveToZone(tracked, permId, Zone.GRAVEYARD)
+        events.addAll(transition.events)
+        return transition.state
+    }
+
+    /**
      * The waterbend amount this cast adds to its mana cost (Avatar: The Last Airbender), or 0 when
      * the spell has no waterbend additional cost, or its *optional* cost was declined. For
      * "waterbend {X}" the amount is the cast-time X ([CastSpell.xValue]).
@@ -2059,26 +2090,8 @@ class CastSpellHandler(
                                 captureEntitySnapshots(action.additionalCostPayment.sacrificedPermanents, projectedBeforeSacrifice)
                             )
                             for (permId in action.additionalCostPayment.sacrificedPermanents) {
-                                val permContainer = currentState.getEntity(permId) ?: continue
-                                val permCard = permContainer.get<CardComponent>() ?: continue
-                                val controllerId = permContainer.get<ControllerComponent>()?.playerId ?: action.playerId
-                                val ownerId = permCard.ownerId ?: action.playerId
-                                val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
-                                val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
-
-                                currentState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                                    .trackPermanentSacrifice(currentState, listOf(permId), action.playerId)
-                                currentState = currentState.removeFromZone(battlefieldZone, permId)
-                                currentState = currentState.addToZone(graveyardZone, permId)
-
-                                events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId), listOf(permCard.name)))
-                                events.add(ZoneChangeEvent(
-                                    entityId = permId,
-                                    entityName = permCard.name,
-                                    fromZone = Zone.BATTLEFIELD,
-                                    toZone = Zone.GRAVEYARD,
-                                    ownerId = ownerId
-                                ))
+                                if (currentState.getEntity(permId) == null) continue
+                                currentState = sacrificePermanentAsCost(currentState, permId, action.playerId, events)
                             }
                         }
                         is CostAtom.Discard -> {
@@ -2177,26 +2190,8 @@ class CastSpellHandler(
                             captureEntitySnapshots(action.additionalCostPayment.sacrificedPermanents, projectedBeforeSacrifice)
                         )
                         for (permId in action.additionalCostPayment.sacrificedPermanents) {
-                            val permContainer = currentState.getEntity(permId) ?: continue
-                            val permCard = permContainer.get<CardComponent>() ?: continue
-                            val controllerId = permContainer.get<ControllerComponent>()?.playerId ?: action.playerId
-                            val ownerId = permCard.ownerId ?: action.playerId
-                            val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
-                            val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
-
-                            currentState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                                .trackPermanentSacrifice(currentState, listOf(permId), action.playerId)
-                            currentState = currentState.removeFromZone(battlefieldZone, permId)
-                            currentState = currentState.addToZone(graveyardZone, permId)
-
-                            events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId), listOf(permCard.name)))
-                            events.add(ZoneChangeEvent(
-                                entityId = permId,
-                                entityName = permCard.name,
-                                fromZone = Zone.BATTLEFIELD,
-                                toZone = Zone.GRAVEYARD,
-                                ownerId = ownerId
-                            ))
+                            if (currentState.getEntity(permId) == null) continue
+                            currentState = sacrificePermanentAsCost(currentState, permId, action.playerId, events)
                         }
                         // Apply cost reduction based on number of creatures sacrificed
                         val reduction = action.additionalCostPayment.sacrificedPermanents.size * additionalCost.costReductionPerCreature
@@ -2389,26 +2384,8 @@ class CastSpellHandler(
                                 captureEntitySnapshots(sacrificed, projectedBeforeSacrifice)
                             )
                             for (permId in sacrificed) {
-                                val permContainer = currentState.getEntity(permId) ?: continue
-                                val permCard = permContainer.get<CardComponent>() ?: continue
-                                val controllerId = permContainer.get<ControllerComponent>()?.playerId ?: action.playerId
-                                val ownerId = permCard.ownerId ?: action.playerId
-                                val battlefieldZone = ZoneKey(controllerId, Zone.BATTLEFIELD)
-                                val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
-
-                                currentState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                                    .trackPermanentSacrifice(currentState, listOf(permId), action.playerId)
-                                currentState = currentState.removeFromZone(battlefieldZone, permId)
-                                currentState = currentState.addToZone(graveyardZone, permId)
-
-                                events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId), listOf(permCard.name)))
-                                events.add(ZoneChangeEvent(
-                                    entityId = permId,
-                                    entityName = permCard.name,
-                                    fromZone = Zone.BATTLEFIELD,
-                                    toZone = Zone.GRAVEYARD,
-                                    ownerId = ownerId
-                                ))
+                                if (currentState.getEntity(permId) == null) continue
+                                currentState = sacrificePermanentAsCost(currentState, permId, action.playerId, events)
                             }
                         }
                     }
@@ -2494,29 +2471,16 @@ class CastSpellHandler(
         }
 
         // Pay Casualty's optional additional cost: sacrifice the chosen creature (CR 702.153).
-        // Validated in validate(); mirror the additional-cost Sacrifice zone move, including the
-        // LKI snapshot (Rule 112.7a / 608.2h) and the leave-the-battlefield events so dies/leaves
-        // triggers and the "cards leave your graveyard" family see the move.
+        // Validated in validate(); routes through the shared cost-sacrifice helper so the LKI
+        // snapshot (CR 608.2h / 113.7a) and the leave-the-battlefield events are emitted for
+        // dies/leaves triggers and the "cards leave your graveyard" family. The pre-sacrifice
+        // EntitySnapshot is also captured into sacrificedSnapshots for the spell's own effect
+        // context (copy-token P/T, etc.).
         action.casualtyCreature?.let { permId ->
             val projectedBeforeSacrifice = currentState.projectedState
             sacrificedSnapshots.addAll(captureEntitySnapshots(listOf(permId), projectedBeforeSacrifice))
-            val permContainer = currentState.getEntity(permId)
-            val permCard = permContainer?.get<CardComponent>()
-            if (permContainer != null && permCard != null) {
-                val controllerId = permContainer.get<ControllerComponent>()?.playerId ?: action.playerId
-                val ownerId = permCard.ownerId ?: action.playerId
-                currentState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                    .trackPermanentSacrifice(currentState, listOf(permId), action.playerId)
-                currentState = currentState.removeFromZone(ZoneKey(controllerId, Zone.BATTLEFIELD), permId)
-                currentState = currentState.addToZone(ZoneKey(ownerId, Zone.GRAVEYARD), permId)
-                events.add(PermanentsSacrificedEvent(action.playerId, listOf(permId), listOf(permCard.name)))
-                events.add(ZoneChangeEvent(
-                    entityId = permId,
-                    entityName = permCard.name,
-                    fromZone = Zone.BATTLEFIELD,
-                    toZone = Zone.GRAVEYARD,
-                    ownerId = ownerId
-                ))
+            if (currentState.getEntity(permId) != null) {
+                currentState = sacrificePermanentAsCost(currentState, permId, action.playerId, events)
             }
         }
 
