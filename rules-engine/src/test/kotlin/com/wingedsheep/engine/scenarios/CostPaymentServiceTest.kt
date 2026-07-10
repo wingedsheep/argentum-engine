@@ -340,14 +340,26 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             game.state.getEntity(fodder)!!.has<TappedComponent>().shouldBeTrue()
         }
 
-        test("Tap: unaffordable when the only other permanent is already tapped") {
+        test("Tap: unaffordable when every permanent, including the source, is already tapped") {
+            val game = scenario().withPlayers()
+                .withCardOnBattlefield(1, "Goblin Guide", tapped = true)
+                .withCardOnBattlefield(1, "Savannah Lions", tapped = true)
+                .build()
+            val service = CostPaymentService(EngineServices(cardRegistry))
+            val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
+            service.canAfford(game.state, game.player1Id, Costs.pay.Tap(GameObjectFilter.Any, 1), source).shouldBeFalse()
+        }
+
+        test("Tap: the source itself is an eligible candidate when the cost doesn't say 'another'") {
+            // "Tap an untapped permanent you control" (Command Bridge, Sunshot Militia's cost
+            // shape) has no "other" — the untapped source may pay its own cost.
             val game = scenario().withPlayers()
                 .withCardOnBattlefield(1, "Goblin Guide")
                 .withCardOnBattlefield(1, "Savannah Lions", tapped = true)
                 .build()
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
-            service.canAfford(game.state, game.player1Id, Costs.pay.Tap(GameObjectFilter.Any, 1), source).shouldBeFalse()
+            service.canAfford(game.state, game.player1Id, Costs.pay.Tap(GameObjectFilter.Any, 1), source).shouldBeTrue()
         }
 
         // -----------------------------------------------------------------------------------------

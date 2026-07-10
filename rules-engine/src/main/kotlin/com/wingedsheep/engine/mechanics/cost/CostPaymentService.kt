@@ -127,7 +127,7 @@ class CostPaymentService(private val services: EngineServices) {
                 is CostAtom.ReturnToHand ->
                     selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, controlledMatching(state, payerId, atom.filter, sourceId), atom.count, useTargetingUI = true)
                 is CostAtom.TapPermanents ->
-                    selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, controlledUntapped(state, payerId, atom.filter, sourceId), atom.count, useTargetingUI = true)
+                    selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, controlledUntapped(state, payerId, atom.filter, if (atom.excludeSelf) sourceId else null), atom.count, useTargetingUI = true)
             }
         }
     }
@@ -476,7 +476,7 @@ class CostPaymentService(private val services: EngineServices) {
                         else candidates.size >= atom.count
                     }
                     is CostAtom.ReturnToHand -> controlledMatching(state, payerId, atom.filter, sourceId).size >= atom.count
-                    is CostAtom.TapPermanents -> controlledUntapped(state, payerId, atom.filter, sourceId).size >= atom.count
+                    is CostAtom.TapPermanents -> controlledUntapped(state, payerId, atom.filter, if (atom.excludeSelf) sourceId else null).size >= atom.count
                 }
             }
         }
@@ -520,9 +520,10 @@ class CostPaymentService(private val services: EngineServices) {
                 state, filter.youControl(), PredicateContext(controllerId = playerId), excludeSelfId = sourceId
             )
 
-        fun controlledUntapped(state: GameState, playerId: EntityId, filter: GameObjectFilter, sourceId: EntityId): List<EntityId> =
+        /** [excludeSelfId] only for costs that say "another" — a plain "tap two untapped …" may tap the source itself. */
+        fun controlledUntapped(state: GameState, playerId: EntityId, filter: GameObjectFilter, excludeSelfId: EntityId?): List<EntityId> =
             BattlefieldFilterUtils.findMatchingOnBattlefield(
-                state, filter.youControl().untapped(), PredicateContext(controllerId = playerId), excludeSelfId = sourceId
+                state, filter.youControl().untapped(), PredicateContext(controllerId = playerId), excludeSelfId = excludeSelfId
             )
 
         /** Number of distinct card names among [candidates] — for "with different names" costs. */
