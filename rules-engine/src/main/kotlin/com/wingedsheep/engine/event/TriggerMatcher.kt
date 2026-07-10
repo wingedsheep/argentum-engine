@@ -757,6 +757,14 @@ class TriggerMatcher(
 
         // Check filter
         if (trigger.filter != GameObjectFilter.Any) {
+            // A heterogeneous OR union (`Artifact or Creature.tapped()`) carries its branches in
+            // anyOf, each a complete filter — match if any branch matches. (A homogeneous OR
+            // instead collapses to a single CardPredicate.Or handled below.)
+            if (trigger.filter.anyOf.isNotEmpty()) {
+                return trigger.filter.anyOf.any { branch ->
+                    matchesZoneChangeTrigger(trigger.copy(filter = branch), binding, event, sourceId, controllerId, state)
+                }
+            }
             val projected = state.projectedState
             // Check card predicates (creature type, subtype, etc.)
             // Note: entity may not exist in state if it was a token cleaned up by SBAs.
@@ -774,13 +782,17 @@ class TriggerMatcher(
             }
             val isFaceDown = entity?.has<FaceDownComponent>() == true
 
-            for (predicate in trigger.filter.cardPredicates) {
-                when (predicate) {
+            // LKI-aware predicate evaluation. Composites (Or/And/Not — e.g. the collapsed
+            // `Artifact or Creature` union on Tarrian's Soulcleaver) must recurse through THIS
+            // function, not fall through to the live-entity path: a token is swept by 704.5d
+            // before the matcher runs, so the generic cardComponent-based path returns false for
+            // every predicate inside the composite and the trigger silently misses token deaths.
+            fun matchesLkiPredicate(predicate: com.wingedsheep.sdk.scripting.predicates.CardPredicate): Boolean {
+                return when (predicate) {
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature -> {
                         // For dying creatures: use base state (they're already in graveyard)
                         // Face-down permanents are 2/2 creatures (Rule 708.2) and count.
-                        val isCreature = isFaceDown || typeLine?.isCreature == true
-                        if (!isCreature) return false
+                        isFaceDown || typeLine?.isCreature == true
                     }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent -> {
                         // LKI-safe permanent check. Anything that left the battlefield was, by
@@ -790,27 +802,21 @@ class TriggerMatcher(
                         // (captured on the event, like IsCreature/IsLand above) instead. Without this,
                         // "whenever another permanent you control leaves the battlefield" (Suki,
                         // Courageous Rescuer) silently misses a leaving token.
-                        val isPermanent = isFaceDown || typeLine?.isPermanent == true
-                        if (!isPermanent) return false
+                        isFaceDown || typeLine?.isPermanent == true
                     }
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLand -> {
-                        if (typeLine?.isLand != true) return false
-                    }
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact -> {
-                        if (typeLine?.isArtifact != true) return false
-                    }
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsEnchantment -> {
-                        if (typeLine?.isEnchantment != true) return false
-                    }
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsLand ->
+                        typeLine?.isLand == true
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsArtifact ->
+                        typeLine?.isArtifact == true
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsEnchantment ->
+                        typeLine?.isEnchantment == true
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype -> {
                         // For entering creatures: use projected state (they're on battlefield)
                         // For dying creatures: use base state (they're in graveyard, no projected subtypes)
                         if (event.toZone == Zone.BATTLEFIELD) {
-                            if (!projected.hasSubtype(event.entityId, predicate.subtype.value)) return false
+                            projected.hasSubtype(event.entityId, predicate.subtype.value)
                         } else {
-                            if (isFaceDown) return false
-                            if (typeLine == null) return false
-                            if (!typeLine.hasSubtype(predicate.subtype)) return false
+                            !isFaceDown && typeLine?.hasSubtype(predicate.subtype) == true
                         }
                     }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasAnyOfSubtypes -> {
@@ -819,11 +825,9 @@ class TriggerMatcher(
                         // the entity (and its CardComponent) may already be gone, so read the
                         // last-known type line rather than the generic cardComponent path.
                         if (event.toZone == Zone.BATTLEFIELD) {
-                            if (predicate.subtypes.none { projected.hasSubtype(event.entityId, it.value) }) return false
+                            predicate.subtypes.any { projected.hasSubtype(event.entityId, it.value) }
                         } else {
-                            if (isFaceDown) return false
-                            if (typeLine == null) return false
-                            if (predicate.subtypes.none { typeLine.hasSubtype(it) }) return false
+                            !isFaceDown && typeLine != null && predicate.subtypes.any { typeLine.hasSubtype(it) }
                         }
                     }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasKeyword -> {
@@ -833,9 +837,9 @@ class TriggerMatcher(
                         // have its keywords (e.g., Jackdaw Savior: "whenever a creature you control
                         // with flying dies").
                         if (event.fromZone == Zone.BATTLEFIELD && event.lastKnown?.keywords?.isNotEmpty() == true) {
-                            if (predicate.keyword.name !in (event.lastKnown?.keywords ?: emptySet())) return false
+                            predicate.keyword.name in (event.lastKnown?.keywords ?: emptySet())
                         } else {
-                            if (!projected.hasKeyword(event.entityId, predicate.keyword)) return false
+                            projected.hasKeyword(event.entityId, predicate.keyword)
                         }
                     }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasChosenSubtype -> {
@@ -852,7 +856,7 @@ class TriggerMatcher(
                         val isChangelingCreatureType = cardComponent != null &&
                             Keyword.CHANGELING in cardComponent.baseKeywords &&
                             chosenType in Subtype.ALL_CREATURE_TYPES
-                        if (!hasSubtype && !isChangelingCreatureType) return false
+                        hasSubtype || isChangelingCreatureType
                     }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNontoken -> {
                         // Token-ness is intrinsic; LKI is required because 704.5d sweeps the
@@ -865,27 +869,36 @@ class TriggerMatcher(
                         } else {
                             entity?.has<com.wingedsheep.engine.state.components.identity.TokenComponent>() == true
                         }
-                        if (isToken) return false
+                        !isToken
                     }
                     is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsToken -> {
-                        val isToken = if (event.fromZone == Zone.BATTLEFIELD) {
+                        if (event.fromZone == Zone.BATTLEFIELD) {
                             event.lastKnown?.wasToken == true
                         } else {
                             entity?.has<com.wingedsheep.engine.state.components.identity.TokenComponent>() == true
                         }
-                        if (!isToken) return false
                     }
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.Or ->
+                        predicate.predicates.any { matchesLkiPredicate(it) }
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.And ->
+                        predicate.predicates.all { matchesLkiPredicate(it) }
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.Not ->
+                        !matchesLkiPredicate(predicate.predicate)
                     else -> {
                         // For other predicates, check the entity's type
                         if (cardComponent == null) return false
-                        if (!matchesCardPredicate(
-                                predicate, cardComponent, projected, event.entityId, isFaceDown,
-                                lastKnownPower = event.lastKnown?.power,
-                                lastKnownToughness = event.lastKnown?.toughness,
-                                lastKnownWasToken = event.lastKnown?.wasToken == true
-                            )) return false
+                        matchesCardPredicate(
+                            predicate, cardComponent, projected, event.entityId, isFaceDown,
+                            lastKnownPower = event.lastKnown?.power,
+                            lastKnownToughness = event.lastKnown?.toughness,
+                            lastKnownWasToken = event.lastKnown?.wasToken == true
+                        )
                     }
                 }
+            }
+
+            for (predicate in trigger.filter.cardPredicates) {
+                if (!matchesLkiPredicate(predicate)) return false
             }
             // Check state predicates (face-down, tapped, etc.)
             for (predicate in trigger.filter.statePredicates) {

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.lci.cards.SynapseNecromage
 import com.wingedsheep.mtg.sets.definitions.lci.cards.TarriansSoulcleaver
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
@@ -29,6 +30,10 @@ import io.kotest.matchers.shouldBe
  *  2. Another creature dying (any controller) puts a +1/+1 counter on the equipped creature.
  *  3. An artifact dying puts a +1/+1 counter on the equipped creature (artifact branch of the OR).
  *  4. When the Soulcleaver is unattached, the death trigger resolves as a harmless no-op.
+ *  5. A TOKEN dying puts a +1/+1 counter on the equipped creature — regression for the
+ *     TriggerMatcher LKI gap: the union filter collapses to CardPredicate.Or, and the token
+ *     entity is swept by CR 704.5d before trigger matching, so the composite must be evaluated
+ *     against the event's last-known type line, not the live (gone) CardComponent.
  */
 class TarriansSoulcleaverScenarioTest : FunSpec({
 
@@ -36,7 +41,7 @@ class TarriansSoulcleaverScenarioTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(TarriansSoulcleaver))
+        driver.registerCards(TestCards.all + listOf(TarriansSoulcleaver, SynapseNecromage))
         return driver
     }
 
@@ -145,5 +150,40 @@ class TarriansSoulcleaverScenarioTest : FunSpec({
 
         // No creature to receive the counter — the bear stays at zero and nothing crashes.
         plusOneCounters(driver, bear) shouldBe 0
+    }
+
+    test("a token dying puts a +1/+1 counter on the equipped creature (LKI regression)") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Swamp" to 40), startingLife = 20)
+
+        val bear = driver.putCreatureOnBattlefield(driver.player1, "Grizzly Bears")
+        driver.putEquipmentAttached(driver.player1, "Tarrian's Soulcleaver", bear)
+        // Opponent's Synapse Necromage: killing it creates two Fungus tokens through the real
+        // token-creation path, so the tokens carry a genuine TokenComponent.
+        val necromage = driver.putCreatureOnBattlefield(driver.player2, "Synapse Necromage")
+
+        driver.advanceToPlayer1Main()
+
+        driver.giveMana(driver.player1, Color.RED, 1)
+        val bolt1 = driver.putCardInHand(driver.player1, "Lightning Bolt")
+        driver.castSpell(driver.player1, bolt1, targets = listOf(necromage)).isSuccess shouldBe true
+        driver.bothPass() // resolve the bolt -> Necromage dies, queuing both players' triggers
+        driver.bothPass() // resolve one trigger (APNAP)
+        driver.bothPass() // resolve the other trigger
+
+        // The Necromage (a real card) dying already grew the bear by one and left two tokens.
+        plusOneCounters(driver, bear) shouldBe 1
+        val fungusTokens = driver.getCreatures(driver.player2).filter { driver.getCardName(it) == "Fungus Token" }
+        fungusTokens.size shouldBe 2
+
+        // Kill a token: it dies AND is swept from the game by 704.5d in the same SBA pass, so
+        // the Soulcleaver's `Artifact or Creature` union must match on last-known info.
+        driver.giveMana(driver.player1, Color.RED, 1)
+        val bolt2 = driver.putCardInHand(driver.player1, "Lightning Bolt")
+        driver.castSpell(driver.player1, bolt2, targets = listOf(fungusTokens.first())).isSuccess shouldBe true
+        driver.bothPass() // resolve the bolt -> token dies and is swept
+        driver.bothPass() // resolve the Soulcleaver trigger
+
+        plusOneCounters(driver, bear) shouldBe 2
     }
 })
