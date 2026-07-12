@@ -26,5 +26,9 @@ object InnistradCrimsonVowSet : MtgSet {
         CardDiscovery.findPrintingsIn(CARDS_PACKAGE)
     }
 
+    override val basicLands: List<CardDefinition> by lazy {
+        CardDiscovery.findBasicLandsIn(CARDS_PACKAGE, code)
+    }
+
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.vow.cards"
 }

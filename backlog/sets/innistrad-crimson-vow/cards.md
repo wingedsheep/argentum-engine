@@ -1,0 +1,277 @@
+# Innistrad: Crimson Vow (VOW) - Card Checklist
+
+**Set Size:** 272 booster cards (excluding basic lands and tokens)
+**Release Date:** November 19, 2021
+**Implemented:** 109 / 272
+- [x] Abrade
+- [x] Adamant Will
+- [ ] Aim for the Head
+- [ ] Alchemist's Gambit
+- [ ] Alchemist's Retrieval
+- [ ] Alluring Suitor
+- [x] Ancestral Anger
+- [ ] Ancient Lumberknot
+- [x] Angelic Quartermaster
+- [ ] Anje, Maid of Dishonor
+- [ ] Apprentice Sharpshooter
+- [ ] Archghoul of Thraben
+- [x] Arm the Cathars
+- [ ] Ascendant Packleader
+- [ ] Avabruck Caretaker
+- [ ] Ballista Watcher
+- [x] Belligerent Guest
+- [ ] Binding Geist
+- [ ] Biolume Egg
+- [x] Bleed Dry
+- [x] Blood Fountain
+- [ ] Blood Hypnotist
+- [x] Blood Petal Celebrant
+- [x] Blood Servitor
+- [x] Bloodcrazed Socialite
+- [ ] Bloodsworn Squire
+- [x] Bloodtithe Harvester
+- [ ] Bloodvial Purveyor
+- [x] Bloody Betrayal
+- [x] Boarded Window
+- [ ] Bramble Armor
+- [x] Bramble Wurm
+- [ ] Bride's Gown
+- [ ] Brine Comber
+- [ ] By Invitation Only
+- [ ] Cartographer's Survey
+- [ ] Catapult Fodder
+- [ ] Cemetery Desecrator
+- [ ] Cemetery Gatekeeper
+- [ ] Cemetery Illuminator
+- [ ] Cemetery Protector
+- [ ] Cemetery Prowler
+- [ ] Ceremonial Knife
+- [ ] Chandra, Dressed to Kill
+- [ ] Change of Fortune
+- [ ] Child of the Pack
+- [ ] Chill of the Grave
+- [ ] Circle of Confinement
+- [ ] Cloaked Cadet
+- [x] Cobbled Lancer
+- [ ] Concealing Curtains
+- [ ] Consuming Tide
+- [x] Courier Bat
+- [x] Cradle of Safety
+- [ ] Crawling Infestation
+- [ ] Creepy Puppeteer
+- [x] Cruel Witness
+- [ ] Crushing Canopy
+- [ ] Cultivator Colossus
+- [ ] Curse of Hospitality
+- [x] Dawnhart Disciple
+- [x] Dawnhart Geist
+- [x] Daybreak Combatants
+- [x] Deathcap Glade
+- [ ] Demonic Bargain
+- [ ] Desperate Farmer
+- [ ] Dig Up
+- [x] Diregraf Scavenger
+- [ ] Distracting Geist
+- [ ] Diver Skaab
+- [ ] Dollhouse of Horrors
+- [ ] Dominating Vampire
+- [ ] Doomed Dissenter
+- [ ] Dormant Grove
+- [ ] Dorothea, Vengeful Victim
+- [ ] Dread Fugue
+- [ ] Dreadfeast Demon
+- [ ] Dreadlight Monstrosity
+- [x] Dreamroot Cascade
+- [ ] Dreamshackle Geist
+- [ ] Drogskol Infantry
+- [ ] Dying to Serve
+- [ ] Edgar's Awakening
+- [ ] Edgar, Charmed Groom
+- [x] End the Festivities
+- [ ] Eruth, Tormented Prophet
+- [x] Estwald Shieldbasher
+- [x] Evolving Wilds
+- [ ] Faithbound Judge
+- [x] Falkenrath Celebrants
+- [x] Falkenrath Forebear
+- [x] Fear of Death
+- [ ] Fearful Villager
+- [ ] Fell Stinger
+- [ ] Fierce Retribution
+- [x] Flame-Blessed Bolt
+- [ ] Fleeting Spirit
+- [x] Flourishing Hunter
+- [ ] Foreboding Statue
+- [x] Forest
+- [x] Frenzied Devils
+- [x] Geistlight Snare
+- [ ] Geralf, Visionary Stitcher
+- [x] Gift of Fangs
+- [ ] Glorious Sunrise
+- [x] Gluttonous Guest
+- [ ] Graf Reaver
+- [x] Grisly Ritual
+- [ ] Grolnok, the Omnivore
+- [ ] Groom's Finery
+- [ ] Gryff Rider
+- [ ] Gryffwing Cavalry
+- [ ] Gutter Skulker
+- [x] Halana and Alena, Partners
+- [ ] Hallowed Haunting
+- [ ] Hamlet Vanguard
+- [x] Headless Rider
+- [ ] Henrika Domnathi
+- [x] Hero's Downfall
+- [ ] Heron of Hope
+- [x] Heron-Blessed Geist
+- [ ] Hiveheart Shaman
+- [ ] Honeymoon Hearse
+- [x] Honored Heirloom
+- [ ] Hookhand Mariner
+- [ ] Hopeful Initiate
+- [ ] Howling Moon
+- [ ] Howlpack Piper
+- [x] Hullbreaker Horror
+- [x] Hungry Ridgewolf
+- [ ] Ill-Tempered Loner
+- [ ] Infestation Expert
+- [ ] Innocent Traveler
+- [ ] Inspired Idea
+- [ ] Into the Night
+- [ ] Investigator's Journal
+- [x] Island
+- [ ] Jacob Hauken, Inspector
+- [ ] Katilda, Dawnhart Martyr
+- [ ] Kaya, Geist Hunter
+- [x] Kessig Flamebreather
+- [x] Kessig Wolfrider
+- [ ] Kindly Ancestor
+- [ ] Lacerate Flesh
+- [ ] Laid to Rest
+- [ ] Lambholt Raconteur
+- [ ] Lantern Bearer
+- [ ] Lantern Flare
+- [x] Lantern of the Lost
+- [x] Lightning Wolf
+- [ ] Lunar Rejection
+- [ ] Magma Pummeler
+- [ ] Manaform Hellkite
+- [x] Markov Purifier
+- [x] Markov Retribution
+- [x] Markov Waltzer
+- [x] Massive Might
+- [x] Militia Rallier
+- [ ] Mindleech Ghoul
+- [ ] Mirrorhall Mimic
+- [ ] Mischievous Catgeist
+- [x] Moldgraf Millipede
+- [x] Mountain
+- [ ] Mulch
+- [ ] Nature's Embrace
+- [x] Nebelgast Beguiler
+- [x] Necroduality
+- [ ] Nurturing Presence
+- [ ] Oakshade Stalker
+- [ ] Odric, Blood-Cursed
+- [ ] Old Rutstein
+- [ ] Olivia's Attendants
+- [ ] Olivia, Crimson Bride
+- [x] Ollenbock Escort
+- [ ] Overcharged Amalgam
+- [x] Packsong Pup
+- [ ] Panicked Bystander
+- [ ] Parasitic Grasp
+- [ ] Parish-Blade Trainee
+- [ ] Patchwork Crawler
+- [ ] Path of Peril
+- [x] Persistent Specimen
+- [x] Piercing Light
+- [x] Plains
+- [x] Pointed Discussion
+- [ ] Pyre Spawn
+- [ ] Radiant Grace
+- [ ] Ragged Recluse
+- [x] Reckless Impulse
+- [x] Reclusive Taxidermist
+- [x] Rending Flame
+- [ ] Repository Skaab
+- [x] Resistance Squad
+- [ ] Restless Bloodseeker
+- [x] Retrieve
+- [ ] Rot-Tide Gargantua
+- [x] Runebound Wolf
+- [ ] Runo Stromkirk
+- [ ] Rural Recruit
+- [x] Sanctify
+- [ ] Sanguine Statuette
+- [ ] Savior of Ollenbock
+- [x] Sawblade Slinger
+- [x] Scattered Thoughts
+- [ ] Screaming Swarm
+- [x] Selhoff Entomber
+- [ ] Serpentine Ambush
+- [x] Shattered Sanctum
+- [x] Sheltering Boughs
+- [x] Sigarda's Imprisonment
+- [ ] Sigarda's Summons
+- [ ] Sigardian Paladin
+- [ ] Skulking Killer
+- [ ] Skull Skaab
+- [x] Skywarp Skaab
+- [ ] Snarling Wolf
+- [ ] Sorin the Mirthless
+- [ ] Soulcipher Board
+- [ ] Spiked Ripsaw
+- [ ] Splendid Reclamation
+- [x] Spore Crawler
+- [x] Sporeback Wolf
+- [x] Steelclad Spirit
+- [ ] Stensia Uprising
+- [ ] Stitched Assistant
+- [x] Stormcarved Coast
+- [ ] Stormchaser Drake
+- [x] Sundown Pass
+- [ ] Supernatural Rescue
+- [x] Sure Strike
+- [x] Swamp
+- [x] Syncopate
+- [x] Syphon Essence
+- [ ] Thalia, Guardian of Thraben
+- [x] Thirst for Discovery
+- [ ] Torens, Fist of the Angels
+- [x] Toxic Scorpion
+- [ ] Toxrill, the Corrosive
+- [x] Traveling Minister
+- [ ] Twinblade Geist
+- [ ] Ulvenwald Oddity
+- [x] Undead Butler
+- [ ] Undying Malice
+- [x] Unhallowed Phalanx
+- [x] Unholy Officiant
+- [x] Valorous Stance
+- [ ] Vampire Slayer
+- [x] Vampire's Kiss
+- [x] Vampires' Vengeance
+- [x] Vilespawn Spider
+- [x] Voice of the Blessed
+- [ ] Volatile Arsonist
+- [ ] Voldaren Bloodcaster
+- [x] Voldaren Epicure
+- [ ] Voldaren Estate
+- [ ] Voltaic Visionary
+- [x] Wandering Mind
+- [x] Wanderlight Spirit
+- [ ] Wash Away
+- [ ] Weary Prisoner
+- [ ] Weaver of Blossoms
+- [ ] Wedding Announcement
+- [x] Wedding Invitation
+- [x] Wedding Security
+- [x] Welcoming Vampire
+- [x] Whispering Wizard
+- [ ] Winged Portent
+- [x] Witch's Web
+- [ ] Witness the Future
+- [ ] Wolf Strike
+- [ ] Wolfkin Outcast
+- [x] Wretched Throng
