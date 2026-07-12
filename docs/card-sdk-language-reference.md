@@ -1995,6 +1995,10 @@ can't statically prevent (cross-trigger flows, `Self`-vs-`ContextTarget` inside 
 `.targetsMatching(subfilter)` (a spell/ability on the stack that targets at least one object matching
 `subfilter` — `CardPredicate.TargetsMatching`; e.g. `GameObjectFilter.InstantOrSorcery.targetsMatching(GameObjectFilter.Creature)`
 for "an instant or sorcery spell that targets a creature" — Forum Necroscribe, Lecturing Scornmage);
+`.castFromZone(zone)` / `.notCastFromZone(zone)` (a spell on the stack that was / wasn't cast from a
+specific zone — `StatePredicate.WasCastFromZone`, reading `SpellOnStackComponent.castFromZone`; e.g.
+`TargetFilter.SpellOnStack.notCastFromZone(Zone.HAND)` for "target spell that wasn't cast from its
+owner's hand" — Wash Away, since a card in a hand is owned by that hand's player, CR 108.3);
 plus `TargetFilter.excludeSelf` to exclude the source.
 
 ### Cross-zone union targets (`TargetFilter.or` / `TargetFilter.anyOf`)
@@ -4488,6 +4492,46 @@ composite abilities).
   instant and sorcery card in your hand has miracle {2}"); `MiracleGrants.effectiveMiracle` is the
   single source of truth consulted by the draw flow, enumerator, and cast handler (printed wins, else
   the first matching battlefield grant on a permanent the player controls).
+- `Cleave(cost)` (`KeywordAbility.cleave("{cost}")`) — Cleave {cost} (CR 702.148, Innistrad: Crimson
+  Vow). Two static abilities on a spell while it's on the stack: "You may cast this spell by paying
+  [cost] rather than paying its mana cost" **and** "If this spell's cleave cost was paid, change its
+  text by removing all text found within square brackets." Modeled as an **alternative casting cost**
+  (`AlternativeCostType.CLEAVE`) whose text change is a **structural swap done at cast time**, not
+  runtime text mangling. Declare the keyword at card level, then supply the *brackets-removed* variant
+  inside the `spell { }` block:
+  - base `target(...)` / `effect` = the **brackets-present** (printed, restricted) shape;
+  - `cleaveTarget(...)` / `cleaveEffect` = the **brackets-removed** (broadened) shape.
+
+  When the spell is cast for its cleave cost, `CastSpellHandler` swaps `cleaveTargetRequirements` /
+  `cleaveSpellEffect` (`CardScript` fields) in for the base ones, so the resolving spell only ever
+  carries the cleaved shape — targeting legality, the effect, and the compiled tree all reflect it.
+  Mirrors how kicker declares `kickerTarget` / `kickerEffect`. The cleave cost **never changes the
+  spell's mana value** — MV is always computed from the printed mana cost (CR 202.3b), so cost
+  reductions/increases keyed on MV are unchanged whether or not cleave was paid. Leave `cleaveTarget`
+  unset when the removed brackets don't touch the target line (a mass-destroy or a self-effect only
+  differs in `cleaveEffect`); leave `cleaveEffect` unset when only the target restriction changes and
+  the effect is identical. The five VOW reference cards cover the shapes:
+  - **Fierce Retribution** ({1}{W}, Cleave {5}{W}) — target only: base `Targets.AttackingCreature`,
+    `cleaveTarget` `Targets.Creature`; both `Effects.Destroy` the chosen target.
+  - **Wash Away** ({U}, Cleave {1}{U}{U}) — target only: base
+    `TargetSpell(TargetFilter.SpellOnStack.notCastFromZone(Zone.HAND))` (the bracketed "that wasn't
+    cast from its owner's hand"), `cleaveTarget` `Targets.Spell`; both `Effects.CounterSpell()`.
+  - **Path of Peril** ({1}{B}{B}, Cleave {4}{W}{B}) — effect only (mass-destroy has no target):
+    base `Effects.DestroyAll(Creature.manaValueAtMost(2))`, `cleaveEffect` `Effects.DestroyAll(Creature)`.
+  - **Dig Up** ({G}, Cleave {1}{B}{B}{G}) — effect only, two bracket spans (`[basic land]` and
+    `[reveal it,]`): base tutors a basic land to hand revealed, `cleaveEffect` tutors any card to hand
+    without revealing.
+  - **Alchemist's Gambit** ({1}{R}{R}, Cleave {4}{U}{U}{R}) — effect only, one bracket span is the
+    drawback: base `Effects.Composite(TakeExtraTurnEffect(loseAtEndStep = true), …)`, `cleaveEffect`
+    the same with `loseAtEndStep = false` — the shared "extra turn / damage can't be prevented on it /
+    self-exile" clauses sit outside the brackets. (The "damage can't be prevented during that turn"
+    clause is scoped to the extra turn, so it's scheduled as a `CreateDelayedTriggerEffect` firing
+    `Effects.DamageCantBePreventedThisTurn()` at the next turn's upkeep, in both modes.)
+
+  The alternative cast is surfaced like the other alt-cost keywords (see `MayCastWithoutPayingManaCost`
+  above and `engine-server-interface.md`): a distinct "Cleave" legal action routed through
+  `CastSpell.useAlternativeCost = true` + `alternativeCostType = AlternativeCostType.CLEAVE`, offered
+  alongside the normal cast so the player explicitly picks one (CR 118.9a).
 - `Afflict(n)` — defender loses N when this becomes blocked.
 - `Crew(n)` (`KeywordAbility.crew(n, onceEachTurn = false)` / `Numeric(Keyword.CREW, n, onceEachTurn)`) —
   Crew N (CR 702.122): tap any number of untapped creatures you control with total power N or greater to

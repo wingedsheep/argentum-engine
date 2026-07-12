@@ -39,6 +39,7 @@ data class SpellOnStackComponent(
     val wasWarped: Boolean = false,  // For warp - permanent is exiled at end step
     val wasEvoked: Boolean = false,  // For evoke - permanent is sacrificed on ETB
     val wasImpending: Boolean = false,  // For impending - permanent enters with time counters and isn't a creature until they're gone
+    val wasCleaved: Boolean = false,  // For cleave (CR 702.148) - spell resolves with its brackets-removed effect/target variant
     /** For sneak (CR 702.190) - permanent spell enters tapped and attacking; the flag is readable via SneakCostWasPaid. */
     val wasSneaked: Boolean = false,
     /**

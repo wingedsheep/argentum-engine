@@ -119,6 +119,7 @@ class StackResolver(
         wasWarped: Boolean = false,
         wasEvoked: Boolean = false,
         wasImpending: Boolean = false,
+        wasCleaved: Boolean = false,
         wasSneaked: Boolean = false,
         sneakAttackDefenderId: EntityId? = null,
         chosenModes: List<Int> = emptyList(),
@@ -192,6 +193,7 @@ class StackResolver(
                 wasWarped = wasWarped,
                 wasEvoked = wasEvoked,
                 wasImpending = wasImpending,
+                wasCleaved = wasCleaved,
                 wasSneaked = wasSneaked,
                 sneakAttackDefenderId = sneakAttackDefenderId,
                 beheldCards = beheldCards,
@@ -1567,6 +1569,11 @@ class StackResolver(
             faceSpellEffect != null -> faceSpellEffect
             spellComponent.wasKicked && cardComponent != null ->
                 resolvedCardDef?.script?.kickerSpellEffect ?: cardComponent.spellEffect
+            // Cleave (CR 702.148): a spell cast for its cleave cost resolves with its
+            // brackets-removed effect variant, applied structurally at cast time rather than by
+            // editing text — so e.g. a bracketed delayed-trigger clause is never created.
+            spellComponent.wasCleaved && cardComponent != null ->
+                resolvedCardDef?.script?.cleaveSpellEffect ?: cardComponent.spellEffect
             else -> cardComponent?.spellEffect
         }
         val rawSpellEffect = baseSpellEffect

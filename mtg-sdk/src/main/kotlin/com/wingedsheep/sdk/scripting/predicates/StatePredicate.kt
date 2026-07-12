@@ -507,6 +507,23 @@ sealed interface StatePredicate {
     }
 
     /**
+     * A spell on the stack whose cast-origin zone is [zone] — reads the
+     * `SpellOnStackComponent.castFromZone` the engine stamps when the spell is put on the stack
+     * (HAND for a normal cast; GRAVEYARD/EXILE/COMMAND for flashback/forage, plot/foretell,
+     * commander, …). Composes with [Not] for the common "*wasn't* cast from …" phrasing.
+     *
+     * Backs Wash Away's base (bracketed) restriction "counter target spell [that wasn't cast from
+     * its owner's hand]" as `Not(WasCastFromZone(Zone.HAND))`. A spell can only be cast from its
+     * own owner's hand (cards in a hand are owned by that hand's player, CR 108.3), so the
+     * owner-scoped wording collapses to the zone check.
+     */
+    @SerialName("WasCastFromZone")
+    @Serializable
+    data class WasCastFromZone(val zone: com.wingedsheep.sdk.core.Zone) : Entity {
+        override val description: String = "cast from ${zone.displayName}"
+    }
+
+    /**
      * The candidate permanent is the permanent the effect's source is attached to — i.e. the
      * creature/permanent enchanted or equipped by the source (read from the source's
      * `AttachedToComponent`). Source-relative: resolves against the source supplied in the

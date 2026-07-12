@@ -469,10 +469,15 @@ object CardLinter {
 
         val baseReqs = script["targetRequirements"] as? JsonArray ?: JsonArray(emptyList())
         val kickerReqs = script["kickerTargetRequirements"] as? JsonArray ?: JsonArray(emptyList())
+        val cleaveReqs = script["cleaveTargetRequirements"] as? JsonArray ?: JsonArray(emptyList())
         val spellScope = state.newScope(
             label = "spell effect",
-            targetCount = maxOf(requirementSlotCount(baseReqs), requirementSlotCount(kickerReqs)),
-            targetIds = requirementIds(baseReqs) + requirementIds(kickerReqs),
+            targetCount = maxOf(
+                requirementSlotCount(baseReqs),
+                requirementSlotCount(kickerReqs),
+                requirementSlotCount(cleaveReqs),
+            ),
+            targetIds = requirementIds(baseReqs) + requirementIds(kickerReqs) + requirementIds(cleaveReqs),
         )
 
         // Spell-resolution scope, in execution order: cast-time writers (captures, additional
@@ -482,7 +487,7 @@ object CardLinter {
             "staticAbilities", "replacementEffects", "sagaChapters", "classLevels",
         )
         val orderedSpellFields = listOf("castTimeCaptures", "additionalCosts", "selfAlternativeCost")
-        val deferredSpellFields = listOf("spellEffect", "kickerSpellEffect")
+        val deferredSpellFields = listOf("spellEffect", "kickerSpellEffect", "cleaveSpellEffect")
 
         // A declared cast-time creature-type choice writes the chosen type before resolution.
         if (script["castTimeCreatureTypeChoice"]?.takeIf { it !is JsonNull } != null) {

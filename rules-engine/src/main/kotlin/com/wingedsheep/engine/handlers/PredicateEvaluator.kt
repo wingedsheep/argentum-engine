@@ -1154,6 +1154,11 @@ class PredicateEvaluator {
             StatePredicate.WasCastForWarp ->
                 container.has<com.wingedsheep.engine.state.components.battlefield.WarpedComponent>()
 
+            // Cast-origin zone of a spell on the stack — reads the engine-stamped
+            // SpellOnStackComponent.castFromZone (Wash Away's "wasn't cast from its owner's hand").
+            is StatePredicate.WasCastFromZone ->
+                container.get<SpellOnStackComponent>()?.castFromZone == predicate.zone
+
             // Relative power
             StatePredicate.HasGreatestPower -> {
                 val projected = state.projectedState

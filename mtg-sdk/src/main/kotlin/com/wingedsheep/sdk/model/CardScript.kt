@@ -224,6 +224,28 @@ data class CardScript(
     val kickerSpellEffect: Effect? = null,
 
     /**
+     * Alternate target requirements used when this spell is cast for its cleave cost
+     * (CR 702.148, Innistrad: Crimson Vow). When non-empty and the spell was cleaved, these replace
+     * [targetRequirements]. This is how the cleave text-change (removing all text in square
+     * brackets) is modelled *structurally* rather than by parsing brackets — the card author writes
+     * the brackets-removed targeting explicitly. Used when removing bracketed text broadens or drops
+     * a targeting restriction (e.g. Fierce Retribution: "target [attacking] creature" → "target
+     * creature"; Wash Away: "target spell [that wasn't cast from its owner's hand]" → "target spell").
+     */
+    val cleaveTargetRequirements: List<TargetRequirement> = emptyList(),
+
+    /**
+     * Alternate spell effect used when this spell is cast for its cleave cost (CR 702.148).
+     * When non-null and the spell was cleaved, this replaces [spellEffect]. Removing bracketed text
+     * can change which objects the effect touches (Path of Peril: "destroy all creatures [with mana
+     * value 2 or less]" → "destroy all creatures"), drop a step (Dig Up: remove "[reveal it,]"), or
+     * delete an entire clause including a delayed triggered ability that is then never created at all
+     * (Alchemist's Gambit: remove "[At the beginning of that turn's end step, you lose the game.]").
+     * The variant is applied at cast time so the resolving spell only ever carries the cleaved shape.
+     */
+    val cleaveSpellEffect: Effect? = null,
+
+    /**
      * Class level abilities (for Class enchantments).
      * Level 1 abilities use the base CardScript fields (triggeredAbilities, staticAbilities, etc.).
      * Levels 2+ are stored here with their level-up costs.
