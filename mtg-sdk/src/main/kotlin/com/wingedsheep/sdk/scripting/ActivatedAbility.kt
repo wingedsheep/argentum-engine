@@ -491,18 +491,21 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
         val maxCount: Int? = null,
     ) : AbilityCost {
         override val description: String = buildString {
+            val exactlyOne = maxCount == 1
+            val article = if (filter.description.firstOrNull()?.lowercaseChar() in listOf('a', 'e', 'i', 'o', 'u')) "an" else "a"
             append("Exile this permanent, Exile ")
             when {
                 maxCount == null && minCount == 1 -> append("one or more ")
                 maxCount == null -> append("$minCount or more ")
-                maxCount == 1 -> append("a ")
+                exactlyOne -> append("$article ")
                 else -> append("$minCount ")
             }
             append(filter.description)
-            if (maxCount != 1) append("s")
+            if (!exactlyOne) append("s")
             append(" you control and/or ")
+            if (exactlyOne) append("$article ")
             append(filter.description)
-            append(" cards from your graveyard")
+            append(if (exactlyOne) " card from your graveyard" else " cards from your graveyard")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): AbilityCost {
