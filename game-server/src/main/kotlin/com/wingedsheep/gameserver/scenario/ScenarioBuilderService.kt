@@ -453,6 +453,11 @@ class ScenarioBuilderService(
                 ownerId = ownerId,
                 spellEffect = cardDef.spellEffect,
                 imageUri = cardDef.metadata.imageUri,
+                // Mirror CardEntityFactory: predicates like CardPredicate.HasActivatedAbility /
+                // HasNonManaActivatedAbility read these precomputed flags (e.g. The Enigma Jewel's
+                // craft material filter). Omitting them made scenario permanents look ability-less.
+                hasNonManaActivatedAbility = cardDef.hasNonManaActivatedAbility,
+                hasActivatedAbility = cardDef.hasActivatedAbility,
             )
 
             var container = ComponentContainer.of(

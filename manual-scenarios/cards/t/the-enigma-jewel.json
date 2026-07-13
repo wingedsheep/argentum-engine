@@ -3,9 +3,8 @@
   "player2Name": "Bob",
   "player1": {
     "lifeTotal": 20,
-    "hand": [],
+    "hand": ["The Enigma Jewel"],
     "battlefield": [
-      { "name": "The Enigma Jewel" },
       { "name": "Sparksmith" },
       { "name": "Embermage Goblin" },
       { "name": "King's Assassin" },
@@ -40,5 +39,6 @@
   "player1StopAtSteps": [],
   "player2StopAtSteps": [],
   "player1OpponentStopAtSteps": [],
-  "player2OpponentStopAtSteps": []
+  "player2OpponentStopAtSteps": [],
+  "mode": "SELF"
 }
