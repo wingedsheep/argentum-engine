@@ -1270,9 +1270,16 @@
                         },
                         "CostTap",
                         {
-                            "type": "CostRemoveCounterFromSelf",
-                            "counterType": "loot",
-                            "count": 2
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "loot",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "self": true
+                            }
                         }
                     ]
                 },

@@ -1774,9 +1774,16 @@
                             }
                         },
                         {
-                            "type": "CostRemoveCounterFromSelf",
-                            "counterType": "+1/+1",
-                            "count": 2
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "+1/+1",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "self": true
+                            }
                         }
                     ]
                 },

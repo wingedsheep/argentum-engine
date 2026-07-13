@@ -1155,8 +1155,12 @@
             {
                 "id": "ability_2",
                 "cost": {
-                    "type": "CostRemoveCounterFromSelf",
-                    "counterType": "charge"
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "charge",
+                        "self": true
+                    }
                 },
                 "effect": {
                     "type": "Modal",

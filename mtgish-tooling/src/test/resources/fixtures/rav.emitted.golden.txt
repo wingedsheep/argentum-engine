@@ -3907,7 +3907,7 @@ val GazeOfTheGorgon = card("Gaze of the Gorgon") {
     colorIdentity = "BG"
     typeLine = "Instant"
     oracleText = "({B/G} can be paid with either {B} or {G}.)\nRegenerate target creature. At this turn's next end of combat, destroy all creatures that blocked or were blocked by it this turn."
-    // STRUCTURE needs human wiring: RegeneratePermanent
+    // STRUCTURE needs human wiring: CreateFutureTrigger
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "246"

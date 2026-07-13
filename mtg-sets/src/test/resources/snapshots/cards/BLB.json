@@ -18258,8 +18258,12 @@
                             }
                         },
                         {
-                            "type": "CostRemoveCounterFromSelf",
-                            "counterType": "supply"
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "supply",
+                                "self": true
+                            }
                         }
                     ]
                 },

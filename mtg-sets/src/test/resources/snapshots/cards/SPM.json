@@ -1406,9 +1406,16 @@
                             }
                         },
                         {
-                            "type": "CostRemovePlusOnePlusOneCounters",
-                            "filter": "artifact",
-                            "count": 2
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "+1/+1",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "filter": "artifact"
+                            }
                         }
                     ]
                 },

@@ -15424,9 +15424,12 @@
                             }
                         },
                         {
-                            "type": "CostRemovePlusOnePlusOneCounters",
-                            "filter": "creature ctrl:you",
-                            "count": 1
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "+1/+1",
+                                "filter": "creature ctrl:you"
+                            }
                         }
                     ]
                 },

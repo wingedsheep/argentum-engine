@@ -799,8 +799,12 @@
                             }
                         },
                         {
-                            "type": "CostRemoveCounterFromSelf",
-                            "counterType": "indestructible"
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "indestructible",
+                                "self": true
+                            }
                         }
                     ]
                 },

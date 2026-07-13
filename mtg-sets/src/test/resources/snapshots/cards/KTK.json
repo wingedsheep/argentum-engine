@@ -1938,8 +1938,12 @@
                         },
                         "CostTap",
                         {
-                            "type": "CostRemoveCounterFromSelf",
-                            "counterType": "gem"
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "gem",
+                                "self": true
+                            }
                         }
                     ]
                 },
@@ -8926,7 +8930,15 @@
                                 "cost": "{B}"
                             }
                         },
-                        "CostRemoveXPlusOnePlusOneCounters"
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "+1/+1",
+                                "count": "XValue",
+                                "filter": "creature ctrl:you"
+                            }
+                        }
                     ]
                 },
                 "effect": {
