@@ -1,0 +1,56 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Idol of the Deep King",
+      "Lodestone Needle",
+      "Waterlogged Hulk",
+      "Spring-Loaded Sawblades",
+      "Master's Guide-Mural"
+    ],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Saheeli's Lattice"},
+      {"name": "Saheeli's Lattice"},
+      {"name": "Grizzly Bears"}
+    ],
+    "graveyard": [
+      "Island",
+      "Saheeli's Lattice",
+      "Grizzly Bears"
+    ],
+    "library": ["Island", "Plains", "Grizzly Bears", "Island", "Grizzly Bears", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Grizzly Bears", "Island"],
+    "battlefield": [
+      {"name": "Grizzly Bears", "tapped": true},
+      {"name": "Grizzly Bears"}
+    ],
+    "graveyard": [],
+    "library": ["Grizzly Bears", "Island", "Grizzly Bears", "Swamp", "Grizzly Bears", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "SELF"
+}

@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 222 / 286
+**Implemented:** 227 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -128,7 +128,7 @@
 - [x] Hulking Raptor
 - [x] Hunter's Blowgun
 - [x] Hurl into History
-- [ ] Idol of the Deep King
+- [x] Idol of the Deep King
 - [x] In the Presence of Ages
 - [x] Inti, Seneschal of the Sun
 - [ ] Intrepid Paleontologist
@@ -145,7 +145,7 @@
 - [ ] Kitesail Larcenist
 - [ ] Kutzil's Flanker
 - [ ] Kutzil, Malamet Exemplar
-- [ ] Lodestone Needle
+- [x] Lodestone Needle
 - [x] Magmatic Galleon
 - [ ] Malamet Battle Glyph
 - [x] Malamet Brawler
@@ -156,7 +156,7 @@
 - [ ] Malicious Eclipse
 - [x] Marauding Brinefang
 - [ ] Market Gnome
-- [ ] Master's Guide-Mural
+- [x] Master's Guide-Mural
 - [ ] Matzalantli, the Great Door
 - [x] Mephitic Draught
 - [ ] Merfolk Cave-Diver
@@ -231,7 +231,7 @@
 - [ ] Souls of the Lost
 - [ ] Sovereign Okinec Ahau
 - [x] Spelunking
-- [ ] Spring-Loaded Sawblades
+- [x] Spring-Loaded Sawblades
 - [x] Spyglass Siren
 - [x] Squirming Emergence
 - [x] Staggering Size
@@ -283,7 +283,7 @@
 - [x] Wail of the Forgotten
 - [x] Walk with the Ancestors
 - [x] Warden of the Inner Sky
-- [ ] Waterlogged Hulk
+- [x] Waterlogged Hulk
 - [x] Waterwind Scout
 - [x] Waylaying Pirates
 - [x] Zoetic Glyph

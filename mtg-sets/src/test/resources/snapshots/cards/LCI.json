@@ -6341,6 +6341,154 @@
     ]
 }
 
+// Idol of the Deep King
+{
+    "name": "Idol of the Deep King",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact",
+    "oracleText": "Flash\nWhen this artifact enters, it deals 2 damage to any target.\nCraft with artifact {2}{R} ({2}{R}, Exile this artifact, Exile another artifact you control or an artifact card from your graveyard: Return this card transformed under its owner's control. Craft only as a sorcery.)",
+    "keywords": [
+        "FLASH",
+        "CRAFT"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "any target"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "any target"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostCraft",
+                            "filter": "artifact",
+                            "maxCount": 1
+                        }
+                    ]
+                },
+                "effect": "ReturnSelfFromExileTransformed",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Craft with artifact — {2}{R}"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Sovereign's Macuahuitl",
+        "manaCost": "",
+        "typeLine": "Artifact — Equipment",
+        "oracleText": "When this Equipment enters, attach it to target creature you control.\nEquipped creature gets +2/+0.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_3",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Battlefield"
+                    },
+                    "effect": {
+                        "type": "AttachEquipment",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature you control"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "target creature you control"
+                    }
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "ability_4",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}"
+                        }
+                    },
+                    "effect": {
+                        "type": "AttachEquipment",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "creature you control"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "creature you control"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isEquipAbility": true
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 0
+                }
+            ]
+        },
+        "equipCost": "{2}",
+        "metadata": {
+            "collectorNumber": "155",
+            "artist": "Matteo Bassini",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/1/d1d8d8ef-c8b2-4e7c-89e4-b381dff20584.jpg?1782694484"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "artist": "Matteo Bassini",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1d8d8ef-c8b2-4e7c-89e4-b381dff20584.jpg?1782694484"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // In the Presence of Ages
 {
     "name": "In the Presence of Ages",
@@ -7184,6 +7332,144 @@
     ]
 }
 
+// Lodestone Needle
+{
+    "name": "Lodestone Needle",
+    "manaCost": "{1}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "Flash\nWhen this artifact enters, tap up to one target artifact or creature and put two stun counters on it.\nCraft with artifact {2}{U} ({2}{U}, Exile this artifact, Exile another artifact you control or an artifact card from your graveyard: Return this card transformed under its owner's control. Craft only as a sorcery.)",
+    "keywords": [
+        "FLASH",
+        "CRAFT"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one target artifact or creature"
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "stun",
+                            "count": 2,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one target artifact or creature"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature|artifact"
+                    },
+                    "id": "up to one target artifact or creature"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostCraft",
+                            "filter": "artifact",
+                            "maxCount": 1
+                        }
+                    ]
+                },
+                "effect": "ReturnSelfFromExileTransformed",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Craft with artifact — {2}{U}"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Guidestone Compass",
+        "manaCost": "",
+        "typeLine": "Artifact",
+        "oracleText": "{1}, {T}: Target creature you control explores. Activate only as a sorcery. (Reveal the top card of your library. Put that card into your hand if it's a land. Otherwise, put a +1/+1 counter on that creature, then put the card back or put it into your graveyard.)",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_3",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{1}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "Explore",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature you control"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "target creature you control"
+                        }
+                    ],
+                    "timing": "SorcerySpeed"
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "62",
+            "rarity": "UNCOMMON",
+            "artist": "José Parodi",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/e/dedd7a22-92e2-41fd-aa80-944c69653a5e.jpg?1782694560"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "José Parodi",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/dedd7a22-92e2-41fd-aa80-944c69653a5e.jpg?1782694560"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Magmatic Galleon
 {
     "name": "Magmatic Galleon",
@@ -7688,6 +7974,125 @@
         "imageUri": "https://cards.scryfall.io/normal/front/7/8/78328899-7996-4cfd-bf00-d2a0d0ff3ef8.jpg"
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Master's Guide-Mural
+{
+    "name": "Master's Guide-Mural",
+    "manaCost": "{3}{W}{U}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, create a 4/4 white and blue Golem artifact creature token.\nCraft with artifact {4}{W}{W}{U} ({4}{W}{W}{U}, Exile this artifact, Exile another artifact you control or an artifact card from your graveyard: Return this card transformed under its owner's control. Craft only as a sorcery.)",
+    "keywords": [
+        "CRAFT"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "WHITE",
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Golem"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/3/3/33a88096-dcfd-4acb-a092-b51507edd13e.jpg?1782731574",
+                    "artifactToken": true
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}{W}{W}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostCraft",
+                            "filter": "artifact",
+                            "maxCount": 1
+                        }
+                    ]
+                },
+                "effect": "ReturnSelfFromExileTransformed",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Craft with artifact — {4}{W}{W}{U}"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Master's Manufactory",
+        "manaCost": "",
+        "typeLine": "Artifact",
+        "oracleText": "{T}: Create a 4/4 white and blue Golem artifact creature token. Activate only if this artifact or another artifact entered the battlefield under your control this turn.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_3",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 4,
+                        "toughness": 4,
+                        "colors": [
+                            "WHITE",
+                            "BLUE"
+                        ],
+                        "creatureTypes": [
+                            "Golem"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33a88096-dcfd-4acb-a092-b51507edd13e.jpg?1782731574",
+                        "artifactToken": true
+                    },
+                    "restrictions": [
+                        {
+                            "type": "ActivationOnlyIfCondition",
+                            "condition": {
+                                "type": "PermanentTypeEnteredBattlefieldThisTurn",
+                                "cardType": "ARTIFACT"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "233",
+            "rarity": "UNCOMMON",
+            "artist": "Racrufi",
+            "flavorText": "\"The Fomori are a foul and distant memory, but their war machines taught us much about large-scale armorcraft.\"\n—Anim Pakal, Thousandth Moon",
+            "imageUri": "https://cards.scryfall.io/normal/back/f/7/f7a41343-7cdb-49aa-a9d1-7460195355d8.jpg?1782694425"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "UNCOMMON",
+        "artist": "Racrufi",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7a41343-7cdb-49aa-a9d1-7460195355d8.jpg?1782694425"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
         "BLUE"
     ]
 }
@@ -11934,6 +12339,138 @@
     ]
 }
 
+// Spring-Loaded Sawblades
+{
+    "name": "Spring-Loaded Sawblades",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact",
+    "oracleText": "Flash\nWhen this artifact enters, it deals 5 damage to target tapped creature an opponent controls.\nCraft with artifact {3}{W} ({3}{W}, Exile this artifact, Exile another artifact you control or an artifact card from your graveyard: Return this card transformed under its owner's control. Craft only as a sorcery.)",
+    "keywords": [
+        "FLASH",
+        "CRAFT"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target tapped creature an opponent controls"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature tapped ctrl:opponent"
+                    },
+                    "id": "target tapped creature an opponent controls"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{W}"
+                            }
+                        },
+                        {
+                            "type": "CostCraft",
+                            "filter": "artifact",
+                            "maxCount": 1
+                        }
+                    ]
+                },
+                "effect": "ReturnSelfFromExileTransformed",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Craft with artifact — {3}{W}"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Bladewheel Chariot",
+        "manaCost": "",
+        "typeLine": "Artifact — Vehicle",
+        "oracleText": "Tap two other untapped artifacts you control: This Vehicle becomes an artifact creature until end of turn.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 5
+        },
+        "keywords": [
+            "CREW"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Numeric",
+                "keyword": "CREW",
+                "n": 1
+            }
+        ],
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_3",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomTapPermanents",
+                            "count": 2,
+                            "filter": "artifact",
+                            "excludeSelf": true
+                        }
+                    },
+                    "effect": {
+                        "type": "BecomeCreature",
+                        "power": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "toughness": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "descriptionOverride": "Tap two other untapped artifacts you control: This Vehicle becomes an artifact creature until end of turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "36",
+            "rarity": "UNCOMMON",
+            "artist": "Wayne Reynolds",
+            "imageUri": "https://cards.scryfall.io/normal/back/2/4/24417388-f2bb-4783-bdce-264774531838.jpg?1782694581"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "UNCOMMON",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/24417388-f2bb-4783-bdce-264774531838.jpg?1782694581"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Spyglass Siren
 {
     "name": "Spyglass Siren",
@@ -14658,6 +15195,134 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Waterlogged Hulk
+{
+    "name": "Waterlogged Hulk",
+    "manaCost": "{U}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Mill a card. (Put the top card of your library into your graveyard.)\nCraft with Island {3}{U} ({3}{U}, Exile this artifact, Exile an Island you control or an Island card from your graveyard: Return this card transformed under its owner's control. Craft only as a sorcery.)",
+    "keywords": [
+        "CRAFT"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostCraft",
+                            "filter": "Island",
+                            "maxCount": 1
+                        }
+                    ]
+                },
+                "effect": "ReturnSelfFromExileTransformed",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Craft with Island — {3}{U}"
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Watertight Gondola",
+        "manaCost": "",
+        "typeLine": "Artifact — Vehicle",
+        "oracleText": "Vigilance\nDescend 8 — This Vehicle can't be blocked as long as there are eight or more permanent cards in your graveyard.\nCrew 1 (Tap any number of creatures you control with total power 1 or more: This Vehicle becomes an artifact creature until end of turn.)",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "VIGILANCE",
+            "CREW"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Numeric",
+                "keyword": "CREW",
+                "n": 1
+            }
+        ],
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "ConditionalStaticAbility",
+                    "ability": "CantBeBlocked",
+                    "condition": {
+                        "type": "Compare",
+                        "left": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Graveyard",
+                            "filter": "permanent"
+                        },
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 8
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "83",
+            "rarity": "UNCOMMON",
+            "artist": "Artur Treffner",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/e/7ea89d3c-8d47-4bbb-9271-8cdfd9296e2f.jpg?1782694543"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "UNCOMMON",
+        "artist": "Artur Treffner",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7ea89d3c-8d47-4bbb-9271-8cdfd9296e2f.jpg?1782694543"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
