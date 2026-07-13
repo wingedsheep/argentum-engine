@@ -833,6 +833,22 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.WasCastForWarp
     )
 
+    /**
+     * Must be a spell on the stack cast from [zone] — reads the engine's stamped
+     * `SpellOnStackComponent.castFromZone`. See [StatePredicate.WasCastFromZone].
+     */
+    fun castFromZone(zone: com.wingedsheep.sdk.core.Zone) = copy(
+        statePredicates = statePredicates + StatePredicate.WasCastFromZone(zone)
+    )
+
+    /**
+     * Must be a spell on the stack that was *not* cast from [zone]. Backs Wash Away's
+     * "counter target spell that wasn't cast from its owner's hand" (`Zone.HAND`).
+     */
+    fun notCastFromZone(zone: com.wingedsheep.sdk.core.Zone) = copy(
+        statePredicates = statePredicates + StatePredicate.Not(StatePredicate.WasCastFromZone(zone))
+    )
+
     // =============================================================================
     // Fluent Builder Methods - Controller Predicates
     // =============================================================================

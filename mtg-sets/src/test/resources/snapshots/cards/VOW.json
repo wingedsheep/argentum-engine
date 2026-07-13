@@ -1,3 +1,68 @@
+// Alchemist's Gambit
+{
+    "name": "Alchemist's Gambit",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Cleave {4}{U}{U}{R} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nTake an extra turn after this one. During that turn, damage can't be prevented. [At the beginning of that turn's end step, you lose the game.]\nExile Alchemist's Gambit.",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{4}{U}{U}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "TakeExtraTurn",
+                    "loseAtEndStep": true
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "UPKEEP",
+                    "effect": "DamageCantBePreventedThisTurn",
+                    "timing": "NextTurn",
+                    "fireOnPlayer": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                }
+            ]
+        },
+        "cleaveSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                "TakeExtraTurn",
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "UPKEEP",
+                    "effect": "DamageCantBePreventedThisTurn",
+                    "timing": "NextTurn",
+                    "fireOnPlayer": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                }
+            ]
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8fbf5d3-4677-4bf0-891f-57d6dcddaff7.jpg?1782703091"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "BLUE"
+    ]
+}
+
 // Ancestral Anger
 {
     "name": "Ancestral Anger",
@@ -1274,6 +1339,108 @@
     ]
 }
 
+// Dig Up
+{
+    "name": "Dig Up",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Cleave {1}{B}{B}{G} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nSearch your library for a [basic land] card, [reveal it,] put it into your hand, then shuffle.",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{1}{B}{B}{G}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "basicland"
+                    },
+                    "storeAs": "searchable"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        },
+        "cleaveSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library"
+                    },
+                    "storeAs": "searchable"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Things buried on Innistrad rarely seem to stay that way.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f14c947-2452-4fd6-8f1a-391cf5898100.jpg?1782703052"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Diregraf Scavenger
 {
     "name": "Diregraf Scavenger",
@@ -1724,6 +1891,70 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Fierce Retribution
+{
+    "name": "Fierce Retribution",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Cleave {5}{W} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nDestroy target [attacking] creature.",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{5}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "attacking creature"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature attacking"
+                },
+                "id": "attacking creature"
+            }
+        ],
+        "cleaveTargetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "creature"
+            }
+        ],
+        "cleaveSpellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "creature"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Sidharth Chaturvedi",
+        "flavorText": "\"It won't bring them back, but it will bring me peace.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/5/9597b163-5c6b-4f64-b1f1-5f1fa2e23e5d.jpg?1782703186"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -3475,6 +3706,80 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Path of Peril
+{
+    "name": "Path of Peril",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Cleave {4}{W}{B} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nDestroy all creatures [with mana value 2 or less].",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{4}{W}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature mv<=2"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        },
+        "cleaveSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Kasia 'Kafis' Zielińska",
+        "flavorText": "To Olivia's guests, a welcome. To everyone else, a warning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0c5449a-d63b-4b22-9432-8f0365c3c4d9.jpg?1782703101"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "WHITE"
     ]
 }
 
@@ -5666,6 +5971,65 @@
         "artist": "Andrew Mar",
         "flavorText": "The towers and catwalks of the Voldaren fortress are lit by the lanterns of geists endlessly seeking a way out.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bb3ce5d-330d-427e-a053-8cc4eeb2941b.jpg?1782703131"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Wash Away
+{
+    "name": "Wash Away",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Cleave {1}{U}{U} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nCounter target spell [that wasn't cast from its owner's hand].",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{1}{U}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "statePredicates": [
+                            {
+                                "type": "StateNot",
+                                "predicate": {
+                                    "type": "WasCastFromZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "zone": "Stack"
+                }
+            }
+        ],
+        "cleaveTargetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                }
+            }
+        ],
+        "cleaveSpellEffect": "Counter"
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Brian Valeza",
+        "flavorText": "\"May the ocean take it\" —Nephalia expression meaning \"good riddance\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43411ade-be80-4535-8baa-7055e78496df.jpg?1782731101"
     },
     "colorIdentityOverride": [
         "BLUE"

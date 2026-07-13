@@ -656,6 +656,64 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Cast a spell for its Cleave cost (CR 702.148), optionally targeting a permanent. Cleave
+         * is an alternative cost, so this drives [CastSpell.useAlternativeCost] gated on
+         * [AlternativeCostType.CLEAVE]; the handler swaps in the brackets-removed
+         * effect / target-requirement variant.
+         */
+        fun castSpellWithCleave(
+            playerNumber: Int,
+            spellName: String,
+            targetId: EntityId? = null
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val targets = if (targetId != null) {
+                listOf(ChosenTarget.Permanent(targetId))
+            } else {
+                emptyList()
+            }
+
+            return execute(CastSpell(
+                playerId, cardId, targets,
+                useAlternativeCost = true,
+                alternativeCostType = AlternativeCostType.CLEAVE
+            ))
+        }
+
+        /**
+         * Cast a spell for its Cleave cost (CR 702.148), targeting a spell on the stack (e.g. the
+         * cleaved Wash Away, which counters any spell). Mirrors [castSpellTargetingStackSpell] but
+         * pays the cleave alternative cost.
+         */
+        fun castSpellWithCleaveTargetingStackSpell(
+            playerNumber: Int,
+            spellName: String,
+            targetSpellName: String
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val targetSpellId = state.stack.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == targetSpellName
+            } ?: error("Spell '$targetSpellName' not found on stack")
+
+            return execute(CastSpell(
+                playerId, cardId,
+                targets = listOf(ChosenTarget.Spell(targetSpellId)),
+                useAlternativeCost = true,
+                alternativeCostType = AlternativeCostType.CLEAVE
+            ))
+        }
+
+        /**
          * Cast a spell using a self-alternative cost that requires tapping permanents.
          * Used for cards like Zahid, Djinn of the Lamp.
          */

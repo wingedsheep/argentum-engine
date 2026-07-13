@@ -814,6 +814,8 @@ class CardBuilder(private val name: String) {
             conditionalFlash = conditionalFlash,
             kickerTargetRequirements = spellBuilder?.kickerTargetRequirements ?: emptyList(),
             kickerSpellEffect = spellBuilder?.kickerEffect,
+            cleaveTargetRequirements = spellBuilder?.cleaveTargetRequirements ?: emptyList(),
+            cleaveSpellEffect = spellBuilder?.cleaveEffect,
             classLevels = classLevelsList.toList(),
             sagaChapters = sagaChaptersList.toList(),
             selfExileOnResolve = spellBuilder?.exilesOnResolve ?: false,
@@ -985,6 +987,45 @@ class SpellBuilder {
             namedKickerTargets.map { it.second }
         } else {
             listOfNotNull(kickerTarget)
+        }
+
+    /**
+     * Alternate effect used when this spell is cast for its cleave cost (CR 702.148). When set, the
+     * cleaved version uses this effect — the brackets-removed shape — instead of the normal [effect].
+     * Declare the keyword itself at the card level with
+     * `keywordAbility(KeywordAbility.cleave("{cost}"))`; set this inside the `spell { }` block
+     * (mirrors how kicker uses [kickerEffect]).
+     */
+    var cleaveEffect: Effect? = null
+
+    /**
+     * Alternate target used when this spell is cast for its cleave cost. When set, the cleaved
+     * version uses this target requirement instead of the normal [target] (e.g. Fierce Retribution's
+     * "target [attacking] creature" → "target creature"). For multiple/named cleave targets use
+     * [cleaveTarget].
+     */
+    var cleaveTarget: TargetRequirement? = null
+
+    // Named cleave target bindings (for cleaved spells with named/multiple alternate targets)
+    private val namedCleaveTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()
+
+    /**
+     * Declare a named cleave target and get an EffectTarget reference to use in [cleaveEffect].
+     *
+     * @param name A descriptive name for the target
+     * @param requirement The (brackets-removed) target requirement specification
+     * @return An EffectTarget.BoundVariable that references this cleave target by name
+     */
+    fun cleaveTarget(name: String, requirement: TargetRequirement): EffectTarget.BoundVariable {
+        namedCleaveTargets.add(name to requirement.withId(name))
+        return EffectTarget.BoundVariable(name)
+    }
+
+    internal val cleaveTargetRequirements: List<TargetRequirement>
+        get() = if (namedCleaveTargets.isNotEmpty()) {
+            namedCleaveTargets.map { it.second }
+        } else {
+            listOfNotNull(cleaveTarget)
         }
 
     // Named target bindings

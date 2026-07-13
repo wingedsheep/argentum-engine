@@ -480,6 +480,10 @@ internal class AffectsFilterResolver {
             container.has<com.wingedsheep.engine.state.components.identity.WarpExiledComponent>()
         StatePredicate.WasCastForWarp ->
             container.has<com.wingedsheep.engine.state.components.battlefield.WarpedComponent>()
+        // Stack-only: cast-origin zone reads SpellOnStackComponent, which battlefield permanents
+        // in group-static projection never carry. Only meaningful in target/counter contexts via
+        // PredicateEvaluator. Never match here.
+        is StatePredicate.WasCastFromZone -> false
         StatePredicate.HasGreatestPower -> hasGreatestPowerInProjection(state, entityId, container, projectedValues)
         StatePredicate.HasLeastPowerAmongAllCreatures -> hasLeastPowerAmongAllCreaturesInProjection(state, entityId, container, projectedValues)
         StatePredicate.HasLeastPower -> hasLeastPowerInProjection(state, entityId, container, projectedValues)

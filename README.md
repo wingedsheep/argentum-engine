@@ -14,7 +14,7 @@ An unofficial Magic: The Gathering rules engine and online play platform. Not af
 
 ## Overview
 
-Argentum Engine is a modular MTG implementation consisting of:
+Argentum Engine is a modular MTG implementation composed of:
 
 - **Rules Engine** — A deterministic Kotlin library implementing MTG comprehensive rules
 - **Game Server** — Spring Boot backend for online multiplayer

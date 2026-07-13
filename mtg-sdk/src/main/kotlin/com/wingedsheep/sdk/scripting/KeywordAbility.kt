@@ -671,6 +671,35 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Cleave
+    // =========================================================================
+
+    /**
+     * Cleave [cost] (CR 702.148, Innistrad: Crimson Vow).
+     * "Cleave [cost]" means "You may cast this spell by paying [cost] rather than paying its mana
+     * cost" and "If this spell's cleave cost was paid, change its text by removing all text found
+     * within square brackets in the spell's rules text." (CR 702.148a)
+     *
+     * An alternative cost (like [Evoke]) whose second ability is a text-changing effect
+     * (CR 702.148b / 612). We model the text change *structurally* rather than by parsing brackets:
+     * the card author supplies a brackets-removed effect and target-requirement variant via
+     * [com.wingedsheep.sdk.model.CardScript.cleaveSpellEffect] /
+     * [com.wingedsheep.sdk.model.CardScript.cleaveTargetRequirements] (mirroring how kicker supplies
+     * an alternate effect/target tree). Casting for cleave swaps in that variant at cast time, so a
+     * clause inside brackets that would create a delayed triggered ability is never created at all
+     * (Alchemist's Gambit ruling). The cleave cost never changes the spell's mana value (CR 202.3b).
+     *
+     * Wired by the `cleave(cost) { }` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder], which
+     * attaches this keyword ability and captures the brackets-removed effect/targets.
+     */
+    @SerialName("Cleave")
+    @Serializable
+    data class Cleave(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.CLEAVE
+        override val description: String = "Cleave $cost"
+    }
+
+    // =========================================================================
     // Devour
     // =========================================================================
 
@@ -978,6 +1007,14 @@ sealed interface KeywordAbility {
          * which also wires the associated static ability and end-step trigger.
          */
         fun impending(time: Int, cost: String): KeywordAbility = Impending(time, ManaCost.parse(cost))
+
+        /**
+         * Create Cleave with a cleave mana cost (CR 702.148). Declared on the card via
+         * `keywordAbility(KeywordAbility.cleave("{cost}"))`; the brackets-removed effect / target
+         * variant is supplied inside the card's `spell { }` block via `cleaveEffect` /
+         * `cleaveTarget(...)` (mirroring how kicker declares `kickerEffect` / `kickerTarget`).
+         */
+        fun cleave(cost: String): KeywordAbility = Cleave(ManaCost.parse(cost))
 
         /**
          * Create Conspire keyword ability.

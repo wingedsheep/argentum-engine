@@ -158,6 +158,13 @@ enum class AlternativeCostType {
     /** Impending ([com.wingedsheep.sdk.scripting.KeywordAbility.Impending]) — hand. */
     IMPENDING,
     /**
+     * Cleave ([com.wingedsheep.sdk.scripting.KeywordAbility.Cleave], CR 702.148) — hand. Pays the
+     * cleave mana instead of the mana cost; the paid branch swaps in the spell's brackets-removed
+     * effect/target variant ([com.wingedsheep.sdk.model.CardScript.cleaveSpellEffect] /
+     * `cleaveTargetRequirements`).
+     */
+    CLEAVE,
+    /**
      * Miracle ([com.wingedsheep.sdk.scripting.KeywordAbility.Miracle], printed or granted) — hand,
      * legal only while the card carries an open miracle window
      * ([com.wingedsheep.engine.state.components.identity.MiracleWindowComponent]), opened when the

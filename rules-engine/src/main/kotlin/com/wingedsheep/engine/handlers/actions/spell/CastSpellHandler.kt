@@ -130,6 +130,18 @@ import kotlin.reflect.KClass
 private fun CastSpell.altAllows(type: AlternativeCostType): Boolean =
     alternativeCostType == null || alternativeCostType == type
 
+/**
+ * True if this cast is paying the card's cleave cost (CR 702.148). Cleave is an alternative cost,
+ * so it's driven by [CastSpell.useAlternativeCost] gated on the chosen [AlternativeCostType.CLEAVE]
+ * (never by `wasKicked`, which is an *additional* cost). When true, the resolver swaps in the
+ * brackets-removed effect / target-requirement variant (`cleaveSpellEffect` /
+ * `cleaveTargetRequirements`).
+ */
+private fun isCleaveCast(action: CastSpell, cardDef: com.wingedsheep.sdk.model.CardDefinition): Boolean =
+    action.useAlternativeCost &&
+        action.altAllows(AlternativeCostType.CLEAVE) &&
+        cardDef.keywordAbilities.any { it is KeywordAbility.Cleave }
+
 class CastSpellHandler(
     private val cardRegistry: CardRegistry,
     private val turnManager: TurnManager,
@@ -455,6 +467,10 @@ class CastSpellHandler(
                 }
             } else if (action.wasKicked && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
                 cardDef.script.kickerTargetRequirements
+            } else if (isCleaveCast(action, cardDef) && cardDef.script.cleaveTargetRequirements.isNotEmpty()) {
+                // Cleave (CR 702.148): removing bracketed text can change the legal target set
+                // (e.g. Fierce Retribution's "target [attacking] creature" → "target creature").
+                cardDef.script.cleaveTargetRequirements
             } else {
                 effectiveScript.targetRequirements
             }
@@ -487,9 +503,11 @@ class CastSpellHandler(
         }
 
         // Validate damage distribution for DividedDamageEffect spells
-        // Use kickerSpellEffect when kicked and available
+        // Use kickerSpellEffect when kicked, cleaveSpellEffect when cleaved, else the printed effect.
         val spellEffect = if (action.wasKicked && cardDef?.script?.kickerSpellEffect != null) {
             cardDef.script.kickerSpellEffect
+        } else if (cardDef != null && isCleaveCast(action, cardDef) && cardDef.script.cleaveSpellEffect != null) {
+            cardDef.script.cleaveSpellEffect
         } else {
             cardDef?.script?.spellEffect
         }
@@ -726,6 +744,9 @@ class CastSpellHandler(
                     } else {
                         // Check impending cost
                         val impendingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Impending>().firstOrNull()
+                        // Check cleave cost (CR 702.148 — an alternative cost; the brackets-removed
+                        // text variant is chosen structurally at resolution, not here).
+                        val cleaveAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Cleave>().firstOrNull()
                         // Check miracle cost (CR 702.94 — printed or granted in hand, window-gated).
                         // The window component must be present (opened when drawn as the first card
                         // this turn); without it, the miracle alternative cost is unavailable.
@@ -736,6 +757,8 @@ class CastSpellHandler(
                         ) else null
                         if (action.altAllows(AlternativeCostType.IMPENDING) && impendingAbility != null) {
                             costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, impendingAbility.cost, action.playerId)
+                        } else if (action.altAllows(AlternativeCostType.CLEAVE) && cleaveAbility != null) {
+                            costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, cleaveAbility.cost, action.playerId)
                         } else if (action.altAllows(AlternativeCostType.MIRACLE) && miracleAbility != null) {
                             costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, miracleAbility.cost, action.playerId)
                         } else {
@@ -1851,6 +1874,8 @@ class CastSpellHandler(
                     } else {
                         // Check impending cost
                         val impendingAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Impending>().firstOrNull()
+                        // Check cleave cost (CR 702.148 — an alternative cost).
+                        val cleaveAbility = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Cleave>().firstOrNull()
                         // Check miracle cost (CR 702.94 — printed or granted in hand, window-gated).
                         val miracleWindowOpen = currentState.getEntity(action.cardId)
                             ?.has<com.wingedsheep.engine.state.components.identity.MiracleWindowComponent>() == true
@@ -1859,6 +1884,8 @@ class CastSpellHandler(
                         ) else null
                         if (action.altAllows(AlternativeCostType.IMPENDING) && impendingAbility != null) {
                             costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, impendingAbility.cost, action.playerId)
+                        } else if (action.altAllows(AlternativeCostType.CLEAVE) && cleaveAbility != null) {
+                            costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, cleaveAbility.cost, action.playerId)
                         } else if (action.altAllows(AlternativeCostType.MIRACLE) && miracleAbility != null) {
                             costCalculator.calculateEffectiveCostWithAlternativeBase(currentState, cardDef, miracleAbility.cost, action.playerId)
                         } else {
@@ -2681,6 +2708,8 @@ class CastSpellHandler(
                 }
             } else if (action.wasKicked && cardDef.script.kickerTargetRequirements.isNotEmpty()) {
                 cardDef.script.kickerTargetRequirements
+            } else if (isCleaveCast(action, cardDef) && cardDef.script.cleaveTargetRequirements.isNotEmpty()) {
+                cardDef.script.cleaveTargetRequirements
             } else {
                 (faceScriptForTargets ?: cardDef.script).targetRequirements
             }
@@ -2746,6 +2775,13 @@ class CastSpellHandler(
         val wasImpending = action.useAlternativeCost && cardDef != null &&
             action.altAllows(AlternativeCostType.IMPENDING) &&
             cardDef.keywordAbilities.any { it is KeywordAbility.Impending }
+
+        // Determine if this spell is being cast using cleave (CR 702.148). When true, the spell
+        // resolves with its brackets-removed effect/target variant (cleaveSpellEffect /
+        // cleaveTargetRequirements) instead of its printed one.
+        val wasCleaved = action.useAlternativeCost && cardDef != null &&
+            action.altAllows(AlternativeCostType.CLEAVE) &&
+            cardDef.keywordAbilities.any { it is KeywordAbility.Cleave }
 
         // Extract per-color mana spent from payment events (for mana-spent-gated triggers)
         val manaSpentEvent = paymentResult.events.filterIsInstance<ManaSpentEvent>().firstOrNull()
@@ -2863,6 +2899,7 @@ class CastSpellHandler(
             wasWarped = wasWarped,
             wasEvoked = wasEvoked,
             wasImpending = wasImpending,
+            wasCleaved = wasCleaved,
             wasSneaked = wasSneaked,
             sneakAttackDefenderId = sneakAttackDefenderId,
             chosenModes = action.chosenModes,
