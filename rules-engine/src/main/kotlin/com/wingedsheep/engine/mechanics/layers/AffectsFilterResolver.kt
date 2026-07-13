@@ -306,6 +306,11 @@ internal class AffectsFilterResolver {
                         ControllerPredicate.ControlledByYou -> entityController == controller
                         ControllerPredicate.ControlledByOpponent -> entityController != controller
                         ControllerPredicate.ControlledByAny -> true
+                        // Turn-scoped floating restrictions (Sandswirl Wanderglyph's "they can't
+                        // attack ... this turn" via a CantAttackGroup over the active player's
+                        // creatures). Unknown leaves fail OPEN in evaluateWith, so leaving this
+                        // unhandled silently matched every creature.
+                        ControllerPredicate.ControlledByActivePlayer -> entityController == state.activePlayerId
                         // Owner-axis leaves read the card's owner relative to the source's
                         // controller (Laughing Jasper Flint: "creatures you control but don't own").
                         ControllerPredicate.OwnedByYou -> card.ownerId != null && card.ownerId == controller
