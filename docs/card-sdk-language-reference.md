@@ -271,8 +271,9 @@ excluded.
   from among permanents matching `filter` you control. When `counterType` is set (e.g. `"+1/+1"`),
   only counters of that type are removed; when `null`, counters of any type may be removed in any
   combination (Tayam, Luminous Enigma).
-- `Costs.RemoveXCounters` — remove X counters of any type from among creatures you control, where
-  X is the activated ability's chosen variable-cost value.
+- `Costs.RemoveXCounters(counterType = "+1/+1")` — remove X +1/+1 counters from among creatures
+  you control, where X is the activated ability's chosen variable-cost value. Use
+  `Costs.RemoveXCounters()` (the default) to remove X counters of any type.
 
 **Spell-level alternatives**
 

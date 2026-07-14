@@ -59,7 +59,11 @@ class CostPaymentContinuationResumer(
             is CostAtom.ReturnToHand, is CostAtom.TapPermanents ->
                 resumeSelection(state, continuation, cost, response, checkForMore)
             is CostAtom.RemoveCounters ->
-                resumeSelection(state, continuation, cost, response, checkForMore)
+                if (atom.self || atom.counterType == null) {
+                    resumeYesNo(state, continuation, cost, response, checkForMore)
+                } else {
+                    resumeSelection(state, continuation, cost, response, checkForMore)
+                }
         }
     }
 

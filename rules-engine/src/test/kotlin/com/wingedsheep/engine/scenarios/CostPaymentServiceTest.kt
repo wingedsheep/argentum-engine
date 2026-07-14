@@ -11,17 +11,21 @@ import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.mechanics.cost.PaymentResult
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContain
@@ -360,6 +364,63 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val service = CostPaymentService(EngineServices(cardRegistry))
             val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
             service.canAfford(game.state, game.player1Id, Costs.pay.Tap(GameObjectFilter.Any, 1), source).shouldBeTrue()
+        }
+
+        // -----------------------------------------------------------------------------------------
+        // RemoveCounters
+        // -----------------------------------------------------------------------------------------
+
+        test("RemoveCounters self: yes/no continuation removes counters from the source") {
+            val game = scenario().withPlayers()
+                .withCardOnBattlefield(1, "Goblin Guide")
+                .build()
+            val service = CostPaymentService(EngineServices(cardRegistry))
+            val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
+            game.state = game.state.updateEntity(source) {
+                it.with(CountersComponent(mapOf(CounterType.PLUS_ONE_PLUS_ONE to 1)))
+            }
+            val cost = PayCost.Atom(
+                CostAtom.RemoveCounters(
+                    counterType = "+1/+1",
+                    count = DynamicAmount.Fixed(1),
+                    self = true
+                )
+            )
+
+            service.canAfford(game.state, game.player1Id, cost, source).shouldBeTrue()
+            val pending = service.pay(game.state, game.player1Id, cost, source) as PaymentResult.Pending
+            game.state = pending.state
+            game.submitDecision(YesNoResponse(pending.pendingDecision.id, true))
+
+            game.state.getEntity(source)!!.get<CountersComponent>()!!
+                .getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 0
+        }
+
+        test("RemoveCounters any-type: yes/no continuation auto-resolves the removal") {
+            val game = scenario().withPlayers()
+                .withCardOnBattlefield(1, "Goblin Guide")
+                .withCardOnBattlefield(1, "Savannah Lions")
+                .build()
+            val service = CostPaymentService(EngineServices(cardRegistry))
+            val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
+            val target = bfCardByName(game.state, game.player1Id, "Savannah Lions")
+            game.state = game.state.updateEntity(target) {
+                it.with(CountersComponent(mapOf(CounterType.STUN to 1)))
+            }
+            val cost = PayCost.Atom(
+                CostAtom.RemoveCounters(
+                    count = DynamicAmount.Fixed(1),
+                    filter = GameObjectFilter.Creature
+                )
+            )
+
+            service.canAfford(game.state, game.player1Id, cost, source).shouldBeTrue()
+            val pending = service.pay(game.state, game.player1Id, cost, source) as PaymentResult.Pending
+            game.state = pending.state
+            game.submitDecision(YesNoResponse(pending.pendingDecision.id, true))
+
+            game.state.getEntity(target)!!.get<CountersComponent>()!!
+                .getCount(CounterType.STUN) shouldBe 0
         }
 
         // -----------------------------------------------------------------------------------------
