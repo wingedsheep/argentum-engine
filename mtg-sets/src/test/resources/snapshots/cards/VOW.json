@@ -63,6 +63,68 @@
     ]
 }
 
+// Alchemist's Retrieval
+{
+    "name": "Alchemist's Retrieval",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Cleave {1}{U} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nReturn target nonland permanent [you control] to its owner's hand.",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{1}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "nonland permanent you control"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent ctrl:you"
+                },
+                "id": "nonland permanent you control"
+            }
+        ],
+        "cleaveTargetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "nonland permanent"
+                },
+                "id": "nonland permanent"
+            }
+        ],
+        "cleaveSpellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "nonland permanent"
+            },
+            "destination": "Hand"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "David Auden Nash",
+        "flavorText": "To most, a terrifying apparition. To a necro-alchemist, a potent fuel source.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/edbf9d4f-6027-40b8-81c1-7f001a9119dd.jpg?1783924901"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ancestral Anger
 {
     "name": "Ancestral Anger",
@@ -908,6 +970,67 @@
     ]
 }
 
+// Cloaked Cadet
+{
+    "name": "Cloaked Cadet",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Human Ranger",
+    "oracleText": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)\nWhenever one or more +1/+1 counters are put on one or more Humans you control, draw a card. This ability triggers only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAINING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlongsideGreaterPower"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "CountersPlacedEvent",
+                    "counterType": "+1/+1",
+                    "filter": "creature Human ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06d86c79-d2c7-4900-9474-4d4bc4c74d44.jpg?1783924816"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Cobbled Lancer
 {
     "name": "Cobbled Lancer",
@@ -1530,6 +1653,131 @@
         "artist": "Manuel Castañón",
         "flavorText": "It can barely feel the sword anymore.",
         "imageUri": "https://cards.scryfall.io/normal/front/f/7/f72eb127-3f4c-42ed-8ba6-b6d83ea18545.jpg?1782703116"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dread Fugue
+{
+    "name": "Dread Fugue",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Cleave {2}{B} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nTarget player reveals their hand. You choose a nonland card from it [with mana value 2 or less]. That player discards that card.",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{2}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "RevealHand",
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "ContextPlayer",
+                            "index": 0
+                        }
+                    },
+                    "storeAs": "revealedHand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "revealedHand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland mv<=2",
+                    "storeSelected": "toDiscard",
+                    "prompt": "Choose a nonland card with mana value 2 or less to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "toDiscard",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "ContextPlayer",
+                            "index": 0
+                        }
+                    },
+                    "moveType": "Discard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            "TargetPlayer"
+        ],
+        "cleaveSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                "RevealHand",
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "ContextPlayer",
+                            "index": 0
+                        }
+                    },
+                    "storeAs": "revealedHand"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "revealedHand",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "toDiscard",
+                    "prompt": "Choose a nonland card to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "toDiscard",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "ContextPlayer",
+                            "index": 0
+                        }
+                    },
+                    "moveType": "Discard"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "UNCOMMON",
+        "artist": "Rovina Cai",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0ad4c472-b8ce-4ae0-a6f0-726ea74722c5.jpg?1783924866"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -2395,6 +2643,51 @@
     ]
 }
 
+// Gryff Rider
+{
+    "name": "Gryff Rider",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying\nTraining (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "TRAINING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlongsideGreaterPower"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "artist": "Yongjae Choi",
+        "flavorText": "\"Keep your heels down and bend at the hips as your mount takes flight. She'll do the rest.\"\n—Anders, cathar drillmaster",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/3/5317077b-370e-41a9-9162-c713362fd7f4.jpg?1783924922"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Halana and Alena, Partners
 {
     "name": "Halana and Alena, Partners",
@@ -3080,6 +3373,103 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Lunar Rejection
+{
+    "name": "Lunar Rejection",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Cleave {3}{U} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nReturn target [Wolf or Werewolf] creature to its owner's hand.\nDraw a card.",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{3}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "Wolf or Werewolf creature"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasAnyOfSubtypes",
+                                "subtypes": [
+                                    "Wolf",
+                                    "Werewolf"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "Wolf or Werewolf creature"
+            }
+        ],
+        "cleaveTargetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "creature"
+            }
+        ],
+        "cleaveSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature"
+                    },
+                    "destination": "Hand"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "UNCOMMON",
+        "artist": "Donato Giancola",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f66511c-355f-4e8a-96fc-3afc7a315231.jpg?1783924891"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -3787,6 +4177,99 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Parasitic Grasp
+{
+    "name": "Parasitic Grasp",
+    "manaCost": "{1}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Cleave {1}{B}{B} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nParasitic Grasp deals 3 damage to target [Human] creature. You gain 3 life.",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{1}{B}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "Human creature"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature Human"
+                },
+                "id": "Human creature"
+            }
+        ],
+        "cleaveTargetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "creature"
+            }
+        ],
+        "cleaveSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Rovina Cai",
+        "flavorText": "Some wicked souls linger only to consume the warmth of life.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/0713adf7-1770-4d5b-80f7-d6cbd24f7890.jpg?1783924860"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5408,6 +5891,98 @@
     ]
 }
 
+// Torens, Fist of the Angels
+{
+    "name": "Torens, Fist of the Angels",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Human Cleric",
+    "oracleText": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)\nWhenever you cast a creature spell, create a 1/1 green and white Human Soldier creature token with training.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAINING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlongsideGreaterPower"
+                    ]
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN",
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "keywords": [
+                        "TRAINING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/5/f/5f3c4810-7359-42b7-905f-4845f6d1daf6.jpg?1783924693",
+                    "triggeredAbilities": [
+                        {
+                            "id": "ability_3",
+                            "trigger": {
+                                "type": "AttackEvent",
+                                "requires": [
+                                    "AttacksAlongsideGreaterPower"
+                                ]
+                            },
+                            "effect": {
+                                "type": "AddCounters",
+                                "counterType": "+1/+1",
+                                "count": 1,
+                                "target": "Self"
+                            },
+                            "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "rarity": "RARE",
+        "artist": "Justine Cruz",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd111dc9-b8de-4e92-a63d-75a961b2db3b.jpg?1783924787"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Toxic Scorpion
 {
     "name": "Toxic Scorpion",
@@ -6501,6 +7076,52 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/4/54fb422d-71f2-44ed-9589-32630ab87050.jpg?1782703130"
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Winged Portent
+{
+    "name": "Winged Portent",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Cleave {4}{G}{U} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nDraw a card for each creature you control [with flying].",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{4}{G}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature kw:flying"
+            }
+        },
+        "cleaveSpellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "rarity": "RARE",
+        "artist": "Nicholas Gregory",
+        "flavorText": "\"No, no, it's just a murder of crows, not an omen of murder . . . I think.\"\n—York, Kessig tracker",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/3494a4fc-37e5-4095-a3bb-5cd9280f4c77.jpg?1783924876"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
         "BLUE"
     ]
 }

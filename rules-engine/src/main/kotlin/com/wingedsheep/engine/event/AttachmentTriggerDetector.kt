@@ -117,7 +117,7 @@ class AttachmentTriggerDetector(private val matcher: TriggerMatcher) {
                     // Apply the trigger's attack-time predicates (e.g. AttackPredicate.Alone for
                     // Bilbo's Ring) — the same conjunctive check the main loop runs at declaration,
                     // which the ATTACHED path must not skip.
-                    trigger.requires.all { matcher.matchesAttackPredicate(it, event, attachedEntityId) }
+                    trigger.requires.all { matcher.matchesAttackPredicate(it, event, attachedEntityId, state) }
             }
             is EventPattern.TapEvent -> {
                 event is TappedEvent && event.entityId == attachedEntityId

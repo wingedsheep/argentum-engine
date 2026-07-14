@@ -214,6 +214,8 @@ export enum Keyword {
   ASCEND = 'ASCEND',
   // Token decay (Innistrad: Midnight Hunt / TDM decayed counter)
   DECAYED = 'DECAYED',
+  // Attack-triggered self-buff (Innistrad: Midnight Hunt)
+  TRAINING = 'TRAINING',
   // Equipment that makes its own bearer (Final Fantasy)
   JOB_SELECT = 'JOB_SELECT',
   // Ability words
@@ -281,6 +283,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.ENDURING]: 'Enduring',
   [Keyword.ASCEND]: 'Ascend',
   [Keyword.DECAYED]: 'Decayed',
+  [Keyword.TRAINING]: 'Training',
   [Keyword.JOB_SELECT]: 'Job select',
   [Keyword.EERIE]: 'Eerie',
 }

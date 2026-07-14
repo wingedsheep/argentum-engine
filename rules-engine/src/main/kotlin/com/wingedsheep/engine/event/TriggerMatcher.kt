@@ -125,7 +125,7 @@ class TriggerMatcher(
             is EventPattern.AttackEvent -> {
                 event is AttackersDeclaredEvent &&
                     checkBinding(binding, sourceId, event.attackers) &&
-                    trigger.requires.all { matchesAttackPredicate(it, event, sourceId) }
+                    trigger.requires.all { matchesAttackPredicate(it, event, sourceId, state) }
             }
             is EventPattern.YouAttackEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
@@ -1462,11 +1462,16 @@ class TriggerMatcher(
      * Add a new branch here when extending [AttackPredicate] with a new
      * attack-time fact. The matcher is conjunctive — every predicate the
      * trigger declares must hold.
+     *
+     * [state] is threaded for predicates that must read **projected** creature stats across the
+     * attacking band (Training's [AttackPredicate.AttackedAlongsideGreaterPower]); count-only and
+     * stamped-set predicates ignore it.
      */
     internal fun matchesAttackPredicate(
         predicate: AttackPredicate,
         event: AttackersDeclaredEvent,
-        boundEntityId: EntityId
+        boundEntityId: EntityId,
+        state: GameState
     ): Boolean = when (predicate) {
         AttackPredicate.Alone -> event.attackers.size == 1
         is AttackPredicate.AttackerCountAtLeast -> event.attackers.size >= predicate.n
@@ -1477,6 +1482,21 @@ class TriggerMatcher(
         // Per-attacker: the trigger's own source was declared as attacking a player (not a
         // planeswalker or battle). Stamped on the event at declaration (CR 508.1 defender kind).
         AttackPredicate.DefenderIsPlayer -> boundEntityId in event.attackersAgainstPlayer
+        // Training (CR 702.149a): the source attacked, and at least one *other* declared attacker
+        // has strictly greater PROJECTED power (Rule 613 layers — so an anthem/aura on the other
+        // attacker counts). Read every power through the cached projected state, never raw
+        // CreatureStatsComponent, per the projected-state load-bearing rule.
+        AttackPredicate.AttackedAlongsideGreaterPower -> {
+            if (boundEntityId !in event.attackers) {
+                false
+            } else {
+                val projected = state.projectedState
+                val myPower = projected.getPower(boundEntityId) ?: 0
+                event.attackers.any { other ->
+                    other != boundEntityId && (projected.getPower(other) ?: 0) > myPower
+                }
+            }
+        }
     }
 
     private fun matchesSpellCastPredicate(

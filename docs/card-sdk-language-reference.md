@@ -2802,6 +2802,14 @@ Adding a new attack-time mechanic is one new sealed-case + one matcher branch
   already scopes to one creature). The defender kind is fixed at declaration, so it's
   captured on `AttackersDeclaredEvent.attackersAgainstPlayer` rather than re-derived
   from post-declaration state. Prefer the `AttacksAnOpponent` sugar.
+- `AttackPredicate.AttackedAlongsideGreaterPower` — the trigger's own attacker was declared
+  **and** at least one *other* declared attacker has strictly greater **projected** power than
+  the trigger's attacker (CR 702.149a, the Training condition). Unlike the count/stamped-set
+  predicates, the matcher reads live `state.projectedState.getPower(...)` for every attacker, so
+  Rule 613 layer effects (anthems, auras, counters) on the *other* attacker count — a lord pumping
+  the partner can flip this from false to true. The comparison is strict (`>`); an equal-power
+  partner does not satisfy it. Per-attacker, so use it on a `SELF` binding. Prefer the `training()`
+  keyword helper (§11) over hand-wiring this predicate.
 
 Examples:
 
@@ -4742,6 +4750,21 @@ composite abilities).
   scan handles the exploiter-still-present case, and a battlefield-presence guard keeps the two from double-firing.
   `EmitExploitedEventEffect` is an internal `data object` (no player-facing text) and should not be used directly — it is
   wired into `exploit()`. See `EventPattern.ExploitedEvent` under Sacrifice triggers for the watcher form.
+- `Training` — "Training (Whenever this creature and at least one other creature with power greater than this creature's
+  power attack, put a +1/+1 counter on this creature.)" (CR 702.149, Innistrad: Midnight Hunt; also WHO, SLD). Display-only
+  keyword; wire the behavior with the `card { training() }` builder helper. It adds the keyword plus one attack-triggered
+  ability — `Triggers.attacks(requires = setOf(AttackPredicate.AttackedAlongsideGreaterPower))` (SELF) → `Effects.AddCounters(
+  Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)`. The predicate reads **projected** power for every attacker (§8
+  `AttackPredicate`), so an anthem/aura on the *other* attacker can flip the trigger on; the comparison is strict. Multiple
+  instances trigger separately (CR 702.149b) — call `training()` twice, or add a second `trainingTriggeredAbility()`, for two
+  independent counters. The standalone `trainingTriggeredAbility()` factory (same file) exposes just the ability so an
+  **intrinsically-training token** can carry it: `Effects.CreateToken(…, keywords = setOf(Keyword.TRAINING))` sets the display
+  badge and `CreateTokenEffect(triggeredAbilities = listOf(trainingTriggeredAbility()))` supplies the behavior (Torens, Fist of
+  the Angels' "1/1 Human Soldier creature token with training" — the token trains when it later attacks alongside greater
+  power). **CR 702.149c "when this creature trains"** (a resolving training ability placing ≥1 +1/+1 counter) is *reserved but
+  not built*: when the first payoff card lands, add a custom `EventPattern.TrainedEvent` (template: `ScriedEvent` /
+  `SurveiledEvent`) emitted where the training `AddCounters` resolves — do not approximate it with a generic counter-placed
+  watcher, which would fire for non-training counters too.
 - `Job select` — "Job select (When this Equipment enters, create a 1/1 colorless Hero creature token, then attach
   this to it.)" (Final Fantasy). Equipment keyword; display-only. Wire it with the `card { jobSelect() }` builder
   helper, which adds the keyword plus an `EntersBattlefield` triggered ability composing two existing primitives

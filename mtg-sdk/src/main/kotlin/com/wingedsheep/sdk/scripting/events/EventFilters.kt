@@ -589,6 +589,28 @@ sealed interface AttackPredicate {
     data object DefenderIsPlayer : AttackPredicate {
         override val description = "a player"
     }
+
+    /**
+     * The attacker was declared as attacking **and** at least one *other* declared attacker has
+     * strictly greater **projected** power than the attacker's own projected power. This is the
+     * Training trigger condition (CR 702.149a: "Whenever this creature and at least one other
+     * creature with power greater than this creature's power attack, put a +1/+1 counter on this
+     * creature").
+     *
+     * Power is compared through **projected** state (Rule 613 layers), so anthems, auras, and
+     * counters on the attacking band are reflected — a lord that pumps the *other* attacker can
+     * flip this from false to true. Both powers are read at declaration time (when the trigger
+     * condition is checked); the comparison is strict (`>`), so an equal-power partner does not
+     * satisfy it.
+     *
+     * Per-attacker by design: it gates against the trigger's own source, so use it with a `SELF`
+     * binding — "Whenever this creature trains, …".
+     */
+    @SerialName("AttacksAlongsideGreaterPower")
+    @Serializable
+    data object AttackedAlongsideGreaterPower : AttackPredicate {
+        override val description = "with another creature with greater power"
+    }
 }
 
 // =============================================================================

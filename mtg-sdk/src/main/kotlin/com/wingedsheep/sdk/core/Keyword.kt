@@ -320,6 +320,21 @@ enum class Keyword(val displayName: String) {
      */
     EXPLOIT("Exploit"),
 
+    /**
+     * Training (CR 702.149, Innistrad: Midnight Hunt). A triggered attack ability:
+     * "Whenever this creature and at least one other creature with power greater than this
+     * creature's power attack, put a +1/+1 counter on this creature" (CR 702.149a). Multiple
+     * instances trigger separately (CR 702.149b).
+     *
+     * The keyword itself is display-only; the behavior is composed by the `training()` DSL helper
+     * on [com.wingedsheep.sdk.dsl.CardBuilder] — an attack-triggered ability
+     * ([com.wingedsheep.sdk.dsl.Triggers.attacks] gated by
+     * [com.wingedsheep.sdk.scripting.events.AttackPredicate.AttackedAlongsideGreaterPower], which
+     * compares *projected* power across the attacking band) whose effect puts one +1/+1 counter on
+     * the source ([com.wingedsheep.sdk.dsl.Effects.AddCounters]).
+     */
+    TRAINING("Training"),
+
     // ── Damage modification ──────────────────────────────
     WITHER("Wither"),
     TOXIC("Toxic"),
