@@ -296,48 +296,6 @@ class DawnhandDissidentTest : FunSpec({
         countersAfter?.getCount(CounterType.STUN) shouldBe 0
     }
 
-    test("linked-exile cast rejects legacy counterRemovals payload (typed-only)") {
-        // CastSpell flow no longer honours the legacy `counterRemovals: Map<EntityId, Int>`
-        // payload — clients must send the typed `distributedCounterRemovals`. This guards
-        // the engine against silently auto-picking counter types on the player's behalf.
-        val driver = setupP1(
-            battlefield = listOf("Dawnhand Dissident", "Hill Giant", "Hill Giant", "Forest", "Forest", "Forest"),
-            exile = listOf("Grizzly Bears"),
-            extraSetCards = listOf(DawnhandDissident),
-        )
-        val state0 = driver.game.state
-        val p1 = driver.player1
-
-        val dissident = state0.getZone(ZoneKey(p1, Zone.BATTLEFIELD))
-            .first { state0.getEntity(it)?.get<CardComponent>()?.name == "Dawnhand Dissident" }
-        val giants = state0.getZone(ZoneKey(p1, Zone.BATTLEFIELD))
-            .filter { state0.getEntity(it)?.get<CardComponent>()?.name == "Hill Giant" }
-        val exiledCreature = state0.getZone(ZoneKey(p1, Zone.EXILE))
-            .first { state0.getEntity(it)?.get<CardComponent>()?.name == "Grizzly Bears" }
-
-        var newState = state0.updateEntity(dissident) { c ->
-            c.with(LinkedExileComponent(listOf(exiledCreature)))
-        }
-        for (g in giants) {
-            newState = newState.updateEntity(g) { c ->
-                c.with(CountersComponent(mapOf(CounterType.MINUS_ONE_MINUS_ONE to 2)))
-            }
-        }
-        driver.game.replaceState(newState)
-
-        val result = driver.game.submit(
-            CastSpell(
-                playerId = p1,
-                cardId = exiledCreature,
-                paymentStrategy = PaymentStrategy.AutoPay,
-                additionalCostPayment = AdditionalCostPayment(
-                    counterRemovals = mapOf(giants[0] to 2, giants[1] to 1)
-                )
-            )
-        )
-        result.isSuccess shouldBe false
-    }
-
     test("linked-exile cast is unavailable on opponent's turn") {
         // Set up on P1's turn. Advance until P2 is the active player.
         val (driver, _, exiledCreature) = setupLinkedExileScenario(piggyCounters = 5)

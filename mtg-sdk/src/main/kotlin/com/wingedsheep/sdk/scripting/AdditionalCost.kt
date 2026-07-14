@@ -528,9 +528,6 @@ data class AdditionalCostPayment(
     /** Permanents that were returned to hand */
     val bouncedPermanents: List<EntityId> = emptyList(),
 
-    /** Counter removals: entity ID -> number of +1/+1 counters to remove from that creature */
-    val counterRemovals: Map<EntityId, Int> = emptyMap(),
-
     /** Creature that received -1/-1 counters via Blight */
     val blightTargets: List<EntityId> = emptyList(),
 
@@ -563,7 +560,6 @@ data class AdditionalCostPayment(
                 beheldCards.isEmpty() &&
                 tappedPermanents.isEmpty() &&
                 bouncedPermanents.isEmpty() &&
-                counterRemovals.isEmpty() &&
                 blightTargets.isEmpty() &&
                 blightAmount == 0 &&
                 payXLifeAmount == 0 &&

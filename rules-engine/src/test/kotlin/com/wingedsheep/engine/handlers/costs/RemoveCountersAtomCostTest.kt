@@ -116,7 +116,10 @@ class RemoveCountersAtomCostTest : FunSpec({
                 sourceId = source,
                 abilityId = abilityId,
                 costPayment = AdditionalCostPayment(
-                    counterRemovals = mapOf(creature1 to 1, creature2 to 1)
+                    distributedCounterRemovals = listOf(
+                        DistributedCounterRemoval(creature1, "+1/+1", 1),
+                        DistributedCounterRemoval(creature2, "+1/+1", 1)
+                    )
                 )
             )
         )
@@ -154,7 +157,9 @@ class RemoveCountersAtomCostTest : FunSpec({
                 sourceId = source,
                 abilityId = abilityId,
                 costPayment = AdditionalCostPayment(
-                    counterRemovals = mapOf(land to 2)
+                    distributedCounterRemovals = listOf(
+                        DistributedCounterRemoval(land, "+1/+1", 2)
+                    )
                 )
             )
         )
