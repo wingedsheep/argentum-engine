@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.ControlChangeDirection
 import com.wingedsheep.sdk.scripting.EventPattern.*
+import com.wingedsheep.sdk.scripting.ExploreReveal
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
@@ -1929,6 +1930,32 @@ object Triggers {
         event = ScriedOrSurveiledEvent(Player.You),
         binding = TriggerBinding.ANY
     )
+
+    /**
+     * Whenever a permanent matching [filter] explores (CR 701.44), optionally gated by the reveal
+     * outcome ([revealedType]). Binding is [TriggerBinding.ANY] — the observer watches every
+     * matching permanent, so `filter.youControl()` resolves "you" to the observer's controller.
+     * Defaults to "a creature you control explores" (Merfolk Cave-Diver). Fires once per explore,
+     * including the empty-library case for [ExploreReveal.ANY] (CR 701.44b).
+     */
+    fun creatureExplores(
+        filter: GameObjectFilter = GameObjectFilter.Creature.youControl(),
+        revealedType: ExploreReveal = ExploreReveal.ANY
+    ): TriggerSpec = TriggerSpec(
+        event = ExploredEvent(filter = filter, revealedType = revealedType),
+        binding = TriggerBinding.ANY
+    )
+
+    /** "Whenever a creature you control explores" (Merfolk Cave-Diver). */
+    val WheneverCreatureYouControlExplores: TriggerSpec = creatureExplores()
+
+    /** "Whenever a creature you control explores a land card" (Nicanzil, first ability). */
+    val WheneverCreatureYouControlExploresLand: TriggerSpec =
+        creatureExplores(revealedType = ExploreReveal.LAND)
+
+    /** "Whenever a creature you control explores a nonland card" (Nicanzil, second ability). */
+    val WheneverCreatureYouControlExploresNonland: TriggerSpec =
+        creatureExplores(revealedType = ExploreReveal.NONLAND)
 
     /**
      * "Whenever you waterbend, earthbend, firebend, or airbend, …" (CR 701.65b / 701.66b /

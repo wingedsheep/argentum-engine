@@ -2381,6 +2381,69 @@
     }
 }
 
+// Cavern Stomper
+{
+    "name": "Cavern Stomper",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "When this creature enters, scry 2.\n{3}{G}: This creature can't be blocked by creatures with power 2 or less this turn.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 2
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "CantBeBlockedBy",
+                        "blockerFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerAtMost",
+                                    "max": 2
+                                }
+                            ]
+                        }
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "artist": "David Szabo",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/decdfd6b-55ab-47fd-9f98-1845261f1caf.jpg?1782694468"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Cavernous Maw
 {
     "name": "Cavernous Maw",
@@ -8027,6 +8090,85 @@
     ]
 }
 
+// Malamet Battle Glyph
+{
+    "name": "Malamet Battle Glyph",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose target creature you control and target creature you don't control. If the creature you control entered this turn, put a +1/+1 counter on it. Then those creatures fight each other.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "filter": {
+                                "statePredicates": [
+                                    "EnteredThisTurn"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "+1/+1",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                {
+                    "type": "Fight",
+                    "target1": {
+                        "type": "BoundVariable",
+                        "name": "target creature you control"
+                    },
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "target creature you don't control"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "target creature you control"
+            },
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "target creature you don't control"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Mar",
+        "flavorText": "\"Let's not give the surface-dwellers time to learn what tactics work best here.\"\n—Daram, Malamet marshal",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/2/2259f959-ca97-4df9-8d50-0532090fb967.jpg?1782694450"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Malamet Brawler
 {
     "name": "Malamet Brawler",
@@ -8649,6 +8791,62 @@
     ]
 }
 
+// Merfolk Cave-Diver
+{
+    "name": "Merfolk Cave-Diver",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Merfolk Scout",
+    "oracleText": "Whenever a creature you control explores, this creature gets +1/+0 until end of turn and can't be blocked this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ExploredEvent",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Fesbra",
+        "flavorText": "\"Learn all you can of this underground sea. I suspect more secrets of our ancestors lie waiting in its depths.\"\n—Tishana",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e0fe81c-b8ef-49ff-8743-f03d0220cb9e.jpg?1782694558"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Might of the Ancestors
 {
     "name": "Might of the Ancestors",
@@ -8978,6 +9176,92 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Nicanzil, Current Conductor
+{
+    "name": "Nicanzil, Current Conductor",
+    "manaCost": "{G}{U}",
+    "typeLine": "Legendary Creature — Merfolk Scout",
+    "oracleText": "Whenever a creature you control explores a land card, you may put a land card from your hand onto the battlefield tapped.\nWhenever a creature you control explores a nonland card, put a +1/+1 counter on Nicanzil.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ExploredEvent",
+                    "filter": "creature ctrl:you",
+                    "revealedType": "LAND"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield",
+                                "placement": "Tapped"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ExploredEvent",
+                    "filter": "creature ctrl:you",
+                    "revealedType": "NONLAND"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "UNCOMMON",
+        "artist": "Fariba Khamseh",
+        "flavorText": "\"This water can guide you anywhere, if you know how to ask.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e6f4aba-3500-4fb7-ab78-02f63c03778a.jpg?1782694423"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 

@@ -126,6 +126,7 @@ val engineSerializersModule = SerializersModule {
         subclass(RingTemptedEvent::class)
         subclass(ScriedEvent::class)
         subclass(SurveiledEvent::class)
+        subclass(PermanentExploredEvent::class)
         subclass(BendPerformedEvent::class)
         subclass(ManifestedDreadEvent::class)
         subclass(LibrarySearchedEvent::class)

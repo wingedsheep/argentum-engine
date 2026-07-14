@@ -501,3 +501,23 @@ data class ExploreEffect(
 ) : Effect {
     override val description: String = "${target.description} explores"
 }
+
+/**
+ * Tail marker that emits the "a permanent explored" event (CR 701.44), mirroring
+ * [EmitSurveiledEventEffect]. Deferred to the very end of the explore so the event lands in a
+ * *completed* resolution batch — the nonland branch of an explore pauses for the top/graveyard
+ * choice, and a game event emitted in that paused batch does not reliably fire watcher triggers.
+ * The land and empty-library branches emit the event inline (they don't pause), so this marker is
+ * appended only to the nonland branch's post-decision effects.
+ *
+ * @property target The permanent that explored (the trigger's subject).
+ * @property revealedCardWasLand `true` land / `false` nonland / `null` no reveal (empty library).
+ */
+@SerialName("EmitExploredEvent")
+@Serializable
+data class EmitExploredEventEffect(
+    val target: EffectTarget = EffectTarget.Self,
+    val revealedCardWasLand: Boolean? = null
+) : Effect {
+    override val description: String = "${target.description} explored"
+}

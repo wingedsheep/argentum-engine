@@ -298,6 +298,27 @@ data class SurveiledEvent(
 ) : GameEvent
 
 /**
+ * A permanent just explored (CR 701.44). Fires once per explore, after the reveal + hand/counter
+ * resolution is determined. Drives [com.wingedsheep.sdk.scripting.EventPattern.ExploredEvent]
+ * triggers ("whenever a creature you control explores [a land / nonland card]").
+ *
+ * @property exploringPermanentId The permanent that explored (the trigger's subject).
+ * @property controllerId The exploring permanent's controller at explore time.
+ * @property revealedCardWasLand `true` if the revealed card was a land, `false` if a nonland,
+ *   `null` if no card was revealed (empty library — the permanent still explored per CR 701.44b).
+ *   Gates the `LAND` / `NONLAND` reveal-type triggers; `ANY` matches regardless.
+ * @property sourceName The card/ability that caused the explore (for display).
+ */
+@Serializable
+@SerialName("PermanentExploredEvent")
+data class PermanentExploredEvent(
+    val exploringPermanentId: EntityId,
+    val controllerId: EntityId,
+    val revealedCardWasLand: Boolean?,
+    val sourceName: String? = null
+) : GameEvent
+
+/**
  * A player just performed one of the four elemental bending keyword actions (CR 701.65b Airbend /
  * 701.66b Earthbend / 701.67c Waterbend / 702.189b Firebending). Fires once per bend so
  * [com.wingedsheep.sdk.scripting.EventPattern.BendPerformedEvent] triggers

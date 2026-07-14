@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.EmitExploredEventEffect
 import com.wingedsheep.sdk.scripting.effects.ExploreEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
@@ -42,8 +43,22 @@ class ExploreEffectExecutor : EffectExecutor<ExploreEffect> {
             ?: return EffectResult.success(state)
 
         val explorerId = context.controllerId
+        val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
+
+        // CR 701.44b: the permanent "explores" even if the reveal was impossible (empty library).
+        // Emit the explored event (revealedCardWasLand = null) so "whenever a creature you control
+        // explores" (ANY) still fires; the land/nonland reveal-type triggers don't match.
+        fun exploredEvent(wasLand: Boolean?) = PermanentExploredEvent(
+            exploringPermanentId = exploringCreatureId,
+            controllerId = explorerId,
+            revealedCardWasLand = wasLand,
+            sourceName = sourceName
+        )
+
         val library = state.getLibrary(explorerId)
-        if (library.isEmpty()) return EffectResult.success(state)
+        if (library.isEmpty()) {
+            return EffectResult.success(state, listOf(exploredEvent(null)))
+        }
 
         val topCardId = library.first()
         val topCardContainer = state.getEntity(topCardId)
@@ -53,7 +68,6 @@ class ExploreEffectExecutor : EffectExecutor<ExploreEffect> {
 
         val topCardName = topCardComponent.name
         val topCardImageUri = topCardComponent.imageUri
-        val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
         val revealEvent = CardsRevealedEvent(
             revealingPlayerId = explorerId,
@@ -66,7 +80,10 @@ class ExploreEffectExecutor : EffectExecutor<ExploreEffect> {
         return if (topCardComponent.typeLine.isLand) {
             // Land: move directly to hand
             val transition = ZoneTransitionService.moveToZone(state, topCardId, Zone.HAND)
-            EffectResult.success(transition.state, listOf(revealEvent) + transition.events)
+            EffectResult.success(
+                transition.state,
+                listOf(revealEvent) + transition.events + exploredEvent(true)
+            )
         } else {
             // Non-land: mark card revealed to all players, add +1/+1 counter, then ask:
             // back to top of library (stays visible) or graveyard?
@@ -91,6 +108,13 @@ class ExploreEffectExecutor : EffectExecutor<ExploreEffect> {
                 noText = "Graveyard"
             )
 
+            // Defer the explored event to after the top/graveyard move resolves (CR 701.44b): a
+            // game event emitted in the paused batch below does not reliably fire watcher triggers,
+            // so both continuation branches end by emitting it from a completed resolution.
+            val emitExplored = EmitExploredEventEffect(
+                target = EffectTarget.SpecificEntity(exploringCreatureId),
+                revealedCardWasLand = false
+            )
             val continuation = MayAbilityContinuation(
                 decisionId = decisionId,
                 playerId = explorerId,
@@ -100,12 +124,16 @@ class ExploreEffectExecutor : EffectExecutor<ExploreEffect> {
                         target = EffectTarget.SpecificEntity(topCardId),
                         destination = Zone.LIBRARY,
                         placement = ZonePlacement.Top
-                    )
+                    ),
+                    emitExplored
                 )),
-                effectIfNo = MoveToZoneEffect(
-                    target = EffectTarget.SpecificEntity(topCardId),
-                    destination = Zone.GRAVEYARD
-                ),
+                effectIfNo = CompositeEffect(listOf(
+                    MoveToZoneEffect(
+                        target = EffectTarget.SpecificEntity(topCardId),
+                        destination = Zone.GRAVEYARD
+                    ),
+                    emitExplored
+                )),
                 effectContext = context
             )
 

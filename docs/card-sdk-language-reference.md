@@ -3239,6 +3239,22 @@ Triggers.youCastSpell(
 - `WheneverYouScryOrSurveil` — the combined look-at-top trigger; fires once per scry **and**
   once per surveil (Matoya, Archon Elder).
 
+### Explore (CR 701.44)
+
+- `Triggers.creatureExplores(filter, revealedType)` — "Whenever a permanent matching `filter`
+  explores." The exploring permanent is the event subject, so the binding is `TriggerBinding.ANY`
+  and `filter.youControl()` resolves "you" to the observing ability's controller. `revealedType`
+  (`ExploreReveal.ANY | LAND | NONLAND`) gates on the reveal outcome (CR 701.44a). Backed by
+  `EventPattern.ExploredEvent`; emitted by `ExploreEffectExecutor` as `PermanentExploredEvent`
+  once per explore.
+  - `WheneverCreatureYouControlExplores` — ANY reveal (Merfolk Cave-Diver).
+  - `WheneverCreatureYouControlExploresLand` — only when a **land** card was revealed (Nicanzil,
+    Current Conductor's first ability).
+  - `WheneverCreatureYouControlExploresNonland` — only when a **nonland** card was revealed
+    (Nicanzil's second ability).
+  - Fires even on an **empty library** (CR 701.44b — the permanent still explored): `ANY` matches,
+    `LAND`/`NONLAND` do not (`revealedCardWasLand == null`).
+
 ### Library search (CR 701.23)
 
 - `WheneverYouSearchYourLibrary` / `WheneverAnOpponentSearchesTheirLibrary` — fire once per

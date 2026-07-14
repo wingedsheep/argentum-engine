@@ -49,6 +49,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.ExploreReveal
 import com.wingedsheep.sdk.scripting.events.ControllerFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
@@ -492,6 +493,26 @@ class TriggerMatcher(
                 is com.wingedsheep.engine.core.SurveiledEvent ->
                     matchesPlayer(trigger.player, event.playerId, controllerId)
                 else -> false
+            }
+            is EventPattern.ExploredEvent -> {
+                if (event !is com.wingedsheep.engine.core.PermanentExploredEvent) return false
+                // Reveal-type gate (CR 701.44a): ANY always matches; LAND/NONLAND require the
+                // matching reveal. Empty-library explore (wasLand == null) matches only ANY.
+                when (trigger.revealedType) {
+                    ExploreReveal.ANY -> {}
+                    ExploreReveal.LAND -> if (event.revealedCardWasLand != true) return false
+                    ExploreReveal.NONLAND -> if (event.revealedCardWasLand != false) return false
+                }
+                // Subject gate: the exploring permanent must match the filter, resolving "you" to
+                // the observing ability's controller. A null filter matches any permanent.
+                val filter = trigger.filter ?: return true
+                predicateEvaluator.matches(
+                    state,
+                    state.projectedState,
+                    event.exploringPermanentId,
+                    filter,
+                    PredicateContext(controllerId = controllerId, sourceId = sourceId)
+                )
             }
             is EventPattern.ExploitedEvent -> {
                 if (event !is com.wingedsheep.engine.core.ExploitedEvent) return false

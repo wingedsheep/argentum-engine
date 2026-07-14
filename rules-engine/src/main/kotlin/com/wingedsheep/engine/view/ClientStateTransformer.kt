@@ -2650,6 +2650,22 @@ class ClientStateTransformer(
                 )
             )
         }
+        // Granted *static* abilities (e.g. Cavern Stomper's "{3}{G}: can't be blocked by creatures
+        // with power 2 or less"). These live in their own GameState list — combat reads them directly
+        // rather than through the layer system — so they never reach the projected keyword set that
+        // feeds `abilityFlags`. Without this badge the grant is invisible after it resolves.
+        for (granted in state.grantedStaticAbilities) {
+            if (granted.entityId != entityId) continue
+            if (!seenGrantDescriptions.add(granted.ability.description)) continue
+            effects.add(
+                ClientCardEffect(
+                    effectId = "granted_static_${granted.ability.description.hashCode()}",
+                    name = "Granted Ability",
+                    description = granted.ability.description,
+                    icon = "granted-ability"
+                )
+            )
+        }
 
         return effects
     }

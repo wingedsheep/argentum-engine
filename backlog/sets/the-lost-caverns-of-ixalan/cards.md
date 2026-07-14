@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 235 / 286
+**Implemented:** 239 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -45,7 +45,7 @@
 - [x] Captivating Cave
 - [x] Careening Mine Cart
 - [x] Cartographer's Companion
-- [ ] Cavern Stomper
+- [x] Cavern Stomper
 - [x] Cavern of Souls
 - [x] Cavernous Maw
 - [x] Cenote Scout
@@ -147,7 +147,7 @@
 - [ ] Kutzil, Malamet Exemplar
 - [x] Lodestone Needle
 - [x] Magmatic Galleon
-- [ ] Malamet Battle Glyph
+- [x] Malamet Battle Glyph
 - [x] Malamet Brawler
 - [x] Malamet Scythe
 - [x] Malamet Veteran
@@ -159,13 +159,13 @@
 - [x] Master's Guide-Mural
 - [ ] Matzalantli, the Great Door
 - [x] Mephitic Draught
-- [ ] Merfolk Cave-Diver
+- [x] Merfolk Cave-Diver
 - [x] Might of the Ancestors
 - [x] Miner's Guidewing
 - [x] Mineshaft Spider
 - [x] Mischievous Pup
 - [x] Molten Collapse
-- [ ] Nicanzil, Current Conductor
+- [x] Nicanzil, Current Conductor
 - [x] Nurturing Bristleback
 - [x] Oaken Siren
 - [ ] Ojer Axonil, Deepest Might

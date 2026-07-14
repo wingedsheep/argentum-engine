@@ -32,6 +32,18 @@ enum class ControlChangeDirection {
 }
 
 /**
+ * Which reveal outcome an [EventPattern.ExploredEvent] trigger requires (CR 701.44a).
+ *
+ * - [ANY] — fires on every explore, regardless of what was revealed (or if the library was empty,
+ *   CR 701.44b: the permanent still explored). Backs "whenever a creature you control explores".
+ * - [LAND] — fires only when the revealed card was a land (went to hand). Backs "explores a land card".
+ * - [NONLAND] — fires only when the revealed card was a nonland (the +1/+1-counter branch). Backs
+ *   "explores a nonland card".
+ */
+@Serializable
+enum class ExploreReveal { ANY, LAND, NONLAND }
+
+/**
  * Represents a game event type used by both replacement effects and triggered abilities.
  *
  * This is compositional - events are specified by combining an event type
@@ -428,6 +440,33 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val player: Player = Player.You
     ) : EventPattern {
         override val description: String = "${player.description} scries or surveils"
+    }
+
+    /**
+     * Whenever a permanent matching [filter] explores (CR 701.44), optionally gated by whether the
+     * revealed card was a land ([revealedType]). The exploring permanent is the event subject, so
+     * "a creature you control explores" is `filter = GameObjectFilter.Creature.youControl()` with a
+     * [com.wingedsheep.sdk.scripting.TriggerBinding.ANY] binding (the observer watches every
+     * matching permanent, resolving "you" to the observer's controller). Fires once per explore,
+     * including the empty-library case (CR 701.44b — the permanent still explored), where
+     * [revealedType] `LAND`/`NONLAND` do not match but `ANY` does.
+     */
+    @SerialName("ExploredEvent")
+    @Serializable
+    data class ExploredEvent(
+        val filter: GameObjectFilter? = null,
+        val revealedType: ExploreReveal = ExploreReveal.ANY
+    ) : EventPattern {
+        override val description: String = when (revealedType) {
+            ExploreReveal.ANY -> "a permanent explores"
+            ExploreReveal.LAND -> "a permanent explores a land card"
+            ExploreReveal.NONLAND -> "a permanent explores a nonland card"
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter?.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
     }
 
     /**
