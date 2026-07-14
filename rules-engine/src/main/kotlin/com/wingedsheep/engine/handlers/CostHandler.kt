@@ -2,7 +2,9 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType
+import com.wingedsheep.engine.mechanics.cost.CostPaymentService
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.state.GameState
@@ -27,8 +29,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
 /**
  * Validates and pays costs for spells and abilities.
  */
-class CostHandler(
-) {
+class CostHandler {
 
     private val predicateEvaluator = PredicateEvaluator()
 
@@ -240,7 +241,7 @@ class CostHandler(
                 if (cardsInHand.isEmpty()) {
                     return CostPaymentResult.success(state, manaPool)
                 }
-                val result = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                val result = ZoneTransitionService
                     .discardCards(state, controllerId, cardsInHand)
                 CostPaymentResult.success(result.state, manaPool, result.events)
             }
@@ -264,7 +265,7 @@ class CostHandler(
                     return CostPaymentResult.failure("Source card is not in its owner's hand")
                 }
 
-                val result = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                val result = ZoneTransitionService
                     .discardCard(state, ownerId, sourceId)
                 CostPaymentResult.success(result.state, manaPool, result.events)
             }
@@ -277,7 +278,7 @@ class CostHandler(
                 if (!state.getZone(ZoneKey(controllerId, Zone.HAND)).contains(tracked)) {
                     return CostPaymentResult.failure("The card you drew last this turn is no longer in your hand")
                 }
-                val result = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                val result = ZoneTransitionService
                     .discardCard(state, controllerId, tracked)
                 CostPaymentResult.success(result.state, manaPool, result.events)
             }
@@ -292,13 +293,13 @@ class CostHandler(
                 // Capture AttachedToComponent before zone transition — needed by effects like
                 // GrantToEnchantedCreatureTypeGroupEffect (Crown cycle) that read the enchanted
                 // creature from the source at resolution time.
-                val attachedTo = sourceContainer.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                val attachedTo = sourceContainer.get<AttachedToComponent>()
 
                 // Track Food sacrifice before zone transition
-                var preState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.trackPermanentSacrifice(state, listOf(sourceId), sourceController)
+                val preState = ZoneTransitionService.trackPermanentSacrifice(state, listOf(sourceId), sourceController)
 
                 // Delegate zone movement to ZoneTransitionService for full cleanup
-                val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
+                val transitionResult = ZoneTransitionService.moveToZone(
                     preState, sourceId, Zone.GRAVEYARD
                 )
 
@@ -320,7 +321,7 @@ class CostHandler(
                     ?: return CostPaymentResult.failure("Source permanent not found")
 
                 // Delegate zone movement to ZoneTransitionService for full cleanup
-                val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
+                val transitionResult = ZoneTransitionService.moveToZone(
                     state, sourceId, Zone.EXILE
                 )
 
@@ -332,7 +333,7 @@ class CostHandler(
                 state.getEntity(granterId)
                     ?: return CostPaymentResult.failure("Granting permanent not found")
 
-                val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
+                val transitionResult = ZoneTransitionService.moveToZone(
                     state, granterId, Zone.EXILE
                 )
 
@@ -393,12 +394,12 @@ class CostHandler(
                     return CostPaymentResult.failure("Blight target can't have counters put on it")
                 }
                 val counters = targetContainer.get<CountersComponent>() ?: CountersComponent()
-                val firstThisTurn = com.wingedsheep.engine.handlers.effects.DamageUtils
+                val firstThisTurn = DamageUtils
                     .isFirstCounterThisTurn(state, targetId)
                 val withCounters = state.updateEntity(targetId) { c ->
                     c.with(counters.withAdded(CounterType.MINUS_ONE_MINUS_ONE, cost.amount))
                 }
-                val newState = com.wingedsheep.engine.handlers.effects.DamageUtils
+                val newState = DamageUtils
                     .markCounterPlacedOnCreature(withCounters, controllerId, targetId)
                 val targetName = targetContainer.get<CardComponent>()?.name ?: "Creature"
                 val events = listOf<GameEvent>(
@@ -564,7 +565,7 @@ class CostHandler(
                 }
                 choices.discardChoices.take(atom.count)
             }
-            val result = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+            val result = ZoneTransitionService
                 .discardCards(workState, controllerId, toDiscard)
             CostPaymentResult.success(result.state, manaPool, result.events)
         }
@@ -580,8 +581,6 @@ class CostHandler(
         is CostAtom.RemoveCounters -> {
             val counterType = atom.counterType?.let { resolveNamedCounterType(it) }
             val requiredCount = getAtomCount(atom.count, choices)
-            val projected = state.projectedState
-            val ctx = PredicateContext(controllerId = controllerId)
             var newState = state
             val events = mutableListOf<GameEvent>()
 
@@ -619,41 +618,12 @@ class CostHandler(
                         "Counter removal total ($totalChosen) does not match required count ($requiredCount)"
                     )
                 }
-                for (removal in removals) {
-                    if (removal.count <= 0) continue
-                    val container = state.getEntity(removal.entityId)
-                        ?: return CostPaymentResult.failure("Permanent not found: ${removal.entityId}")
-                    if (projected.getController(removal.entityId) != controllerId) {
-                        return CostPaymentResult.failure("Cannot remove counters from a permanent you do not control")
-                    }
-                    if (!predicateEvaluator.matches(state, projected, removal.entityId, atom.filter, ctx)) {
-                        return CostPaymentResult.failure("Permanent does not match the required filter for counter removal")
-                    }
-                    val resolvedType = if (counterType != null) {
-                        val entryType = resolveNamedCounterType(removal.counterType)
-                        if (entryType != counterType) {
-                            return CostPaymentResult.failure(
-                                "Counter type mismatch: expected ${atom.counterType}, got ${removal.counterType}"
-                            )
-                        }
-                        counterType
-                    } else {
-                        resolveNamedCounterType(removal.counterType)
-                    }
-                    val available = container.get<CountersComponent>()?.getCount(resolvedType) ?: 0
-                    if (available < removal.count) {
-                        return CostPaymentResult.failure(
-                            "Permanent does not have enough ${removal.counterType} counters (need ${removal.count}, have $available)"
-                        )
-                    }
-                    newState = newState.updateEntity(removal.entityId) { c ->
-                        val counters = c.get<CountersComponent>() ?: CountersComponent()
-                        c.with(counters.withRemoved(resolvedType, removal.count))
-                    }
-                    val entityName = container.get<CardComponent>()?.name ?: "Permanent"
-                    val typeName = atom.counterType ?: removal.counterType
-                    events.add(CountersRemovedEvent(removal.entityId, typeName, removal.count, entityName))
-                }
+                val execution = CostPaymentService.applyDistributedCounterRemovals(
+                    newState, controllerId, atom, removals
+                )
+                if (!execution.success) return CostPaymentResult.failure("Counter removal validation failed")
+                newState = execution.state
+                events.addAll(execution.events)
             }
             CostPaymentResult.success(newState, manaPool, events)
         }
@@ -728,13 +698,13 @@ class CostHandler(
 
             // Capture AttachedToComponent before zone transition — needed by effects that
             // read the enchanted creature from the sacrificed aura at resolution time.
-            val attachedTo = sacrificeContainer.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+            val attachedTo = sacrificeContainer.get<AttachedToComponent>()
 
             // Track Food sacrifice before zone transition
-            newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.trackPermanentSacrifice(newState, listOf(toSacrifice), sacrificeController)
+            newState = ZoneTransitionService.trackPermanentSacrifice(newState, listOf(toSacrifice), sacrificeController)
 
             // Delegate zone movement to ZoneTransitionService for full cleanup
-            val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
+            val transitionResult = ZoneTransitionService.moveToZone(
                 newState, toSacrifice, Zone.GRAVEYARD
             )
             newState = transitionResult.state
@@ -832,7 +802,7 @@ class CostHandler(
             }
 
             // Delegate zone movement to ZoneTransitionService for full cleanup
-            val transitionResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
+            val transitionResult = ZoneTransitionService.moveToZone(
                 newState, toBounce, Zone.HAND
             )
             newState = transitionResult.state
@@ -1140,7 +1110,7 @@ class CostHandler(
         // 1. Exile each chosen material from its zone via the standard zone-transition pipeline
         //    (LTB triggers, attachment cleanup, last-known info — all handled there).
         for (materialId in chosen) {
-            val transition = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
+            val transition = ZoneTransitionService.moveToZone(
                 newState, materialId, Zone.EXILE
             )
             newState = transition.state
@@ -1150,7 +1120,7 @@ class CostHandler(
         // 2. Exile the source itself. The Craft resolution effect will lift it back to the
         //    battlefield as its back face; the materials remain in exile so the back face's
         //    CDA can keep reading their power.
-        val selfTransition = com.wingedsheep.engine.handlers.effects.ZoneTransitionService.moveToZone(
+        val selfTransition = ZoneTransitionService.moveToZone(
             newState, sourceId, Zone.EXILE
         )
         newState = selfTransition.state
@@ -1160,7 +1130,7 @@ class CostHandler(
         //    effect can re-attach the component on battlefield re-entry (it's stripped on
         //    every battlefield entry by applyBattlefieldEntry per Rule 400.7).
         newState = newState.updateEntity(sourceId) { c ->
-            c.with(com.wingedsheep.engine.state.components.battlefield.CraftedFromExiledComponent(chosen))
+            c.with(CraftedFromExiledComponent(chosen))
         }
 
         return CostPaymentResult.success(newState, manaPool, events)

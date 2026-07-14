@@ -2,6 +2,7 @@ package com.wingedsheep.engine.legalactions.utils
 
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.permanent.counters.counterTypeToString
 import com.wingedsheep.engine.legalactions.*
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -9,11 +10,11 @@ import com.wingedsheep.engine.mechanics.mana.ManaSource
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
@@ -428,7 +429,7 @@ class CostEnumerationUtils(
      */
     fun canPayTapAttachedCreatureCost(state: GameState, entityId: EntityId): Boolean {
         val container = state.getEntity(entityId) ?: return false
-        val attachedId = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()?.targetId
+        val attachedId = container.get<AttachedToComponent>()?.targetId
             ?: return false
         val attachedEntity = state.getEntity(attachedId) ?: return false
         if (attachedEntity.has<TappedComponent>()) return false
@@ -459,23 +460,23 @@ class CostEnumerationUtils(
         val resolvedType = counterType?.let {
             com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType(it)
         }
-        return state.entities.mapNotNull { (eid, c) ->
-            if (projected.getController(eid) != playerId) return@mapNotNull null
+        return projected.getBattlefieldControlledBy(playerId).mapNotNull { eid ->
             if (!predicateEvaluator.matches(state, projected, eid, filter, context)) return@mapNotNull null
-            val counters = c.get<CountersComponent>() ?: return@mapNotNull null
-            val card = c.get<CardComponent>() ?: return@mapNotNull null
+            val container = state.getEntity(eid) ?: return@mapNotNull null
+            val counters = container.get<CountersComponent>() ?: return@mapNotNull null
+            val card = container.get<CardComponent>() ?: return@mapNotNull null
 
             val (total, byType) = if (resolvedType != null) {
                 val count = counters.getCount(resolvedType)
                 if (count <= 0) return@mapNotNull null
                 count to mapOf(
-                    com.wingedsheep.engine.handlers.effects.permanent.counters.counterTypeToString(resolvedType) to count
+                    counterTypeToString(resolvedType) to count
                 )
             } else {
                 val nonZero = counters.counters.filterValues { it > 0 }
                 if (nonZero.isEmpty()) return@mapNotNull null
                 nonZero.values.sum() to nonZero.mapKeys { (type, _) ->
-                    com.wingedsheep.engine.handlers.effects.permanent.counters.counterTypeToString(type)
+                    counterTypeToString(type)
                 }
             }
 
