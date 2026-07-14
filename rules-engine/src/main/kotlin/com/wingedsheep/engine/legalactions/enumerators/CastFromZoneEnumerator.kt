@@ -894,11 +894,7 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     val canPay = if (needed <= 0) true else totalAvailable >= needed
                     val info = AdditionalCostData(
                         description = additionalCost.description,
-                        // Keep the established presentation discriminator for the Dawnhand
-                        // shape even though its SDK representation is now the shared atom.
-                        costType = if (atom.counterType == null && atom.filter == GameObjectFilter.Creature)
-                            "RemoveCountersFromYourCreatures"
-                        else "RemoveCounters",
+                        costType = "RemoveCounters",
                         counterRemovalCreatures = creatures,
                         distributedCounterRemovalTotal = needed
                     )

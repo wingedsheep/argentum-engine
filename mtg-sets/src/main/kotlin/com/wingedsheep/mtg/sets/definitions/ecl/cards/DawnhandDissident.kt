@@ -57,7 +57,11 @@ val DawnhandDissident = card("Dawnhand Dissident") {
         ability = GrantMayCastFromLinkedExile(
             filter = GameObjectFilter.Creature,
             duringYourTurnOnly = true,
-            additionalCost = Costs.additional.RemoveCountersFromYourCreatures(totalCount = 3),
+            additionalCost = Costs.additional.RemoveCounters(
+                counterType = null,
+                count = 3,
+                filter = GameObjectFilter.Creature
+            ),
             ownedByYou = true
         )
     }

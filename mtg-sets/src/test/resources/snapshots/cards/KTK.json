@@ -8936,7 +8936,7 @@
                                 "type": "AtomRemoveCounters",
                                 "counterType": "+1/+1",
                                 "count": "XValue",
-                                "filter": "creature ctrl:you"
+                                "filter": "creature"
                             }
                         }
                     ]

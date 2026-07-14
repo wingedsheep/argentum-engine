@@ -77,8 +77,13 @@ class CostPaymentService(private val services: EngineServices) {
      * (e.g. `TurnFaceUpEnumerator`) can call affordability directly with just a [ManaSolver] —
      * one implementation, shared between the payment service and the hot enumeration path.
      */
-    fun canAfford(state: GameState, payerId: EntityId, cost: PayCost, sourceId: EntityId): Boolean =
-        canAfford(state, payerId, cost, sourceId, services.manaSolver)
+    fun canAfford(
+        state: GameState,
+        payerId: EntityId,
+        cost: PayCost,
+        sourceId: EntityId,
+        excludeSource: Boolean = true
+    ): Boolean = canAfford(state, payerId, cost, sourceId, services.manaSolver, excludeSource)
 
     // ---------------------------------------------------------------------------------------------
     // Pay — build the right prompt and push a single continuation.
@@ -95,10 +100,11 @@ class CostPaymentService(private val services: EngineServices) {
         payerId: EntityId,
         cost: PayCost,
         sourceId: EntityId,
-        ctx: CostPaymentContext = CostPaymentContext()
+        ctx: CostPaymentContext = CostPaymentContext(),
+        excludeSource: Boolean = true
     ): PaymentResult {
         val resolved = resolve(state, cost, sourceId)
-        if (!canAfford(state, payerId, resolved, sourceId)) {
+        if (!canAfford(state, payerId, resolved, sourceId, excludeSource)) {
             return PaymentResult.Unaffordable(state)
         }
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "the source"
@@ -139,7 +145,9 @@ class CostPaymentService(private val services: EngineServices) {
                         val prompt = atom.description
                         yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, prompt, prompt)
                     } else {
-                        val candidates = controlledMatching(state, payerId, atom.filter, sourceId)
+                        val candidates = controlledMatching(
+                            state, payerId, atom.filter, if (excludeSource) sourceId else null
+                        )
                         if (candidates.isEmpty()) {
                             return PaymentResult.Unaffordable(state)
                         }
@@ -601,7 +609,14 @@ class CostPaymentService(private val services: EngineServices) {
          * Whether [payerId] can pay [cost]; see the instance [canAfford]. Takes a bare [ManaSolver]
          * so legal-action enumerators can gate the action without constructing the full service.
          */
-        fun canAfford(state: GameState, payerId: EntityId, cost: PayCost, sourceId: EntityId, manaSolver: ManaSolver): Boolean {
+        fun canAfford(
+            state: GameState,
+            payerId: EntityId,
+            cost: PayCost,
+            sourceId: EntityId,
+            manaSolver: ManaSolver,
+            excludeSource: Boolean = true
+        ): Boolean {
             return when (val c = resolve(state, cost, sourceId)) {
                 // Only unresolvable own-mana-costs reach here (missing source/card component) — unpayable.
                 is PayCost.OwnManaCost -> false
@@ -615,7 +630,9 @@ class CostPaymentService(private val services: EngineServices) {
                     is CostAtom.ExileFrom -> cardsInZone(state, payerId, atom.filter, atom.zone).size >= atom.count
                     is CostAtom.RevealFromHand -> cardsInHand(state, payerId, atom.filter).size >= atom.count
                     is CostAtom.Sacrifice -> {
-                        val candidates = controlledMatching(state, payerId, atom.filter, sourceId)
+                        val candidates = controlledMatching(
+                            state, payerId, atom.filter, if (excludeSource) sourceId else null
+                        )
                         if (atom.distinctNames) distinctNameCount(state, candidates) >= atom.count
                         else candidates.size >= atom.count
                     }
@@ -685,9 +702,14 @@ class CostPaymentService(private val services: EngineServices) {
             }
         }
 
-        fun controlledMatching(state: GameState, playerId: EntityId, filter: GameObjectFilter, sourceId: EntityId): List<EntityId> =
+        fun controlledMatching(
+            state: GameState,
+            playerId: EntityId,
+            filter: GameObjectFilter,
+            excludeSelfId: EntityId? = null
+        ): List<EntityId> =
             BattlefieldFilterUtils.findMatchingOnBattlefield(
-                state, filter.youControl(), PredicateContext(controllerId = playerId), excludeSelfId = sourceId
+                state, filter.youControl(), PredicateContext(controllerId = playerId), excludeSelfId = excludeSelfId
             )
 
         /** [excludeSelfId] only for costs that say "another" — a plain "tap two untapped …" may tap the source itself. */

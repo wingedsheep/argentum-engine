@@ -7,6 +7,9 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
+import com.wingedsheep.engine.mechanics.cost.CostPaymentContext
+import com.wingedsheep.engine.mechanics.cost.CostPaymentService
+import com.wingedsheep.engine.mechanics.cost.PaymentResult
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -47,6 +50,7 @@ class PayOrSufferExecutor(
     override val effectType: KClass<PayOrSufferEffect> = PayOrSufferEffect::class
 
     private val predicateEvaluator = PredicateEvaluator()
+    private val costPaymentService by lazy { CostPaymentService(EngineServices(cardRegistry)) }
 
     override fun execute(
         state: GameState,
@@ -651,85 +655,30 @@ class PayOrSufferExecutor(
         sourceName: String,
         controllerId: EntityId
     ): EffectResult {
-        val required = (cost.count as? com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed)?.amount ?: 0
-        val projected = state.projectedState
-        val candidates = if (cost.self) listOf(sourceId) else
-            projected.getBattlefieldControlledBy(controllerId).filter { entityId ->
-                predicateEvaluator.matches(
-                    state, projected, entityId, cost.filter,
-                    PredicateContext(controllerId = controllerId)
-                )
-            }
-        val counterType = cost.counterType?.let {
-            com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType(it)
-        }
-        val available = candidates.sumOf { entityId ->
-            val counters = state.getEntity(entityId)
-                ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
-            if (counterType != null) counters?.getCount(counterType) ?: 0
-            else counters?.counters?.values?.sum() ?: 0
-        }
-        if (available < required) return executeSufferEffect(state, effect.suffer, context)
-
-        val continuation = PayOrSufferContinuation(
-            decisionId = "",
-            playerId = controllerId,
-            sourceId = sourceId,
-            sourceName = sourceName,
-            costType = PayOrSufferCostType.REMOVE_COUNTERS,
-            sufferEffect = effect.suffer,
-            requiredCount = required,
-            filter = cost.filter,
-            counterType = cost.counterType,
-            self = cost.self,
-            targets = context.targets,
-            namedTargets = context.pipeline.namedTargets,
-            triggeringEntityId = context.triggeringEntityId,
-            triggeringPlayerId = context.triggeringPlayerId,
-            abilityControllerId = context.controllerId
-        )
-
-        if (cost.self || cost.counterType == null) {
-            val decision = decisionHandler.createYesNoDecision(
-                state = state,
-                playerId = controllerId,
-                sourceId = sourceId,
-                sourceName = sourceName,
-                prompt = cost.description,
-                yesText = "Remove counters",
-                noText = "Accept consequence",
-                phase = DecisionPhase.RESOLUTION
-            )
-            val pending = decision.pendingDecision!!
-            return EffectResult.paused(
-                decision.state.pushContinuation(continuation.copy(decisionId = pending.id)),
-                pending,
-                decision.events
-            )
-        }
-
-        val decision = decisionHandler.createCardSelectionDecision(
+        val payment = costPaymentService.pay(
             state = state,
-            playerId = controllerId,
+            payerId = controllerId,
+            cost = PayCost.Atom(cost),
             sourceId = sourceId,
-            sourceName = sourceName,
-            prompt = cost.description,
-            options = candidates.filter { entityId ->
-                val counters = state.getEntity(entityId)
-                    ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
-                (counterType?.let { counters?.getCount(it) } ?: counters?.counters?.values?.sum()) ?: 0 > 0
-            },
-            minSelections = 0,
-            maxSelections = required,
-            ordered = false,
-            phase = DecisionPhase.RESOLUTION
+            ctx = CostPaymentContext(
+                onDeclined = effect.suffer,
+                targets = context.targets,
+                namedTargets = context.pipeline.namedTargets,
+                storedCollections = context.pipeline.storedCollections
+            ),
+            // "Remove counters from among creatures you control" does not say "another".
+            excludeSource = false
         )
-        val pending = decision.pendingDecision!!
-        return EffectResult.paused(
-            decision.state.pushContinuation(continuation.copy(decisionId = pending.id)),
-            pending,
-            decision.events
-        )
+        return when (payment) {
+            is PaymentResult.Pending ->
+                EffectResult.paused(payment.state, payment.pendingDecision, payment.events)
+            is PaymentResult.Unaffordable ->
+                executeSufferEffect(state, effect.suffer, context)
+            is PaymentResult.Paid ->
+                EffectResult.success(payment.state, payment.events)
+            is PaymentResult.Declined ->
+                executeSufferEffect(state, effect.suffer, context)
+        }
     }
 
     /**

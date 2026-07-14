@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.Costs.RemoveCounters
 import com.wingedsheep.sdk.dsl.Costs.RemoveXCounters
 import com.wingedsheep.sdk.dsl.Costs.additional.Behold
 import com.wingedsheep.sdk.dsl.Costs.additional.ExileFromStorage
-import com.wingedsheep.sdk.dsl.Costs.additional.RemoveCounters
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CostZone
@@ -471,13 +470,6 @@ object Costs {
 
         /** Group multiple additional costs into one logical cost (steps run in order). */
         fun Composite(steps: List<AdditionalCost>): AdditionalCost = AdditionalCost.Composite(steps)
-
-        /**
-         * Remove [totalCount] counters from among creatures you control (Dawnhand Dissident).
-         * Delegates to [RemoveCounters] with counterType = null and creature filter.
-         */
-        fun RemoveCountersFromYourCreatures(totalCount: Int): AdditionalCost =
-            AdditionalCost.Atom(CostAtom.RemoveCounters(null, DynamicAmount.Fixed(totalCount), GameObjectFilter.Creature))
 
         /**
          * Remove [count] counters of the specified [counterType] (or any type when null)

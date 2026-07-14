@@ -87,7 +87,7 @@ class DawnhandDissidentTest : FunSpec({
         cast.affordable shouldBe true
         cast.additionalCostInfo shouldNotBe null
         val info = cast.additionalCostInfo!!
-        info.costType shouldBe "RemoveCountersFromYourCreatures"
+        info.costType shouldBe "RemoveCounters"
         info.distributedCounterRemovalTotal shouldBe 3
         info.counterRemovalCreatures shouldHaveSize 1
     }
@@ -103,7 +103,7 @@ class DawnhandDissidentTest : FunSpec({
         cast.sourceZone shouldBe "EXILE"
         cast.affordable shouldBe false
         cast.additionalCostInfo shouldNotBe null
-        cast.additionalCostInfo!!.costType shouldBe "RemoveCountersFromYourCreatures"
+        cast.additionalCostInfo!!.costType shouldBe "RemoveCounters"
     }
 
     test("casting from linked exile spends three counters from creatures you control") {
@@ -238,7 +238,7 @@ class DawnhandDissidentTest : FunSpec({
     test("linked-exile cast picks counter type when a creature has multiple types") {
         // Multi-type pay: a 4/4 with both +1/+1 and stun counters lets the
         // player decide which to remove (Scryfall ruling on
-        // RemoveCountersFromYourCreatures — controller chooses). Engine must
+        // RemoveCounters — controller chooses). Engine must
         // honour the typed entries verbatim, not auto-pick.
         val driver = setupP1(
             battlefield = listOf("Dawnhand Dissident", "Hill Giant", "Forest", "Forest", "Forest"),

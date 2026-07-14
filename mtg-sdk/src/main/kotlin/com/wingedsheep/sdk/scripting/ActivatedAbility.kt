@@ -377,31 +377,6 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
     }
 
     /**
-     * Remove N counters of a specific type from among permanents matching a filter you control.
-     * The player distributes which permanents contribute counters toward the total.
-     *
-     * Example: "Remove two +1/+1 counters from among artifacts you control"
-     *
-     * @deprecated Use [CostAtom.RemoveCounters] with [DynamicAmount.Fixed] instead.
-     *   The [Costs] facade already delegates to the atom, so no card DSL change is needed.
-     */
-    @Deprecated("Use CostAtom.RemoveCounters with DynamicAmount.Fixed instead")
-    @SerialName("CostRemoveCountersFromAmongFilteredPermanents")
-    @Serializable
-    data class RemoveCountersFromAmongFilteredPermanents(
-        val counterType: String,
-        val count: Int,
-        val filter: GameObjectFilter
-    ) : AbilityCost {
-        override val description: String =
-            "Remove $count $counterType counter${if (count == 1) "" else "s"} from among ${filter.description}s you control"
-        override fun applyTextReplacement(replacer: TextReplacer): AbilityCost {
-            val newFilter = filter.applyTextReplacement(replacer)
-            return if (newFilter !== filter) copy(filter = newFilter) else this
-        }
-    }
-
-    /**
      * Craft materials (CR 702.167a). The combined "Exile this permanent, Exile [filter] from
      * among permanents you control and/or [filter] cards from your graveyard" portion of the
      * Craft activated ability.
