@@ -58,6 +58,11 @@ class DoomedDissenterScenarioTest : FunSpec({
         val projector = com.wingedsheep.engine.mechanics.layers.StateProjector()
         projector.getProjectedPower(driver.state, zombie) shouldBe 2
         projector.getProjectedToughness(driver.state, zombie) shouldBe 2
-        driver.state.getEntity(zombie)?.get<CardComponent>()?.colors shouldBe setOf(Color.BLACK)
+
+        val zombieCard = driver.state.getEntity(zombie)?.get<CardComponent>()
+        zombieCard?.colors shouldBe setOf(Color.BLACK)
+        // It is specifically a Zombie creature token, not just a colorless 2/2 body.
+        (zombieCard?.typeLine?.isCreature) shouldBe true
+        (zombieCard?.typeLine?.subtypes?.any { it.value == "Zombie" }) shouldBe true
     }
 })
