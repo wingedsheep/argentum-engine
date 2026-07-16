@@ -726,6 +726,40 @@ data class RemoveMaximumHandSizeEffect(
 }
 
 /**
+ * Reduces the target player's maximum hand size by [amount] for the rest of the game
+ * ("your maximum hand size is reduced by three for the rest of the game" — Inspired Idea).
+ *
+ * Like [RemoveMaximumHandSizeEffect], this is a one-shot resolution effect that confers a
+ * player-scoped, permanent property rather than a battlefield-only static
+ * ([com.wingedsheep.sdk.scripting.SetMaximumHandSize]): the reduction survives the source (a
+ * sorcery/instant) leaving the stack. [amount] is evaluated once at resolution and locked in —
+ * "for the rest of the game" snapshots the number, and repeated applications *accumulate* (two
+ * Inspired Ideas reduce your maximum by six). If the player has no maximum hand size (Reliquary
+ * Tower / Wisdom of Ages) the reduction has nothing to reduce and is inert until a maximum exists.
+ *
+ * [amount] is a [DynamicAmount] for parity with [SetMaximumHandSize]; fixed-reduction cards pass
+ * [DynamicAmount.Fixed].
+ *
+ * @param target The player whose maximum hand size is reduced. Defaults to the ability's
+ *   controller, matching "your maximum hand size is reduced …".
+ * @param amount How much to reduce the maximum hand size by (clamped to ≥ 0 by the engine).
+ */
+@SerialName("ReduceMaximumHandSize")
+@Serializable
+data class ReduceMaximumHandSizeEffect(
+    val amount: DynamicAmount,
+    val target: EffectTarget = EffectTarget.Controller
+) : Effect {
+    override val description: String =
+        "${target.description.replaceFirstChar { it.uppercase() }} maximum hand size is reduced by ${amount.description} for the rest of the game"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newAmount !== amount) copy(amount = newAmount) else this
+    }
+}
+
+/**
  * Lock [target] player's life gain — they can't gain life for [duration].
  *
  * Unlike the [com.wingedsheep.sdk.scripting.PreventLifeGain] replacement effect (a static that

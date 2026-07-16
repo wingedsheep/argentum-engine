@@ -108,11 +108,20 @@ object Emitter {
         // Emit keywords in printed (rule) order, not alphabetical — `keywordLines` collects them in the
         // card's rule order, which matches the hand-authored golden's `keywords(...)` order (e.g.
         // "Trample, haste" stays TRAMPLE, HASTE rather than re-sorting to HASTE, TRAMPLE).
-        // Prowess is a keyword ability whose +1/+1 trigger the engine derives from an explicit
-        // triggered ability, NOT the keyword tag — so it must use the prowess() DSL helper (keyword
-        // + trigger), never a bare keywords(Keyword.PROWESS), which would render the pump as a no-op.
-        val plainKw = kw.filterNot { it == "PROWESS" }
+        // Prowess and Training are keyword abilities whose triggered ability the engine derives from
+        // an explicit trigger, NOT the keyword tag — so each must use its DSL helper (keyword +
+        // trigger), never a bare keywords(Keyword.PROWESS) / keywords(Keyword.TRAINING), which would
+        // render the +1/+1 pump / attack-counter trigger as a no-op. Training (CR 702.149a) is the
+        // `training()` builder helper — keyword + the "attacks alongside a greater-power creature ->
+        // +1/+1 counter" attack trigger; the paired *payoff* ("whenever this creature trains, …",
+        // Savior of Ollenbock) is a separate WhenAPermanentTrains trigger the emitter still scaffolds
+        // (per the fidelity policy — that fusion isn't recoverable), so this only renders the plain
+        // keyword faithfully, exactly like prowess()/station()/increment(). Emitted after the plain
+        // keyword line so the order matches the golden (e.g. Gryffwing Cavalry: FLYING then training()).
+        val builderKw = setOf("PROWESS", "TRAINING")
+        val plainKw = kw.filterNot { it in builderKw }
         if (plainKw.isNotEmpty()) body.add(RawLine("    keywords(${plainKw.joinToString(", ") { "Keyword.$it" }})"))
+        if ("TRAINING" in kw) body.add(RawLine("    training()"))
         if ("PROWESS" in kw) body.add(RawLine("    prowess()"))
 
         // Preparation card (Secrets of Strixhaven): `_OracleCard: "Preparer"` with a sibling

@@ -1011,6 +1011,25 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.RemoveMaximumHandSizeEffect(target)
 
     /**
+     * "[target]'s maximum hand size is reduced by [amount] for the rest of the game" (Inspired
+     * Idea). A one-shot resolution effect that confers a permanent, accumulating, player-scoped
+     * reduction (survives the source leaving the stack), distinct from the battlefield-only
+     * [com.wingedsheep.sdk.scripting.SetMaximumHandSize] static. Repeat applications stack.
+     */
+    fun ReduceMaximumHandSize(
+        amount: Int,
+        target: EffectTarget = EffectTarget.Controller
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.ReduceMaximumHandSizeEffect(DynamicAmount.Fixed(amount), target)
+
+    /** [DynamicAmount]-parameterized overload of [ReduceMaximumHandSize]. */
+    fun ReduceMaximumHandSize(
+        amount: DynamicAmount,
+        target: EffectTarget = EffectTarget.Controller
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.ReduceMaximumHandSizeEffect(amount, target)
+
+    /**
      * "[target] can't gain life for [duration]." A one-shot effect that tags the player directly,
      * so the lock is independent of the source (unlike the
      * [com.wingedsheep.sdk.scripting.PreventLifeGain] static replacement). Defaults to the rest of

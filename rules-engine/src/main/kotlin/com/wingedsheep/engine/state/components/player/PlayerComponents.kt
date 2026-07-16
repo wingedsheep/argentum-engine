@@ -678,6 +678,26 @@ data object PlayerCitysBlessingComponent : Component
 data object PlayerNoMaximumHandSizeComponent : Component
 
 /**
+ * Reduces a player's maximum hand size by [amount] for the rest of the game (Inspired Idea,
+ * "Your maximum hand size is reduced by three for the rest of the game").
+ *
+ * Conferred by the [com.wingedsheep.sdk.scripting.effects.ReduceMaximumHandSizeEffect] resolution
+ * effect. [amount] accumulates: each application adds to the running total (two Inspired Ideas
+ * reduce the maximum by six), because "for the rest of the game" makes every reduction independent
+ * and permanent. Like the city's blessing and [PlayerNoMaximumHandSizeComponent] this is never
+ * removed once granted, so it has no `removeOn` field.
+ *
+ * [com.wingedsheep.engine.core.MaximumHandSize.effective] subtracts [amount] from the computed
+ * maximum (floored at 0). A player with no maximum hand size ([PlayerNoMaximumHandSizeComponent] or
+ * a [com.wingedsheep.sdk.scripting.NoMaximumHandSize] permanent) has nothing to reduce, so the
+ * reduction is inert while that holds.
+ */
+@Serializable
+data class PlayerMaximumHandSizeReductionComponent(
+    val amount: Int
+) : Component
+
+/**
  * Tracks a player's emblem named **The Ring** (CR 701.54c).
  *
  * Presence of this component means the player has the Ring emblem. [temptCount] is how many times

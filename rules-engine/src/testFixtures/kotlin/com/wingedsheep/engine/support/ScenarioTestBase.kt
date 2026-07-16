@@ -660,11 +660,17 @@ abstract class ScenarioTestBase : FunSpec() {
          * is an alternative cost, so this drives [CastSpell.useAlternativeCost] gated on
          * [AlternativeCostType.CLEAVE]; the handler swaps in the brackets-removed
          * effect / target-requirement variant.
+         *
+         * [xValue] threads a chosen X through the cast when the cleave cost itself carries {X}
+         * (Lantern Flare's `Cleave {X}{R}{W}`). The cast handler passes [CastSpell.xValue] into
+         * resolution unconditionally — regardless of the cleave flag — so the cleaved
+         * `DynamicAmount.XValue` reads it. Leave `null` for cleave costs without {X}.
          */
         fun castSpellWithCleave(
             playerNumber: Int,
             spellName: String,
-            targetId: EntityId? = null
+            targetId: EntityId? = null,
+            xValue: Int? = null
         ): ExecutionResult {
             val playerId = if (playerNumber == 1) player1Id else player2Id
             val hand = state.getHand(playerId)
@@ -680,6 +686,7 @@ abstract class ScenarioTestBase : FunSpec() {
 
             return execute(CastSpell(
                 playerId, cardId, targets,
+                xValue = xValue,
                 useAlternativeCost = true,
                 alternativeCostType = AlternativeCostType.CLEAVE
             ))

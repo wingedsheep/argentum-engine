@@ -3,6 +3,8 @@ package com.wingedsheep.sdk.dsl
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.scripting.TriggeredAbility
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.EmitTrainedEventEffect
 import com.wingedsheep.sdk.scripting.events.AttackPredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -28,13 +30,26 @@ private const val TRAINING_REMINDER =
  * additionally sets `keywords = setOf(Keyword.TRAINING)` for the display badge; this ability supplies
  * the behavior. Because each instance is a separate `TriggeredAbility`, two copies trigger separately
  * (CR 702.149b).
+ *
+ * The ability's effect is a two-step [CompositeEffect]: place one +1/+1 counter, then
+ * [EmitTrainedEventEffect] — the CR 702.149c "when this creature trains" signal. The emit is gated on
+ * the counter actually landing (see [EmitTrainedEventEffect]), so a Solemnity-type "can't have
+ * counters" prohibition trains nothing and fires no [com.wingedsheep.sdk.scripting.EventPattern.TrainedEvent].
+ * A card with no "when it trains" payoff (Gryff Rider, Cloaked Cadet, Torens) simply has no watcher for
+ * the event; emitting it unconditionally keeps the trained signal faithful for the payoff cards
+ * (Savior of Ollenbock) without any per-card wiring.
  */
 fun trainingTriggeredAbility(): TriggeredAbility {
     val spec = Triggers.attacks(requires = setOf(AttackPredicate.AttackedAlongsideGreaterPower))
     return TriggeredAbility.create(
         trigger = spec.event,
         binding = spec.binding, // SELF
-        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self),
+        effect = CompositeEffect(
+            listOf(
+                Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self),
+                EmitTrainedEventEffect
+            )
+        ),
         descriptionOverride = TRAINING_REMINDER
     )
 }

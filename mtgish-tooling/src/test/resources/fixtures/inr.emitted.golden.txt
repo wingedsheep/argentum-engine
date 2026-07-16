@@ -5018,11 +5018,12 @@ val HoneymoonHearse = card("Honeymoon Hearse") {
 
 package com.wingedsheep.mtg.sets.generated.demo.cards
 
-import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.training
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -5044,11 +5045,11 @@ val HopefulInitiate = card("Hopeful Initiate") {
     oracleText = "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)\n{2}{W}, Remove two +1/+1 counters from among creatures you control: Destroy target artifact or enchantment."
     power = 1
     toughness = 2
-    keywords(Keyword.TRAINING)
+    training()
     activatedAbility {
         cost = Costs.Composite(
             Costs.Mana("{2}{W}"),
-            Costs.RemoveCounters(2, "Counters.PLUS_ONE_PLUS_ONE", GameObjectFilter.Creature.youControl())
+            Costs.RemoveCounters(2, Counters.PLUS_ONE_PLUS_ONE, GameObjectFilter.Creature)
         )
         val t = target("target", TargetPermanent(filter = TargetFilter.ArtifactOrEnchantment))
         effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
@@ -9467,10 +9468,12 @@ package com.wingedsheep.mtg.sets.generated.demo.cards
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.training
+import com.wingedsheep.sdk.dsl.trainingTriggeredAbility
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
 
 
 /**
@@ -9488,15 +9491,16 @@ val TorensFistOfTheAngels = card("Torens, Fist of the Angels") {
     oracleText = "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)\nWhenever you cast a creature spell, create a 1/1 green and white Human Soldier creature token with training."
     power = 2
     toughness = 2
-    keywords(Keyword.TRAINING)
+    training()
     triggeredAbility {
         trigger = Triggers.YouCastCreature
-        effect = Effects.CreateToken(
+        effect = CreateTokenEffect(
             power = 1,
             toughness = 1,
             colors = setOf(Color.GREEN, Color.WHITE),
             creatureTypes = setOf("Human", "Soldier"),
-            keywords = setOf(Keyword.TRAINING)
+            keywords = setOf(Keyword.TRAINING),
+            triggeredAbilities = listOf(trainingTriggeredAbility())
         )
     }
     metadata {

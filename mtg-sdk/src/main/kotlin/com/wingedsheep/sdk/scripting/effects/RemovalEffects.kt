@@ -242,8 +242,16 @@ data class ForceSacrificeEffect(
 }
 
 /**
- * Exile a permanent until this permanent leaves the battlefield.
- * Used for O-Ring style effects like Liminal Hold.
+ * Exile [target] until this permanent leaves the battlefield, linking the exiled card to the source
+ * so a leaves-the-battlefield trigger can return it (pair with
+ * [com.wingedsheep.sdk.dsl.Effects.ReturnLinkedExileUnderOwnersControl] or a
+ * [ReturnLinkedExileEffect] on the source's leaves trigger).
+ *
+ * The target is normally a battlefield permanent — O-Ring style (Liminal Hold, Driftgloom Coyote).
+ * A **graveyard card** is also a legal target: Savior of Ollenbock exiles "up to one other target
+ * creature from the battlefield or creature card from a graveyard", and the executor moves the
+ * target to exile from whichever of those two zones it is in. Any other zone is not a legal
+ * exile-until-leaves source and is ignored.
  */
 @SerialName("ExileUntilLeaves")
 @Serializable

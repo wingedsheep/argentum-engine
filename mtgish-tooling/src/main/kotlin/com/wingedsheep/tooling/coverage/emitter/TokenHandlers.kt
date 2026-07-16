@@ -168,6 +168,14 @@ internal fun EmitCtx.createTokenDsl(spec: JsonObject, count: Int = 1, dynamicCou
                 val kw = pascalToUpperSnake(rname)
                 if (kw !in keywords) return null
                 tokenKeywords.add(kw)
+                // Training on a token (Torens, Fist of the Angels' "1/1 … token with training") is a
+                // keyword ability whose attack-counter trigger the engine derives from the DSL helper,
+                // not the bare keyword tag — so pair the display keyword with `trainingTriggeredAbility()`
+                // (the standalone helper built for token-borne Training), exactly like the card-level
+                // training() render above. A bare keywords(Keyword.TRAINING) alone would make the token's
+                // +1/+1 attack trigger a no-op, diverging from the hand-authored golden. The paired trigger
+                // flips the token onto the raw CreateTokenEffect ctor (which exposes triggeredAbilities).
+                if (kw == "TRAINING") tokenTriggeredAbilities.add(call("trainingTriggeredAbility"))
             }
             // The `Effects.CreateToken` facade can't carry abilities OR the tapped flag — only the raw
             // `CreateTokenEffect` constructor exposes `activatedAbilities` / `triggeredAbilities` / `tapped`.

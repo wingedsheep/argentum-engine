@@ -132,6 +132,7 @@ class PermanentExecutors(
         DistributeCountersAmongTargetsExecutor(),
         DistributeCountersAmongFilteredExecutor(),
         ProliferateExecutor(),
+        com.wingedsheep.engine.handlers.effects.permanent.counters.EmitTrainedEventExecutor(),
         // control
         ExchangeControlExecutor(),
         GainControlExecutor(),

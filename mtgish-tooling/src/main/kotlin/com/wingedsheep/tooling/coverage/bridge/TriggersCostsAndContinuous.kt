@@ -95,6 +95,22 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // (VOW Diver Skaab, Graf Reaver, Mindleech Ghoul, Overcharged Amalgam, Repository Skaab,
     // Rot-Tide Gargantua) are ground truth.
     supported("WhenAPermanentExploitsAPermanent", "trigger: this creature exploits a creature (exploit payoff — card { exploit(onExploit, onExploitTargets) }) — capability only, emitter scaffolds")
+    // Training payoff (CR 702.149c) — "whenever this creature trains, …". Like the exploit payoff above,
+    // NOT an engine gap: the shipped `training()` helper adds the TRAINING keyword + the attack trigger
+    // whose +1/+1 counter placement emits the parameterless `EventPattern.TrainedEvent` (fired only when
+    // the counter actually lands), and this trigger keys on that event via `Triggers.trains()` (SELF
+    // binding). Savior of Ollenbock's "whenever this creature trains, exile up to one …" is the payoff.
+    // Capability-only: the emitter would have to fuse the paired Training-keyword rule + this trigger and
+    // recover the exile-until-leaves / cross-zone-union payoff — exactly the lossy render the fidelity
+    // policy declines — so it leaves the card at SCAFFOLD (like the exploit payoff). The hand-authored
+    // Savior of Ollenbock card + its scenario test are ground truth. See the Triggers.trains() /
+    // TrainedEvent entries in card-sdk-language-reference.md.
+    supported("WhenAPermanentTrains", "trigger: this creature trains (training payoff — Triggers.trains(), TrainedEvent) — capability only, emitter scaffolds")
+    // "When this permanent leaves the battlefield, …" — the self leaves-the-battlefield trigger
+    // (Triggers.LeavesBattlefield). Savior of Ollenbock uses it to return every linked
+    // ExileUntilLeaves card under its owner's control. Capability-only alongside the training payoff it
+    // pairs with; the emitter scaffolds the whole exile-and-return loop.
+    supported("WhenAPermanentLeavesTheBattlefield", "trigger: this permanent leaves the battlefield (Triggers.LeavesBattlefield)")
     // OTJ crime (CR 700.10) — "Whenever you commit a crime, …" (Triggers.YouCommitCrime, Marauding Sphinx).
     supported("WhenAPlayerCommitsACrime", "trigger: you commit a crime (Triggers.YouCommitCrime)")
     // "Whenever one or more cards leave your graveyard, …" — batching leave-graveyard trigger
@@ -167,6 +183,13 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
 
     // Costs.
     supported("PayMana", "cost: pay mana (universal)")
+    // A mana cost carrying {X} — the player-declared variable generic paid at cast/activation, whose
+    // chosen value flows to resolution (DynamicAmount.XValue). Lantern Flare's cleave cost {X}{R}{W}
+    // is the case in point: the engine's X-on-cleave support computes the affordable-X ceiling, threads
+    // the chosen X through payment, and exposes it to the cleaved effect. Capability-only: the {X} /
+    // cast-time-value area is exactly what the emitter declines to render exactly (creator's note in
+    // mtgish-tooling/CLAUDE.md), so cards using it stay SCAFFOLD even though the capability is present.
+    supported("PayManaAnyX", "cost: pay mana with {X} (player-declared, threads to resolution via DynamicAmount.XValue)")
     // Planeswalker loyalty cost (CR 606) — the +N / -N ability activation cost. The engine models it
     // via `loyaltyAbility(loyaltyChange) { }` with `startingLoyalty`. Oko, the Ringleader. The emitter
     // declines the whole loyalty-ability envelope (Activated) -> SCAFFOLD, so this is capability-only.

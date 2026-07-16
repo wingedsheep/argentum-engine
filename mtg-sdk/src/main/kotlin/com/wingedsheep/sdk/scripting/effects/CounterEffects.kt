@@ -473,3 +473,29 @@ data class GrantCounterPlacementModifierEffect(
         }
     }
 }
+
+/**
+ * Emit a `TrainedEvent` (CR 702.149c) after a training ability's +1/+1 counter placement resolves —
+ * the training twin of [EmitExploitedEventEffect] / `EmitScriedEventEffect`. Appended internally by
+ * [com.wingedsheep.sdk.dsl.training] as the tail of the training triggered ability, immediately after
+ * its [AddCountersEffect], so "When this creature trains" payoffs
+ * ([com.wingedsheep.sdk.scripting.EventPattern.TrainedEvent], e.g. Savior of Ollenbock) fire.
+ *
+ * CR 702.149c: "'When this creature trains' means 'When a resolving training ability puts one or more
+ * +1/+1 counters on this creature.'" The executor honours the "puts one or more" clause: it emits the
+ * event **only if** the source is still on the battlefield and can actually receive counters — a
+ * Solemnity-type "can't have counters put on it" prohibition (the only way a training ability places
+ * zero) trains nothing and fires no event. This gating is what distinguishes it from a raw
+ * [com.wingedsheep.sdk.scripting.EventPattern.CountersPlacedEvent] watcher, which would fire for a
+ * +1/+1 counter from any source; the emit only ever runs inside the training ability's own resolution.
+ *
+ * The trained creature is the ability's source ([com.wingedsheep.engine.handlers.EffectContext.sourceId]);
+ * the `TrainedEvent`'s subject is selected by the watching ability's `TriggerBinding` (SELF for
+ * "this creature trains"). Card authors should not use this directly; it is wired into `training()`.
+ */
+@SerialName("EmitTrainedEvent")
+@Serializable
+data object EmitTrainedEventEffect : Effect {
+    // Intentionally blank: this is an internal training-ability tail with no player-facing text.
+    override val description: String = ""
+}

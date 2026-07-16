@@ -242,6 +242,22 @@ data class MaximumHandSizeRemovedEvent(
 ) : GameEvent
 
 /**
+ * A player's maximum hand size was reduced for the rest of the game (Inspired Idea,
+ * "Your maximum hand size is reduced by three for the rest of the game"). [amount] is the
+ * amount this application reduced by; [newReductionTotal] is the accumulated reduction after it.
+ * Permanent — fires once per application (repeat casts stack).
+ */
+@Serializable
+@SerialName("MaximumHandSizeReducedEvent")
+data class MaximumHandSizeReducedEvent(
+    val playerId: EntityId,
+    val playerName: String,
+    val amount: Int,
+    val newReductionTotal: Int,
+    val sourceName: String
+) : GameEvent
+
+/**
  * The Ring tempted a player (CR 701.54d). Emitted after the "the Ring tempts you" action
  * completes (even if some or all of it was impossible). Drives "Whenever the Ring tempts you"
  * triggers; see [com.wingedsheep.sdk.scripting.EventPattern.RingTemptedEvent].
@@ -1068,6 +1084,34 @@ data class ExploitedEvent(
     val sacrificedId: EntityId,
     val sacrificedWasToken: Boolean,
     val sacrificedName: String,
+    val sourceName: String
+) : GameEvent
+
+/**
+ * A creature trained (CR 702.149c): a resolving training ability put one or more +1/+1 counters on
+ * this creature. Emitted by `EmitTrainedEventExecutor` — the tail of the `training()` ability's
+ * composite, right after its `AddCountersEffect` — but **only when the counter actually landed**
+ * (the ability places nothing under a "can't have counters put on it" prohibition, and then no event
+ * fires, faithful to "puts one or more +1/+1 counters"). Drives "When this creature trains" payoffs
+ * ([com.wingedsheep.sdk.scripting.EventPattern.TrainedEvent], e.g. Savior of Ollenbock).
+ *
+ * Distinct from [CountersAddedEvent], which the same counter placement also emits for generic
+ * "whenever counters are placed" watchers (Cloaked Cadet): this event marks that the placement came
+ * from a *resolving training ability* specifically (the Option A distinction).
+ *
+ * @property trainedId The creature that trained (the trigger's subject; selected by the watching
+ *   ability's `TriggerBinding` — SELF for "this creature trains").
+ * @property controllerId The trained creature's controller at train time.
+ * @property counters How many +1/+1 counters the training ability placed (>= 1; normally 1, more
+ *   under a Hardened Scales / Doubling Season counter-placement replacement).
+ * @property sourceName The trained creature's name (for display / logging).
+ */
+@Serializable
+@SerialName("TrainedEvent")
+data class TrainedEvent(
+    val trainedId: EntityId,
+    val controllerId: EntityId,
+    val counters: Int,
     val sourceName: String
 ) : GameEvent
 

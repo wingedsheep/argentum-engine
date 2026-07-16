@@ -9,6 +9,17 @@ internal fun BridgeBuilder.structuralEnvelopes() {
     // real capability lives in those nested actions. The emitter renders it as a `ModalEffect` with
     // per-mode `additionalManaCost`, `minChooseCount = 1` (Explosive Derailment, Caught in the Crossfire).
     envelope("SpellActions_Spree", "envelope: Spree — choose one or more additional-cost modes")
+    // Cleave (CR 702.148, Innistrad: Crimson Vow): "You may cast this spell for its cleave cost. If you
+    // do, remove the words in square brackets." Structural, exactly like SpellActions/SpellActions_Spree:
+    // the wrapper carries the alternative cleave cost, and the real capability is the two nested action
+    // lists it holds — the printed (brackets-present) body and the cleaved (brackets-removed) body,
+    // scored on their own. The engine models it as `keywordAbility(KeywordAbility.cleave(cost))` +
+    // `spell { effect = <printed>; cleaveEffect = <cleaved> }` (Inspired Idea, Lantern Flare). Capability-
+    // only: fusing the two bodies back into one spell { effect / cleaveEffect } pair — and, for Lantern
+    // Flare, threading the cleave cost's {X} (PayManaAnyX below) into resolution — is the cast-time
+    // extra-cost / chosen-value shape the fidelity policy declines, so the emitter leaves it at SCAFFOLD.
+    // Hand-authored cards + their scenario tests are ground truth.
+    envelope("SpellActions_Cleave", "envelope: Cleave — printed vs cleaved action lists (spell { effect / cleaveEffect })")
     envelope("CastEffect", "envelope: on-cast actions")
     // "[that spell] does X" / "as it resolves, …" — a one-shot effect attached to a spell on the
     // stack. The real capability is the nested _SpellEffect / _ResolveAction (e.g. Lilah, Undefeated
@@ -126,6 +137,18 @@ internal fun BridgeBuilder.structuralEnvelopes() {
         composes = listOf("GrantToEnchantedCreatureTypeGroup"))
     envelope("CreateEachPermanentRuleEffectUntil", "envelope: continuous rule, each")
     envelope("CreatePlayerEffectUntil", "envelope: player-scoped continuous effect")
+    // The one-shot (rest-of-game / no duration) sibling of CreatePlayerEffectUntil: a resolution action
+    // that confers a player-scoped effect with no expiration — "you have no maximum hand size for the
+    // rest of the game" (Wisdom of Ages, HasNoMaximumHandSize) / "your maximum hand size is reduced by
+    // three for the rest of the game" (Inspired Idea's printed mode, ReduceMaximumHandSize). Structural,
+    // like every other CreatePlayerEffect*/PlayerEffect/EachPlayerEffect wrapper: the real capability is
+    // the nested _PlayerEffect. NOTE: `_PlayerEffect` is not a CAPABILITY_DISCRIMINATOR, so the probe
+    // scores this outer _Action tag rather than the nested effect — this envelope is what lets those
+    // resolution-time player effects be coverable at all (before this entry the tag was UNMAPPED, which
+    // silently blocked Wisdom of Ages despite its HasNoMaximumHandSize effect entry). The emitter renders
+    // only the exact recognised shapes (the wisdomOfAgesSpell recognizer; Inspired Idea's cleave fusion
+    // scaffolds per the SpellActions_Cleave note); other bodies decline -> SCAFFOLD.
+    envelope("CreatePlayerEffect", "envelope: one-shot player-scoped effect, rest-of-game (capability is the _PlayerEffect)")
     // "Until [expiration], each player gets [player effects]" (Memory Vessel) — a per-player,
     // duration-scoped continuous effect created for every player. The real capability is the nested
     // _PlayerEffect list (MayPlayExiledCards, CantPlayCardsFromHand), expressed inside a

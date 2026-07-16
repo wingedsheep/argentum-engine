@@ -475,6 +475,15 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   *static ability* (§9, Reliquary Tower / Thought Vessel), it survives the source leaving any zone
   (e.g. Wisdom of Ages exiles itself on resolution). Idempotent. `CleanupPhaseManager` checks both
   this component and the static ability when discarding to hand size.
+- `ReduceMaximumHandSize(amount, target?)` — "target's maximum hand size is reduced by `amount` for
+  the rest of the game" (Inspired Idea; default target: controller). `amount` is an `Int` (fixed)
+  or `DynamicAmount` overload, evaluated once at resolution and *accumulated* into
+  `PlayerMaximumHandSizeReductionComponent` — repeat applications stack (two Inspired Ideas → −6).
+  A permanent, player-scoped reduction that survives the source leaving the stack, distinct from the
+  battlefield-only `SetMaximumHandSize` static (§9). `MaximumHandSize.effective` subtracts the
+  accumulated total after the `SetMaximumHandSize` statics pick the most restrictive base, floored
+  at 0; a player with no maximum hand size has nothing to reduce (the reduction is inert while that
+  holds).
 - `WinGame(target, message?)` — target wins the game.
 - `TakeExtraTurn(target, loseAtEndStep?)` — target takes an extra turn after this one (Time Walk, Lost Isle Calling).
   Set `loseAtEndStep = true` for "...you lose the game at the beginning of that turn's end step" (Last Chance, Final
@@ -552,7 +561,7 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 - `Exile(target)` — exile target.
 - `ExileAndGrantOwnerPlayPermission(target, until?)` — exile + owner may play it (Garth-style).
 - `ExileOpponentsGraveyards()` — exile every card in each opponent's graveyard.
-- `ExileUntilLeaves(target)` — linked exile; returns when source leaves the battlefield.
+- `ExileUntilLeaves(target)` — linked exile; the exiled card returns when the source leaves the battlefield (pair with `ReturnLinkedExile*` on the source's `LeavesBattlefield` trigger). The target is normally a **battlefield** permanent (O-Ring: Liminal Hold, Driftgloom Coyote), but a **graveyard card** is also legal — the executor moves the target to exile from whichever of those two zones it is in, so a cross-zone union `target(...)` ("creature on the battlefield **or** creature card from a graveyard") works directly (Savior of Ollenbock). Other zones are ignored.
 - `ExileWithAurasNotingCounters(target = ContextTarget(0))` / `ReturnNotedExileTappedWithAuras()` — the state-preserving "blink that remembers counters and Auras" pair (Tawnos's Coffin). The exile half exiles the target creature **and all Auras attached to it** (all linked to the source via `LinkedExileComponent`) and records the creature's identity + its `kind→count` counter snapshot on the source via `NotedExileComponent` (captures the Auras *before* exiling the creature, so the unattached-Aura SBA can't pre-empt them). The return half (a no-op when nothing is noted, so it's safe to fire from **both** a `LeavesBattlefield` and a `BecomesUntapped` trigger — whichever fires first returns the cards) returns the noted creature **tapped under its owner's control** with the noted counters restored, then returns the linked Auras attached to it; Auras that can't legally re-attach go to their owners' graveyards via the CR 704.5m unattached-Aura SBA (the "If you don't …" fallback). `NotedExileComponent` is preserved across the source's own zone change (like `LinkedExileComponent`) so the leaves-the-battlefield return still reads it, and stripped on battlefield re-entry (Rule 400.7).
 - `ExileLinkedToSource(target)` — exile a target **permanently** and record it in the source's linked-exile pile (`LinkedExileComponent`). Unlike `ExileUntilLeaves` there's no automatic return — the link just lets later abilities reference the exiled card (Territory Forge's "this permanent has all activated abilities of the exiled card").
 - `RecordChosenLinkedExile(from)` — stamp the source's `ChosenLinkedExileComponent` with the first card in the pipeline collection `from` (its "last chosen card"). Pair after a `SelectFromCollection` over `CardSource.FromLinkedExile()` so a `HasAbilitiesOfChosenLinkedExiledCard` static ability grants the source that card's activated and triggered abilities (Koh, the Face Stealer's "Pay 1 life: Choose a creature card exiled with Koh").
@@ -3425,6 +3434,16 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
   `EffectTarget.TriggeringEntity`. Stalwart Successor shape.
 - `CountersPlacedOnThis` — "whenever you put one or more counters on ~" (any kind, SELF-bound).
   Aragorn, Company Leader.
+- `EventPattern.TrainedEvent` (facade: `Triggers.trains(binding = TriggerBinding.SELF)`) — "when this creature trains"
+  (CR 702.149c: "a resolving training ability puts one or more
+  +1/+1 counters on this creature"). A `data object` (no parameters); the trainer identity is selected by the ability's
+  `TriggerBinding` against the event's `trainedId` — `SELF` = "when **this** creature trains" (Savior of Ollenbock), `OTHER`
+  = "whenever **another** creature you control trains". The `training()` helper appends `EmitTrainedEventEffect` after the
+  training `AddCounters`, which fires this **only when a +1/+1 counter actually landed** (recomputed on the post-placement
+  state), so a Solemnity-type prohibition trains nothing and emits nothing. This is *not* a generic counter-placed watcher:
+  it fires only for counters a training ability's resolution placed, never for other +1/+1 counter sources on the same
+  creature (use `countersPlacedOn` / `PlusOneCountersPlacedOnYourCreature` for those). See the `Training` keyword entry for
+  full wiring.
 - `OneOrMorePermanentsEnter(filter?, excludeSource?)` — batched ETB trigger; fires at most once per
   event batch (CR 603.3b). The `filter`'s controller predicate scopes which players' permanents
   count: no predicate means "you control" (default), `.opponentControls()` scopes to your opponents.
@@ -4645,7 +4664,7 @@ composite abilities).
   reductions/increases keyed on MV are unchanged whether or not cleave was paid. Leave `cleaveTarget`
   unset when the removed brackets don't touch the target line (a mass-destroy or a self-effect only
   differs in `cleaveEffect`); leave `cleaveEffect` unset when only the target restriction changes and
-  the effect is identical. The five VOW reference cards cover the shapes:
+  the effect is identical. The VOW reference cards cover the shapes:
   - **Fierce Retribution** ({1}{W}, Cleave {5}{W}) — target only: base `Targets.AttackingCreature`,
     `cleaveTarget` `Targets.Creature`; both `Effects.Destroy` the chosen target.
   - **Wash Away** ({U}, Cleave {1}{U}{U}) — target only: base
@@ -4663,10 +4682,23 @@ composite abilities).
     clause is scoped to the extra turn, so it's scheduled as a `CreateDelayedTriggerEffect` firing
     `Effects.DamageCantBePreventedThisTurn()` at the next turn's upkeep, in both modes.)
 
+  - **Lantern Flare** ({1}{W}, Cleave {X}{R}{W}) — effect identical in both modes, but the **cleave
+    cost itself carries {X}**, so the two modes read X from different sources. The printed cast has no
+    {X}: `[X is the number of creatures you control]` is bracketed, so the base effect binds X from
+    board state (`DynamicAmounts.creaturesYouControl()`). The cleaved cast pays {X}, so its X is a
+    chosen, paid value read via `DynamicAmount.XValue`. `cleaveEffect` therefore swaps only the amount
+    source (`DealDamage(XValue).then(GainLife(XValue))` vs. the `creaturesYouControl()` base) — the
+    deal-damage-and-gain-life structure is shared. `CastSpellEnumerator` detects `cleaveCost.hasX`
+    and computes the affordable-X ceiling for the cleave action exactly as the printed X-cost path
+    does, so the client prompts for X on the cleave cast and threads `action.xValue` through
+    validation → payment → resolution unchanged.
+
   The alternative cast is surfaced like the other alt-cost keywords (see `MayCastWithoutPayingManaCost`
   above and `engine-server-interface.md`): a distinct "Cleave" legal action routed through
   `CastSpell.useAlternativeCost = true` + `alternativeCostType = AlternativeCostType.CLEAVE`, offered
-  alongside the normal cast so the player explicitly picks one (CR 118.9a).
+  alongside the normal cast so the player explicitly picks one (CR 118.9a). When the cleave cost
+  carries {X} (Lantern Flare), the cleave action also carries `hasXCost`/`maxAffordableX` so the
+  client prompts for X, just like an {X} in a printed cost.
 - `Afflict(n)` — defender loses N when this becomes blocked.
 - `Crew(n)` (`KeywordAbility.crew(n, onceEachTurn = false)` / `Numeric(Keyword.CREW, n, onceEachTurn)`) —
   Crew N (CR 702.122): tap any number of untapped creatures you control with total power N or greater to
@@ -4789,18 +4821,22 @@ composite abilities).
 - `Training` — "Training (Whenever this creature and at least one other creature with power greater than this creature's
   power attack, put a +1/+1 counter on this creature.)" (CR 702.149, Innistrad: Midnight Hunt; also WHO, SLD). Display-only
   keyword; wire the behavior with the `card { training() }` builder helper. It adds the keyword plus one attack-triggered
-  ability — `Triggers.attacks(requires = setOf(AttackPredicate.AttackedAlongsideGreaterPower))` (SELF) → `Effects.AddCounters(
-  Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)`. The predicate reads **projected** power for every attacker (§8
-  `AttackPredicate`), so an anthem/aura on the *other* attacker can flip the trigger on; the comparison is strict. Multiple
-  instances trigger separately (CR 702.149b) — call `training()` twice, or add a second `trainingTriggeredAbility()`, for two
-  independent counters. The standalone `trainingTriggeredAbility()` factory (same file) exposes just the ability so an
-  **intrinsically-training token** can carry it: `Effects.CreateToken(…, keywords = setOf(Keyword.TRAINING))` sets the display
-  badge and `CreateTokenEffect(triggeredAbilities = listOf(trainingTriggeredAbility()))` supplies the behavior (Torens, Fist of
-  the Angels' "1/1 Human Soldier creature token with training" — the token trains when it later attacks alongside greater
-  power). **CR 702.149c "when this creature trains"** (a resolving training ability placing ≥1 +1/+1 counter) is *reserved but
-  not built*: when the first payoff card lands, add a custom `EventPattern.TrainedEvent` (template: `ScriedEvent` /
-  `SurveiledEvent`) emitted where the training `AddCounters` resolves — do not approximate it with a generic counter-placed
-  watcher, which would fire for non-training counters too.
+  ability — `Triggers.attacks(requires = setOf(AttackPredicate.AttackedAlongsideGreaterPower))` (SELF) → a two-step
+  `CompositeEffect(Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self), EmitTrainedEventEffect)`. The predicate
+  reads **projected** power for every attacker (§8 `AttackPredicate`), so an anthem/aura on the *other* attacker can flip the
+  trigger on; the comparison is strict. Multiple instances trigger separately (CR 702.149b) — call `training()` twice, or add a
+  second `trainingTriggeredAbility()`, for two independent counters. The standalone `trainingTriggeredAbility()` factory (same
+  file) exposes just the ability so an **intrinsically-training token** can carry it: `Effects.CreateToken(…, keywords =
+  setOf(Keyword.TRAINING))` sets the display badge and `CreateTokenEffect(triggeredAbilities = listOf(trainingTriggeredAbility()))`
+  supplies the behavior (Torens, Fist of the Angels' "1/1 Human Soldier creature token with training" — the token trains when it
+  later attacks alongside greater power). **CR 702.149c "when this creature trains"** (a resolving training ability placing ≥1
+  +1/+1 counter) is realized by the `EmitTrainedEventEffect` tail: after the sibling `AddCounters` resolves it recomputes the
+  placement decision on the post-placement state (still on battlefield, `canReceiveCounters`, ≥1 after counter-placement
+  replacements) and, only if a counter actually landed, fires an observable `EventPattern.TrainedEvent` — so a Solemnity-type
+  "can't have counters" prohibition trains nothing and no payoff fires. This is a *dedicated* signal, never a generic
+  counter-placed watcher (which would fire for non-training counters too). `EmitTrainedEventEffect` is an internal `data object`
+  (no player-facing text) wired into `training()`; do not use it directly. See `EventPattern.TrainedEvent` under counter triggers
+  for the watcher form (Savior of Ollenbock).
 - `Job select` — "Job select (When this Equipment enters, create a 1/1 colorless Hero creature token, then attach
   this to it.)" (Final Fantasy). Equipment keyword; display-only. Wire it with the `card { jobSelect() }` builder
   helper, which adds the keyword plus an `EntersBattlefield` triggered ability composing two existing primitives

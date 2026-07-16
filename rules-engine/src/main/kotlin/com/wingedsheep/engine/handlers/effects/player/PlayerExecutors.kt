@@ -56,6 +56,7 @@ class PlayerExecutors(
         EndTheTurnExecutor(),
         GainCitysBlessingExecutor(),
         RemoveMaximumHandSizeExecutor(),
+        ReduceMaximumHandSizeExecutor(),
         GiftGivenExecutor(),
         GrantCastCreaturesFromGraveyardWithForageExecutor(),
         GrantFlashToSpellsExecutor(),

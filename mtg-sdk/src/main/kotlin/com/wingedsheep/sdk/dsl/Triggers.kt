@@ -1243,6 +1243,23 @@ object Triggers {
         binding = TriggerBinding.SELF
     )
 
+    /**
+     * "Whenever this creature trains" (CR 702.149c) — fires when a resolving training ability puts
+     * one or more +1/+1 counters on this creature. Keyed on [EventPattern.TrainedEvent], which the
+     * training composite emits **only when the counter actually lands** (a Solemnity-type "can't
+     * have counters" prohibition trains nothing and fires nothing). Distinct from
+     * [CountersPlacedOnThis]: that fires for a +1/+1 counter from any source, this only for the one
+     * a resolving training ability placed.
+     *
+     * Defaults to [TriggerBinding.SELF] — "when **this** creature trains" (Savior of Ollenbock).
+     * [TriggerBinding.OTHER] ("another creature you control trains") and [TriggerBinding.ANY] are
+     * supported for the next card (none printed yet). CR 702.149c defines only the SELF form.
+     */
+    fun trains(binding: TriggerBinding = TriggerBinding.SELF): TriggerSpec = TriggerSpec(
+        event = TrainedEvent,
+        binding = binding
+    )
+
     // =========================================================================
     // Damage Received (incoming)
     // =========================================================================

@@ -2,7 +2,7 @@
 
 **Set Size:** 272 booster cards (excluding basic lands and tokens)
 **Release Date:** November 19, 2021
-**Implemented:** 109 / 272
+**Implemented:** 117 / 272
 - [x] Abrade
 - [x] Adamant Will
 - [ ] Aim for the Head
@@ -13,7 +13,7 @@
 - [ ] Ancient Lumberknot
 - [x] Angelic Quartermaster
 - [ ] Anje, Maid of Dishonor
-- [ ] Apprentice Sharpshooter
+- [x] Apprentice Sharpshooter
 - [ ] Archghoul of Thraben
 - [x] Arm the Cathars
 - [ ] Ascendant Packleader
@@ -114,7 +114,7 @@
 - [ ] Grolnok, the Omnivore
 - [ ] Groom's Finery
 - [ ] Gryff Rider
-- [ ] Gryffwing Cavalry
+- [x] Gryffwing Cavalry
 - [ ] Gutter Skulker
 - [x] Halana and Alena, Partners
 - [ ] Hallowed Haunting
@@ -128,7 +128,7 @@
 - [ ] Honeymoon Hearse
 - [x] Honored Heirloom
 - [ ] Hookhand Mariner
-- [ ] Hopeful Initiate
+- [x] Hopeful Initiate
 - [ ] Howling Moon
 - [ ] Howlpack Piper
 - [x] Hullbreaker Horror
@@ -136,7 +136,7 @@
 - [ ] Ill-Tempered Loner
 - [ ] Infestation Expert
 - [ ] Innocent Traveler
-- [ ] Inspired Idea
+- [x] Inspired Idea
 - [ ] Into the Night
 - [ ] Investigator's Journal
 - [x] Island
@@ -150,7 +150,7 @@
 - [ ] Laid to Rest
 - [ ] Lambholt Raconteur
 - [ ] Lantern Bearer
-- [ ] Lantern Flare
+- [x] Lantern Flare
 - [x] Lantern of the Lost
 - [x] Lightning Wolf
 - [ ] Lunar Rejection
@@ -181,7 +181,7 @@
 - [x] Packsong Pup
 - [ ] Panicked Bystander
 - [ ] Parasitic Grasp
-- [ ] Parish-Blade Trainee
+- [x] Parish-Blade Trainee
 - [ ] Patchwork Crawler
 - [ ] Path of Peril
 - [x] Persistent Specimen
@@ -201,10 +201,10 @@
 - [ ] Rot-Tide Gargantua
 - [x] Runebound Wolf
 - [ ] Runo Stromkirk
-- [ ] Rural Recruit
+- [x] Rural Recruit
 - [x] Sanctify
 - [ ] Sanguine Statuette
-- [ ] Savior of Ollenbock
+- [x] Savior of Ollenbock
 - [x] Sawblade Slinger
 - [x] Scattered Thoughts
 - [ ] Screaming Swarm

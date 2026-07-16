@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
+import com.wingedsheep.engine.state.components.player.PlayerMaximumHandSizeReductionComponent
 import com.wingedsheep.engine.state.components.player.PlayerNoMaximumHandSizeComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -66,8 +67,21 @@ object MaximumHandSize {
                 max = minOf(max, value)
             }
         }
-        return max
+        // Player-scoped rest-of-game reductions (Inspired Idea) apply after the SetMaximumHandSize
+        // statics have chosen the most restrictive base, and never below 0. A no-maximum player
+        // short-circuited above, so there is always a finite base to reduce here.
+        val reduction = reductionFor(state, playerId)
+        return (max - reduction).coerceAtLeast(0)
     }
+
+    /**
+     * The accumulated rest-of-game maximum-hand-size reduction for [playerId]
+     * ([PlayerMaximumHandSizeReductionComponent]), or 0 if none. Conferred by
+     * [com.wingedsheep.sdk.scripting.effects.ReduceMaximumHandSizeEffect] (Inspired Idea) and
+     * stacked across repeat applications.
+     */
+    private fun reductionFor(state: GameState, playerId: EntityId): Int =
+        state.getEntity(playerId)?.get<PlayerMaximumHandSizeReductionComponent>()?.amount ?: 0
 
     /**
      * Unwrap [raw] to a live [SetMaximumHandSize] if it is one (directly or behind a

@@ -257,6 +257,57 @@
     ]
 }
 
+// Apprentice Sharpshooter
+{
+    "name": "Apprentice Sharpshooter",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Archer",
+    "oracleText": "Reach\nTraining (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH",
+        "TRAINING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlongsideGreaterPower"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        "EmitTrainedEvent"
+                    ]
+                },
+                "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "artist": "Steve Prescott",
+        "flavorText": "Innistrad's best archers are trained by the Quiver of Kessig, an order of cathars who specialize in ranged combat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f03f0790-cdc9-4bb4-ae54-2c248435b0a4.jpg?1783924821"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Arm the Cathars
 {
     "name": "Arm the Cathars",
@@ -994,10 +1045,16 @@
                     ]
                 },
                 "effect": {
-                    "type": "AddCounters",
-                    "counterType": "+1/+1",
-                    "count": 1,
-                    "target": "Self"
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        "EmitTrainedEvent"
+                    ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
             },
@@ -2820,10 +2877,16 @@
                     ]
                 },
                 "effect": {
-                    "type": "AddCounters",
-                    "counterType": "+1/+1",
-                    "count": 1,
-                    "target": "Self"
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        "EmitTrainedEvent"
+                    ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
             }
@@ -2834,6 +2897,97 @@
         "artist": "Yongjae Choi",
         "flavorText": "\"Keep your heels down and bend at the hips as your mount takes flight. She'll do the rest.\"\n—Anders, cathar drillmaster",
         "imageUri": "https://cards.scryfall.io/normal/front/5/3/5317077b-370e-41a9-9162-c713362fd7f4.jpg?1783924922"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Gryffwing Cavalry
+{
+    "name": "Gryffwing Cavalry",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying\nTraining (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)\nWhenever this creature attacks, you may pay {1}{W}. If you do, target attacking creature without flying gains flying until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "TRAINING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlongsideGreaterPower"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        "EmitTrainedEvent"
+                    ]
+                },
+                "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
+            },
+            {
+                "id": "ability_2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{1}{W}"
+                        }
+                    },
+                    "then": {
+                        "type": "GrantKeyword",
+                        "keyword": "FLYING",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target attacking creature without flying"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotKeyword",
+                                    "keyword": "FLYING"
+                                }
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ]
+                        }
+                    },
+                    "id": "target attacking creature without flying"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/792d5b41-27f3-455b-890e-a1771944fc7d.jpg?1783924920"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -3094,6 +3248,103 @@
     "colorIdentityOverride": []
 }
 
+// Hopeful Initiate
+{
+    "name": "Hopeful Initiate",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)\n{2}{W}, Remove two +1/+1 counters from among creatures you control: Destroy target artifact or enchantment.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAINING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlongsideGreaterPower"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        "EmitTrainedEvent"
+                    ]
+                },
+                "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "+1/+1",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target artifact or enchantment"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "artifact|enchantment"
+                        },
+                        "id": "target artifact or enchantment"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/c/ec1b3fd1-952a-4bc6-9b31-bd9bd13072f5.jpg?1783924918"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Hullbreaker Horror
 {
     "name": "Hullbreaker Horror",
@@ -3283,6 +3534,61 @@
     ]
 }
 
+// Inspired Idea
+{
+    "name": "Inspired Idea",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Cleave {3}{U}{U} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nDraw three cards. [Your maximum hand size is reduced by three for the rest of the game.]",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{3}{U}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "ReduceMaximumHandSize",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        },
+        "cleaveSpellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 3
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "RARE",
+        "artist": "Alix Branwyn",
+        "flavorText": "Stitching is an ever-evolving field, with each new advancement reaching a new height of horror.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/f/2fe4ee8e-579d-4bfa-8c19-bfdb1c0b7177.jpg?1783924891"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Kessig Flamebreather
 {
     "name": "Kessig Flamebreather",
@@ -3393,6 +3699,88 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Lantern Flare
+{
+    "name": "Lantern Flare",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Cleave {X}{R}{W} (You may cast this spell for its cleave cost. If you do, remove the words in square brackets.)\nLantern Flare deals X damage to target creature or planeswalker and you gain X life. [X is the number of creatures you control.]",
+    "keywords": [
+        "CLEAVE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Cleave",
+            "cost": "{X}{R}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature or planeswalker"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "target creature or planeswalker"
+            }
+        ],
+        "cleaveTargetRequirements": [
+            {
+                "type": "TargetCreatureOrPlaneswalker",
+                "id": "target creature or planeswalker"
+            }
+        ],
+        "cleaveSpellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature or planeswalker"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": "XValue"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfd59300-7b5c-4263-a7fd-775c9fcb05ad.jpg?1783924916"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -4580,6 +4968,78 @@
     ]
 }
 
+// Parish-Blade Trainee
+{
+    "name": "Parish-Blade Trainee",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)\nWhen this creature dies, put its counters on target creature you control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAINING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlongsideGreaterPower"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        "EmitTrainedEvent"
+                    ]
+                },
+                "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveAllLastKnownCounters",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature you control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "target creature you control"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Zara Alfonso",
+        "flavorText": "The recruits trained in eternal night, fueled by the hope that they might one day see the sun again.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/9845cdf2-e5ba-44a0-8136-72a1eb03a6a1.jpg?1783924914"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Path of Peril
 {
     "name": "Path of Peril",
@@ -5299,6 +5759,75 @@
     ]
 }
 
+// Rural Recruit
+{
+    "name": "Rural Recruit",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Human Peasant",
+    "oracleText": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)\nWhen this creature enters, create a 3/1 green Boar creature token.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "TRAINING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlongsideGreaterPower"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        "EmitTrainedEvent"
+                    ]
+                },
+                "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 3,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Boar"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/7/975c4329-418a-4ada-82fa-9286fb61d61a.jpg?1783924695"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "artist": "Eelis Kyttanen",
+        "flavorText": "The Dawnhart survivors welcome recruits of all shapes and sizes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bf35971-f1c4-4ccb-af5c-fd396391bb4b.jpg?1783924804"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Sanctify
 {
     "name": "Sanctify",
@@ -5342,6 +5871,122 @@
         "artist": "Kasia 'Kafis' Zielińska",
         "flavorText": "\"Olivia Voldaren has faith only in herself. We answer to a higher calling.\"\n—Thalia, Guardian of Thraben",
         "imageUri": "https://cards.scryfall.io/normal/front/8/8/880e071a-6d6c-41c4-b2eb-c9e6626d0c7f.jpg?1782703172"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Savior of Ollenbock
+{
+    "name": "Savior of Ollenbock",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)\nWhenever this creature trains, exile up to one other target creature from the battlefield or creature card from a graveyard.\nWhen this creature leaves the battlefield, put the exiled cards onto the battlefield under their owners' control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAINING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksAlongsideGreaterPower"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        "EmitTrainedEvent"
+                    ]
+                },
+                "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
+            },
+            {
+                "id": "ability_2",
+                "trigger": "TrainedEvent",
+                "effect": {
+                    "type": "ExileUntilLeaves",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "up to one other target creature from the battlefield or creature card from a graveyard"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true,
+                        "alternatives": [
+                            {
+                                "baseFilter": "creature",
+                                "zone": "Graveyard"
+                            }
+                        ]
+                    },
+                    "id": "up to one other target creature from the battlefield or creature card from a graveyard"
+                }
+            },
+            {
+                "id": "ability_3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "underOwnersControl": true
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "MYTHIC",
+        "artist": "Aaron J. Riley",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba77e83b-1846-4c42-bea0-2e304429fbe0.jpg?1783924908",
+        "rulings": [
+            {
+                "date": "2021-11-19",
+                "text": "A creature \"trains\" when a +1/+1 counter is put onto it as a result of its training ability resolving."
+            },
+            {
+                "date": "2021-11-19",
+                "text": "A creature's training ability triggers only when both that creature and a creature with greater power are declared as attackers. Increasing a creature's power after attackers are declared won't cause a training ability to trigger."
+            },
+            {
+                "date": "2021-11-19",
+                "text": "Once a creature's training ability has triggered, destroying the other attacking creature or reducing its power won't stop the creature with training from getting a +1/+1 counter."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -6345,10 +6990,16 @@
                     ]
                 },
                 "effect": {
-                    "type": "AddCounters",
-                    "counterType": "+1/+1",
-                    "count": 1,
-                    "target": "Self"
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        "EmitTrainedEvent"
+                    ]
                 },
                 "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
             },
@@ -6389,10 +7040,16 @@
                                 ]
                             },
                             "effect": {
-                                "type": "AddCounters",
-                                "counterType": "+1/+1",
-                                "count": 1,
-                                "target": "Self"
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "AddCounters",
+                                        "counterType": "+1/+1",
+                                        "count": 1,
+                                        "target": "Self"
+                                    },
+                                    "EmitTrainedEvent"
+                                ]
                             },
                             "descriptionOverride": "Training (Whenever this creature attacks with another creature with greater power, put a +1/+1 counter on this creature.)"
                         }

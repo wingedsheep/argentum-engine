@@ -2086,6 +2086,32 @@ class CastSpellEnumerator : ActionEnumerator {
                     ?.sources?.map { it.entityId }
             }
 
+            // A cleave cost can itself carry {X} (Lantern Flare — cleave {X}{R}{W}). The printed
+            // mode may bind X from board state, but the cleave mode's X is chosen and paid, so the
+            // client must be prompted for it. Compute the affordable X ceiling exactly as the
+            // printed X-cost path does (available mana minus the fixed portion, divided by the X
+            // symbol count). `action.xValue` then flows through validation → payment → resolution
+            // unchanged, so the resolving effect's `DynamicAmount.XValue` reads the chosen X.
+            val cleaveHasX = cleaveCost.hasX
+            val cleaveMaxAffordableX: Int? = if (cleaveHasX) {
+                val spellContext = SpellPaymentContext(
+                    isInstantOrSorcery = cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery,
+                    isKicked = false,
+                    isCreature = cardComponent.typeLine.isCreature,
+                    isLegendary = cardComponent.typeLine.isLegendary,
+                    manaValue = cardComponent.manaCost.cmc,
+                    hasXInCost = cleaveCost.hasX,
+                    subtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet(),
+                    cardTypes = cardComponent.typeLine.cardTypes,
+                )
+                val availableSources = context.manaSolver.getAvailableManaCount(
+                    state, playerId, precomputedSources = context.availableManaSources, spellContext = spellContext
+                )
+                val fixedCost = cleaveCost.cmc  // X contributes 0 to CMC
+                val xSymbolCount = cleaveCost.xCount.coerceAtLeast(1)
+                ((availableSources - fixedCost) / xSymbolCount).coerceAtLeast(0)
+            } else null
+
             // Target requirements for the brackets-removed variant.
             val cleaveBaseReqs = if (cardDef.script.cleaveTargetRequirements.isNotEmpty()) {
                 cardDef.script.cleaveTargetRequirements
@@ -2114,6 +2140,8 @@ class CastSpellEnumerator : ActionEnumerator {
                         action = CastSpell(playerId, cardId, targets = listOf(autoSelectedTarget), useAlternativeCost = true, alternativeCostType = AlternativeCostType.CLEAVE),
                         affordable = canAffordCleave,
                         manaCostString = cleaveCostString,
+                        hasXCost = cleaveHasX,
+                        maxAffordableX = cleaveMaxAffordableX,
                         autoTapPreview = cleaveAutoTapPreview
                     ))
                 } else {
@@ -2129,6 +2157,8 @@ class CastSpellEnumerator : ActionEnumerator {
                         targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
                         affordable = canAffordCleave,
                         manaCostString = cleaveCostString,
+                        hasXCost = cleaveHasX,
+                        maxAffordableX = cleaveMaxAffordableX,
                         autoTapPreview = cleaveAutoTapPreview
                     ))
                 }
@@ -2139,6 +2169,8 @@ class CastSpellEnumerator : ActionEnumerator {
                     action = CastSpell(playerId, cardId, useAlternativeCost = true, alternativeCostType = AlternativeCostType.CLEAVE),
                     affordable = canAffordCleave,
                     manaCostString = cleaveCostString,
+                    hasXCost = cleaveHasX,
+                    maxAffordableX = cleaveMaxAffordableX,
                     autoTapPreview = cleaveAutoTapPreview
                 ))
             }

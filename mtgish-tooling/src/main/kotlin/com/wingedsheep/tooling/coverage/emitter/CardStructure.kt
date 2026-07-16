@@ -3916,12 +3916,23 @@ internal fun EmitCtx.abilityCostDsl(node: JsonElement?): String? {
             val counter = counterTypeDsl(subArgs.getOrNull(1)) ?: return null
             when (subObj.strField("_RemoveCountersCost")) {
                 "NumberCountersOfTypeFromAmongPermanents" -> {
-                    val filter = costFilterDsl(subArgs.getOrNull(2)) ?: "GameObjectFilter.Any"
-                    "Costs.RemoveCounters($n, \"$counter\", $filter)"
+                    // The engine's RemoveCounters cost payment always scopes candidate permanents to
+                    // the payer (CostPaymentService: getBattlefieldControlledBy(payerId) before the
+                    // filter), so "from among [X] you control" is intrinsic to the cost — a `.youControl()`
+                    // on the filter is redundant and only diverges the serialized tree from the
+                    // hand-authored golden's bare filter. Strip it.
+                    val filter = (costFilterDsl(subArgs.getOrNull(2)) ?: "GameObjectFilter.Any")
+                        .removeSuffix(".youControl()")
+                    // [counter] is already the qualified `Counters.X` constant (its value is the
+                    // counter-type string, e.g. Counters.PLUS_ONE_PLUS_ONE == "+1/+1"); pass it
+                    // unquoted like the RemoveCounterFromSelf sibling above. Quoting it would emit the
+                    // literal string "Counters.PLUS_ONE_PLUS_ONE" as the counter type — a card whose
+                    // cost removes a counter kind that never exists.
+                    "Costs.RemoveCounters($n, $counter, $filter)"
                 }
                 "NumberCountersOfTypeFromPermanent" -> {
                     if ((subArgs.getOrNull(2) as? JsonObject)?.strField("_Permanent") != "ThisPermanent") return null
-                    "Costs.RemoveCounterFromSelf(\"$counter\", $n)"
+                    "Costs.RemoveCounterFromSelf($counter, $n)"
                 }
                 else -> null
             }

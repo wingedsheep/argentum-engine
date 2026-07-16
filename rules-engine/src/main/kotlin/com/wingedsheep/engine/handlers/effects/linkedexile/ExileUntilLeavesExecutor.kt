@@ -14,9 +14,18 @@ import kotlin.reflect.KClass
 /**
  * Executor for ExileUntilLeavesEffect.
  *
- * Exiles the target permanent and links it to the source permanent via
- * LinkedExileComponent. The source's LeavesBattlefield trigger (defined on
- * the card) handles returning the exiled card via ReturnLinkedExile.
+ * Exiles the target and links it to the source permanent via LinkedExileComponent. The source's
+ * LeavesBattlefield trigger (defined on the card) handles returning the exiled card via
+ * ReturnLinkedExile (typically [com.wingedsheep.sdk.dsl.Effects.ReturnLinkedExileUnderOwnersControl],
+ * which puts it back onto the battlefield under its owner's control).
+ *
+ * The target is normally a battlefield permanent (O-Ring style — Driftgloom Coyote, Liminal Hold),
+ * but a graveyard **card** is also accepted: Savior of Ollenbock exiles "up to one other target
+ * creature from the battlefield or creature card from a graveyard" and returns the exiled card to
+ * the battlefield when it leaves. Because [ZoneTransitionService.moveToZone] locates the source zone
+ * itself, one code path moves the target to exile regardless of which of those two zones it started
+ * in. A target in any other zone (hand, library, stack) is never a legal exile-until-leaves target,
+ * so it is left alone.
  *
  * If the source is no longer on the battlefield when this effect resolves
  * (modern template safety), the target is not exiled.
@@ -45,8 +54,13 @@ class ExileUntilLeavesExecutor : EffectExecutor<ExileUntilLeavesEffect> {
         val targetId = context.resolveTarget(effect.target)
             ?: return EffectResult.success(state)
 
-        // Verify target is on the battlefield
-        if (targetId !in state.getBattlefield()) {
+        // Verify the target is somewhere this effect can exile from: a battlefield permanent
+        // (O-Ring style) or a card in some player's graveyard (Savior of Ollenbock's "creature card
+        // from a graveyard"). Target validation at resolution already fizzles illegal targets, so a
+        // target in any other zone is a defensive no-op.
+        val inBattlefield = targetId in state.getBattlefield()
+        val inGraveyard = !inBattlefield && state.turnOrder.any { targetId in state.getGraveyard(it) }
+        if (!inBattlefield && !inGraveyard) {
             return EffectResult.success(state)
         }
 

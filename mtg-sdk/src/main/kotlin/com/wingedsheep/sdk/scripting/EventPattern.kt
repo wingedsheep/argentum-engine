@@ -1926,6 +1926,37 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         }
     }
 
+    /**
+     * When a creature trains (CR 702.149c) — "'When this creature trains' means 'When a resolving
+     * training ability puts one or more +1/+1 counters on this creature.'" The training payoff of
+     * Savior of Ollenbock ("Whenever this creature trains, exile up to one other target creature …").
+     *
+     * Emitted by the training ability's own resolution (the tail of the `training()` composite,
+     * `com.wingedsheep.sdk.dsl.training`), **only when the +1/+1 counter actually lands** — a
+     * Solemnity-type "can't have counters put on it" prohibition means the ability trains nothing
+     * and no event fires, faithful to "puts one or more +1/+1 counters." Distinct from the raw
+     * [CountersPlacedEvent]: that fires for a +1/+1 counter from *any* source; this fires only for
+     * the counter a *resolving training ability* placed (the Option A distinction — see
+     * `EmitTrainedEventEffect`).
+     *
+     * A parameterless [EventPattern] whose subject is selected by the ability's [TriggerBinding]
+     * against the trained creature, exactly like [CountersPlacedEvent] / [ExploitedEvent]:
+     *  - [com.wingedsheep.sdk.scripting.TriggerBinding.SELF] — "when **this** creature trains"
+     *    (Savior of Ollenbock). The trained creature is the ability's own source.
+     *  - [com.wingedsheep.sdk.scripting.TriggerBinding.OTHER] — "when **another** creature you
+     *    control trains" (none printed yet; supported for the next card).
+     *  - [com.wingedsheep.sdk.scripting.TriggerBinding.ANY] — no subject restriction.
+     *
+     * CR 702.149c defines only the SELF form, so this carries no player field; a controller-scoped
+     * "a creature you control trains" variant would add one when a card needs it (mirroring the
+     * deliberately-narrow [BecomesUnblockedEvent]).
+     */
+    @SerialName("TrainedEvent")
+    @Serializable
+    data object TrainedEvent : EventPattern {
+        override val description: String = "this creature trains"
+    }
+
     // =========================================================================
     // Combat Damage Batch Triggers
     // =========================================================================

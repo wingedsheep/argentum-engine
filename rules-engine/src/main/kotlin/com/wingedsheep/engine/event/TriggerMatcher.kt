@@ -528,6 +528,16 @@ class TriggerMatcher(
                 if (trigger.requireNontokenExploited && event.sacrificedWasToken) return false
                 true
             }
+            is EventPattern.TrainedEvent -> {
+                if (event !is com.wingedsheep.engine.core.TrainedEvent) return false
+                // "When THIS creature trains" (Savior of Ollenbock): SELF binding restricts to the
+                // ability's own source. OTHER would be "another creature you control trains"; ANY has
+                // no restriction. The emit already gates on a counter actually landing (CR 702.149c),
+                // so any TrainedEvent that reaches here is a genuine train.
+                if (binding == TriggerBinding.SELF && event.trainedId != sourceId) return false
+                if (binding == TriggerBinding.OTHER && event.trainedId == sourceId) return false
+                true
+            }
             is EventPattern.BendPerformedEvent -> {
                 event is com.wingedsheep.engine.core.BendPerformedEvent &&
                     event.bendType in trigger.types &&
