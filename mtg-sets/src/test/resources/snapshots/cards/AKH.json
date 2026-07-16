@@ -1,3 +1,48 @@
+// Doomed Dissenter
+{
+    "name": "Doomed Dissenter",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human",
+    "oracleText": "When this creature dies, create a 2/2 black Zombie creature token.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5bd6905-79be-4d2c-a343-f6e6a181b3e6.jpg?1783936411"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "artist": "Tony Foti",
+        "flavorText": "There is only one fate left to those banished from the God-Pharaoh's city.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a1c0b645-de43-46d0-84c1-03f295def217.jpg?1783936508"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Enigma Drake
 {
     "name": "Enigma Drake",

@@ -781,6 +781,23 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         }
     }
 
+    /**
+     * Matches cards that share **no** land type with any permanent the evaluating player
+     * controls matching [filter]. Used by Hiveheart Shaman ("a basic land card that doesn't
+     * share a land type with a land you control") with `filter = GameObjectFilter.Land`. The
+     * land types of the controlled permanents are read from projected state, so type-changing
+     * effects are honored. A candidate with no land types of its own shares none, so it matches.
+     */
+    @SerialName("DoesNotShareLandTypeWithPermanentYouControl")
+    @Serializable
+    data class DoesNotShareLandTypeWithPermanentYouControl(val filter: GameObjectFilter) : CardPredicate {
+        override val description: String = "that doesn't share a land type with ${filter.description} you control"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
     // =============================================================================
     // Stack Item Type Predicates
     // =============================================================================

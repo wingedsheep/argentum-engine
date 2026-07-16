@@ -2,7 +2,7 @@
 
 **Set Size:** 272 booster cards (excluding basic lands and tokens)
 **Release Date:** November 19, 2021
-**Implemented:** 118 / 272
+**Implemented:** 123 / 272
 - [x] Abrade
 - [x] Adamant Will
 - [ ] Aim for the Head
@@ -33,7 +33,7 @@
 - [ ] Bloodvial Purveyor
 - [x] Bloody Betrayal
 - [x] Boarded Window
-- [ ] Bramble Armor
+- [x] Bramble Armor
 - [x] Bramble Wurm
 - [ ] Bride's Gown
 - [ ] Brine Comber
@@ -60,7 +60,7 @@
 - [ ] Crawling Infestation
 - [ ] Creepy Puppeteer
 - [x] Cruel Witness
-- [ ] Crushing Canopy
+- [x] Crushing Canopy
 - [ ] Cultivator Colossus
 - [ ] Curse of Hospitality
 - [x] Dawnhart Disciple
@@ -75,7 +75,7 @@
 - [ ] Diver Skaab
 - [ ] Dollhouse of Horrors
 - [ ] Dominating Vampire
-- [ ] Doomed Dissenter
+- [x] Doomed Dissenter
 - [ ] Dormant Grove
 - [ ] Dorothea, Vengeful Victim
 - [ ] Dread Fugue
@@ -124,7 +124,7 @@
 - [x] Hero's Downfall
 - [ ] Heron of Hope
 - [x] Heron-Blessed Geist
-- [ ] Hiveheart Shaman
+- [x] Hiveheart Shaman
 - [ ] Honeymoon Hearse
 - [x] Honored Heirloom
 - [ ] Hookhand Mariner
@@ -218,7 +218,7 @@
 - [ ] Skulking Killer
 - [ ] Skull Skaab
 - [x] Skywarp Skaab
-- [ ] Snarling Wolf
+- [x] Snarling Wolf
 - [ ] Sorin the Mirthless
 - [ ] Soulcipher Board
 - [ ] Spiked Ripsaw

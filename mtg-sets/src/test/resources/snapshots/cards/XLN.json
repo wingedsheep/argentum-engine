@@ -111,6 +111,72 @@
     ]
 }
 
+// Crushing Canopy
+{
+    "name": "Crushing Canopy",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Destroy target creature with flying.\n• Destroy target enchantment.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature kw:flying"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Destroy target creature with flying"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "enchantment"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Destroy target enchantment"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "artist": "Tomasz Jedruszek",
+        "flavorText": "\"Do not mistake your lofty vantage point for safety.\"\n—Shaper Tuvasa",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a66b0e45-e585-44f3-8d2b-e887330ba138.jpg?1783935728"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Dive Down
 {
     "name": "Dive Down",

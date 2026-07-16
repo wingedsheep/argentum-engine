@@ -601,6 +601,22 @@ class PredicateEvaluator {
                 }
             }
 
+            is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl -> {
+                val controllerId = context?.controllerId ?: return false
+                val entityLandTypes = (projectedValues?.subtypes ?: card.typeLine.subtypes.map { it.value }.toSet())
+                    .filter { it in Subtype.ALL_BASIC_LAND_TYPES }
+                // A candidate with no land types of its own shares none, so it matches trivially.
+                if (entityLandTypes.isEmpty()) return true
+                // No shared type when no permanent you control shares any land type with the candidate.
+                state.getBattlefield().none { otherId ->
+                    projected.getController(otherId) == controllerId &&
+                        matches(state, projected, otherId, predicate.filter, context) &&
+                        projected.getSubtypes(otherId).any { otherSubtype ->
+                            entityLandTypes.any { it.equals(otherSubtype, ignoreCase = true) }
+                        }
+                }
+            }
+
             CardPredicate.SharesChosenColorWithSource -> {
                 val sourceId = context?.sourceId ?: return false
                 val chosenColor = state.getEntity(sourceId)
@@ -1355,7 +1371,8 @@ class PredicateEvaluator {
             is CardPredicate.SharesCreatureTypeWith,
             is CardPredicate.SharesColorWith,
             is CardPredicate.SharesColorWithPermanentYouControl,
-            is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl -> false
+            is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl,
+            is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl -> false
             is CardPredicate.HasSubtypeFromVariable, is CardPredicate.HasSubtypeInStoredList,
             is CardPredicate.HasSubtypeInEachStoredGroup -> false
             // Source-component name reference is a permanent-static predicate, not meaningful for a

@@ -580,6 +580,15 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl(filter)
     )
 
+    /**
+     * Must share **no** land type with any permanent the evaluating player controls matching
+     * [filter] (Hiveheart Shaman: "a basic land card that doesn't share a land type with a land
+     * you control").
+     */
+    fun notSharingLandTypeWithPermanentYouControl(filter: GameObjectFilter) = copy(
+        cardPredicates = cardPredicates + CardPredicate.DoesNotShareLandTypeWithPermanentYouControl(filter)
+    )
+
     // =============================================================================
     // Fluent Builder Methods - State Predicates
     // =============================================================================

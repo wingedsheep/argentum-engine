@@ -2388,6 +2388,14 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `.sharingColorWithPermanentYouControl`. Used by Radagast the Brown ("a creature card that doesn't share
   a creature type with a creature you control") with `filter = GameObjectFilter.Creature`. A candidate
   with no creature types of its own shares none, so it matches.
+- `.notSharingLandTypeWithPermanentYouControl(filter)` —
+  `CardPredicate.DoesNotShareLandTypeWithPermanentYouControl`: shares **no** (projected) basic land
+  type with any permanent the evaluating player controls matching `filter`. Land-type sibling of
+  `.notSharingCreatureTypeWithPermanentYouControl`. Used by Hiveheart Shaman ("a basic land card that
+  doesn't share a land type with a land you control") with `filter = GameObjectFilter.Land`. A candidate
+  with no land types of its own shares none, so it matches. Evaluated for real in targeting/search/count
+  contexts; fails closed (false) in static-projection / cast-record matching, permissive (true) in
+  cost-calculation.
 - `.named(name)` — `CardPredicate.NameEquals`: matches a fixed card name.
 - `.notNamed(name)` — `CardPredicate.Not(NameEquals)`: matches cards whose name is **not** `name`. Use for
   "… that don't have the same name as this creature" wording (Marvin, Murderous Mimic — creatures you control

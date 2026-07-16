@@ -705,6 +705,7 @@ internal class AffectsFilterResolver {
         is CardPredicate.SharesColorWith,
         is CardPredicate.SharesColorWithPermanentYouControl,
         is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl,
+        is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl,
         is CardPredicate.HasSubtypeFromVariable,
         is CardPredicate.HasSubtypeInStoredList,
         is CardPredicate.NameEqualsChosen,
