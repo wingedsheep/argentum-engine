@@ -190,4 +190,65 @@ class EffectHandlerTest : StringSpec({
             "t",
         ).shouldBeNull()
     }
+
+    // --- SpellDealsDamage mass-damage recipients (MultipleRecipients rendered in IR = printed order) --
+    // Each MultipleRecipients clause renders in the order the IR lists it, which is the printed order the
+    // hand-authored goldens preserve. EachPlayer(Opponent) -> PlayerRef(EachOpponent) (excludes the
+    // controller); EachPlayer(AnyPlayer) -> ForEachPlayerEffect(Player.Each, …) (includes the controller).
+
+    fun spellDamage(recipients: String, amount: String = """{"_GameNumber":"Integer","args":1}"""): String? =
+        effect(
+            """{"_Action":"SpellDealsDamage","args":[{"_Spell":"ThisSpell"},$amount,$recipients]}""",
+        )
+
+    "End the Festivities: player-FIRST then permanent, opponent-scoped -> PlayerRef(EachOpponent)" {
+        // IR order is EachPlayer(Opponent) then EachPermanent(creature/planeswalker they control); the
+        // printed card and golden are player-first, so honour IR order rather than hardcoding permanents
+        // first. "each opponent" must be PlayerRef(EachOpponent), NOT ForEachPlayerEffect(Player.Each).
+        spellDamage(
+            """{"_DamageRecipient":"MultipleRecipients","args":[""" +
+                """{"_DamageRecipient":"EachPlayer","args":{"_Players":"Opponent"}},""" +
+                """{"_DamageRecipient":"EachPermanent","args":{"_Permanents":"And","args":[""" +
+                """{"_Permanents":"Or","args":[{"_Permanents":"IsCardtype","args":"Creature"},""" +
+                """{"_Permanents":"IsCardtype","args":"Planeswalker"}]},""" +
+                """{"_Permanents":"ControlledByAPlayer","args":{"_Players":"Opponent"}}]}}]}""",
+        ) shouldBe "Effects.Composite(\n" +
+            "            DealDamageEffect(1, EffectTarget.PlayerRef(Player.EachOpponent)),\n" +
+            "            Effects.ForEachInGroup(GroupFilter(GameObjectFilter.CreatureOrPlaneswalker.opponentControls()), " +
+            "DealDamageEffect(1, EffectTarget.Self))\n" +
+            "        )"
+    }
+
+    "Dry Spell: permanent-FIRST then any-player -> creature group then ForEachPlayerEffect(Player.Each)" {
+        // The mirror order of End the Festivities: EachPermanent(Creature) then EachPlayer(AnyPlayer).
+        // "each player" includes the controller, so ForEachPlayerEffect(Player.Each), not EachOpponent.
+        spellDamage(
+            """{"_DamageRecipient":"MultipleRecipients","args":[""" +
+                """{"_DamageRecipient":"EachPermanent","args":{"_Permanents":"IsCardtype","args":"Creature"}},""" +
+                """{"_DamageRecipient":"EachPlayer","args":{"_Players":"AnyPlayer"}}]}""",
+        ) shouldBe "Effects.Composite(\n" +
+            "            Effects.ForEachInGroup(GroupFilter(GameObjectFilter.Creature), DealDamageEffect(1, EffectTarget.Self)),\n" +
+            "            ForEachPlayerEffect(Player.Each, listOf(DealDamageEffect(1, EffectTarget.Controller)))\n" +
+            "        )"
+    }
+
+    "a lone EachPlayer(Opponent) recipient renders the single each-opponent deal (no Composite)" {
+        spellDamage(
+            """{"_DamageRecipient":"EachPlayer","args":{"_Players":"Opponent"}}""",
+            """{"_GameNumber":"Integer","args":2}""",
+        ) shouldBe "DealDamageEffect(2, EffectTarget.PlayerRef(Player.EachOpponent))"
+    }
+
+    "a lone EachPlayer(AnyPlayer) recipient renders the single each-player ForEachPlayerEffect" {
+        spellDamage(
+            """{"_DamageRecipient":"EachPlayer","args":{"_Players":"AnyPlayer"}}""",
+            """{"_GameNumber":"Integer","args":2}""",
+        ) shouldBe "ForEachPlayerEffect(Player.Each, listOf(DealDamageEffect(2, EffectTarget.Controller)))"
+    }
+
+    "an unmodeled EachPlayer scope declines the whole card (-> SCAFFOLD), never a widened recipient set" {
+        // Neither Opponent nor AnyPlayer — massDamageClause returns null, so the entire SpellDealsDamage
+        // declines rather than silently guessing which players take the damage.
+        spellDamage("""{"_DamageRecipient":"EachPlayer","args":{"_Players":"You"}}""").shouldBeNull()
+    }
 })

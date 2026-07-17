@@ -23,22 +23,22 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
 
     on("SpellDealsDamage", "PermanentDealsDamage", "DeadPermanentDealsDamage") { node, args, tvar ->
         val amt = amountExpr(args) ?: dynamicAmountExpr(amountNode(args)) ?: return@on null
-        if (jsonContains(args, "_DamageRecipient", "EachPermanent")) {  // mass: deal N to each creature
-            val filter = groupFilterExpr(args) ?: return@on null
-            val eachPermanent = call(
-                "Effects.ForEachInGroup", arg(filter),
-                arg(call("DealDamageEffect", arg(amt), arg("EffectTarget.Self"))),
-            )
-            if (jsonContains(args, "_DamageRecipient", "EachPlayer")) {
-                return@on Composite(listOf(
-                    eachPermanent,
-                    call(
-                        "ForEachPlayerEffect", arg("Player.Each"),
-                        arg(call("listOf", arg(call("DealDamageEffect", arg(amt), arg("EffectTarget.Controller"))))),
-                    ),
-                ))
-            }
-            return@on eachPermanent
+        // Mass damage — one or more of "each creature/permanent" (`EachPermanent`) and "each
+        // player/opponent" (`EachPlayer`), possibly combined under `MultipleRecipients` ("deals N to
+        // each creature and each player", Dry Spell; "deals 1 damage to each opponent and each creature
+        // and planeswalker they control", End the Festivities). Render each recipient clause in IR order
+        // and compose — the hand-authored goldens preserve the printed order (player-first for End the
+        // Festivities, creature-first for Dry Spell), so honouring IR order matches both instead of
+        // hardcoding one. A clause we can't render exactly declines the whole card -> SCAFFOLD.
+        if (jsonContains(args, "_DamageRecipient", "EachPermanent") ||
+            jsonContains(args, "_DamageRecipient", "EachPlayer")
+        ) {
+            val recip = recipientNode(args) ?: return@on null
+            val clauses = if (recip.strField("_DamageRecipient") == "MultipleRecipients") {
+                recip["args"].asArr?.filterIsInstance<JsonObject>() ?: return@on null
+            } else listOf(recip)
+            val rendered = clauses.map { massDamageClause(it, amt) ?: return@on null }
+            return@on if (rendered.size == 1) rendered[0] else Composite(rendered)
         }
         val tgt = damageRecipientTarget(args, tvar) ?: return@on null
         // For `PermanentDealsDamage`, the acting permanent (the first arg's `_Permanent` ref) is the
@@ -278,6 +278,41 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
         call("Effects.PreventNextDamage", arg("$amount"), arg(Lit(target)))
     }
 }
+
+/** Render one mass-damage recipient clause of a `SpellDealsDamage`/`PermanentDealsDamage` action:
+ *
+ *  - `EachPermanent(<filter>)` ("each creature", "each creature and planeswalker they control") ->
+ *    `Effects.ForEachInGroup(GroupFilter(<filter>), DealDamageEffect(amt, EffectTarget.Self))`.
+ *  - `EachPlayer(Opponent)` ("each opponent") -> `DealDamageEffect(amt,
+ *    EffectTarget.PlayerRef(Player.EachOpponent))` — the same each-opponent shape the single-recipient
+ *    [damageRecipientTarget] renders. NOT `ForEachPlayerEffect(Player.Each, …)`, which would also hit
+ *    the controller.
+ *  - `EachPlayer(AnyPlayer)` ("each player") -> `ForEachPlayerEffect(Player.Each,
+ *    listOf(DealDamageEffect(amt, EffectTarget.Controller)))` — every player, including the controller.
+ *
+ *  Returns null (-> the whole card SCAFFOLDs) for any player scope or permanent filter we can't render
+ *  exactly, so the recipient set is never silently widened or narrowed. */
+private fun EmitCtx.massDamageClause(clause: JsonObject, amt: com.wingedsheep.tooling.coverage.Dsl): com.wingedsheep.tooling.coverage.Dsl? =
+    when (clause.strField("_DamageRecipient")) {
+        "EachPermanent" -> {
+            val filter = groupFilterExpr(clause["args"]) ?: return null
+            call(
+                "Effects.ForEachInGroup", arg(filter),
+                arg(call("DealDamageEffect", arg(amt), arg("EffectTarget.Self"))),
+            )
+        }
+        "EachPlayer" -> when {
+            jsonContains(clause["args"], "_Players", "Opponent") ->
+                call("DealDamageEffect", arg(amt), arg("EffectTarget.PlayerRef(Player.EachOpponent)"))
+            jsonContains(clause["args"], "_Players", "AnyPlayer") ->
+                call(
+                    "ForEachPlayerEffect", arg("Player.Each"),
+                    arg(call("listOf", arg(call("DealDamageEffect", arg(amt), arg("EffectTarget.Controller"))))),
+                )
+            else -> null
+        }
+        else -> null
+    }
 
 /** Resolve a `_DamageRecipient` node to an EffectTarget DSL for a direct deal-damage action.
  *

@@ -573,8 +573,18 @@ private fun EmitCtx.youControlConditionDsl(condNode: JsonElement?): String? {
     if ((args.getOrNull(0) as? JsonObject)?.strField("_Player") != "You") return null
     val controls = args.getOrNull(1) as? JsonObject ?: return null
     if (controls.strField("_Players") != "ControlsA") return null
-    val filter = gameObjectFilterDsl(controls["args"]) ?: return null
-    return render(call("Conditions.YouControl", arg(Lit(filter))))
+    // "you control ANOTHER <filter>" (Packsong Pup's "another Wolf or Werewolf", Resistance Squad's
+    // "another Human"): the filter's `And` carries an `Other(<self>)` clause the flat GameObjectFilter
+    // can't represent. Peel it off and lift it to `excludeSelf = true` on the condition — otherwise the
+    // "another" restriction is silently dropped (gameObjectFilterDsl renders the remaining filter but
+    // ignores the self-exclusion). Mirrors the resolution-time path in [actionConditionDsl].
+    val (innerFilter, excludeSelf) = stripSelfOtherClause(controls["args"])
+    val filter = gameObjectFilterDsl(innerFilter) ?: return null
+    return render(
+        if (excludeSelf)
+            call("Conditions.YouControl", arg(Lit(filter)), arg("excludeSelf", "true"))
+        else call("Conditions.YouControl", arg(Lit(filter)))
+    )
 }
 
 /**

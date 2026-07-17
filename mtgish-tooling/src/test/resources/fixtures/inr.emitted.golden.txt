@@ -488,7 +488,10 @@ val ApothecaryGeist = card("Apothecary Geist") {
     keywords(Keyword.FLYING)
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        triggerCondition = Conditions.YouControl(GameObjectFilter.Creature.withSubtype(Subtype.SPIRIT))
+        triggerCondition = Conditions.YouControl(
+            GameObjectFilter.Creature.withSubtype(Subtype.SPIRIT),
+            excludeSelf = true
+        )
         effect = GainLifeEffect(3)
     }
     metadata {

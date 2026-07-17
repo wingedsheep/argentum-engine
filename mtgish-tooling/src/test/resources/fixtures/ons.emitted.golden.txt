@@ -12171,7 +12171,6 @@ val Threaten = card("Threaten") {
 package com.wingedsheep.mtg.sets.generated.demo.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -12198,7 +12197,7 @@ val ThunderOfHooves = card("Thunder of Hooves") {
     spell {
         effect = Effects.Composite(
             Effects.ForEachInGroup(
-                GroupFilter(GameObjectFilter.Creature.withSubtype(Subtype.BEAST).withoutKeyword(Keyword.FLYING)),
+                GroupFilter(GameObjectFilter.Creature.withoutKeyword(Keyword.FLYING)),
                 DealDamageEffect(
                     DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature.withSubtype("Beast")),
                     EffectTarget.Self
