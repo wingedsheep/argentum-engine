@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 250 / 286
+**Implemented:** 255 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -82,7 +82,7 @@
 - [x] Dire Flail
 - [x] Disruptor Wanderglyph
 - [x] Disturbed Slumber
-- [ ] Dowsing Device
+- [x] Dowsing Device
 - [x] Dreadmaw's Ire
 - [x] Dusk Rose Reliquary
 - [x] Earthshaker Dreadmaw
@@ -109,9 +109,9 @@
 - [x] Glowcap Lantern
 - [x] Goblin Tomb Raider
 - [x] Goldfury Strider
-- [ ] Grasping Shadows
+- [x] Grasping Shadows
 - [x] Greedy Freebooter
-- [ ] Growing Rites of Itlimoc
+- [x] Growing Rites of Itlimoc
 - [x] Guardian of the Great Door
 - [x] Helping Hand
 - [x] Hermitic Nautilus
@@ -267,10 +267,10 @@
 - [x] Tinker's Tote
 - [ ] Tishana's Tidebinder
 - [x] Tithing Blade
-- [ ] Treasure Map
+- [x] Treasure Map
 - [x] Triumphant Chomp
 - [x] Trumpeting Carnosaur
-- [ ] Twists and Turns
+- [x] Twists and Turns
 - [x] Uchbenbak, the Great Mistake
 - [x] Unlucky Drop
 - [x] Unstable Glyphbridge
