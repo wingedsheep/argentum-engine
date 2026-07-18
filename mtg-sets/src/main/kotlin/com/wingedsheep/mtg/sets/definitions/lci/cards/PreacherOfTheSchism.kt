@@ -45,7 +45,8 @@ val PreacherOfTheSchism = card("Preacher of the Schism") {
             toughness = 1,
             colors = setOf(Color.WHITE),
             creatureTypes = setOf("Vampire"),
-            keywords = setOf(Keyword.LIFELINK)
+            keywords = setOf(Keyword.LIFELINK),
+            imageUri = "https://cards.scryfall.io/normal/front/0/4/0484390e-1167-4407-84de-7ddc726e8926.jpg?1783913608"
         )
     }
 
