@@ -1046,6 +1046,32 @@ export const styles: Record<string, React.CSSProperties> = {
     fontWeight: 600,
     fontSize: 14,
   } as React.CSSProperties,
+  cardPreviewEffects: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    padding: 12,
+    borderRadius: 8,
+    border: '1px solid rgba(255, 204, 102, 0.25)',
+  } as React.CSSProperties,
+  cardPreviewEffect: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+  } as React.CSSProperties,
+  cardPreviewEffectName: {
+    color: '#ffcc66',
+    fontWeight: 600,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  } as React.CSSProperties,
+  cardPreviewEffectText: {
+    color: '#e8e8e8',
+    fontSize: 13,
+    lineHeight: 1.4,
+  } as React.CSSProperties,
   cardPreviewRulings: {
     display: 'flex',
     flexDirection: 'column',

@@ -314,6 +314,22 @@ export function CardPreview() {
           ))}
         </div>
       )}
+
+      {/* Granted / active-effect abilities — temporary text not in the printed oracle text
+          (e.g. an ability granted by Dreadmaw's Ire). The DTO carries these in activeEffects;
+          the on-card badge only surfaces them on a nested hover, so show them here too. */}
+      {card.activeEffects && card.activeEffects.some((e) => e.description) && (
+        <div style={styles.cardPreviewEffects}>
+          {card.activeEffects
+            .filter((e) => e.description)
+            .map((effect) => (
+              <div key={effect.effectId} style={styles.cardPreviewEffect}>
+                <span style={styles.cardPreviewEffectName}>{effect.name}</span>
+                <span style={styles.cardPreviewEffectText}>{effect.description}</span>
+              </div>
+            ))}
+        </div>
+      )}
     </HoverCardPreview>
   )
 }
