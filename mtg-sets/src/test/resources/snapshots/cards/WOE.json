@@ -152,6 +152,51 @@
     ]
 }
 
+// Beanstalk Wurm
+{
+    "name": "Beanstalk Wurm",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Plant Wurm",
+    "oracleText": "Reach",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Aldo Domínguez",
+        "flavorText": "When Beluna's pets escape Stormkeld, villages fall and new Everstalks rise.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19f20c0a-22be-4a9c-96ce-4047f7a2d424.jpg?1783915085",
+        "rulings": [
+            {
+                "date": "2023-09-01",
+                "text": "The effect that allows you to play an additional land that turn is cumulative with other effects that do so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Plant Beans",
+            "manaCost": "{1}{G}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "You may play an additional land this turn. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "PlayAdditionalLands",
+                    "count": 1
+                }
+            }
+        }
+    ]
+}
+
 // Beluna's Gatekeeper
 {
     "name": "Beluna's Gatekeeper",
@@ -390,6 +435,106 @@
     ]
 }
 
+// Break the Spell
+{
+    "name": "Break the Spell",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target enchantment. If a permanent you controlled or a token was destroyed this way, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "breakSpellTarget"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "breakSpellTarget",
+                    "filter": {
+                        "type": "MatchesFilter",
+                        "filter": {
+                            "anyOf": [
+                                {
+                                    "controllerPredicate": "ControlledByYou"
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsToken"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "storeMatching": "breakSpellYoursOrToken",
+                    "storeNonMatching": "breakSpellNeither"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "breakSpellTarget",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy",
+                    "storeMovedAs": "breakSpellDestroyed"
+                },
+                {
+                    "type": "FilterCollection",
+                    "from": "breakSpellDestroyed",
+                    "filter": {
+                        "type": "ExcludeOtherCollection",
+                        "otherCollectionName": "breakSpellNeither"
+                    },
+                    "storeMatching": "breakSpellQualifyingDestroyed"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "breakSpellQualifyingDestroyed",
+                    "ifNotEmpty": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            ],
+            "descriptionOverride": "Destroy target enchantment. If a permanent you controlled or a token was destroyed this way, draw a card."
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "enchantment"
+                },
+                "id": "target enchantment"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "Miranda Meeks",
+        "flavorText": "As Hylda watched Ruby drag Kellan's unconscious form through the cold, Hylda felt something she hadn't felt in a long time: compassion.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7094fc0-1d26-429c-9b49-37718c4a5c80.jpg?1783915136",
+        "rulings": [
+            {
+                "date": "2023-09-01",
+                "text": "If the enchantment has indestructible, it won't be destroyed. You won't draw a card."
+            },
+            {
+                "date": "2023-09-01",
+                "text": "If a permanent you controlled or a token is destroyed with Break the Spell but is put into a zone other than a graveyard as a result, you will draw a card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Candy Trail
 {
     "name": "Candy Trail",
@@ -623,6 +768,65 @@
         "imageUri": "https://cards.scryfall.io/normal/front/9/6/967a4f27-8cd6-437d-8c05-8aedbc7ddc4b.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Cooped Up
+{
+    "name": "Cooped Up",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack or block.\n{2}{W}: Exile enchanted creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "EnchantedCreature",
+                    "destination": "Exile"
+                },
+                "descriptionOverride": "{2}{W}: Exile enchanted creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Jodie Muir",
+        "flavorText": "\"Cold iron's all you need to hold a faerie. The charms are mostly decorative.\"\n—Eulyn, Edgewall peddler",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8acb8758-09c5-4e19-ada1-904e36ece1fc.jpg?1783915134"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Dutiful Griffin
@@ -1107,6 +1311,59 @@
         "artist": "Evyn Fong",
         "flavorText": "Even in the grip of the Wicked Slumber, the High Fae princess Obyra is a blademaster of unrivaled skill.",
         "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bdcaf24-4352-47cf-a043-899be47ab1bb.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Feed the Cauldron
+{
+    "name": "Feed the Cauldron",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target creature with mana value 3 or less. If it's your turn, create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "IsYourTurn"
+                    },
+                    "then": {
+                        "type": "CreatePredefinedToken",
+                        "tokenType": "Food"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature mv<=3"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Marta Nael",
+        "flavorText": "Kellan heard Agatha howl when he slammed into her, heard her scream as she fell into the cauldron, but couldn't afford to think about the implications just yet.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0cfd18a5-e06a-4cb5-b78e-de18ec641321.jpg?1783915107"
     },
     "colorIdentityOverride": [
         "BLACK"
