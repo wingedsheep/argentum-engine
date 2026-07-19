@@ -4834,7 +4834,7 @@
             }
         ],
         "replacementEffects": [
-            "DoubleTokenCreation"
+            "MultiplyTokenCreation"
         ]
     },
     "metadata": {

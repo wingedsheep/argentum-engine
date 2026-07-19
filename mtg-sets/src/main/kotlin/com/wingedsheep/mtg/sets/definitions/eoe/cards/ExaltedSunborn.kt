@@ -3,7 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.eoe.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.DoubleTokenCreation
+import com.wingedsheep.sdk.scripting.MultiplyTokenCreation
 
 /**
  * Exalted Sunborn
@@ -30,7 +30,7 @@ val ExaltedSunborn = card("Exalted Sunborn") {
 
     // Doubling Season-style token replacement. The engine resolves the count
     // multiplier in CreateTokenExecutor before any per-token replacements run.
-    replacementEffect(DoubleTokenCreation())
+    replacementEffect(MultiplyTokenCreation())
 
     warp = "{1}{W}"
 

@@ -10574,6 +10574,112 @@
     ]
 }
 
+// Ojer Taq, Deepest Foundation
+{
+    "name": "Ojer Taq, Deepest Foundation",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Vigilance\nIf one or more creature tokens would be created under your control, three times that many of those tokens are created instead.\nWhen Ojer Taq dies, return it to the battlefield tapped and transformed under its owner's control.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ReturnSelfFromZoneTransformed",
+                    "tapped": true
+                },
+                "descriptionOverride": "When Ojer Taq dies, return it to the battlefield tapped and transformed under its owner's control."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "MultiplyTokenCreation",
+                "factor": 3
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Temple of Civilization",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "(Transforms from Ojer Taq, Deepest Foundation.)\n{T}: Add {W}.\n{2}{W}, {T}: Transform this land. Activate only if you attacked with three or more creatures this turn and only as a sorcery.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "WHITE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "ability_3",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{W}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": "Transform",
+                    "timing": "SorcerySpeed",
+                    "restrictions": [
+                        {
+                            "type": "ActivationOnlyIfCondition",
+                            "condition": {
+                                "type": "PlayerAttackedWithCreaturesThisTurn",
+                                "filter": "creature",
+                                "atLeast": 3
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Transform this land. Activate only if you attacked with three or more creatures this turn and only as a sorcery."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "26",
+            "rarity": "MYTHIC",
+            "artist": "Cristi Balanescu",
+            "flavorText": "Chimil gave the Oltec life. Ojer Taq taught them how to live together.",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/c/1ca79dd4-67fc-496c-96fc-489b039c4932.jpg?1782694591"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "MYTHIC",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1ca79dd4-67fc-496c-96fc-489b039c4932.jpg?1782694591"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Oltec Archaeologists
 {
     "name": "Oltec Archaeologists",

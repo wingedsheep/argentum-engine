@@ -27,8 +27,8 @@ import kotlinx.serialization.Serializable
  *
  * Examples:
  * ```kotlin
- * // Doubling Season (tokens)
- * DoubleTokenCreation(
+ * // Doubling Season (tokens) — factor defaults to 2; Ojer Taq passes factor = 3
+ * MultiplyTokenCreation(
  *     appliesTo = EventPattern.TokenCreationEvent(controller = ControllerFilter.You)
  * )
  *
@@ -74,13 +74,21 @@ sealed interface ReplacementEffect : TextReplaceable<ReplacementEffect> {
  * Double the number of tokens created.
  * Example: Doubling Season, Parallel Lives, Anointed Procession
  */
-@SerialName("DoubleTokenCreation")
+@SerialName("MultiplyTokenCreation")
 @Serializable
-data class DoubleTokenCreation(
+data class MultiplyTokenCreation(
+    val factor: Int = 2,
     override val appliesTo: EventPattern = EventPattern.TokenCreationEvent()
 ) : ReplacementEffect {
-    override val description: String =
-        "If ${appliesTo.description}, create twice that many of those tokens instead"
+    override val description: String
+        get() {
+            val times = when (factor) {
+                2 -> "twice"
+                3 -> "three times"
+                else -> "$factor times"
+            }
+            return "If ${appliesTo.description}, create $times that many of those tokens instead"
+        }
 
     override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
         val newAppliesTo = appliesTo.applyTextReplacement(replacer)

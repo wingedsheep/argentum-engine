@@ -8,7 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.DoubleTokenCreation
+import com.wingedsheep.sdk.scripting.MultiplyTokenCreation
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.GrantKeywordEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
@@ -40,7 +40,7 @@ val ElspethStormSlayer = card("Elspeth, Storm Slayer") {
         "−3: Destroy target creature an opponent controls with mana value 3 or greater."
 
     // If one or more tokens would be created under your control, twice that many instead.
-    replacementEffect(DoubleTokenCreation())
+    replacementEffect(MultiplyTokenCreation())
 
     // +1: Create a 1/1 white Soldier creature token.
     loyaltyAbility(+1) {

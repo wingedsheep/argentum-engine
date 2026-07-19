@@ -741,7 +741,7 @@ class CardDslTest : DescribeSpec({
 
         it("should have compositional ReplacementEffect types available") {
             // Test that replacement effect types are properly defined with compositional filters
-            val tokenDoubler = DoubleTokenCreation()
+            val tokenDoubler = MultiplyTokenCreation()
             tokenDoubler.appliesTo.shouldBeInstanceOf<EventPattern.TokenCreationEvent>()
 
             // Hardened Scales - +1 counter when +1/+1 counters placed on creatures you control

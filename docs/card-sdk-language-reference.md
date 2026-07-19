@@ -6570,6 +6570,17 @@ replacementEffect {
   `Effects.GrantCounterPlacementModifier(...)` (§4 Counters) instead — it records a controller-scoped
   modifier in a turn-scoped game-state store consulted from the same counter-placement chokepoint,
   and expires at end of turn.
+- `MultiplyTokenCreation(factor = 2, appliesTo)` / `ModifyTokenCount(modifier, appliesTo)` —
+  **static** token-count replacements living on a battlefield permanent. `MultiplyTokenCreation`
+  multiplies the number of tokens created by `factor` (Doubling Season / Anointed Procession /
+  Exalted Sunborn — `factor = 2`; **Ojer Taq, Deepest Foundation** — `factor = 3`); several stack
+  multiplicatively. `ModifyTokenCount` shifts the count by a fixed amount. `appliesTo` defaults to
+  `EventPattern.TokenCreationEvent(controller = You)`; the multiplier runs in `CreateTokenExecutor`,
+  the executor for **creature** tokens (it always builds a "… Creature" type line — Treasure/Clue/Map
+  and other predefined tokens go through a separate executor that isn't multiplied), so an
+  unfiltered `MultiplyTokenCreation` scopes to creature tokens in practice. `tokenFilter` on the
+  event is not yet honored by the count path (filtered events are skipped), so express "creature
+  tokens" via the default rather than `tokenFilter = Creature`.
 - `ReplaceTokenCreationWithAttachedCopy(optional, oncePerTurn, attachmentVerb, appliesTo)` —
   "the first time you would create one or more tokens each turn, you may instead create that
   many tokens that are copies of [attached] permanent." Works for both Equipment and Auras —
