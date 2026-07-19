@@ -1,3 +1,48 @@
+// Secluded Courtyard
+{
+    "name": "Secluded Courtyard",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "As this land enters, choose a creature type.\n{T}: Add {C}.\n{T}: Add one mana of any color. Spend this mana only to cast a creature spell of the chosen type or activate an ability of a creature source of the chosen type.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": "AddAnyColorManaSpendOnChosenType",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "275",
+        "rarity": "UNCOMMON",
+        "artist": "Sam Burley",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/0539b1a5-8704-476f-ba1f-2fe01190e157.jpg?1783923815"
+    },
+    "colorIdentityOverride": []
+}
+
 // Uncharted Haven
 {
     "name": "Uncharted Haven",
