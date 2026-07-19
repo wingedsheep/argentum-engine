@@ -3,8 +3,8 @@ package com.wingedsheep.mtg.sets.definitions.rav.cards
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.DoubleCounterPlacement
-import com.wingedsheep.sdk.scripting.DoubleTokenCreation
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.MultiplyTokenCreation
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.events.RecipientFilter
 
@@ -30,7 +30,7 @@ val DoublingSeason = card("Doubling Season") {
         "If an effect would create one or more tokens under your control, it creates twice that many of those tokens instead.\n" +
         "If an effect would put one or more counters on a permanent you control, it puts twice that many of those counters on that permanent instead."
 
-    replacementEffect(DoubleTokenCreation())
+    replacementEffect(MultiplyTokenCreation())
 
     replacementEffect(
         DoubleCounterPlacement(
