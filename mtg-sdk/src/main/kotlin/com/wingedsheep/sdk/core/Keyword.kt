@@ -465,7 +465,18 @@ enum class Keyword(val displayName: String) {
      * Wired via the `increment()` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder],
      * which attaches this display-only keyword plus the cast-spell triggered ability.
      */
-    INCREMENT("Increment");
+    INCREMENT("Increment"),
+
+    /**
+     * Rebound (CR 702.88). "If this spell was cast from your hand, instead of putting it into
+     * your graveyard as it resolves, exile it and, at the beginning of your next upkeep, you may
+     * cast this card from exile without paying its mana cost." A static ability that functions
+     * while the spell is on the stack (read by the spell-resolution path in `StackResolver`,
+     * which honors both the printed keyword and one granted to the spell via
+     * `GrantKeywordToSpellEffect` — Ojer Pakpatiq, Deepest Epoch grants it to instants you cast
+     * from hand).
+     */
+    REBOUND("Rebound");
 
     companion object {
         fun fromString(value: String): Keyword? =

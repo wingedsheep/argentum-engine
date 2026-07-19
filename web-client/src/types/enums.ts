@@ -220,6 +220,8 @@ export enum Keyword {
   JOB_SELECT = 'JOB_SELECT',
   // Ability words
   EERIE = 'EERIE',
+  // Instant/sorcery recast next upkeep (Rise of the Eldrazi; granted by Ojer Pakpatiq)
+  REBOUND = 'REBOUND',
 }
 
 export const KeywordDisplayNames: Record<Keyword, string> = {
@@ -286,6 +288,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.TRAINING]: 'Training',
   [Keyword.JOB_SELECT]: 'Job select',
   [Keyword.EERIE]: 'Eerie',
+  [Keyword.REBOUND]: 'Rebound',
 }
 
 /**

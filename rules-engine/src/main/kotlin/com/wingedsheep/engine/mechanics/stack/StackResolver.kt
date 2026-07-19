@@ -1548,6 +1548,61 @@ class StackResolver(
 
 
     /**
+     * Rebound (CR 702.88): a spell has rebound if the printed keyword is on its card definition
+     * or the keyword was granted to this stack object (Ojer Pakpatiq via GrantKeywordToSpellEffect,
+     * stored on [SpellGrantedKeywordsComponent]). Only matters for a spell cast from hand — the
+     * caller gates on [com.wingedsheep.engine.state.components.stack.SpellOnStackComponent.castFromZone].
+     */
+    private fun spellHasRebound(
+        state: GameState,
+        spellId: EntityId,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition?
+    ): Boolean {
+        if (cardDef?.keywords?.contains(com.wingedsheep.sdk.core.Keyword.REBOUND) == true) return true
+        val granted = state.getEntity(spellId)
+            ?.get<com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent>()
+        return granted?.keywords?.contains(com.wingedsheep.sdk.core.Keyword.REBOUND.name) == true
+    }
+
+    /**
+     * Schedule rebound's delayed triggered ability (CR 702.88a): at the beginning of the caster's
+     * next upkeep, they may cast the just-exiled card from exile without paying its mana cost.
+     * A one-shot step-based delayed trigger gated to the caster's turn ([fireOnPlayerId]) and to a
+     * later turn ([notBeforeTurn]); it is consumed the first time it fires. The free cast reuses the
+     * suspend/Shiko cast-from-exile pipeline ([CastFromCollectionWithoutPayingCostEffect]).
+     */
+    private fun scheduleReboundRecast(
+        state: GameState,
+        exiledCardId: EntityId,
+        casterId: EntityId,
+        sourceName: String
+    ): GameState = state.addDelayedTrigger(
+        com.wingedsheep.engine.event.DelayedTriggeredAbility(
+            id = java.util.UUID.randomUUID().toString(),
+            effect = com.wingedsheep.sdk.scripting.effects.MayEffect(
+                com.wingedsheep.sdk.scripting.effects.CompositeEffect(
+                    listOf(
+                        com.wingedsheep.sdk.scripting.effects.GatherCardsEffect(
+                            source = com.wingedsheep.sdk.scripting.effects.CardSource.Self,
+                            storeAs = "rebound_recast",
+                        ),
+                        com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect(
+                            from = "rebound_recast",
+                        ),
+                    )
+                ),
+                descriptionOverride = "cast this card from exile without paying its mana cost",
+            ),
+            fireAtStep = com.wingedsheep.sdk.core.Step.UPKEEP,
+            fireOnPlayerId = casterId,
+            notBeforeTurn = state.turnNumber + 1,
+            sourceId = exiledCardId,
+            sourceName = sourceName,
+            controllerId = casterId,
+        )
+    )
+
+    /**
      * Resolve a non-permanent spell - execute effects, put in graveyard.
      */
     private fun resolveNonPermanentSpell(
@@ -1692,8 +1747,10 @@ class StackResolver(
                     spellComponent.faceIndex != null
                 val pausedOmenFaceShuffle = pausedCardDef?.layout == com.wingedsheep.sdk.model.CardLayout.OMEN &&
                     spellComponent.faceIndex != null
+                val pausedReboundExile = spellComponent.castFromZone == Zone.HAND &&
+                    spellHasRebound(effectResult.state, spellId, pausedCardDef)
                 val pausedIntended = when {
-                    pausedSelfExile || pausedFlashbackExile || pausedExileAfterResolve || pausedAdventureFaceExile -> Zone.EXILE
+                    pausedSelfExile || pausedFlashbackExile || pausedExileAfterResolve || pausedAdventureFaceExile || pausedReboundExile -> Zone.EXILE
                     pausedOmenFaceShuffle -> Zone.LIBRARY
                     else -> Zone.GRAVEYARD
                 }
@@ -1716,6 +1773,13 @@ class StackResolver(
                     pausedState = pausedState.updateEntity(spellId) { c ->
                         c.with(com.wingedsheep.engine.state.components.battlefield.ParadigmComponent)
                     }
+                }
+
+                // Rebound: arm the next-upkeep free recast even when the effect paused mid-resolution.
+                if (pausedReboundExile && pausedDestZone == Zone.EXILE) {
+                    pausedState = scheduleReboundRecast(
+                        pausedState, spellId, spellComponent.casterId, cardComponent?.name ?: "Unknown"
+                    )
                 }
 
                 // Link an opponent's resolving spell exiled by a RedirectZoneChange(linkToSource)
@@ -1831,8 +1895,12 @@ class StackResolver(
         // library instead of putting it in the graveyard. No cast-from-exile linkage.
         val omenFaceShuffle = cardDef?.layout == com.wingedsheep.sdk.model.CardLayout.OMEN &&
             spellComponent.faceIndex != null
+        // Rebound (CR 702.88): a spell cast from hand that has rebound (printed or granted) exiles
+        // on resolution instead of going to the graveyard, and arms a next-upkeep free recast.
+        val reboundExile = spellComponent.castFromZone == Zone.HAND &&
+            spellHasRebound(newState, spellId, cardDef)
         val intendedDestination = when {
-            selfExile || flashbackExile || exileAfterResolve || adventureFaceExile -> Zone.EXILE
+            selfExile || flashbackExile || exileAfterResolve || adventureFaceExile || reboundExile -> Zone.EXILE
             omenFaceShuffle -> Zone.LIBRARY
             else -> Zone.GRAVEYARD
         }
@@ -1863,6 +1931,13 @@ class StackResolver(
             newState = newState.updateEntity(spellId) { c ->
                 c.with(com.wingedsheep.engine.state.components.battlefield.ParadigmComponent)
             }
+        }
+
+        // Rebound (CR 702.88a): arm the caster's next-upkeep free recast of the just-exiled card.
+        if (reboundExile && destinationZone == Zone.EXILE) {
+            newState = scheduleReboundRecast(
+                newState, spellId, spellComponent.casterId, cardComponent?.name ?: "Unknown"
+            )
         }
 
         // CR 715.3d — an Adventure card exiled by its own resolution may be cast as the creature

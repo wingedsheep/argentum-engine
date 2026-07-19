@@ -10918,6 +10918,168 @@
     ]
 }
 
+// Ojer Pakpatiq, Deepest Epoch
+{
+    "name": "Ojer Pakpatiq, Deepest Epoch",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Flying\nWhenever you cast an instant spell from your hand, it gains rebound. (Exile it as it resolves. At the beginning of your next upkeep, you may cast it from exile without paying its mana cost.)\nWhen Ojer Pakpatiq dies, return it to the battlefield tapped and transformed under its owner's control with three time counters on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsInstant"
+                        ]
+                    },
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZone",
+                            "zone": "Hand"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeywordToSpell",
+                    "keyword": "REBOUND"
+                },
+                "descriptionOverride": "Whenever you cast an instant spell from your hand, it gains rebound."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ReturnSelfFromZoneTransformed",
+                            "tapped": true
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "time",
+                            "count": 3,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Ojer Pakpatiq dies, return it to the battlefield tapped and transformed under its owner's control with three time counters on it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Temple of Cyclical Time",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "(Transforms from Ojer Pakpatiq, Deepest Epoch.)\n{T}: Add {U}. Remove a time counter from this land.\n{2}{U}, {T}: Transform this land. Activate only if it has no time counters on it and only as a sorcery.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_3",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddMana",
+                                "color": "BLUE"
+                            },
+                            {
+                                "type": "RemoveCounters",
+                                "counterType": "time",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        ]
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "ability_4",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{U}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": "Transform",
+                    "timing": "SorcerySpeed",
+                    "restrictions": [
+                        {
+                            "type": "ActivationOnlyIfCondition",
+                            "condition": {
+                                "type": "Not",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": {
+                                                "type": "Named",
+                                                "name": "time"
+                                            }
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Transform this land. Activate only if it has no time counters on it and only as a sorcery."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "67",
+            "rarity": "MYTHIC",
+            "artist": "Chris Rahn",
+            "flavorText": "Chimil gave the Oltec time. Ojer Pakpatiq gave them the tools to learn its lessons.",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/9/a9d71007-bc04-4dff-ad3f-e2c0b5b4400e.jpg?1782694556"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9d71007-bc04-4dff-ad3f-e2c0b5b4400e.jpg?1782694556"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ojer Taq, Deepest Foundation
 {
     "name": "Ojer Taq, Deepest Foundation",

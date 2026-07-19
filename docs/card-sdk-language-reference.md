@@ -4550,6 +4550,19 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 > multi-set parameterized keywords (`prowess()`, `rampage(n)`, `keywordAbility(…)`) remain on the core
 > builder. New set mechanics get an extension file in `dsl/mechanics/`.
 
+> **Rebound** (`Keyword.REBOUND`, CR 702.88). "If this spell was cast from your hand, instead of
+> putting it into your graveyard as it resolves, exile it and, at the beginning of your next upkeep,
+> you may cast this card from exile without paying its mana cost." Modeled entirely in the
+> spell-resolution path (`StackResolver.resolveNonPermanentSpell`): a spell whose card def carries the
+> printed keyword **or** that was granted rebound via `GrantKeywordToSpellEffect(Keyword.REBOUND, …)`
+> (stored on `SpellGrantedKeywordsComponent`) and was cast from hand exiles on resolution and schedules
+> a one-shot step-based `DelayedTriggeredAbility` (`fireAtStep = UPKEEP`, `fireOnPlayerId = caster`,
+> `notBeforeTurn = turn + 1`) whose effect is `MayEffect(GatherCards(Self) → CastFromCollectionWithoutPayingCostEffect)`
+> — the same free-cast-from-exile pipeline suspend uses. Casting from exile is not "from hand", so it
+> doesn't rebound again. **Ojer Pakpatiq, Deepest Epoch** grants it to instants you cast from hand via
+> `Triggers.youCastSpell(GameObjectFilter.Instant, requires = setOf(SpellCastPredicate.CastFromZone(Zone.HAND)))`
+> → `GrantKeywordToSpellEffect(Keyword.REBOUND, EffectTarget.TriggeringEntity)`.
+
 > **Enduring** (Duskmourn Glimmer cycle). `card { enduring() }` wires the full mechanic: "When this
 > permanent dies, if it was a creature, return it to the battlefield under its owner's control. It's an
 > enchantment. (It's not a creature.)" Modeled like **Persist** — a synthesized SELF dies-trigger detected
