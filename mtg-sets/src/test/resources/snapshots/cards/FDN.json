@@ -6357,6 +6357,49 @@
     ]
 }
 
+// Starlight Snare
+{
+    "name": "Starlight Snare",
+    "manaCost": "{2}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "514",
+        "artist": "Borja Pindado",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/74fb19b2-4f6c-4cbd-8756-a7eb5c7c9ef6.jpg?1783908961"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Strix Lookout
 {
     "name": "Strix Lookout",
