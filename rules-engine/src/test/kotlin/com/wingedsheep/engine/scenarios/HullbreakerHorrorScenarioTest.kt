@@ -56,8 +56,10 @@ class HullbreakerHorrorScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
                 val modeDecision = game.getPendingDecision() as? ChooseOptionDecision
                     ?: error("Expected a ChooseOptionDecision; got ${game.getPendingDecision()}")
-                withClue("both bounce modes plus a decline option are offered") {
-                    modeDecision.options.size shouldBe 3
+                withClue("the permanent-bounce mode plus a decline option are offered — the only spell " +
+                    "on the stack is your own Bolt, so 'target spell you don't control' has no legal " +
+                    "target and can't be chosen (CR 603.3c)") {
+                    modeDecision.options.size shouldBe 2
                 }
                 val bounceModeIndex = modeDecision.options.indexOfFirst { it.contains("nonland permanent") }
                 withClue("the 'return target nonland permanent' mode is offered") {

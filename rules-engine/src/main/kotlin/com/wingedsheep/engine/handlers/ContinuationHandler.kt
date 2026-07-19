@@ -48,6 +48,7 @@ class ContinuationHandler(
         registerModule(ModalAndCloneContinuationResumer(services))
         registerModule(RoomDoorContinuationResumer(services))
         registerModule(CastModalContinuationResumer(services))
+        registerModule(ModalTriggerContinuationResumer(services))
         registerModule(TokenContinuationResumer(services))
         registerModule(RingTemptContinuationResumer(services))
         registerModule(AmassContinuationResumer(services))

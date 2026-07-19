@@ -206,7 +206,7 @@ class WardCounterEffectExecutor(
 
             // Can't possibly pay → counter immediately.
             if (validPermanents.size < count) {
-                return counterSpellOrAbility(state, cardRegistry, spellEntityId, container)
+                return counterSpellOrAbility(state, cardRegistry, spellEntityId)
             }
 
             val fodderLabel = filter.description
@@ -277,7 +277,7 @@ class WardCounterEffectExecutor(
                 }
             }
             if (eligibleCount < count) {
-                return counterSpellOrAbility(state, cardRegistry, spellEntityId, container)
+                return counterSpellOrAbility(state, cardRegistry, spellEntityId)
             }
 
             val cardsLabel = if (filter != null) {
@@ -360,7 +360,7 @@ class WardCounterEffectExecutor(
                 manaSolver.canPay(state, payingPlayerId, manaCost)
             }
             if (!affordable) {
-                return counterSpellOrAbility(state, cardRegistry, spellEntityId, container)
+                return counterSpellOrAbility(state, cardRegistry, spellEntityId)
             }
 
             val sources = manaSolver.findAvailableManaSources(state, payingPlayerId)
@@ -448,7 +448,7 @@ class WardCounterEffectExecutor(
             val currentLife = state.lifeTotal(payingPlayerId) // CR 810.9a — team's shared total
             if (currentLife < lifeCost) {
                 // Can't pay — counter immediately.
-                return counterSpellOrAbility(state, cardRegistry, spellEntityId, container)
+                return counterSpellOrAbility(state, cardRegistry, spellEntityId)
             }
 
             val decisionId = java.util.UUID.randomUUID().toString()
@@ -508,15 +508,9 @@ class WardCounterEffectExecutor(
         private fun counterSpellOrAbility(
             state: GameState,
             cardRegistry: CardRegistry,
-            entityId: EntityId,
-            container: ComponentContainer
-        ): EffectResult {
-            val resolver = StackResolver(cardRegistry = cardRegistry)
-            return EffectResult.from(if (container.has<SpellOnStackComponent>()) {
-                resolver.counterSpell(state, entityId)
-            } else {
-                resolver.counterAbility(state, entityId)
-            })
-        }
+            entityId: EntityId
+        ): EffectResult = EffectResult.from(
+            StackResolver(cardRegistry = cardRegistry).counterSpellOrAbility(state, entityId)
+        )
     }
 }

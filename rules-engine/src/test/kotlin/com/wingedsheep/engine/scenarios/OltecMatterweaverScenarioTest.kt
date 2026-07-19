@@ -39,8 +39,9 @@ class OltecMatterweaverScenarioTest : ScenarioTestBase() {
             // Resolve it first → mode choice.
             game.resolveStack()
             val modeDecision = game.getPendingDecision() as ChooseOptionDecision
-            withClue("two modes are offered") {
-                modeDecision.options.size shouldBe 2
+            withClue("only the token-making mode is offered — you control no artifact token, so the " +
+                "copy mode has no legal target and can't be chosen (CR 603.3c)") {
+                modeDecision.options.size shouldBe 1
             }
             game.submitDecision(OptionChosenResponse(modeDecision.id, 0))
             game.resolveStack()

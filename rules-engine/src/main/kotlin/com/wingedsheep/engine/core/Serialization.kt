@@ -245,6 +245,8 @@ val engineSerializersModule = SerializersModule {
         subclass(CastWithCreatureTypeContinuation::class)
         subclass(CastModalModeSelectionContinuation::class)
         subclass(CastModalTargetSelectionContinuation::class)
+        subclass(TriggerModalModeSelectionContinuation::class)
+        subclass(TriggerModalTargetSelectionContinuation::class)
         subclass(MoveCollectionAuraTargetContinuation::class)
         subclass(PutOntoBattlefieldAttachedToChosenContinuation::class)
         subclass(ChainCopyAfterActionContinuation::class)

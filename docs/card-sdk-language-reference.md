@@ -6285,6 +6285,22 @@ modal(
 ) { /* modes */ }
 ```
 
+**Modal triggered abilities (CR 603.3c).** A modal *triggered* ability with at least one
+**targeting** mode picks its mode **and** that mode's targets as the ability is put onto the
+stack — same moment a modal spell's caster does — not while it resolves. This is what makes the
+choice observable: the chosen targets only "become targets" once the ability is on the stack, and
+that is what ward (CR 702.21), "whenever this becomes the target of a spell or ability", and
+shroud/hexproof checks all key on. Two consequences for authoring and testing:
+
+- A mode whose mandatory target has no legal choice **isn't offered at all** — e.g. Hullbreaker
+  Horror's "target spell you don't control" is absent when the only spell on the stack is your own.
+  If no mode can be chosen, the ability is removed from the stack (both CR 603.3c).
+- In a scenario test the mode / target decisions surface *before* the ability resolves, so the
+  chosen mode's effect needs a further `resolveStack()`.
+
+Modal triggers whose modes never target keep the simpler resolution-time pick, as do
+`chooseUpToDynamic` (the cap needs the resolving state) and `chooseOneNotYetChosen`.
+
 **"Choose one that hasn't been chosen"** — `ModalEffect.chooseOneNotYetChosen(*modes)` for a
 repeatable modal *ability* whose source remembers which modes it has already chosen across the
 game and never offers them again (Gandalf the Grey). Equivalent raw shape:

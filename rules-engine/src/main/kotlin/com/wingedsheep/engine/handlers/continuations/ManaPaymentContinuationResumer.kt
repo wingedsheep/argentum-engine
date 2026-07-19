@@ -152,7 +152,7 @@ class ManaPaymentContinuationResumer(
                     controllerId = continuation.controllerId ?: continuation.payingPlayerId
                 )
             } else {
-                services.stackResolver.counterSpell(state, continuation.spellEntityId)
+                services.stackResolver.counterSpellOrAbility(state, continuation.spellEntityId)
             }
             return checkForMore(counterResult.newState, counterResult.events)
         }
@@ -195,7 +195,7 @@ class ManaPaymentContinuationResumer(
                         controllerId = continuation.controllerId ?: continuation.payingPlayerId
                     )
                 } else {
-                    services.stackResolver.counterSpell(state, continuation.spellEntityId)
+                    services.stackResolver.counterSpellOrAbility(state, continuation.spellEntityId)
                 }
                 return checkForMore(counterResult.newState, counterResult.events)
             }
@@ -225,7 +225,7 @@ class ManaPaymentContinuationResumer(
                     controllerId = continuation.controllerId ?: continuation.payingPlayerId
                 )
             } else {
-                services.stackResolver.counterSpell(state, continuation.spellEntityId)
+                services.stackResolver.counterSpellOrAbility(state, continuation.spellEntityId)
             }
             return checkForMore(counterResult.newState, counterResult.events)
         }
@@ -260,7 +260,7 @@ class ManaPaymentContinuationResumer(
                     controllerId = continuation.controllerId ?: continuation.payingPlayerId
                 )
             } else {
-                services.stackResolver.counterSpell(state, continuation.spellEntityId)
+                services.stackResolver.counterSpellOrAbility(state, continuation.spellEntityId)
             }
             return checkForMore(counterResult.newState, counterResult.events)
         }
@@ -288,7 +288,7 @@ class ManaPaymentContinuationResumer(
                     controllerId = continuation.controllerId ?: continuation.payingPlayerId
                 )
             } else {
-                services.stackResolver.counterSpell(state, continuation.spellEntityId)
+                services.stackResolver.counterSpellOrAbility(state, continuation.spellEntityId)
             }
             return checkForMore(counterResult.newState, counterResult.events)
         }
@@ -362,7 +362,7 @@ class ManaPaymentContinuationResumer(
                     controllerId = continuation.controllerId ?: continuation.payingPlayerId
                 )
             } else {
-                services.stackResolver.counterSpell(state, continuation.spellEntityId)
+                services.stackResolver.counterSpellOrAbility(state, continuation.spellEntityId)
             }
             return checkForMore(counterResult.newState, counterResult.events)
         }
@@ -415,7 +415,7 @@ class ManaPaymentContinuationResumer(
                     controllerId = continuation.controllerId ?: continuation.payingPlayerId
                 )
             } else {
-                services.stackResolver.counterSpell(state, continuation.spellEntityId)
+                services.stackResolver.counterSpellOrAbility(state, continuation.spellEntityId)
             }
             return checkForMore(counterResult.newState, counterResult.events)
         }
@@ -536,7 +536,7 @@ class ManaPaymentContinuationResumer(
                     controllerId = continuation.controllerId ?: continuation.payingPlayerId
                 )
             } else {
-                services.stackResolver.counterSpell(state, continuation.spellEntityId)
+                services.stackResolver.counterSpellOrAbility(state, continuation.spellEntityId)
             }
             return checkForMore(counterResult.newState, counterResult.events)
         }
@@ -1516,7 +1516,7 @@ class ManaPaymentContinuationResumer(
                     controllerId = continuation.controllerId ?: continuation.payingPlayerId
                 )
             } else {
-                services.stackResolver.counterSpell(currentState, continuation.spellEntityId)
+                services.stackResolver.counterSpellOrAbility(currentState, continuation.spellEntityId)
             }
             return checkForMore(counterResult.newState, events + counterResult.events)
         }

@@ -11,22 +11,26 @@ import com.wingedsheep.sdk.model.EntityId
 /**
  * Converts an entity ID to the appropriate [ChosenTarget] subtype
  * based on the entity's current zone.
+ *
+ * Every card zone is searched, not just the graveyard: a [ChosenTarget.Permanent] fallback for a
+ * card sitting in exile (Blade of the Swarm targeting a warp-exiled card) or in hand is treated as
+ * "not on the battlefield" by resolution-time re-validation and fizzles the whole spell/ability.
  */
+private val CARD_ZONES = listOf(Zone.GRAVEYARD, Zone.EXILE, Zone.HAND, Zone.LIBRARY)
+
 fun entityIdToChosenTarget(state: GameState, entityId: EntityId): ChosenTarget {
     return when {
         entityId in state.turnOrder -> ChosenTarget.Player(entityId)
         entityId in state.getBattlefield() -> ChosenTarget.Permanent(entityId)
         entityId in state.stack -> ChosenTarget.Spell(entityId)
         else -> {
-            val graveyardOwner = state.turnOrder.find { playerId ->
-                val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-                entityId in state.getZone(graveyardZone)
+            for (zone in CARD_ZONES) {
+                val owner = state.turnOrder.find { playerId ->
+                    entityId in state.getZone(ZoneKey(playerId, zone))
+                }
+                if (owner != null) return ChosenTarget.Card(entityId, owner, zone)
             }
-            if (graveyardOwner != null) {
-                ChosenTarget.Card(entityId, graveyardOwner, Zone.GRAVEYARD)
-            } else {
-                ChosenTarget.Permanent(entityId)
-            }
+            ChosenTarget.Permanent(entityId)
         }
     }
 }

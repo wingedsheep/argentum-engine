@@ -2388,6 +2388,22 @@ class StackResolver(
     // =========================================================================
 
     /**
+     * Counter whatever stack object [entityId] is, spell or ability.
+     *
+     * A countered spell goes to its owner's graveyard; a countered ability simply ceases to
+     * exist. "Counter it unless you pay …" effects — ward above all — can end up pointed at
+     * either kind, so they route through here instead of assuming a spell: [counterSpell] on a
+     * triggered ability finds no card/spell component and errors out, leaving the ability on the
+     * stack to resolve as though the cost had been paid.
+     */
+    fun counterSpellOrAbility(state: GameState, entityId: EntityId): ExecutionResult {
+        val container = state.getEntity(entityId)
+            ?: return ExecutionResult.error(state, "Stack object not found: $entityId")
+        return if (container.has<SpellOnStackComponent>()) counterSpell(state, entityId)
+        else counterAbility(state, entityId)
+    }
+
+    /**
      * Counter a spell on the stack.
      */
     fun counterSpell(state: GameState, spellId: EntityId): ExecutionResult {

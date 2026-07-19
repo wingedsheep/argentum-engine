@@ -50,6 +50,10 @@ class FangkeepersFamiliarScenarioTest : ScenarioTestBase() {
                     ?: error("expected a ChooseOptionDecision for the ETB trigger; got ${game.state.pendingDecision}")
                 game.submitDecision(OptionChosenResponse(modeDecision.id, optionIndex = 0))
 
+                // The mode is picked as the trigger goes on the stack (CR 603.3c); the chosen
+                // mode's effect runs when the ability itself resolves.
+                game.resolveStack()
+
                 // Mode 0 = gain 3 life and surveil 3 → a card selection over the top three cards.
                 val surveil = game.getPendingDecision()
                 withClue("Surveil 3 should pause for a library look") {

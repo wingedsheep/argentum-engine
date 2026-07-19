@@ -20,7 +20,9 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
+import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
+import com.wingedsheep.engine.handlers.effects.composite.ModalEffectExecutor
 import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.engine.handlers.effects.composite.asOptionalManaPayment
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
@@ -774,11 +776,322 @@ class TriggerProcessor(
             sagaChapterInfo = trigger.sagaChapterInfo
         )
 
+        val causedByAttack = isAttackCausedTrigger(trigger)
+        val outerRequirements = listOfNotNull(ability.targetRequirement)
+
+        // CR 603.3c — a modal triggered ability's modes and targets are chosen as the ability is
+        // put onto the stack, not while it resolves. Pause here so the choices are locked in
+        // before the ability hits the stack; only then do the chosen targets actually *become*
+        // targets, which is what ward (CR 702.21) and "becomes the target" triggers key on.
+        modalNeedingPutOnStackSelection(abilityComponent.effect)?.let { modal ->
+            return presentTriggerModalModeDecision(
+                state = state,
+                ability = abilityComponent,
+                outerTargets = targets,
+                outerTargetRequirements = outerRequirements,
+                modal = modal,
+                selectedModeIndices = emptyList(),
+                availableIndices = null,
+                causedByAttack = causedByAttack
+            )
+        }
+
         return stackResolver.putTriggeredAbility(
             state, abilityComponent, targets,
-            targetRequirements = listOfNotNull(ability.targetRequirement),
-            causedByAttack = isAttackCausedTrigger(trigger)
+            targetRequirements = outerRequirements,
+            causedByAttack = causedByAttack
         )
+    }
+
+    /**
+     * The top-level [ModalEffect] whose modes must be picked *before* the trigger reaches the
+     * stack, or null when the effect can keep the simpler resolution-time mode picking.
+     *
+     * Only modal effects with at least one *targeting* mode need the earlier pick: those are the
+     * ones where a resolution-time choice would silently skip the "becomes the target" step. Modes
+     * that only affect the controller's own board carry no such observable, so they stay on the
+     * resolution-time path ([com.wingedsheep.engine.handlers.effects.composite.ModalEffectExecutor]).
+     *
+     * Two shapes are deliberately excluded because they need state that only exists at resolution:
+     * a `dynamicChooseCount` (evaluated against the resolving game state) and
+     * `excludePreviouslyChosenModes` (Gandalf the Grey's per-source memory, recorded by the
+     * resolution-time continuation).
+     */
+    private fun modalNeedingPutOnStackSelection(effect: Effect): ModalEffect? {
+        val modal = effect as? ModalEffect ?: return null
+        if (modal.dynamicChooseCount != null) return null
+        if (modal.excludePreviouslyChosenModes) return null
+        if (modal.modes.none { it.targetRequirements.isNotEmpty() }) return null
+        return modal
+    }
+
+    /**
+     * Build the next mode-pick decision for a modal triggered ability going on the stack, or move
+     * straight to per-mode target selection once enough modes are picked.
+     *
+     * CR 603.3c: a mode that would be illegal — no legal targets, say — can't be chosen, so
+     * unselectable modes are filtered out of the offer. When no mode can be chosen and the minimum
+     * hasn't been met, the ability is removed from the stack.
+     */
+    internal fun presentTriggerModalModeDecision(
+        state: GameState,
+        ability: TriggeredAbilityOnStackComponent,
+        outerTargets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>,
+        outerTargetRequirements: List<TargetRequirement>,
+        modal: ModalEffect,
+        selectedModeIndices: List<Int>,
+        availableIndices: List<Int>?,
+        causedByAttack: Boolean
+    ): ExecutionResult {
+        val candidateIndices = availableIndices ?: modal.modes.indices.toList()
+        val offerIndices = candidateIndices.filter { index ->
+            modeHasLegalTargets(state, ability, modal.modes[index])
+        }
+
+        if (offerIndices.isEmpty() && selectedModeIndices.size < modal.minChooseCount) {
+            // No mode can legally be chosen — the ability is removed from the stack (CR 603.3c).
+            return ExecutionResult.success(
+                state,
+                listOf(
+                    AbilityFizzledEvent(
+                        ability.sourceId,
+                        ability.description,
+                        "No legal targets available"
+                    )
+                )
+            )
+        }
+
+        if (offerIndices.isEmpty()) {
+            return presentTriggerModalTargetDecision(
+                state, ability, outerTargets, outerTargetRequirements,
+                modal.modes, selectedModeIndices, emptyList(), currentOrdinal = 0, causedByAttack
+            )
+        }
+
+        val doneOffered = selectedModeIndices.size >= modal.minChooseCount &&
+            selectedModeIndices.size < modal.chooseCount
+        // Same decline label the resolution-time modal path uses, so clients (and tests) can
+        // recognise "choose up to one"'s opt-out wherever the mode question is raised.
+        val optionLabels = offerIndices.map { modal.modes[it].description } +
+            (if (doneOffered) listOf(ModalEffectExecutor.DECLINE_MODE_LABEL) else emptyList())
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val pickNumber = selectedModeIndices.size + 1
+        val alreadyPicked = if (selectedModeIndices.isEmpty()) "" else {
+            "\nAlready picked: ${selectedModeIndices.joinToString("; ") { modal.modes[it].description }}"
+        }
+        val basePrompt = "Choose a mode for ${ability.sourceName}"
+        val prompt = if (modal.chooseCount > 1) {
+            "$basePrompt ($pickNumber of ${modal.chooseCount})$alreadyPicked"
+        } else basePrompt
+
+        val decision = ChooseOptionDecision(
+            id = decisionId,
+            playerId = ability.controllerId,
+            prompt = prompt,
+            context = DecisionContext(
+                sourceId = ability.sourceId,
+                sourceName = ability.sourceName,
+                // The ability isn't on the stack yet, but from the player's seat this is the
+                // trigger going on the stack, not a spell being cast.
+                phase = DecisionPhase.RESOLUTION
+            ),
+            options = optionLabels
+        )
+
+        val continuation = TriggerModalModeSelectionContinuation(
+            decisionId = decisionId,
+            ability = ability,
+            outerTargets = outerTargets,
+            outerTargetRequirements = outerTargetRequirements,
+            modes = modal.modes,
+            chooseCount = modal.chooseCount,
+            minChooseCount = modal.minChooseCount,
+            allowRepeat = modal.allowRepeat,
+            offeredIndices = offerIndices,
+            availableIndices = availableIndices,
+            selectedModeIndices = selectedModeIndices,
+            doneOptionOffered = doneOffered,
+            causedByAttack = causedByAttack
+        )
+
+        return ExecutionResult.paused(
+            state.pushContinuation(continuation).withPendingDecision(decision),
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = ability.controllerId,
+                    decisionType = "CHOOSE_OPTION",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Collect targets for the chosen modes, one decision per targeting mode, then put the ability
+     * on the stack. Modes with no requirements take an empty slot so [resolvedModeTargets] stays
+     * aligned 1:1 with [chosenModeIndices]; a sole legal player target is auto-selected rather than
+     * prompted for, matching the non-modal trigger path.
+     */
+    internal fun presentTriggerModalTargetDecision(
+        state: GameState,
+        ability: TriggeredAbilityOnStackComponent,
+        outerTargets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>,
+        outerTargetRequirements: List<TargetRequirement>,
+        modes: List<com.wingedsheep.sdk.scripting.effects.Mode>,
+        chosenModeIndices: List<Int>,
+        resolvedModeTargets: List<List<com.wingedsheep.engine.state.components.stack.ChosenTarget>>,
+        currentOrdinal: Int,
+        causedByAttack: Boolean
+    ): ExecutionResult {
+        var ordinal = currentOrdinal
+        var targetsAccum = resolvedModeTargets
+
+        while (ordinal < chosenModeIndices.size) {
+            val mode = modes[chosenModeIndices[ordinal]]
+            if (mode.targetRequirements.isEmpty()) {
+                targetsAccum = targetsAccum + listOf(emptyList())
+                ordinal++
+                continue
+            }
+
+            val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
+            val requirementInfos = mode.targetRequirements.mapIndexed { index, req ->
+                legalTargetsMap[index] = findModeLegalTargets(state, ability, req)
+                TargetRequirementInfo(
+                    index = index,
+                    description = req.description,
+                    minTargets = req.effectiveMinCount,
+                    maxTargets = req.count
+                )
+            }
+
+            // Auto-select the lone legal player target instead of prompting (mirrors
+            // processTargetedTrigger's single-player-target shortcut).
+            val soleReq = mode.targetRequirements.singleOrNull()
+            val soleLegal = legalTargetsMap[0].orEmpty()
+            val isPlayerTarget = soleReq is com.wingedsheep.sdk.scripting.targets.TargetPlayer ||
+                soleReq is com.wingedsheep.sdk.scripting.targets.TargetOpponent
+            if (isPlayerTarget && soleLegal.size == 1 && soleReq!!.count == 1) {
+                targetsAccum = targetsAccum + listOf(listOf(createChosenTarget(state, soleLegal.first())))
+                ordinal++
+                continue
+            }
+
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val pickNumber = ordinal + 1
+            val prompt = if (chosenModeIndices.size > 1) {
+                "Choose targets for ${ability.sourceName} — ${mode.description} ($pickNumber of ${chosenModeIndices.size})"
+            } else {
+                "Choose targets for ${ability.sourceName} — ${mode.description}"
+            }
+            val decision = ChooseTargetsDecision(
+                id = decisionId,
+                playerId = ability.controllerId,
+                prompt = prompt,
+                context = DecisionContext(
+                    sourceId = ability.sourceId,
+                    sourceName = ability.sourceName,
+                    phase = DecisionPhase.RESOLUTION,
+                    effectHint = mode.description
+                ),
+                targetRequirements = requirementInfos,
+                legalTargets = legalTargetsMap
+            )
+
+            val continuation = TriggerModalTargetSelectionContinuation(
+                decisionId = decisionId,
+                ability = ability,
+                outerTargets = outerTargets,
+                outerTargetRequirements = outerTargetRequirements,
+                modes = modes,
+                chosenModeIndices = chosenModeIndices,
+                resolvedModeTargets = targetsAccum,
+                currentOrdinal = ordinal,
+                causedByAttack = causedByAttack
+            )
+
+            return ExecutionResult.paused(
+                state.pushContinuation(continuation).withPendingDecision(decision),
+                decision,
+                listOf(
+                    DecisionRequestedEvent(
+                        decisionId = decisionId,
+                        playerId = ability.controllerId,
+                        decisionType = "CHOOSE_TARGETS",
+                        prompt = decision.prompt
+                    )
+                )
+            )
+        }
+
+        return finalizeModalTrigger(
+            state, ability, outerTargets, outerTargetRequirements,
+            modes, chosenModeIndices, targetsAccum, causedByAttack
+        )
+    }
+
+    /**
+     * Put the modal trigger on the stack with its modes and per-mode targets baked in.
+     *
+     * The per-mode targets join the flat `targets` list so [StackResolver.putTriggeredAbility]
+     * emits a `BecomesTargetEvent` for each — the whole point of choosing them here — and so
+     * CR 608.2b re-validation runs against them on resolution.
+     */
+    private fun finalizeModalTrigger(
+        state: GameState,
+        ability: TriggeredAbilityOnStackComponent,
+        outerTargets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>,
+        outerTargetRequirements: List<TargetRequirement>,
+        modes: List<com.wingedsheep.sdk.scripting.effects.Mode>,
+        chosenModeIndices: List<Int>,
+        resolvedModeTargets: List<List<com.wingedsheep.engine.state.components.stack.ChosenTarget>>,
+        causedByAttack: Boolean
+    ): ExecutionResult {
+        val component = ability.copy(
+            chosenModes = chosenModeIndices,
+            modeTargetsOrdered = resolvedModeTargets,
+            modeTargetRequirements = chosenModeIndices.associateWith { modes[it].targetRequirements }
+        )
+        val flatTargets = outerTargets + resolvedModeTargets.flatten()
+        val flatRequirements = outerTargetRequirements +
+            chosenModeIndices.flatMap { modes[it].targetRequirements }
+
+        return stackResolver.putTriggeredAbility(
+            state, component, flatTargets,
+            targetRequirements = flatRequirements,
+            causedByAttack = causedByAttack
+        )
+    }
+
+    /** Legal targets for one of a mode's requirements, in the trigger's own targeting context. */
+    private fun findModeLegalTargets(
+        state: GameState,
+        ability: TriggeredAbilityOnStackComponent,
+        requirement: TargetRequirement
+    ): List<EntityId> = targetFinder.findLegalTargets(
+        state = state,
+        requirement = requirement,
+        controllerId = ability.controllerId,
+        sourceId = ability.sourceId,
+        triggeringEntityId = ability.triggeringEntityId,
+        pipelineContext = com.wingedsheep.engine.handlers.PredicateContext(
+            controllerId = ability.controllerId,
+            triggeringEntityId = ability.triggeringEntityId,
+            triggeringPlayerId = ability.triggeringPlayerId,
+        ),
+    )
+
+    /** True when every mandatory target requirement of [mode] has at least one legal target. */
+    private fun modeHasLegalTargets(
+        state: GameState,
+        ability: TriggeredAbilityOnStackComponent,
+        mode: com.wingedsheep.sdk.scripting.effects.Mode
+    ): Boolean = mode.targetRequirements.all { req ->
+        req.effectiveMinCount == 0 || findModeLegalTargets(state, ability, req).isNotEmpty()
     }
 
     /**
