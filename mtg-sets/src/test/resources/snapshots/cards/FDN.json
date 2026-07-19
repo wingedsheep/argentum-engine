@@ -4402,6 +4402,72 @@
     ]
 }
 
+// Koma, World-Eater
+{
+    "name": "Koma, World-Eater",
+    "manaCost": "{3}{G}{G}{U}{U}",
+    "typeLine": "Legendary Creature — Serpent",
+    "oracleText": "This spell can't be countered.\nTrample, ward {4}\nWhenever Koma deals combat damage to a player, create four 3/3 blue Serpent creature tokens named Koma's Coil.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 12
+    },
+    "keywords": [
+        "TRAMPLE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{4}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "power": 3,
+                    "toughness": 3,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Serpent"
+                    ],
+                    "name": "Koma's Coil",
+                    "imageUri": "https://cards.scryfall.io/normal/front/c/e/cef25434-cd23-4dcf-b77e-36e648a8de23.jpg?1783908590"
+                }
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Mark Zug",
+        "flavorText": "The gods imprisoned Koma, fearing he would eventually devour the Cosmos itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3b92caa-3401-4b11-9515-152f3e057c05.jpg?1783909091"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Kykar, Zephyr Awakener
 {
     "name": "Kykar, Zephyr Awakener",

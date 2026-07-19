@@ -1,0 +1,57 @@
+// Hidetsugu's Second Rite
+{
+    "name": "Hidetsugu's Second Rite",
+    "manaCost": "{3}{R}",
+    "typeLine": "Instant",
+    "oracleText": "If target player has exactly 10 life, Hidetsugu's Second Rite deals 10 damage to that player.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "LifeTotal",
+                        "player": {
+                            "type": "ContextPlayer",
+                            "index": 0
+                        }
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
+                }
+            },
+            "then": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 10
+                },
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "target player"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "target player"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "rarity": "RARE",
+        "artist": "Jeff Miracola",
+        "flavorText": "Hidetsugu never relinquished a grudge. He let it burn within him, gathering ever greater intensity until the final moment of vengeance.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e48eb77-3bd7-444a-9262-799cc706c05a.jpg?1783944146"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
