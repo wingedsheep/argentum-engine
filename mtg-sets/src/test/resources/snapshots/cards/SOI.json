@@ -1233,6 +1233,68 @@
     ]
 }
 
+// Stitched Mangler
+{
+    "name": "Stitched Mangler",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Zombie Horror",
+    "oracleText": "This creature enters tapped.\nWhen this creature enters, tap target creature an opponent controls. That creature doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "creature an opponent controls"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "creature an opponent controls"
+                            },
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "creature an opponent controls"
+                }
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "89",
+        "artist": "Dave Kendall",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c03c643c-8e4c-4dc9-8756-c253fa057729.jpg?1783937785"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Strength of Arms
 {
     "name": "Strength of Arms",
