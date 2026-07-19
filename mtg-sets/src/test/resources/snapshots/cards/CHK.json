@@ -362,6 +362,77 @@
     ]
 }
 
+// Commune with Nature
+{
+    "name": "Commune with Nature",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top five cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in any order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "You may reveal a creature card to put into your hand",
+                    "selectedLabel": "Put in hand",
+                    "remainderLabel": "Put on bottom",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "ControllerChooses"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "artist": "Edward P. Beard, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/e/ce0b706e-017d-4f82-b280-cf9fdf75aef8.jpg?1783944291"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Counsel of the Soratami
 {
     "name": "Counsel of the Soratami",
