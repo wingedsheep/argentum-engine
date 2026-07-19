@@ -1,0 +1,71 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Ojer Kaslem, Deepest Growth",
+      "Ojer Taq, Deepest Foundation",
+      "Ojer Axonil, Deepest Might",
+      "Aclazotz, Deepest Betrayal",
+      "Ojer Pakpatiq, Deepest Epoch",
+      "Lathril, Blade of the Elves",
+      "Shock"
+    ],
+    "battlefield": [
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Forest"}
+    ],
+    "graveyard": [],
+    "library": ["Shock", "Shock", "Forest", "Island", "Forest", "Island", "Forest", "Grizzly Bears", "Forest", "Island", "Forest", "Island", "Forest", "Island", "Mountain"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Forest", "Mountain", "Hero's Downfall", "Hero's Downfall"],
+    "battlefield": [
+      {"name": "Grizzly Bears"},
+      {"name": "Hill Giant"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Swamp", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "AI"
+}
