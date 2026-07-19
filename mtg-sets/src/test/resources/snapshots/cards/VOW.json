@@ -7279,6 +7279,68 @@
     ]
 }
 
+// Undying Malice
+{
+    "name": "Undying Malice",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Until end of turn, target creature gains \"When this creature dies, return it to the battlefield tapped under its owner's control with a +1/+1 counter on it.\"",
+    "script": {
+        "spellEffect": {
+            "type": "GrantTriggeredAbility",
+            "ability": {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "placement": "Tapped",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, return it to the battlefield tapped under its owner's control with a +1/+1 counter on it."
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "134",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Few take kindly to being put in their place, especially if their place is the grave.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8eb38041-043a-4b18-9d9a-f1283684e8f1.jpg?1783924849"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Unhallowed Phalanx
 {
     "name": "Unhallowed Phalanx",

@@ -2,7 +2,7 @@
 
 **Set Size:** 272 booster cards (excluding basic lands and tokens)
 **Release Date:** November 19, 2021
-**Implemented:** 117 / 272
+**Implemented:** 118 / 272
 - [x] Abrade
 - [x] Adamant Will
 - [ ] Aim for the Head
@@ -245,7 +245,7 @@
 - [ ] Twinblade Geist
 - [ ] Ulvenwald Oddity
 - [x] Undead Butler
-- [ ] Undying Malice
+- [x] Undying Malice
 - [x] Unhallowed Phalanx
 - [x] Unholy Officiant
 - [x] Valorous Stance
