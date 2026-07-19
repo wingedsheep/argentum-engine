@@ -2,12 +2,12 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 258 / 286
+**Implemented:** 259 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
 - [x] Abyssal Gorestalker
-- [ ] Aclazotz, Deepest Betrayal
+- [x] Aclazotz, Deepest Betrayal
 - [x] Acolyte of Aclazotz
 - [x] Acrobatic Leap
 - [x] Adaptive Gemguard
