@@ -1,7 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.dsk.cards
 
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.dsl.leyline
+import com.wingedsheep.sdk.dsl.mayBeginGameOnBattlefield
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.EventPattern
@@ -30,7 +30,7 @@ val LeylineOfHope = card("Leyline of Hope") {
         "If you would gain life, you gain that much life plus 1 instead.\n" +
         "As long as you have at least 7 life more than your starting life total, creatures you control get +2/+2."
 
-    leyline()
+    mayBeginGameOnBattlefield()
 
     replacementEffect(
         ModifyLifeGain(

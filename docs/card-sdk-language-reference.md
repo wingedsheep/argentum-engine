@@ -74,11 +74,12 @@ section; do not let SDK additions land without a corresponding doc update.
 - `replacementEffect { ... }` — "instead/if … would" replacement.
 - `keywords(...)` / `keywordAbility(...)` / `keywordAbilities(...)` — add keyword abilities.
 - `spell { ... }` — define the spell payload for instants/sorceries and Adventure / Omen faces.
-- `leyline()` — Leyline mechanic ("If this card is in your opening hand, you may begin the game with it on the
-  battlefield"). Sets `CardScript.mayStartOnBattlefield = true`. After all mulligans and bottoming resolve, the
-  engine walks each player in turn order from the active player and presents a yes/no decision per leyline card
-  in their opening hand; a "yes" routes the card to the battlefield through the standard zone-change pipeline
-  before the first turn begins, a "no" leaves it in hand.
+- `mayBeginGameOnBattlefield()` — the "If this card is in your opening hand, you may begin the game with it on
+  the battlefield" ability (CR 103.6a). Reusable across the Leyline enchantment cycles and non-"Leyline of X"
+  cards alike (e.g. Leyline Axe). Sets `CardScript.mayStartOnBattlefield = true`. After all mulligans and
+  bottoming resolve, the engine walks each player in turn order from the active player and presents a yes/no
+  decision per such card in their opening hand; a "yes" routes the card to the battlefield through the standard
+  zone-change pipeline before the first turn begins, a "no" leaves it in hand.
 
 ---
 
@@ -4569,7 +4570,7 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 ## 11. Keywords
 
 > **Where set-mechanic helpers live.** The `card { … }` keyword helpers below for *set-specific*
-> mechanics — `leyline()`, `flurry { }`, `mobilize(…)`, `firebending(n)`, `sneak(cost)`, `decayed()`,
+> mechanics — `mayBeginGameOnBattlefield()`, `flurry { }`, `mobilize(…)`, `firebending(n)`, `sneak(cost)`, `decayed()`,
 > `vividEtb { }` / `vividCostReduction()`, `convergeEntersWithCounters(counterType?)`,
 > `impending(time, cost)`, `renew(cost) { }`, `enduring()`,
 > `craft(filter, cost)`, `station()`, `jobSelect()` — are `CardBuilder` **extension functions** in
@@ -6726,7 +6727,7 @@ substitution.
 - `charge`, `time`, `level`, `quest`, `shield`, `fade`, `vanishing`, `experience`, `age`, `velocity`, `awakening`,
   `blood`, `cage`, `doom`, `storage`, `divinity`, `charm`, `music`, `crumble`, `corpse`, `germ`, `ink`, `growth`,
   `hour`, `energy`, `scry`, `aura`, `chapter`, `citation`, `rune`, `scar`, `crux`, `omen`, `secret`, `feather`,
-  `hourglass`, `hope`, `verse`, `influence`, `burden`, `loot` — assorted printed counter kinds. (`hourglass`: Temporal Distortion
+  `hourglass`, `hope`, `verse`, `influence`, `burden`, `loot`, `soul` — assorted printed counter kinds. (`hourglass`: Temporal Distortion
   — a permanent with one doesn't untap during its controller's untap step; model the restriction with
   `GrantKeyword(AbilityFlag.DOESNT_UNTAP.name, GroupFilter(... .withCounter(Counters.HOURGLASS)))` so it stays
   projection-scoped.) (`hope` / `verse` / `influence` / `burden`: LTR — Dawn of a New Age / Lost Isle Calling /
@@ -6743,6 +6744,10 @@ substitution.
   `rev` (`Counters.REV`): DSK — Chainsaw, whose "whenever one or more creatures die" batched trigger accumulates one
   per death batch and whose `+X/+0` static reads the count via `DynamicAmounts.countersOnSelf(...)` applied to the
   equipped creature — another pure passive counter with no inherent rule.
+  `soul` (`Counters.SOUL`): FDN — Ravenous Amulet, whose `{1},{T}, sacrifice a creature: draw` ability accumulates
+  one per activation and whose `{4},{T}, sacrifice this: each opponent loses life` ability reads the count via
+  `DynamicAmounts.countersOnSelf(CounterTypeFilter.Named(Counters.SOUL))` — another pure passive counter with no
+  inherent rule.
   `possession` (`Counters.POSSESSION`): DSK — Unwilling Vessel, whose Eerie triggers (an enchantment you control
   entering / fully unlocking a Room) each accumulate one and whose dies trigger reads the total counter count via
   `DynamicAmount.ContextProperty(ContextPropertyKey.LAST_KNOWN_TOTAL_COUNTER_COUNT)` to size the X/X Spirit token it

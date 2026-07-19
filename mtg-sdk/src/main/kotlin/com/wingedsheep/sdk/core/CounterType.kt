@@ -59,6 +59,7 @@ enum class CounterType {
     NEST,
     PAGE,
     REV,
+    SOUL,
     DOOM,
     POSSESSION,
     FIRE,
@@ -205,6 +206,14 @@ object Counters {
      * the count to scale the equipped creature's power bonus (+X/+0). No inherent rule.
      */
     const val REV = "rev"
+
+    /**
+     * Soul counter (FDN — Ravenous Amulet). Passive storage counter with no inherent rule; the
+     * card's own abilities accumulate it (a "sacrifice a creature: draw a card" activation adds
+     * one) and its sacrifice ability reads the count to size the life each opponent loses. No
+     * inherent rule.
+     */
+    const val SOUL = "soul"
 
     /**
      * Doom counter (ATQ — Armageddon Clock). Passive counter accumulated one-per-upkeep; the card

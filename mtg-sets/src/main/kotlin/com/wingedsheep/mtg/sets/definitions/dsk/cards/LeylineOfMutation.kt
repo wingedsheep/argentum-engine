@@ -1,7 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.dsk.cards
 
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.dsl.leyline
+import com.wingedsheep.sdk.dsl.mayBeginGameOnBattlefield
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantAlternativeCastingCost
 
@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.scripting.GrantAlternativeCastingCost
  * You may pay {W}{U}{B}{R}{G} rather than pay the mana cost for spells you cast.
  *
  * The alternative cost is the Jodah, Archmage Eternal ability — [GrantAlternativeCastingCost]
- * with the five-color cost. `leyline()` adds the "begin the game on the battlefield" opening-hand
+ * with the five-color cost. `mayBeginGameOnBattlefield()` adds the "begin the game on the battlefield" opening-hand
  * marker (CR 103.6). The card is mono-green by its own mana cost but has a five-color identity
  * because of the {W}{U}{B}{R}{G} cost it references.
  */
@@ -24,7 +24,7 @@ val LeylineOfMutation = card("Leyline of Mutation") {
     oracleText = "If this card is in your opening hand, you may begin the game with it on the battlefield.\n" +
         "You may pay {W}{U}{B}{R}{G} rather than pay the mana cost for spells you cast."
 
-    leyline()
+    mayBeginGameOnBattlefield()
 
     staticAbility {
         ability = GrantAlternativeCastingCost(cost = "{W}{U}{B}{R}{G}")

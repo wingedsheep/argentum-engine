@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
-import com.wingedsheep.sdk.dsl.leyline
 
 // Type alias for clarity - replacement effects are in the scripting package
 
@@ -327,7 +326,7 @@ data class CardScript(
      * card onto the battlefield under its owner's control through the standard zone-change
      * pipeline before the first turn begins; a "no" leaves it in hand.
      *
-     * Wired via the `leyline()` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+     * Wired via the `mayBeginGameOnBattlefield()` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
      */
     val mayStartOnBattlefield: Boolean = false,
 

@@ -4,7 +4,7 @@ import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.dsl.leyline
+import com.wingedsheep.sdk.dsl.mayBeginGameOnBattlefield
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
@@ -24,7 +24,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * [Conditions.TriggeringSpellHasSingleTarget] requires the spell have exactly one target — together
  * that is "the spell's one and only target is a creature you control." The payoff is the standard
  * [Effects.CopyTargetSpell] of the triggering spell ([EffectTarget.TriggeringEntity]), which already
- * offers "you may choose new targets for the copy." `leyline()` adds the opening-hand marker
+ * offers "you may choose new targets for the copy." `mayBeginGameOnBattlefield()` adds the opening-hand marker
  * (CR 103.6).
  */
 val LeylineOfResonance = card("Leyline of Resonance") {
@@ -35,7 +35,7 @@ val LeylineOfResonance = card("Leyline of Resonance") {
         "Whenever you cast an instant or sorcery spell that targets only a single creature you control, " +
         "copy that spell. You may choose new targets for the copy."
 
-    leyline()
+    mayBeginGameOnBattlefield()
 
     triggeredAbility {
         trigger = Triggers.youCastSpell(

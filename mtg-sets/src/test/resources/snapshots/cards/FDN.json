@@ -4501,6 +4501,71 @@
     ]
 }
 
+// Leyline Axe
+{
+    "name": "Leyline Axe",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "If this card is in your opening hand, you may begin the game with it on the battlefield.\nEquipped creature gets +1/+1 and has double strike and trample.\nEquip {3}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOUBLE_STRIKE"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            }
+        ],
+        "mayStartOnBattlefield": true
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "RARE",
+        "artist": "Edgar Sánchez Hidalgo",
+        "flavorText": "It awaits a worthy wielder.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9c03336-a321-4c06-94d1-809f328fabd8.jpg?1783909089"
+    },
+    "colorIdentityOverride": []
+}
+
 // Luminous Rebuke
 {
     "name": "Luminous Rebuke",
@@ -4549,6 +4614,42 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Lunar Insight
+{
+    "name": "Lunar Insight",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw a card for each different mana value among nonland permanents you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "nonland permanent",
+                "aggregation": "DISTINCT_VALUES",
+                "property": "MANA_VALUE"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"The night sky is generous with its secrets. We need only learn its language.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9a159f6-fecf-4bdd-b2f8-a9665a5cc32d.jpg?1783909117",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "If a permanent you control has {X} in its mana cost, X is 0 for the purpose of determining its mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5268,6 +5369,99 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Ravenous Amulet
+{
+    "name": "Ravenous Amulet",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{1}, {T}, Sacrifice a creature: Draw a card and put a soul counter on this artifact. Activate only as a sorcery.\n{4}, {T}, Sacrifice this artifact: Each opponent loses life equal to the number of soul counters on this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "soul",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed"
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "LastKnownSourceCounters",
+                        "counterType": {
+                            "type": "Named",
+                            "name": "soul"
+                        }
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "UNCOMMON",
+        "artist": "Igor Krstic",
+        "flavorText": "Each of its owners' final moments is remembered within the roiling stone.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80cadee5-6f26-4440-ad31-a8e573a90436.jpg?1783909089"
+    },
+    "colorIdentityOverride": []
 }
 
 // Refute

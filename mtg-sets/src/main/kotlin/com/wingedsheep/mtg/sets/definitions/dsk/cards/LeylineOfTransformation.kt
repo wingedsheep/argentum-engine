@@ -1,7 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.dsk.cards
 
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.dsl.leyline
+import com.wingedsheep.sdk.dsl.mayBeginGameOnBattlefield
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * true for creature spells you control and creature cards you own that aren't on the
  * battlefield.
  *
- * `leyline()` adds the "begin the game on the battlefield" opening-hand marker (CR 103.6).
+ * `mayBeginGameOnBattlefield()` adds the "begin the game on the battlefield" opening-hand marker (CR 103.6).
  * [EntersWithChoice] locks in the chosen creature type (CR 614 as-it-enters choice), and
  * [GrantChosenSubtype] is the type-changing static ability that adds that chosen type to:
  *  - creatures you control (battlefield) — Layer 4 projection via the `filter`;
@@ -39,7 +39,7 @@ val LeylineOfTransformation = card("Leyline of Transformation") {
         "As this enchantment enters, choose a creature type.\n" +
         "Creatures you control are the chosen type in addition to their other types. The same is true for creature spells you control and creature cards you own that aren't on the battlefield."
 
-    leyline()
+    mayBeginGameOnBattlefield()
 
     replacementEffect(EntersWithChoice(ChoiceType.CREATURE_TYPE))
 

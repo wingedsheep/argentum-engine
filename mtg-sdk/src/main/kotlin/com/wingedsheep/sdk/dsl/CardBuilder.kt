@@ -318,7 +318,7 @@ class CardBuilder(private val name: String) {
      */
     var mayStartOnBattlefield: Boolean = false
 
-    // The `leyline()` helper now lives in `dsl/mechanics/LeylineDsl.kt`; it sets this flag.
+    // The `mayBeginGameOnBattlefield()` helper lives in `dsl/mechanics/BeginGameOnBattlefieldDsl.kt`; it sets this flag.
 
     // =========================================================================
     // Internal State
