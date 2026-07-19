@@ -98,12 +98,20 @@ data object ReturnSelfFromExileTransformedEffect : Effect {
  * put a card that isn't a double-faced card onto the battlefield transformed, it will not enter
  * at all"), the executor no-ops when the source is not a double-faced card, and it also no-ops
  * if the source has already left [fromZone] by the time the ability resolves.
+ *
+ * [tapped] returns the back-face permanent tapped — the templating used by the LCI "god cycle"
+ * dies-triggers ("When Ojer X dies, return it to the battlefield **tapped** and transformed").
+ * Because the graveyard→battlefield move preserves the entity id, a card that enters with
+ * counters ("...with three time counters on it", Ojer Pakpatiq) composes this effect with a
+ * following `AddCounters(..., EffectTarget.Self)` — no dedicated counter parameter is needed.
  */
 @SerialName("ReturnSelfFromZoneTransformed")
 @Serializable
 data class ReturnSelfFromZoneTransformedEffect(
     val fromZone: Zone = Zone.GRAVEYARD,
+    val tapped: Boolean = false,
 ) : Effect {
     override val description: String =
-        "Return this card from your ${fromZone.displayName.lowercase()} to the battlefield transformed"
+        "Return this card from your ${fromZone.displayName.lowercase()} to the battlefield transformed" +
+            if (tapped) " tapped" else ""
 }

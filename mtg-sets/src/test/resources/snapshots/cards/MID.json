@@ -1339,6 +1339,79 @@
     ]
 }
 
+// Neonate's Rush
+{
+    "name": "Neonate's Rush",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {1} less to cast if you control a Vampire.\nNeonate's Rush deals 1 damage to target creature and 1 damage to its controller. Draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "TargetController"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "FixedIfControlFilter",
+                        "amount": 1,
+                        "filter": "creature Vampire"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "artist": "Justine Cruz",
+        "flavorText": "\"We spend our entire existence pursuing the joy of our first night's feast.\"\n—Anje Falkenrath",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/dee17e12-e08f-4449-9f49-05f20e0d1670.jpg?1783925594"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Overgrown Farmland
 {
     "name": "Overgrown Farmland",

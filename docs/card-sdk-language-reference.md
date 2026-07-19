@@ -604,14 +604,20 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   (the opposite face — front→back), `FRONT` ("return it front face up" — the eikon Saga's final chapter flips
   back to the legend), or `BACK`. The front face's activated ability is sorcery-speed
   (`timing = TimingRule.SorcerySpeed`); Jecht uses it from a "may" combat-damage trigger instead.
-- `ReturnSelfFromGraveyardTransformed()` — "Return this card from your graveyard to the battlefield
-  transformed" (Garland, Knight of Cornelia). Returns the *source card* from the graveyard to the
-  battlefield with its back face up; pair with `activateFromZone = Zone.GRAVEYARD` on the owning
-  activated ability. No transform triggers fire (the card was never turned over on the battlefield);
-  the back face's ETB triggers fire normally. No-ops if the source left the graveyard before
-  resolution, or if it isn't a double-faced card (a single-faced card instructed to enter transformed
-  doesn't move at all). Raw type `ReturnSelfFromZoneTransformedEffect(fromZone)` generalizes to other
-  source zones.
+- `ReturnSelfFromGraveyardTransformed(tapped = false)` — "Return this card from your graveyard to the
+  battlefield transformed" (Garland, Knight of Cornelia). Returns the *source card* from the graveyard
+  to the battlefield with its back face up; pair with `activateFromZone = Zone.GRAVEYARD` on the owning
+  activated ability, **or wire it to `Triggers.Dies`** for the "when this dies, return it transformed"
+  templating (LCI god cycle — Ojer Axonil/Kaslem/Pakpatiq/Taq // Temples, Aclazotz). No transform
+  triggers fire (the card was never turned over on the battlefield); the back face's ETB triggers fire
+  normally. No-ops if the source left the graveyard before resolution, or if it isn't a double-faced
+  card (a single-faced card instructed to enter transformed doesn't move at all). Pass `tapped = true`
+  to return the back-face permanent **tapped** ("...return it to the battlefield tapped and
+  transformed"). Because the graveyard→battlefield move preserves the entity id, "...with N counters
+  on it" (Ojer Pakpatiq's three time counters) composes as `Composite(ReturnSelfFromGraveyardTransformed(
+  tapped = true), AddCounters(counter, n, EffectTarget.Self))` — the following `Self` still resolves to
+  the returned permanent. Raw type `ReturnSelfFromZoneTransformedEffect(fromZone, tapped)` generalizes
+  to other source zones.
 - `ReturnCreaturesPutInGraveyardThisTurn(player)` — Patriarch's Bidding shape.
 - `ReturnSameNamedFromGraveyard(target = ContextTarget(0))` — return the target graveyard card and
   **every other card with the same name** in the controller's graveyard to the battlefield **tapped**
@@ -2236,6 +2242,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `Filters.PlainsCard` / `IslandCard` / `SwampCard` / `MountainCard` / `ForestCard` — specific basics.
 - `Filters.Instant` — instant card.
 - `Filters.Sorcery` — sorcery card.
+- `Filters.HasAdventure` — card that has an Adventure (adventurer card), regardless of which face it
+  currently shows (`CardPredicate.HasAdventure`, backed by `CardComponent.hasAdventure`). A static,
+  whole-card characteristic evaluated the same way in every zone.
+- `Filters.InstantSorceryOrAdventure` (= `GameObjectFilter.InstantSorceryOrAdventure`) — instant,
+  sorcery, or a card that has an Adventure. Backs Frantic Firebolt's "cards in your graveyard that
+  are instant cards, sorcery cards, and/or have an Adventure" tally (a single membership test, so a
+  card that satisfies more than one clause is counted once).
 - `Filters.Permanent` — permanent card.
 - `Filters.NonlandPermanent` — nonland permanent.
 - `Filters.WithSubtype(subtype)` — card of a given subtype.
@@ -3781,6 +3794,19 @@ staticAbility {
   "Enchanted creature ... is a Citizen with base power and toughness 1/1 and '{T}: Add {C}' named Humble Merchant."
 - `ConditionalStaticAbility` — static gated by a runtime `Condition`. A conditional wrapping a *multi-effect* ability
   (e.g. `TransformPermanent`) lowers through the plural converter and gates every resulting effect on the condition.
+- `CompositeStaticAbility(abilities)` — bundles several component static abilities into **one** printed static ability
+  whose single continuous effect spans multiple Rule 613 layers (CR 613.6). Use it when one printed ability grants a
+  *combination* of type/subtype/color/keyword/P/T changes to the same objects — e.g. Bello, Bard of the Brambles: "each
+  ... permanent ... is a 4/4 Elemental creature in addition to its other types and has indestructible [and] haste."
+  Authoring those as separate `staticAbility { }` blocks is wrong per CR 613.6: each block becomes an *independent*
+  effect that re-resolves its own affected set per layer (so the set can drift between layers) and drops its later-layer
+  parts if the source loses the ability in Layer 6. Bundling them tags the parts as one group so the engine locks the
+  affected-object set once (when the effect first starts to apply) and keeps applying every layer to that same set, even
+  if the ability is removed mid-sequence. The engine assigns every multi-effect ability (this, `AnimateLandGroup`,
+  `TransformPermanent`, Blood Moon's type+ability pair, ...) a shared `ContinuousEffectData.groupId` automatically; see
+  `StateProjector`'s group locking. Only layer-projected grants belong inside — abilities routed to other subsystems
+  (e.g. `GrantTriggeredAbility`, read by `TriggerDetector`) stay in their own top-level block. Gate the whole bundle by
+  wrapping it in a `ConditionalStaticAbility` (or setting `condition` on the `staticAbility { }` block).
 - `CantBeTurnedFaceUp(filter)` — matching permanents can't be turned face up (Layer 6; projects a
   `cantBeTurnedFaceUp` flag read by the turn-face-up handler/enumerator). Only meaningful while the
   permanent is face down (a face-up permanent can't be "turned face up"), so it's applied
@@ -4579,6 +4605,19 @@ copy of it (CR 707.10e). The activated-ability analogue of the spell-level `cant
 > uses one needs the matching import (e.g. `import com.wingedsheep.sdk.dsl.station`). Evergreen /
 > multi-set parameterized keywords (`prowess()`, `rampage(n)`, `keywordAbility(…)`) remain on the core
 > builder. New set mechanics get an extension file in `dsl/mechanics/`.
+
+> **Rebound** (`Keyword.REBOUND`, CR 702.88). "If this spell was cast from your hand, instead of
+> putting it into your graveyard as it resolves, exile it and, at the beginning of your next upkeep,
+> you may cast this card from exile without paying its mana cost." Modeled entirely in the
+> spell-resolution path (`StackResolver.resolveNonPermanentSpell`): a spell whose card def carries the
+> printed keyword **or** that was granted rebound via `GrantKeywordToSpellEffect(Keyword.REBOUND, …)`
+> (stored on `SpellGrantedKeywordsComponent`) and was cast from hand exiles on resolution and schedules
+> a one-shot step-based `DelayedTriggeredAbility` (`fireAtStep = UPKEEP`, `fireOnPlayerId = caster`,
+> `notBeforeTurn = turn + 1`) whose effect is `MayEffect(GatherCards(Self) → CastFromCollectionWithoutPayingCostEffect)`
+> — the same free-cast-from-exile pipeline suspend uses. Casting from exile is not "from hand", so it
+> doesn't rebound again. **Ojer Pakpatiq, Deepest Epoch** grants it to instants you cast from hand via
+> `Triggers.youCastSpell(GameObjectFilter.Instant, requires = setOf(SpellCastPredicate.CastFromZone(Zone.HAND)))`
+> → `GrantKeywordToSpellEffect(Keyword.REBOUND, EffectTarget.TriggeringEntity)`.
 
 > **Enduring** (Duskmourn Glimmer cycle). `card { enduring() }` wires the full mechanic: "When this
 > permanent dies, if it was a creature, return it to the battlefield under its owner's control. It's an
@@ -5495,6 +5534,10 @@ default to "you" so card authors don't need to pass it explicitly.
   `DynamicAmounts.permanentsSacrificedThisTurn()` amount for "that much" damage (Sawblade Skinripper:
   "At the beginning of your end step, if you sacrificed one or more permanents this turn, this creature
   deals that much damage to any target").
+- `YouDealtRedNoncombatDamageThisTurn(atLeast = 1)` — red sources you controlled dealt at least
+  `atLeast` noncombat damage this turn. `Compare(TurnTracking(Player.You, TurnTracker.RED_NONCOMBAT_DAMAGE_DEALT),
+  GTE, Fixed(atLeast))`, backed by the per-player `RedNoncombatDamageDealtThisTurnComponent`. Gates
+  Temple of Power's transform-back (back of Ojer Axonil, Deepest Might).
 - `GraveyardContains(filter)` — "there is at least one card matching `filter` in your graveyard"
   (`Exists(Player.You, Zone.GRAVEYARD, filter)`). Compose with `Conditions.All`/`Any` for multi-type
   checks, e.g. `All(GraveyardContains(Filters.Instant), GraveyardContains(Filters.Sorcery))` =
@@ -6191,6 +6234,11 @@ this turn").
   counter (which sums every player's sacrifices). Backs `Conditions.YouSacrificedPermanentsThisTurn(atLeast)`
   and `DynamicAmounts.permanentsSacrificedThisTurn(player)` — e.g. Sawblade Skinripper's "if you sacrificed
   one or more permanents this turn, ... deals that much damage".
+- `RED_NONCOMBAT_DAMAGE_DEALT` — total noncombat damage red sources a player controlled dealt this turn
+  (controller-scoped). Backed by the per-player `RedNoncombatDamageDealtThisTurnComponent`, incremented in
+  `DamageUtils.dealDamageToTarget` on the source's controller whenever a red source deals positive noncombat
+  damage, and reset to 0 at end of turn. Backs `Conditions.YouDealtRedNoncombatDamageThisTurn(atLeast)` —
+  Temple of Power's transform gate (back of Ojer Axonil, Deepest Might).
 
 `SubtypeEnteredUnderControlThisTurn(player, subtype, excludeTriggeringEntity?)` /
 `DynamicAmounts.subtypeEnteredUnderControlThisTurn(subtype, player?, excludeTriggeringEntity?)` —
@@ -6449,6 +6497,14 @@ replacementEffect {
   "as long as …, prevent …" statics (Spirit of Resistance: a five-distinct-colors `Compare` gate).
 - `CapDamage(maxAmount, appliesTo)` — clamp matching damage to `maxAmount` (a *replacement* distinct
   from prevent/modify; applied after all amplification). Divine Presence: `CapDamage(3, DamageEvent(recipient = Any))`.
+- `SetMinimumDamage(minAmount = 0, dynamicMinimum?, appliesTo)` — the **floor** mirror of `CapDamage`:
+  raise matching damage *up to* a minimum (larger amounts unchanged; a zero would-be amount is not
+  raised — a source only "deals damage" once it deals a positive amount). `dynamicMinimum` (a
+  `DynamicAmount`, else the flat `minAmount`) is evaluated against the **replacement's source**
+  permanent, like `ModifyDamageAmount.dynamicModifier`. Applied after all amplification/capping. Ojer
+  Axonil, Deepest Might: `SetMinimumDamage(dynamicMinimum = DynamicAmounts.sourcePower(), appliesTo =
+  DamageEvent(recipient = Opponent, source = SourceFilter.Matching(GameObjectFilter.Any.withColor(RED).youControl()),
+  damageType = NonCombat))`.
 - `DoubleDamage(restrictions?, appliesTo)` — double matching damage (Gratuitous Violence, Furnace of
   Rath). `restrictions: List<Condition>` (default empty) gates the doubling on extra conditions
   evaluated against the source's controller — the same pattern as `PreventDamage.restrictions`. The
@@ -6616,6 +6672,17 @@ replacementEffect {
   `Effects.GrantCounterPlacementModifier(...)` (§4 Counters) instead — it records a controller-scoped
   modifier in a turn-scoped game-state store consulted from the same counter-placement chokepoint,
   and expires at end of turn.
+- `MultiplyTokenCreation(factor = 2, appliesTo)` / `ModifyTokenCount(modifier, appliesTo)` —
+  **static** token-count replacements living on a battlefield permanent. `MultiplyTokenCreation`
+  multiplies the number of tokens created by `factor` (Doubling Season / Anointed Procession /
+  Exalted Sunborn — `factor = 2`; **Ojer Taq, Deepest Foundation** — `factor = 3`); several stack
+  multiplicatively. `ModifyTokenCount` shifts the count by a fixed amount. `appliesTo` defaults to
+  `EventPattern.TokenCreationEvent(controller = You)`; the multiplier runs in `CreateTokenExecutor`,
+  the executor for **creature** tokens (it always builds a "… Creature" type line — Treasure/Clue/Map
+  and other predefined tokens go through a separate executor that isn't multiplied), so an
+  unfiltered `MultiplyTokenCreation` scopes to creature tokens in practice. `tokenFilter` on the
+  event is not yet honored by the count path (filtered events are skipped), so express "creature
+  tokens" via the default rather than `tokenFilter = Creature`.
 - `ReplaceTokenCreationWithAttachedCopy(optional, oncePerTurn, attachmentVerb, appliesTo)` —
   "the first time you would create one or more tokens each turn, you may instead create that
   many tokens that are copies of [attached] permanent." Works for both Equipment and Auras —

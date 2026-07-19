@@ -19,8 +19,12 @@ For each set we've catalogued (a `definitions/<code>/` folder with a `*Set.kt`):
     `card-status`, so the numbers match the mtgish coverage TUI
 
 Output: `game-server/src/main/resources/coverage/set-totals.json`, an array of
-  { code, name, releaseDate, setType,
+  { code, name, releaseDate, setType, standardLegal,
     draft: [{ name, img }, ...], extra: [{ name, img }, ...] }
+`standardLegal` is the set's current Standard-format membership, computed with the
+same rule as `card-status` (a core/expansion/draft-innovation set whose canonical
+cards are majority Standard-legal) so the Set Completion view doesn't have to
+re-derive it at runtime from the implemented-card legality mirror.
 draft = booster-relevant cards (Scryfall `booster: true`); extra = completionist
 exclusives (starter decks, bonus sheets, Special Guests). `img` is the set's
 Scryfall card image (direct CDN URL, normal size) so the detail view can render art
@@ -50,6 +54,13 @@ OUTPUT = REPO_ROOT / "game-server/src/main/resources/coverage/set-totals.json"
 CACHE_ROOT = Path.home() / ".cache" / "scryfall"
 CACHE_SCHEMA_VERSION = 6
 REFRESH_WINDOW_DAYS = 30
+
+# Standard-format membership, computed here (not at runtime) because the signal lives only in the
+# Scryfall cache: a set is "in Standard" when it is a core/expansion/draft-innovation set the bulk
+# of whose *canonical* cards are Standard-legal. This mirrors `scripts/card-status` exactly, and —
+# unlike a per-implemented-card derivation — it doesn't drift as a set's implementation fills in.
+STANDARD_SET_TYPES = {"core", "expansion", "draft_innovation"}
+STANDARD_LEGAL_RATIO = 0.5
 
 SET_CODE_RE = re.compile(r'override\s+val\s+code\s*=\s*"([^"]+)"')
 DISPLAY_NAME_RE = re.compile(r'override\s+val\s+displayName\s*=\s*"([^"]+)"')
@@ -92,6 +103,16 @@ def load_cache(code: str) -> dict | None:
         print(f"warning: {code} cache is schema v{payload.get('_v')} (expected v{CACHE_SCHEMA_VERSION})",
               file=sys.stderr)
     return payload
+
+
+def is_standard_legal(payload: dict) -> bool:
+    """Whether the set is currently Standard-legal, by the same rule as scripts/card-status."""
+    if payload.get("set_type") not in STANDARD_SET_TYPES:
+        return False
+    total = len(payload.get("draft_names", [])) + len(payload.get("extra_names", []))
+    if total == 0:
+        return False
+    return payload.get("standard_legal_count", 0) >= total * STANDARD_LEGAL_RATIO
 
 
 def is_stale(payload: dict) -> bool:
@@ -146,6 +167,7 @@ def main() -> int:
             "name": name,
             "releaseDate": payload.get("released_at"),
             "setType": payload.get("set_type"),
+            "standardLegal": is_standard_legal(payload),
             "draft": card_entries(draft),
             "extra": card_entries(extra),
         })

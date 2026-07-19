@@ -104,6 +104,13 @@ enum class TurnTracker {
      */
     PERMANENTS_SACRIFICED,
     /**
+     * Total noncombat damage red sources this player controlled have dealt this turn
+     * (controller-scoped). Backed by `RedNoncombatDamageDealtThisTurnComponent`, reset to 0 for
+     * every player at end of turn. Powers Temple of Power's transform gate ("red sources you
+     * controlled dealt 4 or more noncombat damage this turn", back of Ojer Axonil, Deepest Might).
+     */
+    RED_NONCOMBAT_DAMAGE_DEALT,
+    /**
      * Number of *distinct* elemental bending keyword actions ([com.wingedsheep.sdk.core.BendType]:
      * waterbend, earthbend, firebend, airbend) the player has performed this turn — 0 through 4.
      * Backed by `BendsThisTurnComponent`, reset to empty for every player at the start of each
@@ -135,6 +142,7 @@ enum class TurnTracker {
         CARDS_DRAWN -> "the number of cards ${player.description} have drawn this turn"
         CARDS_PUT_INTO_EXILE -> "the number of cards put into exile this turn"
         PERMANENTS_SACRIFICED -> "the number of permanents ${player.description} sacrificed this turn"
+        RED_NONCOMBAT_DAMAGE_DEALT -> "the noncombat damage red sources ${player.description} controlled dealt this turn"
         DISTINCT_BENDS -> "the number of different ways ${player.description} bent this turn"
     }
 }

@@ -327,12 +327,12 @@ class CardSerializationRoundTripTest : DescribeSpec({
             val card = card("Doubling Season") {
                 manaCost = "{4}{G}"
                 typeLine = "Enchantment"
-                replacementEffect(DoubleTokenCreation())
+                replacementEffect(MultiplyTokenCreation())
                 replacementEffect(DoubleCounterPlacement())
             }
 
             val serialized = CardLoader.toJson(card)
-            serialized shouldContain "DoubleTokenCreation"
+            serialized shouldContain "MultiplyTokenCreation"
             serialized shouldContain "DoubleCounterPlacement"
 
             val deserialized = CardLoader.fromJson(serialized)

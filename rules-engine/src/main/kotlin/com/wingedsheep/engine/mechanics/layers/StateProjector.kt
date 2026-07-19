@@ -154,21 +154,50 @@ class StateProjector(
         // Sort effects by layer and dependency
         val sortedEffects = effectSorter.sortByLayerAndDependency(effects, state)
 
+        // CR 613.6 group locking. A single multi-layer static ability lowers to several effects
+        // that share a groupId (within one source permanent). Such an effect must affect the *same
+        // set of objects* in every layer it applies in, with that set locked in when it first
+        // starts to apply. [lockAffected] records the affected set the first time a group is
+        // resolved (bands run in ascending layer order, so that's the group's earliest layer) and
+        // returns that frozen set for every later layer, ignoring per-layer re-resolution. Keyed by
+        // (sourceId, groupId) so the same groupId on two permanents never merges. A no-op (returns
+        // the freshly-resolved set) for ungrouped single-layer effects.
+        val lockedGroups = HashMap<Pair<EntityId, String>, Set<EntityId>>()
+        fun lockAffected(effect: ContinuousEffect, resolved: Set<EntityId>): Set<EntityId> {
+            val groupId = effect.groupId ?: return resolved
+            return lockedGroups.getOrPut(effect.sourceId to groupId) { resolved }
+        }
+
+        // Earliest layer each group starts to apply. Per CR 613.6, a group that started applying
+        // before Layer 6 keeps applying its later-layer parts "even if the ability generating the
+        // effect is removed during this process" — used below to exempt such groups from the
+        // Layer-7 lose-all-abilities suppression.
+        val groupFirstLayer = HashMap<Pair<EntityId, String>, Layer>()
+        for (effect in sortedEffects) {
+            val groupId = effect.groupId ?: continue
+            val key = effect.sourceId to groupId
+            val existing = groupFirstLayer[key]
+            if (existing == null || effect.layer.ordinal < existing.ordinal) {
+                groupFirstLayer[key] = effect.layer
+            }
+        }
+
         // === Layer 2 (Control) ===
         val controlEffects = sortedEffects.filter { it.layer == Layer.CONTROL }
         for (effect in controlEffects) {
-            effectApplicator.applyEffect(effect, state, projectedValues)
+            effectApplicator.applyEffect(effect.copy(affectedEntities = lockAffected(effect, effect.affectedEntities)), state, projectedValues)
         }
 
         // Re-resolve controller-dependent filters for layers 3-6 now that control is established
         val nonControlNonPTEffects = sortedEffects.filter { it.layer != Layer.CONTROL && it.layer != Layer.POWER_TOUGHNESS }
             .map { effect -> applyControllerGate(effect, projectedValues) }
             .map { effect ->
-                if (effect.affectsFilter != null && filterResolver.isControllerDependentFilter(effect.affectsFilter)) {
-                    effect.copy(affectedEntities = filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
+                val resolved = if (effect.affectsFilter != null && filterResolver.isControllerDependentFilter(effect.affectsFilter)) {
+                    filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues)
                 } else {
-                    effect
+                    effect.affectedEntities
                 }
+                effect.copy(affectedEntities = lockAffected(effect, resolved))
             }
 
         // === Layers 3-4 (Text + Type) ===
@@ -193,14 +222,17 @@ class StateProjector(
             }
         }
 
-        // Re-resolve creature-dependent filters for layers 5-6 now that type changes are applied
+        // Re-resolve creature-dependent filters for layers 5-6 now that type changes are applied.
+        // A grouped effect keeps its locked set (CR 613.6) — [lockAffected] ignores this re-resolve
+        // for any group already frozen at an earlier layer.
         val postTypeEffects = nonControlNonPTEffects.filter { it.layer != Layer.TEXT && it.layer != Layer.TYPE }
             .map { effect ->
-                if (effect.affectsFilter != null && filterResolver.isCreatureDependentFilter(effect.affectsFilter)) {
-                    effect.copy(affectedEntities = filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
+                val resolved = if (effect.affectsFilter != null && filterResolver.isCreatureDependentFilter(effect.affectsFilter)) {
+                    filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues)
                 } else {
-                    effect
+                    effect.affectedEntities
                 }
+                effect.copy(affectedEntities = lockAffected(effect, resolved))
             }
 
         // === Layers 5-6 (Color + Ability) ===
@@ -251,22 +283,33 @@ class StateProjector(
             val effect = applyControllerGate(rawEffect, projectedValues)
             if (effect.layer != Layer.POWER_TOUGHNESS) return@mapNotNull effect
 
+            // CR 613.6: a grouped effect that started applying before Layer 6 keeps applying its
+            // Layer-7 part "even if the ability generating the effect is removed during this
+            // process" (e.g. Bello's 4/4 set survives Bello losing all abilities). Only such
+            // groups are exempt — a standalone P/T static (a lord anthem removed by Humility) has
+            // no earlier-layer part and is still suppressed below.
+            val startedBeforeAbility = effect.groupId?.let { groupId ->
+                (groupFirstLayer[effect.sourceId to groupId]?.ordinal ?: Int.MAX_VALUE) < Layer.ABILITY.ordinal
+            } ?: false
+
             // Suppress effects from sources that lost all abilities (e.g., a lord under Humility),
-            // but NOT from sources that are themselves the source of a RemoveAllAbilities effect.
+            // but NOT from sources that are themselves the source of a RemoveAllAbilities effect,
+            // nor from a multi-layer group that already started applying before Layer 6.
             val sourceProjected = projectedValues[effect.sourceId]
             if (sourceProjected != null && sourceProjected.lostAllAbilities &&
-                effect.sourceId !in removeAllAbilitiesSources) {
+                effect.sourceId !in removeAllAbilitiesSources && !startedBeforeAbility) {
                 return@mapNotNull null
             }
 
-            if (effect.affectsFilter != null &&
+            val resolved = if (effect.affectsFilter != null &&
                 (filterResolver.isSubtypeDependentFilter(effect.affectsFilter) ||
                     filterResolver.isControllerDependentFilter(effect.affectsFilter) ||
                     filterResolver.isCreatureDependentFilter(effect.affectsFilter))) {
-                effect.copy(affectedEntities = filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues))
+                filterResolver.resolveAffectedEntities(state, effect.sourceId, effect.affectsFilter, projectedValues)
             } else {
-                effect
+                effect.affectedEntities
             }
+            effect.copy(affectedEntities = lockAffected(effect, resolved))
         }
 
         // Apply layer 7 continuous effects
@@ -486,7 +529,8 @@ class StateProjector(
                         modification = effect.modification,
                         affectedEntities = filterResolver.resolveAffectedEntities(state, entityId, effectiveFilter, projectedValues),
                         sourceCondition = effect.sourceCondition,
-                        affectsFilter = effectiveFilter
+                        affectsFilter = effectiveFilter,
+                        groupId = effect.groupId
                     )
                 })
             }

@@ -607,6 +607,8 @@ internal class AffectsFilterResolver {
         CardPredicate.IsPlaneswalker -> "PLANESWALKER" in types
         CardPredicate.IsInstant -> "INSTANT" in types
         CardPredicate.IsSorcery -> "SORCERY" in types
+        // Adventure-ness is a static whole-card characteristic, not a projected type.
+        CardPredicate.HasAdventure -> card.hasAdventure
         CardPredicate.IsPermanent -> types.any { it in setOf("CREATURE", "LAND", "ARTIFACT", "ENCHANTMENT", "PLANESWALKER") }
         CardPredicate.IsNonland -> "LAND" !in types
         CardPredicate.IsNoncreature -> "CREATURE" !in types

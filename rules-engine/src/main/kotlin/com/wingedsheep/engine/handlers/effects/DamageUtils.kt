@@ -29,6 +29,8 @@ import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTur
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
+import com.wingedsheep.engine.state.components.player.RedNoncombatDamageDealtThisTurnComponent
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.engine.mechanics.mana.GrantedKeywordResolver
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -359,6 +361,28 @@ object DamageUtils {
         // Read by "damage equal to that creature's toughness" triggers (Taii Wakeen).
         val targetToughnessAtDamage = if (targetWasCreature) projected.getToughness(targetId) else null
         events.add(DamageDealtEvent(sourceId, targetId, effectiveAmount, false, sourceName = sourceName, targetName = targetName, targetIsPlayer = targetIsPlayer, targetWasFaceDown = targetIsFaceDown, targetControllerId = targetControllerId, targetWasCreature = targetWasCreature, excessAmount = creatureExcessDamage, targetToughnessAtDamage = targetToughnessAtDamage))
+
+        // Track noncombat damage dealt by red sources, keyed to the source's controller
+        // (Temple of Power's transform gate — TurnTracker.RED_NONCOMBAT_DAMAGE_DEALT). A red
+        // spell/ability carries no ControllerComponent, so fall back to its caster.
+        if (sourceId != null && !isCombatDamage && effectiveAmount > 0) {
+            // Combine projected colors (battlefield permanents, so a granted-red source counts) with
+            // base card colors (spells on the stack, which have no projection).
+            val sourceColors = projected.getColors(sourceId) +
+                (state.getEntity(sourceId)?.get<CardComponent>()?.colors?.map { it.name } ?: emptyList())
+            val sourceIsRed = Color.RED.name in sourceColors
+            if (sourceIsRed) {
+                val sourceControllerId = projected.getController(sourceId)
+                    ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+                    ?: state.getEntity(sourceId)?.get<SpellOnStackComponent>()?.casterId
+                if (sourceControllerId != null) {
+                    newState = newState.updateEntity(sourceControllerId) { container ->
+                        val prior = container.get<RedNoncombatDamageDealtThisTurnComponent>()?.amount ?: 0
+                        container.with(RedNoncombatDamageDealtThisTurnComponent(prior + effectiveAmount))
+                    }
+                }
+            }
+        }
 
         // Lifelink: if the source has lifelink, its controller gains life equal to the damage dealt
         // (CR 120.3f / 702.15b). The lifelink damage causes a life-gain event, so ModifyLifeGain
@@ -1605,6 +1629,66 @@ object DamageUtils {
                 if (!recipientMatches) continue
 
                 amplifiedAmount = effect.maxAmount
+            }
+        }
+
+        // Minimum-damage replacements (Ojer Axonil, Deepest Might): raise the would-be amount to
+        // a floor. The floor mirror of CapDamage — applied last, only to a positive would-be
+        // amount (a source dealing 0 isn't dealing damage, so it isn't raised).
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
+            val sourceControllerId = replacementHostController(state, entityId) ?: continue
+
+            for (effect in replacementComponent.replacementEffects) {
+                if (effect !is com.wingedsheep.sdk.scripting.SetMinimumDamage) continue
+                if (amplifiedAmount <= 0) continue
+
+                val floor = effect.dynamicMinimum?.let { dyn ->
+                    dynamicAmountEvaluator.evaluate(
+                        state, dyn,
+                        EffectContext(sourceId = entityId, controllerId = sourceControllerId),
+                        projected
+                    )
+                } ?: effect.minAmount
+                if (amplifiedAmount >= floor) continue
+
+                val damageEvent = effect.appliesTo
+                if (damageEvent !is com.wingedsheep.sdk.scripting.EventPattern.DamageEvent) continue
+
+                val damageTypeMatches = when (damageEvent.damageType) {
+                    is DamageType.Any -> true
+                    is DamageType.Combat -> isCombatDamage
+                    is DamageType.NonCombat -> !isCombatDamage
+                }
+                if (!damageTypeMatches) continue
+                if (!damageEvent.amount.matches(amplifiedAmount)) continue
+
+                val sourceMatches = when (val source = damageEvent.source) {
+                    is SourceFilter.Any -> true
+                    is SourceFilter.Matching -> {
+                        if (sourceId == null) false
+                        else {
+                            val context = PredicateContext(controllerId = sourceControllerId, sourceId = entityId, recipientId = targetId)
+                            predicateEvaluator.matches(state, projected, sourceId, source.filter, context)
+                        }
+                    }
+                    else -> false
+                }
+                if (!sourceMatches) continue
+
+                val recipientMatches = when (val recipient = damageEvent.recipient) {
+                    is RecipientFilter.Any -> true
+                    is RecipientFilter.Opponent -> targetId in state.turnOrder && targetId != sourceControllerId
+                    is RecipientFilter.Matching -> {
+                        val context = PredicateContext(controllerId = sourceControllerId, sourceId = entityId)
+                        predicateEvaluator.matches(state, projected, targetId, recipient.filter, context)
+                    }
+                    else -> false
+                }
+                if (!recipientMatches) continue
+
+                amplifiedAmount = floor
             }
         }
 

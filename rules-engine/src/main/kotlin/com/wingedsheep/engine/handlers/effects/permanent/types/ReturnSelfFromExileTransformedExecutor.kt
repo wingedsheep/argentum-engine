@@ -54,7 +54,7 @@ class ReturnSelfFromExileTransformedExecutor(
         // Flip to the back face (CR 702.167a always returns transformed) and move EXILE →
         // BATTLEFIELD under owner's control. The shared helper handles the face swap + zone move
         // (it is also used by the FIN Dominant exile-and-return-transformed effect).
-        val transition = returnDfcFaceFromExile(
+        val transition = returnDfcFace(
             state, cardRegistry, sourceId, DoubleFacedComponent.Face.BACK
         )
         var newState = transition.state

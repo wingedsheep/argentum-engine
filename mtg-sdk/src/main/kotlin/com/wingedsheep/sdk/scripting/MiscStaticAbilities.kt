@@ -46,6 +46,44 @@ data class ConditionalStaticAbility(
 }
 
 /**
+ * A single static ability whose one continuous effect spans multiple Rule 613 layers, expressed
+ * as a bundle of component static abilities that share one identity (CR 613.6).
+ *
+ * Per CR 613.6, when an effect applies in several layers/sublayers, the set of objects it affects
+ * is locked in as it *first* starts to apply and reused in every later applicable layer — and the
+ * effect keeps being applied even if the ability generating it is removed partway through the
+ * layer sequence. Authoring such an effect as separate `staticAbility { }` blocks makes the engine
+ * treat each layer as an independent effect: it re-resolves its own affected set per layer (so the
+ * set can drift between layers) and drops the later-layer parts if the source loses the ability in
+ * Layer 6. Bundling the parts here tags them as one grouped effect, so the engine locks the
+ * affected set once at the first layer and keeps applying every layer to that same set.
+ *
+ * Used for Bello, Bard of the Brambles: "each ... permanent ... is a 4/4 Elemental creature in
+ * addition to its other types and has indestructible [and] haste" — one printed ability touching
+ * Layer 4 (type/subtype), Layer 6 (keywords), and Layer 7b (base P/T).
+ *
+ * The component abilities are the ordinary grant primitives (GrantCardType, GrantSubtype,
+ * SetBasePowerToughnessStatic, GrantKeyword, ...), each carrying the shared filter. Only abilities
+ * projected through the layer system belong here; abilities handled by other subsystems (e.g.
+ * GrantTriggeredAbility, read by TriggerDetector) are not layer effects and stay in their own
+ * top-level block. Wrap the whole bundle in a `ConditionalStaticAbility` (or set a `condition` on
+ * the `staticAbility { }` block) to gate every layer on the same condition.
+ *
+ * @property abilities The component static abilities forming this one multi-layer ability.
+ */
+@SerialName("CompositeStaticAbility")
+@Serializable
+data class CompositeStaticAbility(
+    val abilities: List<StaticAbility>
+) : StaticAbility {
+    override val description: String = abilities.joinToString("; ") { it.description }
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newAbilities = abilities.map { it.applyTextReplacement(replacer) }
+        return if (newAbilities != abilities) copy(abilities = newAbilities) else this
+    }
+}
+
+/**
  * Whenever enchanted land is tapped for mana, its controller adds additional mana.
  * Used for auras like Elvish Guidance: "Whenever enchanted land is tapped for mana,
  * its controller adds an additional {G} for each Elf on the battlefield."

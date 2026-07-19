@@ -296,221 +296,210 @@
             {
                 "type": "ConditionalStaticAbility",
                 "ability": {
-                    "type": "GrantCardType",
-                    "cardType": "CREATURE",
-                    "filter": {
-                        "baseFilter": {
-                            "cardPredicates": [
-                                {
-                                    "type": "Or",
-                                    "predicates": [
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "GrantCardType",
+                            "cardType": "CREATURE",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
                                         {
-                                            "type": "And",
+                                            "type": "Or",
                                             "predicates": [
-                                                "IsArtifact",
                                                 {
-                                                    "type": "NotSubtype",
-                                                    "subtype": "Equipment"
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsArtifact",
+                                                        {
+                                                            "type": "NotSubtype",
+                                                            "subtype": "Equipment"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsEnchantment",
+                                                        {
+                                                            "type": "NotSubtype",
+                                                            "subtype": "Aura"
+                                                        }
+                                                    ]
                                                 }
                                             ]
                                         },
                                         {
-                                            "type": "And",
-                                            "predicates": [
-                                                "IsEnchantment",
-                                                {
-                                                    "type": "NotSubtype",
-                                                    "subtype": "Aura"
-                                                }
-                                            ]
+                                            "type": "ManaValueAtLeast",
+                                            "min": 4
                                         }
-                                    ]
-                                },
-                                {
-                                    "type": "ManaValueAtLeast",
-                                    "min": 4
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
                                 }
-                            ],
-                            "controllerPredicate": "ControlledByYou"
-                        }
-                    }
-                },
-                "condition": "IsYourTurn"
-            },
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "GrantSubtype",
-                    "subtype": "Elemental",
-                    "filter": {
-                        "baseFilter": {
-                            "cardPredicates": [
-                                {
-                                    "type": "Or",
-                                    "predicates": [
+                            }
+                        },
+                        {
+                            "type": "GrantSubtype",
+                            "subtype": "Elemental",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
                                         {
-                                            "type": "And",
+                                            "type": "Or",
                                             "predicates": [
-                                                "IsArtifact",
                                                 {
-                                                    "type": "NotSubtype",
-                                                    "subtype": "Equipment"
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsArtifact",
+                                                        {
+                                                            "type": "NotSubtype",
+                                                            "subtype": "Equipment"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsEnchantment",
+                                                        {
+                                                            "type": "NotSubtype",
+                                                            "subtype": "Aura"
+                                                        }
+                                                    ]
                                                 }
                                             ]
                                         },
                                         {
-                                            "type": "And",
-                                            "predicates": [
-                                                "IsEnchantment",
-                                                {
-                                                    "type": "NotSubtype",
-                                                    "subtype": "Aura"
-                                                }
-                                            ]
+                                            "type": "ManaValueAtLeast",
+                                            "min": 4
                                         }
-                                    ]
-                                },
-                                {
-                                    "type": "ManaValueAtLeast",
-                                    "min": 4
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
                                 }
-                            ],
-                            "controllerPredicate": "ControlledByYou"
-                        }
-                    }
-                },
-                "condition": "IsYourTurn"
-            },
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "SetBasePowerToughnessStatic",
-                    "power": 4,
-                    "toughness": 4,
-                    "filter": {
-                        "baseFilter": {
-                            "cardPredicates": [
-                                {
-                                    "type": "Or",
-                                    "predicates": [
+                            }
+                        },
+                        {
+                            "type": "SetBasePowerToughnessStatic",
+                            "power": 4,
+                            "toughness": 4,
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
                                         {
-                                            "type": "And",
+                                            "type": "Or",
                                             "predicates": [
-                                                "IsArtifact",
                                                 {
-                                                    "type": "NotSubtype",
-                                                    "subtype": "Equipment"
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsArtifact",
+                                                        {
+                                                            "type": "NotSubtype",
+                                                            "subtype": "Equipment"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsEnchantment",
+                                                        {
+                                                            "type": "NotSubtype",
+                                                            "subtype": "Aura"
+                                                        }
+                                                    ]
                                                 }
                                             ]
                                         },
                                         {
-                                            "type": "And",
-                                            "predicates": [
-                                                "IsEnchantment",
-                                                {
-                                                    "type": "NotSubtype",
-                                                    "subtype": "Aura"
-                                                }
-                                            ]
+                                            "type": "ManaValueAtLeast",
+                                            "min": 4
                                         }
-                                    ]
-                                },
-                                {
-                                    "type": "ManaValueAtLeast",
-                                    "min": 4
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
                                 }
-                            ],
-                            "controllerPredicate": "ControlledByYou"
-                        }
-                    }
-                },
-                "condition": "IsYourTurn"
-            },
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "GrantKeyword",
-                    "keyword": "INDESTRUCTIBLE",
-                    "filter": {
-                        "baseFilter": {
-                            "cardPredicates": [
-                                {
-                                    "type": "Or",
-                                    "predicates": [
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "INDESTRUCTIBLE",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
                                         {
-                                            "type": "And",
+                                            "type": "Or",
                                             "predicates": [
-                                                "IsArtifact",
                                                 {
-                                                    "type": "NotSubtype",
-                                                    "subtype": "Equipment"
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsArtifact",
+                                                        {
+                                                            "type": "NotSubtype",
+                                                            "subtype": "Equipment"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsEnchantment",
+                                                        {
+                                                            "type": "NotSubtype",
+                                                            "subtype": "Aura"
+                                                        }
+                                                    ]
                                                 }
                                             ]
                                         },
                                         {
-                                            "type": "And",
-                                            "predicates": [
-                                                "IsEnchantment",
-                                                {
-                                                    "type": "NotSubtype",
-                                                    "subtype": "Aura"
-                                                }
-                                            ]
+                                            "type": "ManaValueAtLeast",
+                                            "min": 4
                                         }
-                                    ]
-                                },
-                                {
-                                    "type": "ManaValueAtLeast",
-                                    "min": 4
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
                                 }
-                            ],
-                            "controllerPredicate": "ControlledByYou"
-                        }
-                    }
-                },
-                "condition": "IsYourTurn"
-            },
-            {
-                "type": "ConditionalStaticAbility",
-                "ability": {
-                    "type": "GrantKeyword",
-                    "keyword": "HASTE",
-                    "filter": {
-                        "baseFilter": {
-                            "cardPredicates": [
-                                {
-                                    "type": "Or",
-                                    "predicates": [
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
                                         {
-                                            "type": "And",
+                                            "type": "Or",
                                             "predicates": [
-                                                "IsArtifact",
                                                 {
-                                                    "type": "NotSubtype",
-                                                    "subtype": "Equipment"
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsArtifact",
+                                                        {
+                                                            "type": "NotSubtype",
+                                                            "subtype": "Equipment"
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "type": "And",
+                                                    "predicates": [
+                                                        "IsEnchantment",
+                                                        {
+                                                            "type": "NotSubtype",
+                                                            "subtype": "Aura"
+                                                        }
+                                                    ]
                                                 }
                                             ]
                                         },
                                         {
-                                            "type": "And",
-                                            "predicates": [
-                                                "IsEnchantment",
-                                                {
-                                                    "type": "NotSubtype",
-                                                    "subtype": "Aura"
-                                                }
-                                            ]
+                                            "type": "ManaValueAtLeast",
+                                            "min": 4
                                         }
-                                    ]
-                                },
-                                {
-                                    "type": "ManaValueAtLeast",
-                                    "min": 4
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
                                 }
-                            ],
-                            "controllerPredicate": "ControlledByYou"
+                            }
                         }
-                    }
+                    ]
                 },
                 "condition": "IsYourTurn"
             },

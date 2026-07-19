@@ -68,6 +68,18 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "sorcery"
     }
 
+    /**
+     * The card has an Adventure ([com.wingedsheep.sdk.model.CardLayout.ADVENTURE]) — i.e. it is an
+     * adventurer card, regardless of which face it currently shows. Matches the whole card in any
+     * zone (Frantic Firebolt counts adventurer cards in your graveyard). Tokens and non-adventure
+     * cards never match.
+     */
+    @SerialName("HasAdventure")
+    @Serializable
+    data object HasAdventure : CardPredicate {
+        override val description: String = "has an Adventure"
+    }
+
     @SerialName("IsBasicLand")
     @Serializable
     data object IsBasicLand : CardPredicate {

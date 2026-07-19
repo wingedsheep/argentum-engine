@@ -518,6 +518,7 @@ val engineSerializersModule = SerializersModule {
         subclass(PlayerDescendedThisTurnComponent::class)
         subclass(FlippedCoinsThisTurnComponent::class)
         subclass(PermanentsSacrificedThisTurnComponent::class)
+        subclass(RedNoncombatDamageDealtThisTurnComponent::class)
         subclass(PermanentEnteredFaceDownThisTurnComponent::class)
         subclass(TurnedPermanentFaceUpThisTurnComponent::class)
         subclass(PlayerCitysBlessingComponent::class)

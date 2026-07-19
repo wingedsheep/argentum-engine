@@ -30,7 +30,17 @@ data class ContinuousEffectSourceComponent(
 data class ContinuousEffectData(
     val modification: Modification,
     val affectsFilter: AffectsFilter? = null,
-    val sourceCondition: Condition? = null
+    val sourceCondition: Condition? = null,
+    /**
+     * Identifies the single multi-layer static ability this modification belongs to (CR 613.6).
+     * Non-null and shared across every [ContinuousEffectData] a single static ability lowers to
+     * when that ability touches more than one layer (e.g. an animate/transform ability, or a
+     * [com.wingedsheep.sdk.scripting.CompositeStaticAbility]). Effects sharing a groupId (within
+     * one source permanent) resolve their affected-object set once — when the group first starts
+     * to apply — and reuse it in every later layer, and keep applying even if the source loses the
+     * generating ability in Layer 6. Null for single-layer abilities, which need no grouping.
+     */
+    val groupId: String? = null
 ) {
     val layer: Layer get() = modification.layer
     val sublayer: Sublayer? get() = modification.sublayer
@@ -193,7 +203,14 @@ data class ContinuousEffect(
      * [EffectContext] after the enchantment has left. Null for static-ability effects, which
      * always resolve their controller from the source permanent on the battlefield.
      */
-    val controllerId: EntityId? = null
+    val controllerId: EntityId? = null,
+    /**
+     * See [ContinuousEffectData.groupId]. Identifies the single multi-layer static ability this
+     * effect belongs to (CR 613.6); shared across the group's per-layer effects from one source.
+     * The lock key is `(sourceId, groupId)`, so the same groupId string on two different source
+     * permanents stays independent. Null for single-layer and floating effects.
+     */
+    val groupId: String? = null
 ) {
     val layer: Layer get() = modification.layer
     val sublayer: Sublayer? get() = modification.sublayer

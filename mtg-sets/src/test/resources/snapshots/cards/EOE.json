@@ -4922,7 +4922,7 @@
     ],
     "script": {
         "replacementEffects": [
-            "DoubleTokenCreation"
+            "MultiplyTokenCreation"
         ]
     },
     "metadata": {

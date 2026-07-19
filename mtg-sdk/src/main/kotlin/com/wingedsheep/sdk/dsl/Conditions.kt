@@ -1291,6 +1291,17 @@ object Conditions {
         )
 
     /**
+     * If red sources you controlled dealt [atLeast] or more noncombat damage this turn
+     * (controller-scoped). Backed by the per-player `RedNoncombatDamageDealtThisTurnComponent`.
+     * Gates Temple of Power's transform-back (back of Ojer Axonil, Deepest Might).
+     */
+    fun YouDealtRedNoncombatDamageThisTurn(atLeast: Int = 1): ConditionInterface =
+        trackerAtLeast(
+            com.wingedsheep.sdk.scripting.values.TurnTracker.RED_NONCOMBAT_DAMAGE_DEALT,
+            atLeast = atLeast,
+        )
+
+    /**
      * If a permanent of the given card type entered the battlefield under the given player's
      * control this turn. The permanent need not still be on the battlefield, still be of that
      * type, or still be under that player's control — only the entry event matters.

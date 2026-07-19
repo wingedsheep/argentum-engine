@@ -91,6 +91,7 @@ object CardEntityFactory {
                 hasActivatedAbility = cardDef.hasActivatedAbility,
                 // Original-printing set (canonical, not the pinned printing) — "originally printed in X".
                 originalSetCode = cardDef.setCode,
+                hasAdventure = cardDef.isAdventure,
             ),
             OwnerComponent(ownerId),
             ControllerComponent(ownerId)

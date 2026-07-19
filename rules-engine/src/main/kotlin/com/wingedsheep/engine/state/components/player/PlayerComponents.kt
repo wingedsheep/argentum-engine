@@ -1071,6 +1071,17 @@ data object SacrificedFoodThisTurnComponent : Component
 data class PermanentsSacrificedThisTurnComponent(val count: Int = 0) : Component
 
 /**
+ * Tracks the total noncombat damage red sources this player controlled have dealt this turn
+ * (controller-scoped). Incremented in `DamageUtils.dealDamageToTarget` on the damage source's
+ * controller whenever a red source deals a positive amount of noncombat damage, and cleared at
+ * end of turn by `CleanupPhaseManager`. Backs `TurnTracker.RED_NONCOMBAT_DAMAGE_DEALT` — the
+ * Temple of Power (back of Ojer Axonil, Deepest Might) transform gate ("Activate only if red
+ * sources you controlled dealt 4 or more noncombat damage this turn").
+ */
+@Serializable
+data class RedNoncombatDamageDealtThisTurnComponent(val amount: Int = 0) : Component
+
+/**
  * The set of distinct elemental bending keyword actions ([BendType]: waterbend, earthbend,
  * firebend, airbend) this player has performed this turn (CR 701.65–701.67 / 702.189). Folded in by
  * `BendEvents.record` whenever the player bends, and reset to empty for every player at the start of

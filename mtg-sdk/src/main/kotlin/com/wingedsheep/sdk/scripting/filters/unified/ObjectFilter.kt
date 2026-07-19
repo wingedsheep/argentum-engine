@@ -131,6 +131,15 @@ data class GameObjectFilter(
                 CardPredicate.Or(listOf(CardPredicate.IsInstant, CardPredicate.IsSorcery))
             )
         )
+
+        /** Instant, sorcery, or a card with an Adventure — Frantic Firebolt's graveyard tally. */
+        val InstantSorceryOrAdventure = GameObjectFilter(
+            cardPredicates = listOf(
+                CardPredicate.Or(
+                    listOf(CardPredicate.IsInstant, CardPredicate.IsSorcery, CardPredicate.HasAdventure)
+                )
+            )
+        )
         val CreatureOrPlaneswalker = GameObjectFilter(
             cardPredicates = listOf(
                 CardPredicate.Or(listOf(CardPredicate.IsCreature, CardPredicate.IsPlaneswalker))

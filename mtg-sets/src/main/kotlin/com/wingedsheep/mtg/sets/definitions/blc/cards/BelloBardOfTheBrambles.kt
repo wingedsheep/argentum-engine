@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantCardType
 import com.wingedsheep.sdk.scripting.GrantKeyword
@@ -26,11 +27,14 @@ import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
  * types and has indestructible, haste, and "Whenever this creature deals combat
  * damage to a player, draw a card."
  *
- * Implementation: each layer of the animation (add type, add subtype, set P/T,
- * grant indestructible, grant haste) is a separate `ConditionalStaticAbility` gated
- * by `IsYourTurn`. The combat-damage trigger is granted unconditionally — it can
- * only fire when the source is a creature in combat, which only happens on Bello's
- * controller's turn (when the gating condition adds the creature type).
+ * Implementation: the animation is one printed static ability whose single continuous effect
+ * spans Layer 4 (add creature type + Elemental subtype), Layer 6 (grant indestructible + haste),
+ * and Layer 7b (set base 4/4). Per CR 613.6 those parts must affect the *same* locked-in set of
+ * objects and keep applying even if Bello loses the ability mid-layer-sequence, so they are bundled
+ * into one [CompositeStaticAbility] (gated by `IsYourTurn`) rather than separate `staticAbility`
+ * blocks. The combat-damage trigger is granted separately — it is detected by TriggerDetector, not
+ * projected through the layer system, and it can only fire when the source is a creature in combat,
+ * which only happens on Bello's controller's turn (when the gating condition adds the creature type).
  */
 val BelloBardOfTheBrambles = card("Bello, Bard of the Brambles") {
     manaCost = "{1}{R}{G}"
@@ -47,25 +51,19 @@ val BelloBardOfTheBrambles = card("Bello, Bard of the Brambles") {
             .youControl()
     )
 
+    // One multi-layer static ability (CR 613.6): the type/subtype/keyword/P/T grants share a
+    // single locked-in affected set and all persist even if Bello loses this ability in Layer 6.
     staticAbility {
-        ability = GrantCardType("CREATURE", animatedFilter)
         condition = Conditions.IsYourTurn
-    }
-    staticAbility {
-        ability = GrantSubtype("Elemental", animatedFilter)
-        condition = Conditions.IsYourTurn
-    }
-    staticAbility {
-        ability = SetBasePowerToughnessStatic(4, 4, animatedFilter)
-        condition = Conditions.IsYourTurn
-    }
-    staticAbility {
-        ability = GrantKeyword(Keyword.INDESTRUCTIBLE, animatedFilter)
-        condition = Conditions.IsYourTurn
-    }
-    staticAbility {
-        ability = GrantKeyword(Keyword.HASTE, animatedFilter)
-        condition = Conditions.IsYourTurn
+        ability = CompositeStaticAbility(
+            listOf(
+                GrantCardType("CREATURE", animatedFilter),
+                GrantSubtype("Elemental", animatedFilter),
+                SetBasePowerToughnessStatic(4, 4, animatedFilter),
+                GrantKeyword(Keyword.INDESTRUCTIBLE, animatedFilter),
+                GrantKeyword(Keyword.HASTE, animatedFilter),
+            )
+        )
     }
     staticAbility {
         ability = GrantTriggeredAbility(

@@ -235,3 +235,38 @@ class StateProjector(val state: GameState) {
 
 This effectively solves the hardest logic problem in the engine while keeping the core `GameAction` logic pure and
 simple.
+
+## 6. Cross-Layer Grouping (Rule 613.6)
+
+Dependencies (613.8) order effects *within* a layer. Rule **613.6** governs a different problem: a *single* continuous
+effect that applies in **several** layers.
+
+> 613.6. If an effect should be applied in different layers and/or sublayers, the parts of the effect each apply in
+> their appropriate ones. If an effect starts to apply in one layer and/or sublayer, it will continue to be applied to
+> the **same set of objects** in each other applicable layer and/or sublayer, **even if the ability generating the
+> effect is removed during this process.**
+
+The canonical example: *"All noncreature artifacts become 2/2 artifact creatures."* The type change (Layer 4) is applied
+to the set of noncreature artifacts; the P/T set (Layer 7b) is applied to **those same permanents**, even though they
+are no longer noncreature artifacts by then. Bello, Bard of the Brambles is the same shape (Layer 4 type/subtype, Layer
+6 keywords, Layer 7b P/T), and additionally exercises the "even if the ability is removed" clause — if Bello loses all
+abilities in Layer 6, the animation it started in Layer 4 still sets the 4/4 in Layer 7b.
+
+### Implementation: effect groups
+
+A single static ability that lowers to more than one `ContinuousEffectData` (an `AnimateLandGroup`, a
+`TransformPermanent`, a `CompositeStaticAbility`, Blood Moon's type + ability pair, ...) is one continuous effect
+spanning multiple layers. `StaticAbilityHandler.toGroupedEffectData` stamps every such ability's effects with a shared
+`ContinuousEffectData.groupId` (unique per source permanent; single-layer abilities keep `groupId = null`). The
+`StateProjector` then enforces 613.6 for each group, keyed by `(sourceId, groupId)`:
+
+* **Same set of objects** — `lockAffected` records the affected-object set the *first* time a group is resolved. Because
+  the projector processes effects in ascending layer order, that's the group's earliest applicable layer. Every later
+  layer reuses the frozen set instead of re-resolving its filter (which could otherwise drift — a "noncreature artifact"
+  filter matches nothing once Layer 4 has made the artifacts creatures).
+* **Survives ability removal** — the Layer-7 "source lost all abilities" suppression (which correctly kills a standalone
+  lord anthem removed by Humility) is *skipped* for a group whose earliest layer is before Layer 6 (ABILITY). Such a
+  group "started to apply" before the removal, so per 613.6 its later-layer parts keep applying.
+
+This is orthogonal to 613.8: grouping decides *which set* a multi-layer effect uses across layers; dependency sorting
+decides the *order* of effects within a layer.

@@ -111,6 +111,88 @@
     ]
 }
 
+// Lightning Axe
+{
+    "name": "Lightning Axe",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, discard a card or pay {5}.\nLightning Axe deals 5 damage to target creature.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Discard a card — deal 5 damage to target creature",
+                    "additionalCosts": [
+                        {
+                            "type": "AdditionalAtom",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            }
+                        }
+                    ],
+                    "description": "Pay {5} — deal 5 damage to target creature",
+                    "additionalManaCost": "{5}"
+                }
+            ],
+            "countsAsModalSpell": false
+        }
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "\"A gargoyle's meat can be carved with an ordinary cleaver, but for its petrous hide . . .\"\n—Asmoranomardicadaistinaculdacar, The Underworld Cookbook",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b748290-04b0-48a9-81aa-ab43182cf339.jpg?1783943219",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "The mana value of Lightning Axe is 1, no matter which additional cost you paid."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Mystical Teachings
 {
     "name": "Mystical Teachings",

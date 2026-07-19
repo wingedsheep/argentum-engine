@@ -926,11 +926,15 @@ object Effects {
     /**
      * Return the source card from your graveyard to the battlefield with its back face up —
      * "Return this card from your graveyard to the battlefield transformed" (Garland, Knight
-     * of Cornelia). Pair with `activateFromZone = Zone.GRAVEYARD` on the owning ability. No-ops
-     * if the source left the graveyard before resolution or is not a double-faced card.
+     * of Cornelia). Pair with `activateFromZone = Zone.GRAVEYARD` on the owning ability, or wire
+     * it to `Triggers.Dies` for the LCI "god cycle" dies-and-return templating. No-ops if the
+     * source left the graveyard before resolution or is not a double-faced card.
+     *
+     * @param tapped return the back-face permanent tapped ("...return it to the battlefield
+     *   **tapped** and transformed", Ojer Axonil/Kaslem/Pakpatiq/Taq // Temples, Aclazotz).
      */
-    fun ReturnSelfFromGraveyardTransformed(): Effect =
-        ReturnSelfFromZoneTransformedEffect(Zone.GRAVEYARD)
+    fun ReturnSelfFromGraveyardTransformed(tapped: Boolean = false): Effect =
+        ReturnSelfFromZoneTransformedEffect(Zone.GRAVEYARD, tapped = tapped)
 
     /**
      * Exile a double-faced permanent, then return it to the battlefield as a new object on the

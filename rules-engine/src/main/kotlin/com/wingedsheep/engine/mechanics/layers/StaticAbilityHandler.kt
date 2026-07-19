@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.MustBeBlocked
 import com.wingedsheep.sdk.scripting.MustBlock
 import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
+import com.wingedsheep.sdk.scripting.CompositeStaticAbility
 import com.wingedsheep.sdk.scripting.conditions.Compare
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
@@ -225,10 +226,9 @@ class StaticAbilityHandler(
         // unlocked; the component is re-baked on later unlocks by RoomDoorUnlocker.
         val allStaticAbilities = RoomFaceStatics.activeStaticAbilities(container, cardDefinition)
 
-        // Convert static abilities to continuous effect data
-        val effectsData = allStaticAbilities.flatMap { ability ->
-            convertStaticAbilities(ability)
-        }
+        // Convert static abilities to continuous effect data, tagging each ability's effects with
+        // a shared group id when it touches more than one layer (CR 613.6 — see toGroupedEffectData).
+        val effectsData = allStaticAbilities.toGroupedEffectData()
 
         if (effectsData.isNotEmpty()) {
             result = result.with(ContinuousEffectSourceComponent(effectsData))
@@ -308,12 +308,29 @@ class StaticAbilityHandler(
         container: ComponentContainer,
         staticAbilities: List<StaticAbility>
     ): ComponentContainer {
-        val effectsData = staticAbilities.flatMap { ability ->
-            convertStaticAbilities(ability)
-        }
+        val effectsData = staticAbilities.toGroupedEffectData()
         return if (effectsData.isNotEmpty()) container.with(ContinuousEffectSourceComponent(effectsData))
         else container
     }
+
+    /**
+     * Lower a list of static abilities to [ContinuousEffectData], stamping every effect that comes
+     * from the *same* multi-layer ability with a shared [ContinuousEffectData.groupId] (CR 613.6).
+     *
+     * An ability that lowers to more than one effect (an animate/transform ability, a
+     * [com.wingedsheep.sdk.scripting.CompositeStaticAbility], Blood Moon's type+ability pair, ...)
+     * is one continuous effect spanning multiple layers: its affected-object set must be locked in
+     * at the first layer and reused in the rest, and it keeps applying even if the ability is
+     * removed mid-sequence. The shared groupId lets [StateProjector] enforce that. Single-effect
+     * abilities need no grouping and keep a null groupId. The id is the ability's index in this
+     * list — stable and unique per source permanent (the lock key also includes the source id, so
+     * ids never collide across permanents).
+     */
+    private fun List<StaticAbility>.toGroupedEffectData(): List<ContinuousEffectData> =
+        flatMapIndexed { index, ability ->
+            val effects = convertStaticAbilities(ability)
+            if (effects.size > 1) effects.map { it.copy(groupId = "g$index") } else effects
+        }
 
     /**
      * Convert a static ability to a list of ContinuousEffectData.
@@ -325,6 +342,10 @@ class StaticAbilityHandler(
             is GrantAdditionalTypesToGroup -> convertGrantAdditionalTypesToGroup(ability)
             is SetLandTypesForGroup -> convertSetLandTypesForGroup(ability)
             is TransformPermanent -> convertTransformPermanent(ability)
+            // A CompositeStaticAbility is one printed ability whose single effect spans several
+            // layers (CR 613.6): flatten its component abilities. The shared groupId is stamped by
+            // toGroupedEffectData at the call site, so the whole bundle locks one affected set.
+            is CompositeStaticAbility -> ability.abilities.flatMap { convertStaticAbilities(it) }
             // A ConditionalStaticAbility wrapping a multi-effect ability (e.g. TransformPermanent)
             // must lower through the plural converter too, then gate every resulting effect on the
             // condition — otherwise the singular path returns null and the whole gated ability is
@@ -782,6 +803,7 @@ class StaticAbilityHandler(
             is GrantAdditionalTypesToGroup,
             is SetLandTypesForGroup,
             is TransformPermanent,
+            is CompositeStaticAbility,
 
             // Trigger system (TriggerDetector / TriggerAbilityResolver / TriggerIndex):
             is AdditionalAttackTriggers,
@@ -986,6 +1008,7 @@ class StaticAbilityHandler(
             is DoubleDamage,
             is ModifyDamageAmount,
             is com.wingedsheep.sdk.scripting.CapDamage,
+            is com.wingedsheep.sdk.scripting.SetMinimumDamage,
             is com.wingedsheep.sdk.scripting.RedirectDamage,
             is com.wingedsheep.sdk.scripting.DamageCantBePrevented,
             is ReplaceDamageWithCounters,
@@ -1021,7 +1044,7 @@ class StaticAbilityHandler(
             is com.wingedsheep.sdk.scripting.ModifyExplore,
             // Token creation:
             is com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithAttachedCopy,
-            is com.wingedsheep.sdk.scripting.DoubleTokenCreation,
+            is com.wingedsheep.sdk.scripting.MultiplyTokenCreation,
             is com.wingedsheep.sdk.scripting.ModifyTokenCount,
             is com.wingedsheep.sdk.scripting.CreateAdditionalToken -> true
 

@@ -78,7 +78,7 @@ class ExileAndReturnTransformedExecutor(
         }
 
         // 2. Flip to the destination face and return it to the battlefield as a new object.
-        val returnTransition = returnDfcFaceFromExile(newState, cardRegistry, targetId, destinationFace)
+        val returnTransition = returnDfcFace(newState, cardRegistry, targetId, destinationFace)
         newState = returnTransition.state
         events.addAll(returnTransition.events)
 

@@ -20,10 +20,10 @@ import kotlin.reflect.KClass
  *     battlefield transformed doesn't move at all (official FIN ruling), so this is a no-op,
  *     not an error.
  *
- * The face flip + zone move is the shared [returnDfcFaceFromExile] helper (its name predates
- * this executor — it flips-then-moves from whatever zone the entity is currently in), always
- * to the back face: a card in a non-battlefield zone is front-face-up by definition, so
- * "transformed" can only mean the back face.
+ * The face flip + zone move is the shared [returnDfcFace] helper (it flips-then-moves from
+ * whatever zone the entity is currently in), always to the back face: a card in a
+ * non-battlefield zone is front-face-up by definition, so "transformed" can only mean the
+ * back face.
  */
 class ReturnSelfFromZoneTransformedExecutor(
     private val cardRegistry: CardRegistry
@@ -72,8 +72,8 @@ class ReturnSelfFromZoneTransformedExecutor(
             }
         }
 
-        val transition = returnDfcFaceFromExile(
-            workingState, cardRegistry, sourceId, DoubleFacedComponent.Face.BACK
+        val transition = returnDfcFace(
+            workingState, cardRegistry, sourceId, DoubleFacedComponent.Face.BACK, tapped = effect.tapped
         )
         return EffectResult.success(transition.state, transition.events)
     }

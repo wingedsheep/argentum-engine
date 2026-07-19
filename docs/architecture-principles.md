@@ -708,7 +708,7 @@ sealed interface ReplacementEffect {
 }
 
 // Doubling Season: double token creation
-data class DoubleTokenCreation(
+data class MultiplyTokenCreation(
     override val appliesTo: EventPattern = EventPattern.TokenCreationEvent()
 ) : ReplacementEffect
 

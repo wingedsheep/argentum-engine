@@ -53,7 +53,7 @@ import com.wingedsheep.sdk.scripting.effects.WarpExileEffect
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.engine.handlers.effects.EntersWithReplacements
-import com.wingedsheep.engine.handlers.effects.permanent.types.returnDfcFaceFromExile
+import com.wingedsheep.engine.handlers.effects.permanent.types.returnDfcFace
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.EntersWithChoice
@@ -1548,6 +1548,61 @@ class StackResolver(
 
 
     /**
+     * Rebound (CR 702.88): a spell has rebound if the printed keyword is on its card definition
+     * or the keyword was granted to this stack object (Ojer Pakpatiq via GrantKeywordToSpellEffect,
+     * stored on [SpellGrantedKeywordsComponent]). Only matters for a spell cast from hand — the
+     * caller gates on [com.wingedsheep.engine.state.components.stack.SpellOnStackComponent.castFromZone].
+     */
+    private fun spellHasRebound(
+        state: GameState,
+        spellId: EntityId,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition?
+    ): Boolean {
+        if (cardDef?.keywords?.contains(com.wingedsheep.sdk.core.Keyword.REBOUND) == true) return true
+        val granted = state.getEntity(spellId)
+            ?.get<com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent>()
+        return granted?.keywords?.contains(com.wingedsheep.sdk.core.Keyword.REBOUND.name) == true
+    }
+
+    /**
+     * Schedule rebound's delayed triggered ability (CR 702.88a): at the beginning of the caster's
+     * next upkeep, they may cast the just-exiled card from exile without paying its mana cost.
+     * A one-shot step-based delayed trigger gated to the caster's turn ([fireOnPlayerId]) and to a
+     * later turn ([notBeforeTurn]); it is consumed the first time it fires. The free cast reuses the
+     * suspend/Shiko cast-from-exile pipeline ([CastFromCollectionWithoutPayingCostEffect]).
+     */
+    private fun scheduleReboundRecast(
+        state: GameState,
+        exiledCardId: EntityId,
+        casterId: EntityId,
+        sourceName: String
+    ): GameState = state.addDelayedTrigger(
+        com.wingedsheep.engine.event.DelayedTriggeredAbility(
+            id = java.util.UUID.randomUUID().toString(),
+            effect = com.wingedsheep.sdk.scripting.effects.MayEffect(
+                com.wingedsheep.sdk.scripting.effects.CompositeEffect(
+                    listOf(
+                        com.wingedsheep.sdk.scripting.effects.GatherCardsEffect(
+                            source = com.wingedsheep.sdk.scripting.effects.CardSource.Self,
+                            storeAs = "rebound_recast",
+                        ),
+                        com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect(
+                            from = "rebound_recast",
+                        ),
+                    )
+                ),
+                descriptionOverride = "cast this card from exile without paying its mana cost",
+            ),
+            fireAtStep = com.wingedsheep.sdk.core.Step.UPKEEP,
+            fireOnPlayerId = casterId,
+            notBeforeTurn = state.turnNumber + 1,
+            sourceId = exiledCardId,
+            sourceName = sourceName,
+            controllerId = casterId,
+        )
+    )
+
+    /**
      * Resolve a non-permanent spell - execute effects, put in graveyard.
      */
     private fun resolveNonPermanentSpell(
@@ -1692,8 +1747,10 @@ class StackResolver(
                     spellComponent.faceIndex != null
                 val pausedOmenFaceShuffle = pausedCardDef?.layout == com.wingedsheep.sdk.model.CardLayout.OMEN &&
                     spellComponent.faceIndex != null
+                val pausedReboundExile = spellComponent.castFromZone == Zone.HAND &&
+                    spellHasRebound(effectResult.state, spellId, pausedCardDef)
                 val pausedIntended = when {
-                    pausedSelfExile || pausedFlashbackExile || pausedExileAfterResolve || pausedAdventureFaceExile -> Zone.EXILE
+                    pausedSelfExile || pausedFlashbackExile || pausedExileAfterResolve || pausedAdventureFaceExile || pausedReboundExile -> Zone.EXILE
                     pausedOmenFaceShuffle -> Zone.LIBRARY
                     else -> Zone.GRAVEYARD
                 }
@@ -1716,6 +1773,13 @@ class StackResolver(
                     pausedState = pausedState.updateEntity(spellId) { c ->
                         c.with(com.wingedsheep.engine.state.components.battlefield.ParadigmComponent)
                     }
+                }
+
+                // Rebound: arm the next-upkeep free recast even when the effect paused mid-resolution.
+                if (pausedReboundExile && pausedDestZone == Zone.EXILE) {
+                    pausedState = scheduleReboundRecast(
+                        pausedState, spellId, spellComponent.casterId, cardComponent?.name ?: "Unknown"
+                    )
                 }
 
                 // Link an opponent's resolving spell exiled by a RedirectZoneChange(linkToSource)
@@ -1831,8 +1895,12 @@ class StackResolver(
         // library instead of putting it in the graveyard. No cast-from-exile linkage.
         val omenFaceShuffle = cardDef?.layout == com.wingedsheep.sdk.model.CardLayout.OMEN &&
             spellComponent.faceIndex != null
+        // Rebound (CR 702.88): a spell cast from hand that has rebound (printed or granted) exiles
+        // on resolution instead of going to the graveyard, and arms a next-upkeep free recast.
+        val reboundExile = spellComponent.castFromZone == Zone.HAND &&
+            spellHasRebound(newState, spellId, cardDef)
         val intendedDestination = when {
-            selfExile || flashbackExile || exileAfterResolve || adventureFaceExile -> Zone.EXILE
+            selfExile || flashbackExile || exileAfterResolve || adventureFaceExile || reboundExile -> Zone.EXILE
             omenFaceShuffle -> Zone.LIBRARY
             else -> Zone.GRAVEYARD
         }
@@ -1863,6 +1931,13 @@ class StackResolver(
             newState = newState.updateEntity(spellId) { c ->
                 c.with(com.wingedsheep.engine.state.components.battlefield.ParadigmComponent)
             }
+        }
+
+        // Rebound (CR 702.88a): arm the caster's next-upkeep free recast of the just-exiled card.
+        if (reboundExile && destinationZone == Zone.EXILE) {
+            newState = scheduleReboundRecast(
+                newState, spellId, spellComponent.casterId, cardComponent?.name ?: "Unknown"
+            )
         }
 
         // CR 715.3d — an Adventure card exiled by its own resolution may be cast as the creature
@@ -1969,7 +2044,7 @@ class StackResolver(
      * exile is invisible — no effect keys on it — so the stack → battlefield move is done directly.
      *
      * Per the official ruling, a card that is not double-faced (or whose back face is not a permanent)
-     * "will not enter at all"; [returnDfcFaceFromExile] no-ops in that case and the caller must fall
+     * "will not enter at all"; [returnDfcFace] no-ops in that case and the caller must fall
      * back to the normal graveyard/exile destination.
      */
     private fun resolveSelfToBattlefieldTransformed(
@@ -2000,11 +2075,11 @@ class StackResolver(
 
         // "Exile it, then put it onto the battlefield transformed": the resolving spell was already
         // popped off the stack (it is in no zone), so place it in its owner's exile — the source
-        // zone [returnDfcFaceFromExile] is built to flip-and-return from.
+        // zone [returnDfcFace] is built to flip-and-return from.
         working = working.addToZone(ZoneKey(ownerId, Zone.EXILE), spellId)
 
         // A DFC spell on the stack carries no DoubleFacedComponent yet (it's stamped on ETB); add
-        // one on its front face so returnDfcFaceFromExile can flip it to the back face.
+        // one on its front face so returnDfcFace can flip it to the back face.
         if (working.getEntity(spellId)?.get<DoubleFacedComponent>() == null) {
             working = working.updateEntity(spellId) { c ->
                 c.with(
@@ -2017,7 +2092,7 @@ class StackResolver(
             }
         }
 
-        val transition = returnDfcFaceFromExile(working, cardRegistry, spellId, DoubleFacedComponent.Face.BACK)
+        val transition = returnDfcFace(working, cardRegistry, spellId, DoubleFacedComponent.Face.BACK)
         working = transition.state
         events.addAll(transition.events)
 

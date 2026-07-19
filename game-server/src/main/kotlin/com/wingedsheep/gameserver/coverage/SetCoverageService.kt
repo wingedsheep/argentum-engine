@@ -1,8 +1,6 @@
 package com.wingedsheep.gameserver.coverage
 
 import com.wingedsheep.mtg.sets.MtgSetCatalog
-import com.wingedsheep.mtg.sets.legality.LegalityData
-import com.wingedsheep.sdk.core.DeckFormat
 import com.wingedsheep.sdk.model.MtgSet
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -46,6 +44,13 @@ class SetCoverageService {
         val name: String,
         val releaseDate: String? = null,
         val setType: String? = null,
+        /**
+         * Whether the set is currently legal in the Standard format, baked by `scripts/gen-set-totals`
+         * from the full canonical Scryfall pool (same rule as `scripts/card-status`). Baked rather than
+         * derived at runtime because the only runtime legality source is the implemented-card mirror,
+         * which under-counts partially-implemented sets. Defaults `false` for older baked resources.
+         */
+        val standardLegal: Boolean = false,
         val draft: List<CanonicalCard> = emptyList(),
         val extra: List<CanonicalCard> = emptyList(),
     ) {
@@ -76,7 +81,7 @@ class SetCoverageService {
         val extraTotal: Int,
         /** `implemented / total * 100` (booster cards), one decimal. `0.0` when [total] is `0`. */
         val percent: Double,
-        /** Whether this set is currently legal in the Standard format. See [isInStandard]. */
+        /** Whether this set is currently legal in the Standard format (baked by `scripts/gen-set-totals`). */
         val inStandard: Boolean,
     )
 
@@ -179,7 +184,7 @@ class SetCoverageService {
                     extraImplemented = extraImplemented,
                     extraTotal = c.secondaryCards.size,
                     percent = percent(implemented, c.mainCards.size),
-                    inStandard = isInStandard(c),
+                    inStandard = c.standardLegal,
                 )
             }
             .sortedWith(compareByDescending<SetCoverageDTO> { it.releaseDate ?: "" }.thenBy { it.code })
@@ -262,34 +267,6 @@ class SetCoverageService {
      * progress chart behind the Set Completion overall-progress element.
      */
     fun progress(): List<ProgressPointDTO> = progress
-
-    /**
-     * Whether a set is currently legal in Standard.
-     *
-     * Scryfall exposes no per-set Standard flag (its set object carries no legality at all), and
-     * WotC only publishes rotation as prose announcements — so there is no authoritative per-set
-     * source to read. Legality is fundamentally per-*card*, and we already mirror Scryfall's
-     * per-card legalities in [LegalityData] (the same data the deckbuilder's format filter uses).
-     *
-     * We derive set membership from that. The catch: [LegalityData] unions a card's legality across
-     * *every* printing by name, so an old set keeps a handful of staples flagged Standard-legal only
-     * because they were reprinted into a current set — "any card is Standard-legal" would wrongly
-     * light up half the back catalog. A set is genuinely *in* Standard only when the bulk of its own
-     * cards are Standard-legal, so we require a majority of the booster (main) pool. The split is
-     * sharply bimodal (a current set is ~100%, a rotated/old set is a few %), so the threshold is
-     * not sensitive. Best of all it auto-tracks rotation as the synced legality data changes — no
-     * second hand-maintained list of Standard set codes to keep in sync.
-     */
-    private fun isInStandard(c: CanonicalSet): Boolean {
-        val main = c.mainCards
-        if (main.isEmpty()) return false
-        val legal = main.count { DeckFormat.STANDARD in legalityFor(it.name) }
-        return legal * 2 >= main.size
-    }
-
-    /** Per-card legality, tolerating DFC names by falling back to the front face. */
-    private fun legalityFor(name: String): Set<DeckFormat> =
-        LegalityData.forCard(name).ifEmpty { LegalityData.forCard(frontFace(name)) }
 
     /**
      * Names we've authored for a set, matching `scripts/card-status`: every `card(...)`,

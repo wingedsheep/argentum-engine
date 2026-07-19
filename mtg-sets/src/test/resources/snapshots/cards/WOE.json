@@ -197,6 +197,62 @@
     ]
 }
 
+// Bellowing Bruiser
+{
+    "name": "Bellowing Bruiser",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Ogre",
+    "oracleText": "Haste",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "metadata": {
+        "collectorNumber": "121",
+        "artist": "Kai Carpenter",
+        "flavorText": "You can't give an ogre the runaround.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26ece013-f3ef-4c12-9dea-b2789f61f8a0.jpg?1783915098"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Beat a Path",
+            "manaCost": "{2}{R}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Up to two target creatures can't block this turn. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "CantBlockTargetCreatures",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
+
 // Beluna's Gatekeeper
 {
     "name": "Beluna's Gatekeeper",
@@ -829,6 +885,47 @@
     ]
 }
 
+// Cursed Courtier
+{
+    "name": "Cursed Courtier",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Noble",
+    "oracleText": "Lifelink\nWhen this creature enters, create a Cursed Role token attached to it. (Enchanted creature is 1/1.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateRoleToken",
+                    "roleName": "Cursed Role",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "UNCOMMON",
+        "artist": "Tuan Duong Chu",
+        "flavorText": "It was the first and last time anyone attempted to levy a tax on the witches of Dunbarrow.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d2d5a71-d6e1-4c96-9a53-0e370047a56e.jpg?1783915134"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Dutiful Griffin
 {
     "name": "Dutiful Griffin",
@@ -1013,6 +1110,65 @@
     ]
 }
 
+// Embereth Veteran
+{
+    "name": "Embereth Veteran",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "{1}, Sacrifice this creature: Create a Young Hero Role token attached to another target creature. (If you control another Role on it, put that one into the graveyard. Enchanted creature has \"Whenever this creature attacks, if its toughness is 3 or less, put a +1/+1 counter on it.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateRoleToken",
+                    "roleName": "Young Hero Role",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "UNCOMMON",
+        "artist": "Andreia Ugrai",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc7130b8-3168-421f-912a-46ed5b769807.jpg?1783915096"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Eriette's Tempting Apple
 {
     "name": "Eriette's Tempting Apple",
@@ -1133,6 +1289,95 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/b/5b61711f-8982-4ff0-86ba-01e0125cd705.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Eriette's Whisper
+{
+    "name": "Eriette's Whisper",
+    "manaCost": "{3}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent discards two cards. Create a Wicked Role token attached to up to one target creature you control. (If you control another Role on it, put that one into the graveyard. Enchanted creature gets +1/+1. When this token is put into a graveyard, each opponent loses 1 life.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 2 cards to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                {
+                    "type": "CreateRoleToken",
+                    "roleName": "Wicked Role",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "opponent"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "artist": "Quintin Gleim",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/dfed2acf-9ac8-447b-94f5-7db3a713c991.jpg?1783915109"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Faerie Dreamthief
@@ -1490,6 +1735,65 @@
     ]
 }
 
+// Frantic Firebolt
+{
+    "name": "Frantic Firebolt",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Frantic Firebolt deals X damage to target creature, where X is 2 plus the number of cards in your graveyard that are instant cards, sorcery cards, and/or have an Adventure.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Add",
+                "left": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "right": {
+                    "type": "Count",
+                    "player": "You",
+                    "zone": "Graveyard",
+                    "filter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery",
+                                    "HasAdventure"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Olivier Bernard",
+        "flavorText": "Johann's conjecture about draconic fire dispelling rainwater elementals proved to be correct. Now he just needed a way to dispel draconic fire.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/efd85f5a-258b-4ced-bf9e-3abe7fe72395.jpg?1783915094"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Freeze in Place
 {
     "name": "Freeze in Place",
@@ -1597,6 +1901,149 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Gnawing Crescendo
+{
+    "name": "Gnawing Crescendo",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Creatures you control get +2/+0 until end of turn. Whenever a nontoken creature you control dies this turn, create a 1/1 black Rat creature token with \"This token can't block.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    }
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Rat"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e0205f2-25c1-403b-b408-56e3f2d63b4d.jpg?1783915000",
+                        "staticAbilities": [
+                            "CantBlock"
+                        ]
+                    },
+                    "trigger": {
+                        "event": {
+                            "type": "ZoneChangeEvent",
+                            "filter": "creature nontoken ctrl:you",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "binding": "ANY"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Alexey Kruglov",
+        "flavorText": "Totentanz's song had no lyrics, but the rats understood it nonetheless. \"You own this land,\" it said. \"You deserve to feast.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/254fc64a-9734-44a6-8869-ab03512f1a99.jpg?1783915094"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Grabby Giant
+{
+    "name": "Grabby Giant",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "Reach\n{2}{R}, Sacrifice an artifact or land: Draw a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "artifact|land"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fab7646a-61e8-446b-9dba-ac6e0db82f10.jpg?1783915094"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "That's Mine",
+            "manaCost": "{1}{R}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "Create a Treasure token. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        }
     ]
 }
 
@@ -1883,6 +2330,57 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Knight of Doves
+{
+    "name": "Knight of Doves",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Whenever an enchantment you control is put into a graveyard from the battlefield, create a 1/1 white Bird creature token with flying.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Bird"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b0c59f8-b407-47e7-8885-8c968f4ceecf.jpg?1783914993"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "flavorText": "So many birds, yet the air was still and empty of song. Part of Syr Damon knew something wasn't right, but it was a far-off worry, unimportant and soon forgotten.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4f33617-ad19-4d42-ab94-6f21a7fb3dd4.jpg?1783915132"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -2449,6 +2947,70 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Rat Out
+{
+    "name": "Rat Out",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Up to one target creature gets -1/-1 until end of turn. You create a 1/1 black Rat creature token with \"This token can't block.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Rat"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e0205f2-25c1-403b-b408-56e3f2d63b4d.jpg?1783915000",
+                    "staticAbilities": [
+                        "CantBlock"
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "artist": "Michele Giorgi",
+        "flavorText": "\"Hold this for me.\"\n—Totentanz, swarm piper",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2c42755-bf91-4c75-95c6-d2a60ba3492a.jpg?1783915104"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -3543,6 +4105,69 @@
     ]
 }
 
+// Voracious Vermin
+{
+    "name": "Voracious Vermin",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Rat",
+    "oracleText": "When this creature enters, create a 1/1 black Rat creature token with \"This token can't block.\"\nWhenever another creature you control dies, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Rat"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/e/1e0205f2-25c1-403b-b408-56e3f2d63b4d.jpg?1783915000",
+                    "staticAbilities": [
+                        "CantBlock"
+                    ]
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "artist": "Milivoj Ćeran",
+        "flavorText": "Lord Skitter promised the starving rats of Edgewall that they would never go hungry again.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8059be65-3c73-49bb-a3b6-c346ce2f9fa4.jpg?1783915099"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Warehouse Tabby
 {
     "name": "Warehouse Tabby",
@@ -3604,6 +4229,52 @@
         "artist": "Steve Prescott",
         "flavorText": "For every rat she kills, ten more take its place.",
         "imageUri": "https://cards.scryfall.io/normal/front/d/5/d500ad81-9659-4a00-8f99-8be7c23587e8.jpg?1783915100"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wicked Visitor
+{
+    "name": "Wicked Visitor",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Nightmare",
+    "oracleText": "Whenever an enchantment you control is put into a graveyard from the battlefield, each opponent loses 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "EachOpponent"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "artist": "Nicholas Gregory",
+        "flavorText": "Amalgamations of many childhood nightmares stalked the realm of dreams, feeding on the collective terror of all those trapped in the Wicked Slumber.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e26ec4b8-0012-48c4-9ccb-0f062df0c250.jpg?1783915099"
     },
     "colorIdentityOverride": [
         "BLACK"

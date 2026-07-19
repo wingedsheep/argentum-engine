@@ -2,12 +2,12 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 255 / 286
+**Implemented:** 260 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
 - [x] Abyssal Gorestalker
-- [ ] Aclazotz, Deepest Betrayal
+- [x] Aclazotz, Deepest Betrayal
 - [x] Acolyte of Aclazotz
 - [x] Acrobatic Leap
 - [x] Adaptive Gemguard
@@ -168,10 +168,10 @@
 - [x] Nicanzil, Current Conductor
 - [x] Nurturing Bristleback
 - [x] Oaken Siren
-- [ ] Ojer Axonil, Deepest Might
-- [ ] Ojer Kaslem, Deepest Growth
-- [ ] Ojer Pakpatiq, Deepest Epoch
-- [ ] Ojer Taq, Deepest Foundation
+- [x] Ojer Axonil, Deepest Might
+- [x] Ojer Kaslem, Deepest Growth
+- [x] Ojer Pakpatiq, Deepest Epoch
+- [x] Ojer Taq, Deepest Foundation
 - [x] Oltec Archaeologists
 - [x] Oltec Cloud Guard
 - [x] Orazca Puzzle-Door

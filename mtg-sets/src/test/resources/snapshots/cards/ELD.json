@@ -135,6 +135,80 @@
     ]
 }
 
+// Gingerbrute
+{
+    "name": "Gingerbrute",
+    "manaCost": "{1}",
+    "typeLine": "Artifact Creature — Food Golem",
+    "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\n{1}: This creature can't be blocked this turn except by creatures with haste.\n{2}, {T}, Sacrifice this creature: You gain 3 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantCantBeBlockedExceptBy",
+                    "target": "Self",
+                    "blockerFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "HasKeyword",
+                                "keyword": "HASTE"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "This creature can't be blocked this turn except by creatures with haste."
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "artist": "Vincent Proce",
+        "flavorText": "The unlabeled vial was not vanilla extract after all.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f55fe038-c903-4d92-b689-72dd6d041a91.jpg?1783932587"
+    },
+    "colorIdentityOverride": []
+}
+
 // Heraldic Banner
 {
     "name": "Heraldic Banner",

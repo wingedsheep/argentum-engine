@@ -243,6 +243,9 @@ class PredicateEvaluator {
             CardPredicate.IsPlaneswalker -> "PLANESWALKER" in types
             CardPredicate.IsInstant -> "INSTANT" in types
             CardPredicate.IsSorcery -> "SORCERY" in types
+            // Adventure-ness is a static characteristic of the whole card (not a projected type),
+            // read straight off the CardComponent flag stamped at entity creation.
+            CardPredicate.HasAdventure -> card.hasAdventure
             CardPredicate.IsBasicLand -> "LAND" in types && card.typeLine.supertypes.any { it.name == "BASIC" }
             CardPredicate.IsPermanent -> types.any { it in setOf("CREATURE", "LAND", "ARTIFACT", "ENCHANTMENT", "PLANESWALKER") }
             CardPredicate.IsNonland -> "LAND" !in types
@@ -1273,6 +1276,10 @@ class PredicateEvaluator {
             CardPredicate.IsPlaneswalker -> com.wingedsheep.sdk.core.CardType.PLANESWALKER in typeLine.cardTypes
             CardPredicate.IsInstant -> typeLine.isInstant
             CardPredicate.IsSorcery -> typeLine.isSorcery
+            // A cast-spell record stores only the resolved characteristics, not the card's layout,
+            // so adventure-ness can't be recovered here. No in-scope card queries it against cast
+            // history; fall through to the safe default.
+            CardPredicate.HasAdventure -> false
             CardPredicate.IsBasicLand -> typeLine.isBasicLand
             CardPredicate.IsPermanent -> typeLine.isPermanent
             CardPredicate.IsNonland -> !typeLine.isLand

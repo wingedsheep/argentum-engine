@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.core.Zone
@@ -83,6 +84,16 @@ object Filters {
      * Sorcery card.
      */
     val Sorcery: GameObjectFilter = GameObjectFilter.Sorcery
+
+    /**
+     * Card that has an Adventure (adventurer card), regardless of which face it shows.
+     */
+    val HasAdventure: GameObjectFilter = GameObjectFilter.Any.withCardPredicate(CardPredicate.HasAdventure)
+
+    /**
+     * Instant card, sorcery card, or a card that has an Adventure — Frantic Firebolt's graveyard tally.
+     */
+    val InstantSorceryOrAdventure: GameObjectFilter = GameObjectFilter.InstantSorceryOrAdventure
 
     /**
      * Permanent card.

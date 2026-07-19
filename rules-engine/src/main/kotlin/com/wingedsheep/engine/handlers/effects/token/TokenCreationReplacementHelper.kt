@@ -29,7 +29,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CreateAdditionalToken
-import com.wingedsheep.sdk.scripting.DoubleTokenCreation
+import com.wingedsheep.sdk.scripting.MultiplyTokenCreation
 import com.wingedsheep.sdk.scripting.EventPattern as SdkGameEvent
 import com.wingedsheep.sdk.scripting.ModifyTokenCount
 import com.wingedsheep.sdk.scripting.ReplaceTokenCreationWithAttachedCopy
@@ -47,8 +47,9 @@ object TokenCreationReplacementHelper {
     /**
      * Apply token-count replacement effects whose [SdkGameEvent.TokenCreationEvent] filter
      * matches the player receiving the tokens:
-     * - [DoubleTokenCreation] (Anointed Procession / Exalted Sunborn) multiplies the count
-     *   by 2 per source; stacks multiplicatively when several apply.
+     * - [MultiplyTokenCreation] (Anointed Procession / Exalted Sunborn — factor 2; Ojer Taq —
+     *   factor 3) multiplies the count by its factor per source; stacks multiplicatively when
+     *   several apply.
      * - [ModifyTokenCount] shifts the count by a fixed amount per source (clamped at zero).
      *
      * Dispatch reads `appliesTo.controller`, mirroring [ReplacementEffectUtils.applyCounterPlacementModifiers]:
@@ -68,7 +69,7 @@ object TokenCreationReplacementHelper {
     ): Int {
         if (baseCount <= 0) return baseCount
 
-        var doublings = 0
+        val factors = mutableListOf<Int>()
         var modifier = 0
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
@@ -78,7 +79,7 @@ object TokenCreationReplacementHelper {
             val repl = container.get<ReplacementEffectSourceComponent>() ?: continue
             for (effect in repl.replacementEffects) {
                 val event = when (effect) {
-                    is DoubleTokenCreation -> effect.appliesTo
+                    is MultiplyTokenCreation -> effect.appliesTo
                     is ModifyTokenCount -> effect.appliesTo
                     else -> continue
                 }
@@ -94,7 +95,7 @@ object TokenCreationReplacementHelper {
                 }
                 if (!controllerMatches) continue
                 when (effect) {
-                    is DoubleTokenCreation -> doublings += 1
+                    is MultiplyTokenCreation -> factors += effect.factor
                     is ModifyTokenCount -> modifier += effect.modifier
                 }
             }
@@ -106,7 +107,7 @@ object TokenCreationReplacementHelper {
         // actually allocating entities.
         var count = com.wingedsheep.engine.core.GameLimits.addClamped(baseCount, modifier)
         if (count <= 0) return 0
-        repeat(doublings) { count = com.wingedsheep.engine.core.GameLimits.mulClamped(count, 2) }
+        for (factor in factors) count = com.wingedsheep.engine.core.GameLimits.mulClamped(count, factor)
         return count
     }
 

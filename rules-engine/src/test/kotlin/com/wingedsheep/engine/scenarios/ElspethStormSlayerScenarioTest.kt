@@ -14,7 +14,7 @@ import io.kotest.matchers.shouldBe
  * Scenario tests for Elspeth, Storm Slayer (TDM #11, {3}{W}{W}, Loyalty 5).
  *
  *   If one or more tokens would be created under your control, twice that many of those tokens
- *   are created instead.  ([com.wingedsheep.sdk.scripting.DoubleTokenCreation])
+ *   are created instead.  ([com.wingedsheep.sdk.scripting.MultiplyTokenCreation])
  *   +1: Create a 1/1 white Soldier creature token.
  *   0: Put a +1/+1 counter on each creature you control. Those creatures gain flying until your
  *      next turn.

@@ -53,6 +53,13 @@ data class CardComponent(
      * Null for tokens and any card whose definition carries no set code.
      */
     val originalSetCode: String? = null,
+    /**
+     * Precomputed from the card definition: does this card have an Adventure
+     * ([com.wingedsheep.sdk.model.CardLayout.ADVENTURE])? A static, copyable-independent
+     * characteristic of the whole card in any zone — read by `CardPredicate.HasAdventure`
+     * (Frantic Firebolt tallies adventurer cards in the graveyard). False for tokens.
+     */
+    val hasAdventure: Boolean = false,
 ) : Component {
     // Convenience accessors
     val isCreature: Boolean get() = typeLine.isCreature

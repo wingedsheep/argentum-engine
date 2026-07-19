@@ -2,6 +2,7 @@ package com.wingedsheep.mtg.sets.tokens
 
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
@@ -23,6 +24,7 @@ import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.SetBasePowerToughnessStatic
 import com.wingedsheep.sdk.scripting.effects.WardCost
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
@@ -409,6 +411,66 @@ object PredefinedTokens {
     }
 
     /**
+     * Wicked Role — Enchantment — Aura Role token (Wilds of Eldraine).
+     * "Enchanted creature gets +1/+1. When this Role is put into a graveyard, each opponent loses 1 life."
+     */
+    val WickedRole = card("Wicked Role") {
+        typeLine = "Enchantment — Aura Role"
+        oracleText = "Enchant creature\nEnchanted creature gets +1/+1.\n" +
+            "When this Role is put into a graveyard, each opponent loses 1 life."
+
+        auraTarget = Targets.Creature
+
+        staticAbility {
+            ability = ModifyStats(+1, +1, Filters.EnchantedCreature)
+        }
+
+        // The Role leaving the battlefield for the graveyard — destroyed, sacrificed, replaced by
+        // another Role, or falling off as its creature leaves — drains each opponent for 1.
+        triggeredAbility {
+            trigger = Triggers.PutIntoGraveyardFromBattlefield
+            effect = Effects.LoseLife(1, EffectTarget.PlayerRef(Player.EachOpponent))
+        }
+
+        metadata {
+            // "Wicked // Cursed" flip token: Wicked is the upright (front) face — no rotation.
+            imageUri = "https://cards.scryfall.io/normal/front/a/9/a9b7040e-cd24-42cc-b043-9af8c557da6a.jpg?1782732081"
+            artist = "Rovina Cai"
+        }
+    }
+
+    /**
+     * Young Hero Role — Enchantment — Aura Role token (Wilds of Eldraine).
+     * "Enchanted creature has 'Whenever this creature attacks, if its toughness is 3 or less,
+     *  put a +1/+1 counter on it.'"
+     */
+    val YoungHeroRole = card("Young Hero Role") {
+        typeLine = "Enchantment — Aura Role"
+        oracleText = "Enchant creature\nEnchanted creature has \"Whenever this creature attacks, " +
+            "if its toughness is 3 or less, put a +1/+1 counter on it.\""
+
+        auraTarget = Targets.Creature
+
+        // The granted ability is modeled as an ATTACHED-bound trigger on the Role watching its
+        // enchanted creature attack; the intervening-if re-checks the toughness at resolution (CR 603.4).
+        triggeredAbility {
+            trigger = Triggers.attacks(binding = TriggerBinding.ATTACHED)
+            triggerCondition = Conditions.EntityMatches(
+                EffectTarget.EnchantedCreature,
+                GameObjectFilter.Creature.toughnessAtMost(3)
+            )
+            effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.EnchantedCreature)
+        }
+
+        metadata {
+            // "Royal // Young Hero" flip token: Young Hero is the bottom face — rotate 180°.
+            imageUri = "https://cards.scryfall.io/normal/front/c/f/cff8ef48-2988-4d21-837e-01f1459e07c5.jpg?1783914992"
+            imageRotation = 180
+            artist = "Rovina Cai"
+        }
+    }
+
+    /**
      * Phyrexian — back face of the Incubator token.
      * Colorless 0/0 Phyrexian artifact creature.
      */
@@ -610,6 +672,8 @@ object PredefinedTokens {
         MonsterRole,
         RoyalRole,
         CursedRole,
+        WickedRole,
+        YoungHeroRole,
         Incubator,
         Drone,
         Everywhere,

@@ -227,6 +227,223 @@
     ]
 }
 
+// Aclazotz, Deepest Betrayal
+{
+    "name": "Aclazotz, Deepest Betrayal",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Bat God",
+    "oracleText": "Flying, lifelink\nWhenever Aclazotz attacks, each opponent discards a card. For each opponent who can't, you draw a card.\nWhenever an opponent discards a land card, create a 1/1 black Bat creature token with flying.\nWhen Aclazotz dies, return it to the battlefield tapped and transformed under its owner's control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "CountPlayersWith",
+                                "scope": "EachOpponent",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Hand"
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Aclazotz attacks, each opponent discards a card. For each opponent who can't, you draw a card."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "EachOpponent",
+                    "cardFilter": "land"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Bat"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/0/100c0127-49dd-4a78-9c88-1881e7923674.jpg?1721425184"
+                },
+                "descriptionOverride": "Whenever an opponent discards a land card, create a 1/1 black Bat creature token with flying."
+            },
+            {
+                "id": "ability_3",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ReturnSelfFromZoneTransformed",
+                    "tapped": true
+                },
+                "descriptionOverride": "When Aclazotz dies, return it to the battlefield tapped and transformed under its owner's control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Temple of the Dead",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "(Transforms from Aclazotz, Deepest Betrayal.)\n{T}: Add {B}.\n{2}{B}, {T}: Transform this land. Activate only if a player has one or fewer cards in hand and only as a sorcery.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_4",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLACK"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "ability_5",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{B}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": "Transform",
+                    "timing": "SorcerySpeed",
+                    "restrictions": [
+                        {
+                            "type": "ActivationOnlyIfCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "CountPlayersWith",
+                                    "scope": "Each",
+                                    "condition": {
+                                        "type": "Compare",
+                                        "left": {
+                                            "type": "Count",
+                                            "player": "You",
+                                            "zone": "Hand"
+                                        },
+                                        "operator": "LTE",
+                                        "right": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    }
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Transform this land. Activate only if a player has one or fewer cards in hand and only as a sorcery."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "88",
+            "rarity": "MYTHIC",
+            "artist": "Steve Prescott",
+            "flavorText": "Chimil gave the Oltec peace in death. Aclazotz ripped it away.",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/2/627c392c-4d18-4eb2-a4e8-c668f61f5487.jpg?1782694541"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "MYTHIC",
+        "artist": "Steve Prescott",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/627c392c-4d18-4eb2-a4e8-c668f61f5487.jpg?1782694541"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Acolyte of Aclazotz
 {
     "name": "Acolyte of Aclazotz",
@@ -10376,6 +10593,596 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Ojer Axonil, Deepest Might
+{
+    "name": "Ojer Axonil, Deepest Might",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Trample\nIf a red source you control would deal an amount of noncombat damage less than Ojer Axonil's power to an opponent, that source deals damage equal to Ojer Axonil's power instead.\nWhen Ojer Axonil dies, return it to the battlefield tapped and transformed under its owner's control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ReturnSelfFromZoneTransformed",
+                    "tapped": true
+                },
+                "descriptionOverride": "When Ojer Axonil dies, return it to the battlefield tapped and transformed under its owner's control."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "SetMinimumDamage",
+                "dynamicMinimum": {
+                    "type": "EntityProperty",
+                    "entity": "Source",
+                    "numericProperty": "Power"
+                },
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": "RecipientOpponent",
+                    "source": {
+                        "type": "SourceMatching",
+                        "filter": "red ctrl:you"
+                    },
+                    "damageType": "DamageNonCombat"
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Temple of Power",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "(Transforms from Ojer Axonil, Deepest Might.)\n{T}: Add {R}.\n{2}{R}, {T}: Transform this land. Activate only if red sources you controlled dealt 4 or more noncombat damage this turn and only as a sorcery.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "RED"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "ability_3",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{R}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": "Transform",
+                    "timing": "SorcerySpeed",
+                    "restrictions": [
+                        {
+                            "type": "ActivationOnlyIfCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "TurnTracking",
+                                    "player": "You",
+                                    "tracker": "RED_NONCOMBAT_DAMAGE_DEALT"
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Transform this land. Activate only if red sources you controlled dealt 4 or more noncombat damage this turn and only as a sorcery."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "158",
+            "rarity": "MYTHIC",
+            "artist": "Victor Adame Minguez",
+            "flavorText": "Chimil gave the Oltec passion. Ojer Axonil challenged them to harness it.",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/0/50f8e2b6-98c7-4f28-bb39-e1fbe841f1ee.jpg?1782694483"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "158",
+        "rarity": "MYTHIC",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50f8e2b6-98c7-4f28-bb39-e1fbe841f1ee.jpg?1782694483"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Ojer Kaslem, Deepest Growth
+{
+    "name": "Ojer Kaslem, Deepest Growth",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Trample\nWhenever Ojer Kaslem deals combat damage to a player, reveal that many cards from the top of your library. You may put a creature card and/or a land card from among them onto the battlefield. Put the rest on the bottom of your library in a random order.\nWhen Ojer Kaslem dies, return it to the battlefield tapped and transformed under its owner's control.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "ContextProperty",
+                                    "key": "TRIGGER_DAMAGE_AMOUNT"
+                                }
+                            },
+                            "storeAs": "kaslem_revealed",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "kaslem_revealed",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature",
+                            "storeSelected": "kaslem_creature",
+                            "storeRemainder": "kaslem_afterCreature",
+                            "prompt": "You may put a creature card onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "kaslem_afterCreature",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "land",
+                            "storeSelected": "kaslem_land",
+                            "storeRemainder": "kaslem_toBottom",
+                            "prompt": "You may put a land card onto the battlefield",
+                            "selectedLabel": "Put onto the battlefield",
+                            "remainderLabel": "Put on the bottom of your library",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kaslem_creature",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kaslem_land",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kaslem_toBottom",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Ojer Kaslem deals combat damage to a player, reveal that many cards from the top of your library. You may put a creature card and/or a land card from among them onto the battlefield. Put the rest on the bottom of your library in a random order."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ReturnSelfFromZoneTransformed",
+                    "tapped": true
+                },
+                "descriptionOverride": "When Ojer Kaslem dies, return it to the battlefield tapped and transformed under its owner's control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Temple of Cultivation",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "(Transforms from Ojer Kaslem, Deepest Growth.)\n{T}: Add {G}.\n{2}{G}, {T}: Transform this land. Activate only if you control ten or more permanents and only as a sorcery.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_3",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "GREEN"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "ability_4",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{G}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": "Transform",
+                    "timing": "SorcerySpeed",
+                    "restrictions": [
+                        {
+                            "type": "ActivationOnlyIfCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "permanent"
+                                },
+                                "operator": "GTE",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 10
+                                }
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Transform this land. Activate only if you control ten or more permanents and only as a sorcery."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "204",
+            "rarity": "MYTHIC",
+            "artist": "Ryan Pancoast",
+            "flavorText": "Chimil gave the Oltec sacred lands. Ojer Kaslem brought them to life.",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/c/0cbc43a3-8cba-4988-9de1-c89aedd79ada.jpg?1782694445"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "MYTHIC",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0cbc43a3-8cba-4988-9de1-c89aedd79ada.jpg?1782694445"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Ojer Pakpatiq, Deepest Epoch
+{
+    "name": "Ojer Pakpatiq, Deepest Epoch",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Flying\nWhenever you cast an instant spell from your hand, it gains rebound. (Exile it as it resolves. At the beginning of your next upkeep, you may cast it from exile without paying its mana cost.)\nWhen Ojer Pakpatiq dies, return it to the battlefield tapped and transformed under its owner's control with three time counters on it.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsInstant"
+                        ]
+                    },
+                    "requires": [
+                        {
+                            "type": "SpellCastFromZone",
+                            "zone": "Hand"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeywordToSpell",
+                    "keyword": "REBOUND"
+                },
+                "descriptionOverride": "Whenever you cast an instant spell from your hand, it gains rebound."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ReturnSelfFromZoneTransformed",
+                            "tapped": true
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "time",
+                            "count": 3,
+                            "target": "Self"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Ojer Pakpatiq dies, return it to the battlefield tapped and transformed under its owner's control with three time counters on it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Temple of Cyclical Time",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "(Transforms from Ojer Pakpatiq, Deepest Epoch.)\n{T}: Add {U}. Remove a time counter from this land.\n{2}{U}, {T}: Transform this land. Activate only if it has no time counters on it and only as a sorcery.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_3",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddMana",
+                                "color": "BLUE"
+                            },
+                            {
+                                "type": "RemoveCounters",
+                                "counterType": "time",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        ]
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "ability_4",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{U}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": "Transform",
+                    "timing": "SorcerySpeed",
+                    "restrictions": [
+                        {
+                            "type": "ActivationOnlyIfCondition",
+                            "condition": {
+                                "type": "Not",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": {
+                                                "type": "Named",
+                                                "name": "time"
+                                            }
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Transform this land. Activate only if it has no time counters on it and only as a sorcery."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "67",
+            "rarity": "MYTHIC",
+            "artist": "Chris Rahn",
+            "flavorText": "Chimil gave the Oltec time. Ojer Pakpatiq gave them the tools to learn its lessons.",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/9/a9d71007-bc04-4dff-ad3f-e2c0b5b4400e.jpg?1782694556"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rahn",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a9d71007-bc04-4dff-ad3f-e2c0b5b4400e.jpg?1782694556"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Ojer Taq, Deepest Foundation
+{
+    "name": "Ojer Taq, Deepest Foundation",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Legendary Creature — God",
+    "oracleText": "Vigilance\nIf one or more creature tokens would be created under your control, three times that many of those tokens are created instead.\nWhen Ojer Taq dies, return it to the battlefield tapped and transformed under its owner's control.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "ReturnSelfFromZoneTransformed",
+                    "tapped": true
+                },
+                "descriptionOverride": "When Ojer Taq dies, return it to the battlefield tapped and transformed under its owner's control."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "MultiplyTokenCreation",
+                "factor": 3
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Temple of Civilization",
+        "manaCost": "",
+        "typeLine": "Land",
+        "oracleText": "(Transforms from Ojer Taq, Deepest Foundation.)\n{T}: Add {W}.\n{2}{W}, {T}: Transform this land. Activate only if you attacked with three or more creatures this turn and only as a sorcery.",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_2",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "WHITE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                {
+                    "id": "ability_3",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{2}{W}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": "Transform",
+                    "timing": "SorcerySpeed",
+                    "restrictions": [
+                        {
+                            "type": "ActivationOnlyIfCondition",
+                            "condition": {
+                                "type": "PlayerAttackedWithCreaturesThisTurn",
+                                "filter": "creature",
+                                "atLeast": 3
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Transform this land. Activate only if you attacked with three or more creatures this turn and only as a sorcery."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "26",
+            "rarity": "MYTHIC",
+            "artist": "Cristi Balanescu",
+            "flavorText": "Chimil gave the Oltec life. Ojer Taq taught them how to live together.",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/c/1ca79dd4-67fc-496c-96fc-489b039c4932.jpg?1782694591"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "MYTHIC",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1ca79dd4-67fc-496c-96fc-489b039c4932.jpg?1782694591"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
