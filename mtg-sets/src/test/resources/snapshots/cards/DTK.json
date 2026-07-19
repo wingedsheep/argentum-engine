@@ -677,6 +677,70 @@
     ]
 }
 
+// Surrak, the Hunt Caller
+{
+    "name": "Surrak, the Hunt Caller",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Creature — Human Warrior",
+    "oracleText": "Formidable — At the beginning of combat on your turn, if creatures you control have total power 8 or greater, target creature you control gains haste until end of turn. (It can attack and {T} no matter when it came under your control.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature you control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "target creature you control"
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "creature",
+                        "aggregation": "SUM",
+                        "property": "POWER"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "RARE",
+        "artist": "Wesley Burt",
+        "flavorText": "\"The greatest honor is to feed Atarka.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b374446d-44bc-4ac5-9829-8c49f0cca173.jpg?1783938575"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Twin Bolt
 {
     "name": "Twin Bolt",
