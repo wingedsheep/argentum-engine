@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.fin.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -16,7 +15,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * Snow Villiers's power is equal to the number of creatures you control.
  *
  * Power is a characteristic-defining ability (printed *), recomputed continuously via
- * [CharacteristicValue.dynamic] over the count of creatures you control (read through projected
+ * `dynamicPower(...)` over the count of creatures you control (read through projected
  * control). Snow himself is a creature you control, so he counts toward his own power. Toughness
  * is the printed fixed value 3, so only `dynamicPower` is set.
  */
@@ -24,7 +23,7 @@ val SnowVilliers = card("Snow Villiers") {
     manaCost = "{2}{W}"
     colorIdentity = "W"
     typeLine = "Legendary Creature — Human Rebel Monk"
-    dynamicPower = CharacteristicValue.dynamic(
+    dynamicPower(
         DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature),
     )
     toughness = 3

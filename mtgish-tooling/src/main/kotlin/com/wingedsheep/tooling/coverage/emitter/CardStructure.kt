@@ -3374,18 +3374,36 @@ private fun isPlainCreatureFilter(trig: JsonObject): Boolean {
 }
 
 /**
- * A characteristic-defining `CDA_Power` rule (with its matching `CDA_Toughness`) -> a single
- * `dynamicStats(...)` line, when both power and toughness are the same dynamic count (the
- * power-and-toughness-equal-to-the-number-of-X cycle). Differing power/toughness amounts scaffold.
+ * A characteristic-defining `CDA_Power` rule (plus its `CDA_Toughness` sibling, if any) -> the
+ * card-level dynamic P/T line(s). Both stats reading the *same* count (the
+ * power-and-toughness-equal-to-the-number-of-X cycle) collapse to one `dynamicStats(...)`;
+ * a power-only CDA (Duelist of the Mind's `*`/3) or two different counts (Yavimaya Kavu's red
+ * creatures / green creatures) render the single-stat `dynamicPower(...)` / `dynamicToughness(...)`
+ * helpers. An amount we can't recover still scaffolds.
  */
 internal fun EmitCtx.cdaStatsBlock(card: JsonObject, rule: JsonObject): List<Stmt>? {
     val toughnessRule = (card["Rules"].asArr ?: JsonArray(emptyList()))
         .filterIsInstance<JsonObject>().firstOrNull { it.strField("_Rule") == "CDA_Toughness" }
-    if (toughnessRule == null || compact(rule["args"]) != compact(toughnessRule["args"])) {
-        reasons.add("CDA_Power"); return null
+    val power = dynamicAmountExpr(rule["args"]) ?: run { reasons.add("CDA_Power"); return null }
+    if (toughnessRule != null && compact(rule["args"]) == compact(toughnessRule["args"])) {
+        return listOf(Eval(call("dynamicStats", arg(power))))
     }
-    val amount = dynamicAmountExpr(rule["args"]) ?: run { reasons.add("CDA_Power"); return null }
-    return listOf(Eval(call("dynamicStats", arg(amount))))
+    val lines = mutableListOf<Stmt>(Eval(call("dynamicPower", arg(power))))
+    if (toughnessRule != null) {
+        val toughness = dynamicAmountExpr(toughnessRule["args"])
+            ?: run { reasons.add("CDA_Toughness"); return null }
+        lines.add(Eval(call("dynamicToughness", arg(toughness))))
+    }
+    return lines
+}
+
+/**
+ * A `CDA_Toughness` rule with no `CDA_Power` sibling -> a lone `dynamicToughness(...)` line
+ * (the printed power stays a fixed number). The paired case is emitted by [cdaStatsBlock].
+ */
+internal fun EmitCtx.cdaToughnessBlock(rule: JsonObject): List<Stmt>? {
+    val amount = dynamicAmountExpr(rule["args"]) ?: run { reasons.add("CDA_Toughness"); return null }
+    return listOf(Eval(call("dynamicToughness", arg(amount))))
 }
 
 /**

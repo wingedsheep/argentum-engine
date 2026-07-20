@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.craft
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.IfYouDoEffect
@@ -76,7 +75,7 @@ private val MastercraftRaptor = card("Mastercraft Raptor") {
     typeLine = "Artifact Creature — Dinosaur"
     // Power = total power of cards exiled to craft this permanent (CR 702.167c).
     // The CDA reads CraftedFromExiledComponent on this entity each projection pass.
-    dynamicPower = CharacteristicValue.Dynamic(DynamicAmount.CraftedMaterialsTotalPower)
+    dynamicPower(DynamicAmount.CraftedMaterialsTotalPower)
     toughness = 4
     oracleText = "Mastercraft Raptor's power is equal to the total power of the exiled cards used to craft it."
 

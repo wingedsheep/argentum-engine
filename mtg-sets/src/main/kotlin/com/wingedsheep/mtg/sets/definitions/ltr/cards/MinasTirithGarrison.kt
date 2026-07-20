@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.ltr.cards
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
@@ -34,7 +33,7 @@ val MinasTirithGarrison = card("Minas Tirith Garrison") {
         "Whenever this creature attacks, you may tap any number of untapped Humans you control. Draw a card for each Human tapped this way."
 
     // Power is equal to the number of cards in your hand.
-    dynamicPower = CharacteristicValue.dynamic(
+    dynamicPower(
         DynamicAmount.Count(Player.You, Zone.HAND)
     )
 

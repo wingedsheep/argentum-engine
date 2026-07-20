@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
@@ -40,7 +39,7 @@ private val NeoExdeathDimensionsEnd = card("Neo Exdeath, Dimension's End") {
     colorIdentity = "BG"
     typeLine = "Legendary Creature — Spirit Avatar"
     oracleText = "Trample\nNeo Exdeath's power is equal to the number of permanent cards in your graveyard."
-    dynamicPower = CharacteristicValue.dynamic(
+    dynamicPower(
         DynamicAmount.Count(Player.You, Zone.GRAVEYARD, GameObjectFilter.Permanent),
     )
     toughness = 3

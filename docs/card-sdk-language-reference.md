@@ -38,8 +38,15 @@ section; do not let SDK additions land without a corresponding doc update.
   from the type line in both legal-action enumeration and the cast handler; no per-card opt-in needed.
 - `oracleText: String` — rules text; auto-generated from abilities if omitted.
 - `power: Int?`, `toughness: Int?` — base P/T for creatures.
-- `dynamicPower`, `dynamicToughness` — characteristic-defining P/T (e.g. `*/*` Tarmogoyf).
-- `dynamicStats(source, powerOffset?, toughnessOffset?)` — sets both with optional `±` deltas.
+- `dynamicPower`, `dynamicToughness` — characteristic-defining P/T (e.g. `*/*` Tarmogoyf), as
+  `CharacteristicValue` properties. Prefer the builder helpers below over assigning them directly.
+- `dynamicPower(source, offset?)` / `dynamicToughness(source, offset?)` — set one
+  characteristic-defining stat from a `DynamicAmount` with an optional `±` delta. Use these when
+  only one stat is dynamic (Duelist of the Mind's `*`/3) or when the two read *different* sources
+  (Yavimaya Kavu: power = red creatures, toughness = green creatures).
+- `dynamicStats(source, powerOffset?, toughnessOffset?)` — the `*`/`*` cycle: composes
+  `dynamicPower` + `dynamicToughness` over one shared source, with optional `±` deltas
+  (Tarmogoyf's `toughnessOffset = 1`).
 - `startingLoyalty: Int?` — starting loyalty for planeswalkers.
 - `colorIdentity: String?` — override (normally auto-detected). Treated as authoritative in this repo.
 - `colorIndicator: String?` — explicit color indicator (CR 204), e.g. `"B"`. `null` (default) = no

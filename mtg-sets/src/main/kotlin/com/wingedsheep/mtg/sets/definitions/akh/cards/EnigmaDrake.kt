@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.akh.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -18,10 +17,10 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * Flying
  * Enigma Drake's power is equal to the number of instant and sorcery cards in your graveyard.
  *
- * The characteristic-defining power is a [CharacteristicValue.dynamic] over
+ * The characteristic-defining power is a `dynamicPower(...)` over
  * [DynamicAmount.Count] of instant/sorcery cards in the controller's graveyard
  * ([GameObjectFilter.InstantOrSorcery]). Only power is dynamic; toughness stays a printed 4,
- * so we set `dynamicPower` directly (same shape as Duelist of the Mind).
+ * so we use the single-stat `dynamicPower(...)` helper (same shape as Duelist of the Mind).
  *
  * Canonical printing lives here (Amonkhet, the earliest real expansion); later sets
  * (M19, Foundations, …) contribute only [com.wingedsheep.sdk.model.Printing] rows.
@@ -33,7 +32,7 @@ val EnigmaDrake = card("Enigma Drake") {
     toughness = 4
     oracleText = "Flying\nEnigma Drake's power is equal to the number of instant and sorcery cards in your graveyard."
 
-    dynamicPower = CharacteristicValue.dynamic(
+    dynamicPower(
         DynamicAmount.Count(Player.You, Zone.GRAVEYARD, GameObjectFilter.InstantOrSorcery)
     )
 

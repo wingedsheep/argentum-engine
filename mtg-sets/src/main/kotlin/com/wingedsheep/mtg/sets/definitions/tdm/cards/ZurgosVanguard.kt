@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.tdm.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.mobilize
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -17,7 +16,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * Zurgo's Vanguard's power is equal to the number of creatures you control.
  *
  * `mobilize(1)` supplies the attack-triggered Warrior token. The characteristic-defining power is a
- * power-only [CharacteristicValue.dynamic] over [DynamicAmount.AggregateBattlefield] counting
+ * power-only `dynamicPower(...)` over [DynamicAmount.AggregateBattlefield] counting
  * creatures you control (toughness stays fixed at 3). Because Mobilize's token enters tapped and
  * attacking before damage, the Warrior it makes is itself a creature you control, so the
  * count-based power already reflects the new token when combat damage is assigned.
@@ -32,7 +31,7 @@ val ZurgosVanguard = card("Zurgo's Vanguard") {
         "Zurgo's Vanguard's power is equal to the number of creatures you control."
 
     mobilize(1)
-    dynamicPower = CharacteristicValue.dynamic(
+    dynamicPower(
         DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature)
     )
 

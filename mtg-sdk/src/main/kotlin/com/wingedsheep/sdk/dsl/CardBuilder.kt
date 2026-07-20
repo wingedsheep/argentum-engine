@@ -216,12 +216,31 @@ class CardBuilder(private val name: String) {
     var dynamicToughness: CharacteristicValue? = null
 
     /**
-     * Set dynamic stats from the same source with optional offsets.
+     * Set a characteristic-defining power from a dynamic source with an optional `±` offset.
+     * Example: `dynamicPower(DynamicAmount.TurnTracking(Player.You, TurnTracker.CARDS_DRAWN))` for
+     * Duelist of the Mind (`*`/3 — only power is dynamic).
+     */
+    fun dynamicPower(source: DynamicAmount, offset: Int = 0) {
+        dynamicPower = CharacteristicValue.dynamic(source, offset)
+    }
+
+    /**
+     * Set a characteristic-defining toughness from a dynamic source with an optional `±` offset.
+     * Example: `dynamicToughness(DynamicAmounts.landsYouControl(), offset = 1)` for a `2`/`*+1`.
+     */
+    fun dynamicToughness(source: DynamicAmount, offset: Int = 0) {
+        dynamicToughness = CharacteristicValue.dynamic(source, offset)
+    }
+
+    /**
+     * Set both dynamic stats from the same source with optional offsets — the common `*`/`*` cycle.
+     * Composes [dynamicPower] and [dynamicToughness]; use those directly when only one stat is
+     * characteristic-defining, or when the two read different sources.
      * Example: `dynamicStats(DynamicAmount.AggregateZone(Player.Each, Zone.GRAVEYARD, aggregation = Aggregation.DISTINCT_TYPES), toughnessOffset = 1)` for Tarmogoyf.
      */
     fun dynamicStats(source: DynamicAmount, powerOffset: Int = 0, toughnessOffset: Int = 0) {
-        dynamicPower = CharacteristicValue.dynamic(source, powerOffset)
-        dynamicToughness = CharacteristicValue.dynamic(source, toughnessOffset)
+        dynamicPower(source, powerOffset)
+        dynamicToughness(source, toughnessOffset)
     }
 
     /**

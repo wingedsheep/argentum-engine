@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
@@ -26,14 +25,14 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * Toph's power is equal to the number of +1/+1 counters on lands you control.
  *
  * Power is a characteristic-defining ability (printed *), recomputed continuously via
- * [CharacteristicValue.dynamic] as the total +1/+1 counters among lands you control (SUM over
+ * `dynamicPower(...)` as the total +1/+1 counters among lands you control (SUM over
  * the +1/+1 counters on each land). Toughness is the printed fixed value 3.
  */
 val TophTheBlindBandit = card("Toph, the Blind Bandit") {
     manaCost = "{2}{G}"
     colorIdentity = "G"
     typeLine = "Legendary Creature — Human Warrior Ally"
-    dynamicPower = CharacteristicValue.dynamic(
+    dynamicPower(
         DynamicAmount.AggregateBattlefield(
             player = Player.You,
             filter = GameObjectFilter.Land,

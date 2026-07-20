@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.KeywordAbility
@@ -35,7 +34,7 @@ val DragonflySwarm = card("Dragonfly Swarm") {
         "When this creature dies, if there's a Lesson card in your graveyard, draw a card."
 
     // Power is the number of noncreature, nonland cards in the controller's graveyard (CDA).
-    dynamicPower = CharacteristicValue.dynamic(
+    dynamicPower(
         DynamicAmount.Count(
             player = Player.You,
             zone = Zone.GRAVEYARD,

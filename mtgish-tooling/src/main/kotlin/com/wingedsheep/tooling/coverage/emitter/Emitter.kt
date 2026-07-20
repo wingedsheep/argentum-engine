@@ -234,7 +234,7 @@ object Emitter {
                 rname == "CDA_Power" -> block = ctx.cdaStatsBlock(card, rule)
                 rname == "CDA_Toughness" ->
                     if (jsonContains(card["Rules"], "_Rule", "CDA_Power")) continue  // emitted with CDA_Power
-                    else { gap("CDA_Toughness", addReason = "CDA_Toughness")?.let { return it }; continue }
+                    else block = ctx.cdaToughnessBlock(rule)
                 rname == "Activated" || rname == "ActivatedWithModifiers" -> block = ctx.activatedBlock(rule)
                 rname == "Cycling" -> block = manaKeywordCost(rule)?.let { listOf(Eval(call("keywordAbility", arg(call("KeywordAbility.cycling", arg("\"$it\"")))))) }
                 // Typecycling (CR 702.29) — the land-type "Forestcycling"/"Swampcycling"/… forms carry

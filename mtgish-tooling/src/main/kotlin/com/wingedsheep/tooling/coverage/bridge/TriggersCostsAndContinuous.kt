@@ -338,4 +338,14 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // trigger." A continuous static that suppresses CR 603.6 enters-the-battlefield triggers caused by a
     // matching permanent entering. Renders to the SuppressEntersTriggers static ability.
     supported("PermanentsEnteringTheBattlefieldDontCauseAbilitiesToTrigger", "rule: matching permanents entering don't cause abilities to trigger (SuppressEntersTriggers)")
+
+    // Characteristic-defining power/toughness (CR 604.3, applied in layer 7a) — "~'s power is equal to
+    // the number of [X]". The card DSL models each stat independently: `dynamicPower(amount, offset)` /
+    // `dynamicToughness(amount, offset)`, with `dynamicStats(...)` composing both over one shared count
+    // (the `*`/`*` cycle). Each stat is its own IR rule, so both are supported on their own — a
+    // power-only CDA (Duelist of the Mind's `*`/3) and two different counts (Yavimaya Kavu) are as
+    // renderable as the matched pair. Whether the *amount* itself is recoverable is the emitter's call;
+    // an unreadable count still scaffolds.
+    supported("CDA_Power", "rule: characteristic-defining power (dynamicPower / dynamicStats)")
+    supported("CDA_Toughness", "rule: characteristic-defining toughness (dynamicToughness / dynamicStats)")
 }

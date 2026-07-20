@@ -35,6 +35,7 @@ import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.Aggregation
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import com.wingedsheep.sdk.scripting.values.TurnTracker
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveSize
@@ -714,13 +715,67 @@ class CardDslTest : DescribeSpec({
                 manaCost = "{2}{G}{G}"
                 typeLine = "Creature — Lhurgoyf"
 
-                dynamicPower = com.wingedsheep.sdk.model.CharacteristicValue.Dynamic(DynamicAmounts.creatureCardsInYourGraveyard())
-                dynamicToughness = com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset(DynamicAmounts.creatureCardsInYourGraveyard(), 1)
+                dynamicPower(DynamicAmounts.creatureCardsInYourGraveyard())
+                dynamicToughness(DynamicAmounts.creatureCardsInYourGraveyard(), offset = 1)
             }
 
             lhurgoyf.creatureStats shouldNotBe null
             lhurgoyf.creatureStats!!.isDynamic shouldBe true
             lhurgoyf.creatureStats.basePower shouldBe null  // No fixed base power
+
+            lhurgoyf.creatureStats.power.shouldBeInstanceOf<com.wingedsheep.sdk.model.CharacteristicValue.Dynamic>()
+            val toughness = lhurgoyf.creatureStats.toughness
+                .shouldBeInstanceOf<com.wingedsheep.sdk.model.CharacteristicValue.DynamicWithOffset>()
+            toughness.offset shouldBe 1
+        }
+
+        it("should define a power-only CDA, leaving toughness printed") {
+            val duelist = card("Duelist") {
+                manaCost = "{1}{U}"
+                typeLine = "Creature — Human Advisor"
+                toughness = 3
+
+                dynamicPower(DynamicAmount.TurnTracking(Player.You, TurnTracker.CARDS_DRAWN))
+            }
+
+            duelist.creatureStats shouldNotBe null
+            duelist.creatureStats!!.isDynamic shouldBe true
+            duelist.creatureStats.power.shouldBeInstanceOf<com.wingedsheep.sdk.model.CharacteristicValue.Dynamic>()
+            duelist.creatureStats.toughness shouldBe com.wingedsheep.sdk.model.CharacteristicValue.Fixed(3)
+        }
+
+        it("should define power and toughness from two different dynamic sources") {
+            val kavu = card("Yavimaya Kavu") {
+                manaCost = "{2}{R}{G}"
+                typeLine = "Creature — Kavu"
+
+                dynamicPower(DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature.withColor(Color.RED)))
+                dynamicToughness(DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature.withColor(Color.GREEN)))
+            }
+
+            val power = kavu.creatureStats!!.power
+                .shouldBeInstanceOf<com.wingedsheep.sdk.model.CharacteristicValue.Dynamic>()
+            val toughness = kavu.creatureStats.toughness
+                .shouldBeInstanceOf<com.wingedsheep.sdk.model.CharacteristicValue.Dynamic>()
+            power.source shouldNotBe toughness.source
+        }
+
+        it("dynamicStats composes dynamicPower and dynamicToughness over one source") {
+            val shared = DynamicAmounts.creatureCardsInYourGraveyard()
+
+            val viaHelper = card("Composed") {
+                manaCost = "{2}{G}"
+                typeLine = "Creature — Lhurgoyf"
+                dynamicStats(shared, toughnessOffset = 1)
+            }
+            val viaParts = card("Composed") {
+                manaCost = "{2}{G}"
+                typeLine = "Creature — Lhurgoyf"
+                dynamicPower(shared)
+                dynamicToughness(shared, offset = 1)
+            }
+
+            viaHelper.creatureStats shouldBe viaParts.creatureStats
         }
     }
 

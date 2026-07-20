@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.ecl.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 
 /**
@@ -21,7 +20,7 @@ val Squawkroaster = card("Squawkroaster") {
     typeLine = "Creature — Elemental"
     oracleText = "Double strike\n" +
         "Vivid — Squawkroaster's power is equal to the number of colors among permanents you control."
-    dynamicPower = CharacteristicValue.Dynamic(DynamicAmounts.colorsAmongPermanents())
+    dynamicPower(DynamicAmounts.colorsAmongPermanents())
     toughness = 4
 
     keywords(Keyword.DOUBLE_STRIKE, Keyword.VIVID)

@@ -3,7 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.dmu.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.scripting.CostModification
@@ -30,7 +29,7 @@ val HaughtyDjinn = card("Haughty Djinn") {
     oracleText = "Flying\nHaughty Djinn's power is equal to the number of instant and sorcery cards in your graveyard.\nInstant and sorcery spells you cast cost {1} less to cast."
 
     // Power is dynamic based on instant and sorcery cards in controller's graveyard
-    dynamicPower = CharacteristicValue.dynamic(
+    dynamicPower(
         DynamicAmount.Count(
             player = Player.You,
             zone = Zone.GRAVEYARD,

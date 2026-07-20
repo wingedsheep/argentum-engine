@@ -4,7 +4,6 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.model.CharacteristicValue
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.references.Player
@@ -23,8 +22,8 @@ import com.wingedsheep.sdk.scripting.values.TurnTracker
  *
  * The characteristic-defining power uses [DynamicAmount.TurnTracking] with the new
  * [TurnTracker.CARDS_DRAWN] tracker (backed by `CardsDrawnThisTurnComponent`); only power is
- * dynamic, toughness stays a printed 3, so we set `dynamicPower` directly rather than via the
- * both-stats `dynamicStats` helper.
+ * dynamic, toughness stays a printed 3, so we use the single-stat `dynamicPower(...)` helper
+ * rather than the both-stats `dynamicStats(...)`.
  *
  * The crime trigger is the standard [Triggers.YouCommitCrime] capped with `oncePerTurn = true`
  * and runs the optional loot ([MayEffect] wrapping [Patterns.Hand.loot]) — the same composition
@@ -36,7 +35,7 @@ val DuelistOfTheMind = card("Duelist of the Mind") {
     typeLine = "Creature — Human Advisor"
     oracleText = "Flying, vigilance\nDuelist of the Mind's power is equal to the number of cards you've drawn this turn.\nWhenever you commit a crime, you may draw a card. If you do, discard a card. This ability triggers only once each turn."
     toughness = 3
-    dynamicPower = CharacteristicValue.dynamic(
+    dynamicPower(
         DynamicAmount.TurnTracking(Player.You, TurnTracker.CARDS_DRAWN)
     )
 
