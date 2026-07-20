@@ -1406,6 +1406,86 @@
     ]
 }
 
+// Bat Colony
+{
+    "name": "Bat Colony",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create a 1/1 black Bat creature token with flying for each mana from a Cave spent to cast it.\nWhenever a Cave you control enters, put a +1/+1 counter on target creature you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "ManaSpentFromSubtype",
+                        "subtype": "Cave"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Bat"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/1/0/100c0127-49dd-4a78-9c88-1881e7923674.jpg?1721425184"
+                },
+                "descriptionOverride": "When this enchantment enters, create a 1/1 black Bat creature token with flying for each mana from a Cave spent to cast it."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land Cave ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature you control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "target creature you control"
+                },
+                "descriptionOverride": "Whenever a Cave you control enters, put a +1/+1 counter on target creature you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "UNCOMMON",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c02134c-ec9f-4090-820e-8ba7ae4a8c2b.jpg?1782694607",
+        "rulings": [
+            {
+                "date": "2023-11-10",
+                "text": "The number of Bats created is equal to the number of mana from Caves you control that was spent to cast Bat Colony, not the number of Caves you control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Bedrock Tortoise
 {
     "name": "Bedrock Tortoise",
@@ -2036,6 +2116,207 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Brass's Tunnel-Grinder
+{
+    "name": "Brass's Tunnel-Grinder",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "When Brass's Tunnel-Grinder enters, discard any number of cards, then draw that many cards plus one.\nAt the beginning of your end step, if you descended this turn, put a bore counter on Brass's Tunnel-Grinder. Then if there are three or more bore counters on it, remove those counters and transform it. (You descended if a permanent card was put into your graveyard from anywhere.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "discarded_candidates"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "discarded_candidates",
+                                    "selection": "ChooseAnyNumber",
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose any number of cards to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Add",
+                                "left": {
+                                    "type": "VariableReference",
+                                    "variableName": "discarded_count"
+                                },
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Brass's Tunnel-Grinder enters, discard any number of cards, then draw that many cards plus one."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "bore",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": {
+                                                "type": "Named",
+                                                "name": "bore"
+                                            }
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "RemoveCounters",
+                                        "counterType": "bore",
+                                        "count": 3,
+                                        "target": "Self"
+                                    },
+                                    "Transform"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "TurnTracking",
+                        "player": "You",
+                        "tracker": "DESCENDED"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "At the beginning of your end step, if you descended this turn, put a bore counter on Brass's Tunnel-Grinder. Then if there are three or more bore counters on it, remove those counters and transform it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Tecutlan, the Searing Rift",
+        "manaCost": "",
+        "typeLine": "Legendary Land — Cave",
+        "oracleText": "{T}: Add {R}.\nWhenever you cast a permanent spell using mana produced by Tecutlan, discover X, where X is that spell's mana value.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_3",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                "IsPermanent"
+                            ]
+                        },
+                        "requires": [
+                            "SpellPaidWithManaFromSource"
+                        ]
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Discover",
+                        "amount": {
+                            "type": "ContextProperty",
+                            "key": "TRIGGERING_SPELL_MANA_VALUE"
+                        }
+                    },
+                    "descriptionOverride": "Whenever you cast a permanent spell using mana produced by Tecutlan, discover X, where X is that spell's mana value."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "ability_4",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "RED"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "135",
+            "rarity": "RARE",
+            "artist": "Cristi Balanescu",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/6/d61d8895-7f2e-4c77-951f-4f1a49e96f57.jpg?1782694501"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d61d8895-7f2e-4c77-951f-4f1a49e96f57.jpg?1782694501"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -16815,6 +17096,164 @@
     ]
 }
 
+// The Everflowing Well
+{
+    "name": "The Everflowing Well",
+    "manaCost": "{2}{U}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "When The Everflowing Well enters, mill two cards, then draw two cards.\nDescend 8 — At the beginning of your upkeep, if there are eight or more permanent cards in your graveyard, transform The Everflowing Well. (You descended if a permanent card was put into your graveyard from anywhere.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When The Everflowing Well enters, mill two cards, then draw two cards."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "permanent"
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
+                },
+                "descriptionOverride": "Descend 8 — At the beginning of your upkeep, if there are eight or more permanent cards in your graveyard, transform The Everflowing Well."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "The Myriad Pools",
+        "manaCost": "",
+        "typeLine": "Legendary Artifact Land",
+        "oracleText": "{T}: Add {U}.\nWhenever you cast a permanent spell using mana produced by The Myriad Pools, up to one other target permanent you control becomes a copy of that spell until end of turn.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_3",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                "IsPermanent"
+                            ]
+                        },
+                        "requires": [
+                            "SpellPaidWithManaFromSource"
+                        ]
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "EachPermanentBecomesCopyOfTarget",
+                        "target": "TriggeringEntity",
+                        "duration": "EndOfTurn",
+                        "affected": {
+                            "type": "BoundVariable",
+                            "name": "up to one other target permanent you control"
+                        },
+                        "sourceFromAnyZone": true
+                    },
+                    "targetRequirement": {
+                        "type": "TargetOther",
+                        "baseRequirement": {
+                            "type": "TargetObject",
+                            "optional": true,
+                            "filter": {
+                                "baseFilter": "permanent ctrl:you"
+                            }
+                        },
+                        "id": "up to one other target permanent you control"
+                    },
+                    "descriptionOverride": "Whenever you cast a permanent spell using mana produced by The Myriad Pools, up to one other target permanent you control becomes a copy of that spell until end of turn."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "ability_4",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "BLUE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "56",
+            "rarity": "RARE",
+            "artist": "David Álvarez",
+            "imageUri": "https://cards.scryfall.io/normal/back/b/f/bf573fb7-fa6c-4df7-8e5e-1e071585361e.jpg?1782694564"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "RARE",
+        "artist": "David Álvarez",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bf573fb7-fa6c-4df7-8e5e-1e071585361e.jpg?1782694564"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // The Mycotyrant
 {
     "name": "The Mycotyrant",
@@ -16970,6 +17409,193 @@
         "artist": "Manuel Castañón",
         "flavorText": "The Thousand Moons train and fight in tight-knit squads of ten. Every tenth Moon functions as an officer, every hundredth as a captain, and the thousandth, Anim Pakal, as supreme commander.",
         "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1974a8c-3328-4ff5-9a00-cb79ebb8ccf6.jpg?1782694580"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Thousand Moons Smithy
+{
+    "name": "Thousand Moons Smithy",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "When Thousand Moons Smithy enters, create a white Gnome Soldier artifact creature token with \"This token's power and toughness are each equal to the number of artifacts and/or creatures you control.\"\nAt the beginning of your first main phase, you may tap five untapped artifacts and/or creatures you control. If you do, transform Thousand Moons Smithy.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 0,
+                    "toughness": 0,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Gnome",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a6bec46-1acd-4726-b8d9-3045ac6a2ea2.jpg?1782694580",
+                    "artifactToken": true,
+                    "staticAbilities": [
+                        {
+                            "type": "SetBasePowerToughnessDynamicStatic",
+                            "power": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact|creature"
+                            },
+                            "toughness": {
+                                "type": "AggregateBattlefield",
+                                "player": "You",
+                                "filter": "artifact|creature"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Thousand Moons Smithy enters, create a white Gnome Soldier artifact creature token with \"This token's power and toughness are each equal to the number of artifacts and/or creatures you control.\""
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "PRECOMBAT_MAIN"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "ControlledPermanents",
+                                        "filter": "artifact|creature untapped"
+                                    },
+                                    "storeAs": "smithyTapPool"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "smithyTapPool",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 5
+                                        }
+                                    },
+                                    "storeSelected": "smithyToTap",
+                                    "prompt": "Tap five untapped artifacts and/or creatures you control",
+                                    "useTargetingUI": true
+                                },
+                                {
+                                    "type": "TapUntapCollection",
+                                    "collectionName": "smithyToTap"
+                                }
+                            ]
+                        }
+                    },
+                    "then": "Transform",
+                    "descriptionOverride": "You may tap five untapped artifacts and/or creatures you control. If you do, transform Thousand Moons Smithy."
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Barracks of the Thousand",
+        "manaCost": "",
+        "typeLine": "Legendary Artifact Land",
+        "oracleText": "{T}: Add {W}.\nWhenever you cast an artifact or creature spell using mana produced by Barracks of the Thousand, create a white Gnome Soldier artifact creature token with \"This token's power and toughness are each equal to the number of artifacts and/or creatures you control.\"",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_3",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsArtifact",
+                                        "IsCreature"
+                                    ]
+                                }
+                            ]
+                        },
+                        "requires": [
+                            "SpellPaidWithManaFromSource"
+                        ]
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 0,
+                        "toughness": 0,
+                        "colors": [
+                            "WHITE"
+                        ],
+                        "creatureTypes": [
+                            "Gnome",
+                            "Soldier"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a6bec46-1acd-4726-b8d9-3045ac6a2ea2.jpg?1782694580",
+                        "artifactToken": true,
+                        "staticAbilities": [
+                            {
+                                "type": "SetBasePowerToughnessDynamicStatic",
+                                "power": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "artifact|creature"
+                                },
+                                "toughness": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "artifact|creature"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Whenever you cast an artifact or creature spell using mana produced by Barracks of the Thousand, create a white Gnome Soldier artifact creature token."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "ability_4",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "WHITE"
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "39",
+            "rarity": "RARE",
+            "artist": "Manuel Castañón",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/a/4a6bec46-1acd-4726-b8d9-3045ac6a2ea2.jpg?1782694580"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "RARE",
+        "artist": "Manuel Castañón",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a6bec46-1acd-4726-b8d9-3045ac6a2ea2.jpg?1782694580"
     },
     "colorIdentityOverride": [
         "WHITE"

@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 261 / 286
+**Implemented:** 265 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -22,7 +22,7 @@
 - [x] Attentive Sunscribe
 - [x] Bartolomé del Presidio
 - [x] Basking Capybara
-- [ ] Bat Colony
+- [x] Bat Colony
 - [x] Bedrock Tortoise
 - [x] Belligerent Yearling
 - [x] Bitter Triumph
@@ -31,7 +31,7 @@
 - [x] Bonehoard Dracosaur
 - [x] Brackish Blunder
 - [x] Braided Net
-- [ ] Brass's Tunnel-Grinder
+- [x] Brass's Tunnel-Grinder
 - [x] Brazen Blademaster
 - [ ] Breeches, Eager Pillager
 - [x] Bringer of the Last Gift
@@ -254,13 +254,13 @@
 - [x] The Ancient One
 - [x] The Belligerent
 - [x] The Enigma Jewel
-- [ ] The Everflowing Well
+- [x] The Everflowing Well
 - [ ] The Millennium Calendar
 - [x] The Mycotyrant
 - [ ] The Skullspore Nexus
 - [x] Thousand Moons Crackshot
 - [x] Thousand Moons Infantry
-- [ ] Thousand Moons Smithy
+- [x] Thousand Moons Smithy
 - [x] Thrashing Brontodon
 - [x] Threefold Thunderhulk
 - [x] Throne of the Grim Captain
