@@ -1304,15 +1304,50 @@ class CastSpellHandler(
         return perModeOverrides.flatten()
     }
 
+    /**
+     * Reduce each cost-vs-cost [AdditionalCost.Choice] in [costs] to the single option the caster is
+     * actually paying, so every downstream cost path (validation, application, free-cast selection)
+     * handles it as a plain atom with no [Choice] awareness. The chosen option is:
+     *  1. the option whose [AdditionalCostPayment] field the client populated — a normal cast, where
+     *     each option surfaced as its own legal action so exactly one field is filled; else
+     *  2. the first option payable from the current board — server-initiated free/AI casts arrive with
+     *     no payment (mirrors [ForageCostResolver]'s engine-direct fallback); else
+     *  3. the first option (nothing payable — downstream validation/selection then rejects the cast).
+     */
+    private fun reduceChoiceCosts(
+        costs: List<AdditionalCost>,
+        state: GameState,
+        playerId: EntityId,
+        payment: AdditionalCostPayment?,
+    ): List<AdditionalCost> = costs.map { cost ->
+        if (cost !is AdditionalCost.Choice) cost
+        else cost.options.firstOrNull { optionPaymentSatisfied(it, payment) }
+            ?: cost.options.firstOrNull { costHandler.canPayAdditionalCost(state, it, playerId) }
+            ?: cost.options.first()
+    }
+
+    /** True when [payment] already carries a selection for the field [option]'s atom consumes. */
+    private fun optionPaymentSatisfied(option: AdditionalCost, payment: AdditionalCostPayment?): Boolean {
+        val atom = (option as? AdditionalCost.Atom)?.atom ?: return false
+        val p = payment ?: return false
+        return when (atom) {
+            is CostAtom.Sacrifice -> p.sacrificedPermanents.isNotEmpty()
+            is CostAtom.Discard -> p.discardedCards.isNotEmpty()
+            is CostAtom.ExileFrom -> p.exiledCards.isNotEmpty()
+            is CostAtom.TapPermanents -> p.tappedPermanents.isNotEmpty()
+            is CostAtom.ReturnToHand -> p.bouncedPermanents.isNotEmpty()
+            else -> false
+        }
+    }
+
     private fun validateAdditionalCosts(
         state: GameState,
         additionalCosts: List<AdditionalCost>,
         action: CastSpell
     ): String? {
         val projected = state.projectedState
-        val flattenedCosts = additionalCosts.flatMap {
-            if (it is AdditionalCost.Composite) it.steps else listOf(it)
-        }
+        val flattenedCosts = reduceChoiceCosts(additionalCosts, state, action.playerId, action.additionalCostPayment)
+            .flatMap { if (it is AdditionalCost.Composite) it.steps else listOf(it) }
         for (additionalCost in flattenedCosts) {
             when (additionalCost) {
                 is AdditionalCost.Atom -> when (val atom = additionalCost.atom) {
@@ -2104,9 +2139,8 @@ class CastSpellHandler(
             linkedGranter?.additionalCost?.let { add(it) }
         }
 
-        val flattenedAllCosts = allAdditionalCosts.flatMap {
-            if (it is AdditionalCost.Composite) it.steps else listOf(it)
-        }
+        val flattenedAllCosts = reduceChoiceCosts(allAdditionalCosts, currentState, action.playerId, action.additionalCostPayment)
+            .flatMap { if (it is AdditionalCost.Composite) it.steps else listOf(it) }
 
         // Server-initiated free cast: pay the spell's printed additional costs even though the
         // mana cost is waived (CR 601.2f / 118.9). A normal client cast arrives with the

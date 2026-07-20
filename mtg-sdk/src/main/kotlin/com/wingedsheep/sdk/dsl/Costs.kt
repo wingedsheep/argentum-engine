@@ -414,6 +414,14 @@ object Costs {
         /** Forage (exile three cards from your graveyard or sacrifice a Food). */
         val Forage: AdditionalCost = AdditionalCost.Forage
 
+        /**
+         * Cost-vs-cost — the caster pays exactly one of [options] ("discard a card **or** sacrifice a
+         * permanent"; Souls of the Lost). For options that are each independently payable non-mana
+         * costs; use the `*OrPay` family instead when one branch pays extra *mana*. See
+         * [AdditionalCost.Choice].
+         */
+        fun Choice(vararg options: AdditionalCost): AdditionalCost = AdditionalCost.Choice(options.toList())
+
         /** Blight X — put X -1/-1 counters on a creature you control (X declared at cast time, min [minCount]). */
         fun BlightVariable(minCount: Int = 0): AdditionalCost = AdditionalCost.BlightVariable(minCount)
 

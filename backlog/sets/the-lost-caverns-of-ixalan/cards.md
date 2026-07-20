@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 260 / 286
+**Implemented:** 261 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -228,7 +228,7 @@
 - [x] Song of Stupefaction
 - [ ] Sorcerous Spyglass
 - [x] Soulcoil Viper
-- [ ] Souls of the Lost
+- [x] Souls of the Lost
 - [ ] Sovereign Okinec Ahau
 - [x] Spelunking
 - [x] Spring-Loaded Sawblades

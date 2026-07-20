@@ -14959,6 +14959,62 @@
     ]
 }
 
+// Souls of the Lost
+{
+    "name": "Souls of the Lost",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "As an additional cost to cast this spell, discard a card or sacrifice a permanent.\nFathomless descent — Souls of the Lost's power is equal to the number of permanent cards in your graveyard and its toughness is equal to that number plus 1.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "permanent"
+            }
+        },
+        "toughness": {
+            "type": "DynamicWithOffset",
+            "source": {
+                "type": "Count",
+                "player": "You",
+                "zone": "Graveyard",
+                "filter": "permanent"
+            },
+            "offset": 1
+        }
+    },
+    "script": {
+        "additionalCosts": [
+            {
+                "type": "ChoiceCost",
+                "options": [
+                    {
+                        "type": "AdditionalAtom",
+                        "atom": "AtomDiscard"
+                    },
+                    {
+                        "type": "AdditionalAtom",
+                        "atom": "AtomSacrifice"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "flavorText": "\"Do you remember us?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5c6f502-f11f-4e41-beb8-0843432fa431.jpg?1782694513"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Spelunking
 {
     "name": "Spelunking",

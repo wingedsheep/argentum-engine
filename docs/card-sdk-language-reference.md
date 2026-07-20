@@ -342,6 +342,23 @@ definitions construct these through the facade, e.g. `Costs.additional.Sacrifice
   is recovered at payment time from whether the cast action's `additionalCostPayment.sacrificedPermanents`
   is non-empty; the sacrifice path is only offered when you control at least `count` matching
      permanents, so with nothing to sacrifice only the pay path is castable.
+- `Costs.additional.Choice(vararg options)` — **cost-vs-cost**: "as an additional cost to cast this
+  spell, pay exactly one of `options`" (Souls of the Lost: *"discard a card **or** sacrifice a
+  permanent"*). The general, parameterized form of `Forage` — each option is itself an
+  `AdditionalCost` (compose the `Sacrifice` / `Discard` / `ExileFrom` atoms). Distinct from the
+  `*OrPay` family (`SacrificeOrPay` / `ExileFromGraveyardOrPay` / `BeholdOrPay` / `BlightOrPay`): those
+  fold a **mana** alternative into the spell's cost, whereas `Choice` is for options that are each
+  independently payable **non-mana** costs (no mana-cost change). The enumerator emits **one cast
+  action per payable option** (`CastSpellEnumerator.expandChoiceAdditionalCosts` +
+  `ChoiceCostResolver`), each carrying that option's existing picker (`SacrificePermanent` /
+  `DiscardCard` / `ExileFromGraveyard`) — so the caster picks the sub-cost by choosing which action to
+  play, with **no new client UI**. The plain (un-expanded) base action is dropped, since a mandatory
+  choice cost can't be skipped. At payment time `CastSpellHandler.reduceChoiceCosts` collapses the
+  `Choice` to the single option the caller populated (or, for a server-initiated free/AI cast with no
+  payment, the first payable option — mirroring `ForageCostResolver`'s engine-direct fallback), so
+  validation, application, and the free-cast selection pause all handle it as a plain atom. Keep the
+  options on **distinct** payment fields (sacrifice vs. discard vs. exile) — two options consuming the
+  same field can't be told apart by the payment alone.
 - `Costs.additional.RemoveCounters(count, counterType = null, filter = Any)` — "as an additional
   cost to cast this spell, remove `count` counters from among permanents matching `filter` you
   control." When `counterType` is set (e.g. `"+1/+1"`), only counters of that type are removed;

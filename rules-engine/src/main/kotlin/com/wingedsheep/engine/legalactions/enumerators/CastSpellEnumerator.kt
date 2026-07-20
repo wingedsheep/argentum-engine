@@ -377,6 +377,14 @@ class CastSpellEnumerator : ActionEnumerator {
                         beholdTargets = allTargets
                         beholdCount = 1
                     }
+                    is AdditionalCost.Choice -> {
+                        // Cost-vs-cost: castable only if at least one option is payable. The per-option
+                        // legal actions are produced by expandChoiceAdditionalCosts in post-processing.
+                        if (com.wingedsheep.engine.handlers.costs.ChoiceCostResolver
+                                .costInfos(state, playerId, cost, context.costUtils, cardId).isEmpty()) {
+                            canPayAdditionalCosts = false
+                        }
+                    }
                     else -> {}
                 }
             }
@@ -1525,7 +1533,51 @@ class CastSpellEnumerator : ActionEnumerator {
         // --- Casualty ---
         enumerateCasualty(context, hand, result)
 
-        return applySpellWaterbendMetadata(context, result)
+        return applySpellWaterbendMetadata(context, expandChoiceAdditionalCosts(context, result))
+    }
+
+    /**
+     * Post-process: expand each normal-cost cast of a card carrying a cost-vs-cost
+     * [AdditionalCost.Choice] into **one legal action per payable option**, each carrying that
+     * option's [AdditionalCostData] picker (SacrificePermanent / DiscardCard / ExileFromGraveyard).
+     * The caster picks the option by choosing which action to play, then the existing per-cost picker
+     * drives the selection — no new client UI (the same multi-action pattern Forage and the `*OrPay`
+     * costs use). Modeled on [applySpellWaterbendMetadata] so it stays out of the branchy per-target
+     * emission above.
+     *
+     * The plain base action is *replaced* (not kept): a mandatory choice cost can't be skipped, so the
+     * un-expanded action — which would let the spell resolve without paying the additional cost — must
+     * not survive. Only the primary "CastSpell" cast is expanded; alternative/free-cast variants pay
+     * printed additional costs through the cast-time selection pause instead (CR 601.2f).
+     */
+    private fun expandChoiceAdditionalCosts(
+        context: EnumerationContext,
+        actions: List<LegalAction>
+    ): List<LegalAction> {
+        val state = context.state
+        val out = mutableListOf<LegalAction>()
+        for (la in actions) {
+            val cs = la.action as? CastSpell
+            val choice = if (cs != null && la.actionType == "CastSpell" && la.affordable) {
+                val name = state.getEntity(cs.cardId)?.get<CardComponent>()?.name
+                name?.let { context.cardRegistry.getCard(it) }?.script?.additionalCosts
+                    ?.filterIsInstance<AdditionalCost.Choice>()?.firstOrNull()
+            } else null
+            if (cs == null || choice == null) {
+                out.add(la)
+                continue
+            }
+            // One action per payable option; if none is payable the card is dropped (uncastable).
+            val optionInfos = com.wingedsheep.engine.handlers.costs.ChoiceCostResolver
+                .costInfos(state, cs.playerId, choice, context.costUtils, cs.cardId)
+            for (info in optionInfos) {
+                out.add(la.copy(
+                    description = "${la.description} (${info.description})",
+                    additionalCostInfo = info
+                ))
+            }
+        }
+        return out
     }
 
     /**

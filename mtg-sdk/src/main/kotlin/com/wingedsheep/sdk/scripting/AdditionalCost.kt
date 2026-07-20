@@ -134,6 +134,40 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     }
 
     /**
+     * Cost-vs-cost: the caster chooses **exactly one** of [options] and pays it — "as an additional
+     * cost to cast this spell, discard a card **or** sacrifice a permanent" (Souls of the Lost). Each
+     * option is itself a fully-formed [AdditionalCost] paid through the normal cast machinery, so the
+     * options compose the same atoms every other cost uses (Sacrifice / Discard / ExileFrom / …).
+     *
+     * **Boundary — what this is *not*:** [Choice] is for options that are each *independently payable
+     * non-mana costs*. Options where one branch instead pays *additional mana* ("… or pay {2}") are the
+     * separate `*OrPay` family ([SacrificeOrPay], [ExileFromGraveyardOrPay], [BeholdOrPay],
+     * [BlightOrPay]) — those fold the alternative into the spell's mana cost, which [Choice] never does.
+     * [Forage] (CR 701.61) is the named keyword shortcut for a fixed two-option cost-vs-cost (exile
+     * three from your graveyard / sacrifice a Food); [Choice] is its open, parameterized generalization.
+     *
+     * Each option surfaces as its own cast-time legal action (the same multi-action pattern the OrPay
+     * costs and Forage use), so the caster picks the option by choosing which action to play and the
+     * existing per-cost picker drives the selection — no new client UI. At payment time the chosen
+     * option is recovered from which [AdditionalCostPayment] field the client populated; options that
+     * consume *different* payment fields (sacrifice vs. discard vs. exile) disambiguate cleanly. Two
+     * options that consume the *same* field (e.g. two different Sacrifice filters) are not
+     * distinguishable by payment alone — keep options on distinct fields.
+     */
+    @SerialName("ChoiceCost")
+    @Serializable
+    data class Choice(
+        val options: List<AdditionalCost>
+    ) : AdditionalCost {
+        override val description: String get() = options.joinToString(" or ") { it.description }
+
+        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
+            val newOptions = options.map { it.applyTextReplacement(replacer) }
+            return if (newOptions.zip(options).any { (a, b) -> a !== b }) copy(options = newOptions) else this
+        }
+    }
+
+    /**
      * Blight X (variable): the caster declares X at cast time, puts X -1/-1
      * counters on a creature they control, and X is exposed to the spell's
      * effects via `DynamicAmount.CastChoice(ChoiceSlot.BLIGHT_AMOUNT)`.

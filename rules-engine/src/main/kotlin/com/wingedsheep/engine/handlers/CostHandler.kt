@@ -904,6 +904,9 @@ class CostHandler {
             }
             is AdditionalCost.Forage ->
                 com.wingedsheep.engine.handlers.costs.ForageCostResolver.canPay(state, controllerId)
+            is AdditionalCost.Choice ->
+                // Cost-vs-cost: payable if at least one option can be paid.
+                cost.options.any { canPayAdditionalCost(state, it, controllerId) }
             is AdditionalCost.Behold -> {
                 // Can behold if matching permanent on battlefield or matching card in hand
                 val projected = state.projectedState
