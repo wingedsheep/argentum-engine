@@ -113,6 +113,13 @@ data class SpentManaProvenance(
     val sourceIds: Set<com.wingedsheep.sdk.model.EntityId> = emptySet()
 ) {
     val isEmpty: Boolean get() = bySubtype.isEmpty() && sourceIds.isEmpty()
+
+    /**
+     * The producing-source subtypes that had at least one mana unit spent. `bySubtype` only ever
+     * holds positive counts (consumers add an entry only when they consume a unit), so this is just
+     * its key set — named here so the cast/resolve paths don't each re-filter for `> 0`.
+     */
+    val spentSubtypes: Set<com.wingedsheep.sdk.core.Subtype> get() = bySubtype.keys
 }
 
 @Serializable

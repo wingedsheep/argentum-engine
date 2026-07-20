@@ -343,7 +343,7 @@ class StackResolver(
                 totalManaSpent = totalManaSpent,
                 distinctColorsSpent =
                     com.wingedsheep.engine.handlers.ManaSpentReader.distinctColorsSpent(newState, cardId),
-                spentManaSubtypes = spentManaProvenance.bySubtype.keys.filter { (spentManaProvenance.bySubtype[it] ?: 0) > 0 }.toSet(),
+                spentManaSubtypes = spentManaProvenance.spentSubtypes,
                 spentManaSourceIds = spentManaProvenance.sourceIds,
                 chosenModesCount = reportedChosenModesCount,
                 manaValue = cardComponent.manaValue
