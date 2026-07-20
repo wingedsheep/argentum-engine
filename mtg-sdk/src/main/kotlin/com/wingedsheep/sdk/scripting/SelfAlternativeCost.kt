@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import kotlinx.serialization.Serializable
 
 /**
@@ -19,9 +20,16 @@ import kotlinx.serialization.Serializable
  *           Typed like every other cost; serializes as its string form.
  * @property additionalCosts Non-mana costs that must be paid alongside the alternative
  *           mana cost (e.g., tapping an artifact)
+ * @property condition Game-state gate on the alternative being *available at all* — the
+ *           "…if <condition>" clause on cards like Blasphemous Edict ("You may pay {B} rather
+ *           than pay this spell's mana cost if there are thirteen or more creatures on the
+ *           battlefield"). Evaluated with no target/trigger context, at the two mirrored sites
+ *           that decide legality: action enumeration and cast authorization. `null` (the default)
+ *           means unconditionally available, which is Zahid's shape.
  */
 @Serializable
 data class SelfAlternativeCost(
     val manaCost: ManaCost,
-    val additionalCosts: List<AdditionalCost> = emptyList()
+    val additionalCosts: List<AdditionalCost> = emptyList(),
+    val condition: Condition? = null
 )

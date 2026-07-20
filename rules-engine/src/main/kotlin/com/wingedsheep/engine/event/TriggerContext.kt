@@ -44,6 +44,14 @@ data class TriggerContext(
     /** Last known toughness when the triggering entity left the battlefield (for dies/leaves triggers) */
     val lastKnownToughness: Int? = null,
     /**
+     * Last-known **projected** subtypes when the triggering entity left the battlefield (CR 603.10),
+     * so continuous-effect-granted types count and not just printed ones. Read by
+     * [com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadSubtype] as an intervening-if on
+     * dies/leaves triggers (Infernal Vessel's "if it wasn't a Demon" self-recursion guard). Null
+     * when the trigger's source never left the battlefield.
+     */
+    val lastKnownSubtypes: Set<String>? = null,
+    /**
      * Last-known counter map (counter-type-string → count) when the triggering source left
      * the battlefield. Used by triggers that move every counter onto another permanent
      * (e.g., Essence Channeler's "put its counters on target creature you control").
@@ -166,6 +174,7 @@ data class TriggerContext(
                     xValue = event.xValue,
                     lastKnownPower = event.lastKnown?.power,
                     lastKnownToughness = event.lastKnown?.toughness,
+                    lastKnownSubtypes = event.lastKnown?.subtypes?.takeIf { it.isNotEmpty() },
                     lastKnownCounters = event.lastKnown?.counters?.takeIf { it.isNotEmpty() },
                     lastKnownDamageDealtByPlayers =
                         event.lastKnown?.damageDealtByPlayers?.takeIf { it.isNotEmpty() },

@@ -280,7 +280,14 @@ excluded.
 
 **Spell-level alternatives**
 
-- `selfAlternativeCost` — generic "cast instead for" alt-cost.
+- `selfAlternativeCost` — generic "cast instead for" alt-cost. Optional `condition` gates whether
+  the alternative is available at all — the "…rather than pay this spell's mana cost **if**
+  <condition>" clause (Blasphemous Edict: `condition = Conditions.CompareAmounts(
+  DynamicAmount.AggregateBattlefield(Player.Each, GameObjectFilter.Creature), GTE,
+  DynamicAmount.Fixed(13))`). Evaluated with no target/trigger context at two mirrored sites —
+  `CastSpellEnumerator` (so the action isn't offered) and `CastSpellHandler.validate` (so an
+  authorization can't outlive the enumeration that offered it). Omit for an unconditional
+  alternative (Zahid, Djinn of the Lamp).
 - `evoke` — pay evoke cost; creature is sacrificed at ETB.
 - `morph` — cast face-down for `{3}`-ish.
 - `warp` — cast from anywhere; exiled at end of turn.
@@ -5213,6 +5220,14 @@ answer it and would silently return `false`.
   `Effects.MoveAllLastKnownCounters` for "whenever this or another creature you control dies, if it
   had counters on it, move its counters" (Host of the Hereafter). Companion to the existing
   `TriggeringEntityHadMinusOneMinusOneCounter` (which checks only -1/-1 counters, e.g. Retched Wretch).
+- `TriggeringEntityHadSubtype(subtype)` — intervening-if for dies/leaves triggers: true when the
+  triggering entity had `subtype` among its **projected** subtypes the moment it left the battlefield
+  (CR 603.10), so continuous-effect-granted types count and not just printed ones. Resolution-only.
+  Wrap in `Conditions.Not(...)` for the "if it wasn't a X" wording — Infernal Vessel's
+  `triggerCondition = Conditions.Not(Conditions.TriggeringEntityHadSubtype(Subtype.DEMON.value))`,
+  where the Demon type the card grants itself on return (`Effects.AddCreatureType(..., Duration.Permanent)`)
+  is what stops the second death from returning it again. Reads `TriggerContext.lastKnownSubtypes`,
+  populated from the `ZoneChangeEvent`'s `EntitySnapshot.subtypes`.
 - `TargetControlsCreature(target)` — target player has a creature.
 - `TargetControlsLand(target)` — target player has a land.
 - `TargetMatchesFilter(filter, targetIndex = 0)` — the context target matches a `GameObjectFilter`.
@@ -6858,6 +6873,11 @@ substitution.
   "that many" via `AddDynamicCounters(Counters.INCUBATION, DynamicAmount.ContextProperty(TRIGGER_DAMAGE_AMOUNT), Self)`;
   an activated ability spends three via `Costs.RemoveCounterFromSelf(Counters.INCUBATION, 3)` to hatch a Drake token) —
   a pure passive resource counter with no inherent rule. Not MTG's Incubate/incubator-token mechanic.
+  `fellowship` (`Counters.FELLOWSHIP`): FDN — Banner of Kinship (enters with one per creature you control of
+  the as-enters chosen type via `EntersWithDynamicCounters(CounterTypeFilter.Named(Counters.FELLOWSHIP),
+  DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature.withChosenSubtype()))`; a
+  `GrantDynamicStatsEffect` sized by `DynamicAmounts.countersOnSelf(...)` reads the count back) — a pure
+  passive resource counter with no inherent rule.
 - `stun` — CR 122.1d, a built-in replacement: "If a permanent with a stun counter on it would become untapped,
   instead remove a stun counter from it." Engine-wired through `untapOrConsumeStun` (`rules-engine/core/UntapHelpers.kt`),
   which is invoked from the untap step (`BeginningPhaseManager`), from `TapUntapExecutor`'s untap branch, and from the

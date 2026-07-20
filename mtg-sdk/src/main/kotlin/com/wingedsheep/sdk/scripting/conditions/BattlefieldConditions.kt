@@ -169,6 +169,23 @@ data object TriggeringEntityHadCounters : Condition {
 }
 
 /**
+ * Condition: "if it was a <subtype>" (intervening-if for dies/leaves triggers).
+ * Reads the last-known **projected** subtypes captured on the triggering entity at the moment it
+ * left the battlefield (Rule 603.10 last-known information), so subtypes granted by continuous
+ * effects — not just printed ones — count.
+ *
+ * Wrap in [com.wingedsheep.sdk.dsl.Conditions.Not] for the "if it wasn't a <subtype>" wording used
+ * by self-recursion loop guards such as Infernal Vessel ("When this creature dies, if it wasn't a
+ * Demon, return it … It's a Demon in addition to its other types"), where the returned permanent's
+ * granted subtype is what stops the second death from triggering again.
+ */
+@SerialName("TriggeringEntityHadSubtype")
+@Serializable
+data class TriggeringEntityHadSubtype(val subtype: String) : Condition {
+    override val description: String = "if it was a $subtype"
+}
+
+/**
  * Condition: "with a single target" — true iff the triggering spell or ability
  * has exactly one target chosen. Reads the triggering entity's TargetsComponent.
  * Used by cards like Spinerock Tyrant whose trigger fires only when you cast an

@@ -1499,6 +1499,15 @@ object Conditions {
         com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadCounters
 
     /**
+     * If the triggering entity had [subtype] among its **projected** subtypes when it left the
+     * battlefield (CR 603.10 last-known information). Wrap in [Not] for the "if it wasn't a X"
+     * wording — e.g. Infernal Vessel's `Not(TriggeringEntityHadSubtype(Subtype.DEMON.value))`,
+     * where the Demon type the card grants itself on return is what stops it looping.
+     */
+    fun TriggeringEntityHadSubtype(subtype: String): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadSubtype(subtype)
+
+    /**
      * If the triggering entity was NOT put onto the battlefield by this source's ability.
      * Used to break ETB-trigger loops on cards like Kodama of the East Tree:
      * "if it wasn't put onto the battlefield with this ability". Pair with

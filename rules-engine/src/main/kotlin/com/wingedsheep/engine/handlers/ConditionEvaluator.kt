@@ -496,6 +496,12 @@ class ConditionEvaluator(
                 ifResolution { (it.triggerMinusOneMinusOneCounterCount ?: 0) > 0 }
             is TriggeringEntityHadCounters ->
                 ifResolution { (it.triggerTotalCounterCount ?: 0) > 0 }
+            is com.wingedsheep.sdk.scripting.conditions.TriggeringEntityHadSubtype ->
+                // Subtype names are captured in projected form (e.g. "Demon"); compare
+                // case-insensitively so card authors can pass either Subtype.X.value or a literal.
+                ifResolution { ctx ->
+                    ctx.triggerLastKnownSubtypes.orEmpty().any { it.equals(condition.subtype, ignoreCase = true) }
+                }
             is TriggeringEntityWasNotPutByThisSource ->
                 ifResolution { evaluateTriggeringEntityWasNotPutByThisSource(state, it) }
             is TriggeringSpellHasSingleTarget -> ifResolution { evaluateTriggeringSpellHasSingleTarget(state, it) }

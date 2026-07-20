@@ -500,6 +500,19 @@ class CastSpellEnumerator : ActionEnumerator {
 
             // Check self-alternative cost (e.g., Zahid's {3}{U} + tap an artifact)
             val selfAltCost = cardDef.script.selfAlternativeCost
+                // "…rather than pay this spell's mana cost **if** <condition>" (Blasphemous Edict).
+                // Gate availability here and mirror it in CastSpellHandler's authorization, so the
+                // permission can't outlive the enumeration that offered it.
+                ?.takeIf { alt ->
+                    alt.condition == null || context.conditionEvaluator.evaluate(
+                        state,
+                        alt.condition!!,
+                        com.wingedsheep.engine.handlers.EffectContext(
+                            sourceId = cardId,
+                            controllerId = playerId
+                        )
+                    )
+                }
             val canAffordSelfAlternative = if (selfAltCost != null) {
                 val selfAltMana = selfAltCost.manaCost
                 val selfAltEffective = context.costCalculator.calculateEffectiveCostWithAlternativeBase(state, cardDef, selfAltMana, playerId)

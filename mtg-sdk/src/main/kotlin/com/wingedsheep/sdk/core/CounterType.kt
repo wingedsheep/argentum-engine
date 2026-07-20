@@ -68,7 +68,8 @@ enum class CounterType {
     LANDMARK,
     DREAD,
     SPORE,
-    INCUBATION;
+    INCUBATION,
+    FELLOWSHIP;
 
     companion object {
         /**
@@ -283,6 +284,14 @@ object Counters {
      * Not MTG's Incubate/incubator-token mechanic.
      */
     const val INCUBATION = "incubation"
+
+    /**
+     * Fellowship counter (FDN — Banner of Kinship). Passive storage counter with no inherent rule;
+     * the Banner enters with one per creature of its chosen type and its static ability reads the
+     * count to size the anthem. NOT a keyword counter, so it is intentionally absent from
+     * `StateProjector.KEYWORD_COUNTER_MAP`.
+     */
+    const val FELLOWSHIP = "fellowship"
 
     /**
      * Wildcard sentinel for triggers/events that fire on counters of *any* type, e.g.

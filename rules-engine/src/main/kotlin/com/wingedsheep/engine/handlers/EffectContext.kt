@@ -190,6 +190,12 @@ data class EffectContext(
     val triggerTotalCounterCount: Int? = null,
     /** Last known -1/-1 counter count from a death trigger context (e.g., Retched Wretch) */
     val triggerMinusOneMinusOneCounterCount: Int? = null,
+    /**
+     * Last-known projected subtypes from a dies/leaves trigger context (CR 603.10). Read by
+     * `TriggeringEntityHadSubtype` as an intervening-if — e.g. Infernal Vessel's "if it wasn't a
+     * Demon". Null when the trigger wasn't driven by a permanent leaving the battlefield.
+     */
+    val triggerLastKnownSubtypes: Set<String>? = null,
     /** The entity that caused the trigger to fire (e.g., creature that dealt damage for Aurification) */
     val triggeringEntityId: EntityId? = null,
     /** The player associated with the trigger event (e.g., the player who cast a spell for SpellCastEvent) */

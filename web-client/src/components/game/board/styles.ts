@@ -1895,6 +1895,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   LANDMARK: { bg: 'rgba(60, 50, 15, 0.95)', border: 'rgba(220, 190, 80, 0.7)', color: '#e8cf68', glow: 'rgba(220, 190, 80, 0.55)' },
   DREAD: { bg: 'rgba(25, 15, 35, 0.95)', border: 'rgba(120, 90, 160, 0.7)', color: '#b59ad0', glow: 'rgba(120, 90, 160, 0.55)' },
   INCUBATION: { bg: 'rgba(20, 45, 65, 0.95)', border: 'rgba(110, 190, 220, 0.65)', color: '#a0d4e8', glow: 'rgba(110, 190, 220, 0.5)' },
+  FELLOWSHIP: { bg: 'rgba(58, 44, 20, 0.95)', border: 'rgba(214, 178, 96, 0.65)', color: '#e8d3a0', glow: 'rgba(214, 178, 96, 0.5)' },
   PLUS_ONE_PLUS_ZERO: { bg: 'rgba(20, 60, 25, 0.95)', border: 'rgba(120, 220, 130, 0.7)', color: '#9ce0a8' },
   PLUS_ZERO_PLUS_ONE: { bg: 'rgba(20, 60, 25, 0.95)', border: 'rgba(120, 220, 130, 0.7)', color: '#9ce0a8' },
   MINUS_ONE_MINUS_ZERO: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },

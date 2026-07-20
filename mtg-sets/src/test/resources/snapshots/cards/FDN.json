@@ -557,6 +557,77 @@
     ]
 }
 
+// Banner of Kinship
+{
+    "name": "Banner of Kinship",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "As this artifact enters, choose a creature type. This artifact enters with a fellowship counter on it for each creature you control of the chosen type.\nCreatures you control of the chosen type get +1/+1 for each fellowship counter on this artifact.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "chosenSubtypeKey": "chosenCreatureType"
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Source",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": {
+                            "type": "Named",
+                            "name": "fellowship"
+                        }
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "Source",
+                    "numericProperty": {
+                        "type": "CounterCount",
+                        "counterType": {
+                            "type": "Named",
+                            "name": "fellowship"
+                        }
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            },
+            {
+                "type": "EntersWithDynamicCounters",
+                "counterType": {
+                    "type": "Named",
+                    "name": "fellowship"
+                },
+                "count": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "HasChosenSubtype"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "RARE",
+        "artist": "Olena Richards",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a14c16c0-4053-46b0-8fa6-be8b4a7a1c8a.jpg?1783909089"
+    },
+    "colorIdentityOverride": []
+}
+
 // Battlesong Berserker
 {
     "name": "Battlesong Berserker",
@@ -800,6 +871,61 @@
         "rarity": "UNCOMMON",
         "artist": "Brent Hollowell",
         "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b3587a9-0667-4d53-807b-c437bcb1d7b3.jpg?1782689217"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Blasphemous Edict
+{
+    "name": "Blasphemous Edict",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "You may pay {B} rather than pay this spell's mana cost if there are thirteen or more creatures on the battlefield.\nEach player sacrifices thirteen creatures of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "ForceSacrifice",
+            "filter": "creature",
+            "count": 13,
+            "target": {
+                "type": "PlayerRef",
+                "player": "Each"
+            }
+        },
+        "selfAlternativeCost": {
+            "manaCost": "{B}",
+            "condition": {
+                "type": "Compare",
+                "left": {
+                    "type": "AggregateBattlefield",
+                    "player": "Each",
+                    "filter": "creature"
+                },
+                "operator": "GTE",
+                "right": {
+                    "type": "Fixed",
+                    "amount": 13
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "RARE",
+        "artist": "Andrew Mar",
+        "flavorText": "\"A demonic pact is all fun and games until the bill comes due.\"\n—Liliana Vess",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11040ecd-3153-4029-b42b-1441bc51ec34.jpg?1783909112",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "If a player controls fewer than thirteen creatures when Blasphemous Edict resolves, they will sacrifice all of their creatures."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "Starting with the player whose turn it is, each player in turn order chooses which creatures they will sacrifice, then all the creatures chosen by all players are sacrificed at the same time. Players get to know the choices made by players who chose before them."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -4028,6 +4154,69 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Infernal Vessel
+{
+    "name": "Infernal Vessel",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature dies, if it wasn't a Demon, return it to the battlefield under its owner's control with two +1/+1 counters on it. It's a Demon in addition to its other types.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "+1/+1",
+                            "count": 2,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Demon"
+                        }
+                    ]
+                },
+                "triggerCondition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "TriggeringEntityHadSubtype",
+                        "subtype": "Demon"
+                    }
+                },
+                "descriptionOverride": "When this creature dies, if it wasn't a Demon, return it to the battlefield under its owner's control with two +1/+1 counters on it. It's a Demon in addition to its other types."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "Franz Vohwinkel",
+        "flavorText": "\"Rise, my liege! Rise, and blanket the world in eternal night!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/877b6330-2d0b-4f2f-a848-f10b06fb4ef5.jpg?1783909112"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

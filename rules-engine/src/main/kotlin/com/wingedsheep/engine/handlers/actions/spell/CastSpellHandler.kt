@@ -369,6 +369,18 @@ class CastSpellHandler(
         // Validate self-alternative cost's additional costs when using alternative cost
         if (action.useAlternativeCost && cardDef != null && action.altAllows(AlternativeCostType.SELF_ALTERNATIVE)) {
             val selfAltCost = cardDef.script.selfAlternativeCost
+            // "…rather than pay this spell's mana cost **if** <condition>" (Blasphemous Edict).
+            // Mirrors the availability gate in CastSpellEnumerator so an authorization can't
+            // outlive the enumeration that offered it.
+            val selfAltCondition = selfAltCost?.condition
+            if (selfAltCondition != null && !conditionEvaluator.evaluate(
+                    state,
+                    selfAltCondition,
+                    EffectContext(sourceId = action.cardId, controllerId = action.playerId)
+                )
+            ) {
+                return "Alternative cost is not available: ${selfAltCondition.description}"
+            }
             if (selfAltCost != null && selfAltCost.additionalCosts.isNotEmpty()) {
                 val selfAltCostError = validateAdditionalCosts(state, selfAltCost.additionalCosts, action)
                 if (selfAltCostError != null) return selfAltCostError
