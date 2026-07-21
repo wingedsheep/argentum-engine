@@ -1,10 +1,12 @@
 package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.ActivateAbilityOpponentTargetContinuation
+import com.wingedsheep.engine.core.ActivateAbilityOpponentChooserContinuation
 import com.wingedsheep.engine.core.CancelDecisionResponse
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.TargetsResponse
 import com.wingedsheep.engine.handlers.actions.ability.ActivateAbilityHandler
 import com.wingedsheep.engine.state.GameState
@@ -37,8 +39,34 @@ class ActivateAbilityOpponentTargetResumer(
     private val handler: ActivateAbilityHandler by lazy { ActivateAbilityHandler.create(services) }
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
+        resumer(ActivateAbilityOpponentChooserContinuation::class, ::resumeOpponentChooser),
         resumer(ActivateAbilityOpponentTargetContinuation::class, ::resumeOpponentTargets)
     )
+
+    private fun resumeOpponentChooser(
+        state: GameState,
+        continuation: ActivateAbilityOpponentChooserContinuation,
+        response: DecisionResponse,
+        @Suppress("UNUSED_PARAMETER") checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response is CancelDecisionResponse) {
+            return ExecutionResult.success(state.withPriority(continuation.action.playerId))
+        }
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option response for opponent chooser")
+        }
+        val deciderId = continuation.opponentIds.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid opponent choice")
+
+        return handler.pauseForOpponentChosenTargetsForDecider(
+            state = state,
+            action = continuation.action,
+            sourceName = continuation.sourceName,
+            fullTargetReqs = continuation.fullRequirements,
+            opponentReqs = continuation.opponentRequirements,
+            deciderId = deciderId
+        )
+    }
 
     private fun resumeOpponentTargets(
         state: GameState,

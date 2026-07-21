@@ -152,6 +152,32 @@ class GameTestDriver {
         initGame(deck, deck, skipMulligans, startingLife, startingPlayer)
     }
 
+    /** Initialize a game with any number of players and return their IDs in turn order. */
+    fun initMultiplayer(
+        decks: List<Deck>,
+        skipMulligans: Boolean = true,
+        startingLife: Int = 20,
+        startingPlayer: Int = 0
+    ): List<EntityId> {
+        val initializer = GameInitializer(cardRegistry)
+        val result = initializer.initializeGame(
+            GameConfig(
+                players = decks.mapIndexed { index, deck ->
+                    PlayerConfig("Player ${index + 1}", deck, startingLife)
+                },
+                skipMulligans = skipMulligans,
+                startingPlayerIndex = startingPlayer
+            )
+        )
+
+        _state = result.state
+        _events.clear()
+        _events.addAll(result.events)
+        _player1 = result.playerIds.getOrNull(0)
+        _player2 = result.playerIds.getOrNull(1)
+        return result.playerIds
+    }
+
     // =========================================================================
     // Action Submission
     // =========================================================================

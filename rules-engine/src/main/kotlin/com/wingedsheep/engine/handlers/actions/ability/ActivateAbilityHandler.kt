@@ -1564,12 +1564,83 @@ class ActivateAbilityHandler(
             )
         }
 
-        // The controller chooses which opponent makes the selection (per the card's own ruling:
-        // "You choose which opponent chooses the second target"). In a two-player game that's the
-        // sole opponent; choosing among several opponents in multiplayer is a future extension —
-        // default to the first opponent in turn order so the ability still functions.
-        val deciderId = state.turnOrder.firstOrNull { it != action.playerId && state.hasEntity(it) }
-            ?: return ExecutionResult.error(state, "No opponent available to choose a target")
+        val opponentIds = state.getOpponents(action.playerId)
+        if (opponentIds.isEmpty()) {
+            return ExecutionResult.error(state, "No opponent available to choose a target")
+        }
+        if (opponentIds.size > 1) {
+            return pauseForOpponentTargetChooser(
+                state, action, sourceName, fullTargetReqs, opponentReqs, opponentIds
+            )
+        }
+
+        return pauseForOpponentChosenTargetsForDecider(
+            state = state,
+            action = action,
+            sourceName = sourceName,
+            fullTargetReqs = fullTargetReqs,
+            opponentReqs = opponentReqs,
+            deciderId = opponentIds.single()
+        )
+    }
+
+    private fun pauseForOpponentTargetChooser(
+        state: GameState,
+        action: ActivateAbility,
+        sourceName: String,
+        fullTargetReqs: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+        opponentReqs: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+        opponentIds: List<EntityId>
+    ): ExecutionResult {
+        val opponentNames = opponentIds.map { opponentId ->
+            state.getEntity(opponentId)
+                ?.get<com.wingedsheep.engine.state.components.identity.PlayerComponent>()?.name
+                ?: "Player ${opponentId.value}"
+        }
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val prompt = "Choose an opponent to choose a target for $sourceName"
+        val decision = com.wingedsheep.engine.core.ChooseOptionDecision(
+            id = decisionId,
+            playerId = action.playerId,
+            prompt = prompt,
+            context = com.wingedsheep.engine.core.DecisionContext(
+                sourceId = action.sourceId,
+                sourceName = sourceName,
+                phase = com.wingedsheep.engine.core.DecisionPhase.CASTING
+            ),
+            options = opponentNames
+        )
+        val continuation = com.wingedsheep.engine.core.ActivateAbilityOpponentChooserContinuation(
+            decisionId = decisionId,
+            action = action,
+            sourceName = sourceName,
+            opponentRequirements = opponentReqs,
+            fullRequirements = fullTargetReqs,
+            opponentIds = opponentIds
+        )
+        val pausedState = state
+            .withPendingDecision(decision)
+            .pushContinuation(continuation)
+        val event = com.wingedsheep.engine.core.DecisionRequestedEvent(
+            decisionId = decisionId,
+            playerId = action.playerId,
+            decisionType = "CHOOSE_OPTION",
+            prompt = prompt
+        )
+        return ExecutionResult.paused(pausedState, decision, listOf(event))
+    }
+
+    internal fun pauseForOpponentChosenTargetsForDecider(
+        state: GameState,
+        action: ActivateAbility,
+        sourceName: String,
+        fullTargetReqs: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+        opponentReqs: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+        deciderId: EntityId
+    ): ExecutionResult {
+        if (!state.getOpponents(action.playerId).contains(deciderId)) {
+            return ExecutionResult.error(state, "Chosen player is not an opponent")
+        }
 
         val finder = com.wingedsheep.engine.handlers.TargetFinder()
         val legalTargets = mutableMapOf<Int, List<EntityId>>()

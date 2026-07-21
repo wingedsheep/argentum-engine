@@ -622,6 +622,21 @@ data class ActivateAbilityOpponentTargetContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after an activated ability's controller chooses which opponent will choose the
+ * "... of an opponent's choice" target. In two-player games the handler skips this frame and
+ * routes the target choice directly to the only opponent; this frame exists for multiplayer.
+ */
+@Serializable
+data class ActivateAbilityOpponentChooserContinuation(
+    override val decisionId: String,
+    val action: ActivateAbility,
+    val sourceName: String,
+    val opponentRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+    val fullRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
+    val opponentIds: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Resume after a player picks which permanents to sacrifice to satisfy a
  * [com.wingedsheep.sdk.scripting.costs.CostAtom.Sacrifice] cost on an activated ability.
  *

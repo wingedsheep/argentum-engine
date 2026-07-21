@@ -1,11 +1,17 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
+import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.arn.cards.CuombajjWitches
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.model.Deck
 import io.kotest.assertions.withClue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldNotContain
@@ -196,6 +202,53 @@ class CuombajjWitchesScenarioTest : ScenarioTestBase() {
                 withClue("The controller takes the opponent's-choice 1 damage (20 -> 19)") {
                     game.getLifeTotal(1) shouldBe 19
                 }
+            }
+
+            test("controller chooses which opponent chooses the second target in multiplayer") {
+                val driver = GameTestDriver()
+                driver.registerCards(TestCards.all)
+                driver.registerCard(CuombajjWitches)
+                val players = driver.initMultiplayer(
+                    decks = List(3) { Deck.of("Forest" to 40) },
+                    startingLife = 20
+                )
+                val controller = players[0]
+                val nextOpponent = players[1]
+                val chosenOpponent = players[2]
+
+                driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+                val witches = driver.putCreatureOnBattlefield(controller, "Cuombajj Witches")
+                driver.removeSummoningSickness(witches)
+
+                val activation = driver.submit(
+                    ActivateAbility(
+                        playerId = controller,
+                        sourceId = witches,
+                        abilityId = CuombajjWitches.activatedAbilities.single().id,
+                        targets = listOf(ChosenTarget.Player(nextOpponent))
+                    )
+                )
+
+                activation.isPaused shouldBe true
+                val opponentChoice = driver.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
+                opponentChoice.playerId shouldBe controller
+                opponentChoice.options shouldBe listOf("Player 2", "Player 3")
+
+                driver.submitDecision(controller, OptionChosenResponse(opponentChoice.id, optionIndex = 1))
+
+                val targetChoice = driver.pendingDecision.shouldBeInstanceOf<ChooseTargetsDecision>()
+                targetChoice.playerId shouldBe chosenOpponent
+
+                driver.submitTargetSelection(chosenOpponent, listOf(controller))
+
+                var guard = 0
+                while (driver.stackSize > 0 && guard++ < 12) {
+                    driver.passPriority(driver.priorityPlayer!!)
+                }
+
+                driver.getLifeTotal(controller) shouldBe 19
+                driver.getLifeTotal(nextOpponent) shouldBe 19
+                driver.getLifeTotal(chosenOpponent) shouldBe 20
             }
 
             test("a client cannot set the internal opponentTargetsChosen flag to skip the opponent's choice") {
