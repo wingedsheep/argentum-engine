@@ -5680,7 +5680,14 @@ default to "you" so card authors don't need to pass it explicitly.
   printed threshold is always four, but `count` is parameterized. Works as a static "as long as …"
   gate (`staticAbility { ability = ModifyStats(...); condition = Conditions.Delirium() }` —
   Spineseeker Centipede) and as an activated-ability `ActivationRestriction.OnlyIfCondition`
-  ("Activate only if there are four or more card types …" — Balustrade Wurm).
+  ("Activate only if there are four or more card types …" — Balustrade Wurm). `Delirium(count)`
+  delegates to `DistinctCardTypesInGraveyard(count, filter = GameObjectFilter.Any)` (below).
+- `DistinctCardTypesInGraveyard(count, filter = GameObjectFilter.Any)` — generalizes `Delirium`:
+  "there are `count` or more distinct card types among the cards in your graveyard that match
+  `filter`." Pass `GameObjectFilter.Permanent` for "N or more **permanent** types among cards in
+  your graveyard" (Matzalantli, the Great Door's transform gate — a permanent card only ever carries
+  permanent card types, so distinct card types among the graveyard's permanent cards is exactly its
+  permanent-type count: artifact, battle, creature, enchantment, land, planeswalker).
 - `CreatureDiedThisTurn` — intervening-if "if a creature died this turn", **global** (any player's
   control; sums every player's `CreaturesDiedThisTurnComponent`).
 - `ControlledCreatureDiedThisTurn` — intervening-if "if a creature died **under your control** this

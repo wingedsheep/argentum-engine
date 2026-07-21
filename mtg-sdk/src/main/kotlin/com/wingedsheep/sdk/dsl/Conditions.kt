@@ -675,12 +675,25 @@ object Conditions {
      * parameterized for "N or more card types" variants.
      * Used by Delirium cards (Spineseeker Centipede, Balustrade Wurm).
      */
-    fun Delirium(count: Int = 4): ConditionInterface =
+    fun Delirium(count: Int = 4): ConditionInterface = DistinctCardTypesInGraveyard(count)
+
+    /**
+     * If there are [count] or more distinct card types among the cards in your graveyard that match
+     * [filter]. Generalizes [Delirium] (which is this with `filter = GameObjectFilter.Any`): pass
+     * `GameObjectFilter.Permanent` for "N or more permanent types among cards in your graveyard"
+     * (Matzalantli, the Great Door's transform gate). A permanent card only ever carries permanent
+     * card types, so filtering to permanents and counting distinct card types yields exactly the
+     * permanent-type count (artifact, battle, creature, enchantment, land, planeswalker).
+     */
+    fun DistinctCardTypesInGraveyard(
+        count: Int,
+        filter: GameObjectFilter = GameObjectFilter.Any
+    ): ConditionInterface =
         Compare(
             DynamicAmount.AggregateZone(
                 player = Player.You,
                 zone = Zone.GRAVEYARD,
-                filter = GameObjectFilter.Any,
+                filter = filter,
                 aggregation = Aggregation.DISTINCT_TYPES
             ),
             ComparisonOperator.GTE,

@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 268 / 286
+**Implemented:** 269 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -157,7 +157,7 @@
 - [x] Marauding Brinefang
 - [ ] Market Gnome
 - [x] Master's Guide-Mural
-- [ ] Matzalantli, the Great Door
+- [x] Matzalantli, the Great Door
 - [x] Mephitic Draught
 - [x] Merfolk Cave-Diver
 - [x] Might of the Ancestors
