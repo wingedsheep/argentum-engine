@@ -84,6 +84,24 @@ data class CastSpell(
     val modeDamageDistribution: Map<Int, Map<EntityId, Int>> = emptyMap(),
     val graveyardLifeCost: Int = 0,
     /**
+     * Which graveyard-cast permission a [CastSpell] from the graveyard is using, when more than one
+     * [com.wingedsheep.sdk.scripting.MayCastFromGraveyard] grant applies to the same card at once —
+     * e.g. a free `Nonland` grant (Yawgmoth's Agenda) *and* The Tomb of Aclazotz's `Creature` grant
+     * that makes the creature enter with a finality counter and become a Vampire. The applicable
+     * grants can differ in their cast-this-way entry rider (and in `graveyardLifeCost`), so those
+     * flags alone can't say which permission was clicked; without this discriminator the handler
+     * auto-picks (rider-preferring) and silently imposes a drawback the player didn't choose. This
+     * records the choice explicitly (CR 601.2b — the player announces the applicable permission as
+     * part of casting), exactly as [alternativeCostType] does for alternative costs.
+     *
+     * `null` means "unspecified" — the handler falls back to its rider-preferring auto-pick. The
+     * graveyard-cast enumerator always stamps it (the chosen permission's entry rider, possibly the
+     * no-rider `GraveyardCastRiderSelection()`); hand-constructed actions and the forage path (whose
+     * finality counter comes from `MayCastCreaturesFromGraveyardWithForageComponent`, not a
+     * `MayCastFromGraveyard` grant) leave it null.
+     */
+    val graveyardCastRider: GraveyardCastRiderSelection? = null,
+    /**
      * Creatures tapped to pay Conspire's optional additional cost. When non-empty, must contain
      * exactly two distinct untapped creatures the caster controls that each share a color with
      * the spell being cast (CR 702.78). When empty, Conspire was not invoked.
@@ -132,6 +150,19 @@ data class CastSpell(
      */
     val alternativeCostType: AlternativeCostType? = null
 ) : GameAction
+
+/**
+ * Identity of the [com.wingedsheep.sdk.scripting.MayCastFromGraveyard] permission a graveyard
+ * [CastSpell] is being cast under, captured as its cast-this-way entry rider so the handler can tell
+ * apart two permissions that both apply to the same card (see [CastSpell.graveyardCastRider]). The
+ * no-argument value `GraveyardCastRiderSelection()` is the explicit "no rider" choice (a free grant
+ * such as Yawgmoth's Agenda), distinct from a `null` [CastSpell.graveyardCastRider] ("unspecified").
+ */
+@Serializable
+data class GraveyardCastRiderSelection(
+    val entersWithCounter: com.wingedsheep.sdk.core.CounterType? = null,
+    val addedSubtype: String? = null
+)
 
 /**
  * Which alternative casting cost a [CastSpell] with `useAlternativeCost = true` is using. Lets the

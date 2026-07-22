@@ -2945,7 +2945,9 @@ class CastSpellHandler(
         // (finality counter + Vampire) can be frozen onto the stack spell after it's cast (below).
         // Null unless casting from a graveyard under a rider-bearing grant.
         val graveyardCastRiderGrant =
-            zoneResolver.findMayCastFromGraveyardGrant(state, action.playerId, action.cardId, cardComponent)
+            zoneResolver.findMayCastFromGraveyardGrant(
+                state, action.playerId, action.cardId, cardComponent, action.graveyardCastRider
+            )
 
         val castResult = stackResolver.castSpell(
             currentState,

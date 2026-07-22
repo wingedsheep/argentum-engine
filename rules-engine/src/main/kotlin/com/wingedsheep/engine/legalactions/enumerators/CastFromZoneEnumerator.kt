@@ -2,6 +2,7 @@ package com.wingedsheep.engine.legalactions.enumerators
 
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.GraveyardCastRiderSelection
 import com.wingedsheep.engine.core.PlayLand
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.legalactions.ActionEnumerator
@@ -1795,11 +1796,23 @@ class CastFromZoneEnumerator : ActionEnumerator {
 
         if (permissions.isEmpty()) return
 
+        // One legal action per card per *distinct* permission (life cost + entry rider), so when two
+        // grants apply to the same card (a free `Nonland` grant and The Tomb of Aclazotz's `Creature`
+        // grant that adds a finality counter + Vampire) the player picks which up front — CR 601.2b —
+        // instead of the handler auto-picking the rider. Keyed on (card, life cost, rider) so grants
+        // that are indistinguishable to the player collapse to a single action.
+        val emitted = HashSet<String>()
+
         // Check timing restrictions
         for (permission in permissions) {
             if (permission.duringYourTurnOnly && !state.isActiveTurnFor(playerId)) continue
             val lifeCost = permission.lifeCost
             val lifeSuffix = if (lifeCost > 0) " (pay $lifeCost life)" else ""
+            // The permission's cast-this-way entry rider, recorded on the action so the handler
+            // applies exactly the permission the player chose, and surfaced in the action text so the
+            // options read differently when riders differ.
+            val riderSelection = GraveyardCastRiderSelection(permission.entersWithCounter, permission.addedSubtypeOnEntry)
+            val riderSuffix = graveyardRiderSuffix(permission)
 
             val graveyardCards = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))
             for (cardId in graveyardCards) {
@@ -1830,6 +1843,9 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     if (currentLife < lifeCost) continue
                 }
 
+                // Collapse permissions indistinguishable to the player (same card, life cost, rider).
+                if (!emitted.add("$cardId|$lifeCost|${permission.entersWithCounter}|${permission.addedSubtypeOnEntry}")) continue
+
                 val effectiveCost = context.costCalculator.calculateEffectiveCost(state, cardDef, playerId)
                 val costString = effectiveCost.toString()
                 val canAfford = context.manaSolver.canPay(state, playerId, effectiveCost, precomputedSources = context.availableManaSources)
@@ -1838,8 +1854,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     result.add(
                         LegalAction(
                             actionType = "CastSpell",
-                            description = "Cast ${cardComponent.name}$lifeSuffix",
-                            action = CastSpell(playerId, cardId, graveyardLifeCost = lifeCost),
+                            description = "Cast ${cardComponent.name}$riderSuffix$lifeSuffix",
+                            action = CastSpell(playerId, cardId, graveyardLifeCost = lifeCost, graveyardCastRider = riderSelection),
                             affordable = false,
                             manaCostString = costString,
                             sourceZone = "GRAVEYARD",
@@ -1868,8 +1884,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                         result.add(
                             LegalAction(
                                 actionType = "CastSpell",
-                                description = "Cast ${cardComponent.name}$lifeSuffix",
-                                action = CastSpell(playerId, cardId, graveyardLifeCost = lifeCost),
+                                description = "Cast ${cardComponent.name}$riderSuffix$lifeSuffix",
+                                action = CastSpell(playerId, cardId, graveyardLifeCost = lifeCost, graveyardCastRider = riderSelection),
                                 validTargets = firstInfo.validTargets,
                                 requiresTargets = true,
                                 targetCount = firstReq.count,
@@ -1887,8 +1903,8 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     result.add(
                         LegalAction(
                             actionType = "CastSpell",
-                            description = "Cast ${cardComponent.name}$lifeSuffix",
-                            action = CastSpell(playerId, cardId, graveyardLifeCost = lifeCost),
+                            description = "Cast ${cardComponent.name}$riderSuffix$lifeSuffix",
+                            action = CastSpell(playerId, cardId, graveyardLifeCost = lifeCost, graveyardCastRider = riderSelection),
                             manaCostString = costString,
                             autoTapPreview = autoTapPreview,
                             sourceZone = "GRAVEYARD",
@@ -1898,6 +1914,21 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 }
             }
         }
+    }
+
+    /**
+     * Human-readable suffix describing a [MayCastFromGraveyard] permission's cast-this-way entry
+     * rider, so two graveyard-cast options for the same card read differently when their riders
+     * differ (e.g. "Cast Skullcap Snail (enters with a finality counter; becomes a Vampire)" vs the
+     * plain "Cast Skullcap Snail" from a free grant). Empty when the permission carries no rider.
+     */
+    private fun graveyardRiderSuffix(permission: MayCastFromGraveyard): String {
+        if (!permission.hasEntryRider) return ""
+        val parts = buildList {
+            permission.entersWithCounter?.let { add("enters with a ${it.name.lowercase()} counter") }
+            permission.addedSubtypeOnEntry?.let { add("becomes a $it") }
+        }
+        return " (" + parts.joinToString("; ") + ")"
     }
 
     // =========================================================================

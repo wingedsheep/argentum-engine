@@ -4432,14 +4432,23 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   Journal back) = `GrantStaticAbility(MayCastFromGraveyard(Creature, entersWithCounter =
   CounterType.FINALITY, addedSubtypeOnEntry = "Vampire"), EffectTarget.Self, Duration.EndOfTurn)`. The
   rider is frozen onto the stack spell at cast time (`CastSpellHandler` reads the authorizing grant via
-  `CastZoneResolver.findMayCastFromGraveyardGrant`, preferring a rider-bearing one when several apply)
-  as a `GraveyardCastRiderComponent`, and applied on entry by `StackResolver` →
+  `CastZoneResolver.findMayCastFromGraveyardGrant`) as a `GraveyardCastRiderComponent`, and applied on
+  entry by `StackResolver` →
   `EntersWithReplacements.applyCastFromGraveyardRider` (finality counter placed → the
   `ZoneMovementUtils` death-replacement exiles it instead of dying; added subtype = floating `Layer.TYPE`
   effect). This is the reusable "cast from graveyard, enters with a finality counter" mechanism:
   Osteomancer Adept's forage permission (`MayCastCreaturesFromGraveyardWithForageComponent`) shares it —
   `CastSpellHandler` freezes the same `GraveyardCastRiderComponent(entersWithCounter = FINALITY)` onto a
   forage-cast creature, applied on entry by the identical `StackResolver` path.
+  **Choosing among grants (CR 601.2b):** when several `MayCastFromGraveyard` grants apply to the same
+  card at once (a free `Nonland` grant *and* the Tomb's rider `Creature` grant), the graveyard-cast
+  enumerator offers one legal action per distinct permission — distinguished by life cost and entry
+  rider (the rider option reads "Cast X (enters with a finality counter; becomes a Vampire)") — and
+  the choice rides on `CastSpell.graveyardCastRider` (a `GraveyardCastRiderSelection`). So the player
+  picks the permission, and thus whether they take the rider, *before* paying — like flashback vs a
+  normal cast. `findMayCastFromGraveyardGrant(selection)` returns the grant matching that choice,
+  falling back to a rider-preferring auto-pick when the selection is unspecified or names a rider no
+  applicable grant offers (so a client can't dodge a mandatory rider).
 - `GraveyardCardsHaveFlashback(filter, cost = null, duringYourTurnOnly = false)` — a **whole-graveyard
   flashback grant** (CR 702.34): a continuous static that grants flashback to *every* card in the
   controller's graveyard matching `filter` (not a single-card grant like `Effects.GrantFlashback` /
