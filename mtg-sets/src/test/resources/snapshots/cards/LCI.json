@@ -2373,6 +2373,118 @@
     ]
 }
 
+// Breeches, Eager Pillager
+{
+    "name": "Breeches, Eager Pillager",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Goblin Pirate",
+    "oracleText": "First strike\nWhenever a Pirate you control attacks, choose one that hasn't been chosen this turn —\n• Create a Treasure token.\n• Target creature can't block this turn.\n• Exile the top card of your library. You may play it this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Pirate ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure"
+                            }
+                        },
+                        {
+                            "effect": {
+                                "type": "CantBlockTargetCreatures",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    }
+                                }
+                            ],
+                            "description": "Target creature can't block this turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeAs": "breechesExiled"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "breechesExiled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantMayPlayFromExile",
+                                        "from": "breechesExiled"
+                                    }
+                                ]
+                            },
+                            "description": "Exile the top card of your library. You may play it this turn"
+                        }
+                    ],
+                    "excludeModesChosenThisTurn": true,
+                    "countsAsModalSpell": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aadf5028-8dfe-40d3-89b4-22bd7ed0aae6.jpg?1782694500",
+        "rulings": [
+            {
+                "date": "2023-11-10",
+                "text": "You pay all costs and follow all normal timing rules for cards played this way. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2023-11-10",
+                "text": "If you can't legally choose a mode because all three have been chosen that turn, that instance of the ability is removed from the stack with no effect."
+            },
+            {
+                "date": "2023-11-10",
+                "text": "If you somehow control two or more Breeches, Eager Pillager, track which modes have been chosen each turn for each one's ability separately."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Bringer of the Last Gift
 {
     "name": "Bringer of the Last Gift",

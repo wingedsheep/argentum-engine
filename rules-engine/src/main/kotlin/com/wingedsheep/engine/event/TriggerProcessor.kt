@@ -818,15 +818,17 @@ class TriggerProcessor(
      * that only affect the controller's own board carry no such observable, so they stay on the
      * resolution-time path ([com.wingedsheep.engine.handlers.effects.composite.ModalEffectExecutor]).
      *
-     * Two shapes are deliberately excluded because they need state that only exists at resolution:
-     * a `dynamicChooseCount` (evaluated against the resolving game state) and
-     * `excludePreviouslyChosenModes` (Gandalf the Grey's per-source memory, recorded by the
-     * resolution-time continuation).
+     * Three shapes are deliberately excluded because they need state that only exists at resolution:
+     * a `dynamicChooseCount` (evaluated against the resolving game state),
+     * `excludePreviouslyChosenModes` (Gandalf the Grey's per-source memory) and
+     * `excludeModesChosenThisTurn` (Breeches, Eager Pillager's turn-scoped per-source memory),
+     * both recorded by the resolution-time continuation.
      */
     private fun modalNeedingPutOnStackSelection(effect: Effect): ModalEffect? {
         val modal = effect as? ModalEffect ?: return null
         if (modal.dynamicChooseCount != null) return null
         if (modal.excludePreviouslyChosenModes) return null
+        if (modal.excludeModesChosenThisTurn) return null
         if (modal.modes.none { it.targetRequirements.isNotEmpty() }) return null
         return modal
     }

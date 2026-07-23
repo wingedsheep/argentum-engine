@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 277 / 286
+**Implemented:** 278 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -33,7 +33,7 @@
 - [x] Braided Net
 - [x] Brass's Tunnel-Grinder
 - [x] Brazen Blademaster
-- [ ] Breeches, Eager Pillager
+- [x] Breeches, Eager Pillager
 - [x] Bringer of the Last Gift
 - [x] Broodrage Mycoid
 - [x] Buried Treasure
