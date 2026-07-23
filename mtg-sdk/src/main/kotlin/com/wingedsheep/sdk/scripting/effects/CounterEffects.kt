@@ -90,7 +90,7 @@ data class MoveAllLastKnownCountersEffect(
 }
 
 /**
- * Double the number of counters of a given kind already on a target (one-shot).
+ * Double the number of counters already on a target (one-shot).
  * "Double the number of +1/+1 counters on that creature."
  *
  * Distinct from the `DoubleCounterPlacement` replacement effect, which doubles
@@ -101,16 +101,22 @@ data class MoveAllLastKnownCountersEffect(
  * effects (e.g., Hardened Scales), matching the rules treatment of doubling as
  * additional counter placement.
  *
- * No-op when the target has no counters of [counterType].
+ * When [counterType] is null, *every* kind of counter currently on the target is
+ * doubled independently — "double the number of each kind of counter on it"
+ * (Vorel of the Hull Clade, Zimone, Paradox Sculptor). Each kind is placed as its
+ * own counter-placement, so per-kind replacements apply as normal.
+ *
+ * No-op when the target has no counters of the relevant kind(s).
  */
 @SerialName("DoubleCounters")
 @Serializable
 data class DoubleCountersEffect(
-    val counterType: String = Counters.PLUS_ONE_PLUS_ONE,
+    val counterType: String? = Counters.PLUS_ONE_PLUS_ONE,
     val target: EffectTarget = EffectTarget.ContextTarget(0)
 ) : Effect {
     override val description: String =
-        "Double the number of $counterType counters on ${target.description}"
+        if (counterType == null) "Double the number of each kind of counter on ${target.description}"
+        else "Double the number of $counterType counters on ${target.description}"
 }
 
 /**

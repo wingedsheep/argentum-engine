@@ -774,6 +774,11 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   target: reads the current count and places that many more (so the total doubles). Distinct from the
   `DoubleCounterPlacement` replacement (which doubles *future* placements); the added counters still trigger
   placement replacements like Hardened Scales. No-op with zero counters. Sage of the Fang.
+- `DoubleAllCounters(target?)` — the every-kind twin of `DoubleCounters`: "double the number of each kind of
+  counter on target permanent" (`DoubleCountersEffect` with `counterType = null`). Every kind currently on the
+  target is snapshotted first, then doubled as its own placement, so per-kind replacements apply and counters
+  added by this effect are never re-doubled. No-op when the target has no counters at all. Zimone, Paradox
+  Sculptor.
 - `GrantCounterPlacementModifier(modifier?, duration?, counterType?, recipient?)` — install a **temporary,
   duration-scoped, controller-scoped** counter-placement modifier: the activated/spell-granted analogue of the
   static `ModifyCounterPlacement` replacement (Hardened Scales). While active, if the *controller* of the effect
