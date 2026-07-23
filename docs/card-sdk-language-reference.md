@@ -1061,7 +1061,10 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   taps for any color — i.e. the mana ability of each basic land type, without the basic supertype. The
   Overlord of the Hauntwoods trigger creates them `tapped = true`.
 - `CreateRoleToken(roleName, target)` — attach a Role aura token.
-- `CreateMapToken(count?)` — Map artifact tokens.
+- `CreateMapToken(count?)` — Map artifact tokens. `count` accepts an `Int` or a `DynamicAmount`
+  (the latter evaluated at resolution, e.g. Journey On's `CreateMapToken(Add(Fixed(1),
+  CountPlayersWith(Player.EachOpponent, Conditions.ControlArtifact)))` — "X is one plus the number
+  of opponents who control an artifact").
 - `CreateDroneToken(count?)` — Drone tokens.
 - `CreateMunitionsToken(count?)` — Munitions noncreature artifact tokens (Weapons Manufacturing); the LTB damage
   trigger lives on the predefined `Munitions` `CardDefinition` and is picked up automatically by the engine's

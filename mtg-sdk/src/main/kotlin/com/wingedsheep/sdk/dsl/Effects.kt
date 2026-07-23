@@ -2395,6 +2395,14 @@ object Effects {
         CreatePredefinedTokenEffect("Map", count)
 
     /**
+     * Create a dynamic number of Map tokens — the count is evaluated at resolution time.
+     * Used for cards like Journey On ("create X Map tokens, where X is one plus the number
+     * of opponents who control an artifact") where the amount depends on game state.
+     */
+    fun CreateMapToken(count: DynamicAmount): Effect =
+        CreatePredefinedTokenEffect("Map", dynamicCount = count)
+
+    /**
      * Create Drone artifact creature tokens.
      * "Flying. This token can block only creatures with flying."
      *

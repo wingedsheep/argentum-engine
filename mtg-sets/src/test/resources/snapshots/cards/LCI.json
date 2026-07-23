@@ -9563,6 +9563,117 @@
     ]
 }
 
+// Kellan, Daring Traveler
+{
+    "name": "Kellan, Daring Traveler",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Human Faerie Scout",
+    "oracleText": "Whenever Kellan attacks, reveal the top card of your library. If it's a creature card with mana value 3 or less, put it into your hand. Otherwise, you may put it into your graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "revealed",
+                            "revealed": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "revealed",
+                                    "filter": "creature mv<=3"
+                                }
+                            },
+                            "then": {
+                                "type": "MoveCollection",
+                                "from": "revealed",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            "otherwise": {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "MoveCollection",
+                                    "from": "revealed",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                },
+                                "descriptionOverride": "Put the revealed card into your graveyard?"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "RARE",
+        "artist": "Marta Nael",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01739030-c280-492b-a5c9-b3e9f6debc6d.jpg?1782694426"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Journey On",
+            "manaCost": "{G}",
+            "typeLine": "Sorcery — Adventure",
+            "oracleText": "Create X Map tokens, where X is one plus the number of opponents who control an artifact. (Then exile this card. You may cast the creature later from exile.)",
+            "script": {
+                "spellEffect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Map",
+                    "dynamicCount": {
+                        "type": "Add",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "right": {
+                            "type": "CountPlayersWith",
+                            "scope": "EachOpponent",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "artifact"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
+
 // Kinjalli's Dawnrunner
 {
     "name": "Kinjalli's Dawnrunner",
