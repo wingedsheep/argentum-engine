@@ -2986,6 +2986,66 @@
     ]
 }
 
+// Into the Fae Court
+{
+    "name": "Into the Fae Court",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw three cards. Create a 1/1 blue Faerie creature token with flying and \"This token can block only creatures with flying.\"",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Faerie"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/f/0f9a993f-1f2b-4b17-b415-e975b7873e18.jpg?1783914992",
+                    "staticAbilities": [
+                        {
+                            "type": "CanOnlyBlockCreaturesWith",
+                            "blockerFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasKeyword",
+                                        "keyword": "FLYING"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "artist": "Anna Steinbauer",
+        "flavorText": "Kellan stepped from his village into a strange world where trees bore jeweled fruit. A regal, inhuman voice rang in his ears: \"Tell me, brave hero, are you true of heart?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/969b13bb-6411-41f9-b6b4-af4ffca62e17.jpg?1783915119"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Kindled Heroism
 {
     "name": "Kindled Heroism",
@@ -3377,6 +3437,47 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Misleading Motes
+{
+    "name": "Misleading Motes",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature's owner puts it on their choice of the top or bottom of their library.",
+    "script": {
+        "spellEffect": {
+            "type": "PutOnLibraryPositionOfChoice",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target creature"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Raoul Vitale",
+        "flavorText": "Yarvis was almost certain he'd seen the same tree an hour ago, but then again, didn't all trees look alike? He shelved his doubts and followed the friendly, twinkling motes deeper into the forest.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4c6c7a43-c3d1-450e-834a-54e1b9def1cd.jpg?1783915117",
+        "rulings": [
+            {
+                "date": "2023-09-01",
+                "text": "The creature's owner chooses whether to put it on the top or bottom of their library. If multiple cards are put into the library this way (such as when the spell targets a melded permanent), that creature's owner puts all the cards on top or all the cards on the bottom. They put them in whatever order they wish, and do not need to reveal the order."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
