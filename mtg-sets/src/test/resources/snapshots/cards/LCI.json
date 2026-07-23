@@ -15180,6 +15180,58 @@
     ]
 }
 
+// Roaming Throne
+{
+    "name": "Roaming Throne",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Ward {2}\nAs this creature enters, choose a creature type.\nThis creature is the chosen type in addition to its other types.\nIf a triggered ability of another creature you control of the chosen type triggers, it triggers an additional time.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            "GrantChosenSubtype",
+            {
+                "type": "AdditionalSourceTriggers",
+                "sourceFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        "HasChosenSubtype"
+                    ]
+                },
+                "description": "If a triggered ability of another creature you control of the chosen type triggers, it triggers an additional time"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "258",
+        "rarity": "RARE",
+        "artist": "Cristi Balanescu",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32fd8b7c-baf3-4d3d-be6f-044a917b11a0.jpg?1782694404"
+    },
+    "colorIdentityOverride": []
+}
+
 // Ruin-Lurker Bat
 {
     "name": "Ruin-Lurker Bat",

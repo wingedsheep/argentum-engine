@@ -4143,6 +4143,11 @@ staticAbility {
   ~ is equipped, …"); a `null` condition always applies. Cloud, Midgar Mercenary combines all three:
   `AdditionalSourceTriggers(sourceFilter = Artifact.withSubtype("Equipment").attachedToSource(),
   alsoSource = true, condition = Conditions.SourceMatches(GameObjectFilter.Any.equipped()))`.
+  The `sourceFilter` may key off the source's own **chosen creature type** —
+  `GameObjectFilter.Creature.withChosenSubtype()` matches creatures whose projected subtypes include the
+  type this permanent chose as it entered (read from the doubler's `sourceId` via
+  `CardPredicate.HasChosenSubtype`). Roaming Throne pairs it with `EntersWithChoice(CREATURE_TYPE)` +
+  `GrantChosenSubtype()` for "another creature you control of the chosen type" (`excludeSelf = true`).
   `TriggerDetector.duplicateSourceTriggers` (and `ActivateAbilityHandler` for triggered mana abilities).
 - `AdditionalAttackTriggers(attackerFilter = GameObjectFilter.Any)` — Windcrag Siege (Mardu): the
   attack-cause analogue of `AdditionalETBOrLTBTriggers`. If a creature matching `attackerFilter`

@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 285 / 286
+**Implemented:** 286 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -206,7 +206,7 @@
 - [x] Restless Vents
 - [x] River Herald Guide
 - [x] River Herald Scout
-- [ ] Roaming Throne
+- [x] Roaming Throne
 - [x] Ruin-Lurker Bat
 - [x] Rumbling Rockslide
 - [x] Runaway Boulder
