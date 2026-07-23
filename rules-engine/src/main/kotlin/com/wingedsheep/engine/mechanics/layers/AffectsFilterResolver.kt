@@ -673,6 +673,12 @@ internal class AffectsFilterResolver {
         is CardPredicate.PowerGreaterThanEntity -> false
         is CardPredicate.PowerAtMostEntity -> false
         is CardPredicate.PowerLessThanEntity -> false
+        CardPredicate.PowerGreaterThanBase -> {
+            // Self-relative: projected power vs the object's own printed base power.
+            val basePower = card.baseStats?.basePower
+            val currentPower = projected?.power ?: basePower
+            basePower != null && currentPower != null && currentPower > basePower
+        }
         CardPredicate.ManaValueIsEven -> card.manaValue % 2 == 0
         CardPredicate.ManaValueIsOdd -> card.manaValue % 2 != 0
         CardPredicate.HasXInManaCost -> if (isFaceDown) false else card.manaCost.hasX

@@ -949,6 +949,8 @@ class CostCalculator(
             is CardPredicate.PowerGreaterThanEntity -> false
             is CardPredicate.PowerAtMostEntity -> false
             is CardPredicate.PowerLessThanEntity -> false
+            // A printed card's power never exceeds its own base power statically (they're equal).
+            CardPredicate.PowerGreaterThanBase -> false
             CardPredicate.ManaValueIsEven -> cardDef.manaCost.cmc % 2 == 0
             CardPredicate.ManaValueIsOdd -> cardDef.manaCost.cmc % 2 != 0
             CardPredicate.HasXInManaCost -> cardDef.manaCost.hasX

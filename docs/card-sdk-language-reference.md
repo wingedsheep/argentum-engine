@@ -2517,6 +2517,14 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   with `EntityReference.AmassedArmy` for a **resolution-time pipeline** bound — Grishnákh, Brash Instigator
   ("power ≤ the amassed Army's power"). The pipeline reference is threaded into target enumeration via
   `findLegalTargets(..., pipelineContext = …)`; see §13 "Pipeline values inside target filters".
+- `.powerGreaterThanBase()` — **self-relative**: the object's current (projected) power is strictly greater
+  than its **own** printed base power (`CardComponent.baseStats.basePower`). Any pump that raises power above
+  base qualifies — a +1/+1 counter, an anthem, a temporary boost; a shrunk or unmodified creature does not.
+  Off-battlefield objects (no projected power) and `*`/CDA-power creatures (no fixed printed base) never
+  match. Backs the Malamet "power greater than its base power" cycle — Kutzil, Malamet Exemplar ("Whenever
+  one or more creatures you control each with power greater than its base power deals combat damage to a
+  player, draw a card"), pairing `GameObjectFilter.Creature.powerGreaterThanBase()` with the
+  `OneOrMoreDealCombatDamageToPlayerEvent` batch trigger (§8).
 - `.manaValueAtMostEntityManaSpent(ref)` — mana value ≤ the mana **actually spent** to cast a referenced
   entity. Reads the live `SpellOnStackComponent` buckets while the entity is still a spell, or the
   `CastRecordComponent` snapshot once it has resolved onto the battlefield (0 if it was never cast).

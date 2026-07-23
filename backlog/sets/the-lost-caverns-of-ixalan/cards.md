@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 273 / 286
+**Implemented:** 274 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -144,7 +144,7 @@
 - [x] Kinjalli's Dawnrunner
 - [ ] Kitesail Larcenist
 - [x] Kutzil's Flanker
-- [ ] Kutzil, Malamet Exemplar
+- [x] Kutzil, Malamet Exemplar
 - [x] Lodestone Needle
 - [x] Magmatic Galleon
 - [x] Malamet Battle Glyph

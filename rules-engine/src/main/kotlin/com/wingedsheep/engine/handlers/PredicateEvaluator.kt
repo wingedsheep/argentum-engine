@@ -505,6 +505,16 @@ class PredicateEvaluator {
                 candidatePower < refPower
             }
 
+            CardPredicate.PowerGreaterThanBase -> {
+                // Self-relative: current (projected) power vs the object's own printed base power.
+                // A +1/+1 counter, an anthem, or any temporary pump raises projected power above
+                // base and qualifies; a shrunk/unmodified creature does not. No projected power
+                // (off-battlefield) or no fixed base (*/CDA power) → not greater.
+                val basePower = card.baseStats?.basePower ?: return false
+                val currentPower = projectedValues?.power ?: basePower
+                currentPower > basePower
+            }
+
             // Source-relative predicates
             CardPredicate.NotOfSourceChosenType -> {
                 val sourceId = context?.sourceId ?: return true
@@ -1374,6 +1384,7 @@ class PredicateEvaluator {
             is CardPredicate.PowerGreaterThanEntity,
             is CardPredicate.PowerAtMostEntity,
             is CardPredicate.PowerLessThanEntity,
+            CardPredicate.PowerGreaterThanBase,
             CardPredicate.ToughnessGreaterThanPower -> false
 
             // Name predicates — matched against the record's card name; a record without a

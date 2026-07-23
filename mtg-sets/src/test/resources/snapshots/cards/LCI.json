@@ -9709,6 +9709,59 @@
     ]
 }
 
+// Kutzil, Malamet Exemplar
+{
+    "name": "Kutzil, Malamet Exemplar",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Legendary Creature — Cat Warrior",
+    "oracleText": "Your opponents can't cast spells during your turn.\nWhenever one or more creatures you control each with power greater than its base power deals combat damage to a player, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "PowerGreaterThanBase"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "condition": "IsYourTurn"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "UNCOMMON",
+        "artist": "Marie Magny",
+        "flavorText": "\"Invaders in the West Chasm? Give me an hour and they'll be fungus food.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9f88a40-a6ed-4c1f-a309-011aca1acddd.jpg?1782694425"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
 // Lodestone Needle
 {
     "name": "Lodestone Needle",
