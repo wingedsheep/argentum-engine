@@ -1126,6 +1126,19 @@ internal class CombatDamageManager(
                 events.add(CountersAddedEvent(targetId, com.wingedsheep.sdk.core.CounterType.MINUS_ONE_MINUS_ONE.name, amount,
                     newState.getEntity(targetId)?.get<CardComponent>()?.name ?: "Creature", firstThisTurn,
                     placedBy = projected.getController(sourceId)))
+                // Wither only changes the FORM of the damage (CR 702.80a); the creature was still
+                // dealt damage by this source, so a deathtouch source still marks it for
+                // destruction as an SBA (CR 702.2b / 704.5h) even though nothing is marked as
+                // normal damage. Record the deathtouch flag without marking damage.
+                if (projected.hasKeyword(sourceId, Keyword.DEATHTOUCH)) {
+                    newState = newState.updateEntity(targetId) { container ->
+                        val existing = container.get<DamageComponent>()
+                        container.with(DamageComponent(
+                            amount = existing?.amount ?: 0,
+                            deathtouchDamageReceived = true
+                        ))
+                    }
+                }
             } else {
                 val existingDamage = newState.getEntity(targetId)?.get<DamageComponent>()
                 val currentDamage = existingDamage?.amount ?: 0

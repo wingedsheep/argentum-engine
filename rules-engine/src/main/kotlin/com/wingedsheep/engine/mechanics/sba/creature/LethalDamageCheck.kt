@@ -45,7 +45,13 @@ class LethalDamageCheck : StateBasedActionCheck {
             val effectiveToughness = projected.getToughness(entityId) ?: 0
 
             val hasLethalDamage = damageComponent.amount >= effectiveToughness
-            val hasDeathtouch = damageComponent.deathtouchDamageReceived && damageComponent.amount > 0
+            // CR 704.5h — destroyed if dealt damage by a deathtouch source, regardless of the
+            // form that damage took. `deathtouchDamageReceived` is only ever set when a deathtouch
+            // source actually dealt nonzero damage (marked, or as wither -1/-1 counters), so no
+            // separate `amount > 0` guard is needed — and requiring marked `amount > 0` would
+            // wrongly spare a creature whose deathtouch damage arrived as wither counters (which
+            // are not marked damage, CR 702.80a).
+            val hasDeathtouch = damageComponent.deathtouchDamageReceived
 
             if (hasLethalDamage || hasDeathtouch) {
                 // Check for regeneration shields
