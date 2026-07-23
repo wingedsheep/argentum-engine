@@ -10,6 +10,7 @@ import com.wingedsheep.engine.core.CloneEntersOnBattlefieldContinuation
 import com.wingedsheep.engine.core.EntersWithChoiceOnBattlefieldContinuation
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.HandLookedAtEvent
 import com.wingedsheep.engine.core.OptionMetadata
 import com.wingedsheep.engine.core.PendingDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
@@ -18,9 +19,11 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
+import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.sdk.scripting.EntersWithChoice
@@ -51,6 +54,32 @@ import com.wingedsheep.sdk.scripting.references.Player
 object PermanentEntryReplacements {
 
     private val predicateEvaluator = PredicateEvaluator()
+
+    /**
+     * Models the "look at an opponent's hand" clause of an [EntersWithChoice] with
+     * [EntersWithChoice.lookAtOpponentHand] set (Sorcerous Spyglass). Reveals the first opponent's
+     * hand to [viewerId] for the rest of the game (via [RevealedToComponent], the same durable
+     * reveal used by "look at target player's hand") and emits a [HandLookedAtEvent] so the client
+     * shows those cards to the viewer while they make the choice. The reveal is purely
+     * informational — it never restricts the name that may be chosen. Returns the (possibly
+     * unchanged) state paired with any event to carry.
+     */
+    fun revealOpponentHandForEntersChoice(
+        state: GameState,
+        viewerId: EntityId,
+    ): Pair<GameState, List<GameEvent>> {
+        val opponentId = state.getOpponents(viewerId).firstOrNull() ?: return state to emptyList()
+        val handCards = state.getHand(opponentId)
+        var newState = state
+        for (cardId in handCards) {
+            newState = newState.updateEntity(cardId) { container ->
+                val existing = container.get<RevealedToComponent>()
+                if (existing != null) container.with(existing.withPlayer(viewerId))
+                else container.with(RevealedToComponent.to(viewerId))
+            }
+        }
+        return newState to listOf(HandLookedAtEvent(viewerId, opponentId, handCards))
+    }
 
     /**
      * Copy candidates for an [EntersAsCopy] on a permanent already on the battlefield: land/permanent
@@ -330,29 +359,37 @@ object PermanentEntryReplacements {
             }
 
             ChoiceType.CARD_NAME -> {
-                // The option list (land card names from the registry) is supplied by the caller,
-                // which has the registry in scope. If empty, there is nothing to name — complete
-                // entry normally.
+                // The option list (land names, or every card name for a CardNamePool.ANY choice) is
+                // supplied by the caller, which has the registry in scope. If empty, there is nothing
+                // to name — complete entry normally.
                 val options = cardNameOptions.sorted()
                 if (options.isEmpty()) return null
+                // "As this enters, look at an opponent's hand, then …": reveal to the controller
+                // before presenting the choice, so they see the hand while naming a card.
+                val (baseState, lookEvents) = if (choice.lookAtOpponentHand) {
+                    revealOpponentHandForEntersChoice(state, controllerId)
+                } else state to emptyList()
                 val id = "choose-card-name-enters-${entityId.value}"
-                pause(
-                    ChooseOptionDecision(
-                        id = id,
-                        playerId = chooserId,
-                        prompt = "Choose a land card name",
-                        context = context(id),
-                        options = options
-                    ),
-                    EntersWithChoiceOnBattlefieldContinuation(
-                        decisionId = id,
-                        entityId = entityId,
-                        controllerId = controllerId,
-                        choiceType = ChoiceType.CARD_NAME,
-                        cardNames = options,
-                        fromZone = fromZone
-                    )
+                val prompt = if (choice.cardNamePool == CardNamePool.ANY) {
+                    "Choose a card name"
+                } else "Choose a land card name"
+                val decision = ChooseOptionDecision(
+                    id = id,
+                    playerId = chooserId,
+                    prompt = prompt,
+                    context = context(id),
+                    options = options
                 )
+                val continuation = EntersWithChoiceOnBattlefieldContinuation(
+                    decisionId = id,
+                    entityId = entityId,
+                    controllerId = controllerId,
+                    choiceType = ChoiceType.CARD_NAME,
+                    cardNames = options,
+                    fromZone = fromZone
+                )
+                val paused = baseState.pushContinuation(continuation).withPendingDecision(decision)
+                ExecutionResult.paused(paused, decision, carryEvents + lookEvents)
             }
 
             ChoiceType.NUMBER -> {

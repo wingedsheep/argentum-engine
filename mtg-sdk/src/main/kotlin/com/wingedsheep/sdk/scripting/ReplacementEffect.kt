@@ -1325,6 +1325,19 @@ enum class ChoiceType {
 }
 
 /**
+ * The pool of card names offered by a [ChoiceType.CARD_NAME] [EntersWithChoice].
+ *
+ * - [LAND] — only registered *land* card names (Petrified Hamlet: "choose a land card name").
+ * - [ANY] — every registered card name (Sorcerous Spyglass / Pithing Needle: "choose any card
+ *   name"). The chosen name is still stored under [com.wingedsheep.sdk.scripting.ChoiceSlot.CARD_NAME]
+ *   and read the same way; only the offered option set differs.
+ */
+enum class CardNamePool {
+    LAND,
+    ANY
+}
+
+/**
  * A single named option in an [EntersWithChoice] of type [ChoiceType.MODE].
  *
  * The [id] is the stable, machine-readable identifier referenced by
@@ -1384,6 +1397,20 @@ data class EntersWithChoice(
      */
     val minValue: Int = 0,
     val maxValue: Int = 0,
+    /**
+     * When [choiceType] is [ChoiceType.CARD_NAME], which names are offered — a pool of just land
+     * names ([CardNamePool.LAND], the default matching Petrified Hamlet) or every registered card
+     * name ([CardNamePool.ANY], "choose any card name" à la Sorcerous Spyglass / Pithing Needle).
+     * Ignored for every other choice type.
+     */
+    val cardNamePool: CardNamePool = CardNamePool.LAND,
+    /**
+     * When true, the chooser first looks at an opponent's hand as the permanent enters, immediately
+     * before making the choice (the opponent's hand is revealed to the chooser for the rest of the
+     * game per CR 701.16). Models the "look at an opponent's hand, then …" clause of Sorcerous
+     * Spyglass. The look is purely informational — it does not restrict the choice. Defaults to false.
+     */
+    val lookAtOpponentHand: Boolean = false,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Any,
         to = Zone.BATTLEFIELD
@@ -1419,10 +1446,11 @@ data class EntersWithChoice(
         } else {
             "As this permanent enters, choose an opponent"
         }
-        ChoiceType.CARD_NAME -> if (chooser == Player.AnOpponent) {
-            "As this permanent enters, an opponent chooses a land card name"
-        } else {
-            "As this permanent enters, choose a land card name"
+        ChoiceType.CARD_NAME -> {
+            val lookPrefix = if (lookAtOpponentHand) "look at an opponent's hand, then " else ""
+            val nameKind = if (cardNamePool == CardNamePool.ANY) "any card name" else "a land card name"
+            val verb = if (chooser == Player.AnOpponent) "an opponent chooses" else "choose"
+            "As this permanent enters, $lookPrefix$verb $nameKind"
         }
         ChoiceType.NUMBER -> if (chooser == Player.AnOpponent) {
             "As this permanent enters, an opponent chooses a number between $minValue and $maxValue"

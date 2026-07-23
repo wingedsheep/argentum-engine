@@ -6713,13 +6713,22 @@ EntersWithChoice(
 `ChoiceType.OPPONENT` writes an entity-id choice into the `CastChoicesComponent` under
 `ChoiceSlot.OPPONENT` — read back via the `Player.ChosenOpponent` reference (e.g. Jihad's
 anthem + state-trigger condition: `Exists(Player.ChosenOpponent, Zone.BATTLEFIELD, …)`), and
-`ChoiceType.CARD_NAME` writes a chosen **land card name** (every registered land name, presented as
-a searchable option list) into the `CastChoicesComponent` under `ChoiceSlot.CARD_NAME` as a
-`ChoiceValue.TextChoice` — read back via `chosenCardName()` or, for name-keyed static-ability
-filters, `GameObjectFilter.namedFromChosenComponent()` (→ `CardPredicate.NameEqualsChosenComponent`,
-see §7). Used by Petrified Hamlet ("When this land enters, choose a land card name", then two
-statics — `PreventActivatedAbilities(nonManaAbilitiesOnly = true)` and `GrantActivatedAbility` of a
-`{T}: Add {C}` mana ability — both filtered by `namedFromChosenComponent()`), and
+`ChoiceType.CARD_NAME` writes a chosen **card name** (presented as a searchable option list) into
+the `CastChoicesComponent` under `ChoiceSlot.CARD_NAME` as a `ChoiceValue.TextChoice` — read back via
+`chosenCardName()` or, for name-keyed static-ability filters,
+`GameObjectFilter.namedFromChosenComponent()` (→ `CardPredicate.NameEqualsChosenComponent`, see §7).
+The offered pool is controlled by `cardNamePool: CardNamePool` — `CardNamePool.LAND` (default) offers
+every registered land name (Petrified Hamlet's "choose a land card name"); `CardNamePool.ANY` offers
+every registered card name (Sorcerous Spyglass / Pithing Needle's "choose any card name"). Set
+`lookAtOpponentHand = true` to first reveal an opponent's hand to the controller as the permanent
+enters, immediately before the choice (durable reveal via `RevealedToComponent`, correctly masked to
+show only to the controller; purely informational — it never restricts the name chosen, so an empty
+opposing hand still lets you name any card). Used by Petrified Hamlet ("When this land enters, choose
+a land card name", then two statics — `PreventActivatedAbilities(nonManaAbilitiesOnly = true)` and
+`GrantActivatedAbility` of a `{T}: Add {C}` mana ability — both filtered by
+`namedFromChosenComponent()`) and Sorcerous Spyglass (`EntersWithChoice(ChoiceType.CARD_NAME,
+cardNamePool = CardNamePool.ANY, lookAtOpponentHand = true)` +
+`PreventActivatedAbilities(GameObjectFilter.Any.namedFromChosenComponent(), nonManaAbilitiesOnly = true)`), and
 `ChoiceType.NUMBER` (set `minValue` / `maxValue`) writes a chosen number into the
 `CastChoicesComponent` under `ChoiceSlot.CHOSEN_NUMBER` as a `ChoiceValue.NumberChoice` — read back
 by a CDA via `DynamicAmount.CastChoice(CHOSEN_NUMBER)`. This is the *as-enters replacement* (CR
