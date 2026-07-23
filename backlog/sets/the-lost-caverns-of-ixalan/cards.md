@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 278 / 286
+**Implemented:** 279 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -59,7 +59,7 @@
 - [x] Colossadactyl
 - [x] Compass Gnome
 - [x] Confounding Riddle
-- [ ] Contested Game Ball
+- [x] Contested Game Ball
 - [x] Corpses of the Lost
 - [x] Cosmium Blast
 - [x] Cosmium Confluence
