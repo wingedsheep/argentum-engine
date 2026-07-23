@@ -265,7 +265,7 @@
 - [x] Threefold Thunderhulk
 - [x] Throne of the Grim Captain
 - [x] Tinker's Tote
-- [ ] Tishana's Tidebinder
+- [x] Tishana's Tidebinder
 - [x] Tithing Blade
 - [x] Treasure Map
 - [x] Triumphant Chomp

@@ -19814,6 +19814,76 @@
     ]
 }
 
+// Tishana's Tidebinder
+{
+    "name": "Tishana's Tidebinder",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Merfolk Wizard",
+    "oracleText": "Flash\nWhen this creature enters, counter up to one target activated or triggered ability. If an ability of an artifact, creature, or planeswalker is countered this way, that permanent loses all abilities for as long as this creature remains on the battlefield. (Mana abilities can't be targeted.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveAbilitiesFromSourceOfTargetedAbility",
+                            "duration": {
+                                "type": "WhileSourceOnBattlefield",
+                                "sourceDescription": "this creature"
+                            },
+                            "sourceCardTypes": [
+                                "ARTIFACT",
+                                "CREATURE",
+                                "PLANESWALKER"
+                            ]
+                        },
+                        {
+                            "type": "Counter",
+                            "target": "CounterTarget.Ability"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsActivatedOrTriggeredAbility"
+                            ]
+                        },
+                        "zone": "Stack"
+                    },
+                    "id": "up to one target activated or triggered ability"
+                },
+                "descriptionOverride": "When this creature enters, counter up to one target activated or triggered ability. If an ability of an artifact, creature, or planeswalker is countered this way, that permanent loses all abilities for as long as this creature remains on the battlefield. (Mana abilities can't be targeted.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "RARE",
+        "artist": "Nino Vecia",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/907b3d1d-8c85-4707-80b5-c4d832df9846.jpg?1782694545"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Tithing Blade
 {
     "name": "Tithing Blade",
