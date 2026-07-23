@@ -56,7 +56,15 @@ data class ZoneEntryOptions(
     val manifested: Boolean = false,
     val skipZoneChangeRedirect: Boolean = false,
     val faceDownExile: Boolean = false,
-    val lastKnownAttachedTo: EntityId? = null
+    val lastKnownAttachedTo: EntityId? = null,
+    /**
+     * True when this move is the exile of a material chosen to pay a Craft cost (CR 702.167).
+     * Stamped onto the emitted [ZoneChangeEvent.craftMaterial] so a SELF "exiled while activating
+     * a craft ability" trigger (Market Gnome) can distinguish it from any other exile. Set only by
+     * the Craft cost payment, and only for the material exiles — never for the crafted card's own
+     * self-exile.
+     */
+    val craftMaterial: Boolean = false
 )
 
 /**
@@ -519,7 +527,10 @@ object ZoneTransitionService {
                 // counts derive from its `counters` map (plusOnePlusOneCounters / etc.).
                 lastKnown = lastKnownSnapshot,
                 xValue = lastKnownCastX,
-                wasSacrificed = wasSacrificed
+                wasSacrificed = wasSacrificed,
+                // Only a battlefield exit can be a craft-material exile; the flag is carried on the
+                // ZoneEntryOptions by the Craft cost payment for each chosen material.
+                craftMaterial = leavingBattlefield && options.craftMaterial
             )
         )
 

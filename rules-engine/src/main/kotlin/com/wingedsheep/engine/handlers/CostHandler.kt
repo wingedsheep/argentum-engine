@@ -1216,10 +1216,13 @@ class CostHandler {
         val events = mutableListOf<GameEvent>()
 
         // 1. Exile each chosen material from its zone via the standard zone-transition pipeline
-        //    (LTB triggers, attachment cleanup, last-known info — all handled there).
+        //    (LTB triggers, attachment cleanup, last-known info — all handled there). Flag the move
+        //    as a craft-material exile so a SELF "exiled from the battlefield while you're activating
+        //    a craft ability" trigger (Market Gnome) fires on materials that left the battlefield.
         for (materialId in chosen) {
             val transition = ZoneTransitionService.moveToZone(
-                newState, materialId, Zone.EXILE
+                newState, materialId, Zone.EXILE,
+                options = com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(craftMaterial = true)
             )
             newState = transition.state
             events.addAll(transition.events)

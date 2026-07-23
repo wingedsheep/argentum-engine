@@ -798,6 +798,9 @@ class TriggerMatcher(
         if (trigger.excludeTo != null && event.toZone == trigger.excludeTo) return false
         // "if it wasn't sacrificed" (Urza's Miter, CR 701.21) — reject sacrifice deaths.
         if (trigger.excludeSacrifice && event.wasSacrificed) return false
+        // "while you're activating a craft ability" (Market Gnome, CR 702.167) — fire only when
+        // this exile was a chosen craft material, not on any other exile.
+        if (trigger.requireCraftMaterial && !event.craftMaterial) return false
 
         // Check binding
         when (binding) {

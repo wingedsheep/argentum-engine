@@ -484,6 +484,16 @@ class DeathAndLeaveTriggerDetector(
 
             when (ability.binding) {
                 TriggerBinding.SELF -> {
+                    // A SELF leave/exile trigger fires on its own departure, but event-fact
+                    // qualifiers on the pattern (e.g. `requireCraftMaterial` — "while you're
+                    // activating a craft ability", Market Gnome) still gate it, so an unrelated
+                    // exile doesn't fire it. Verify those against the event.
+                    val trig = ability.trigger
+                    if (trig is EventPattern.ZoneChangeEvent && trig.requireCraftMaterial &&
+                        !event.craftMaterial
+                    ) {
+                        continue
+                    }
                     triggers.add(
                         PendingTrigger(
                             ability = ability,

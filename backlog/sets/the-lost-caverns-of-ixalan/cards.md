@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 279 / 286
+**Implemented:** 280 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -155,7 +155,7 @@
 - [x] Malcolm, Alluring Scoundrel
 - [x] Malicious Eclipse
 - [x] Marauding Brinefang
-- [ ] Market Gnome
+- [x] Market Gnome
 - [x] Master's Guide-Mural
 - [x] Matzalantli, the Great Door
 - [x] Mephitic Draught

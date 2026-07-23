@@ -185,6 +185,24 @@ object Triggers {
     )
 
     /**
+     * When this permanent is exiled from the battlefield as a material to pay a Craft cost
+     * (CR 702.167) — "When this creature is exiled from the battlefield while you're activating
+     * a craft ability" (Market Gnome, LCI). (SELF.)
+     *
+     * Distinct from [Dies] (battlefield → graveyard) and from a plain exile: the
+     * `requireCraftMaterial` gate makes it fire only when the exile was one of the materials
+     * chosen to pay a Craft activation cost, not on removal-style exile.
+     */
+    val ExiledAsCraftMaterial: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(
+            from = Zone.BATTLEFIELD,
+            to = Zone.EXILE,
+            requireCraftMaterial = true
+        ),
+        binding = TriggerBinding.SELF
+    )
+
+    /**
      * Generic "leaves the battlefield" trigger factory. Use the named
      * constants above ([LeavesBattlefield], [Dies], [AnyCreatureDies],
      * [YourCreatureDies], [PutIntoGraveyardFromBattlefield]) when their

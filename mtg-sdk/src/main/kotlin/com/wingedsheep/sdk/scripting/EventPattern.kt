@@ -135,7 +135,16 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * wasn't sacrificed...". Only meaningful for `from = BATTLEFIELD` patterns; the matcher
          * reads the triggering event's sacrifice flag.
          */
-        val excludeSacrifice: Boolean = false
+        val excludeSacrifice: Boolean = false,
+        /**
+         * When true, the trigger fires only if this object left the battlefield because it was
+         * exiled as a material to pay a Craft cost (CR 702.167) — "When this creature is exiled
+         * from the battlefield while you're activating a craft ability" (Market Gnome). Only
+         * meaningful for `from = BATTLEFIELD, to = EXILE` patterns; the matcher reads the
+         * triggering event's craft-material flag, which the Craft cost payment stamps onto the
+         * exile of each chosen material (and only those — an unrelated exile leaves it `false`).
+         */
+        val requireCraftMaterial: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             append(describeObjectForEvent(filter))
@@ -164,6 +173,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             } else if (from != null) {
                 append(" would leave ${from.displayName}")
             }
+            if (requireCraftMaterial) append(" while you're activating a craft ability")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {

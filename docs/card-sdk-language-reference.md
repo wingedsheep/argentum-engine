@@ -2911,6 +2911,16 @@ for any other (filter, binding, to/excludeTo) combination.
   widen any controller-scoped filter the same way.
 - `PutIntoGraveyardFromBattlefield` — SELF, same event shape as `Dies`; rename
   clarifies non-creature intent (artifact / enchantment going to yard).
+- `ExiledAsCraftMaterial` — SELF, battlefield → exile, gated on `requireCraftMaterial = true`:
+  "When this permanent is exiled from the battlefield while you're activating a craft ability"
+  (Market Gnome, CR 702.167). Fires **only** when this permanent was one of the materials chosen
+  to pay a Craft cost, not on removal-style exile and not on the crafted card's own self-exile.
+  The matcher reads the triggering `ZoneChangeEvent.craftMaterial` flag, which the Craft cost
+  payment (`CostHandler.payCraftCost`) stamps via `ZoneEntryOptions(craftMaterial = true)` on each
+  material's exile — every other exile leaves it `false`. Because the exile goes to `EXILE`, not
+  `GRAVEYARD`, a companion `Dies` trigger on the same card does **not** also fire (exile is not
+  death). The SELF leaves-battlefield detector honors the `requireCraftMaterial` gate too, so a
+  non-craft exile fires neither.
 - `leavesBattlefield(filter, to?, excludeTo?, binding, excludeSacrifice = false)` — factory.
   `to = GRAVEYARD` gives a "dies" variant scoped beyond the named constants (other tribal deaths,
   any-controller deaths); `excludeTo = GRAVEYARD` gives "leaves without dying"
