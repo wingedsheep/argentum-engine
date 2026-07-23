@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 280 / 286
+**Implemented:** 282 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -255,7 +255,7 @@
 - [x] The Belligerent
 - [x] The Enigma Jewel
 - [x] The Everflowing Well
-- [ ] The Millennium Calendar
+- [x] The Millennium Calendar
 - [x] The Mycotyrant
 - [x] The Skullspore Nexus
 - [x] Thousand Moons Crackshot

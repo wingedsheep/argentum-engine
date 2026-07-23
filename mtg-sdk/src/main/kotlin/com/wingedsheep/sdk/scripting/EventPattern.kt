@@ -1429,11 +1429,31 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     /**
      * When a permanent becomes untapped.
      * Binding SELF = "whenever this becomes untapped".
+     *
+     * [batch] = true is the untap analogue of [TapEvent] batch semantics (CR 603.2c): the trigger
+     * fires at most **once** per simultaneous untap batch regardless of how many matching permanents
+     * were untapped together — the untap step untaps all of a player's permanents at once — instead
+     * of once per untapped permanent. Handled by the dedicated batch pass
+     * (`TriggerDetector.detectUntapBatchTriggers`); the per-event path skips it. ANY-binding only.
+     * The untapped permanents are exposed to the payoff as the trigger's captured collection, so a
+     * "put that many counters" effect can read the count. [filter] optionally restricts which
+     * untapped permanents count (e.g. "permanents you control" — The Millennium Calendar).
      */
     @SerialName("UntapEvent")
     @Serializable
-    data object UntapEvent : EventPattern {
-        override val description: String = "this permanent becomes untapped"
+    data class UntapEvent(
+        val filter: GameObjectFilter? = null,
+        val batch: Boolean = false
+    ) : EventPattern {
+        override val description: String = buildString {
+            append(if (batch) "one or more " else "a ")
+            append(filter?.description ?: "permanent")
+            append(if (batch) " become untapped" else " becomes untapped")
+        }
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter?.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
     }
 
     /**

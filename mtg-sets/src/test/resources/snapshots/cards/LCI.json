@@ -18722,6 +18722,114 @@
     ]
 }
 
+// The Millennium Calendar
+{
+    "name": "The Millennium Calendar",
+    "manaCost": "{1}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Whenever you untap one or more permanents during your untap step, put that many time counters on The Millennium Calendar.\n{2}, {T}: Double the number of time counters on The Millennium Calendar.\nWhen there are 1,000 or more time counters on The Millennium Calendar, sacrifice it and each opponent loses 1,000 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "UntapEvent",
+                    "filter": "permanent ctrl:you",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "time",
+                    "amount": {
+                        "type": "DistinctEntitiesInCollections",
+                        "collections": [
+                            "trigger.captured"
+                        ]
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "stateTriggeredAbilities": [
+            {
+                "id": "ability_2",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Source",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": {
+                                "type": "Named",
+                                "name": "time"
+                            }
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1000
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SacrificeTarget",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1000
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When there are 1,000 or more time counters on The Millennium Calendar, sacrifice it and each opponent loses 1,000 life."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DoubleCounters",
+                    "counterType": "time",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Double the number of time counters on The Millennium Calendar."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "257",
+        "rarity": "MYTHIC",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/deabba7f-05ef-41cf-ae3a-d950d051cf1e.jpg?1782694405"
+    },
+    "colorIdentityOverride": []
+}
+
 // The Mycotyrant
 {
     "name": "The Mycotyrant",
