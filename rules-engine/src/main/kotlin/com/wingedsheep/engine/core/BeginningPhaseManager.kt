@@ -97,12 +97,13 @@ class BeginningPhaseManager(
             }
         }
 
-        // Filter out permanents with CANT_UNTAP keyword (e.g., Goblin Sharpshooter).
-        // Temporal Distortion's hourglass counters route through this same flag: it
-        // grants DOESNT_UNTAP via a counter-keyed static ability (so the restriction
-        // is projection-scoped and disappears if Temporal Distortion leaves play).
+        // Filter out permanents that don't untap this step (e.g., Goblin Sharpshooter's
+        // DOESNT_UNTAP, or the stronger CANT_BECOME_UNTAPPED from Blossombind).
+        // Temporal Distortion's hourglass counters route through DOESNT_UNTAP via a
+        // counter-keyed static ability (so the restriction is projection-scoped and
+        // disappears if Temporal Distortion leaves play).
         val permanentsAfterCantUntap = permanentsToUntap.filter { entityId ->
-            !projected.hasKeyword(entityId, AbilityFlag.DOESNT_UNTAP)
+            !projected.doesntUntapDuringUntapStep(entityId)
         }
 
         // Check if any permanents have MAY_NOT_UNTAP keyword (e.g., Everglove Courier)
@@ -195,7 +196,7 @@ class BeginningPhaseManager(
                 val tappedPermanents = newState.entities.filter { (entityId, container) ->
                     projectedForSeedborn.getController(entityId) == playerId &&
                         container.has<TappedComponent>() &&
-                        !projectedForSeedborn.hasKeyword(entityId, AbilityFlag.DOESNT_UNTAP)
+                        !projectedForSeedborn.doesntUntapDuringUntapStep(entityId)
                 }.keys
                 for (entityId in tappedPermanents) {
                     // Another player's untap step (Seedborn Muse, etc.) — the
@@ -212,7 +213,7 @@ class BeginningPhaseManager(
                         entityId !in alreadyUntapped &&
                             projectedForSeedborn.getController(entityId) == playerId &&
                             container.has<TappedComponent>() &&
-                            !projectedForSeedborn.hasKeyword(entityId, AbilityFlag.DOESNT_UNTAP) &&
+                            !projectedForSeedborn.doesntUntapDuringUntapStep(entityId) &&
                             matchesFilterForUntap(newState, projectedForSeedborn, entityId, container, filter)
                     }.keys
                     for (entityId in tappedPermanents) {
@@ -231,7 +232,7 @@ class BeginningPhaseManager(
             for (entityId in selfUntapIds) {
                 val container = newState.getEntity(entityId) ?: continue
                 if (!container.has<TappedComponent>()) continue
-                if (projectedForSeedborn.hasKeyword(entityId, AbilityFlag.DOESNT_UNTAP)) continue
+                if (projectedForSeedborn.doesntUntapDuringUntapStep(entityId)) continue
                 val (afterUntap, untapEvents) = untapOrConsumeStun(newState, entityId)
                 newState = afterUntap
                 events.addAll(untapEvents)

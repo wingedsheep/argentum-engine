@@ -1645,7 +1645,7 @@
         "staticAbilities": [
             {
                 "type": "GrantKeyword",
-                "keyword": "DOESNT_UNTAP"
+                "keyword": "CANT_BECOME_UNTAPPED"
             },
             "CantReceiveCounters"
         ],

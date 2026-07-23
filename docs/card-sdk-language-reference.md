@@ -3919,8 +3919,17 @@ staticAbility {
   toughness rather than its power"), grant the `AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS` flag via
   `Effects.GrantKeyword(AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS, target, duration)`; the same combat
   util reads it from projected keywords (unconditional — no toughness > power gate).
-- **Untap-step restriction flags** — granted via `GrantKeyword(AbilityFlag.X.name)` and read by the untap
-  step (`BeginningPhaseManager`) off projected keywords, so they vanish when the granting source leaves play:
+- **Untap restriction flags** — granted via `GrantKeyword(AbilityFlag.X.name)` and read off projected keywords,
+  so they vanish when the granting source leaves play. The two "can't untap" flags differ in *scope*:
+  - `AbilityFlag.CANT_BECOME_UNTAPPED` — "can't become untapped" (Blossombind). The **stronger**
+    restriction: it blocks *every* untap source — explicit "untap target permanent" effects, provoke, untap
+    costs (`{Q}`), Seedborn-style other-player untaps, ForEach untaps — not only the controller's untap step.
+    Enforced universally in the shared untap atom `untapOrConsumeStun` (`rules-engine/core/TapHelpers.kt`),
+    which every untap path routes through; it reads the always-cached projected state, so the restriction
+    applies even on paths that pass `projected = null`. Being a continuous "can't", it also subsumes the
+    untap-step behavior below (the untap step's gate checks both flags via
+    `ProjectedState.doesntUntapDuringUntapStep`). Use this for "can't become untapped" wording; use
+    `DOESNT_UNTAP` for the narrower "doesn't untap during your untap step".
   - `AbilityFlag.DOESNT_UNTAP` — "doesn't untap during its controller's untap step" (Charmed Sleep,
     Temporal Distortion's hourglass-counter form). `Effects.GrantKeyword(AbilityFlag.DOESNT_UNTAP, target,
     duration)` works on **any** battlefield permanent, not only creatures (the grant executor no longer

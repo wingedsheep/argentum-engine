@@ -32,7 +32,10 @@ val Blossombind = card("Blossombind") {
     }
 
     staticAbility {
-        ability = GrantKeyword(AbilityFlag.DOESNT_UNTAP.name)
+        // "Can't become untapped" is the stronger restriction: it blocks explicit untap
+        // effects (e.g. Formidable Speaker) too, not just the untap step — see
+        // AbilityFlag.CANT_BECOME_UNTAPPED vs DOESNT_UNTAP.
+        ability = GrantKeyword(AbilityFlag.CANT_BECOME_UNTAPPED.name)
     }
 
     staticAbility {

@@ -20,6 +20,18 @@ enum class AbilityFlag(val displayName: String) {
 
     // ── Untap restriction flags ─────────────────────────────────
     DOESNT_UNTAP("Doesn't untap during your untap step"),
+
+    /**
+     * "Can't become untapped." The stronger untap restriction (Blossombind, Kraken's
+     * Eye of the Sea, …): unlike [DOESNT_UNTAP] — which only removes the permanent from
+     * its controller's untap step (CR 502.3) — this blocks *every* source of untapping,
+     * including explicit "untap target permanent" effects, provoke, and untap costs. It
+     * is a continuous "can't" restriction, so it also subsumes the untap-step behavior.
+     * Enforced universally in the shared untap atom (`untapOrConsumeStun`), which every
+     * untap path routes through.
+     */
+    CANT_BECOME_UNTAPPED("Can't become untapped"),
+
     MAY_NOT_UNTAP("You may choose not to untap"),
 
     /**

@@ -88,6 +88,18 @@ fun untapOrConsumeStun(
     val container = state.getEntity(entityId) ?: return state to emptyList()
     if (!container.has<TappedComponent>()) return state to emptyList()
 
+    // "Can't become untapped" (e.g. Blossombind) — the stronger continuous restriction
+    // that blocks *every* untap source, not only the untap step (contrast DOESNT_UNTAP,
+    // CR 502.3). Because this atom is the single chokepoint for untapping, checking it
+    // here covers explicit untap effects, provoke, untap costs, and the untap step alike.
+    // Read off the always-cached projected state so it applies even when a caller passed
+    // projected = null (explicit "untap target" path). A permanent that can't untap never
+    // "would become untapped", so this precedes the stun/counter replacements (which only
+    // fire on a permanent that would otherwise untap).
+    if (state.projectedState.hasKeyword(entityId, AbilityFlag.CANT_BECOME_UNTAPPED)) {
+        return state to emptyList()
+    }
+
     // Rule 122.1d: a stun counter replaces becoming untapped by removing itself.
     val stunCounters = container.get<CountersComponent>()?.getCount(CounterType.STUN) ?: 0
     if (stunCounters > 0) {
@@ -123,3 +135,16 @@ fun untapOrConsumeStun(
 
 /** Marker for the events [untapOrConsumeStun] may emit ([UntappedEvent], [CountersRemovedEvent]). */
 typealias UntappedOrConsumeEvent = GameEvent
+
+/**
+ * True if [entityId] must be skipped by an untap step (CR 502.3) — either the narrow
+ * [AbilityFlag.DOESNT_UNTAP] ("doesn't untap during your untap step") or the stronger
+ * [AbilityFlag.CANT_BECOME_UNTAPPED], which also blocks untap *effects* and therefore
+ * subsumes the untap-step behavior. Use this at every untap-step gate in
+ * [BeginningPhaseManager] so both restrictions drop the permanent from the untap list
+ * (and from the MAY_NOT_UNTAP / untap-limit choice pools). Universal untap enforcement
+ * still lives in [untapOrConsumeStun]; this is the untap-step-only convenience.
+ */
+fun ProjectedState.doesntUntapDuringUntapStep(entityId: EntityId): Boolean =
+    hasKeyword(entityId, AbilityFlag.DOESNT_UNTAP) ||
+        hasKeyword(entityId, AbilityFlag.CANT_BECOME_UNTAPPED)
