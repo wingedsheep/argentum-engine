@@ -1990,6 +1990,10 @@
                             "subtype": "Wall"
                         }
                     ]
+                },
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
                 }
             }
         ],

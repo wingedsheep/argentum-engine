@@ -97,6 +97,15 @@ internal fun EmitCtx.staticBlock(rule: JsonObject): List<Stmt>? {
             val ability = when (r.strField("_PermanentRule")!!) {
                 "MustAttack" -> call("MustAttack", arg(call("GroupFilter.attachedCreature")))
                 "CantBlock" -> call("CantBlock", arg(call("GroupFilter.attachedCreature")))
+                "CantBeBlockedExceptByDefenders" -> {
+                    val blockerFilter = cantBeBlockedExceptByFilter(r)
+                        ?: run { reasons.add("PermanentRuleEffect"); return null }
+                    call(
+                        "CantBeBlockedExceptBy",
+                        arg("blockerFilter", blockerFilter),
+                        arg("filter", call("GroupFilter.attachedCreature"))
+                    )
+                }
                 else -> { reasons.add("PermanentRuleEffect"); return null }
             }
             stmts.add(staticAbilityStmt(ability))

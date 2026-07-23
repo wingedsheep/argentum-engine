@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptBy
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 
 /**
@@ -26,7 +27,10 @@ val Invisibility = card("Invisibility") {
     oracleText = "Enchant creature\nEnchanted creature can't be blocked except by Walls."
     auraTarget = Targets.Creature
     staticAbility {
-        ability = CantBeBlockedExceptBy(blockerFilter = GameObjectFilter.Creature.withSubtype(Subtype.WALL))
+        ability = CantBeBlockedExceptBy(
+            blockerFilter = GameObjectFilter.Creature.withSubtype(Subtype.WALL),
+            filter = GroupFilter.attachedCreature()
+        )
     }
     metadata {
         rarity = Rarity.COMMON
