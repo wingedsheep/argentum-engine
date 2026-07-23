@@ -242,6 +242,21 @@ excluded.
 - `Costs.ExileFromGraveyard(count, filter)` — exile N matching cards from your graveyard.
 - `Costs.ExileXFromGraveyard(filter)` — exile X cards from your graveyard (X = the ability's
   chosen X value).
+- `Costs.ExilePermanents(filter = Any, minCount = 1, excludeSelf = true)` — **variable-count** "exile
+  one or more permanents you control matching `filter`" activated-ability cost (CR 601.2b — the
+  player chooses how many, at least `minCount`, as the ability is activated). With `excludeSelf` the
+  ability's own source is excluded ("one or more *other* …"). Unlike the fixed-count
+  `Sacrifice`/`ExileFromGraveyard` atoms, the **total mana value of the exiled permanents becomes the
+  ability's X value** — read it with `DynamicAmount.XValue` (or `GameObjectFilter.manaValueAtMostX()`
+  on a target) to bound "mana value X or less" reads. The value is fixed at activation and stored on
+  the stack, so an X-bounded target is re-validated against it at resolution (CR 608.2b). Backs
+  **Fabrication Foundry** ("{2}{W}, {T}, Exile one or more other artifacts you control with total
+  mana value X: Return target artifact card with mana value X or less from your graveyard to the
+  battlefield"). The engine drives the activation in order: it pauses for the on-battlefield exile
+  selection (min = `minCount`, max = all eligible), computes X, then pauses again for the X-bounded
+  target — so an over-MV target can never be chosen. Pair with `TimingRule.SorcerySpeed` where the
+  card says "Activate only as a sorcery." (permanents leave via the normal battlefield→exile
+  transition, so Auras fall off, tokens cease to exist, and leaves-the-battlefield triggers fire).
 - `Costs.Forage()` (ability cost) / `Costs.additional.Forage` (additional cost) — Forage (CR
   701.61): "exile three cards from your graveyard **or** sacrifice a Food." A *choice* between two
   sub-costs that belongs to the player. All cost-shaped forage payment is unified in the engine's

@@ -93,7 +93,7 @@
 - [x] Envoy of Okinec Ahau
 - [x] Etali's Favor
 - [x] Explorer's Cache
-- [ ] Fabrication Foundry
+- [x] Fabrication Foundry
 - [x] Family Reunion
 - [x] Fanatical Offering
 - [x] Forgotten Monument

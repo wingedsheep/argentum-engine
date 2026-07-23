@@ -415,6 +415,18 @@ class ActivateAbilityHandler(
         // yet at submission time (the opponent's pick is validated when it's made). See
         // [com.wingedsheep.sdk.scripting.targets.TargetChooser].
         val controllerTargetReqs = effectiveTargetReqs.filter { it.chooser == TargetChooser.Controller }
+        // For an "Exile one or more other permanents you control with total mana value X" cost
+        // (Fabrication Foundry), X is the total mana value of the exiled permanents (CR 601.2b), and
+        // the reanimation target's "mana value X or less" legality is measured against it. Derive X
+        // from the chosen exiled permanents so target validation sees the right cap; when the cost is
+        // paid via the two-step pause flow the exiled set already rides on the action's costPayment.
+        val exilePermanentsCost = extractExilePermanentsCost(effectiveCost)
+        val exiledForCost = action.costPayment?.exiledCards ?: emptyList()
+        val effectiveXValue = if (exilePermanentsCost != null && exiledForCost.isNotEmpty()) {
+            sumExiledManaValue(state, exiledForCost)
+        } else {
+            action.xValue
+        }
         if (controllerTargetReqs.isNotEmpty() && action.targets.isNotEmpty()) {
             val targetError = targetValidator.validateTargets(
                 state,
@@ -425,8 +437,9 @@ class ActivateAbilityHandler(
                 sourceSubtypes = cardComponent.typeLine.subtypes.map { it.value }.toSet(),
                 sourceId = action.sourceId,
                 // X-clamped target counts (e.g. Rot-Curse Rakshasa's Renew "X target creatures")
-                // need the chosen X to validate more than one target — mirror the spell path.
-                xValue = action.xValue
+                // and X-bounded "mana value X or less" reanimation targets (Fabrication Foundry)
+                // need the chosen X to validate — mirror the spell path.
+                xValue = effectiveXValue
             )
             if (targetError != null) {
                 return targetError
@@ -435,8 +448,11 @@ class ActivateAbilityHandler(
             // An empty target list is only illegal when at least one controller-chosen
             // requirement is mandatory. For an ability whose controller targets are all
             // optional ("up to one target …", e.g. Boom Box), choosing no targets is a
-            // legal activation, so don't reject it here.
-            if (controllerTargetReqs.any { it.effectiveMinCount > 0 }) {
+            // legal activation, so don't reject it here. An ExilePermanents cost drives the
+            // target choice *after* the exile selection (X isn't known until then), so the
+            // bare initial submission legitimately arrives with no target — the engine pauses
+            // for it during execute(); don't reject that here either.
+            if (exilePermanentsCost == null && controllerTargetReqs.any { it.effectiveMinCount > 0 }) {
                 return "This ability requires a target"
             }
         }
@@ -506,6 +522,17 @@ class ActivateAbilityHandler(
                 ability, state, action.playerId
             )
         )
+
+        // "Exile one or more other permanents you control with total mana value X" cost (Fabrication
+        // Foundry): X is the total mana value of the exiled permanents (CR 601.2b — a variable
+        // defined by a cost choice is announced as the ability is activated). It bounds the X-limited
+        // reanimation target and is stored on the stack for 608.2b re-validation. When the cost is
+        // being paid, the exiled set already rides on the action's costPayment.
+        val exilePermanentsCost = extractExilePermanentsCost(effectiveCost)
+        val exiledForCost = action.costPayment?.exiledCards ?: emptyList()
+        val effectiveXValue: Int? =
+            if (exilePermanentsCost != null && exiledForCost.isNotEmpty()) sumExiledManaValue(state, exiledForCost)
+            else action.xValue
 
         // -------------------------------------------------------------------
         // "… of an opponent's choice" target selection (Cuombajj Witches).
@@ -746,6 +773,126 @@ class ActivateAbilityHandler(
             }
         }
 
+        // -------------------------------------------------------------------
+        // ExilePermanents cost-choice pause (legal-actions submission path).
+        //
+        // "Exile one or more other [filter] you control with total mana value X" (Fabrication
+        // Foundry). The player picks which permanents to exile — a variable-count choice (at least
+        // minCount). The bare ActivateAbility arrives with no selection; pause and raise a
+        // SelectCardsDecision over the eligible permanents. The resumer computes X (their total mana
+        // value) and re-enters, which then pauses again for the X-bounded target (block below).
+        //
+        // Skipped when exiledCards is already filled (engine-direct path / resumed replay).
+        // -------------------------------------------------------------------
+        if (exilePermanentsCost != null && exiledForCost.isEmpty()) {
+            val candidates = costHandler
+                .findMatchingCardsUnified(state, state.getBattlefield(action.playerId), exilePermanentsCost.filter, action.playerId)
+                .let { if (exilePermanentsCost.excludeSelf) it.filter { id -> id != action.sourceId } else it }
+            val minCount = exilePermanentsCost.minCount
+            if (candidates.size < minCount) {
+                return ExecutionResult.error(state, "Not enough permanents to exile for ${cardComponent.name}")
+            }
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val prompt = "Choose one or more ${exilePermanentsCost.filter.description}s to exile for ${cardComponent.name}"
+            val decision = com.wingedsheep.engine.core.SelectCardsDecision(
+                id = decisionId,
+                playerId = action.playerId,
+                prompt = prompt,
+                context = com.wingedsheep.engine.core.DecisionContext(
+                    sourceId = action.sourceId,
+                    sourceName = cardComponent.name,
+                    phase = com.wingedsheep.engine.core.DecisionPhase.CASTING
+                ),
+                options = candidates,
+                minSelections = minCount,
+                maxSelections = candidates.size
+            )
+            val continuation = com.wingedsheep.engine.core.ActivateAbilityExilePermanentsContinuation(
+                decisionId = decisionId,
+                action = action,
+                exileCandidates = candidates,
+                minCount = minCount
+            )
+            val pausedState = state.withPendingDecision(decision).pushContinuation(continuation)
+            val event = com.wingedsheep.engine.core.DecisionRequestedEvent(
+                decisionId = decisionId,
+                playerId = action.playerId,
+                decisionType = "SELECT_CARDS",
+                prompt = prompt
+            )
+            return ExecutionResult.paused(pausedState, decision, listOf(event))
+        }
+
+        // -------------------------------------------------------------------
+        // X-bounded target pause for an ExilePermanents ability (Fabrication Foundry).
+        //
+        // Once the exile selection is known (block above resumed → exiledCards filled → X computed),
+        // raise the controller's target choice with the "mana value X or less" cap resolved against
+        // X (threaded through the predicate context). The resumer fills action.targets and re-enters
+        // to pay + resolve. Skipped on the engine-direct path (targets already supplied) and for
+        // abilities with no controller target.
+        // -------------------------------------------------------------------
+        if (exilePermanentsCost != null && exiledForCost.isNotEmpty() && action.targets.isEmpty()) {
+            val execTargetReqs = if (textReplacement != null) {
+                ability.targetRequirements.map { it.applyTextReplacement(textReplacement) }
+            } else {
+                ability.targetRequirements
+            }
+            val controllerTargetReqsExec = execTargetReqs.filter { it.chooser == TargetChooser.Controller }
+            if (controllerTargetReqsExec.any { it.effectiveMinCount > 0 }) {
+                val xForTargets = effectiveXValue ?: 0
+                val finder = com.wingedsheep.engine.handlers.TargetFinder()
+                val pipelineContext = com.wingedsheep.engine.handlers.PredicateContext(
+                    controllerId = action.playerId,
+                    sourceId = action.sourceId,
+                    xValue = xForTargets
+                )
+                val legalTargets = mutableMapOf<Int, List<EntityId>>()
+                val requirementInfos = controllerTargetReqsExec.mapIndexed { index, req ->
+                    val legal = finder.findLegalTargets(
+                        state, req, action.playerId, action.sourceId, pipelineContext = pipelineContext
+                    )
+                    if (legal.isEmpty() && req.effectiveMinCount > 0) {
+                        return ExecutionResult.error(state, "No legal target for ${cardComponent.name}")
+                    }
+                    legalTargets[index] = legal
+                    com.wingedsheep.engine.core.TargetRequirementInfo(
+                        index = index,
+                        description = req.description,
+                        minTargets = req.effectiveMinCount,
+                        maxTargets = req.count
+                    )
+                }
+                val decisionId = java.util.UUID.randomUUID().toString()
+                val prompt = "Choose ${controllerTargetReqsExec.joinToString(" and ") { it.description }} for ${cardComponent.name}"
+                val decision = com.wingedsheep.engine.core.ChooseTargetsDecision(
+                    id = decisionId,
+                    playerId = action.playerId,
+                    prompt = prompt,
+                    context = com.wingedsheep.engine.core.DecisionContext(
+                        sourceId = action.sourceId,
+                        sourceName = cardComponent.name,
+                        phase = com.wingedsheep.engine.core.DecisionPhase.CASTING
+                    ),
+                    targetRequirements = requirementInfos,
+                    legalTargets = legalTargets
+                )
+                val continuation = com.wingedsheep.engine.core.ActivateAbilityControllerTargetContinuation(
+                    decisionId = decisionId,
+                    action = action,
+                    requirements = controllerTargetReqsExec
+                )
+                val pausedState = state.withPendingDecision(decision).pushContinuation(continuation)
+                val event = com.wingedsheep.engine.core.DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = action.playerId,
+                    decisionType = "CHOOSE_TARGETS",
+                    prompt = prompt
+                )
+                return ExecutionResult.paused(pausedState, decision, listOf(event))
+            }
+        }
+
         val executeAbilityContext = buildAbilityPaymentContext(cardComponent, state.projectedState, action.sourceId)
 
         var currentState = state
@@ -772,7 +919,9 @@ class ActivateAbilityHandler(
 
         // Pay mana costs before paying other costs
         var effectiveManaCost = extractManaCost(effectiveCost)
-        val xValue = action.xValue ?: 0
+        // For an ExilePermanents cost, X is the exiled permanents' total mana value (computed above);
+        // otherwise it's the action's chosen X. Identical to `action.xValue ?: 0` for every other card.
+        val xValue = effectiveXValue ?: 0
 
         // Apply convoke payment for abilities with hasConvoke (e.g., Heirloom Epic)
         if (effectiveManaCost != null && ability.hasConvoke && action.alternativePayment != null && !action.alternativePayment.isEmpty) {
@@ -1394,7 +1543,9 @@ class ActivateAbilityHandler(
             controllerId = action.playerId,
             effect = finalEffect,
             sacrificedPermanents = sacrificedSnapshots,
-            xValue = action.xValue,
+            // ExilePermanents X (exiled total mana value) is stored so 608.2b re-validation of the
+            // "mana value X or less" target and any XValue read resolve against it; else action.xValue.
+            xValue = effectiveXValue,
             tappedPermanents = firstTapSlice,
             tappedEntitySnapshots = tappedSnapshots,
             lastKnownSourceCounters = lastKnownSourceCounters,
@@ -2660,4 +2811,29 @@ class ActivateAbilityHandler(
         }
         else -> null
     }
+
+    /**
+     * Pull the [CostAtom.ExilePermanents] variable-count sub-cost out of an ability cost, or null if
+     * none. Drives the two-step activation flow for "Exile one or more other [filter] you control
+     * with total mana value X" costs (Fabrication Foundry): the handler pauses to let the player pick
+     * which permanents to exile, then — because the target's legality depends on the resulting X —
+     * pauses again for the target choice.
+     */
+    private fun extractExilePermanentsCost(cost: AbilityCost): CostAtom.ExilePermanents? = when (cost) {
+        is AbilityCost.Atom -> cost.atom as? CostAtom.ExilePermanents
+        is AbilityCost.Composite -> cost.costs.firstNotNullOfOrNull {
+            (it as? AbilityCost.Atom)?.atom as? CostAtom.ExilePermanents
+        }
+        else -> null
+    }
+
+    /**
+     * Total mana value (CR 202.3) of the permanents chosen to pay a [CostAtom.ExilePermanents] cost.
+     * This is the ability's X value (CR 601.2b — a variable defined by a cost choice is announced at
+     * activation), read at target validation and stored on the stack for resolution re-validation.
+     * Mana value is intrinsic, so it reads correctly whether the permanents are still on the
+     * battlefield (validation) or already exiled (resolution).
+     */
+    private fun sumExiledManaValue(state: GameState, exiledIds: List<EntityId>): Int =
+        exiledIds.sumOf { state.getEntity(it)?.get<CardComponent>()?.manaValue ?: 0 }
 }

@@ -68,6 +68,9 @@ class CostPaymentContinuationResumer(
             // (nothing to select) if one is ever built.
             is CostAtom.PutCountersOnSelf ->
                 resumeYesNo(state, continuation, cost, response, checkForMore)
+            // ExilePermanents is an activated-ability-only cost, never a PayCost — unreachable here.
+            is CostAtom.ExilePermanents ->
+                ExecutionResult.error(state, "ExilePermanents is not a payable cost in this context")
         }
     }
 
