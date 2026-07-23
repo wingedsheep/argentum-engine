@@ -3981,6 +3981,50 @@
     ]
 }
 
+// Savior of the Sleeping
+{
+    "name": "Savior of the Sleeping",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Vigilance\nWhenever an enchantment you control is put into a graveyard from the battlefield, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "enchantment ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "artist": "Valera Lutfullina",
+        "flavorText": "Even lost in slumber, the citizens of Ardenvale dream of a tireless protector standing guard over their homes.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7b4979d9-fafb-4e0e-868f-f4772109d7a7.jpg?1783915126"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Scarecrow Guide
 {
     "name": "Scarecrow Guide",
@@ -4195,6 +4239,53 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Skybeast Tracker
+{
+    "name": "Skybeast Tracker",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Giant Archer",
+    "oracleText": "Reach\nWhenever you cast a spell with mana value 5 or greater, create a Food token. (It's an artifact with \"{2}, {T}, Sacrifice this token: You gain 3 life.\")",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "ManaValueAtLeast",
+                                "min": 5
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Food"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "185",
+        "artist": "Andreas Zafiratos",
+        "flavorText": "Cloud eaters, heaven tillers, beanstalk wurms—he favors prey worthy of a giant's appetite.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a08da5c6-ebe7-4166-99d5-2aca5b0b529f.jpg?1783915079"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4467,6 +4558,54 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Spiteful Hexmage
+{
+    "name": "Spiteful Hexmage",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Warlock",
+    "oracleText": "When this creature enters, create a Cursed Role token attached to target creature you control. (If you control another Role on it, put that one into the graveyard. Enchanted creature is 1/1.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateRoleToken",
+                    "roleName": "Cursed Role",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature you control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "target creature you control"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "108",
+        "rarity": "RARE",
+        "artist": "Anna Steinbauer",
+        "flavorText": "\"Who'll never amount to anything now, Father?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40c797b2-db51-4a39-b80e-44d58cd7a07c.jpg?1783915102"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4752,6 +4891,62 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Succumb to the Cold
+{
+    "name": "Succumb to the Cold",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Tap one or two target creatures an opponent controls. Put a stun counter on each of them. (If a permanent with a stun counter would become untapped, remove one from it instead.)",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": "IterationSpace.Targets",
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    {
+                        "type": "AddCounters",
+                        "counterType": "stun",
+                        "count": 1,
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 2,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "target creatures an opponent controls"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Mar",
+        "flavorText": "\"I've never known cold like it. It burned like fire and bit like an adder's fangs. Call me a coward if you wish, but I won't go back there.\"\n—Syr Lydel, knight of Vantress",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c14d9fc0-bfbf-4359-93bf-5e53466965d6.jpg?1783915114"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -5198,6 +5393,57 @@
                 ]
             }
         }
+    ]
+}
+
+// Verdant Outrider
+{
+    "name": "Verdant Outrider",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "{1}{G}: This creature can't be blocked by creatures with power 2 or less this turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantStaticAbility",
+                    "ability": {
+                        "type": "CantBeBlockedBy",
+                        "blockerFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "PowerAtMost",
+                                    "max": 2
+                                }
+                            ]
+                        }
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Taras Susak",
+        "flavorText": "Some knights who survived the invasion have forsaken what remains of their courts. The newly formed Verdant Order has sworn to defend the last untouched parts of the wilds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c34830e4-823a-40fa-ba41-bb2afbf1e499.jpg?1783915074"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
