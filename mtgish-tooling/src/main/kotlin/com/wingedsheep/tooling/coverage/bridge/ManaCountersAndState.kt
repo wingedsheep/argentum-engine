@@ -66,6 +66,10 @@ internal fun BridgeBuilder.manaCountersAndState() {
     // (Ornery Tumblewagg's saddled attack; Omnivorous Flytrap's each-of-those-creatures tail).
     effects("DoubleCountersOfTypeOnPermanent", "DoubleCountersOfTypeOnEachPermanent", tag = "DoubleCounters",
         note = "double the +1/+1 counters (Ornery Tumblewagg, Omnivorous Flytrap)")
+    // "Double the number of each kind of counter on <permanent(s)>" -> DoubleAllCounters
+    // (Zimone, Paradox Sculptor; Vorel of the Hull Clade).
+    effects("DoubleAllCountersOnPermanent", "DoubleAllCountersOnEachPermanent", tag = "DoubleCounters",
+        note = "double every kind of counter (Zimone, Paradox Sculptor)")
     // "Distribute N +1/+1 counters among one or two target creatures" — the counter analogue of
     // distributed damage; the `TargetedDistributed` envelope's `DistributeNumberAmongTargets`
     // distribution drives a DistributeDecision over the chosen targets, then this action places the

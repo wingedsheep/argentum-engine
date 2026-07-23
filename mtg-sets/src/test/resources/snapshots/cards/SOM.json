@@ -22,6 +22,98 @@
     ]
 }
 
+// Genesis Wave
+{
+    "name": "Genesis Wave",
+    "manaCost": "{X}{G}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Reveal the top X cards of your library. You may put any number of permanent cards with mana value X or less from among them onto the battlefield. Then put all cards revealed this way that weren't put onto the battlefield into your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": "XValue"
+                    },
+                    "storeAs": "genesisWave_revealed",
+                    "revealed": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "genesisWave_revealed",
+                    "selection": "ChooseAnyNumber",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            "ManaValueAtMostX"
+                        ]
+                    },
+                    "storeSelected": "genesisWave_toBattlefield",
+                    "storeRemainder": "genesisWave_toGraveyard",
+                    "prompt": "Put any number of permanent cards with mana value X or less onto the battlefield",
+                    "selectedLabel": "Put onto the battlefield",
+                    "remainderLabel": "Put into your graveyard",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "genesisWave_toBattlefield",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "genesisWave_toGraveyard",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "James Paick",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c920236f-c3d7-421c-b021-103996da790e.jpg?1783941717",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "If you have fewer than X cards in your library, you reveal all of them."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If a card in a player's library has {X} in its mana cost, X is considered to be 0."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "A permanent card is an artifact, battle, creature, enchantment, land, or planeswalker card."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If a permanent card in your library has no mana symbols in its upper right corner (because it's a land card, for example), its mana value is 0. Such cards can always be put onto the battlefield with Genesis Wave."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You don't have to put permanent cards revealed this way onto the battlefield if you choose not to, regardless of their mana values."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "All of the permanents put onto the battlefield this way enter at the same time. If any have triggered abilities that trigger on something else entering, they'll see each other."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Painful Quandary
 {
     "name": "Painful Quandary",

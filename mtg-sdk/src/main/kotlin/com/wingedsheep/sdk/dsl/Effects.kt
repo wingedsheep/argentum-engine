@@ -1567,6 +1567,17 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect(counterType, target)
 
     /**
+     * "Double the number of each kind of counter on [target]" — the every-kind twin of
+     * [DoubleCounters]. Each counter kind currently on the target is doubled independently,
+     * so per-kind placement replacements (Hardened Scales, Branching Evolution) apply as
+     * normal. No-op when the target has no counters at all. Used by Zimone, Paradox Sculptor.
+     */
+    fun DoubleAllCounters(
+        target: EffectTarget = EffectTarget.ContextTarget(0)
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.DoubleCountersEffect(counterType = null, target = target)
+
+    /**
      * Remove counters of a given type from a target. No-op if the target has fewer
      * than `count` counters of that type.
      */

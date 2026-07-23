@@ -318,6 +318,27 @@ internal fun EmitCtx.renderPutCountersVariant(inner: JsonObject, tvar: String?):
         "ACounterOfTypeOnEachPermanent" -> {
             val arr = args.asArr ?: return null
             val counter = counterTypeDsl(arr.getOrNull(0)) ?: return null
+            // "…on each of up to two target creatures" — the subject is the ability's CHOSEN TARGETS
+            // (Byrke, Zimone), not a battlefield filter. Fan one AddCounters per chosen target via
+            // ForEachTargetEffect; a ForEachInGroup here would widen to every matching permanent.
+            // Decline the mixed shape where a player is also targeted.
+            if (jsonContains(arr.getOrNull(1), "_Permanents", "Ref_TargetPermanents")) {
+                if (targetRefVarsByKind.containsKey("Ref_TargetPlayer")) return null
+                return call(
+                    "ForEachTargetEffect",
+                    arg(
+                        call(
+                            "listOf",
+                            arg(
+                                call(
+                                    "Effects.AddCounters", arg(Lit(counter)), arg("1"),
+                                    arg("EffectTarget.ContextTarget(0)"),
+                                )
+                            ),
+                        )
+                    ),
+                )
+            }
             val filter = groupFilterExpr(arr.getOrNull(1)) ?: return null
             call(
                 "Effects.ForEachInGroup", arg(filter),
@@ -334,6 +355,23 @@ internal fun EmitCtx.renderPutCountersVariant(inner: JsonObject, tvar: String?):
             val counter = counterTypeDsl(arr.getOrNull(0)) ?: return null
             val tgt = refTarget(arr.getOrNull(1), tvar) ?: return null
             call("Effects.DoubleCounters", arg(Lit(counter)), arg(Lit(tgt)))
+        }
+        // "Double the number of each kind of counter on <permanents>." (Zimone, Paradox Sculptor;
+        // Vorel of the Hull Clade.) args = <permanents>. Only the bound-targets subject renders —
+        // fan `Effects.DoubleAllCounters(ContextTarget(0))` over the chosen targets, the same shape
+        // the "<targets> each …" layer effects use. A filter subject ("each creature you control")
+        // would need a group filter here; decline it (-> SCAFFOLD) rather than widen wrongly, and
+        // decline the mixed target shape where a player is also targeted.
+        "DoubleAllCountersOnEachPermanent", "DoubleAllCountersOnPermanent" -> {
+            if (!jsonContains(args, "_Permanents", "Ref_TargetPermanents")) {
+                val tgt = refTarget(args, tvar) ?: return null
+                return call("Effects.DoubleAllCounters", arg(Lit(tgt)))
+            }
+            if (targetRefVarsByKind.containsKey("Ref_TargetPlayer")) return null
+            call(
+                "ForEachTargetEffect",
+                arg(call("listOf", arg(call("Effects.DoubleAllCounters", arg("EffectTarget.ContextTarget(0)"))))),
+            )
         }
         // "Put those counters on <permanent>." — a just-died permanent's counters move to the target
         // (Scolding Administrator's dies trigger). mtgish models this as a "duplicate the source's
