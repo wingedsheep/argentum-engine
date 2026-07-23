@@ -10031,6 +10031,132 @@
     ]
 }
 
+// Kitesail Larcenist
+{
+    "name": "Kitesail Larcenist",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Pirate",
+    "oracleText": "Flying, ward {1}\nWhen this creature enters, for each player, choose up to one other target artifact or creature that player controls. For as long as this creature remains on the battlefield, the chosen permanents become Treasure artifacts with \"{T}, Sacrifice this artifact: Add one mana of any color\" and lose all other abilities.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{1}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "BecomeArtifact",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one other target artifact or creature you control"
+                            },
+                            "subtypes": [
+                                "Treasure"
+                            ],
+                            "colors": null,
+                            "grantedAbility": {
+                                "id": "ability_2",
+                                "cost": {
+                                    "type": "CostComposite",
+                                    "costs": [
+                                        "CostTap",
+                                        "CostSacrificeSelf"
+                                    ]
+                                },
+                                "effect": "AddManaOfChoice",
+                                "isManaAbility": true,
+                                "descriptionOverride": "{T}, Sacrifice this artifact: Add one mana of any color."
+                            },
+                            "duration": {
+                                "type": "WhileSourceOnBattlefield",
+                                "sourceDescription": "Kitesail Larcenist"
+                            }
+                        },
+                        {
+                            "type": "BecomeArtifact",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one target artifact or creature an opponent controls"
+                            },
+                            "subtypes": [
+                                "Treasure"
+                            ],
+                            "colors": null,
+                            "grantedAbility": {
+                                "id": "ability_2",
+                                "cost": {
+                                    "type": "CostComposite",
+                                    "costs": [
+                                        "CostTap",
+                                        "CostSacrificeSelf"
+                                    ]
+                                },
+                                "effect": "AddManaOfChoice",
+                                "isManaAbility": true,
+                                "descriptionOverride": "{T}, Sacrifice this artifact: Add one mana of any color."
+                            },
+                            "duration": {
+                                "type": "WhileSourceOnBattlefield",
+                                "sourceDescription": "Kitesail Larcenist"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature|artifact ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "up to one other target artifact or creature you control"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature|artifact ctrl:opponent"
+                        },
+                        "id": "up to one target artifact or creature an opponent controls"
+                    }
+                ],
+                "descriptionOverride": "When this creature enters, for each player, choose up to one other target artifact or creature that player controls. For as long as this creature remains on the battlefield, the chosen permanents become Treasure artifacts with \"{T}, Sacrifice this artifact: Add one mana of any color\" and lose all other abilities."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "RARE",
+        "artist": "Sidharth Chaturvedi",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/3/03207457-70d8-4462-8c8b-ed39791d56a1.jpg?1782694559"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Kutzil's Flanker
 {
     "name": "Kutzil's Flanker",
