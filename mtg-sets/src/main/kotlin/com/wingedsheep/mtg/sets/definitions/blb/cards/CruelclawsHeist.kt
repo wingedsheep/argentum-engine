@@ -79,7 +79,14 @@ val CruelclawsHeist = card("Cruelclaw's Heist") {
                 Effects.Composite(
                     listOf(DrawCardsEffect(1, EffectTarget.ContextTarget(0))) +
                     revealChooseExile +
-                    listOf(GrantMayPlayFromExileEffect(from = "chosenCard", expiry = MayPlayExpiry.Permanent)) +
+                    listOf(
+                        GrantMayPlayFromExileEffect(
+                            from = "chosenCard",
+                            expiry = MayPlayExpiry.Permanent,
+                            // "and mana of any type can be spent to cast it"
+                            withAnyManaType = true
+                        )
+                    ) +
                     listOf(Effects.GiftGiven())
                 ),
                 Targets.Opponent,
