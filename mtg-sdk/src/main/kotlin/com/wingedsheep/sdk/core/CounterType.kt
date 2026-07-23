@@ -72,7 +72,8 @@ enum class CounterType {
     INCUBATION,
     FELLOWSHIP,
     BAIT,
-    BORE;
+    BORE,
+    POINT;
 
     companion object {
         /**
@@ -317,6 +318,15 @@ object Counters {
      * `StateProjector.KEYWORD_COUNTER_MAP`.
      */
     const val BORE = "bore"
+
+    /**
+     * Point counter (LCI — Contested Game Ball). Passive storage counter with no inherent rule of
+     * its own — Contested Game Ball's activated ability adds one per activation and reads the count
+     * (via `Conditions.SourceCounterCountAtLeast(...)`) to sacrifice itself and create a Treasure
+     * once it has five or more. NOT a keyword counter, so it is intentionally absent from
+     * `StateProjector.KEYWORD_COUNTER_MAP`.
+     */
+    const val POINT = "point"
 
     /**
      * Wildcard sentinel for triggers/events that fire on counters of *any* type, e.g.
