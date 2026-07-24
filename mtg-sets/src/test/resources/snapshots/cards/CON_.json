@@ -104,6 +104,63 @@
     "colorIdentityOverride": []
 }
 
+// Progenitus
+{
+    "name": "Progenitus",
+    "manaCost": "{W}{W}{U}{U}{B}{B}{R}{R}{G}{G}",
+    "typeLine": "Legendary Creature — Hydra Avatar",
+    "oracleText": "Protection from everything\nIf Progenitus would be put into a graveyard from anywhere, reveal Progenitus and shuffle it into its owner's library instead.",
+    "creatureStats": {
+        "power": 10,
+        "toughness": 10
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": "ProtectionScope.Everything"
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Library",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Graveyard"
+                },
+                "selfOnly": true,
+                "shuffleIntoLibrary": true,
+                "reveal": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "MYTHIC",
+        "artist": "Jaime Jones",
+        "flavorText": "The Soul of the World has returned.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcc764b0-3046-4bde-b424-c0f4e1a6169b.jpg?1783942466",
+        "rulings": [
+            {
+                "date": "2009-02-01",
+                "text": "\"Protection from everything\" means Progenitus can't be blocked, enchanted or equipped, targeted, or dealt damage."
+            },
+            {
+                "date": "2009-02-01",
+                "text": "Progenitus can still be affected by effects that neither target it nor deal damage to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Reliquary Tower
 {
     "name": "Reliquary Tower",
