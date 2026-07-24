@@ -21,9 +21,10 @@ import com.wingedsheep.sdk.scripting.PreventActivatedAbilities
  *     - `cardNamePool = CardNamePool.ANY` offers *every* registered card name (not just lands, the
  *       Petrified Hamlet default) — the "choose any card name" clause.
  *     - `lookAtOpponentHand = true` reveals an opponent's hand to this artifact's controller
- *       immediately before the choice (durable reveal per CR 701.16 / RevealedToComponent). The look
- *       is purely informational — the chosen name is unrestricted, so an empty opposing hand still
- *       lets you name any card. Masking is automatic: the hand shows only to the controller.
+ *       immediately before the choice (a durable reveal via `RevealedToComponent`; "look at" is not a
+ *       keyword action — a player normally can't see an opponent's hand, CR 402.3). The look is purely
+ *       informational — the chosen name is unrestricted, so an empty opposing hand still lets you name
+ *       any card. Masking is automatic: the hand shows only to the controller.
  *   The pick is stored durably on the permanent's `CastChoicesComponent` under `ChoiceSlot.CARD_NAME`.
  * - "Activated abilities of sources with the chosen name can't be activated unless they're mana
  *   abilities" → [PreventActivatedAbilities]`(filter, nonManaAbilitiesOnly = true)`. "Sources" is any

@@ -1406,9 +1406,11 @@ data class EntersWithChoice(
     val cardNamePool: CardNamePool = CardNamePool.LAND,
     /**
      * When true, the chooser first looks at an opponent's hand as the permanent enters, immediately
-     * before making the choice (the opponent's hand is revealed to the chooser for the rest of the
-     * game per CR 701.16). Models the "look at an opponent's hand, then …" clause of Sorcerous
-     * Spyglass. The look is purely informational — it does not restrict the choice. Defaults to false.
+     * before making the choice. "Look at" is not a keyword action (a player normally can't see an
+     * opponent's hand — CR 402.3); it's modeled here as a durable reveal to the chooser
+     * (RevealedToComponent), the same convention used for "look at target player's hand". Models the
+     * "look at an opponent's hand, then …" clause of Sorcerous Spyglass. The look is purely
+     * informational — it does not restrict the choice. Defaults to false.
      */
     val lookAtOpponentHand: Boolean = false,
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
