@@ -215,6 +215,15 @@ export function ReplayPage() {
   const currentSnapshot = snapshots[currentStep]
   if (!currentSnapshot) return null
 
+  // The replay metadata only carries the first two seat names (legacy 2-player shape), so a
+  // 3+ player game would misleadingly read "Alice vs Bob". The reconstructed snapshot's
+  // gameState carries every seat in turn order — use it to list all players for multiplayer.
+  const allSeats = (currentSnapshot.gameState as SpectatingState['gameState'] | null)?.players ?? []
+  const isMultiplayerReplay = allSeats.length > 2
+  const matchupLabel = isMultiplayerReplay
+    ? allSeats.map((p) => p.name).join('  ·  ')
+    : `${metadata?.player1Name ?? currentSnapshot.player1Name} vs ${metadata?.player2Name ?? currentSnapshot.player2Name}`
+
   return (
     <SpectatorContext.Provider
       value={{
@@ -255,10 +264,8 @@ export function ReplayPage() {
             </span>
           </div>
           <div style={styles.replayInfo}>
-            <span style={styles.replayLabel}>Replay</span>
-            <span style={styles.matchupText}>
-              {metadata?.player1Name ?? currentSnapshot.player1Name} vs {metadata?.player2Name ?? currentSnapshot.player2Name}
-            </span>
+            <span style={styles.replayLabel}>{isMultiplayerReplay ? `Replay · ${allSeats.length} players` : 'Replay'}</span>
+            <span style={styles.matchupText}>{matchupLabel}</span>
             {metadata?.winnerName && (
               <span style={styles.winnerText}>Winner: {metadata.winnerName}</span>
             )}

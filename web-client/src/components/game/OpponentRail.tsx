@@ -61,6 +61,7 @@ function chipSizing(responsive: { isMobile: boolean; isTablet: boolean; isShortD
 export function OpponentRail({
   spectatorMode = false,
   visibleBoardIds = [],
+  topOffset = 0,
 }: {
   spectatorMode?: boolean
   /**
@@ -69,6 +70,12 @@ export function OpponentRail({
    * center-HUD orb (viewed) or the cell's name plate (shared-strip) carries them instead.
    */
   visibleBoardIds?: readonly EntityId[]
+  /**
+   * Height of a fixed header sitting above the board (replay/spectator playback bar). The
+   * rail is `position: fixed` to the viewport, so it must drop below the header itself —
+   * unlike the board strip, which lives inside an already-offset container. 0 in normal play.
+   */
+  topOffset?: number
 }) {
   const responsive = useResponsiveContext()
   const opponents = useOpponents()
@@ -102,7 +109,9 @@ export function OpponentRail({
 
   // Vertical column in the top-left corner, tucked under the fullscreen button (top: 8/12,
   // ~36px tall). A column reads as a clear turn-order list and leaves the board its full height.
-  const top = responsive.isMobile ? 46 : 54
+  // In replay/spectator mode a fixed playback header sits above the board, so drop the whole
+  // column below it (topOffset) — otherwise the top chips render under the header bar.
+  const top = (responsive.isMobile ? 46 : 54) + topOffset
   const left = responsive.isMobile ? 8 : 12
   const columnWidth = chipSizing(responsive).width
 
@@ -198,7 +207,9 @@ export function OpponentRail({
           ))}
         </>
       )}
-      {!spectatorMode && (
+      {/* Camera controls (Overview / Follow) are settings, not players — shown in normal play
+          and while spectating alike, since a spectator steers the same multi-board camera. */}
+      {(
         <>
           {/* Divider — the camera controls below are *settings*, not players, so set them apart
               from the chip list above. */}

@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useRef } from 'react'
+import { useMemo, useCallback, useRef, useEffect } from 'react'
 import { useGameStore } from '@/store/gameStore'
 import { useInteraction } from '@/hooks/useInteraction'
 import { useViewingPlayer, useOpponent, useOpponents, useViewedOpponent, useStackCards, selectPriorityMode, useGhostCards, useBattlefieldCards, selectTeamMap, useIdentityColor, useViewerTeamIndex, useIsAlly, identitySeatColor } from '@/store/selectors'
@@ -151,6 +151,22 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
   )
 
   const responsive = useResponsive(effectiveTopOffset, zoneRowCounts)
+
+  // Spectators (replay + live) default to the all-boards table overview: one seat anchored
+  // at the bottom, every other board across the top — the natural "watch the whole table"
+  // layout, rather than a one-board camera that hides most of the game. One-shot on entry so
+  // a spectator who then focuses a single board (rail-chip click / key 0) isn't yanked back.
+  // Desktop only — GameBoard degrades overview to the single-board camera on phones anyway.
+  const didDefaultSpectatorOverview = useRef(false)
+  useEffect(() => {
+    if (didDefaultSpectatorOverview.current) return
+    if (spectatorMode && isMulti && !responsive.isMobile) {
+      didDefaultSpectatorOverview.current = true
+      const store = useGameStore.getState()
+      if (!store.overviewMode) store.toggleOverviewMode()
+    }
+  }, [spectatorMode, isMulti, responsive.isMobile])
+
   // Grid row 1: keeps the battlefield clear of the fixed/absolute opponent hand.
   const oppHandReservation =
     responsive.smallCardHeight + effectiveTopOffset + responsive.opponentHandBattlefieldGap
@@ -703,7 +719,11 @@ export function GameBoard({ spectatorMode = false, topOffset = 0 }: GameBoardPro
       )}
       {isMulti && (
         <>
-          <OpponentRail spectatorMode={spectatorMode} visibleBoardIds={anchorVisibleBoardIds} />
+          <OpponentRail
+            spectatorMode={spectatorMode}
+            visibleBoardIds={anchorVisibleBoardIds}
+            topOffset={effectiveTopOffset}
+          />
           <div
             data-opponent-strip
             style={{
