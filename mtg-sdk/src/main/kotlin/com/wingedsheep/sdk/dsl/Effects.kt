@@ -3024,6 +3024,28 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.DestroySourceOfTargetedAbilityEffect
 
     /**
+     * If the spell/ability being countered is an activated or triggered ability whose source is a
+     * permanent on the battlefield matching [sourceCardTypes] (any type when empty), that permanent
+     * loses all abilities for [duration]. The ability-strip sibling of
+     * [DestroySourceOfTargetedAbility]. Compose with [CounterAbility] in a `Composite`, placing this
+     * step *before* the counter so the stack entity's ability component is still readable.
+     *
+     * Tishana's Tidebinder: "If an ability of an artifact, creature, or planeswalker is countered
+     * this way, that permanent loses all abilities for as long as this creature remains on the
+     * battlefield." →
+     * `RemoveAbilitiesFromSourceOfTargetedAbility(Duration.WhileSourceOnBattlefield("this creature"),
+     * setOf(CardType.ARTIFACT, CardType.CREATURE, CardType.PLANESWALKER))`.
+     */
+    fun RemoveAbilitiesFromSourceOfTargetedAbility(
+        duration: com.wingedsheep.sdk.scripting.Duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
+        sourceCardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet()
+    ): Effect =
+        com.wingedsheep.sdk.scripting.effects.RemoveAbilitiesFromSourceOfTargetedAbilityEffect(
+            duration = duration,
+            sourceCardTypes = sourceCardTypes
+        )
+
+    /**
      * Return target spell to its owner's hand.
      *
      * Distinct from a counter — "this spell can't be countered" does not

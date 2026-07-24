@@ -905,6 +905,42 @@
     ]
 }
 
+// Sorcerous Spyglass
+{
+    "name": "Sorcerous Spyglass",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "As this artifact enters, look at an opponent's hand, then choose any card name.\nActivated abilities of sources with the chosen name can't be activated unless they're mana abilities.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PreventActivatedAbilities",
+                "filter": {
+                    "cardPredicates": [
+                        "NameEqualsChosenComponent"
+                    ]
+                },
+                "nonManaAbilitiesOnly": true
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CARD_NAME",
+                "cardNamePool": "ANY",
+                "lookAtOpponentHand": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85506a24-8d60-475c-9f43-65994caca7d4.jpg?1783935702"
+    },
+    "colorIdentityOverride": []
+}
+
 // Storm Fleet Spy
 {
     "name": "Storm Fleet Spy",

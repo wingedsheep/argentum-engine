@@ -237,6 +237,16 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                             )
                             if (sacrificeTargets.size < atom.count) continue
                         }
+                        is CostAtom.ExilePermanents -> {
+                            // "Exile one or more other [filter] you control …" (Fabrication Foundry).
+                            // Affordable when at least minCount eligible permanents exist; the player
+                            // picks which during activation (the handler pauses). Same candidate pool
+                            // as a sacrifice cost.
+                            val eligible = context.costUtils.findAbilitySacrificeTargets(
+                                state, playerId, atom.filter, if (atom.excludeSelf) entityId else null
+                            )
+                            if (eligible.size < atom.minCount) continue
+                        }
                         is CostAtom.ReturnToHand -> {
                             bounceCost = atom
                             bounceTargets = context.costUtils.findAbilityBounceTargets(state, playerId, atom.filter)
@@ -365,6 +375,19 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                             state, playerId, atom.filter, if (atom.excludeSelf) entityId else null
                                         )
                                         if (sacrificeTargets.size < atom.count) {
+                                            costCanBePaid = false
+                                            break
+                                        }
+                                    }
+                                    is CostAtom.ExilePermanents -> {
+                                        // "Exile one or more other [filter] you control …" as one leg
+                                        // of a composite cost (Fabrication Foundry's {2}{W}, {T},
+                                        // Exile …). Affordable when at least minCount eligible
+                                        // permanents exist; the player picks which during activation.
+                                        val eligible = context.costUtils.findAbilitySacrificeTargets(
+                                            state, playerId, atom.filter, if (atom.excludeSelf) entityId else null
+                                        )
+                                        if (eligible.size < atom.minCount) {
                                             costCanBePaid = false
                                             break
                                         }
@@ -787,6 +810,24 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     // All requirements must be satisfiable
                     if (!context.targetUtils.allRequirementsSatisfied(targetReqInfos)) continue
 
+                    // Fabrication Foundry: the reanimation target's "mana value X or less" legality
+                    // depends on X (the exiled permanents' total mana value), which isn't known until
+                    // the exile cost is chosen during activation (CR 601.2b). Don't gather the target
+                    // client-side up front — that would let an over-MV target be picked and then
+                    // fizzle. Surface a bare action; the handler pauses first for the exile selection,
+                    // then for the X-bounded target, in order. (The satisfiability gate above still
+                    // applies — no artifact card in the graveyard means no legal target at any X.)
+                    if (costContainsExilePermanents(effectiveCost)) {
+                        result.add(LegalAction(
+                            actionType = "ActivateAbility",
+                            description = displayDescription,
+                            action = ActivateAbility(playerId, entityId, ability.id),
+                            additionalCostInfo = costInfo,
+                            manaCostString = abilityManaCostString
+                        ))
+                        continue
+                    }
+
                     val firstReq = targetReqs.first()
                     val firstReqInfo = targetReqInfos.first()
 
@@ -1183,6 +1224,13 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
      * "real" effect is hidden inside (e.g., Figure of Fable's `ConditionalEffect(... BecomeCreature)`) is
      * also excluded.
      */
+    /** True when [cost] contains a [CostAtom.ExilePermanents] atom (top-level or in a Composite). */
+    private fun costContainsExilePermanents(cost: AbilityCost): Boolean = when (cost) {
+        is AbilityCost.Atom -> cost.atom is CostAtom.ExilePermanents
+        is AbilityCost.Composite -> cost.costs.any { costContainsExilePermanents(it) }
+        else -> false
+    }
+
     private fun effectStacksOnRepeat(effect: Effect): Boolean {
         effect.asConditional()?.let { conditional ->
             return effectStacksOnRepeat(conditional.then) &&

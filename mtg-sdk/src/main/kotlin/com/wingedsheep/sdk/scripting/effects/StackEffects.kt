@@ -1,8 +1,10 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -317,6 +319,56 @@ data class CounterAllOnStackEffect(
 data object DestroySourceOfTargetedAbilityEffect : Effect {
     override val description: String =
         "If a permanent's ability is countered this way, destroy that permanent"
+}
+
+/**
+ * The ability-strip sibling of [DestroySourceOfTargetedAbilityEffect]. If the targeted
+ * activated or triggered ability on the stack has a source that is currently a permanent on the
+ * battlefield, and (when [sourceCardTypes] is non-empty) that permanent's projected card types
+ * include at least one of them, the source permanent **loses all abilities** for [duration].
+ *
+ * Reads the targeted stack entity from [com.wingedsheep.engine.handlers.EffectContext.targets]
+ * (expects a [com.wingedsheep.engine.state.components.stack.ChosenTarget.Spell]) and inspects its
+ * `ActivatedAbilityOnStackComponent` / `TriggeredAbilityOnStackComponent` to find the source. If
+ * the targeted stack object is a spell (no ability component), its source has already left the
+ * battlefield, or the source's type doesn't match [sourceCardTypes], nothing happens.
+ *
+ * Compose with [CounterEffect]`(target = CounterTarget.Ability)` in a `CompositeEffect`, placing
+ * this step **before** the counter so the source's ability-on-stack component is still readable
+ * (the counter removes the ability from the stack). Used by Tishana's Tidebinder: "If an ability
+ * of an artifact, creature, or planeswalker is countered this way, that permanent loses all
+ * abilities for as long as this creature remains on the battlefield." — pair
+ * `Duration.WhileSourceOnBattlefield` with `sourceCardTypes = {ARTIFACT, CREATURE, PLANESWALKER}`.
+ *
+ * @property duration How long the source permanent loses its abilities. The floating effect is
+ *   keyed to the *effect's* source (e.g. Tishana), so [Duration.WhileSourceOnBattlefield] ends
+ *   when that permanent leaves the battlefield.
+ * @property sourceCardTypes Which card types the countered ability's source must have for the
+ *   strip to apply (any of them). Empty means any permanent qualifies.
+ */
+@SerialName("RemoveAbilitiesFromSourceOfTargetedAbility")
+@Serializable
+data class RemoveAbilitiesFromSourceOfTargetedAbilityEffect(
+    val duration: Duration = Duration.EndOfTurn,
+    val sourceCardTypes: Set<CardType> = emptySet()
+) : Effect {
+    override val description: String = buildString {
+        append("If an ability of ")
+        if (sourceCardTypes.isEmpty()) {
+            append("a permanent")
+        } else {
+            val names = sourceCardTypes.map { it.displayName.lowercase() }
+            val list = when (names.size) {
+                1 -> names[0]
+                2 -> "${names[0]} or ${names[1]}"
+                else -> names.dropLast(1).joinToString(", ") + ", or " + names.last()
+            }
+            val article = if (names.first().first() in "aeiou") "an" else "a"
+            append("$article $list")
+        }
+        append(" is countered this way, that permanent loses all abilities ")
+        append(duration.description.ifEmpty { "permanently" })
+    }
 }
 
 // =============================================================================

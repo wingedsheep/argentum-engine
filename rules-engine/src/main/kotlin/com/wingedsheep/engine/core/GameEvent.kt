@@ -59,7 +59,15 @@ data class ZoneChangeEvent(
      * e.g. Urza's Miter ("if it wasn't sacrificed"). Always `false` for non-battlefield exits and
      * for non-sacrifice deaths (destruction, lethal damage, state-based actions).
      */
-    val wasSacrificed: Boolean = false
+    val wasSacrificed: Boolean = false,
+    /**
+     * True when this battlefield exit was the exile of a material chosen to pay a Craft cost
+     * (CR 702.167). Lets a SELF exile trigger ("When this creature is exiled from the battlefield
+     * while you're activating a craft ability", Market Gnome) distinguish craft-material exile
+     * from any other way a permanent is exiled. Always `false` for non-exile exits and for exiles
+     * that are not craft materials (removal, the crafted card's own self-exile, etc.).
+     */
+    val craftMaterial: Boolean = false
 ) : GameEvent
 
 // =============================================================================

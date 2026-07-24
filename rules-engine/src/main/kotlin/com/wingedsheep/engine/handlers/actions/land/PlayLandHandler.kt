@@ -456,7 +456,9 @@ class PlayLandHandler(
                         fromZone = fromZone,
                         carryEvents = events,
                         cardNameOptions = if (firstChoice.choiceType == ChoiceType.CARD_NAME) {
-                            cardRegistry.landCardNames().toList()
+                            if (firstChoice.cardNamePool == com.wingedsheep.sdk.scripting.CardNamePool.ANY) {
+                                cardRegistry.allCardNames().toList()
+                            } else cardRegistry.landCardNames().toList()
                         } else emptyList(),
                     )
                 if (result != null) return result

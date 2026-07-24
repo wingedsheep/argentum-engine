@@ -169,6 +169,8 @@ class CostPaymentService(private val services: EngineServices) {
                         }
                     }
                 }
+                // ExilePermanents is an activated-ability-only cost, never a PayCost.
+                is CostAtom.ExilePermanents -> PaymentResult.Unaffordable(state)
             }
         }
     }
@@ -314,6 +316,8 @@ class CostPaymentService(private val services: EngineServices) {
             // cost is paid through CostHandler.payAtom, which owns the counter-placement path.
             is CostAtom.PutCountersOnSelf -> CostPaymentExecution(state, emptyList(), success = false)
             is CostAtom.RemoveCounters -> performRemoveCounters(state, payerId, atom, sourceId, selected)
+            // ExilePermanents is an activated-ability-only cost, never a PayCost.
+            is CostAtom.ExilePermanents -> CostPaymentExecution(state, emptyList(), success = false)
         }
     }
 
@@ -659,6 +663,8 @@ class CostPaymentService(private val services: EngineServices) {
                             total >= needed
                         }
                     }
+                    // ExilePermanents is an activated-ability-only cost, never a PayCost.
+                    is CostAtom.ExilePermanents -> false
                 }
             }
         }

@@ -176,6 +176,22 @@ data class ModalEffect(
      */
     val excludePreviouslyChosenModes: Boolean = false,
     /**
+     * "Choose one that hasn't been chosen this turn" (e.g., Breeches, Eager Pillager). The
+     * turn-scoped sibling of [excludePreviouslyChosenModes]: when `true`, the engine remembers
+     * which modes the *source permanent* has chosen **during the current turn** (in a per-source
+     * memory component cleared each cleanup step) and excludes those modes from every later
+     * presentation of this modal effect *this turn*. The memory resets at end of turn, so every
+     * mode is available again next turn. Once all modes have been chosen this turn, the ability
+     * has no legal mode and resolves as a no-op (CR 700.2b — a modal triggered ability with no
+     * chosen mode is removed from the stack; and the card's own ruling).
+     *
+     * Like [excludePreviouslyChosenModes], the memory is keyed to the source object (CR 700.4
+     * object identity), so two copies of the same source track their chosen modes independently.
+     * Only meaningful for repeatable modal *abilities* (triggered/activated) that can fire more
+     * than once per turn — not modal spells. Mutually exclusive with [excludePreviouslyChosenModes].
+     */
+    val excludeModesChosenThisTurn: Boolean = false,
+    /**
      * Whether choosing among [modes] makes this a *modal spell* in MTG terms (rules
      * 700.2). `true` for printed "Choose one — • X • Y" wording; `false` when this
      * data class is used as an implementation shortcut for a non-modal mechanic —
@@ -190,6 +206,7 @@ data class ModalEffect(
     override val description: String = buildString {
         append("Choose ")
         when {
+            excludeModesChosenThisTurn -> append("one that hasn't been chosen this turn")
             excludePreviouslyChosenModes -> append("one that hasn't been chosen")
             dynamicChooseCount != null -> {
                 append("up to ")
@@ -261,6 +278,22 @@ data class ModalEffect(
                 modes = modes.toList(),
                 chooseCount = 1,
                 excludePreviouslyChosenModes = true,
+                countsAsModalSpell = false
+            )
+
+        /**
+         * Create a "choose one that hasn't been chosen this turn" modal effect (Breeches,
+         * Eager Pillager). The turn-scoped sibling of [chooseOneNotYetChosen]: the source
+         * permanent remembers which modes it has chosen *this turn* and never offers them again
+         * until the memory resets at end of turn, so across all of a turn's triggers each mode is
+         * chosen at most once. When every mode has been chosen this turn the ability does nothing.
+         * Intended for repeatable modal triggered/activated abilities, so it is not a modal spell.
+         */
+        fun chooseOneNotYetChosenThisTurn(vararg modes: Mode): ModalEffect =
+            ModalEffect(
+                modes = modes.toList(),
+                chooseCount = 1,
+                excludeModesChosenThisTurn = true,
                 countsAsModalSpell = false
             )
 

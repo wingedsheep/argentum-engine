@@ -87,14 +87,20 @@ class ModalEffectExecutor(
             return EffectResult.success(state, emptyList())
         }
 
-        // "Choose one that hasn't been chosen" (Gandalf the Grey): exclude any mode this
-        // source has already chosen, recorded in a per-source memory component. If every
-        // mode has been chosen, the ability has no legal mode and does nothing.
-        val alreadyChosen: Set<Int> = if (effect.excludePreviouslyChosenModes) {
-            context.sourceId
-                ?.let { state.getEntity(it)?.get<com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent>() }
+        // "Choose one that hasn't been chosen" (Gandalf the Grey — game-scoped) / "…this turn"
+        // (Breeches, Eager Pillager — turn-scoped): exclude any mode this source has already
+        // chosen, recorded in a per-source memory component. If every mode has been chosen, the
+        // ability has no legal mode and does nothing.
+        val sourceEntity = context.sourceId?.let { state.getEntity(it) }
+        val alreadyChosenEver: Set<Int> = if (effect.excludePreviouslyChosenModes) {
+            sourceEntity?.get<com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent>()
                 ?.modeIndices ?: emptySet()
         } else emptySet()
+        val alreadyChosenThisTurn: Set<Int> = if (effect.excludeModesChosenThisTurn) {
+            sourceEntity?.get<com.wingedsheep.engine.state.components.battlefield.ChosenModesThisTurnComponent>()
+                ?.modeIndices ?: emptySet()
+        } else emptySet()
+        val alreadyChosen: Set<Int> = alreadyChosenEver + alreadyChosenThisTurn
 
         val availableIndices = effect.modes.indices.filter { it !in alreadyChosen }
         if (availableIndices.isEmpty()) {
@@ -140,7 +146,8 @@ class ModalEffectExecutor(
             availableIndices = availableIndices,
             outerTargets = context.targets,
             outerNamedTargets = context.pipeline.namedTargets,
-            recordChosenModesOnSource = effect.excludePreviouslyChosenModes
+            recordChosenModesOnSource = effect.excludePreviouslyChosenModes,
+            recordChosenModesThisTurn = effect.excludeModesChosenThisTurn
         )
 
         val stateWithDecision = state.withPendingDecision(decision)

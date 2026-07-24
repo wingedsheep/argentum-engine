@@ -3407,18 +3407,29 @@ class StackResolver(
             }
 
             ChoiceType.CARD_NAME -> {
-                // "Choose a land card name" (Petrified Hamlet). For a permanent that enters from
-                // the stack the registry's land card names are the option set; the chosen name is
-                // stored durably under [ChoiceSlot.CARD_NAME] by the resumer. (Lands themselves
-                // route through PlayLandHandler / PermanentEntryReplacements, but this completes the
-                // spell-cast path for any permanent spell that names a land as it enters.)
-                val cardNames = cardRegistry.landCardNames().sorted()
+                // "Choose a land card name" (Petrified Hamlet) or "choose any card name"
+                // (Sorcerous Spyglass / Pithing Needle) as the permanent spell resolves. The pool
+                // is land names or every registered card name per [EntersWithChoice.cardNamePool];
+                // the chosen name is stored durably under [ChoiceSlot.CARD_NAME] by the resumer.
+                val cardNames = when (choice.cardNamePool) {
+                    com.wingedsheep.sdk.scripting.CardNamePool.ANY -> cardRegistry.allCardNames()
+                    com.wingedsheep.sdk.scripting.CardNamePool.LAND -> cardRegistry.landCardNames()
+                }.sorted()
                 if (cardNames.isEmpty()) return null
+                // "As this enters, look at an opponent's hand, then …": reveal the opponent's hand
+                // to the controller before presenting the name choice.
+                val (baseState, lookEvents) = if (choice.lookAtOpponentHand) {
+                    com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+                        .revealOpponentHandForEntersChoice(state, controllerId)
+                } else state to emptyList()
+                val prompt = if (choice.cardNamePool == com.wingedsheep.sdk.scripting.CardNamePool.ANY) {
+                    "Choose a card name"
+                } else "Choose a land card name"
                 val decisionId = "choose-card-name-enters-${spellId.value}"
                 val decision = ChooseOptionDecision(
                     id = decisionId,
                     playerId = chooserId,
-                    prompt = "Choose a land card name",
+                    prompt = prompt,
                     context = DecisionContext(
                         sourceId = spellId,
                         sourceName = cardComponent.name,
@@ -3434,10 +3445,10 @@ class StackResolver(
                     choiceType = ChoiceType.CARD_NAME,
                     cardNames = cardNames
                 )
-                val pausedState = state
+                val pausedState = baseState
                     .pushContinuation(continuation)
                     .withPendingDecision(decision)
-                ExecutionResult.paused(pausedState, decision)
+                ExecutionResult.paused(pausedState, decision, lookEvents)
             }
 
             ChoiceType.NUMBER -> {

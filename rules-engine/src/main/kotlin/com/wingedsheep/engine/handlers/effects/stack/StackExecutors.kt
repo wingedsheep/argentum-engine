@@ -35,6 +35,7 @@ class StackExecutors(
         MarkSpellPlotOnResolveExecutor(),
         ReturnSpellToOwnersHandExecutor(),
         ReturnSpellOrPermanentToOwnersHandExecutor(cardRegistry),
-        DestroySourceOfTargetedAbilityExecutor()
+        DestroySourceOfTargetedAbilityExecutor(),
+        RemoveAbilitiesFromSourceOfTargetedAbilityExecutor()
     )
 }

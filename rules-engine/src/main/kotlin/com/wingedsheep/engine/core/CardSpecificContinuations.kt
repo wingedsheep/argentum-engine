@@ -666,3 +666,51 @@ data class ActivateAbilitySacrificeContinuation(
     val sacrificeCount: Int,
     val distinctNames: Boolean = false
 ) : ContinuationFrame
+
+/**
+ * Resume after the controller picks which permanents to exile for a variable-count
+ * [com.wingedsheep.sdk.scripting.costs.CostAtom.ExilePermanents] cost — "Exile one or more other
+ * [filter] you control with total mana value X" (Fabrication Foundry).
+ *
+ * The bare [ActivateAbility] arrives with no exile selection; the handler raised a
+ * [SelectCardsDecision] over the eligible permanents (min [minCount], max = all eligible) and pushed
+ * this frame. The resumer validates the pick, fills it into `costPayment.exiledCards`, and re-enters
+ * the handler — which then computes X (the exiled set's total mana value) and pauses again for the
+ * X-bounded target ([ActivateAbilityControllerTargetContinuation]). The exile pause happens before
+ * any cost is paid, so cancellation pops this frame with no side effects.
+ *
+ * @property action The original [ActivateAbility] (`costPayment.exiledCards` still empty).
+ * @property exileCandidates The eligible permanents offered as options (used to validate the pick).
+ * @property minCount Minimum number of permanents that must be exiled (the cost's floor).
+ */
+@Serializable
+data class ActivateAbilityExilePermanentsContinuation(
+    override val decisionId: String,
+    val action: ActivateAbility,
+    val exileCandidates: List<EntityId>,
+    val minCount: Int
+) : ContinuationFrame
+
+/**
+ * Resume after the controller picks the target for an activated ability whose target legality
+ * depends on a value determined during activation — specifically the X-bounded reanimation target of
+ * a [com.wingedsheep.sdk.scripting.costs.CostAtom.ExilePermanents] ability (Fabrication Foundry:
+ * "Return target artifact card with mana value X or less from your graveyard to the battlefield").
+ *
+ * Because X isn't known until the exile selection is made, the target is chosen *after* the exile
+ * ([ActivateAbilityExilePermanentsContinuation]) rather than up front. The handler raised a
+ * [ChooseTargetsDecision] whose legal targets were found with X threaded through the predicate
+ * context, and pushed this frame. The resumer converts the response into [ChosenTarget]s, fills
+ * `action.targets`, and re-enters the handler to pay the cost and put the ability on the stack.
+ *
+ * @property action The original [ActivateAbility] carrying the already-chosen exiled permanents
+ *   (and thus the resolved X) but no target yet.
+ * @property requirements The controller target requirements, in script order, aligned 1:1 with the
+ *   indices in the [TargetsResponse].
+ */
+@Serializable
+data class ActivateAbilityControllerTargetContinuation(
+    override val decisionId: String,
+    val action: ActivateAbility,
+    val requirements: List<TargetRequirement>
+) : ContinuationFrame

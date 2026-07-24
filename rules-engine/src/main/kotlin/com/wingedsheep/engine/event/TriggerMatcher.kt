@@ -438,7 +438,22 @@ class TriggerMatcher(
                 } else true
             }
             is EventPattern.UntapEvent -> {
-                event is UntappedEvent && (binding != TriggerBinding.SELF || event.entityId == sourceId)
+                if (event !is UntappedEvent) return false
+                // Batch ("one or more become untapped") triggers fire once per untap batch, handled
+                // by detectUntapBatchTriggers — never once per event here.
+                if (trigger.batch) return false
+                if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
+                val filter = trigger.filter
+                if (filter != null) {
+                    val predicateEvaluator = PredicateEvaluator()
+                    val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                        controllerId = controllerId,
+                        sourceId = sourceId
+                    )
+                    predicateEvaluator.matches(
+                        state, state.projectedState, event.entityId, filter, predicateContext
+                    )
+                } else true
             }
             is EventPattern.PhasesInEvent -> {
                 if (event !is PhasedInEvent) return false
@@ -798,6 +813,9 @@ class TriggerMatcher(
         if (trigger.excludeTo != null && event.toZone == trigger.excludeTo) return false
         // "if it wasn't sacrificed" (Urza's Miter, CR 701.21) — reject sacrifice deaths.
         if (trigger.excludeSacrifice && event.wasSacrificed) return false
+        // "while you're activating a craft ability" (Market Gnome, CR 702.167) — fire only when
+        // this exile was a chosen craft material, not on any other exile.
+        if (trigger.requireCraftMaterial && !event.craftMaterial) return false
 
         // Check binding
         when (binding) {
