@@ -716,9 +716,19 @@ class ClientStateTransformer(
         val spellOnStack = container.get<SpellOnStackComponent>()
         val isInFaceDownZone = zoneKey.zoneType == Zone.BATTLEFIELD || zoneKey.zoneType == Zone.STACK || zoneKey.zoneType == Zone.EXILE
         val isFaceDown = isInFaceDownZone && (container.has<FaceDownComponent>() || spellOnStack?.castFaceDown == true)
-        // Use projected P/T which correctly handles face-down base 2/2 + any modifications
-        val power = projectedValues?.power ?: if (isFaceDown) 2 else cardComponent.baseStats?.basePower
-        val toughness = projectedValues?.toughness ?: if (isFaceDown) 2 else cardComponent.baseStats?.baseToughness
+        // Use projected P/T which correctly handles face-down base 2/2 + any modifications.
+        // CR 208.3: a noncreature permanent has no power or toughness — even one with a printed P/T
+        // (a Vehicle), and even a creature turned into an artifact/land by a type-changing effect
+        // (Kitesail Larcenist's Treasure, Song of the Dryads' Forest). On the battlefield we
+        // therefore only surface P/T for permanents that are creatures in projected state (face-down
+        // permanents are always 2/2 creatures), so a transformed permanent stops showing a stat box.
+        // Non-battlefield zones keep base P/T (a creature card in hand still shows its printed P/T).
+        val onBattlefield = zoneKey.zoneType == Zone.BATTLEFIELD
+        val showsPowerToughness = !onBattlefield || isFaceDown || projectedState.isCreature(entityId)
+        val power = if (!showsPowerToughness) null
+            else projectedValues?.power ?: if (isFaceDown) 2 else cardComponent.baseStats?.basePower
+        val toughness = if (!showsPowerToughness) null
+            else projectedValues?.toughness ?: if (isFaceDown) 2 else cardComponent.baseStats?.baseToughness
         val rawKeywords = projectedValues?.keywords?.mapNotNull {
             when {
                 // Granted toxic floats as TOXIC_<N> (e.g. Skrelv's activated ability); collapse
@@ -2552,6 +2562,42 @@ class ClientStateTransformer(
                             effectId = "type_added",
                             name = "+$joined",
                             description = "Also a $joined in addition to its other types",
+                            icon = "type-change"
+                        )
+                    )
+                }
+            }
+
+            // Surface a "type-change" badge when a permanent's CARD TYPES are replaced by a
+            // type-changing effect (Kitesail Larcenist "becomes a Treasure artifact", Song of the
+            // Dryads "becomes a Forest land", Polymorphist's Jest "becomes a Frog"). This is the
+            // full-replacement modification (SetCardTypes); additive "becomes a creature in addition
+            // to its other types" animate effects use AddType and don't trip this. The printed art
+            // still reads as the original object, so the badge makes the new type visible and pairs
+            // with the P/T box vanishing (CR 208.3). Driven from projected state so superseded
+            // transformations don't stack, and the projected subtypes ride along ("Artifact —
+            // Treasure").
+            val hasSetCardTypes = state.floatingEffects.any {
+                entityId in it.effect.affectedEntities &&
+                    it.effect.modification is SerializableModification.SetCardTypes
+            }
+            if (hasSetCardTypes) {
+                val baseTypes = baseCardComponent?.typeLine?.cardTypes?.map { it.name }?.toSet() ?: emptySet()
+                val projectedTypes = projectedState.getTypes(entityId)
+                if (projectedTypes.isNotEmpty() && projectedTypes != baseTypes) {
+                    val typeWords = com.wingedsheep.sdk.core.CardType.entries
+                        .filter { it.name in projectedTypes }
+                        .map { it.displayName }
+                    val subtypeWords = projectedState.getSubtypes(entityId).toList()
+                    val newTypeLine = buildString {
+                        append(typeWords.joinToString(" "))
+                        if (subtypeWords.isNotEmpty()) append(" — ").append(subtypeWords.joinToString(" "))
+                    }
+                    effects.add(
+                        ClientCardEffect(
+                            effectId = "card_type_changed",
+                            name = newTypeLine,
+                            description = "Card type is now $newTypeLine",
                             icon = "type-change"
                         )
                     )
