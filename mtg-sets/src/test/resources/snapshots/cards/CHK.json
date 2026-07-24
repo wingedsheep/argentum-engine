@@ -1545,6 +1545,125 @@
     ]
 }
 
+// Myojin of Night's Reach
+{
+    "name": "Myojin of Night's Reach",
+    "manaCost": "{5}{B}{B}{B}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "Myojin of Night's Reach enters with a divinity counter on it if you cast it from your hand.\nMyojin of Night's Reach has indestructible as long as it has a divinity counter on it.\nRemove a divinity counter from Myojin of Night's Reach: Each opponent discards their hand.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "divinity",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Hand"
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose cards to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Remove a divinity counter from this creature: Each opponent discards their hand."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "DIVINITY"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": {
+                    "type": "Named",
+                    "name": "divinity"
+                },
+                "count": 1,
+                "selfOnly": true,
+                "condition": "WasCastFromHand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/13a295b0-535e-4c2d-879d-62603d1f2f1b.jpg?1783944311",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "In a Commander game where this card is your commander, casting it from the command zone does not count as casting it from your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Nezumi Bone-Reader
 {
     "name": "Nezumi Bone-Reader",

@@ -187,6 +187,106 @@
     ]
 }
 
+// Finale of Revelation
+{
+    "name": "Finale of Revelation",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw X cards. If X is 10 or more, instead shuffle your graveyard into your library, draw X cards, untap up to five lands, and you have no maximum hand size for the rest of the game.\nExile Finale of Revelation.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "Compare",
+                    "left": "XValue",
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 10
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Graveyard"
+                                },
+                                "storeAs": "graveyardCards"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "graveyardCards",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Shuffled"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "DrawCards",
+                        "count": "XValue"
+                    },
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Battlefield",
+                            "filter": "land"
+                        },
+                        "storeAs": "lands"
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "lands",
+                        "selection": {
+                            "type": "ChooseUpTo",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 5
+                            }
+                        },
+                        "storeSelected": "landsToUntap",
+                        "prompt": "Choose up to five lands to untap",
+                        "showAllCards": true
+                    },
+                    {
+                        "type": "TapUntapCollection",
+                        "collectionName": "landsToUntap",
+                        "tap": false
+                    },
+                    "RemoveMaximumHandSize"
+                ]
+            },
+            "otherwise": {
+                "type": "DrawCards",
+                "count": "XValue"
+            }
+        },
+        "selfExileOnResolve": true
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "MYTHIC",
+        "artist": "Johann Bodin",
+        "flavorText": "Ugin saw the gem that connected Bolas to his Meditation Realm as the key to his brother's downfall.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/6630c34a-1a97-4e31-9d2c-1150b0aa903e.jpg?1783933465"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Spellgorger Weird
 {
     "name": "Spellgorger Weird",
