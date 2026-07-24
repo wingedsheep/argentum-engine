@@ -27,6 +27,8 @@ export interface GameSummary {
 export interface SpectatorStateUpdate {
   gameSessionId: string
   gameState: unknown
+  /** N-player seat roster (turn order), carrying team membership for team variants. */
+  players?: ReadonlyArray<{ playerId: string; teamIndex?: number | null; teamSharedLife?: boolean }>
   player1Id: string | null
   player2Id: string | null
   player1Name: string | null

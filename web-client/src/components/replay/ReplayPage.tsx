@@ -24,6 +24,7 @@ export function ReplayPage() {
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const setSpectatingState = useGameStore((s) => s.setSpectatingState)
+  const setSeatTeams = useGameStore((s) => s.setSeatTeams)
 
   // Same breakpoint as useResponsive's isMobile. The scenario/snapshot/share
   // buttons don't fit the header on phones — hide them there (they're
@@ -91,6 +92,15 @@ export function ReplayPage() {
         setMetadata(data.metadata)
         const reconstructed = reconstructSnapshots(data.initialSnapshot, data.deltas)
         setSnapshots(reconstructed)
+        // Stamp the seat → team map from the replay roster so a team-game replay lights up the
+        // team-grouped rail, ally treatment, and team-split layout (team membership only rides
+        // in the roster, never the per-frame board state).
+        const roster = data.initialSnapshot.players
+        if (roster?.some((p) => p.teamIndex != null)) {
+          const teams: Record<string, number> = {}
+          for (const p of roster) if (p.teamIndex != null) teams[p.playerId] = p.teamIndex
+          setSeatTeams(teams, roster.some((p) => p.teamSharedLife))
+        }
         setCurrentStep(0)
         if (reconstructed.length > 0) {
           writeSnapshotToStore(reconstructed[0]!)
@@ -103,14 +113,15 @@ export function ReplayPage() {
 
     loadReplay()
     return () => { cancelled = true }
-  }, [gameId, writeSnapshotToStore])
+  }, [gameId, writeSnapshotToStore, setSeatTeams])
 
   // Clean up spectating state on unmount
   useEffect(() => {
     return () => {
       setSpectatingState(null)
+      setSeatTeams({})
     }
-  }, [setSpectatingState])
+  }, [setSpectatingState, setSeatTeams])
 
   const goToStep = useCallback(
     (step: number) => {

@@ -97,6 +97,13 @@ export interface BoardViewSliceState {
    * the rail shows a single shared-life team header or per-player life.
    */
   teamSharedLife: boolean
+  /**
+   * Team-split board layout (team games only): the viewer's team fills the bottom half and the
+   * enemy team the top half, each a multi-board strip (e.g. 3v3 = 3 boards top, 3 bottom) with the
+   * same per-board collapse as the table overview. Auto-defaulted on when spectating a team game;
+   * an opt-in toggle when playing. Ignored in non-team games.
+   */
+  teamSplit: boolean
 }
 
 export interface BoardViewSliceActions {
@@ -134,6 +141,8 @@ export interface BoardViewSliceActions {
    * (2HG); Team vs. Team passes false. Persists until the next reset.
    */
   setSeatTeams: (teamByPlayerId: Record<EntityId, number>, sharedLife?: boolean) => void
+  /** Toggle the team-split board layout (team games only). */
+  toggleTeamSplit: () => void
   /** Reset on game start / leave. */
   resetBoardView: () => void
 }
@@ -151,6 +160,7 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
   spectatorBottomSeatId: null,
   teamByPlayerId: {},
   teamSharedLife: false,
+  teamSplit: false,
 
   viewOpponent: (playerId, opts) => {
     const { gameState, playerId: ownId } = get()
@@ -226,6 +236,8 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
   setSeatTeams: (teamByPlayerId, sharedLife = false) =>
     set({ teamByPlayerId, teamSharedLife: sharedLife }),
 
+  toggleTeamSplit: () => set({ teamSplit: !get().teamSplit }),
+
   resetBoardView: () =>
     set({
       viewedOpponentId: null,
@@ -237,5 +249,6 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
       spectatorBottomSeatId: null,
       teamByPlayerId: {},
       teamSharedLife: false,
+      teamSplit: false,
     }),
 })

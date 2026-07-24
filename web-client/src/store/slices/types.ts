@@ -992,6 +992,7 @@ export type GameStore = {
   spectatorBottomSeatId: EntityId | null
   teamByPlayerId: Readonly<Record<EntityId, number>>
   teamSharedLife: boolean
+  teamSplit: boolean
   viewOpponent: (playerId: EntityId, opts?: { pin?: boolean }) => void
   unpinView: () => void
   toggleFollowAction: () => void
@@ -1002,6 +1003,7 @@ export type GameStore = {
   followViewTo: (playerId: EntityId) => void
   setSpectatorBottomSeat: (playerId: EntityId | null) => void
   setSeatTeams: (teamByPlayerId: Record<EntityId, number>, sharedLife?: boolean) => void
+  toggleTeamSplit: () => void
   resetBoardView: () => void
 
   // UI slice

@@ -86,6 +86,8 @@ export function OpponentRail({
   const toggleFollowAction = useGameStore((state) => state.toggleFollowAction)
   const overviewMode = useGameStore((state) => state.overviewMode)
   const toggleOverviewMode = useGameStore((state) => state.toggleOverviewMode)
+  const teamSplit = useGameStore((state) => state.teamSplit)
+  const toggleTeamSplit = useGameStore((state) => state.toggleTeamSplit)
 
   // Two-Headed Giant (CR 810): when a team game is in progress, the rail splits into two
   // team sections — your team (you + ally) and the opposing team — colored by team with one
@@ -247,6 +249,41 @@ export function OpponentRail({
             Overview
             <span style={{ fontWeight: 800, color: overviewMode ? '#e4daff' : '#666' }}>
               {overviewMode ? 'On' : 'Off'}
+            </span>
+          </button>}
+          {/* Team-split layout — team games only: put your team on the bottom half and the enemy
+              team on top, each a multi-board strip. Desktop only (like the overview). */}
+          {isTeamGame && !responsive.isMobile && <button
+            onClick={toggleTeamSplit}
+            title={
+              teamSplit
+                ? 'Team split: your team fills the bottom half, the enemy team the top. Click to return to the standard layout.'
+                : 'Standard layout: you on the bottom, everyone else on top. Click to split the board by team (your team bottom, enemy team top).'
+            }
+            style={{
+              alignSelf: 'flex-start',
+              pointerEvents: 'auto',
+              height: 20,
+              padding: '0 9px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              borderRadius: 6,
+              border: `1px solid ${teamSplit ? 'rgba(120, 220, 170, 0.55)' : '#3a3a44'}`,
+              background: teamSplit ? 'rgba(20, 70, 55, 0.7)' : 'rgba(18, 18, 26, 0.7)',
+              color: teamSplit ? '#9ff0cd' : '#888',
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <span aria-hidden style={{ fontSize: 11 }}>⬍</span>
+            Teams
+            <span style={{ fontWeight: 800, color: teamSplit ? '#c9f7e4' : '#666' }}>
+              {teamSplit ? 'On' : 'Off'}
             </span>
           </button>}
           <button

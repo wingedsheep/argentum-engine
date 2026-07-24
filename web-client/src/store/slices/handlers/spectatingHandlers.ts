@@ -46,6 +46,15 @@ export function createSpectatingHandlers(set: SetState, get: GetState): Pick<Mes
       // Ignore spectator updates if we're in an active game
       if (sessionId) return
 
+      // Stamp the seat → team map from the roster (once). Team membership only rides in the
+      // seat roster, so without this a spectator never knows the game is a team game (2HG /
+      // Team vs. Team) — the team-grouped rail, ally treatment, and team-split layout all read it.
+      if (Object.keys(get().teamByPlayerId).length === 0 && msg.players?.some((p) => p.teamIndex != null)) {
+        const teams: Record<string, number> = {}
+        for (const p of msg.players) if (p.teamIndex != null) teams[p.playerId] = p.teamIndex
+        get().setSeatTeams(teams, msg.players.some((p) => p.teamSharedLife))
+      }
+
       if (msg.gameState && prevState?.gameState) {
         const prevPlayers = prevState.gameState.players
         const newPlayers = msg.gameState.players
@@ -109,6 +118,8 @@ export function createSpectatingHandlers(set: SetState, get: GetState): Pick<Mes
 
     onSpectatingStopped: () => {
       set({ spectatingState: null })
+      // Leaving the stream: drop the stamped team map so a later non-team spectate starts clean.
+      get().setSeatTeams({})
     },
 
     onSpectatorCountChanged: (msg) => {
