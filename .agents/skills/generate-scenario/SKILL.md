@@ -6,7 +6,7 @@ argument-hint: <description of what you want to test>
 
 # Generate Test Scenario
 
-Generate a test scenario JSON file based on the user's request: `$ARGUMENTS`
+Generate a test scenario JSON file based on the user's request or explicit skill arguments.
 
 ## Step 1: Understand the Request
 

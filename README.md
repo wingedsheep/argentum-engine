@@ -290,7 +290,7 @@ healthy, there's one rule above all others:
 ### Using AI to implement cards
 
 Using AI to implement cards is encouraged — most of the card catalog is data, and the project ships
-[Claude Code](https://claude.com/claude-code) skills that automate the workflow correctly (Scryfall
+agent skills that automate the workflow correctly (Scryfall
 lookup, oracle errata, set registration, scenario tests, reprint handling):
 
 - **`add-card <CARD_NAME> <SET_CODE>`** — implement a specific card.
@@ -356,7 +356,7 @@ time (it's how Invasion was done):
 
 ### Guidelines
 
-- Read [`CLAUDE.md`](CLAUDE.md) and [`docs/architecture-principles.md`](docs/architecture-principles.md)
+- Read [`AGENTS.md`](AGENTS.md) and [`docs/architecture-principles.md`](docs/architecture-principles.md)
   first — they describe the load-bearing rules (immutability, projected state, events-not-mutations,
   server-authoritative client) that PRs are reviewed against.
 - Prefer composing existing primitives over adding new SDK types; when you do add a type, parameterize

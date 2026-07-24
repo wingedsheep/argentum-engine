@@ -6,7 +6,7 @@ argument-hint: <feature description>
 
 # Add Engine Feature
 
-Implement the feature described in `$ARGUMENTS`. This skill is for work that extends the
+Implement the feature described in the user's request or explicit skill arguments. This skill is for work that extends the
 **engine, SDK, server, or client** — a new primitive, mechanic, decision flow, or capability —
 as opposed to a single card (use `add-card` for that, and `add-card` Step 4 for the small SDK
 additions a card needs).
@@ -52,7 +52,7 @@ Read this before touching code. It is the lens for every decision below.
   reshaping an existing type, renaming a primitive, collapsing redundant variants, or changing a
   signature makes the engine or SDK cleaner and simpler, that is *usually the correct call*, not a
   risk to avoid. Don't bolt a new variant alongside a now-obsolete one to "stay safe" — replace the
-  old shape and update every call site. (Still respect `CLAUDE.md` collaboration rules: refactor
+  old shape and update every call site. (Still respect `AGENTS.md` collaboration rules: refactor
   *your own* surface freely, but don't revert or stash another agent's in-flight work; if a refactor
   collides with theirs, pause and report.) The condition-hierarchy unification and the `EffectTarget`
   refactor are the model here: sweeping, compat-breaking changes that left the SDK markedly simpler.
@@ -142,7 +142,7 @@ re-bloats with one-offs otherwise — see `backlog/sdk-analysis-2026-06-revised.
 | Component / tracker | `mtg-sdk/.../component/` or engine component | reader in projection/handlers; cleanup if it has a duration |
 | Decision type | `mtg-sdk` decision model | `PendingDecision` + continuation frame + client UI (Step 6) |
 
-Hard rules while writing it (from `CLAUDE.md` "Load-bearing rules" and the engine's recurring bug
+Hard rules while writing it (from `AGENTS.md` "Load-bearing rules" and the engine's recurring bug
 classes — `review-changes` §3):
 
 - **Immutability** — never mutate components/state in place; return new instances.
@@ -276,7 +276,7 @@ signature changed, run the broader module suite.
 
 - **`docs/card-sdk-language-reference.md` is the canonical SDK catalog.** Any new effect, trigger,
   condition, filter, cost, keyword, dynamic amount, modal shape, or replacement effect MUST be
-  documented in the appropriate section in this same change (this is a `CLAUDE.md` standing rule).
+  documented in the appropriate section in this same change (this is an `AGENTS.md` standing rule).
 - **`docs/architecture-principles.md`** — update only if the feature introduces or changes an
   *architectural* concept (a new layer of the engine, a new cross-cutting pattern), not for a
   routine new primitive.
@@ -319,7 +319,7 @@ is correct. See [`mtgish-tooling/README.md`](../../../mtgish-tooling/README.md) 
 
 1. `just build` (no new behavior to exercise) or `just test` (new effects/engine changes). Fix only
    failures your change caused; if a pre-existing/other-agent test fails, report it and stop
-   (`CLAUDE.md` collaboration rules — never revert or stash others' work).
+   (`AGENTS.md` collaboration rules — never revert or stash others' work).
 2. **Verify CR rule numbers** you cite in code/comments/commit via the official WotC rules page
    <https://magic.wizards.com/en/rules> (download the linked plain-text `.txt` and `grep` it locally — too large to
    fetch into context) before committing — they're easy to misremember.

@@ -104,7 +104,7 @@ These come up often enough to be worth calling out:
   subtype, color, keyword, or P/T must go through projected state
   (`matchesWithProjection`, `projected.isCreature(...)`). The base state
   doesn't see continuous effects. This is in
-  [`CLAUDE.md`](CLAUDE.md) and the architecture doc — it's the single most
+  [`AGENTS.md`](AGENTS.md) and the architecture doc — it's the single most
   common correctness bug.
 - **Silent mutations.** Every state change should emit a `GameEvent` so
   triggers and the client can react. If you find yourself wanting to update

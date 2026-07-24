@@ -6,7 +6,7 @@ argument-hint: <card-name> [--set <set-code>]
 
 # Add MTG Card
 
-Implement the card specified in `$ARGUMENTS`. The card name is the main argument; `--set <set-code>` is optional (defaults to `por` for Portal).
+Implement the card specified in the user's request or explicit skill arguments. The card name is the main argument; `--set <set-code>` is optional (defaults to `por` for Portal).
 
 ## Guiding principle: rules-faithful, no shortcuts
 

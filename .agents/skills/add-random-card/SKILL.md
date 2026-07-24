@@ -6,15 +6,15 @@ argument-hint: <set-name-or-code> | <path-to-backlog-cards.md>
 
 # Add Random Card
 
-Implement a random unimplemented card from the set referenced by `$ARGUMENTS`.
+Implement a random unimplemented card from the set referenced by the user's request or explicit skill arguments.
 
-`$ARGUMENTS` can be either:
+The supplied set reference can be either:
 - **A set name or code** (e.g., `tempest`, `tmp`, `scourge`, `scg`) → use the `card-status` script as the source of truth.
 - **A path to a backlog `cards.md`** (e.g., `backlog/sets/scourge/cards.md`) → use the hand-curated checklist.
 
 ## Step 1: Pick the source of truth
 
-Check whether `$ARGUMENTS` looks like a file path (contains `/` or ends in `.md`).
+Check whether the supplied set reference looks like a file path (contains `/` or ends in `.md`).
 
 - **Path form** → go to Step 2A (backlog mode).
 - **Set name/code** → go to Step 2B (card-status mode). This is the preferred mode for any set where `scripts/card-status --set <CODE>` succeeds; it doesn't require maintaining a hand-curated checklist.

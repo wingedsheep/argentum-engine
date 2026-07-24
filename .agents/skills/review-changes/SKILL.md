@@ -9,7 +9,7 @@ argument-hint: [<PR# | branch | path>]
 Primary lens: **SDK elegance**. The SDK must stay small and reusable so new cards compose
 existing primitives instead of growing a card-specific type per Magic card.
 
-`$ARGUMENTS` may be a PR number/URL, a branch name, or empty (review the working tree's
+The user's request or explicit skill arguments may contain a PR number/URL, a branch name, or nothing (review the working tree's
 diff vs `main`).
 
 ## 1. Establish the diff (with `main` merged in)
@@ -179,7 +179,7 @@ values, layer interactions, "as ~ enters", protection / hexproof / ward).
 
 ## 6. Style & scope
 
-- Comments only when *why* is non-obvious (project CLAUDE.md). Flag restated-code
+- Comments only when *why* is non-obvious (project AGENTS.md). Flag restated-code
   comments and "added for X" notes.
 - No backwards-compat hacks (unused fields, `// removed` markers).
 
