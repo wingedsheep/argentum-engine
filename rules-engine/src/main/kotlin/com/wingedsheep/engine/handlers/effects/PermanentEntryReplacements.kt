@@ -63,6 +63,11 @@ object PermanentEntryReplacements {
      * shows those cards to the viewer while they make the choice. The reveal is purely
      * informational — it never restricts the name that may be chosen. Returns the (possibly
      * unchanged) state paired with any event to carry.
+     *
+     * Two-player scope: the real card lets the controller choose *which* opponent's hand to look at,
+     * but the engine's supported games are two-player, so the sole opponent (`firstOrNull`) is
+     * unambiguous. A 3+ player game would under-approximate here (same simplification other
+     * "an opponent" effects document, e.g. Kitesail Larcenist's "for each player" winnow).
      */
     fun revealOpponentHandForEntersChoice(
         state: GameState,
