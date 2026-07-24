@@ -119,6 +119,7 @@ export const counterManaClass: Record<string, string> = {
   PAGE: 'counter-lore',
   REV: 'counter-bolt',
   SOUL: 'counter-doom',
+  DIVINITY: 'counter-devotion',
   POSSESSION: 'counter-devotion',
   LANDMARK: 'counter-charge',
   DREAD: 'counter-doom',

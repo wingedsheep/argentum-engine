@@ -1891,6 +1891,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   PAGE: { bg: 'rgba(35, 30, 55, 0.95)', border: 'rgba(160, 150, 220, 0.65)', color: '#bcb4e8', glow: 'rgba(160, 150, 220, 0.5)' },
   REV: { bg: 'rgba(60, 30, 15, 0.95)', border: 'rgba(230, 140, 70, 0.7)', color: '#f0b070', glow: 'rgba(230, 140, 70, 0.55)' },
   SOUL: { bg: 'rgba(30, 20, 40, 0.95)', border: 'rgba(150, 110, 190, 0.7)', color: '#c0a0e0', glow: 'rgba(150, 110, 190, 0.55)' },
+  DIVINITY: { bg: 'rgba(48, 38, 70, 0.95)', border: 'rgba(190, 165, 235, 0.75)', color: '#d8c8f5', glow: 'rgba(190, 165, 235, 0.6)' },
   POSSESSION: { bg: 'rgba(45, 20, 60, 0.95)', border: 'rgba(180, 110, 220, 0.7)', color: '#cda0e8', glow: 'rgba(180, 110, 220, 0.55)' },
   LANDMARK: { bg: 'rgba(60, 50, 15, 0.95)', border: 'rgba(220, 190, 80, 0.7)', color: '#e8cf68', glow: 'rgba(220, 190, 80, 0.55)' },
   DREAD: { bg: 'rgba(25, 15, 35, 0.95)', border: 'rgba(120, 90, 160, 0.7)', color: '#b59ad0', glow: 'rgba(120, 90, 160, 0.55)' },

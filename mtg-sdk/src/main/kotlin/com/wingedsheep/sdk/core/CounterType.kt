@@ -60,6 +60,7 @@ enum class CounterType {
     PAGE,
     REV,
     SOUL,
+    DIVINITY,
     DOOM,
     POSSESSION,
     FIRE,
@@ -224,6 +225,12 @@ object Counters {
      * inherent rule.
      */
     const val SOUL = "soul"
+
+    /**
+     * Divinity counter (CHK — Myojin cycle). Passive counter with no inherent rule; each Myojin's
+     * own static and activated abilities check for or remove it.
+     */
+    const val DIVINITY = "divinity"
 
     /**
      * Doom counter (ATQ — Armageddon Clock). Passive counter accumulated one-per-upkeep; the card

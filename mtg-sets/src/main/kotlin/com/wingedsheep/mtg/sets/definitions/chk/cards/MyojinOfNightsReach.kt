@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.chk.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
@@ -38,7 +39,7 @@ val MyojinOfNightsReach = card("Myojin of Night's Reach") {
 
     replacementEffect(
         EntersWithCounters(
-            counterType = CounterTypeFilter.Named("divinity"),
+            counterType = CounterTypeFilter.Named(Counters.DIVINITY),
             count = 1,
             selfOnly = true,
             condition = Conditions.WasCastFromHand,
@@ -48,12 +49,12 @@ val MyojinOfNightsReach = card("Myojin of Night's Reach") {
     staticAbility {
         ability = ConditionalStaticAbility(
             ability = GrantKeyword(Keyword.INDESTRUCTIBLE),
-            condition = Conditions.SourceHasCounter(CounterTypeFilter.Named("divinity")),
+            condition = Conditions.SourceHasCounter(CounterTypeFilter.Named(Counters.DIVINITY)),
         )
     }
 
     activatedAbility {
-        cost = Costs.RemoveCounterFromSelf("divinity")
+        cost = Costs.RemoveCounterFromSelf(Counters.DIVINITY)
         effect = Effects.ForEachPlayer(
             Player.EachOpponent,
             listOf(

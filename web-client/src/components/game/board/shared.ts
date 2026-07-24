@@ -678,6 +678,7 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.PAGE,
   CounterType.REV,
   CounterType.SOUL,
+  CounterType.DIVINITY,
   CounterType.POSSESSION,
   CounterType.LANDMARK,
   CounterType.DREAD,
