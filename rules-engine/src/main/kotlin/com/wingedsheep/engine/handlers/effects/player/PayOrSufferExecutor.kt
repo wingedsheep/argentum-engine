@@ -87,6 +87,7 @@ class PayOrSufferExecutor(
                 is CostAtom.ReturnToHand -> EffectResult.error(state, "ReturnToHand payment for PayOrSuffer not yet implemented")
                 is CostAtom.RevealFromHand -> EffectResult.error(state, "RevealCard payment for PayOrSuffer not yet implemented")
                 is CostAtom.PutCountersOnSelf -> EffectResult.error(state, "PutCountersOnSelf is an activated-ability cost, not a PayOrSuffer cost")
+                is CostAtom.ExilePermanents -> EffectResult.error(state, "ExilePermanents payment for PayOrSuffer not supported")
                 is CostAtom.RemoveCounters -> handleRemoveCountersCost(state, effect, context, atom, sourceId, sourceCard.name, payingPlayerId)
             }
         }
@@ -712,6 +713,7 @@ class PayOrSufferExecutor(
                 is CostAtom.ReturnToHand -> false
                 is CostAtom.RevealFromHand -> false
                 is CostAtom.PutCountersOnSelf -> false
+                is CostAtom.ExilePermanents -> false
                 is CostAtom.RemoveCounters -> {
                     // Can pay if there are permanents matching the filter with enough counters.
                     // Don't exclude the source — removing counters from the source itself is a

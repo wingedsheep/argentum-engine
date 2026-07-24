@@ -2373,6 +2373,118 @@
     ]
 }
 
+// Breeches, Eager Pillager
+{
+    "name": "Breeches, Eager Pillager",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Creature — Goblin Pirate",
+    "oracleText": "First strike\nWhenever a Pirate you control attacks, choose one that hasn't been chosen this turn —\n• Create a Treasure token.\n• Target creature can't block this turn.\n• Exile the top card of your library. You may play it this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "filter": "creature Pirate ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "CreatePredefinedToken",
+                                "tokenType": "Treasure"
+                            }
+                        },
+                        {
+                            "effect": {
+                                "type": "CantBlockTargetCreatures",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            "targetRequirements": [
+                                {
+                                    "type": "TargetObject",
+                                    "filter": {
+                                        "baseFilter": "creature"
+                                    }
+                                }
+                            ],
+                            "description": "Target creature can't block this turn"
+                        },
+                        {
+                            "effect": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "TopOfLibrary",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeAs": "breechesExiled"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "breechesExiled",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile"
+                                        }
+                                    },
+                                    {
+                                        "type": "GrantMayPlayFromExile",
+                                        "from": "breechesExiled"
+                                    }
+                                ]
+                            },
+                            "description": "Exile the top card of your library. You may play it this turn"
+                        }
+                    ],
+                    "excludeModesChosenThisTurn": true,
+                    "countsAsModalSpell": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Josu Hernaiz",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aadf5028-8dfe-40d3-89b4-22bd7ed0aae6.jpg?1782694500",
+        "rulings": [
+            {
+                "date": "2023-11-10",
+                "text": "You pay all costs and follow all normal timing rules for cards played this way. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2023-11-10",
+                "text": "If you can't legally choose a mode because all three have been chosen that turn, that instance of the ability is removed from the stack with no effect."
+            },
+            {
+                "date": "2023-11-10",
+                "text": "If you somehow control two or more Breeches, Eager Pillager, track which modes have been chosen each turn for each one's ability separately."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Bringer of the Last Gift
 {
     "name": "Bringer of the Last Gift",
@@ -3934,6 +4046,126 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Contested Game Ball
+{
+    "name": "Contested Game Ball",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you're dealt combat damage, the attacking player gains control of this artifact and untaps it.\n{2}, {T}: Draw a card and put a point counter on this artifact. Then if it has five or more point counters on it, sacrifice it and create a Treasure token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "OneOrMoreDealCombatDamageToYouEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "GainControlByActivePlayer",
+                        {
+                            "type": "TapUntap",
+                            "target": "Self",
+                            "tap": false
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you're dealt combat damage, the attacking player gains control of this artifact and untaps it."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "point",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": {
+                                                "type": "Named",
+                                                "name": "point"
+                                            }
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 5
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "SacrificeTarget",
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "CreatePredefinedToken",
+                                        "tokenType": "Treasure"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}, {T}: Draw a card and put a point counter on this artifact. Then if it has five or more point counters on it, sacrifice it and create a Treasure token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "rarity": "UNCOMMON",
+        "artist": "Camille Alquier",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71cb7776-a6af-4efb-b536-6b9b4f3d3874.jpg?1782694410",
+        "rulings": [
+            {
+                "date": "2023-11-10",
+                "text": "Contested Game Ball's triggered ability triggers only once whenever you're dealt combat damage, no matter how many creatures deal combat damage to you at the same time."
+            },
+            {
+                "date": "2023-11-10",
+                "text": "If point counters are put on Contested Game Ball some way other than its last ability, you won't sacrifice it or create a Treasure token. The check for five or more point counters happens only as the activated ability resolves."
+            }
+        ]
+    }
 }
 
 // Corpses of the Lost
@@ -6342,6 +6574,92 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Fabrication Foundry
+{
+    "name": "Fabrication Foundry",
+    "manaCost": "{1}{W}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {W}. Spend this mana only to cast an artifact spell or activate an ability of an artifact source.\n{2}{W}, {T}, Exile one or more other artifacts you control with total mana value X: Return target artifact card with mana value X or less from your graveyard to the battlefield. Activate only as a sorcery.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE",
+                    "restriction": {
+                        "type": "CardTypeSpellsOrAbilitiesOnly",
+                        "cardType": "ARTIFACT",
+                        "allowAbilities": true
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true,
+                "descriptionOverride": "{T}: Add {W}. Spend this mana only to cast an artifact spell or activate an ability of an artifact source."
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExilePermanents",
+                                "filter": "artifact"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target artifact card with mana value X or less from your graveyard"
+                    },
+                    "destination": "Battlefield"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsArtifact",
+                                    "ManaValueAtMostX"
+                                ],
+                                "controllerPredicate": "OwnedByYou"
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "target artifact card with mana value X or less from your graveyard"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "{2}{W}, {T}, Exile one or more other artifacts you control with total mana value X: Return target artifact card with mana value X or less from your graveyard to the battlefield. Activate only as a sorcery."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Racrufi",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/323a05ee-8296-41c0-94ab-00913d9d84f1.jpg?1782694603"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -10654,6 +10972,89 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Market Gnome
+{
+    "name": "Market Gnome",
+    "manaCost": "{W}",
+    "typeLine": "Artifact Creature — Gnome",
+    "oracleText": "When this creature dies, you gain 1 life and draw a card.\nWhen this creature is exiled from the battlefield while you're activating a craft ability, you gain 1 life and draw a card.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Market Gnome dies, you gain 1 life and draw a card."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Exile",
+                    "requireCraftMaterial": true
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Market Gnome is exiled from the battlefield while you're activating a craft ability, you gain 1 life and draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "22",
+        "rarity": "UNCOMMON",
+        "artist": "Gaboleps",
+        "flavorText": "\"Maize, sweet and fresh! Tamal, hot and filling! Water, still or sparkling!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36dafcd6-ce4e-4a27-bd8c-fa1a3bffc99e.jpg?1782694594"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -18319,6 +18720,114 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// The Millennium Calendar
+{
+    "name": "The Millennium Calendar",
+    "manaCost": "{1}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "Whenever you untap one or more permanents during your untap step, put that many time counters on The Millennium Calendar.\n{2}, {T}: Double the number of time counters on The Millennium Calendar.\nWhen there are 1,000 or more time counters on The Millennium Calendar, sacrifice it and each opponent loses 1,000 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "UntapEvent",
+                    "filter": "permanent ctrl:you",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "time",
+                    "amount": {
+                        "type": "DistinctEntitiesInCollections",
+                        "collections": [
+                            "trigger.captured"
+                        ]
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "stateTriggeredAbilities": [
+            {
+                "id": "ability_2",
+                "condition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Source",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": {
+                                "type": "Named",
+                                "name": "time"
+                            }
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 1000
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SacrificeTarget",
+                            "target": "Self"
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1000
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "EachOpponent"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When there are 1,000 or more time counters on The Millennium Calendar, sacrifice it and each opponent loses 1,000 life."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DoubleCounters",
+                    "counterType": "time",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Double the number of time counters on The Millennium Calendar."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "257",
+        "rarity": "MYTHIC",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/deabba7f-05ef-41cf-ae3a-d950d051cf1e.jpg?1782694405"
+    },
+    "colorIdentityOverride": []
 }
 
 // The Mycotyrant

@@ -93,6 +93,43 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     }
 
     /**
+     * Exile one or more permanents matching [filter] you control — a *variable-count* cost: the
+     * payer chooses how many to exile (at least [minCount]). Unlike the fixed-count [Sacrifice] /
+     * [ExileFrom] atoms, the number exiled is a player choice made as the ability is activated (CR
+     * 601.2b — the value of a variable defined by a cost choice is announced at activation). The
+     * resolving ability reads the **total mana value** of the exiled permanents as its X value
+     * ([com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue]), so a target/effect can be
+     * bounded "with mana value X or less".
+     *
+     * @property filter which permanents you control may be exiled.
+     * @property minCount minimum number to exile (default 1 — "one or more").
+     * @property excludeSelf when true the cost's source permanent is excluded — "exile one or more
+     *   *other* [filter] you control" (Fabrication Foundry).
+     */
+    @SerialName("AtomExilePermanents")
+    @Serializable
+    data class ExilePermanents(
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val minCount: Int = 1,
+        val excludeSelf: Boolean = true
+    ) : CostAtom {
+        // Variable count — the floor the payer must at least select. The picker's max is the number
+        // of eligible permanents, resolved by the engine at activation time.
+        override val selectionCount: Int get() = minCount
+        override val description: String get() = buildString {
+            append("exile ")
+            append(if (minCount <= 1) "one or more " else "$minCount or more ")
+            if (excludeSelf) append("other ")
+            append("${filter.description}s you control")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): CostAtom {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
      * Discard [count] cards matching [filter].
      *
      * @property random when true the discard is at random (no player selection — e.g. Pillaging Horde).

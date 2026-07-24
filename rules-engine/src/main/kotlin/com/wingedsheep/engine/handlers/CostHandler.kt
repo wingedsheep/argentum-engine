@@ -546,6 +546,11 @@ class CostHandler {
                 eligible.size >= atom.count
             }
         }
+        is CostAtom.ExilePermanents -> {
+            val candidates = findMatchingPermanentsUnified(state, controllerId, atom.filter)
+            val eligible = if (atom.excludeSelf) candidates.filter { it != sourceId } else candidates
+            eligible.size >= atom.minCount
+        }
         is CostAtom.Discard -> {
             val handZone = ZoneKey(controllerId, Zone.HAND)
             findMatchingCardsUnified(state, state.getZone(handZone), atom.filter, controllerId).size >= atom.count
@@ -617,6 +622,10 @@ class CostHandler {
             state, choices.sacrificeChoices, atom.filter,
             requiredCount = atom.count, excludeSelf = atom.excludeSelf, sourceId, controllerId, manaPool,
             distinctNames = atom.distinctNames
+        )
+        is CostAtom.ExilePermanents -> payExilePermanentsList(
+            state, choices.exileChoices, atom.filter,
+            minCount = atom.minCount, excludeSelf = atom.excludeSelf, sourceId, controllerId, manaPool
         )
         is CostAtom.Discard -> {
             var workState = state
@@ -823,6 +832,69 @@ class CostHandler {
         return CostPaymentResult.success(newState, manaPool, events)
     }
 
+    /**
+     * Pay a [CostAtom.ExilePermanents] variable-count cost: exile every permanent the player chose
+     * ([exileChoices]), re-validating that each matches [filter], is controlled by the activator,
+     * and — when [excludeSelf] — isn't the ability's own source. At least [minCount] must be chosen.
+     * Unlike the fixed-count sacrifice / exile-from-zone atoms this exiles *all* selected permanents
+     * (the count is the player's choice, CR 601.2b). Permanents move to exile via
+     * [ZoneTransitionService.moveToZone], so attached Auras fall off, tokens cease to exist, and
+     * leaves-the-battlefield triggers fire.
+     */
+    private fun payExilePermanentsList(
+        state: GameState,
+        exileChoices: List<EntityId>,
+        filter: GameObjectFilter,
+        minCount: Int,
+        excludeSelf: Boolean,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        manaPool: ManaPool,
+    ): CostPaymentResult {
+        // With no selection supplied, auto-pick ONLY when the choice is forced (exactly minCount
+        // eligible). A real choice (more eligible than minCount) is paused for by
+        // ActivateAbilityHandler; never silently guess which permanents to exile.
+        val toExile: List<EntityId> = if (exileChoices.isEmpty()) {
+            val candidates = findMatchingCardsUnified(state, state.getBattlefield(controllerId), filter, controllerId)
+                .let { if (excludeSelf) it.filter { id -> id != sourceId } else it }
+            if (candidates.size < minCount) {
+                return CostPaymentResult.failure("Not enough permanents to exile (need $minCount, got ${candidates.size})")
+            }
+            if (candidates.size > minCount) {
+                return CostPaymentResult.failure("No permanents chosen to exile (need at least $minCount)")
+            }
+            candidates
+        } else {
+            exileChoices
+        }
+        if (toExile.size < minCount) {
+            return CostPaymentResult.failure("Not enough permanents chosen to exile (need $minCount, got ${toExile.size})")
+        }
+        val context = PredicateContext(controllerId = controllerId)
+        val projected = state.projectedState
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+        for (id in toExile) {
+            val container = newState.getEntity(id)
+                ?: return CostPaymentResult.failure("Permanent to exile not found")
+            val itsController = container.get<ControllerComponent>()?.playerId
+                ?: return CostPaymentResult.failure("Permanent to exile has no controller")
+            if (itsController != controllerId) {
+                return CostPaymentResult.failure("Can only exile permanents you control")
+            }
+            if (!predicateEvaluator.matches(state, projected, id, filter, context)) {
+                return CostPaymentResult.failure("Permanent to exile does not match the required filter")
+            }
+            if (excludeSelf && id == sourceId) {
+                return CostPaymentResult.failure("Cannot exile the source permanent for this cost")
+            }
+            val transitionResult = ZoneTransitionService.moveToZone(newState, id, Zone.EXILE)
+            newState = transitionResult.state
+            events.addAll(transitionResult.events)
+        }
+        return CostPaymentResult.success(newState, manaPool, events)
+    }
+
     /** Pay a [CostAtom.TapPermanents] atom from the chosen tap targets, re-validating each. */
     private fun payTapPermanents(
         state: GameState,
@@ -955,11 +1027,12 @@ class CostHandler {
                         total >= needed
                     }
                 }
-                // Mana / return-to-hand / reveal / put-counters-on-self are not produced as spell
-                // additional costs today (the last is inherently ability-scoped — a spell on the
-                // stack has no permanent to put the counters on).
+                // Mana / return-to-hand / reveal / put-counters-on-self / exile-permanents are not
+                // produced as spell additional costs today (put-counters-on-self is inherently
+                // ability-scoped — a spell on the stack has no permanent to put the counters on; and
+                // ExilePermanents is an activated-ability cost only).
                 is CostAtom.Mana, is CostAtom.ReturnToHand, is CostAtom.RevealFromHand,
-                is CostAtom.PutCountersOnSelf -> false
+                is CostAtom.PutCountersOnSelf, is CostAtom.ExilePermanents -> false
             }
             is AdditionalCost.PayLifePerTarget -> {
                 // Always payable: choosing zero targets pays zero life. Per-target life
@@ -1216,10 +1289,13 @@ class CostHandler {
         val events = mutableListOf<GameEvent>()
 
         // 1. Exile each chosen material from its zone via the standard zone-transition pipeline
-        //    (LTB triggers, attachment cleanup, last-known info — all handled there).
+        //    (LTB triggers, attachment cleanup, last-known info — all handled there). Flag the move
+        //    as a craft-material exile so a SELF "exiled from the battlefield while you're activating
+        //    a craft ability" trigger (Market Gnome) fires on materials that left the battlefield.
         for (materialId in chosen) {
             val transition = ZoneTransitionService.moveToZone(
-                newState, materialId, Zone.EXILE
+                newState, materialId, Zone.EXILE,
+                options = com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(craftMaterial = true)
             )
             newState = transition.state
             events.addAll(transition.events)

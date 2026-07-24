@@ -2,7 +2,7 @@
 
 **Set Size:** 286 booster cards (excluding basic lands and tokens)
 **Release Date:** November 17, 2023
-**Implemented:** 277 / 286
+**Implemented:** 282 / 286
 - [x] Abrade
 - [x] Abuelo's Awakening
 - [x] Abuelo, Ancestral Echo
@@ -33,7 +33,7 @@
 - [x] Braided Net
 - [x] Brass's Tunnel-Grinder
 - [x] Brazen Blademaster
-- [ ] Breeches, Eager Pillager
+- [x] Breeches, Eager Pillager
 - [x] Bringer of the Last Gift
 - [x] Broodrage Mycoid
 - [x] Buried Treasure
@@ -59,7 +59,7 @@
 - [x] Colossadactyl
 - [x] Compass Gnome
 - [x] Confounding Riddle
-- [ ] Contested Game Ball
+- [x] Contested Game Ball
 - [x] Corpses of the Lost
 - [x] Cosmium Blast
 - [x] Cosmium Confluence
@@ -93,7 +93,7 @@
 - [x] Envoy of Okinec Ahau
 - [x] Etali's Favor
 - [x] Explorer's Cache
-- [ ] Fabrication Foundry
+- [x] Fabrication Foundry
 - [x] Family Reunion
 - [x] Fanatical Offering
 - [x] Forgotten Monument
@@ -155,7 +155,7 @@
 - [x] Malcolm, Alluring Scoundrel
 - [x] Malicious Eclipse
 - [x] Marauding Brinefang
-- [ ] Market Gnome
+- [x] Market Gnome
 - [x] Master's Guide-Mural
 - [x] Matzalantli, the Great Door
 - [x] Mephitic Draught
@@ -255,7 +255,7 @@
 - [x] The Belligerent
 - [x] The Enigma Jewel
 - [x] The Everflowing Well
-- [ ] The Millennium Calendar
+- [x] The Millennium Calendar
 - [x] The Mycotyrant
 - [x] The Skullspore Nexus
 - [x] Thousand Moons Crackshot

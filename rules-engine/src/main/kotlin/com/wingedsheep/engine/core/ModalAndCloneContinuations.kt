@@ -64,7 +64,15 @@ data class ModalContinuation(
      * [com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent] so
      * later triggers exclude it.
      */
-    val recordChosenModesOnSource: Boolean = false
+    val recordChosenModesOnSource: Boolean = false,
+    /**
+     * "Choose one that hasn't been chosen this turn" (Breeches, Eager Pillager): when true, each
+     * chosen mode index is recorded in the source's
+     * [com.wingedsheep.engine.state.components.battlefield.ChosenModesThisTurnComponent] so later
+     * triggers *this turn* exclude it. Cleared at end of turn. Turn-scoped sibling of
+     * [recordChosenModesOnSource].
+     */
+    val recordChosenModesThisTurn: Boolean = false
 ) : ContinuationFrame
 
 /**

@@ -242,6 +242,21 @@ excluded.
 - `Costs.ExileFromGraveyard(count, filter)` — exile N matching cards from your graveyard.
 - `Costs.ExileXFromGraveyard(filter)` — exile X cards from your graveyard (X = the ability's
   chosen X value).
+- `Costs.ExilePermanents(filter = Any, minCount = 1, excludeSelf = true)` — **variable-count** "exile
+  one or more permanents you control matching `filter`" activated-ability cost (CR 601.2b — the
+  player chooses how many, at least `minCount`, as the ability is activated). With `excludeSelf` the
+  ability's own source is excluded ("one or more *other* …"). Unlike the fixed-count
+  `Sacrifice`/`ExileFromGraveyard` atoms, the **total mana value of the exiled permanents becomes the
+  ability's X value** — read it with `DynamicAmount.XValue` (or `GameObjectFilter.manaValueAtMostX()`
+  on a target) to bound "mana value X or less" reads. The value is fixed at activation and stored on
+  the stack, so an X-bounded target is re-validated against it at resolution (CR 608.2b). Backs
+  **Fabrication Foundry** ("{2}{W}, {T}, Exile one or more other artifacts you control with total
+  mana value X: Return target artifact card with mana value X or less from your graveyard to the
+  battlefield"). The engine drives the activation in order: it pauses for the on-battlefield exile
+  selection (min = `minCount`, max = all eligible), computes X, then pauses again for the X-bounded
+  target — so an over-MV target can never be chosen. Pair with `TimingRule.SorcerySpeed` where the
+  card says "Activate only as a sorcery." (permanents leave via the normal battlefield→exile
+  transition, so Auras fall off, tokens cease to exist, and leaves-the-battlefield triggers fire).
 - `Costs.Forage()` (ability cost) / `Costs.additional.Forage` (additional cost) — Forage (CR
   701.61): "exile three cards from your graveyard **or** sacrifice a Food." A *choice* between two
   sub-costs that belongs to the player. All cost-shaped forage payment is unified in the engine's
@@ -849,7 +864,9 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   keep it out of `StateProjector.KEYWORD_COUNTER_MAP` since it grants no keyword. Recent examples:
   `Counters.LANDMARK` (Treasure Map — three flip it into Treasure Cove), `Counters.DREAD` (Grasping Shadows —
   three flip it into Shadows' Lair), `Counters.BORE` (Brass's Tunnel-Grinder — three flip it into Tecutlan),
-  `Counters.NET`, `Counters.FIRE`, `Counters.CONQUEROR`.
+  `Counters.NET`, `Counters.FIRE`, `Counters.CONQUEROR`, `Counters.POINT` (Contested Game Ball — its
+  `{2}, {T}` ability adds one per activation and, when five or more are present, sacrifices the artifact and
+  creates a Treasure).
 - `DistributeCountersFromSelf(type?, count?)` — split source's counters among creatures you control.
 - `DistributeCountersAmongTargets(total, type?, minPerTarget?)` — divvy N counters among chosen targets.
 - `DistributeCountersAmongFiltered(total, type?, filter, minPerTarget?)` — distribute N **new** counters among permanents matching `filter`, chosen at resolution (not the spell's targets); `minPerTarget = 0` models "among any number of". Unlike `DistributeCountersFromSelf` nothing is removed from a source. Crashing Wave: `DistributeCountersAmongFiltered(3, Counters.STUN, Filters.Creature.tapped().opponentControls())` — "distribute three stun counters among any number of tapped creatures your opponents control."
@@ -1632,7 +1649,8 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 ### Modal & choice
 
 - `ModalEffect.chooseOne { mode(...) }` / `ModalEffect.chooseN(n) { ... }` — modal effect block.
-- `ModalEffect.chooseOneNotYetChosen(*modes)` — "choose one that hasn't been chosen"; source remembers used modes across the game (Gandalf the Grey).
+- `ModalEffect.chooseOneNotYetChosen(*modes)` — "choose one that hasn't been chosen"; source remembers used modes across the game (Gandalf the Grey). Flag: `excludePreviouslyChosenModes` (per-source `ChosenModesEverComponent`, never cleared).
+- `ModalEffect.chooseOneNotYetChosenThisTurn(*modes)` — "choose one that hasn't been chosen **this turn**"; the turn-scoped sibling. The source remembers modes chosen during the current turn (per-source `ChosenModesThisTurnComponent`, cleared each cleanup step) and excludes them from later triggers *this turn*, so across all of a turn's triggers each mode is chosen at most once; the memory resets next turn. Once every mode is chosen this turn the ability has no legal mode and resolves as a no-op. Keyed to the source object, so two copies track modes independently. Flag: `excludeModesChosenThisTurn` (mutually exclusive with `excludePreviouslyChosenModes`). Repeatable modal triggered/activated abilities only — not modal spells (Breeches, Eager Pillager).
 - `ChooseActionEffect(choices, player = Controller)` — `player` picks from a list of labeled effects; infeasible options (per each `EffectChoice.feasibilityCheck`) are filtered out, and if one remains it auto-runs. `player` may be any `EffectTarget`, including the state-relational `EffectTarget.TargetController` — routing the choice to the controller of the ability's chosen permanent (a "[do X to target permanent] unless its controller [accepts an avoidance]" choice). Combustion Man: "destroy target permanent unless its controller has Combustion Man deal damage to them equal to his power" — `player = TargetController`, with choices `DealDamage(sourcePower(), target = TargetController, damageSource = Self)` and `Destroy(<the permanent>)`.
 - `GrantProtectionFromColor(color, target, duration)` — grant protection from a **fixed** color to a target (no player choice); a thin recipe over `GrantKeyword("PROTECTION_FROM_<COLOR>")`. "{W}: Target creature gains protection from red until end of turn." (Crimson Acolyte).
 - `GrantPlayerProtection(scope = ProtectionScope.Everything, duration = Duration.UntilYourNextTurn, target = Controller)` — grant a **player** protection from a `ProtectionScope` (CR 702.16); the player-level counterpart of the creature protection statics. For a player only the **D**amage and **T**argeting parts of DEBT apply: a protected player can't be the target of, nor be dealt damage by, a source matching the scope. Adds/merges a `PlayerProtectionComponent` (multiple grants stack their scopes); the targeting validator, target enumerator, and `DamageUtils` all consult the shared `PlayerProtectionRules`. `Duration.UntilYourNextTurn` clears it after the untap step of the player's next turn. "You gain protection from everything until your next turn." (The One Ring).
@@ -2908,6 +2926,16 @@ for any other (filter, binding, to/excludeTo) combination.
   widen any controller-scoped filter the same way.
 - `PutIntoGraveyardFromBattlefield` — SELF, same event shape as `Dies`; rename
   clarifies non-creature intent (artifact / enchantment going to yard).
+- `ExiledAsCraftMaterial` — SELF, battlefield → exile, gated on `requireCraftMaterial = true`:
+  "When this permanent is exiled from the battlefield while you're activating a craft ability"
+  (Market Gnome, CR 702.167). Fires **only** when this permanent was one of the materials chosen
+  to pay a Craft cost, not on removal-style exile and not on the crafted card's own self-exile.
+  The matcher reads the triggering `ZoneChangeEvent.craftMaterial` flag, which the Craft cost
+  payment (`CostHandler.payCraftCost`) stamps via `ZoneEntryOptions(craftMaterial = true)` on each
+  material's exile — every other exile leaves it `false`. Because the exile goes to `EXILE`, not
+  `GRAVEYARD`, a companion `Dies` trigger on the same card does **not** also fire (exile is not
+  death). The SELF leaves-battlefield detector honors the `requireCraftMaterial` gate too, so a
+  non-craft exile fires neither.
 - `leavesBattlefield(filter, to?, excludeTo?, binding, excludeSacrifice = false)` — factory.
   `to = GRAVEYARD` gives a "dies" variant scoped beyond the named constants (other tribal deaths,
   any-controller deaths); `excludeTo = GRAVEYARD` gives "leaves without dying"
@@ -3072,6 +3100,7 @@ Named sugar for the common cases; reach for the factories for any other combinat
 - `takesDamage(source?, binding?)` — incoming-damage trigger. Pick `SourceFilter.{Any,Creature,Spell,Combat,NonCombat,HasColor(c),…}` and `TriggerBinding.{SELF,ATTACHED}`. Covers "damaged by a creature/spell" and "enchanted creature is dealt damage" (`binding = ATTACHED`, Aurification / Frozen Solid shape).
 - `becomesTapped(binding?, filter?)` — "becomes tapped" trigger. `BecomesTapped` is the SELF constant; pass `binding = TriggerBinding.ANY` with an optional `filter: GameObjectFilter` for "whenever a [filter] becomes tapped" (e.g. `GameObjectFilter.CreatureOrLand` — Temporal Distortion). The filter is matched against the tapped permanent via projected state. Fires once **per** tapped permanent.
 - `OneOrMoreBecomeTapped(filter)` — the **batch** sibling of `becomesTapped` (`TapEvent(batch = true)`, ANY binding). Fires at most **once** per simultaneous tap batch (CR 603.2c) regardless of how many matching permanents were tapped together — "Whenever one or more [filter] become tapped" (Deeproot Pilgrimage: `OneOrMoreBecomeTapped(GameObjectFilter.Creature.withSubtype("Merfolk").youControl().nontoken())`). Tapping several matching permanents at once (attacking, convoke, crew) makes a single payoff, not one per permanent. Handled by `TriggerDetector.detectTapBatchTriggers`; the per-event path skips batch taps. The first matching tapped permanent is bound as the triggering entity.
+- `OneOrMoreBecomeUntapped(filter)` — the **untap** analogue of `OneOrMoreBecomeTapped` (`UntapEvent(batch = true)`, ANY binding). Fires at most **once** per untap step (CR 603.2c) — "Whenever you untap one or more [filter] **during your untap step** …" — even though the untap step untaps all your permanents at once (The Millennium Calendar: `OneOrMoreBecomeUntapped(GameObjectFilter.Permanent.youControl())`). Handled by `TriggerDetector.detectUntapBatchTriggers`; the per-event `UntapEvent` path (`BecomesUntapped`) skips batch untaps. **Unlike the tap batch, it exposes the untapped permanents as the trigger's captured collection** (`IterationSpace.TRIGGER_CAPTURED_COLLECTION`), so a "put **that many** counters" payoff reads the count with `Effects.AddDynamicCounters(type, DynamicAmount.DistinctEntitiesInCollections(listOf(TRIGGER_CAPTURED_COLLECTION)), EffectTarget.Self)`. The **"during your untap step" scoping is intrinsic** — the detector fires it only for the active player's untap-step untaps (not instant-speed untaps, nor an opponent-turn Seedborn Muse untap of your permanents), so no `triggerCondition` is needed. (An untap-step untap advances straight to upkeep before any player gets priority, so an `IsInStep(UNTAP)` intervening-if would read false at detection time — hence the restriction lives in the detector.)
 
 ### Phase & turn
 

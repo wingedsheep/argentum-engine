@@ -220,6 +220,20 @@ object Costs {
     fun ExileXFromGraveyard(filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
         AbilityCost.ExileXFromGraveyard(filter)
 
+    /**
+     * Exile one or more permanents matching [filter] you control (variable count, at least
+     * [minCount]); with [excludeSelf] the ability's own source is excluded ("one or more *other*
+     * …"). The exiled set's **total mana value** becomes the ability's X value — read it with
+     * `DynamicAmount.XValue` (e.g. to bound a reanimation target "with mana value X or less").
+     * Backs Fabrication Foundry's "Exile one or more other artifacts you control with total mana
+     * value X" activation cost. Pair with a sorcery-speed timing rule where the card demands it.
+     */
+    fun ExilePermanents(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        minCount: Int = 1,
+        excludeSelf: Boolean = true
+    ): AbilityCost = AbilityCost.Atom(CostAtom.ExilePermanents(filter, minCount, excludeSelf))
+
     // =========================================================================
     // Loyalty Costs
     // =========================================================================

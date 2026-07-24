@@ -7,7 +7,9 @@ import com.wingedsheep.engine.core.CardCycledEvent
 import com.wingedsheep.engine.core.CardPlottedEvent
 import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CardsDrawnEvent
+import com.wingedsheep.engine.core.StepChangedEvent
 import com.wingedsheep.engine.core.TappedEvent
+import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.ControlChangedEvent
 import com.wingedsheep.engine.core.DoorUnlockedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
@@ -279,6 +281,12 @@ class TriggerDetector(
         // (e.g., Deeproot Pilgrimage). Fires the trigger at most once per source regardless of how
         // many matching permanents were tapped simultaneously; the per-event path skips batch taps.
         detectTapBatchTriggers(state, events, triggers, index)
+
+        // Detect "whenever you untap one or more permanents …" batching triggers (e.g. The
+        // Millennium Calendar). The untap step untaps all your permanents in one batch; this fires
+        // the trigger once for that batch and exposes the untapped permanents so a "that many"
+        // payoff can count them. The per-event path skips batch untaps.
+        detectUntapBatchTriggers(state, events, triggers, index)
 
         // Detect "whenever one or more [creatures] you control deal combat damage to a player"
         // batching triggers (e.g., Kastral, the Windcrested). Groups combat damage events
@@ -2082,6 +2090,93 @@ class TriggerDetector(
                         sourceName = entry.cardComponent.name,
                         controllerId = entry.controllerId,
                         triggerContext = TriggerContext(triggeringEntityId = matched.first())
+                    )
+                )
+            }
+        }
+    }
+
+    /**
+     * Detect "whenever you untap one or more permanents during your untap step" batching triggers
+     * (`UntapEvent(batch = true)`, ANY binding — The Millennium Calendar). The untap step untaps all
+     * of a player's permanents at once, emitting several [UntappedEvent]s in one batch; this fires
+     * the trigger **once** for that batch, not once per permanent (the over-count the per-event path
+     * — which skips batch untaps — would produce). The matching untapped permanents are exposed as
+     * `capturedEntityIds` (seeded into the resolving ability's pipeline under
+     * `PipelineState.TRIGGER_CAPTURED_COLLECTION`) so a "put that many counters" payoff reads the
+     * count via `DynamicAmount.DistinctEntitiesInCollections(TRIGGER_CAPTURED_COLLECTION)`.
+     *
+     * The "during your untap step" restriction is enforced here rather than as a `triggerCondition`:
+     * the untap step advances straight to upkeep (no priority), so by the time these events reach
+     * detection `state.step` is already `UPKEEP` and an `IsInStep(UNTAP)` intervening-if would read
+     * false. The reliable "these untaps are the untap step's turn-based action" signal is instead the
+     * `UPKEEP` `StepChangedEvent` bundled in the same event batch (the untap step emits no
+     * `StepChangedEvent` of its own here) — or, on the `MAY_NOT_UNTAP` keep-tapped decision resume,
+     * `state.step` still being `UNTAP`. "Your" scopes to the trigger controller being the active
+     * player whose untap step just ran (so an opponent-turn Seedborn Muse untap of your permanents
+     * does not fire it), and a later upkeep-triggered untap resolves in its own batch (no `UPKEEP`
+     * `StepChangedEvent`) so it is correctly excluded.
+     */
+    private fun detectUntapBatchTriggers(
+        state: GameState,
+        events: List<EngineGameEvent>,
+        triggers: MutableList<PendingTrigger>,
+        index: TriggerIndex
+    ) {
+        val untappedIds = events.filterIsInstance<UntappedEvent>().map { it.entityId }
+        if (untappedIds.isEmpty()) return
+        // "during your untap step": only the untap step's turn-based untap fires this trigger — not
+        // instant-speed untaps, nor an opponent-turn Seedborn Muse untap of your permanents. The
+        // untap step grants no priority and advances straight to upkeep without its own priority
+        // point, so in the normal flow these UntappedEvents reach detection once the step is already
+        // UPKEEP, bundled in the same event batch as the entry into upkeep (a StepChangedEvent whose
+        // newStep is UPKEEP; the untap step itself emits no StepChangedEvent here). The rare
+        // MAY_NOT_UNTAP keep-tapped decision instead resumes and detects them while the step is still
+        // UNTAP. Either signal marks the beginning-of-turn untap; a later upkeep-triggered untap
+        // resolves in its own batch (no UPKEEP StepChangedEvent) and is correctly excluded.
+        val isUntapStepBatch = state.step == Step.UNTAP ||
+            events.any { it is StepChangedEvent && it.newStep == Step.UPKEEP }
+        if (!isUntapStepBatch) return
+        val activePlayer = state.activePlayerId ?: return
+
+        for (entry in index.getEntitiesForCategory(TriggerCategory.UNTAPPED)) {
+            // "your untap step" — the observer must be the active player whose untap step just ran.
+            if (entry.controllerId != activePlayer) continue
+            for (ability in entry.abilities) {
+                val trigger = ability.trigger
+                if (trigger !is EventPattern.UntapEvent || !trigger.batch) continue
+                // Batch untap triggers are "one or more … become untapped" observers (ANY binding).
+                if (ability.binding != TriggerBinding.ANY) continue
+
+                val filter = trigger.filter
+                val matched = if (filter == null) {
+                    untappedIds
+                } else {
+                    val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                        controllerId = entry.controllerId,
+                        sourceId = entry.entityId
+                    )
+                    untappedIds.filter { untappedId ->
+                        predicateEvaluator.matches(
+                            state, state.projectedState, untappedId, filter, predicateContext
+                        )
+                    }
+                }
+                if (matched.isEmpty()) continue
+
+                // Fire once for the whole batch; expose the untapped permanents as the captured
+                // collection so "put that many counters" can count them (CR 603.2c). Bind the first
+                // matching permanent as the triggering entity for any "it" referent.
+                triggers.add(
+                    PendingTrigger(
+                        ability = ability,
+                        sourceId = entry.entityId,
+                        sourceName = entry.cardComponent.name,
+                        controllerId = entry.controllerId,
+                        triggerContext = TriggerContext(
+                            triggeringEntityId = matched.first(),
+                            capturedEntityIds = matched
+                        )
                     )
                 )
             }

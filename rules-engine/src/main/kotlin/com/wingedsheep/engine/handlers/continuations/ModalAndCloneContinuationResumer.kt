@@ -68,9 +68,17 @@ class ModalAndCloneContinuationResumer(
 
         // "Choose one that hasn't been chosen" (Gandalf the Grey): record the chosen mode
         // on the source so later triggers exclude it. Persists for the source's lifetime.
-        val stateAfterRecord = if (continuation.recordChosenModesOnSource && continuation.sourceId != null) {
-            recordChosenMode(state, continuation.sourceId, originalModeIndex)
-        } else state
+        // Turn-scoped sibling (Breeches, Eager Pillager): record on a component cleared at end
+        // of turn instead, so the exclusion resets next turn.
+        var stateAfterRecord = state
+        if (continuation.sourceId != null) {
+            if (continuation.recordChosenModesOnSource) {
+                stateAfterRecord = recordChosenMode(stateAfterRecord, continuation.sourceId, originalModeIndex)
+            }
+            if (continuation.recordChosenModesThisTurn) {
+                stateAfterRecord = recordChosenModeThisTurn(stateAfterRecord, continuation.sourceId, originalModeIndex)
+            }
+        }
 
         // More modes still need to be picked — present the next ChooseOptionDecision.
         if (newSelectedIndices.size < continuation.chooseCount && newAvailableIndices.isNotEmpty()) {
@@ -127,6 +135,21 @@ class ModalAndCloneContinuationResumer(
         return state.updateEntity(sourceId) { c ->
             val existing = c.get<com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent>()
                 ?: com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent()
+            c.with(existing.withChosen(modeIndex))
+        }
+    }
+
+    /**
+     * Record a chosen mode index on the source's
+     * [com.wingedsheep.engine.state.components.battlefield.ChosenModesThisTurnComponent]
+     * for "choose one that hasn't been chosen this turn" effects (Breeches, Eager Pillager).
+     * The component is cleared at end of turn by CleanupPhaseManager.
+     */
+    private fun recordChosenModeThisTurn(state: GameState, sourceId: EntityId, modeIndex: Int): GameState {
+        if (state.getEntity(sourceId) == null) return state
+        return state.updateEntity(sourceId) { c ->
+            val existing = c.get<com.wingedsheep.engine.state.components.battlefield.ChosenModesThisTurnComponent>()
+                ?: com.wingedsheep.engine.state.components.battlefield.ChosenModesThisTurnComponent()
             c.with(existing.withChosen(modeIndex))
         }
     }

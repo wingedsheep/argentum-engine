@@ -32,6 +32,7 @@ class CostAtomSerializationTest : FunSpec({
         CostAtom.Sacrifice(GameObjectFilter.Creature, count = 2),
         CostAtom.Discard(count = 1, filter = GameObjectFilter.Any, random = true),
         CostAtom.ExileFrom(Zone.GRAVEYARD, GameObjectFilter.Creature, count = 3),
+        CostAtom.ExilePermanents(GameObjectFilter.Artifact, minCount = 1, excludeSelf = true),
         CostAtom.TapPermanents(count = 1, filter = GameObjectFilter.Creature),
         CostAtom.ReturnToHand(GameObjectFilter.Any, count = 1),
         CostAtom.RevealFromHand(GameObjectFilter.Any, count = 1),

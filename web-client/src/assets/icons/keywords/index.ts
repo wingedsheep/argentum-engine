@@ -126,4 +126,5 @@ export const counterManaClass: Record<string, string> = {
   INCUBATION: 'counter-slime',
   FELLOWSHIP: 'counter-devotion',
   BAIT: 'counter-fungus',
+  POINT: 'counter-charge',
 }

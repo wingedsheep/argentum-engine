@@ -1,0 +1,64 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Breeches, Eager Pillager",
+      "Contested Game Ball",
+      "Market Gnome",
+      "Fabrication Foundry",
+      "The Millennium Calendar"
+    ],
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Hunter's Blowgun"},
+      {"name": "Buried Treasure"},
+      {"name": "Brazen Blademaster", "summoningSickness": false}
+    ],
+    "graveyard": [
+      "Clay-Fired Bricks",
+      "Hunter's Blowgun"
+    ],
+    "library": [
+      "Mountain",
+      "Plains",
+      "Island",
+      "Brazen Blademaster",
+      "Bedrock Tortoise",
+      "Buried Treasure"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Bedrock Tortoise"},
+      {"name": "Plains"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Island",
+      "Swamp"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

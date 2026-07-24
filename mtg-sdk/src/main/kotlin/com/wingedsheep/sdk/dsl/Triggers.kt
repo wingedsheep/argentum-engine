@@ -185,6 +185,24 @@ object Triggers {
     )
 
     /**
+     * When this permanent is exiled from the battlefield as a material to pay a Craft cost
+     * (CR 702.167) — "When this creature is exiled from the battlefield while you're activating
+     * a craft ability" (Market Gnome, LCI). (SELF.)
+     *
+     * Distinct from [Dies] (battlefield → graveyard) and from a plain exile: the
+     * `requireCraftMaterial` gate makes it fire only when the exile was one of the materials
+     * chosen to pay a Craft activation cost, not on removal-style exile.
+     */
+    val ExiledAsCraftMaterial: TriggerSpec = TriggerSpec(
+        event = ZoneChangeEvent(
+            from = Zone.BATTLEFIELD,
+            to = Zone.EXILE,
+            requireCraftMaterial = true
+        ),
+        binding = TriggerBinding.SELF
+    )
+
+    /**
      * Generic "leaves the battlefield" trigger factory. Use the named
      * constants above ([LeavesBattlefield], [Dies], [AnyCreatureDies],
      * [YourCreatureDies], [PutIntoGraveyardFromBattlefield]) when their
@@ -1324,7 +1342,7 @@ object Triggers {
      * Whenever this permanent becomes untapped.
      */
     val BecomesUntapped: TriggerSpec = TriggerSpec(
-        event = UntapEvent,
+        event = UntapEvent(),
         binding = TriggerBinding.SELF
     )
 
@@ -1358,7 +1376,7 @@ object Triggers {
      * carries no filter, so binding is the only axis.
      */
     fun becomesUntapped(binding: TriggerBinding = TriggerBinding.SELF): TriggerSpec =
-        TriggerSpec(event = UntapEvent, binding = binding)
+        TriggerSpec(event = UntapEvent(), binding = binding)
 
     /**
      * Whenever one or more permanents matching [filter] become tapped — a **batching** trigger
@@ -1372,6 +1390,27 @@ object Triggers {
      */
     fun OneOrMoreBecomeTapped(filter: GameObjectFilter): TriggerSpec =
         TriggerSpec(event = TapEvent(filter = filter, batch = true), binding = TriggerBinding.ANY)
+
+    /**
+     * Whenever you untap one or more permanents matching [filter] **during your untap step** — a
+     * **batching** trigger (CR 603.2c) that fires at most once per untap step, not once per untapped
+     * permanent. Use for "Whenever you untap one or more permanents during your untap step …"
+     * wording (The Millennium Calendar), where the untap step untaps all your permanents at once but
+     * the trigger must fire a single time. The untapped permanents are exposed as the trigger's
+     * captured collection ([com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION]),
+     * so a "put that many counters" payoff reads the count with
+     * `DynamicAmount.DistinctEntitiesInCollections(listOf(TRIGGER_CAPTURED_COLLECTION))`.
+     *
+     * The untap analogue of [OneOrMoreBecomeTapped]. ANY binding; scope with the filter's
+     * `youControl()` for "you untap". The "during your untap step" restriction is intrinsic —
+     * `TriggerDetector.detectUntapBatchTriggers` fires it only for the active player's untap-step
+     * untaps (not instant-speed untaps, nor an opponent-turn Seedborn Muse untap of your
+     * permanents) — so no `triggerCondition` is needed. (An untap-step untap advances straight to
+     * upkeep before any player gets priority, so an `IsInStep(UNTAP)` intervening-if would read
+     * false at detection time; the restriction lives in the detector instead.)
+     */
+    fun OneOrMoreBecomeUntapped(filter: GameObjectFilter): TriggerSpec =
+        TriggerSpec(event = UntapEvent(filter = filter, batch = true), binding = TriggerBinding.ANY)
 
     /**
      * Whenever any player taps a land for mana. (ANY binding.)

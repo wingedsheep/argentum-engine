@@ -541,6 +541,26 @@ data class ChosenModesEverComponent(
 }
 
 /**
+ * Tracks which modes of a modal effect this permanent has already chosen **this turn**, for
+ * "choose one that hasn't been chosen this turn" effects (e.g., Breeches, Eager Pillager).
+ * Keyed by the original mode index in the source's
+ * [com.wingedsheep.sdk.scripting.effects.ModalEffect].
+ *
+ * The turn-scoped sibling of [ChosenModesEverComponent]: cleared at end of turn by
+ * CleanupPhaseManager, so every mode becomes available again next turn. Keyed to the source
+ * object, so two copies of the same source track their chosen modes independently (CR 700.4).
+ */
+@Serializable
+data class ChosenModesThisTurnComponent(
+    val modeIndices: Set<Int> = emptySet()
+) : Component {
+    fun withChosen(modeIndex: Int): ChosenModesThisTurnComponent =
+        copy(modeIndices = modeIndices + modeIndex)
+
+    fun hasChosen(modeIndex: Int): Boolean = modeIndex in modeIndices
+}
+
+/**
  * Tracks which triggered abilities have fired this turn for "once each turn" restrictions.
  * Used for cards like Scavenger's Talent: "This ability triggers only once each turn."
  * Cleared at end of turn by CleanupPhaseManager.
