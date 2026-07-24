@@ -38,6 +38,7 @@ export function OpponentBoardArea({
   hijackedSurfaceStyle,
   isAlly = false,
   allyColor,
+  bottomHalf = false,
 }: {
   opponent: ClientPlayer
   layout: 'grid' | 'strip'
@@ -88,6 +89,12 @@ export function OpponentBoardArea({
   isAlly?: boolean
   /** Team color for the ally marker (the viewing player's team hue). */
   allyColor?: string
+  /**
+   * This cell sits on the *bottom* half of a two-row "show table" layout, so its battlefield is
+   * oriented like a player's own board — lands toward the bottom edge, creatures toward the center —
+   * instead of the opponent orientation. The name plate still pins to the top of the cell.
+   */
+  bottomHalf?: boolean
 }) {
   const revealedTopCard = useRevealedLibraryTopCard(opponent.playerId)
   const ghostCards = useMemo(
@@ -151,8 +158,10 @@ export function OpponentBoardArea({
             ...(isHijacking ? hijackedSurfaceStyle : null),
           }}
         >
-          {/* Opponent battlefield - lands first (closer to opponent), then creatures */}
-          <Battlefield isOpponent playerId={opponent.playerId} spectatorMode={spectatorMode} />
+          {/* Opponent battlefield — lands first (closer to opponent), then creatures. On the
+              bottom half of a two-row layout, flip to the player orientation so lands sit toward
+              the bottom edge. */}
+          <Battlefield isOpponent={!bottomHalf} playerId={opponent.playerId} spectatorMode={spectatorMode} />
         </div>
 
         {/* Opponent deck/graveyard (right side) */}
