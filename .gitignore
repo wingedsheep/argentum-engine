@@ -186,10 +186,10 @@ gradle-app.setting
 # Claude Code per-agent git worktrees (transient — never commit)
 .claude/worktrees/
 
-# backlog-loop run ledgers (per-run scratch state — never commit)
+# Agent-loop run state (per-run scratch — never commit)
 .claude/loop-runs/
 
-# backlog-loop per-unit handoff notes, written in the unit's worktree (never commit)
+# Agent-loop per-unit scratch notes, written in the unit's worktree (never commit)
 LOOP_UNIT.md
 review.md
 

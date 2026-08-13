@@ -22,8 +22,9 @@ docs it points at; load those when the work needs them.
   - Any engine/SDK/server/client capability that isn't a single card — effect, trigger, condition,
     keyword, decision flow → **`add-feature`** (composition-first design, cross-layer tracing, perf + UX).
   - Running the build/test gates and reading the results → **`verify`**.
-  - Working autonomously through a whole set or backlog, one PR per unit → **`backlog-loop`** (queue +
-    one background worker at a time; the orchestrator never implements or builds).
+  - Working autonomously through a whole set, one PR at a time, until it's done → **`set-loop`** (launches
+    the harness's own loop — Claude Code `/loop`, Codex `/goal`; every PR it opens is titled
+    `[agent-loop: <model-id>]`).
 - **Verify MTG rule numbers before citing them** in code, comments, commit messages, PR bodies, or chat.
   613.8 vs 613.7 and 704.5 vs 704.6 are easy to swap. Check the official Comprehensive Rules
   <https://magic.wizards.com/en/rules> — the plain-text `.txt` is too large to fetch into context, so

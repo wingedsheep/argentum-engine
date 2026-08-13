@@ -2191,6 +2191,10 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
   - `ForEachPlayerEffect(players, effects)` → `IterationSpace.Players(players)` — per matching
     player; `controllerId` rebound so `Player.You` is the current player, `opponentId` recomputed,
     fresh `storedCollections` (Winds of Change, Bend or Break, One Ring to Rule Them All).
+    Relational single-player references such as `Player.ControllerOf("target creature")` iterate
+    exactly that player, using last-known controller information if the permanent has left. If the
+    reference is undefined (for example, an optional target was not chosen), the loop is a no-op;
+    it never widens to every active player.
   - `ForEachInCollectionEffect(collection, effect)` → `IterationSpace.Collection(name)` — per
     entity of a named pipeline collection; `pipeline.iterationTarget` bound so `EffectTarget.Self`
     is the current entity; outer collections preserved (Fight or Flight).
