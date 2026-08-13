@@ -8062,6 +8062,109 @@
     ]
 }
 
+// My Precious
+{
+    "name": "My Precious",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature has hexproof and can't be blocked.\nEquip—{2}, Pay 2 life.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "target creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true,
+                "descriptionOverride": "Equip—{2}, Pay 2 life."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF"
+            },
+            {
+                "type": "CantBeBlocked",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "RARE",
+        "artist": "Valera Lutfullina",
+        "flavorText": "\"It won't see us, will it, my precious?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15ae4d50-be2f-412c-bb6b-b0a06b60474a.jpg?1783902783"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "ADVENTURE",
+    "cardFaces": [
+        {
+            "name": "Allure of Power",
+            "manaCost": "{1}{B}",
+            "typeLine": "Instant — Adventure",
+            "oracleText": "As an additional cost to cast this spell, sacrifice a creature.\nDraw two cards.",
+            "script": {
+                "spellEffect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "additionalCosts": [
+                    {
+                        "type": "AdditionalAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "creature"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}
+
 // Nasty Little Rabbit
 {
     "name": "Nasty Little Rabbit",
@@ -9481,6 +9584,109 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Riddles in the Dark
+{
+    "name": "Riddles in the Dark",
+    "manaCost": "{2}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Look at the top four cards of your library and separate them into a face-down pile and a face-up pile. An opponent chooses one of the piles. Put that pile into your hand and the other into your graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "looked",
+                    "ifNotEmpty": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "looked",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "faceUp",
+                                "storeRemainder": "faceDown",
+                                "prompt": "Separate the top four cards into a face-up pile and a face-down pile. The cards you select are placed face up; the rest stay face down.",
+                                "selectedLabel": "Face-up pile",
+                                "remainderLabel": "Face-down pile",
+                                "showAllCards": true,
+                                "alwaysPrompt": true
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromVariable",
+                                    "variableName": "faceUp"
+                                },
+                                "storeAs": "faceUpRevealed",
+                                "revealed": true
+                            },
+                            {
+                                "type": "ChoosePile",
+                                "pileA": "faceUpRevealed",
+                                "pileB": "faceDown",
+                                "pileALabel": "Face-up pile",
+                                "pileBLabel": "Face-down pile",
+                                "chooser": "Opponent",
+                                "storeChosenAs": "chosenPile4",
+                                "storeOtherAs": "otherPile4",
+                                "prompt": "Choose a pile. That pile goes to your opponent's hand; the other goes to their graveyard."
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "chosenPile4",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "otherPile4",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "RARE",
+        "artist": "Lorenzo Mastroianni",
+        "flavorText": "\"What have I got in my pocket?\"\n—Bilbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6129286-7437-4ba4-be55-586a22cd67ca.jpg?1783902787",
+        "rulings": [
+            {
+                "date": "2026-06-29",
+                "text": "You may split the cards into one pile of four and one pile of zero. Either pile may be the face-up pile."
+            },
+            {
+                "date": "2026-06-29",
+                "text": "You don't have to reveal the cards in the face-down pile if you put it into your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
