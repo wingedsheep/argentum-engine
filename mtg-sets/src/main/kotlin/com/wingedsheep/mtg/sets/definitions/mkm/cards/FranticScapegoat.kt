@@ -30,7 +30,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *
  * Three details the wording pins down, and how each is modelled:
  *
- * - **"one or more other creatures you control enter"** is a batching trigger (CR 603.3b): a mass
+ * - **"one or more other creatures you control enter"** is a batching trigger (CR 603.6a): a mass
  *   reanimation that returns four creatures fires this once, not four times.
  *   [Triggers.OneOrMorePermanentsEnter] with `excludeSource = true` is exactly that shape — the
  *   filter's default controller scope is "you control", and `excludeSource` realises "other" so the

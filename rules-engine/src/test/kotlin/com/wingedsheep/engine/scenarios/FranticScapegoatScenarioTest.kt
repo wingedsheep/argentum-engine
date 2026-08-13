@@ -26,7 +26,10 @@ import io.kotest.matchers.shouldNotBe
  *     is the exact thing "If you do" forbids;
  *  3. once the suspicion has been handed off, the intervening-if (CR 603.4) must stop the ability
  *     going on the stack at all. Without it the Goat would keep prompting on every creature that
- *     enters for the rest of the game.
+ *     enters for the rest of the game;
+ *  4. the batch is scoped to creatures *you control*. A filter missing that scope passes all three
+ *     tests above — they only ever deploy creatures on one side — so the opponent case is tested
+ *     explicitly.
  */
 class FranticScapegoatScenarioTest : ScenarioTestBase() {
 
@@ -106,6 +109,42 @@ class FranticScapegoatScenarioTest : ScenarioTestBase() {
             withClue("and the Goat keeps its own suspicion") {
                 projected.isSuspected(goat) shouldBe true
                 projected.cantBlock(goat) shouldBe true
+            }
+        }
+
+        test("an opponent's creature entering is not 'a creature you control'") {
+            val game = scenario()
+                .withPlayers("Sleuth", "Opponent")
+                .withCardInHand(1, "Frantic Scapegoat")
+                .withCardInHand(2, "Goblin Guide")
+                .withLandsOnBattlefield(1, "Mountain", 4)
+                .withLandsOnBattlefield(2, "Mountain", 4)
+                .withCardInLibrary(1, "Mountain")
+                .withCardInLibrary(1, "Mountain")
+                .withCardInLibrary(2, "Mountain")
+                .withCardInLibrary(2, "Mountain")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            game.castSpell(1, "Frantic Scapegoat").error shouldBe null
+            game.resolveStack()
+            val goat = game.findPermanent("Frantic Scapegoat")!!
+            projector.project(game.state).isSuspected(goat) shouldBe true
+
+            // Hand the turn over so the opponent can deploy a creature of their own.
+            game.passUntilPhase(Phase.BEGINNING, Step.UPKEEP)
+            game.state.activePlayerId shouldBe game.player2Id
+            game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+
+            game.castSpell(2, "Goblin Guide").error shouldBe null
+            game.resolveStack()
+
+            withClue("the filter is scoped to creatures you control, so nothing triggers") {
+                game.getPendingDecision() shouldBe null
+            }
+            withClue("and the Goat is left holding the suspicion") {
+                projector.project(game.state).isSuspected(goat) shouldBe true
             }
         }
 
