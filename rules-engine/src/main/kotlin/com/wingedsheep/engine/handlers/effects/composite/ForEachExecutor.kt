@@ -212,13 +212,12 @@ class ForEachExecutor(
             Player.TargetOpponent, Player.TargetPlayer -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )
-            // Single-player references (e.g. ControllerOf a targeted spell — Fear of Impostors'
-            // "its controller manifests dread") resolve to exactly that player. Fall back to all
-            // active players only when the reference yields nothing (a truly multi-player or
-            // unresolved ref).
-            else -> TargetResolutionUtils.resolvePlayerRef(player, context, state)
-                ?.let { listOf(it) }
-                ?: state.activePlayers
+            // Single-player references (e.g. ControllerOf a targeted permanent — Unwanted
+            // Remake's "its controller manifests dread") resolve to exactly that player. An
+            // unresolved reference means there is nobody to iterate, not "every player": that
+            // distinction is load-bearing for optional-target abilities whose "its controller"
+            // rider must do nothing when no target was chosen.
+            else -> listOfNotNull(TargetResolutionUtils.resolvePlayerRef(player, context, state))
         }
     }
 
