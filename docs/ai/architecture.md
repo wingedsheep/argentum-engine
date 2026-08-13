@@ -57,6 +57,7 @@ AIPlayer.chooseAction(state)
  └─ Strategist.chooseAction
      ├─ combat declaration?  → CombatAdvisor (seed from CombatSeed, then local search)
      ├─ candidates           ← MeaningfulActionFilter.filterMeaningful                    (Phase 4a)
+     │   └─ one candidate per plausible {X}  ← XCostSelection
      ├─ budget               ← BudgetPolicy.budgetFor(state, player, candidates)          (Phase 4b)
      ├─ pass 1: simulate each candidate (and the pass) to its quiet state
      │           └─ drop leaves that repeat a position we already acted from  ← StateProgress
@@ -70,6 +71,58 @@ The three passes are the shape Phase 7 needed. The evaluator sees **every** cand
 is what lets it *allocate* effort rather than spend a fixed amount per candidate — sequential
 halving is impossible with a one-candidate-at-a-time API. For `StaticCandidateEvaluator` the batch
 is `map(::score)`, so `LEGACY_V0` is bit-identical; `FrozenBaselineTest` is what proves it.
+
+---
+
+## Choosing `{X}` (`XCostSelection`)
+
+X is announced as part of casting (CR 601.2b), so the enumerator — which runs *before* the cast —
+cannot pick it. It hands over `maxAffordableX`, `minX`, and a deliberately permissive
+`validTargets`, and leaves the choice to whoever is casting. A human makes it in the client's
+X-selection phase; the AI makes it here, by expanding the action into one candidate per X worth
+simulating and letting the ordinary scoring passes decide.
+
+Not doing this is not a mild inefficiency. An `ActivateAbility` with no `xValue` at least reaches
+the engine's own choose-X pause, but a `CastSpell` has no such pause: X binds to 0 as the spell goes
+on the stack, so an unexpanded Mind Spring draws nothing and an unexpanded Day of Black Sun destroys
+nothing. Every X spell in a deck is dead weight until it is expanded.
+
+Which values are worth a simulation depends on whether X gates the targets:
+
+- **X gates target legality** ("mana value X or less", "mana value X", "power X" — Blue Sun's
+  Twilight, Repeal, Spell Blast, Ent-Draught Basin): the candidates are the values that make some
+  currently-legal target legal, biggest first. Sweeping the affordable range would mostly produce X
+  values nothing matches. For the "or less" form the candidate is the target's own mana value — a
+  larger X hits the same permanent for more mana, so it is dominated.
+- **X is free of the targets** (Fireball, Genesis Wave, "up to X target creatures"): more X is more
+  effect, so the top `MAX_X_CANDIDATES` affordable values are the interesting ones. X=0 is never a
+  candidate — it is the enumerator's own default.
+
+This reads four `xConstrains*` flags off the enumerated action, so a gate the enumerator does not
+surface is a gate that silently does not exist: an action missing its flag falls into the sweep and
+casts for the wrong X. `CastSpellEnumerator` and `CastFromZoneEnumerator` populate all four for the
+same reason `ActivatedAbilityEnumerator` does — the client's X-selection phase reads exactly the
+same flags.
+
+Each candidate then carries a target list **narrowed to that X**, mirroring `applyXFilters` /
+`resolveMaxByX` in the client's `pipelinePhases.ts`. The enumerator is permissive on purpose and
+whoever binds X owes the narrowing; without it the AI would pick a target the server then rejects.
+Mana values come out of the projection, not the printed cost — a face-down permanent has none
+(CR 708.2a), which is what the engine's own filter applies. An X that empties a mandatory target
+slot is dropped rather than offered, and an action with no legal X at all is dropped entirely —
+submitting the bare action would cast it at X=0. The `MAX_X_CANDIDATES` cap is applied to what
+survives narrowing, so an uncastable value costs a filter rather than a simulation slot.
+
+Two callers cannot afford the simulation and take a single X instead: the Strategist's
+one-legal-action shortcut binds the best-looking candidate (`bindBestX`), and `PlayoutPolicy`
+*samples* one (`sampleX`) — a playout that always picked the largest affordable X would make all R
+playouts of that line identical, which is the one thing a rollout policy may not do.
+
+Two shapes keep their own rule. A **targeted activated ability** is never pre-bound: submitted bare
+it reaches the engine's choose-X pause, which `DecisionResponder` answers by simulating each value.
+The **Momir avatar** keeps its own candidate rule (`Strategist.momirXCandidates`): its X is a
+format-strategy question — skip the weak early activations, then aim at the 8-drop band — not a
+"more is better" sweep.
 
 ---
 

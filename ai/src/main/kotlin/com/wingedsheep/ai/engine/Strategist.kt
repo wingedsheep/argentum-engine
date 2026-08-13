@@ -165,7 +165,18 @@ class Strategist(
         }
 
         if (legalActions.size == 1) {
-            val only = legalActions.first()
+            // Nothing to compare against, so no candidate expansion — but X still has to be chosen,
+            // or this shortcut would submit the one available action at the enumerator's X=0.
+            // Which shapes get an X bound is [expandXCostAbilities]' decision, not a second one:
+            // a targeted activated ability is left alone here for the same reason it is there, so
+            // that the engine's own choose-X pause (which DecisionResponder answers by simulation)
+            // keeps handling it.
+            val single = legalActions.first()
+            val only = if (bindsXWithoutTheEnginesHelp(single)) {
+                XCostSelection.bindBestX(state, single)
+            } else {
+                single
+            }
             return only.copy(action = chooseCommittedTargets(state, only, playerId))
         }
 
@@ -934,15 +945,24 @@ class Strategist(
     }
 
     /**
-     * Expand an affordable, no-target X-cost activated ability into one candidate [LegalAction] per
-     * concrete X value, filling [ActivateAbility.xValue] and any "discard a card" cost, so the
-     * normal simulation-based scoring picks the best X. Submitting the enumerator's bare action runs
-     * it at the default `xValue = 0` — e.g. the Momir avatar would only ever look for a mana-value-0
-     * creature and make nothing, so the AI would always pass it over. Higher X usually yields a
-     * bigger creature, so when many X are affordable we keep the top [MAX_X_CANDIDATES] and let
-     * simulation choose among them. Targeted X abilities keep the engine's choose-X decision path
-     * (they also need target selection) and pass through untouched, as do abilities with an
-     * additional cost we don't know how to pay here.
+     * Expand an affordable X-cost action into one candidate [LegalAction] per concrete X value, so
+     * the normal simulation-based scoring picks the best X instead of defaulting it away.
+     *
+     * Both halves matter, for different reasons:
+     *
+     * - **Activated abilities.** Submitting the enumerator's bare action runs it at `xValue = 0` —
+     *   the Momir avatar would only ever look for a mana-value-0 creature and make nothing, so the
+     *   AI would always pass it over. Only no-target abilities are expanded here; a targeted one
+     *   keeps the engine's own choose-X decision path (see [bindsXWithoutTheEnginesHelp]). With no
+     *   targets there is nothing to narrow, so the X values *are* the candidates, capped directly.
+     * - **Spells.** There is no such decision path on the cast side: `CastSpell.xValue` left null is
+     *   bound to 0 as the spell goes on the stack (CR 601.2b), so an un-expanded Day of Black Sun or
+     *   Genesis Wave is cast for X=0 and does nothing. Targeted spells are expanded too, with their
+     *   target lists narrowed to the chosen X — see [XCostSelection], which owns both the choice of
+     *   which X values are worth a simulation and the narrowing that keeps the resulting action
+     *   legal.
+     *
+     * An action with an additional cost we don't know how to pay passes through untouched.
      */
     private fun expandXCostAbilities(
         state: GameState,
@@ -953,25 +973,45 @@ class Strategist(
         val maxX = action.maxAffordableX
         val info = action.additionalCostInfo
         val payableCost = info == null || info.costType == "DiscardCard"
-        if (!action.hasXCost || maxX == null || maxX < 1 ||
-            base !is ActivateAbility || action.requiresTargets || !payableCost
-        ) {
+        if (!action.hasXCost || maxX == null || maxX < 1 || !payableCost) {
             return@flatMap listOf(action)
         }
-        val discard = chooseActivationDiscard(state, action, playerId)
-        if (info?.costType == "DiscardCard" && info.discardCount > 0 && discard == null) {
-            return@flatMap emptyList()
-        }
-        val xCandidates = if (isMomirAvatarActivation(state, action)) {
-            momirXCandidates(state, maxX, playerId)
-        } else {
-            val lowest = maxOf(1, maxX - MAX_X_CANDIDATES + 1)
-            (lowest..maxX).toList()
-        }
-        xCandidates.map { x ->
-            action.copy(action = base.copy(xValue = x, costPayment = discard ?: base.costPayment))
+        if (!bindsXWithoutTheEnginesHelp(action)) return@flatMap listOf(action)
+        when (base) {
+            is ActivateAbility -> {
+                val discard = chooseActivationDiscard(state, action, playerId)
+                if (info?.costType == "DiscardCard" && info.discardCount > 0 && discard == null) {
+                    return@flatMap emptyList()
+                }
+                // A no-target ability has nothing to narrow, so the X values are all there is.
+                val xCandidates = if (isMomirAvatarActivation(state, action)) {
+                    momirXCandidates(state, maxX, playerId)
+                } else {
+                    XCostSelection.candidateXValues(state, action).take(XCostSelection.MAX_X_CANDIDATES)
+                }
+                xCandidates.map { x ->
+                    action.copy(action = base.copy(xValue = x, costPayment = discard ?: base.costPayment))
+                }
+            }
+            // An empty expansion means the spell is uncastable to any purpose right now (every
+            // affordable X leaves a mandatory target slot empty). Dropping it beats offering the
+            // bare action, which would be submitted at X=0 and fizzle.
+            is CastSpell -> XCostSelection.expandToX(state, action)
+            else -> listOf(action)
         }
     }
+
+    /**
+     * Whether the AI has to choose this action's X itself.
+     *
+     * A targeted activated ability is the one shape that must *not* be pre-bound: submitted bare it
+     * reaches the engine's own choose-X pause, which [DecisionResponder] answers by simulating each
+     * value — strictly better than anything decided here, and it has to pick targets in the same
+     * breath anyway. Everything else defaults to `xValue = 0` if the AI stays quiet
+     * (`CastSpell.xValue ?: 0`), so staying quiet is not an option.
+     */
+    private fun bindsXWithoutTheEnginesHelp(action: LegalAction): Boolean =
+        !(action.action is ActivateAbility && action.requiresTargets)
 
     /**
      * Momir Basic strategy is mostly resource management: skip the smallest early activations so
@@ -1027,9 +1067,6 @@ class Strategist(
     }
 
     private companion object {
-        /** Cap on the number of X values an X-cost ability is expanded into (keeps the highest). */
-        const val MAX_X_CANDIDATES = 5
-
         /** How many acted-from positions [remember] keeps. See it for why a short memory suffices. */
         const val POSITION_MEMORY = 32
 

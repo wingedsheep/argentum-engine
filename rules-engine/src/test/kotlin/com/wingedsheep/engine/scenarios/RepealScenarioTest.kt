@@ -45,6 +45,25 @@ class RepealScenarioTest : FunSpec({
         driver.findCardInHand(player, "Forest Walker") shouldNotBe null
     }
 
+    test("the enumerated cast advertises that X constrains target mana value exactly") {
+        val driver = setup()
+        val player = driver.activePlayer!!
+
+        driver.putCreatureOnBattlefield(player, "Forest Walker")
+        driver.putCardInHand(player, "Repeal")
+        driver.giveMana(player, Color.BLUE, 1)
+        driver.giveColorlessMana(player, 2)
+
+        val cast = driver.legalActions(player).find { it.description == "Cast Repeal" }
+        cast shouldNotBe null
+        // X is unbound at enumeration, so validTargets is permissive and whoever binds X owes the
+        // narrowing — the client in its X-selection phase, XCostSelection for the AI. Neither can
+        // do it without this flag: "mana value X" is an equality, not the "or less" the plain
+        // xConstrainsTargetManaValue means.
+        cast!!.xConstrainsTargetManaValueExactly shouldBe true
+        cast.xConstrainsTargetManaValue shouldBe false
+    }
+
     test("Repeal with X=2 cannot target a mana value 3 permanent") {
         val driver = setup()
         val player = driver.activePlayer!!
