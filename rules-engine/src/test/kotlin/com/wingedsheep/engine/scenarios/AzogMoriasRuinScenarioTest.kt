@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Phase
@@ -101,6 +102,38 @@ class AzogMoriasRuinScenarioTest : ScenarioTestBase() {
                 army shouldBe (army ?: error("Azog's controller did not create a Goblin Army"))
                 game.plusOneCounters(army) shouldBe 2
                 game.handSize(1) shouldBe 1
+            }
+
+            test("uses projected control and preserves that controller through destruction") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "Threaten")
+                    .withCardInHand(1, "Azog, Moria's Ruin")
+                    .withLandsOnBattlefield(1, "Swamp", 3)
+                    .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withCardOnBattlefield(2, "Grizzly Bears")
+                    .withCardInLibrary(1, "Island")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val target = game.findPermanent("Grizzly Bears")!!
+
+                game.castSpell(1, "Threaten", target).error shouldBe null
+                game.resolveStack()
+                withClue("Threaten changes projected control without rewriting base ownership/control") {
+                    game.state.projectedState.getController(target) shouldBe game.player1Id
+                    game.state.getEntity(target)?.get<ControllerComponent>()?.playerId shouldBe game.player2Id
+                }
+
+                game.castAzog(target)
+
+                game.isInGraveyard(2, "Grizzly Bears") shouldBe true
+                val army = game.goblinArmyControlledBy(game.player1Id)
+                army shouldBe (army ?: error("the stolen creature's last-known controller did not amass"))
+                game.plusOneCounters(army) shouldBe 2
+                game.goblinArmyControlledBy(game.player2Id) shouldBe null
+                game.handSize(1) shouldBe 1
+                game.handSize(2) shouldBe 0
             }
 
             test("choosing no target destroys nothing, amasses nothing, and draws nothing") {
