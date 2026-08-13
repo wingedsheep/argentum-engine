@@ -9961,6 +9961,177 @@
     ]
 }
 
+// Roads Go Ever, Ever On
+{
+    "name": "Roads Go Ever, Ever On",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Saga",
+    "oracleText": "(As this Saga enters and after your draw step, add a lore counter. Sacrifice after IV.)\nI — Search your library for up to two basic Plains cards, exile them, then shuffle. You gain 2 life.\nII, III — Put a card exiled with this Saga into its owner's hand.\nIV — Whenever you attack this turn, target creature you control gets +1/+1 until end of turn for each Plains you control.",
+    "script": {
+        "sagaChapters": [
+            {
+                "chapter": 1,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "basicland Plains"
+                            },
+                            "storeAs": "roadsSearchable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "roadsSearchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "roadsExiled",
+                            "prompt": "Search your library for up to two basic Plains cards"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "roadsExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        },
+                        "ShuffleLibrary",
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 2,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "roadsLinked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "roadsLinked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "roadsReturned",
+                            "prompt": "Choose a card exiled with Roads Go Ever, Ever On to put into its owner's hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "roadsReturned",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "unlinkFromSource": true
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 3,
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "roadsLinked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "roadsLinked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "roadsReturned",
+                            "prompt": "Choose a card exiled with Roads Go Ever, Ever On to put into its owner's hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "roadsReturned",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "unlinkFromSource": true
+                        }
+                    ]
+                }
+            },
+            {
+                "chapter": 4,
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land Plains"
+                        },
+                        "toughnessModifier": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land Plains"
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    },
+                    "trigger": {
+                        "event": "YouAttackEvent",
+                        "binding": "ANY"
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "RARE",
+        "artist": "Rovina Cai",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3c1ebd6-967f-4b8c-8f1f-442ce8c1da24.jpg?1784673434"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Roll-Roll-Roll-Roll
 {
     "name": "Roll-Roll-Roll-Roll",
