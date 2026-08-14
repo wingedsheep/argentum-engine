@@ -257,47 +257,88 @@ class DamageTriggerDetector(
     ) {
         for (entry in index.damageObservers) {
             for (ability in entry.abilities) {
-                val trigger = ability.trigger
-                if (trigger is EventPattern.DealsDamageEvent && ability.binding == TriggerBinding.ANY) {
-                    // Batch ("one or more") observers fire once per event batch, not once per
-                    // damage event — handled by detectDamageObserverBatchTriggers.
-                    if (trigger.batch) continue
-                    if (matcher.matchesDealsDamageTrigger(trigger, event, state, entry.controllerId)) {
-                        // When the trigger has a sourceFilter (e.g., "creature you control deals
-                        // combat damage"), the triggering entity is the damage SOURCE (the creature),
-                        // not the damage recipient. This allows effects like "exile it" to reference
-                        // the creature that dealt damage.
-                        val context = if (trigger.sourceFilter != null && event.sourceId != null) {
-                            // The triggering entity is the damage SOURCE (e.g. "a source you
-                            // control deals damage… exile it"). Still carry the recipient creature's
-                            // toughness so "equal to that creature's toughness" payoffs (Taii Wakeen)
-                            // can read it via ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS. When the
-                            // recipient is a player, also carry it as the triggering player so
-                            // "…to a player, [that player] …" payoffs (Fear of Burning Alive's
-                            // "target creature that player controls") resolve Player.TriggeringPlayer
-                            // to the damaged player rather than the source.
-                            TriggerContext(
-                                triggeringEntityId = event.sourceId,
-                                triggeringPlayerId = event.targetId.takeIf { it in state.turnOrder },
-                                damageAmount = event.amount,
-                                recipientToughnessAtDamage = event.targetToughnessAtDamage
-                            )
-                        } else {
-                            TriggerContext.fromEvent(event)
-                        }
-                        triggers.add(
-                            PendingTrigger(
-                                ability = ability,
-                                sourceId = entry.entityId,
-                                sourceName = entry.cardComponent.name,
-                                controllerId = entry.controllerId,
-                                triggerContext = context
-                            )
-                        )
-                    }
-                }
+                matchDamageObserver(
+                    state = state,
+                    event = event,
+                    triggers = triggers,
+                    ability = ability,
+                    sourceId = entry.entityId,
+                    sourceName = entry.cardComponent.name,
+                    controllerId = entry.controllerId
+                )
             }
         }
+
+        // Global granted abilities are attached to no permanent, so they are absent from every
+        // battlefield index — and the generic TriggerMatcher deliberately returns false for
+        // DealsDamageEvent (all damage patterns route here). Without this pass a floating
+        // "whenever a creature you control deals combat damage to a player" ability (Mistway Spy's
+        // turned-face-up payoff) would never fire. They are few and only live for their duration,
+        // so the extra walk costs nothing on a board without one.
+        for (global in state.globalGrantedTriggeredAbilities) {
+            matchDamageObserver(
+                state = state,
+                event = event,
+                triggers = triggers,
+                ability = global.ability,
+                sourceId = global.sourceId,
+                sourceName = global.sourceName,
+                controllerId = global.controllerId
+            )
+        }
+    }
+
+    /**
+     * Match one ANY-bound [EventPattern.DealsDamageEvent] observer against [event] and queue it.
+     * Shared by the indexed battlefield observers and the global granted abilities, which differ
+     * only in where their identity comes from.
+     */
+    private fun matchDamageObserver(
+        state: GameState,
+        event: DamageDealtEvent,
+        triggers: MutableList<PendingTrigger>,
+        ability: com.wingedsheep.sdk.scripting.TriggeredAbility,
+        sourceId: com.wingedsheep.sdk.model.EntityId,
+        sourceName: String,
+        controllerId: com.wingedsheep.sdk.model.EntityId
+    ) {
+        val trigger = ability.trigger
+        if (trigger !is EventPattern.DealsDamageEvent || ability.binding != TriggerBinding.ANY) return
+        // Batch ("one or more") observers fire once per event batch, not once per
+        // damage event — handled by detectDamageObserverBatchTriggers.
+        if (trigger.batch) return
+        if (!matcher.matchesDealsDamageTrigger(trigger, event, state, controllerId)) return
+        // When the trigger has a sourceFilter (e.g., "creature you control deals
+        // combat damage"), the triggering entity is the damage SOURCE (the creature),
+        // not the damage recipient. This allows effects like "exile it" to reference
+        // the creature that dealt damage.
+        val context = if (trigger.sourceFilter != null && event.sourceId != null) {
+            // The triggering entity is the damage SOURCE (e.g. "a source you
+            // control deals damage… exile it"). Still carry the recipient creature's
+            // toughness so "equal to that creature's toughness" payoffs (Taii Wakeen)
+            // can read it via ContextPropertyKey.TRIGGER_RECIPIENT_TOUGHNESS. When the
+            // recipient is a player, also carry it as the triggering player so
+            // "…to a player, [that player] …" payoffs (Fear of Burning Alive's
+            // "target creature that player controls") resolve Player.TriggeringPlayer
+            // to the damaged player rather than the source.
+            TriggerContext(
+                triggeringEntityId = event.sourceId,
+                triggeringPlayerId = event.targetId.takeIf { it in state.turnOrder },
+                damageAmount = event.amount,
+                recipientToughnessAtDamage = event.targetToughnessAtDamage
+            )
+        } else {
+            TriggerContext.fromEvent(event)
+        }
+        triggers.add(
+            PendingTrigger(
+                ability = ability,
+                sourceId = sourceId,
+                sourceName = sourceName,
+                controllerId = controllerId,
+                triggerContext = context
+            )
+        )
     }
 
     /**

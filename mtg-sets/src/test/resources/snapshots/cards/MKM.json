@@ -1667,6 +1667,108 @@
     ]
 }
 
+// Clandestine Meddler
+{
+    "name": "Clandestine Meddler",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Vampire Rogue",
+    "oracleText": "When this creature enters, suspect up to one other target creature you control. (A suspected creature has menace and can't block.)\nWhenever one or more suspected creatures you control attack, surveil 1. (Look at the top card of your library. You may put it into your graveyard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "SetSuspected",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one other target creature you control"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "MENACE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one other target creature you control"
+                            },
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one other target creature you control"
+                            },
+                            "duration": "Permanent"
+                        }
+                    ],
+                    "descriptionOverride": "target becomes suspected"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature ctrl:you",
+                        "excludeSelf": true
+                    },
+                    "id": "up to one other target creature you control"
+                },
+                "descriptionOverride": "When this creature enters, suspect up to one other target creature you control."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "YouAttackEvent",
+                    "attackerFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsSuspected"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                },
+                "descriptionOverride": "Whenever one or more suspected creatures you control attack, surveil 1."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "UNCOMMON",
+        "artist": "Jodie Muir",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e069de0-3218-456c-b191-93e755634783.jpg?1783912902",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "When an effect suspects a creature, it becomes suspected. It gains menace and \"This creature can't block\" for as long as it's suspected. It stays suspected until it leaves the battlefield or another effect causes it to no longer be suspected."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Clandestine Meddler's last ability triggers only once each combat, no matter how many suspected creatures you attack with."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Cold Case Cracker
 {
     "name": "Cold Case Cracker",
@@ -2407,6 +2509,111 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Deadly Complication
+{
+    "name": "Deadly Complication",
+    "manaCost": "{1}{B}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one or both —\n• Destroy target creature.\n• Put a +1/+1 counter on target suspected creature you control. You may have it become no longer suspected.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target creature"
+                        }
+                    ],
+                    "description": "Destroy target creature"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "+1/+1",
+                                "count": 1,
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target suspected creature you control"
+                                }
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "RemoveSuspected",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "target suspected creature you control"
+                                    }
+                                },
+                                "descriptionOverride": "Have it become no longer suspected?"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "IsSuspected"
+                                    ],
+                                    "controllerPredicate": "ControlledByYou"
+                                }
+                            },
+                            "id": "target suspected creature you control"
+                        }
+                    ],
+                    "description": "Put a +1/+1 counter on target suspected creature you control"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "195",
+        "rarity": "UNCOMMON",
+        "artist": "Jodie Muir",
+        "flavorText": "Teysa's security was unrivaled. Etrata was locked up. Kaya was left with nothing but multiplying questions... and a dead friend.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c68981c-037c-42e7-9b7f-6f07edab5f2e.jpg?1783912852",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "You choose modes as you cast Deadly Complication. You must choose at least one mode, and you may choose both. You choose targets for each mode you chose."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "When an effect suspects a creature, it becomes suspected. It gains menace and \"This creature can't block\" for as long as it's suspected. It stays suspected until it leaves the battlefield or another effect causes it to no longer be suspected."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -6296,6 +6503,98 @@
     ]
 }
 
+// Lost in the Maze
+{
+    "name": "Lost in the Maze",
+    "manaCost": "{X}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "Flash\nWhen this enchantment enters, tap X target creatures. Put a stun counter on each of those creatures you don't control. (If a permanent with a stun counter would become untapped, remove one from it instead.)\nTapped creatures you control have hexproof.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": "IterationSpace.Targets",
+                            "body": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": {
+                                        "type": "EntityMatches",
+                                        "entity": {
+                                            "type": "ContextTarget",
+                                            "index": 0
+                                        },
+                                        "filter": "creature ctrl:opponent"
+                                    }
+                                },
+                                "then": {
+                                    "type": "AddCounters",
+                                    "counterType": "stun",
+                                    "count": 1,
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "dynamicMaxCount": "CastX"
+                },
+                "descriptionOverride": "When this enchantment enters, tap X target creatures. Put a stun counter on each of those creatures you don't control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HEXPROOF",
+                "filter": {
+                    "baseFilter": "creature tapped ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "rarity": "RARE",
+        "artist": "Julian Kok Joon Wen",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/6308dc62-d945-4761-aa4c-ef8e9271e901.jpg?1783912909"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Loxodon Eavesdropper
 {
     "name": "Loxodon Eavesdropper",
@@ -6733,6 +7032,84 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "BLUE"
+    ]
+}
+
+// Mistway Spy
+{
+    "name": "Mistway Spy",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Merfolk Detective",
+    "oracleText": "Flying\nDisguise {1}{U} (You may cast this card face down for {3} as a 2/2 creature with ward {2}. Turn it face up any time for its disguise cost.)\nWhen this creature is turned face up, until end of turn, whenever a creature you control deals combat damage to a player, investigate.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disguise",
+            "disguiseCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{U}"
+                }
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "ability_2",
+                        "trigger": {
+                            "type": "DealsDamageEvent",
+                            "damageType": "DamageCombat",
+                            "recipient": "AnyPlayer",
+                            "sourceFilter": "creature ctrl:you"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Clue"
+                        }
+                    },
+                    "duration": "EndOfTurn",
+                    "descriptionOverride": "Whenever a creature you control deals combat damage to a player, investigate."
+                },
+                "descriptionOverride": "When this creature is turned face up, until end of turn, whenever a creature you control deals combat damage to a player, investigate."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Andrew Mar",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8578839-046f-4afd-a0e7-4737ded9e6eb.jpg?1783912908",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "Mistway Spy's last ability triggers on combat damage dealt by any creature you control, not just combat damage dealt by Mistway Spy."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Any time you have priority, you may turn the face-down creature face up by revealing what its disguise cost is and paying that cost. This is a special action. It doesn't use the stack and can't be responded to."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "The resulting creature is a 2/2 creature with ward {2} that has no name, mana cost, or creature types. Other effects that apply to the creature can still grant it any characteristics it doesn't have."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
         "BLUE"
     ]
 }

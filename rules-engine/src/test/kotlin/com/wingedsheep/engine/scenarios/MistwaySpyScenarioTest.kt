@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.mkm.cards.MistwaySpy
+import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck
@@ -39,7 +40,9 @@ class MistwaySpyScenarioTest : FunSpec({
 
     fun newDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all)
+        // GameTestDriver starts with an empty registry, so the Clue token has to be registered
+        // explicitly — an unregistered predefined token makes Investigate resolve to nothing.
+        driver.registerCards(TestCards.all + PredefinedTokens.allTokens)
         driver.registerCard(MistwaySpy)
         driver.initMirrorMatch(Deck.of("Island" to 40), skipMulligans = true, startingPlayer = 0)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -71,6 +74,27 @@ class MistwaySpyScenarioTest : FunSpec({
     fun clueCount(driver: GameTestDriver): Int =
         driver.getPermanents(driver.player1).count { driver.getCardName(it) == "Clue" }
 
+    /**
+     * Attack with [attackers] into an empty board and let combat damage resolve, draining whatever
+     * it puts on the stack.
+     *
+     * Every step boundary is explicit and every action's `error` is asserted: declaring blockers
+     * only becomes legal *after* passing out of declare-attackers, and an ignored
+     * "You can only declare blockers during the declare blockers step" is exactly the kind of
+     * rejection that turns a trigger test vacuous. An unblocked attacker needs no
+     * damage-assignment decision, so [confirmCombatDamage] only applies when one is pending.
+     */
+    fun GameTestDriver.attackAndResolveDamage(attackers: List<EntityId>) {
+        passPriorityUntil(Step.DECLARE_ATTACKERS)
+        declareAttackers(player1, attackers, player2).error shouldBe null
+        bothPass()
+        declareNoBlockers(player2).error shouldBe null
+        passPriorityUntil(Step.COMBAT_DAMAGE)
+        if (state.pendingDecision != null) confirmCombatDamage()
+        var guard = 0
+        while (state.stack.isNotEmpty() && state.pendingDecision == null && guard++ < 20) bothPass()
+    }
+
     /** Put a face-down Spy on the battlefield and turn it face up for its disguise cost. */
     fun unmaskedSpy(driver: GameTestDriver): EntityId {
         val spy = driver.putFaceDown(driver.player1, "Mistway Spy", FaceDownMode.DISGUISE)
@@ -96,10 +120,7 @@ class MistwaySpyScenarioTest : FunSpec({
         unmaskedSpy(driver)
         clueCount(driver) shouldBe 0
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-        driver.declareAttackers(driver.player1, listOf(bears), driver.player2)
-        driver.declareNoBlockers(driver.player2)
-        driver.confirmCombatDamage()
+        driver.attackAndResolveDamage(listOf(bears))
 
         withClue("the floating trigger watches every creature you control, not just the Spy") {
             clueCount(driver) shouldBe 1
@@ -114,10 +135,7 @@ class MistwaySpyScenarioTest : FunSpec({
 
         unmaskedSpy(driver)
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-        driver.declareAttackers(driver.player1, listOf(first, second), driver.player2)
-        driver.declareNoBlockers(driver.player2)
-        driver.confirmCombatDamage()
+        driver.attackAndResolveDamage(listOf(first, second))
 
         withClue("this is a repeating trigger, not a one-shot delayed trigger") {
             clueCount(driver) shouldBe 2
@@ -131,10 +149,7 @@ class MistwaySpyScenarioTest : FunSpec({
         // The Spy is on the battlefield but never turned face up.
         driver.putFaceDown(driver.player1, "Mistway Spy", FaceDownMode.DISGUISE)
 
-        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
-        driver.declareAttackers(driver.player1, listOf(bears), driver.player2)
-        driver.declareNoBlockers(driver.player2)
-        driver.confirmCombatDamage()
+        driver.attackAndResolveDamage(listOf(bears))
 
         withClue("face down it is a vanilla 2/2 with ward {2} — no trigger at all") {
             clueCount(driver) shouldBe 0

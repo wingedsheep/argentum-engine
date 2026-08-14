@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -14,6 +15,7 @@ import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 
 /**
  * Lost in the Maze — "Flash. When this enchantment enters, tap X target creatures. Put a stun counter
@@ -25,9 +27,15 @@ import io.kotest.matchers.shouldBe
  *  1. every chosen target gets tapped, but only the ones you *don't* control get a stun counter —
  *     an implementation that stunned all targets, or none, passes a single-target test either way,
  *     so the discriminating case targets one creature on each side at once;
- *  2. X clamps the number of targets, so X=2 must not permit a third;
+ *  2. X clamps the number of targets, so an X=2 cast must offer at most two target slots and reject
+ *     a third;
  *  3. the hexproof static is continuous over `tapped().youControl()`, not a snapshot — a creature
  *     that untaps loses it again.
+ *
+ * The targets belong to the *enters* trigger, not to the spell, so they are chosen from a
+ * [ChooseTargetsDecision] after the enchantment resolves rather than at cast time. That is also why
+ * the amount is [com.wingedsheep.sdk.scripting.values.DynamicAmount.CastX] and not `XValue` — by the
+ * time the trigger asks, the spell's resolution context is gone.
  */
 class LostInTheMazeScenarioTest : FunSpec({
 
@@ -44,17 +52,36 @@ class LostInTheMazeScenarioTest : FunSpec({
         driver.state.getEntity(entity)?.get<CountersComponent>()
             ?.getCount(CounterType.STUN) ?: 0
 
+    /**
+     * Drain the stack, stopping the moment it empties or something needs answering.
+     *
+     * Deliberately *not* a fixed number of passes: passing on an empty stack walks the turn
+     * forward, and the opponent's untap step spends the stun counter this test is asserting on
+     * (CR 701.22 — a permanent with a stun counter loses one instead of untapping).
+     */
+    fun GameTestDriver.resolveStack(maxPasses: Int = 8) {
+        var guard = 0
+        while (state.stack.isNotEmpty() && pendingDecision == null && guard++ < maxPasses) bothPass()
+    }
+
+    /** Cast the Maze for [xValue] and resolve it up to the enters trigger's target decision. */
+    fun GameTestDriver.castMaze(xValue: Int): ChooseTargetsDecision {
+        val maze = putCardInHand(player1, "Lost in the Maze")
+        giveMana(player1, Color.BLUE, xValue + 2)
+        castXSpell(player1, maze, xValue = xValue).error shouldBe null
+        resolveStack()
+        return pendingDecision as? ChooseTargetsDecision
+            ?: error("Expected a ChooseTargetsDecision for the enters trigger, got $pendingDecision")
+    }
+
     test("X=2 taps both targets but stuns only the one you don't control") {
         val driver = newDriver()
         val mine = driver.putCreatureOnBattlefield(driver.player1, "Grizzly Bears")
         val theirs = driver.putCreatureOnBattlefield(driver.player2, "Minotaur Warrior")
 
-        val maze = driver.putCardInHand(driver.player1, "Lost in the Maze")
-        driver.giveMana(driver.player1, Color.BLUE, 4)
-        driver.castXSpell(driver.player1, maze, xValue = 2, targets = listOf(mine, theirs))
-            .error shouldBe null
-        driver.bothPass() // resolve the enchantment; its enters trigger goes on the stack
-        driver.bothPass() // resolve the trigger
+        driver.castMaze(xValue = 2)
+        driver.submitTargetSelection(driver.player1, listOf(mine, theirs)).error shouldBe null
+        driver.resolveStack()
 
         withClue("'tap X target creatures' is not scoped by controller") {
             driver.isTapped(mine) shouldBe true
@@ -70,11 +97,9 @@ class LostInTheMazeScenarioTest : FunSpec({
         val driver = newDriver()
         val mine = driver.putCreatureOnBattlefield(driver.player1, "Grizzly Bears")
 
-        val maze = driver.putCardInHand(driver.player1, "Lost in the Maze")
-        driver.giveMana(driver.player1, Color.BLUE, 3)
-        driver.castXSpell(driver.player1, maze, xValue = 1, targets = listOf(mine)).error shouldBe null
-        driver.bothPass()
-        driver.bothPass()
+        driver.castMaze(xValue = 1)
+        driver.submitTargetSelection(driver.player1, listOf(mine)).error shouldBe null
+        driver.resolveStack()
 
         driver.isTapped(mine) shouldBe true
         withClue("the static grants hexproof to your tapped creatures") {
@@ -91,11 +116,9 @@ class LostInTheMazeScenarioTest : FunSpec({
         val driver = newDriver()
         val theirs = driver.putCreatureOnBattlefield(driver.player2, "Minotaur Warrior")
 
-        val maze = driver.putCardInHand(driver.player1, "Lost in the Maze")
-        driver.giveMana(driver.player1, Color.BLUE, 3)
-        driver.castXSpell(driver.player1, maze, xValue = 1, targets = listOf(theirs)).error shouldBe null
-        driver.bothPass()
-        driver.bothPass()
+        driver.castMaze(xValue = 1)
+        driver.submitTargetSelection(driver.player1, listOf(theirs)).error shouldBe null
+        driver.resolveStack()
 
         driver.isTapped(theirs) shouldBe true
         withClue("'you control' scopes the hexproof to the Maze's controller") {
@@ -103,18 +126,22 @@ class LostInTheMazeScenarioTest : FunSpec({
         }
     }
 
-    test("X clamps the target count — three targets on an X=2 cast is illegal") {
+    test("X clamps the target count — an X=2 cast offers two slots and rejects a third") {
         val driver = newDriver()
         val a = driver.putCreatureOnBattlefield(driver.player2, "Grizzly Bears")
         val b = driver.putCreatureOnBattlefield(driver.player2, "Grizzly Bears")
         val c = driver.putCreatureOnBattlefield(driver.player2, "Minotaur Warrior")
 
-        val maze = driver.putCardInHand(driver.player1, "Lost in the Maze")
-        driver.giveMana(driver.player1, Color.BLUE, 4)
-        val result = driver.castXSpell(driver.player1, maze, xValue = 2, targets = listOf(a, b, c))
+        val decision = driver.castMaze(xValue = 2)
 
-        withClue("dynamicMaxCount = XValue must reject a target beyond the X paid") {
-            result.isSuccess shouldBe false
+        withClue("dynamicMaxCount = CastX caps the requirement at the X actually paid") {
+            decision.targetRequirements.single().maxTargets shouldBe 2
+        }
+        withClue("'up to X' means a zero-target choice is legal too") {
+            decision.targetRequirements.single().minTargets shouldBe 0
+        }
+        withClue("submitting a third target beyond the X paid must be rejected") {
+            driver.submitTargetSelection(driver.player1, listOf(a, b, c)).error shouldNotBe null
         }
     }
 })
