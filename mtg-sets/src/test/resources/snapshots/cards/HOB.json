@@ -6601,6 +6601,78 @@
     "colorIdentityOverride": []
 }
 
+// Inside Information
+{
+    "name": "Inside Information",
+    "manaCost": "{X}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Exile the top X cards of target opponent's library. You may play those cards this turn. If you cast a spell this way, pay life equal to its mana value rather than pay its mana cost.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": "XValue",
+                        "player": "TargetOpponent"
+                    },
+                    "storeAs": "insideInformationExiled"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "insideInformationExiled",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": "TargetOpponent"
+                    }
+                },
+                {
+                    "type": "GrantMayPlayFromExile",
+                    "from": "insideInformationExiled"
+                },
+                {
+                    "type": "GrantPlayWithoutPayingCost",
+                    "from": "insideInformationExiled"
+                },
+                {
+                    "type": "GrantPlayWithAdditionalCost",
+                    "from": "insideInformationExiled",
+                    "additionalCost": "PayLifeEqualToManaValueOfSpell"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "target opponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "MYTHIC",
+        "artist": "Sean Vo",
+        "flavorText": "\"Old fool!\" Bilbo thought. \"Why, there is a large patch in the hollow of his left breast as bare as a snail out of its shell!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/9763bd56-fa4b-4907-ad15-c3f040c5fc0a.jpg?1785152426",
+        "rulings": [
+            {
+                "date": "2026-06-29",
+                "text": "If you cast a spell for another cost rather than pay its mana cost, you can't choose another alternative cost. You may still pay optional additional costs and must pay mandatory additional costs."
+            },
+            {
+                "date": "2026-06-29",
+                "text": "You must follow all normal timing rules when playing a land or casting a spell exiled with Inside Information."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Iron Hills
 {
     "name": "Iron Hills",

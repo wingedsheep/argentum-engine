@@ -31,6 +31,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.RoomFaceStatics
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
+import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtEndOfTurnComponent
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtNextEndStepComponent
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtYourNextTurnComponent
@@ -930,7 +931,7 @@ class CleanupPhaseManager(
             newState = newState.copy(globalGrantedTriggeredAbilities = remainingGrants)
         }
 
-        // 9. Expire non-permanent permissions and PlayWithoutPayingCostComponent (end of turn)
+        // 9. Expire non-permanent permissions and runtime cast-cost components (end of turn)
         // Skip permanent ones (used by "for as long as it remains exiled" effects)
         // For expiresAfterTurn: keep alive until that turn number's end step
         // Also clear ExileEntryTurnComponent so "exiled with [granter] this turn" effects
@@ -939,17 +940,19 @@ class CleanupPhaseManager(
         for ((entityId, container) in newState.entities) {
             val playFree = container.get<PlayWithoutPayingCostComponent>()
             val removePlayFree = playFree != null && !playFree.permanent
+            val removePlayAdditionalCost = container.get<PlayWithAdditionalCostComponent>() != null
             val removeLinkedExileUsed = container.get<MayCastFromLinkedExileUsedThisTurnComponent>() != null
             val removeFreeCastUsed = container.get<MayCastWithoutPayingCostUsedThisTurnComponent>() != null
             val removeGraveyardCastUsed = container.get<MayCastFromGraveyardUsedThisTurnComponent>() != null
             val removeTopLibraryCastUses = container.get<CastFromTopOfLibraryUsesThisTurnComponent>() != null
             val removeExileEntryTurn = container.get<ExileEntryTurnComponent>() != null
-            if (removePlayFree || removeLinkedExileUsed || removeFreeCastUsed || removeGraveyardCastUsed ||
-                removeTopLibraryCastUses || removeExileEntryTurn
+            if (removePlayFree || removePlayAdditionalCost || removeLinkedExileUsed || removeFreeCastUsed ||
+                removeGraveyardCastUsed || removeTopLibraryCastUses || removeExileEntryTurn
             ) {
                 newState = newState.updateEntity(entityId) { c ->
                     var updated = c
                     if (removePlayFree) updated = updated.without<PlayWithoutPayingCostComponent>()
+                    if (removePlayAdditionalCost) updated = updated.without<PlayWithAdditionalCostComponent>()
                     if (removeLinkedExileUsed) updated = updated.without<MayCastFromLinkedExileUsedThisTurnComponent>()
                     if (removeFreeCastUsed) updated = updated.without<MayCastWithoutPayingCostUsedThisTurnComponent>()
                     if (removeGraveyardCastUsed) updated = updated.without<MayCastFromGraveyardUsedThisTurnComponent>()

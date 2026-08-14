@@ -102,6 +102,7 @@ import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MakePlottedEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
+import com.wingedsheep.sdk.scripting.effects.GrantPlayWithAdditionalCostEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFreeCastTargetFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.FightEffect
 import com.wingedsheep.sdk.scripting.effects.ForceSacrificeEffect
@@ -1338,6 +1339,14 @@ object Effects {
      * Card must still be in a playable zone (hand, or exile with GrantMayPlayFromExile).
      */
     fun GrantPlayWithoutPayingCost(from: String): Effect = GrantPlayWithoutPayingCostEffect(from)
+
+    /**
+     * Require [additionalCost] when casting cards in a named collection. Compose with
+     * [GrantMayPlayFromExile] and [GrantPlayWithoutPayingCost] for "pay [cost] rather than pay
+     * its mana cost" permissions.
+     */
+    fun GrantPlayWithAdditionalCost(from: String, additionalCost: AdditionalCost): Effect =
+        GrantPlayWithAdditionalCostEffect(from, additionalCost)
 
     /**
      * Tax spells cast from a named collection — each card in [from] gets a
