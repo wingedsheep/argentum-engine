@@ -9,7 +9,6 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
 
 /**
  * Seraph Sanctuary
@@ -29,7 +28,7 @@ val SeraphSanctuary = card("Seraph Sanctuary") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = GainLifeEffect(1)
+        effect = Effects.GainLife(1)
     }
 
     triggeredAbility {
@@ -37,7 +36,7 @@ val SeraphSanctuary = card("Seraph Sanctuary") {
             filter = GameObjectFilter.Creature.withSubtype(Subtype.ANGEL).youControl(),
             binding = TriggerBinding.ANY,
         )
-        effect = GainLifeEffect(1)
+        effect = Effects.GainLife(1)
     }
 
     activatedAbility {

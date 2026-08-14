@@ -41,4 +41,35 @@ class MindwrackDemonScenarioTest : FunSpec({
         driver.bothPass() // resolve delirium trigger
         driver.getLifeTotal(you) shouldBe 16
     }
+
+    test("with delirium satisfied, the upkeep trigger costs no life") {
+        val driver = GameTestDriver()
+        driver.registerCards(TestCards.all)
+        driver.registerCard(MindwrackDemon)
+        driver.initMirrorMatch(deck = Deck.of("Swamp" to 40), startingLife = 20)
+        val you = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val demon = driver.putPermanentOnBattlefield(you, "Mindwrack Demon")
+        demon shouldNotBe null
+
+        // Four distinct card types in the graveyard: creature, instant, sorcery, land.
+        driver.putCardInGraveyard(you, "Grizzly Bears")
+        driver.putCardInGraveyard(you, "Lightning Bolt")
+        driver.putCardInGraveyard(you, "Demonic Counsel")
+        driver.putCardInGraveyard(you, "Forest")
+
+        val lifeBefore = driver.getLifeTotal(you)
+
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.passPriorityUntil(Step.UPKEEP) // opponent upkeep
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.passPriorityUntil(Step.UPKEEP) // your upkeep
+        driver.state.activePlayerId shouldBe you
+
+        driver.bothPass() // resolve (or fizzle) the delirium trigger
+
+        // "unless there are four or more card types" — delirium is met, so no life is lost.
+        driver.getLifeTotal(you) shouldBe lifeBefore
+    }
 })

@@ -49,5 +49,41 @@ class FalkenrathNobleScenarioTest : ScenarioTestBase() {
             game.isOnBattlefield("Falkenrath Noble") shouldBe true
             game.isOnBattlefield("Grizzly Bears") shouldBe false
         }
+
+        test("the Noble's own death triggers it — 'this creature or another'") {
+            val game = scenario()
+                .withPlayers("Player1", "Player2")
+                .withCardOnBattlefield(1, "Falkenrath Noble")
+                .withCardInHand(1, "Shock")
+                .withLandsOnBattlefield(1, "Mountain", 1)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val noble = game.findPermanent("Falkenrath Noble")
+            noble.shouldNotBeNull()
+            val shock = game.findCardsInHand(1, "Shock").single()
+
+            // Shock deals 2 to the 2/2 Noble — it dies to its own trigger's source leaving play.
+            val cast = game.execute(
+                CastSpell(
+                    playerId = game.player1Id,
+                    cardId = shock,
+                    targets = listOf(entityIdToChosenTarget(game.state, noble)),
+                ),
+            )
+            withClue("Shock cast: ${cast.error}") { cast.error shouldBe null }
+            game.resolveStack()
+
+            withClue("TriggerBinding.ANY means the Noble sees itself die") {
+                (game.state.pendingDecision as? ChooseTargetsDecision).shouldNotBeNull()
+            }
+            game.selectTargets(listOf(game.player2Id))
+            game.resolveStack()
+
+            game.isOnBattlefield("Falkenrath Noble") shouldBe false
+            game.getLifeTotal(2) shouldBe 19
+            game.getLifeTotal(1) shouldBe 21
+        }
     }
 }

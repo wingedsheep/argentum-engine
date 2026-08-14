@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.conditions.NotCondition
 import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
@@ -45,7 +44,7 @@ val MindwrackDemon = card("Mindwrack Demon") {
     triggeredAbility {
         trigger = Triggers.YourUpkeep
         effect = ConditionalEffect(
-            condition = NotCondition(Conditions.Delirium(4)),
+            condition = Conditions.Not(Conditions.Delirium(4)),
             effect = Effects.LoseLife(4, EffectTarget.Controller),
         )
     }

@@ -1,3 +1,51 @@
+// Abattoir Ghoul
+{
+    "name": "Abattoir Ghoul",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "First strike\nWhenever a creature dealt damage by this creature this turn dies, you gain life equal to that creature's toughness.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CreatureDealtDamageBySourceDiesEvent",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": "Triggering",
+                        "numericProperty": "Toughness"
+                    }
+                },
+                "descriptionOverride": "Whenever a creature dealt damage by this creature this turn dies, you gain life equal to that creature's toughness."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "flavorText": "Death took his humanity but not his skill with the knife.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59cf0906-04fa-4b30-a7a6-3d117931154f.jpg?1783940963",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "You'll gain life equal to the creature's last known toughness before it died. For example, if Abattoir Ghoul deals 3 first-strike damage to a 7/7 creature and then you give the creature -5/-5 before the regular combat damage step, you'll gain 2 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Abbey Griffin
 {
     "name": "Abbey Griffin",
@@ -533,6 +581,79 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Bonds of Faith
+{
+    "name": "Bonds of Faith",
+    "manaCost": "{1}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +2/+2 as long as it's a Human. Otherwise, it can't attack or block.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2
+                },
+                "condition": {
+                    "type": "EnchantedCreatureHasSubtype",
+                    "subtype": "Human"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CantAttack",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "AttachedTo"
+                    }
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EnchantedCreatureHasSubtype",
+                        "subtype": "Human"
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CantBlock",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "AttachedTo"
+                    }
+                },
+                "condition": {
+                    "type": "Not",
+                    "condition": {
+                        "type": "EnchantedCreatureHasSubtype",
+                        "subtype": "Human"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "Steve Argyle",
+        "flavorText": "\"What cannot be destroyed will be bound.\"\n—Oath of Avacyn",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc8d1ce0-78c5-4e97-9cca-33e7b6ff3440.jpg?1562835456"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1266,6 +1387,78 @@
     ]
 }
 
+// Elder Cathar
+{
+    "name": "Elder Cathar",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature dies, put a +1/+1 counter on target creature you control. If that creature is a Human, put two +1/+1 counters on it instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "filter": "creature Human"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "+1/+1",
+                        "count": 2,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature you control"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "AddCounters",
+                        "counterType": "+1/+1",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature you control"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "target creature you control"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Chris Rahn",
+        "flavorText": "\"My greatest hope is that you will surpass me in every way, my student. Then I can consider my life's work complete.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c21b9e51-fecd-4f9a-9354-a6dc1613feb3.jpg?1562837015"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Elder of Laurels
 {
     "name": "Elder of Laurels",
@@ -1425,6 +1618,72 @@
         "artist": "Ryan Yee",
         "flavorText": "With Thraben's army recalled to its city walls, outlying villages were left to fend for themselves.",
         "imageUri": "https://cards.scryfall.io/normal/front/5/d/5db15c5f-80b7-4f7f-985a-9bbec3199ad9.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Falkenrath Noble
+{
+    "name": "Falkenrath Noble",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Vampire Noble",
+    "oracleText": "Flying\nWhenever this creature or another creature dies, target player loses 1 life and you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target player"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "target player"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"I often think on how excited they must feel to be chosen as my prey.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2286f94-4cf9-4462-b5d7-cee7f6910018.jpg?1782714754"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -2170,6 +2429,72 @@
     ]
 }
 
+// Geist of Saint Traft
+{
+    "name": "Geist of Saint Traft",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Legendary Creature — Spirit Cleric",
+    "oracleText": "Hexproof\nWhenever this creature attacks, create a 4/4 white Angel creature token with flying that's tapped and attacking. Exile that token at end of combat.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 4,
+                            "toughness": 4,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Angel"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ],
+                            "tapped": true,
+                            "attacking": true
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "step": "END_COMBAT",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "createdTokens"
+                                },
+                                "destination": "Exile"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "MYTHIC",
+        "artist": "Igor Kieryluk",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35b57113-b39a-460b-b4aa-02606b40bbd0.jpg?1783940907"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Geistcatcher's Rig
 {
     "name": "Geistcatcher's Rig",
@@ -2262,6 +2587,72 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Ghoulraiser
+{
+    "name": "Ghoulraiser",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, return a Zombie card at random from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "filter": "Zombie"
+                            },
+                            "storeAs": "zombies"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "zombies",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "chosen"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "chosen",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "102",
+        "artist": "Steve Prescott",
+        "flavorText": "\"Come. Bring your brothers. Tonight, you feast on living flesh.\"\n—Jadar, ghoulcaller of Nephalia",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52c537d1-2d57-4a87-9dac-594d40d95633.jpg?1783940954"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4744,6 +5135,74 @@
     ]
 }
 
+// Sharpened Pitchfork
+{
+    "name": "Sharpened Pitchfork",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has first strike.\nAs long as equipped creature is a Human, it gets +1/+1.\nEquip {1}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE"
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EquippedCreature",
+                    "filter": "creature Human"
+                }
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "Not everyone can have a sword of blessed silver. Not everyone needs one, either.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/c/4ce20f19-a159-40e6-bb67-6108872ac1e0.jpg?1782714678"
+    },
+    "colorIdentityOverride": []
+}
+
 // Silent Departure
 {
     "name": "Silent Departure",
@@ -5457,6 +5916,42 @@
     "colorIdentityOverride": [
         "BLACK",
         "RED"
+    ]
+}
+
+// Stitched Drake
+{
+    "name": "Stitched Drake",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Zombie Drake",
+    "oracleText": "As an additional cost to cast this spell, exile a creature card from your graveyard.\nFlying",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "artist": "Chris Rahn",
+        "flavorText": "\"The best skaab are more powerful and more beautiful than the sum of their parts.\"\n—Stitcher Geralf",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad81266a-488f-449a-9daf-637727564865.jpg?1782714763"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

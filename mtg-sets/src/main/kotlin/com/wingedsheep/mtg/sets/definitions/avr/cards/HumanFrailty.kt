@@ -1,6 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.avr.cards
 
-import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -23,7 +23,7 @@ val HumanFrailty = card("Human Frailty") {
     spell {
         val t = target(
             "Human creature",
-            TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Human"))),
+            TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.withSubtype(Subtype.HUMAN))),
         )
         effect = Effects.Destroy(t)
     }

@@ -1,10 +1,10 @@
 package com.wingedsheep.mtg.sets.definitions.avr.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 
 /**
  * Gryff Vanguard
@@ -26,7 +26,7 @@ val GryffVanguard = card("Gryff Vanguard") {
 
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = DrawCardsEffect(1)
+        effect = Effects.DrawCards(1)
     }
 
     metadata {

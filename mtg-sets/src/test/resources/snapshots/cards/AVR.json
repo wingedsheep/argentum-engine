@@ -108,6 +108,82 @@
     "colorIdentityOverride": []
 }
 
+// Appetite for Brains
+{
+    "name": "Appetite for Brains",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. You choose a card from it with mana value 4 or greater and exile that card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target opponent"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "ContextPlayer",
+                            "index": 0
+                        },
+                        "filter": "mv>=4"
+                    },
+                    "storeAs": "mv4Plus"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "mv4Plus",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "chosenCard",
+                    "prompt": "Choose a card with mana value 4 or greater to exile"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "chosenCard",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile",
+                        "player": {
+                            "type": "ContextPlayer",
+                            "index": 0
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "target opponent"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "rarity": "UNCOMMON",
+        "artist": "Michael C. Hayes",
+        "flavorText": "Just as with a peach, the first bite is always the juiciest.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/062ee892-cce7-42bd-97c7-032cec61faca.jpg?1783940710"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Avacyn, Angel of Hope
 {
     "name": "Avacyn, Angel of Hope",
@@ -233,6 +309,104 @@
     ]
 }
 
+// Captain of the Mists
+{
+    "name": "Captain of the Mists",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "Whenever another Human you control enters, untap this creature.\n{1}{U}, {T}: You may tap or untap target permanent.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Human ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "ChooseAction",
+                        "choices": [
+                            {
+                                "label": "Tap it",
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "target permanent"
+                                    }
+                                }
+                            },
+                            {
+                                "label": "Untap it",
+                                "effect": {
+                                    "type": "TapUntap",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "target permanent"
+                                    },
+                                    "tap": false
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may tap or untap that permanent"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent"
+                        },
+                        "id": "target permanent"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "rarity": "RARE",
+        "artist": "Allen Williams",
+        "flavorText": "\"I am no mere ship's captain. The north wind is my accomplice. The tide is my first mate.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c43aa68e-a182-4006-b4d6-b4fc67e68583.jpg?1783940723"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cathars' Crusade
 {
     "name": "Cathars' Crusade",
@@ -273,6 +447,45 @@
         "artist": "Karl Kopinski",
         "flavorText": "Avacyn's holy warriors kept hope alive in her darkest hours. Now they will carry that hope across Innistrad.",
         "imageUri": "https://cards.scryfall.io/normal/front/7/8/78154978-9e7d-44e9-a03f-c578072a8ff7.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Cathedral Sanctifier
+{
+    "name": "Cathedral Sanctifier",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "When this creature enters, you gain 3 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Michael C. Hayes",
+        "flavorText": "\"Evil will soon be vanquished. What Innistrad most needs now is healing.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76cac47a-9e83-4039-8d80-fa9bdadb7527.jpg?1783940738"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -833,6 +1046,125 @@
     ]
 }
 
+// Emancipation Angel
+{
+    "name": "Emancipation Angel",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhen this creature enters, return a permanent you control to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "ctrl:you"
+                            },
+                            "storeAs": "yourPermanents"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "yourPermanents",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "returned",
+                            "prompt": "Choose a permanent you control to return to its owner's hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "returned",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "UNCOMMON",
+        "artist": "Scott Chou",
+        "flavorText": "\"You have done your best. I give you leave to rest.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a4bc00e-28ca-4152-b832-f36425d2b615.jpg?1783940736"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Goldnight Redeemer
+{
+    "name": "Goldnight Redeemer",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhen this creature enters, you gain 2 life for each other creature you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "creature",
+                            "excludeSelf": true
+                        },
+                        "multiplier": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "rarity": "UNCOMMON",
+        "artist": "Karl Kopinski",
+        "flavorText": "The Host sings of Avacyn's return without a single verse about its own suffering.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df5656e3-5f53-41f8-9f24-04caad5e4ca3.jpg?1783940734"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Griselbrand
 {
     "name": "Griselbrand",
@@ -874,6 +1206,136 @@
         "artist": "Igor Kieryluk",
         "flavorText": "\"Avacyn emerged from the broken Helvault, but her freedom came at a price—him.\"\n—Thalia, Knight-Cathar",
         "imageUri": "https://cards.scryfall.io/normal/front/b/5/b51666ae-2aef-4cb1-9cd4-44aec81530f8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Gryff Vanguard
+{
+    "name": "Gryff Vanguard",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Flying\nWhen this creature enters, draw a card.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "59",
+        "artist": "Jason Chan",
+        "flavorText": "\"Ghouls smashed the door, but I heard the call of the gryffs and knew we were saved.\"\n—Ekka, shopkeeper of Hanweir",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b7238136-c8de-4949-9b54-ff75094e0569.jpg?1783940717"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Harvester of Souls
+{
+    "name": "Harvester of Souls",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Demon",
+    "oracleText": "Deathtouch\nWhenever another nontoken creature dies, you may draw a card.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "\"He is judge, jury, and executioner because he killed them all to claim those positions.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/505c0d25-dc1f-402e-9183-01c273efe0e1.jpg?1592708993"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Human Frailty
+{
+    "name": "Human Frailty",
+    "manaCost": "{B}",
+    "typeLine": "Instant",
+    "oracleText": "Destroy target Human creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "Human creature"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature Human"
+                },
+                "id": "Human creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "UNCOMMON",
+        "artist": "David Palumbo",
+        "flavorText": "\"I have seen a hundred mortal families rise and fall. I shall outlast a thousand more.\"\n—Olivia Voldaren",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d1de712-86ac-4c03-be86-2403cd121f66.jpg?1783940696"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -1190,6 +1652,120 @@
     ]
 }
 
+// Moorland Inquisitor
+{
+    "name": "Moorland Inquisitor",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "{2}{W}: This creature gains first strike until end of turn. (It deals combat damage before creatures without first strike.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "30",
+        "artist": "David Palumbo",
+        "flavorText": "Inquisitors are taught scripture, philosophy, and the fine art of sharpening an axe.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/581dbbea-9995-4e4b-ba5c-d6d5597e4ace.jpg?1783940731"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Nephalia Smuggler
+{
+    "name": "Nephalia Smuggler",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "{3}{U}, {T}: Exile another target creature you control, then return that card to the battlefield under your control.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "another target creature you control"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "another target creature you control"
+                            },
+                            "destination": "Battlefield",
+                            "controllerOverride": "Controller"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "another target creature you control"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "\"My drivers are trustworthy. I removed their tongues myself.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a531b2f-2a9e-4cc9-aea6-9dce239f5511.jpg?1592708698"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Reforge the Soul
 {
     "name": "Reforge the Soul",
@@ -1335,6 +1911,109 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Scrapskin Drake
+{
+    "name": "Scrapskin Drake",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Zombie Drake",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nThis creature can block only creatures with flying.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanOnlyBlockCreaturesWith",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "FLYING"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "73",
+        "artist": "Kev Walker",
+        "flavorText": "\"The cathars killed my skaabs down below. Let's see how high their swords can reach.\"\n—Ludevic, necro-alchemist",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9f03bae-1d23-43ea-9079-4b09d61bbadd.jpg?1783940711"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Seraph Sanctuary
+{
+    "name": "Seraph Sanctuary",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "When this land enters, you gain 1 life.\nWhenever an Angel you control enters, you gain 1 life.\n{T}: Add {C}.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Angel ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "228",
+        "artist": "David Palumbo",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f903b04a-2733-4ce7-9d83-9db8d5e1e10d.jpg?1783940648"
+    },
+    "colorIdentityOverride": []
 }
 
 // Seraph of Dawn
@@ -1656,6 +2335,52 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Voice of the Provinces
+{
+    "name": "Voice of the Provinces",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying\nWhen this creature enters, create a 1/1 white Human creature token.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Her horn is heard across Innistrad, lifting the hearts of the righteous.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b785276b-3778-49f3-b46f-a1f3d91db097.jpg?1783940726"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

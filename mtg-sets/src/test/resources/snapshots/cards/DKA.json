@@ -171,6 +171,72 @@
     ]
 }
 
+// Diregraf Captain
+{
+    "name": "Diregraf Captain",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Creature — Zombie Soldier",
+    "oracleText": "Deathtouch\nOther Zombie creatures you control get +1/+1.\nWhenever another Zombie you control dies, target opponent loses 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Zombie ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target opponent"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "target opponent"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Zombie ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Slawomir Maniak",
+        "flavorText": "Though its mind has long since rotted away, it wields a sword with devastating skill.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e5f41eb-609b-4882-af9e-904daa717484.jpg?1562898409"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Drogskol Reaver
 {
     "name": "Drogskol Reaver",
@@ -487,6 +553,86 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Havengul Runebinder
+{
+    "name": "Havengul Runebinder",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{2}{U}, {T}, Exile a creature card from your graveyard: Create a 2/2 black Zombie creature token, then put a +1/+1 counter on each Zombie creature you control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomExileFrom",
+                                "zone": "Graveyard",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "BLACK"
+                            ],
+                            "creatureTypes": [
+                                "Zombie"
+                            ]
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "creature Zombie ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "AddCounters",
+                                "counterType": "+1/+1",
+                                "count": 1,
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "RARE",
+        "artist": "Bud Cook",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/de766c12-eb2c-466a-8630-8242a153eb1f.jpg?1783940998"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -819,6 +965,60 @@
     ]
 }
 
+// Increasing Devotion
+{
+    "name": "Increasing Devotion",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create five 1/1 white Human creature tokens. If this spell was cast from a graveyard, create ten of those tokens instead.\nFlashback {7}{W}{W} (You may cast this card from your graveyard for its flashback cost. Then exile it.)",
+    "keywords": [
+        "FLASHBACK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Flashback",
+            "cost": "{7}{W}{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Conditional",
+                "condition": {
+                    "type": "WasCastFromZone",
+                    "zone": "Graveyard"
+                },
+                "ifTrue": {
+                    "type": "Fixed",
+                    "amount": 10
+                },
+                "ifFalse": {
+                    "type": "Fixed",
+                    "amount": 5
+                }
+            },
+            "power": 1,
+            "toughness": 1,
+            "colors": [
+                "WHITE"
+            ],
+            "creatureTypes": [
+                "Human"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/87b5de81-65a6-4a74-8a71-767b92e89e91.jpg?1783941024"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Lingering Souls
 {
     "name": "Lingering Souls",
@@ -1135,6 +1335,63 @@
     ]
 }
 
+// Screeching Skaab
+{
+    "name": "Screeching Skaab",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "When this creature enters, mill two cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "artist": "Clint Cearley",
+        "flavorText": "Its screeching is the sound of you losing your mind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c40a2c7-df7a-41a6-a49e-5f7db808b810.jpg?1783940837"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Thalia, Guardian of Thraben
 {
     "name": "Thalia, Guardian of Thraben",
@@ -1169,6 +1426,54 @@
         "artist": "Jana Schirmer & Johannes Voss",
         "flavorText": "\"Thraben is our home and I will not see it fall to this unhallowed horde.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/8/2/824423ff-6441-4be6-b754-810adf9ca6a2.jpg?1783940849"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Thraben Heretic
+{
+    "name": "Thraben Heretic",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{T}: Exile target creature card from a graveyard.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature card from a graveyard"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "zone": "Graveyard"
+                        },
+                        "id": "target creature card from a graveyard"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "rarity": "UNCOMMON",
+        "artist": "James Ryman",
+        "flavorText": "\"Let them decry me for burning the dead. I'm not giving those ghoulcallers any more fuel for their madness.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/8/f8cc36df-040b-4f29-bcc1-f5600803f71d.jpg?1783940850"
     },
     "colorIdentityOverride": [
         "WHITE"

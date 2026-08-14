@@ -207,7 +207,6 @@ scripts/__pycache__/
 /data/ecl-training*.json
 /ai/data/ecl-training*.json
 
-# Local Python / knowledge-index artifacts (never commit)
+# Python bytecode anywhere (scripts/ tools are imported from several roots)
 __pycache__/
 *.py[cod]
-/uncommitted/
