@@ -6,6 +6,7 @@ import { styles } from '../board/styles'
 import { HoverCardPreview } from '../../ui/HoverCardPreview'
 import { AbilityText } from '../../ui/ManaSymbols'
 import { TheRingBadge } from './TheRingBadge'
+import { isLoneTargetRequirement } from '@/utils/targeting.ts'
 
 /**
  * Life total display - interactive when in targeting mode or when a pending decision requires player targeting.
@@ -17,6 +18,7 @@ export function LifeDisplay({
   playerName,
   spectatorMode = false,
   poisonCounters = 0,
+  energyCounters = 0,
   commanderDamage,
   seatColor,
   isAlly = false,
@@ -29,6 +31,8 @@ export function LifeDisplay({
   playerName?: string
   spectatorMode?: boolean
   poisonCounters?: number
+  /** Current energy counter total (Kaladesh block onward, CR 107.14). No badge when 0. */
+  energyCounters?: number
   commanderDamage?: readonly ClientCommanderDamage[]
   /** Current hand size — paired with [maxHandSize] to show the hand-limit badge when it changed. */
   handSize?: number | undefined
@@ -82,10 +86,13 @@ export function LifeDisplay({
   const isValidTargetingTarget = targetingState?.validTargets.includes(playerId) ?? false
   const isTargetingSelected = targetingState?.selectedTargets.includes(playerId) ?? false
 
-  // Check if this player is a valid target in a pending ChooseTargetsDecision (single-requirement only)
+  // Check if this player can be click-to-submitted for a pending ChooseTargetsDecision. Only a lone
+  // single-target requirement uses this immediate-submit path; a multi-target player slot (e.g.
+  // Parker Luck's "two target players") routes to BattlefieldTargetingUI and is picked via the
+  // decisionSelectionState toggle path below, so it must NOT match here.
   const isChooseTargetsDecision = pendingDecision?.type === 'ChooseTargetsDecision'
-  const isSingleRequirementDecision = isChooseTargetsDecision && pendingDecision.targetRequirements.length === 1
-  const decisionLegalTargets = isSingleRequirementDecision
+  const isLoneTargetDecision = isChooseTargetsDecision && isLoneTargetRequirement(pendingDecision)
+  const decisionLegalTargets = isLoneTargetDecision
     ? (pendingDecision.legalTargets[0] ?? [])
     : []
   const isValidDecisionTarget = decisionLegalTargets.includes(playerId)
@@ -420,6 +427,27 @@ export function LifeDisplay({
           }}
         >
           POISON {poisonCounters}/10
+        </div>
+      )}
+      {energyCounters > 0 && (
+        <div
+          title={`${energyCounters} energy counter${energyCounters === 1 ? '' : 's'}`}
+          style={{
+            marginTop: 4,
+            minHeight: 18,
+            padding: '2px 7px',
+            borderRadius: 4,
+            border: '1px solid rgba(250, 204, 21, 0.55)',
+            backgroundColor: 'rgba(43, 33, 4, 0.92)',
+            color: '#fde68a',
+            fontSize: 11,
+            fontWeight: 800,
+            lineHeight: '14px',
+            fontVariantNumeric: 'tabular-nums',
+            boxShadow: '0 0 10px rgba(250, 204, 21, 0.25)',
+          }}
+        >
+          ⚡ {energyCounters}
         </div>
       )}
       <MaxHandSizeBadge handSize={handSize} maxHandSize={maxHandSize} />

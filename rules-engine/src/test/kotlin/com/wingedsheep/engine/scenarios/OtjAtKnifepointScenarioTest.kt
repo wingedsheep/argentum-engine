@@ -19,7 +19,7 @@ import io.kotest.matchers.shouldBe
  * "Whenever you commit a crime, create a 1/1 red Mercenary creature token ... This ability
  *  triggers only once each turn."
  *
- * Ragavan, Nimble Pilferer (a Monkey Pirate, hence an outlaw) is the test outlaw.
+ * Test Hasty Prospector (a Monkey Pirate, hence an outlaw) is the test outlaw.
  */
 class OtjAtKnifepointScenarioTest : FunSpec({
 
@@ -45,8 +45,8 @@ class OtjAtKnifepointScenarioTest : FunSpec({
         val opp = driver.getOpponent(me)
         driver.putPermanentOnBattlefield(me, "At Knifepoint")
 
-        val myPirate = driver.putCreatureOnBattlefield(me, "Ragavan, Nimble Pilferer")
-        val oppPirate = driver.putCreatureOnBattlefield(opp, "Ragavan, Nimble Pilferer")
+        val myPirate = driver.putCreatureOnBattlefield(me, "Test Hasty Prospector")
+        val oppPirate = driver.putCreatureOnBattlefield(opp, "Test Hasty Prospector")
 
         // It's my turn: my outlaw gains first strike, the opponent's does not (not mine).
         driver.state.projectedState.hasKeyword(myPirate, Keyword.FIRST_STRIKE) shouldBe true
@@ -57,7 +57,7 @@ class OtjAtKnifepointScenarioTest : FunSpec({
         val driver = createDriver()
         val me = driver.activePlayer!!
         driver.putPermanentOnBattlefield(me, "At Knifepoint")
-        val myPirate = driver.putCreatureOnBattlefield(me, "Ragavan, Nimble Pilferer")
+        val myPirate = driver.putCreatureOnBattlefield(me, "Test Hasty Prospector")
 
         driver.state.projectedState.hasKeyword(myPirate, Keyword.FIRST_STRIKE) shouldBe true
 

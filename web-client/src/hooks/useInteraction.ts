@@ -24,12 +24,18 @@ export type CardClickResult =
  * - Process card clicks
  * - Execute actions
  * - Handle action menu selection
+ *
+ * Every card on the board calls this hook, so what it *subscribes* to it subscribes to ~50 times
+ * over. `legalActions` is a fresh array on each server update and `selectedCardId` changes on
+ * every click, so reading either reactively re-rendered the whole board for changes that only a
+ * couple of cards care about — and each card already tracks its own selection and playability
+ * with a narrow per-card selector. Both are only ever needed *inside* the handlers below, so they
+ * are read lazily from the store at call time (the same lazy-read pattern as `useLobbyCommands`),
+ * leaving this hook with no subscriptions at all.
  */
 export function useInteraction() {
   const submitAction = useGameStore((state) => state.submitAction)
   const selectCard = useGameStore((state) => state.selectCard)
-  const selectedCardId = useGameStore((state) => state.selectedCardId)
-  const legalActions = useGameStore((state) => state.legalActions)
   const startTapForPowerSelection = useGameStore((state) => state.startTapForPowerSelection)
   const startPipeline = useGameStore((state) => state.startPipeline)
 
@@ -44,7 +50,7 @@ export function useInteraction() {
    */
   const getCardActions = useCallback(
     (cardId: EntityId): LegalActionInfo[] => {
-      return legalActions.filter((action) => {
+      return useGameStore.getState().legalActions.filter((action) => {
         const a = action.action
         switch (a.type) {
           case 'PlayLand':
@@ -70,7 +76,7 @@ export function useInteraction() {
         }
       })
     },
-    [legalActions]
+    []
   )
 
   /**
@@ -221,17 +227,16 @@ export function useInteraction() {
     if (!playerId) return
 
     // Find pass priority action
-    const passAction = legalActions.find(
+    const passAction = useGameStore.getState().legalActions.find(
       (a) => a.action.type === 'PassPriority'
     )
 
     if (passAction) {
       submitAction(passAction.action)
     }
-  }, [legalActions, submitAction])
+  }, [submitAction])
 
   return {
-    selectedCardId,
     getCardActions,
     processCardClick,
     handleCardClick,

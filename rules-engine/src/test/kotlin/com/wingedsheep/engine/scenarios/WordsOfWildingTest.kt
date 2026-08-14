@@ -12,6 +12,8 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.CreatureStats
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -50,7 +52,7 @@ class WordsOfWildingTest : FunSpec({
         return driver
     }
 
-    fun GameTestDriver.countBears(playerId: com.wingedsheep.sdk.model.EntityId): Int {
+    fun GameTestDriver.countBears(playerId: EntityId): Int {
         return getCreatures(playerId).count { entityId ->
             state.getEntity(entityId)?.get<CardComponent>()?.name == "Bear Token"
         }
@@ -100,7 +102,7 @@ class WordsOfWildingTest : FunSpec({
         val bear = driver.findPermanent(activePlayer, "Bear Token")
         bear shouldNotBe null
         val bearCard = driver.state.getEntity(bear!!)!!.get<CardComponent>()!!
-        bearCard.baseStats shouldBe com.wingedsheep.sdk.model.CreatureStats(2, 2)
+        bearCard.baseStats shouldBe CreatureStats(2, 2)
         bearCard.colors shouldBe setOf(Color.GREEN)
     }
 
@@ -237,9 +239,7 @@ class WordsOfWildingTest : FunSpec({
         driver.countBears(activePlayer) shouldBe 0
     }
 
-    // --- promptOnDraw tests ---
-
-    test("draw step prompts to activate Words of Wilding, player accepts") {
+    test("manual activation — shield replaces draw during the draw step") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -249,34 +249,33 @@ class WordsOfWildingTest : FunSpec({
         val activePlayer = driver.activePlayer!!
 
         driver.putPermanentOnBattlefield(activePlayer, "Words of Wilding")
-        driver.putPermanentOnBattlefield(activePlayer, "Forest")
 
-        // Advance past turn 1 to reach active player's draw step on turn 3
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
 
-        driver.state.activePlayerId shouldBe activePlayer
-        val initialHandSize = driver.getHandSize(activePlayer)
+        val wordsId = driver.findPermanent(activePlayer, "Words of Wilding")!!
 
-        // Pass through upkeep to reach draw step
+        // Activate Words of Wilding
+        driver.giveMana(activePlayer, Color.GREEN, 1)
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = wordsId,
+                abilityId = abilityId,
+                targets = emptyList()
+            )
+        )
         driver.bothPass()
 
-        // Should now be at DRAW with a mana source selection decision
-        driver.state.step shouldBe Step.DRAW
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        // Cast Inspiration (draw 2) — 1st draw replaced with Bear token, 2nd normal
+        driver.giveMana(activePlayer, Color.BLUE, 4)
+        val inspiration = driver.putCardInHand(activePlayer, "Inspiration")
+        driver.castSpell(activePlayer, inspiration)
+        driver.bothPass()
 
-        // Accept: auto-pay to activate Words of Wilding
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Draw replaced with Bear token, no card drawn
-        driver.getHandSize(activePlayer) shouldBe initialHandSize
         driver.countBears(activePlayer) shouldBe 1
     }
 
-    test("draw step allows declining Words of Wilding activation") {
+    test("unactivated Words of Wilding does nothing during draw step") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -286,9 +285,8 @@ class WordsOfWildingTest : FunSpec({
         val activePlayer = driver.activePlayer!!
 
         driver.putPermanentOnBattlefield(activePlayer, "Words of Wilding")
-        driver.putPermanentOnBattlefield(activePlayer, "Forest")
 
-        // Advance past turn 1 to reach active player's draw step on turn 3
+        // Advance to draw step on turn 3
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
         driver.passPriorityUntil(Step.UPKEEP)
@@ -297,19 +295,14 @@ class WordsOfWildingTest : FunSpec({
 
         val initialHandSize = driver.getHandSize(activePlayer)
 
-        // Pass through upkeep to reach draw step
+        // Pass through upkeep to reach draw step — normal draw
         driver.bothPass()
-        driver.state.step shouldBe Step.DRAW
 
-        // Decline the activation
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Normal draw happens - no Bear token
         driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
         driver.countBears(activePlayer) shouldBe 0
     }
 
-    test("spell draw prompts to activate Words of Wilding for each draw") {
+    test("activating for each draw of a multi-draw spell creates tokens for each") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -320,34 +313,30 @@ class WordsOfWildingTest : FunSpec({
 
         driver.putPermanentOnBattlefield(activePlayer, "Words of Wilding")
 
-        // Give untapped lands for mana to pay for activations
-        driver.putPermanentOnBattlefield(activePlayer, "Forest")
-        driver.putPermanentOnBattlefield(activePlayer, "Forest")
-        driver.putPermanentOnBattlefield(activePlayer, "Forest")
-
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        // Give mana to cast Concentrate ({2}{U}{U})
-        driver.giveMana(activePlayer, Color.BLUE, 4)
+        val wordsId = driver.findPermanent(activePlayer, "Words of Wilding")!!
 
-        // Cast Concentrate (draw 3)
+        // Activate 3 times
+        driver.giveMana(activePlayer, Color.GREEN, 3)
+        repeat(3) {
+            driver.submitSuccess(
+                ActivateAbility(
+                    playerId = activePlayer,
+                    sourceId = wordsId,
+                    abilityId = abilityId,
+                    targets = emptyList()
+                )
+            )
+            driver.bothPass()
+        }
+
+        // Cast Concentrate (draw 3) — all replaced
+        driver.giveMana(activePlayer, Color.BLUE, 4)
         val concentrate = driver.putCardInHand(activePlayer, "Concentrate")
         driver.castSpell(activePlayer, concentrate)
         driver.bothPass()
 
-        // Draw 1: Prompted - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Draw 2: Prompted - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Draw 3: Prompted - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // All 3 draws replaced with Bear tokens
         driver.countBears(activePlayer) shouldBe 3
     }
 })

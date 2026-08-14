@@ -1,18 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.dom.cards
 
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantDynamicStatsEffect
-import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -40,32 +34,15 @@ val BlackbladeReforged = card("Blackblade Reforged") {
         )
     }
 
-    // Equip legendary creature {3}
-    activatedAbility {
-        cost = Costs.Mana("{3}")
-        timing = TimingRule.SorcerySpeed
-        description = "Equip legendary creature {3}"
-        val legendaryCreatureYouControl = target(
-            "legendary creature you control",
-            TargetCreature(
-                filter = TargetFilter(
-                    GameObjectFilter(
-                        cardPredicates = listOf(CardPredicate.IsCreature, CardPredicate.IsLegendary)
-                    ).youControl()
-                )
-            )
-        )
-        effect = Effects.AttachEquipment(legendaryCreatureYouControl)
-    }
+    // Equip legendary creature {3} — an "Equip [quality] creature" variant (CR 702.6c).
+    equipAbility(
+        "{3}",
+        quality = "legendary",
+        targetFilter = TargetFilter(GameObjectFilter.Creature.legendary().youControl()),
+    )
 
     // Equip {7}
-    activatedAbility {
-        cost = Costs.Mana("{7}")
-        timing = TimingRule.SorcerySpeed
-        description = "Equip {7}"
-        val creature = target("creature you control", Targets.CreatureYouControl)
-        effect = Effects.AttachEquipment(creature)
-    }
+    equipAbility("{7}")
 
     metadata {
         rarity = Rarity.RARE

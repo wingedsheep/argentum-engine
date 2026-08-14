@@ -51,6 +51,7 @@ object Dashboard {
             return 1
         }
         if ("--render" in args) return selfRender()
+        if ("--cross" in args) return dumpCrossSet(args)
         if (!RawTerminal.available()) {
             System.err.println("coverage-dashboard needs an interactive terminal (no /dev/tty available).")
             return 1
@@ -62,6 +63,34 @@ object Dashboard {
         } finally {
             tty.exit()
         }
+        return 0
+    }
+
+    /**
+     * Non-interactive dump of the cross-set capability index (`dashboard --cross [--top N]`) — the same
+     * [Analyzer.crossSet] roll-up the TUI's `c` view shows, printed as a plain ranked table so it can be
+     * piped, diffed, or pasted into a backlog doc. The interactive view stays the place to DRILL from a
+     * row into the cards it unlocks; this is the ranking only.
+     *
+     * Deliberately not folded into `probe`: `probe --set` prints its own per-set leaderboard truncated to
+     * the top 20, so aggregating those would undercount any capability sitting in a set's long tail. The
+     * roll-up here reads each set's FULL leaderboard, so the counts are exact.
+     */
+    private fun dumpCrossSet(args: List<String>): Int {
+        val top = args.indexOf("--top").takeIf { it >= 0 }?.let { args.getOrNull(it + 1)?.toIntOrNull() } ?: Int.MAX_VALUE
+        System.err.print("analyzing ${sets.size} sets")
+        val rows = Analyzer.crossSet { done, total -> if (done % 20 == 0 || done == total) System.err.print(" $done/$total") }
+        System.err.println()
+        println("== cross-set capability index — ${rows.size} unmapped/missing capabilities across ${sets.size} sets ==")
+        println("   (count = blocked unimplemented cards this capability would unlock; sets = how many sets it appears in)")
+        println()
+        println("  %-6s %-7s %-6s %s".format("CARDS", "SETS", "KIND", "CAPABILITY"))
+        println("  " + "-".repeat(84))
+        for (r in rows.take(top)) {
+            val kind = if (r.verdict == "MISSING") "GAP" else "??"
+            println("  %-6d %-7d %-6s %s = %s".format(r.count, r.sets, kind, r.disc, r.value))
+        }
+        if (rows.size > top) println("  … ${rows.size - top} more (raise --top)")
         return 0
     }
 

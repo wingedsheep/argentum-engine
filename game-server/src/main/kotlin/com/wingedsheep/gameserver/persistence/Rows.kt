@@ -53,6 +53,21 @@ data class DeckRow(
     val updatedAt: Instant = Instant.now(),
 )
 
+/**
+ * A saved cube — the deck row's twin. [data] is the client's SharedCube JSON verbatim;
+ * [cardCount] is the total physical cards (sum of entry counts), denormalized for list views.
+ */
+@Table("cubes")
+data class CubeRow(
+    @Id val id: Long? = null,
+    val userId: UUID,
+    val name: String,
+    val cardCount: Int = 0,
+    val data: String,
+    val createdAt: Instant = Instant.now(),
+    val updatedAt: Instant = Instant.now(),
+)
+
 @Table("match_results")
 data class MatchResultRow(
     @Id val id: Long? = null,
@@ -107,11 +122,16 @@ data class MatchCardRow(
 )
 
 /**
- * A durable, compact replay of a finished game — the reproducible setup plus the input stream,
- * gzip+base64-encoded in [data] (see [com.wingedsheep.gameserver.replay.ReplayCodec]). Keyed by
- * [gameId] (the same id the live in-memory cache and the spectator/share links use). The metadata
- * columns mirror [com.wingedsheep.gameserver.replay.CompactReplay] so a history list never has to
- * decode + re-simulate just to render a row.
+ * The one durable record of a recorded game — in progress or finished. Keyed by [gameId] (the same
+ * id the spectator and share links use). The metadata columns mirror
+ * [com.wingedsheep.gameserver.replay.CompactReplay] so a history list never has to decode +
+ * re-simulate just to render a row.
+ *
+ * Two payloads, both gzip+base64 (see [com.wingedsheep.gameserver.replay.ReplayCodec]): [data] is
+ * the compact input log that re-simulates the game, [presentation] the frames that log produced when
+ * it was folded by the build that recorded it. The first is small and exact; the second is the one
+ * that still renders after the engine has moved on. See
+ * [com.wingedsheep.gameserver.replay.ReplayPresentation].
  */
 @Table("game_replays")
 data class GameReplayRow(
@@ -120,14 +140,42 @@ data class GameReplayRow(
     val format: String? = null,
     val winnerName: String? = null,
     val tournamentName: String? = null,
+    val tournamentRound: Int? = null,
     val startedAt: Instant? = null,
     val endedAt: Instant = Instant.now(),
     /** Reconstructable frames (initial + one per action) — the activity measure for the UI. */
     val frameCount: Int = 0,
     /** Player display names in seat order, comma-joined — enough for a summary row. */
     val playerNames: String = "",
-    /** gzip+base64-encoded CompactReplay JSON. */
+    /** [com.wingedsheep.gameserver.replay.ReplayStatus] name. */
+    val status: String = "FINISHED",
+    /** The build that recorded the game — diagnostic when a replay turns out not to re-simulate. */
+    val engineVersion: String? = null,
+    /** Position fingerprint at the last flush; gates resuming an interrupted recording. */
+    val resumeFingerprint: String? = null,
+    /** gzip+base64-encoded CompactReplay JSON, *without* the pins (see [pinnedCards]). */
     val data: String,
+    /**
+     * gzip+base64-encoded pinned `CardDefinition` JSON array — the largest part of a record and the
+     * only part that never changes, so it lives here instead of inside [data], written once when the
+     * row is inserted and untouched by later flushes (see `GameReplayRepository.updateRecording`).
+     * Null for pre-V11 rows, whose pins are still inside [data], and for unpinned records.
+     */
+    val pinnedCards: String? = null,
+    /** gzip+base64-encoded `{initialSnapshot, deltas}` viewer body; null when not archived. */
+    val presentation: String? = null,
+    /** Seat roster, indexed so "replays I played in" is a join rather than a scan. */
+    @MappedCollection(idColumn = "replay_id")
+    val players: Set<GameReplayPlayerRow> = emptySet(),
+)
+
+/** One seat of a [GameReplayRow], by engine player id. */
+@Table("game_replay_players")
+data class GameReplayPlayerRow(
+    @Id val id: Long? = null,
+    val seat: Int,
+    val playerId: String,
+    val playerName: String,
 )
 
 @Table("tournaments")

@@ -186,9 +186,26 @@ gradle-app.setting
 # Claude Code per-agent git worktrees (transient — never commit)
 .claude/worktrees/
 
+# Agent-loop run state (per-run scratch — never commit)
+.claude/loop-runs/
+
+# Agent-loop per-unit scratch notes, written in the unit's worktree (never commit)
+LOOP_UNIT.md
+review.md
+
 # Claude Code local-only files (auto-loaded, machine/contributor-specific — never commit)
 CLAUDE.local.md
 .claude/settings.local.json
+
+# Bytecode from the shared modules the scripts/ tools import
+scripts/__pycache__/
+
+# Arena / benchmark run output (docs/ai/ carries the numbers worth keeping)
+/benchmarks/
+
+# Generated ECL training corpora and reports (large, reproducible benchmark output)
+/data/ecl-training*.json
+/ai/data/ecl-training*.json
 
 # Local Python / knowledge-index artifacts (never commit)
 __pycache__/

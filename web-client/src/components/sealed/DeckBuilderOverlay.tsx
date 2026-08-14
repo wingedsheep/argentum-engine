@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from 'react'
 import { useGameStore, type DeckBuildingState } from '@/store/gameStore.ts'
 import type { SealedCardInfo } from '@/types'
 import { useResponsive } from '@/hooks/useResponsive.ts'
-import { getCardImageUrl, splitImageRotateDeg } from '@/utils/cardImages.ts'
+import { getCardImageUrl, landscapeImageRotateDeg } from '@/utils/cardImages.ts'
 import { playableWithinColors } from '@/utils/manaCost.ts'
 import { ManaSymbol, ManaCost } from '../ui/ManaSymbols'
 import { HoverCardPreview } from '../ui/HoverCardPreview'
@@ -11,6 +11,16 @@ import { SetSynergiesButton, type Archetype } from '../draft/SetSynergiesOverlay
 import { DeckbuilderChatPanel } from './DeckbuilderChatPanel'
 import { fetchAdvisors, type AdvisorInfo } from '@/api/aiAssist'
 import { buildArenaDeckList } from './arenaExport'
+import {
+  CARD_TYPE_COLORS,
+  cardTypeLabel,
+  formatTypeLine,
+  rarityColor,
+  rarityInitial,
+  rarityLabel,
+  summarizeDeckTypes,
+  type DeckCardType,
+} from './cardTypes'
 import type { AutoBuildResult } from '@/store/slices/types'
 import {
   detectProducedColors,
@@ -19,6 +29,13 @@ import {
   type DeckEntry,
   type LandColor,
 } from '@/utils/landSuggestion'
+import { rulesFromLobbySettings } from '../lobby/axes'
+
+/**
+ * Hard per-card copy cap while deckbuilding (basic lands exempt, managed via `landCounts`). Mirrors
+ * `TournamentLobby.MAX_COPIES_PER_CARD` and the cap enforced in `addCardToDeck`.
+ */
+const MAX_COPIES_PER_CARD = 4
 
 /**
  * Deck Builder overlay for sealed draft mode.
@@ -137,10 +154,13 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
   const lobbyState = useGameStore((s) => s.lobbyState)
   const isInLobby = lobbyState !== null
   const isHost = lobbyState?.isHost ?? false
-  // Commander Draft / Sealed lobbies require a commander to be chosen from the pool before the
-  // deck can be submitted. The lobby's preset drives the minimum deck size (defaults to 60).
-  const lobbyFormat = lobbyState?.settings.format
-  const isCommanderShape = lobbyFormat === 'COMMANDER_DRAFT' || lobbyFormat === 'COMMANDER_SEALED'
+  // A Commander lobby requires a commander to be chosen from the pool before the deck can be
+  // submitted, and its preset drives the minimum deck size (defaults to 60). Read off the lobby's
+  // Rules axis rather than its pack format: the server validates a submitted deck against
+  // `usesCommanderRules`, so deriving this from the format would let a Commander game over ordinary
+  // draft packs submit with no commander and be rejected by the server instead of asked for one.
+  const isCommanderShape =
+    lobbyState !== null && rulesFromLobbySettings(lobbyState.settings) === 'COMMANDER'
   const commanderMinDeckSize = lobbyState?.settings.deckSizeMin ?? 60
   // AI assistance is host-gated in lobbies; practice mode (no lobby) always allows it. When off,
   // hide the controls AND any card score badges that were fetched before the host switched it off.
@@ -277,17 +297,6 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
       if (info) cardInfos.push(info)
     }
 
-    let creatureCount = 0
-    let nonCreatureCount = 0
-    for (const card of cardInfos) {
-      if (card.typeLine.toLowerCase().includes('land')) continue
-      if (card.typeLine.toLowerCase().includes('creature')) {
-        creatureCount++
-      } else {
-        nonCreatureCount++
-      }
-    }
-
     // Mana curve
     const curve: Record<number, number> = {}
     for (const card of cardInfos) {
@@ -332,7 +341,20 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
 
     const creatureTypes = getCreatureSubtypes(cardInfos)
 
-    return { creatureCount, nonCreatureCount, curve, colorSymbols, landColors, creatureTypes }
+    // Per-card-type distribution. Basic lands live outside `state.deck`, so fold their total into
+    // the Land bucket — the breakdown is meant to sum to the deck the player will actually shuffle.
+    const basicLands = Object.values(state.landCounts).reduce((a, b) => a + b, 0)
+    const typeCounts = summarizeDeckTypes(cardInfos.map((c) => c.typeLine), basicLands)
+    const typeTotal = typeCounts.reduce((sum, t) => sum + t.count, 0)
+
+    return {
+      curve,
+      colorSymbols,
+      landColors,
+      creatureTypes,
+      typeCounts,
+      typeTotal,
+    }
   }, [state.deck, state.cardPool, state.landCounts])
 
   // Pool-level creature type stats (across entire card pool, not just deck)
@@ -374,10 +396,14 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
       }
     }
 
-    const groups: { card: SealedCardInfo; availableCount: number }[] = []
+    const groups: { card: SealedCardInfo; availableCount: number; inDeckCount: number }[] = []
     for (const [name, { card, totalCount }] of Object.entries(poolCardCounts)) {
       const inDeckCount = deckCardCounts[name] || 0
-      const availableCount = totalCount - inDeckCount
+      // In Pool Play the pool is the whole cube and copies are unlimited, so a card is never
+      // consumed — what's left to add is the 4-of cap minus what's already in the deck.
+      const availableCount = state.poolPlay
+        ? MAX_COPIES_PER_CARD - inDeckCount
+        : totalCount - inDeckCount
       if (availableCount > 0) {
         if (archetypeFilter) {
           const cardColors = getCardColors(card)
@@ -421,7 +447,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         if (searchText) {
           if (!matchesSearch(card, searchText)) continue
         }
-        groups.push({ card, availableCount })
+        groups.push({ card, availableCount, inDeckCount })
       }
     }
 
@@ -434,14 +460,18 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         return getRarityOrder(a.card) - getRarityOrder(b.card) || getCmc(a.card) - getCmc(b.card)
       }
     })
-  }, [state.cardPool, state.deck, sortBy, colorFilter, colorMode, typeFilter, creatureTypeFilter, searchText, archetypeFilter, commanderIdentity, restrictToCommanderIdentity])
+  }, [state.cardPool, state.deck, state.poolPlay, sortBy, colorFilter, colorMode, typeFilter, creatureTypeFilter, searchText, archetypeFilter, commanderIdentity, restrictToCommanderIdentity])
 
-  const totalPoolCards = poolCardGroups.reduce((sum, g) => sum + g.availableCount, 0)
+  // "Cards left to add" is only a meaningful total when the pool is finite. In Pool Play every card
+  // is always available, so count distinct cards on offer instead of copies.
+  const totalPoolCards = state.poolPlay
+    ? poolCardGroups.length
+    : poolCardGroups.reduce((sum, g) => sum + g.availableCount, 0)
 
   const poolByRarity = useMemo(() => {
     if (sortBy !== 'rarity') return null
 
-    type PoolGroup = { card: SealedCardInfo; availableCount: number }
+    type PoolGroup = { card: SealedCardInfo; availableCount: number; inDeckCount: number }
     const mythic: PoolGroup[] = []
     const rare: PoolGroup[] = []
     const uncommon: PoolGroup[] = []
@@ -535,6 +565,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <h2 style={{ color: 'white', margin: 0, fontSize: responsive.isMobile ? 16 : 20 }}>
             Deck Builder - {state.setNames.join(' + ')}
+            {state.poolPlay ? ' (Pool Play)' : ''}
           </h2>
           <SetSynergiesButton
             setCodes={state.setCodes}
@@ -923,8 +954,15 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
               )}
             </div>
 
-            <span style={{ color: '#666', fontSize: 12, marginLeft: 'auto' }}>
-              Pool: {totalPoolCards}
+            <span
+              style={{ color: '#666', fontSize: 12, marginLeft: 'auto' }}
+              title={
+                state.poolPlay
+                  ? `Pool Play: the whole cube is available, up to ${MAX_COPIES_PER_CARD} copies of any card`
+                  : undefined
+              }
+            >
+              {state.poolPlay ? `Cube: ${totalPoolCards} cards` : `Pool: ${totalPoolCards}`}
             </span>
           </div>
 
@@ -1044,7 +1082,9 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                 {(['MYTHIC', 'RARE', 'UNCOMMON', 'COMMON'] as const).map((rarity) => {
                   const groups = poolByRarity[rarity] ?? []
                   if (groups.length === 0) return null
-                  const totalInSection = groups.reduce((sum, g) => sum + g.availableCount, 0)
+                  const totalInSection = state.poolPlay
+                    ? groups.length
+                    : groups.reduce((sum, g) => sum + g.availableCount, 0)
                   return (
                     <div key={rarity}>
                       <RaritySectionHeader rarity={rarity} count={totalInSection} />
@@ -1056,11 +1096,12 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                           justifyContent: 'flex-start',
                         }}
                       >
-                        {groups.map(({ card, availableCount }) => (
+                        {groups.map(({ card, availableCount, inDeckCount }) => (
                           <PoolCard
                             key={card.name}
                             card={card}
                             count={availableCount}
+                            inDeckCount={state.poolPlay ? inDeckCount : undefined}
                             onClick={() => {
                               if (isSubmitted) return
                               addCardToDeck(card.name)
@@ -1087,11 +1128,12 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
                   justifyContent: 'flex-start',
                 }}
               >
-                {poolCardGroups.map(({ card, availableCount }) => (
+                {poolCardGroups.map(({ card, availableCount, inDeckCount }) => (
                   <PoolCard
                     key={card.name}
                     card={card}
                     count={availableCount}
+                    inDeckCount={state.poolPlay ? inDeckCount : undefined}
                     onClick={() => {
                       if (isSubmitted) return
                       addCardToDeck(card.name)
@@ -1128,18 +1170,15 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
               borderBottom: '1px solid #333',
             }}
           >
-            {/* Live counters */}
-            <div style={{ display: 'flex', gap: 12, marginBottom: 8, flexWrap: 'wrap' }}>
-              <DeckStat label="Creatures" value={deckAnalytics.creatureCount} color="#8bc34a" />
-              <DeckStat label="Spells" value={deckAnalytics.nonCreatureCount} color="#4fc3f7" />
-              <DeckStat label="Lands" value={landCount} color="#a1887f" />
-            </div>
+            {/* Card-type distribution — one bucket per card, so the counts sum to the deck size */}
+            <DeckTypeDistribution counts={deckAnalytics.typeCounts} total={deckAnalytics.typeTotal} />
 
-            {/* Mana curve histogram */}
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 48 }}>
+            {/* Mana curve histogram. The 62px box is the tallest bar (36) plus both 9px labels and
+                their margins — at 48 the count label overflowed upward into whatever sat above. */}
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, height: 62 }}>
               {[0, 1, 2, 3, 4, 5, 6, 7].map((cmc) => {
                 const count = deckAnalytics.curve[cmc] || 0
-                const height = maxCurveCount > 0 ? (count / maxCurveCount) * 40 : 0
+                const height = maxCurveCount > 0 ? (count / maxCurveCount) * 36 : 0
                 return (
                   <div key={cmc} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, minWidth: 0 }}>
                     {count > 0 && (
@@ -1377,7 +1416,7 @@ function DeckBuilder({ state }: { state: DeckBuildingState }) {
           pos={hoverPos}
           rulings={hoveredCard.rulings}
           overlay={dfc.hint}
-          imageRotateDeg={splitImageRotateDeg(hoveredCard)}
+          imageRotateDeg={landscapeImageRotateDeg(hoveredCard)}
         />
       )}
 
@@ -1796,11 +1835,59 @@ function AnimatedDots() {
 /**
  * Small stat display for deck analytics.
  */
-function DeckStat({ label, value, color }: { label: string; value: number; color: string }) {
+function DeckTypeDistribution({
+  counts,
+  total,
+}: {
+  counts: ReadonlyArray<{ type: DeckCardType; count: number }>
+  total: number
+}) {
+  if (total === 0) {
+    return (
+      <div style={{ color: '#666', fontSize: 10, marginBottom: 8 }}>
+        Click cards in the pool to build your deck
+      </div>
+    )
+  }
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-      <span style={{ color, fontSize: 14, fontWeight: 700 }}>{value}</span>
-      <span style={{ color: '#888', fontSize: 10 }}>{label}</span>
+    <div style={{ marginBottom: 8 }}>
+      {/* Stacked proportion bar — same visual language as the colour bars below the curve */}
+      <div style={{ display: 'flex', gap: 1, height: 6, borderRadius: 3, overflow: 'hidden' }}>
+        {counts.map(({ type, count }) => (
+          <div
+            key={type}
+            style={{
+              flex: count,
+              backgroundColor: CARD_TYPE_COLORS[type],
+              transition: 'flex 0.2s',
+            }}
+            title={`${count} ${cardTypeLabel(type, count)} (${Math.round((count / total) * 100)}%)`}
+          />
+        ))}
+      </div>
+      {/* Per-type counts */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px 10px', marginTop: 5 }}>
+        {counts.map(({ type, count }) => (
+          <div
+            key={type}
+            style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+            title={`${count} ${cardTypeLabel(type, count).toLowerCase()} — ${Math.round((count / total) * 100)}% of the deck`}
+          >
+            <span
+              style={{
+                width: 7,
+                height: 7,
+                borderRadius: 2,
+                backgroundColor: CARD_TYPE_COLORS[type],
+                flexShrink: 0,
+              }}
+            />
+            <span style={{ color: CARD_TYPE_COLORS[type], fontSize: 13, fontWeight: 700 }}>{count}</span>
+            <span style={{ color: '#888', fontSize: 10 }}>{cardTypeLabel(type, count)}</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -1811,6 +1898,7 @@ function DeckStat({ label, value, color }: { label: string; value: number; color
 function PoolCard({
   card,
   count,
+  inDeckCount,
   onClick,
   onHover,
   disabled,
@@ -1820,6 +1908,12 @@ function PoolCard({
 }: {
   card: SealedCardInfo
   count: number
+  /**
+   * Pool Play only: copies of this card already in the deck. When set, the badge reports that
+   * instead of a stack count — with the whole cube available at 4-of, "how many can I still add"
+   * is the same number on every card and tells the player nothing.
+   */
+  inDeckCount?: number | undefined
   onClick: () => void
   onHover: (card: SealedCardInfo | null, e?: React.MouseEvent) => void
   disabled: boolean
@@ -1876,23 +1970,42 @@ function PoolCard({
           objectFit: 'cover',
         }}
       />
-      {count > 1 && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: 4,
-            right: 4,
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            color: '#4fc3f7',
-            borderRadius: 4,
-            padding: '2px 6px',
-            fontSize: 12,
-            fontWeight: 600,
-          }}
-        >
-          x{count}
-        </div>
-      )}
+      {inDeckCount != null
+        ? inDeckCount > 0 && (
+            <div
+              title={`${inDeckCount} in your deck`}
+              style={{
+                position: 'absolute',
+                bottom: 4,
+                right: 4,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                color: '#81c784',
+                borderRadius: 4,
+                padding: '2px 6px',
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+            >
+              {inDeckCount} in deck
+            </div>
+          )
+        : count > 1 && (
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 4,
+                right: 4,
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                color: '#4fc3f7',
+                borderRadius: 4,
+                padding: '2px 6px',
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+            >
+              x{count}
+            </div>
+          )}
       {score != null && (
         <div
           style={{
@@ -1952,7 +2065,7 @@ function DeckListRow({
       style={{
         display: 'flex',
         alignItems: 'center',
-        height: 28,
+        height: 36,
         padding: '0 8px 0 0',
         cursor: disabled ? 'default' : 'pointer',
         opacity: disabled ? 0.8 : 1,
@@ -1985,16 +2098,51 @@ function DeckListRow({
       >
         {count}
       </span>
-      {/* Card name */}
-      <span style={{
-        color: offIdentity ? '#ef9a9a' : '#ddd',
-        fontSize: 12,
-        flex: 1,
-        whiteSpace: 'nowrap',
-        overflow: 'hidden',
-        textOverflow: 'ellipsis',
-      }}>
-        {card.name}
+      {/* Rarity badge */}
+      <span
+        title={rarityLabel(card.rarity)}
+        style={{
+          width: 14,
+          height: 14,
+          marginRight: 6,
+          flexShrink: 0,
+          borderRadius: 3,
+          border: `1px solid ${rarityColor(card.rarity)}`,
+          color: rarityColor(card.rarity),
+          backgroundColor: 'rgba(0, 0, 0, 0.35)',
+          fontSize: 9,
+          fontWeight: 700,
+          lineHeight: '12px',
+          textAlign: 'center',
+        }}
+      >
+        {rarityInitial(card.rarity)}
+      </span>
+      {/* Card name over its printed type line */}
+      <span style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
+        <span style={{
+          color: offIdentity ? '#ef9a9a' : '#ddd',
+          fontSize: 12,
+          lineHeight: '14px',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}>
+          {card.name}
+        </span>
+        <span
+          title={formatTypeLine(card.typeLine)}
+          style={{
+            color: '#7d7d7d',
+            fontSize: 9.5,
+            lineHeight: '11px',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {formatTypeLine(card.typeLine)}
+        </span>
       </span>
       {/* Commander crown — only in commander-shape lobbies */}
       {showCommanderControls && (
@@ -2130,20 +2278,6 @@ function LandRow({
  * Section header for rarity grouping.
  */
 function RaritySectionHeader({ rarity, count }: { rarity: string; count: number }) {
-  const colors: Record<string, string> = {
-    MYTHIC: '#ff8b00',
-    RARE: '#ffd700',
-    UNCOMMON: '#c0c0c0',
-    COMMON: '#888888',
-  }
-
-  const labels: Record<string, string> = {
-    MYTHIC: 'Mythic Rare',
-    RARE: 'Rare',
-    UNCOMMON: 'Uncommon',
-    COMMON: 'Common',
-  }
-
   return (
     <div
       style={{
@@ -2152,11 +2286,11 @@ function RaritySectionHeader({ rarity, count }: { rarity: string; count: number 
         gap: 8,
         marginBottom: 6,
         paddingBottom: 4,
-        borderBottom: `2px solid ${colors[rarity] || '#888'}`,
+        borderBottom: `2px solid ${rarityColor(rarity)}`,
       }}
     >
-      <span style={{ color: colors[rarity] || '#888', fontWeight: 600, fontSize: 13 }}>
-        {labels[rarity] || rarity}
+      <span style={{ color: rarityColor(rarity), fontWeight: 600, fontSize: 13 }}>
+        {rarityLabel(rarity)}
       </span>
       <span style={{ color: '#666', fontSize: 11 }}>({count})</span>
     </div>

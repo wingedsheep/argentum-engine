@@ -1,0 +1,90 @@
+/* Layout chrome for the composed CardBrowser. The search bar, filter panel, and card grid
+   inside it are styled by the shared deckbuilder stylesheet. */
+
+.browser {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  background: #0f172a;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px 0;
+  flex-wrap: wrap;
+}
+
+.searchRow {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.searchRow > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.filtersToggle {
+  align-self: center;
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.filtersToggle:hover {
+  background: #263449;
+}
+
+.filtersToggleActive {
+  composes: filtersToggle;
+  background: #4c1d95;
+  border-color: #6d28d9;
+  color: #ede9fe;
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+  min-width: 0;
+}
+
+.filters {
+  width: 232px;
+  flex: 0 0 232px;
+  overflow-y: auto;
+  border-right: 1px solid #1e293b;
+  padding: 4px 8px 12px;
+}
+
+.results {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.notice {
+  padding: 16px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.error {
+  composes: notice;
+  color: #fca5a5;
+}

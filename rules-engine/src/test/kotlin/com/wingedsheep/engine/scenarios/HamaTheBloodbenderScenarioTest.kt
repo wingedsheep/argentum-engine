@@ -134,7 +134,7 @@ class HamaTheBloodbenderScenarioTest : ScenarioTestBase() {
                     CastSpell(
                         game.player1Id,
                         exiledBait,
-                        alternativePayment = AlternativePaymentChoice(waterbendPermanents = tappers.toSet()),
+                        alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = tappers.toSet()),
                     )
                 )
                 withClue("waterbending {2} by tapping the two creatures pays the whole cost: ${castExiled.error}") {

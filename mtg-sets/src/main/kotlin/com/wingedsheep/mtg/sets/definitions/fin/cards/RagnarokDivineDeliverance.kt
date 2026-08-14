@@ -23,7 +23,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * blocked mechanic, so — following the Brisela, Voice of Nightmares precedent — Ragnarok is
  * authored as a normal legendary creature with its printed abilities and the meld linkage is
  * ignored (it has no mana cost, matching the printed card). Ragnarok can still be exercised by
- * putting it on the battlefield directly.
+ * putting it on the battlefield directly. `meldResult = true` keeps it out of booster, draft and
+ * deckbuilding pools — it's only ever created by melding the pair.
  *
  * The dies trigger has two independent targets chosen when it's put on the stack (CR 603.3d):
  * a permanent to destroy and a nonlegendary permanent card in your graveyard to reanimate. Each
@@ -33,6 +34,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  */
 val RagnarokDivineDeliverance = card("Ragnarok, Divine Deliverance") {
     manaCost = ""
+    meldResult = true
     colorIdentity = "BG"
     typeLine = "Legendary Creature — Beast Avatar"
     power = 7

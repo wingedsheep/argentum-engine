@@ -103,9 +103,28 @@ class ModalPerModeAdditionalCostTest : FunSpec({
         )
     )
 
+    val EscalateModal = CardDefinition(
+        name = "Test Escalate Modal",
+        manaCost = ManaCost.parse("{R}"),
+        typeLine = TypeLine.sorcery(),
+        oracleText = "Escalate {2}\nChoose one or more —\n• Gain 1 life.\n• Draw a card.\n• You lose 1 life.",
+        script = CardScript.spell(
+            effect = ModalEffect(
+                modes = listOf(
+                    Mode.noTarget(GainLifeEffect(DynamicAmount.Fixed(1), EffectTarget.Controller), "Gain 1 life"),
+                    Mode.noTarget(DrawCardsEffect(DynamicAmount.Fixed(1), EffectTarget.Controller), "Draw a card"),
+                    Mode.noTarget(LoseLifeEffect(DynamicAmount.Fixed(1), EffectTarget.Controller), "Lose 1 life")
+                ),
+                chooseCount = 3,
+                minChooseCount = 1,
+                additionalManaCostPerExtraMode = "{2}"
+            )
+        )
+    )
+
     fun driver(): GameTestDriver {
         val d = GameTestDriver()
-        d.registerCards(TestCards.all + listOf(StackingCostsModal, SacrificeModal))
+        d.registerCards(TestCards.all + listOf(StackingCostsModal, SacrificeModal, EscalateModal))
         return d
     }
 
@@ -253,5 +272,67 @@ class ModalPerModeAdditionalCostTest : FunSpec({
             )
         )
         result.isSuccess shouldBe false
+    }
+
+    test("Escalate — the first chosen mode adds no mana cost") {
+        val d = driver()
+        d.initMirrorMatch(deck = Deck.of("Mountain" to 40))
+        val p1 = d.activePlayer!!
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        d.giveMana(p1, Color.RED, 1)
+        val lifeBefore = d.state.getEntity(p1)!!.get<LifeTotalComponent>()!!.life
+        val spell = d.putCardInHand(p1, "Test Escalate Modal")
+
+        d.submit(
+            CastSpell(
+                playerId = p1,
+                cardId = spell,
+                chosenModes = listOf(0),
+                paymentStrategy = com.wingedsheep.engine.core.PaymentStrategy.FromPool
+            )
+        ).isSuccess shouldBe true
+        d.bothPass()
+        d.state.getEntity(p1)!!.get<LifeTotalComponent>()!!.life shouldBe lifeBefore + 1
+    }
+
+    test("Escalate — its cost is paid once for each mode beyond the first") {
+        val d = driver()
+        d.initMirrorMatch(deck = Deck.of("Mountain" to 40))
+        val p1 = d.activePlayer!!
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        d.giveMana(p1, Color.RED, 1)
+        d.giveColorlessMana(p1, 4)
+        val lifeBefore = d.state.getEntity(p1)!!.get<LifeTotalComponent>()!!.life
+        val spell = d.putCardInHand(p1, "Test Escalate Modal")
+
+        d.submit(
+            CastSpell(
+                playerId = p1,
+                cardId = spell,
+                chosenModes = listOf(0, 1, 2),
+                paymentStrategy = com.wingedsheep.engine.core.PaymentStrategy.FromPool
+            )
+        ).isSuccess shouldBe true
+        d.bothPass()
+        d.state.getEntity(p1)!!.get<LifeTotalComponent>()!!.life shouldBe lifeBefore
+    }
+
+    test("Escalate — a second mode is illegal when its one escalate payment is unaffordable") {
+        val d = driver()
+        d.initMirrorMatch(deck = Deck.of("Mountain" to 40))
+        val p1 = d.activePlayer!!
+        d.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        d.giveMana(p1, Color.RED, 1)
+        d.giveColorlessMana(p1, 1)
+        val spell = d.putCardInHand(p1, "Test Escalate Modal")
+
+        d.submit(
+            CastSpell(
+                playerId = p1,
+                cardId = spell,
+                chosenModes = listOf(0, 1),
+                paymentStrategy = com.wingedsheep.engine.core.PaymentStrategy.FromPool
+            )
+        ).isSuccess shouldBe false
     }
 })

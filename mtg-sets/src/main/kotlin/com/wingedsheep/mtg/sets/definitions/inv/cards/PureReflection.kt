@@ -34,7 +34,6 @@ val PureReflection = card("Pure Reflection") {
                 colors = setOf(Color.WHITE),
                 creatureTypes = setOf("Reflection"),
                 controller = EffectTarget.PlayerRef(Player.TriggeringPlayer),
-                imageUri = "/images/tokens/inv-reflection.jpeg",
             ),
         )
     }

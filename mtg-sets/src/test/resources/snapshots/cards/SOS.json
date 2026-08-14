@@ -4269,9 +4269,6 @@
         "power": 3,
         "toughness": 3
     },
-    "keywords": [
-        "PREPARED"
-    ],
     "script": {
         "triggeredAbilities": [
             {
@@ -8292,7 +8289,9 @@
                         "destination": "Hand"
                     }
                 },
-                "activeZone": "Graveyard",
+                "activeZones": [
+                    "Graveyard"
+                ],
                 "descriptionOverride": "Whenever one or more creatures you control deal combat damage to a player, you may pay {W/B}. If you do, return this card from your graveyard to your hand."
             }
         ]
@@ -14793,8 +14792,15 @@
     "script": {
         "additionalCosts": [
             {
-                "type": "ExileFromGraveyardOrPay",
-                "exileCount": 2,
+                "type": "OrPay",
+                "cost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomExileFrom",
+                        "zone": "Graveyard",
+                        "count": 2
+                    }
+                },
                 "alternativeManaCost": "{1}{W}"
             }
         ]

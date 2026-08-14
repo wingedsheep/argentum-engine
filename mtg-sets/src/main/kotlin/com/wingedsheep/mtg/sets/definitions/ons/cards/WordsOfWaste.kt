@@ -20,7 +20,6 @@ val WordsOfWaste = card("Words of Waste") {
     activatedAbility {
         cost = Costs.Mana("{1}")
         effect = Effects.ReplaceNextDraw(Effects.EachOpponentDiscards(1))
-        promptOnDraw = true
     }
 
     metadata {

@@ -193,6 +193,74 @@ export async function upsertDeckByName(deck: SharedDeck): Promise<DeckDetail> {
   return match ? updateDeck(match.id, deck) : saveDeck(deck)
 }
 
+// ----- Saved cubes -----
+
+/**
+ * A cube as stored in the account — card names + counts, not resolved cards, so a cube can name a
+ * card that isn't implemented yet and stays valid as sets land. Mirrors `SavedCube` minus the local
+ * id/timestamp, and the server's `CubeList`.
+ */
+export interface SharedCube {
+  readonly name: string
+  readonly cards: ReadonlyArray<{ readonly name: string; readonly count: number }>
+  readonly basicLandSetCode: string
+  readonly packSize: number
+}
+
+export interface CubeSummary {
+  readonly id: number
+  readonly name: string
+  readonly cardCount: number
+  readonly updatedAt: string
+}
+
+export interface CubeDetail extends CubeSummary {
+  readonly cube: SharedCube
+}
+
+export async function listCubes(): Promise<CubeSummary[]> {
+  const res = await fetch('/api/account/cubes', { headers: authHeaders() })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(`Failed to load cubes (${res.status})`)
+  return (await res.json()) as CubeSummary[]
+}
+
+/** Full detail for every saved cube in one request (`?full`) — used by the unified cube library. */
+export async function listCubeDetails(): Promise<CubeDetail[]> {
+  const res = await fetch('/api/account/cubes?full', { headers: authHeaders() })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(`Failed to load cubes (${res.status})`)
+  return (await res.json()) as CubeDetail[]
+}
+
+export async function saveCube(cube: SharedCube): Promise<CubeDetail> {
+  const res = await fetch('/api/account/cubes', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(cube),
+  })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(`Failed to save cube (${res.status})`)
+  return (await res.json()) as CubeDetail
+}
+
+export async function updateCube(id: number, cube: SharedCube): Promise<CubeDetail> {
+  const res = await fetch(`/api/account/cubes/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify(cube),
+  })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok) throw new Error(`Failed to update cube (${res.status})`)
+  return (await res.json()) as CubeDetail
+}
+
+export async function deleteCube(id: number): Promise<void> {
+  const res = await fetch(`/api/account/cubes/${id}`, { method: 'DELETE', headers: authHeaders() })
+  if (res.status === 401) throw new UnauthorizedError()
+  if (!res.ok && res.status !== 404) throw new Error(`Failed to delete cube (${res.status})`)
+}
+
 // ----- Stats -----
 
 export interface AccountStats {

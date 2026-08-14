@@ -109,3 +109,19 @@ export function mergeModeBuckets(
   }
   return [...acc.entries()].map(([label, count]) => ({ label, count })).sort((a, b) => b.count - a.count)
 }
+
+/** Byte count as a compact binary-unit size: 0 → "0 B", 1536 → "1.5 KiB", 5e6 → "4.8 MiB". */
+export function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0) return '0 B'
+  const units = ['B', 'KiB', 'MiB', 'GiB', 'TiB']
+  const exp = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)))
+  const value = bytes / 1024 ** exp
+  // Whole bytes read oddly as "512.0 B"; above that one decimal is enough precision.
+  const digits = exp === 0 ? 0 : value < 10 ? 1 : value < 100 ? 1 : 0
+  return `${value.toFixed(digits)} ${units[exp]}`
+}
+
+/** Thousands-separated integer, so six-figure row counts stay readable. */
+export function formatCount(n: number): string {
+  return n.toLocaleString('en-US')
+}

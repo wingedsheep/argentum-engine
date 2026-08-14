@@ -2,10 +2,15 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.replacement.ReplacementEffectProcessor
 import com.wingedsheep.engine.handlers.effects.drawing.DrawCardPrimitive
-import com.wingedsheep.engine.handlers.effects.drawing.DrawLoop
 import com.wingedsheep.engine.handlers.effects.drawing.DrawReplacementDispatcher
+import com.wingedsheep.engine.handlers.effects.drawing.DrawLoop
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.state.components.player.SkipDrawStepComponent
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
@@ -14,27 +19,25 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 /**
  * Handles draw step execution.
  *
- * The bulk of "what happens when a player draws" lives in the shared
- * drawing primitives under `handlers/effects/drawing/`:
- *  - [DrawCardPrimitive] — physical single-card move library→hand, empty-library
- *    loss, `CardsDrawnThisTurnComponent`, reveal-first-draw
- *  - [DrawReplacementDispatcher] — shield consumer, static draw replacement,
- *    prompt-on-draw
- *  - [DrawLoop] — the actual for-loop over draws
+ * Delegates all draw mechanics to [DrawCardsExecutor], which shares the same
+ * primitives ([DrawCardPrimitive], [DrawReplacementDispatcher], [DrawLoop])
+ * with spell/ability draws.
  *
- * This manager's job is to (a) apply the first-turn-first-player draw-skip
- * rule, (b) ask the prompt-on-draw question once up-front, and (c) invoke the
- * shared loop. Spell/ability draws via [com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor]
- * go through exactly the same primitives.
+ * This manager's only job is the draw-step setup: first-turn skip, teammate
+ * draws, skip-draw-step markers, and the draw-count announcement.
  */
 class DrawPhaseManager(
-    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
+    private val cardRegistry: CardRegistry,
     @Suppress("unused") private val decisionHandler: DecisionHandler,
-    effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)?
+    effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)?,
+    replacementProcessor: ReplacementEffectProcessor = ReplacementEffectProcessor()
 ) {
 
-    private val primitive = DrawCardPrimitive(cardRegistry)
-    private val dispatcher = DrawReplacementDispatcher(cardRegistry, effectExecutor)
+    private val drawExecutor = DrawCardsExecutor(
+        cardRegistry = cardRegistry,
+        effectExecutor = effectExecutor,
+        replacementProcessor = replacementProcessor
+    )
 
     /**
      * Perform the draw step (active player draws a card).
@@ -48,7 +51,7 @@ class DrawPhaseManager(
         // active player — there is no one to take the draw turn-based action, so it doesn't
         // happen. (Their library is gone too, so attempting it would be a spurious deck-out.)
         if (stateIn.getEntity(activePlayer)
-                ?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() == true
+                ?.has<PlayerLostComponent>() == true
         ) {
             return ExecutionResult.success(
                 stateIn.withPriority(activePlayer),
@@ -62,7 +65,7 @@ class DrawPhaseManager(
         // every draw-step entry (including the skip/first-turn paths below) so a later in-step draw
         // is still identified correctly. See GameState.drawStepStartDrawCountByPlayer.
         val drawnSoFar = stateIn.getEntity(activePlayer)
-            ?.get<com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent>()?.count ?: 0
+            ?.get<CardsDrawnThisTurnComponent>()?.count ?: 0
         val state = stateIn.copy(
             drawStepStartDrawCountByPlayer = stateIn.drawStepStartDrawCountByPlayer + (activePlayer to drawnSoFar)
         )
@@ -86,11 +89,8 @@ class DrawPhaseManager(
         }
 
         // CR 805.4b — each player on the active team draws during the team's draw step. Draw the
-        // teammates first (a team draws in any order it likes, 805.6a), then the active player last
-        // so its prompt-on-draw pause stays the final action of the step. Deck-out marks the loss in
-        // the returned state, so accumulating each draw's state/events is enough. (Prompt-on-draw for
-        // a teammate's own draw is a rare deferred nuance — teammate draws skip that prompt.) In a
-        // non-team game — and in Team vs. Team, where each player draws only on their own turn
+        // teammates first (a team draws in any order it likes, 805.6a), then the active player last.
+        // In a non-team game — and in Team vs. Team, where each player draws only on their own turn
         // (CR 808.4) — there are no shared-turn teammates and this loop is a no-op.
         var s = state
         val teammateEvents = mutableListOf<GameEvent>()
@@ -100,9 +100,7 @@ class DrawPhaseManager(
                 s = s.updateEntity(teammate) { it.without<SkipDrawStepComponent>() }
                 continue
             }
-            val teammateDrawCount = dispatcher.applyDrawAmountModifier(s, teammate, 1)
-            if (teammateDrawCount <= 0) continue
-            val r = drawCards(s, teammate, teammateDrawCount)
+            val r = drawCards(s, teammate, 1)
             if (r.isPaused) {
                 return ExecutionResult.paused(r.newState, r.pendingDecision!!, teammateEvents + r.events)
             }
@@ -120,26 +118,7 @@ class DrawPhaseManager(
             )
         }
 
-        // Apply ModifyDrawAmount replacements once at the draw-step's announcement
-        // site (CR 121.2a) — e.g., Quantum Riddler's "draw that many cards plus one
-        // instead" turns this step's draw of 1 into 2 while its restriction holds.
-        val drawCount = dispatcher.applyDrawAmountModifier(s, activePlayer, 1)
-        if (drawCount <= 0) {
-            return ExecutionResult.success(
-                s.withPriority(activePlayer),
-                teammateEvents + StepChangedEvent(Step.DRAW)
-            )
-        }
-
-        // Ask "prompt on draw" abilities (e.g., Words of Wind) once up-front.
-        // The draw loop runs with skipPromptOnDraw=true to avoid asking again.
-        val promptResult = checkPromptOnDraw(s, activePlayer, drawCount, isDrawStep = true)
-        if (promptResult != null) {
-            return if (teammateEvents.isEmpty()) promptResult
-            else ExecutionResult.paused(promptResult.newState, promptResult.pendingDecision!!, teammateEvents + promptResult.events)
-        }
-
-        val drawResult = drawCards(s, activePlayer, drawCount)
+        val drawResult = drawCards(s, activePlayer, 1)
         if (!drawResult.isSuccess) {
             return drawResult
         }
@@ -149,45 +128,27 @@ class DrawPhaseManager(
     }
 
     /**
-     * Draw [count] cards for [playerId] as part of the draw step (or the draw
-     * following a replacement activation).
+     * Draw [count] cards for [playerId] as part of the draw step.
      *
-     * The draw-step path runs the dispatcher with `skipPromptOnDraw = true`
-     * because [performDrawStep] asks that question once up-front; the shared
-     * loop does still check shield consumers and static draw replacements
-     * (unless [skipPrompts] is set, in which case static is also skipped).
+     * Delegates to [DrawCardsExecutor.executeDraws] so the draw-step path and
+     * the spell/ability path share the same primitives.
+     *
+     * @param announce `false` when [count] is the tail of a draw that was already
+     *     announced and then paused — see [DrawCardsExecutor.executeDraws].
      */
-    fun drawCards(state: GameState, playerId: EntityId, count: Int, skipPrompts: Boolean = false): ExecutionResult {
-        return DrawLoop.run(
+    fun drawCards(
+        state: GameState,
+        playerId: EntityId,
+        count: Int,
+        announce: Boolean = true
+    ): ExecutionResult {
+        return drawExecutor.executeDraws(
             state = state,
             playerId = playerId,
             count = count,
-            primitive = primitive,
-            dispatcher = dispatcher,
             isDrawStep = true,
-            skipStaticReplacement = skipPrompts,
-            skipPromptOnDraw = true,
-            emptyLibraryReason = "Library is empty"
+            emptyLibraryReason = "Library is empty",
+            announce = announce
         ).toExecutionResult()
     }
-
-    /**
-     * Ask the prompt-on-draw question for [playerId]. Exposed so the draw-step
-     * continuation resumer can re-check for other unprompted abilities after
-     * a player declines one.
-     */
-    internal fun checkPromptOnDraw(
-        state: GameState,
-        playerId: EntityId,
-        drawCount: Int,
-        isDrawStep: Boolean,
-        declinedSourceIds: List<EntityId> = emptyList()
-    ): ExecutionResult? = dispatcher.checkPromptOnDraw(
-        state = state,
-        playerId = playerId,
-        drawCount = drawCount,
-        drawnCardsSoFar = emptyList(),
-        isDrawStep = isDrawStep,
-        declinedSourceIds = declinedSourceIds
-    )?.toExecutionResult()
 }

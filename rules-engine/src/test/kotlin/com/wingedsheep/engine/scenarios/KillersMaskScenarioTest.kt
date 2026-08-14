@@ -3,7 +3,8 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
-import com.wingedsheep.engine.state.components.identity.ManifestedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
@@ -51,7 +52,7 @@ class KillersMaskScenarioTest : ScenarioTestBase() {
                 game.resolveStack()
 
                 withClue("The chosen card is a manifested 2/2 on the battlefield") {
-                    game.state.getEntity(manifestPick)?.get<ManifestedComponent>() shouldBe ManifestedComponent
+                    game.state.getEntity(manifestPick)?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
                     game.state.projectedState.getPower(manifestPick) shouldBe 2
                     game.state.projectedState.getToughness(manifestPick) shouldBe 2
                 }

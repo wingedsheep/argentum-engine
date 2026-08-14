@@ -45,6 +45,7 @@ class BeetleHeadedMerchantsTest : FunSpec({
         driver.declareAttackers(me, listOf(beetle), opponent)
         driver.bothPass()                 // resolve the attack trigger → may yes/no
         driver.submitYesNo(me, true)      // opt to sacrifice; one valid fodder → auto-sacrificed
+        driver.bothPass()                 // CR 603.12: reflexive payoff is a real stack object now
 
         plusCounters(driver, beetle) shouldBe 1
         driver.getHandSize(me) shouldBe handBefore + 1

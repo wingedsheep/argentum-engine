@@ -21,7 +21,6 @@ val WordsOfWind = card("Words of Wind") {
     activatedAbility {
         cost = Costs.Mana("{1}")
         effect = Effects.ReplaceNextDraw(Effects.EachPlayerReturnPermanentToHand())
-        promptOnDraw = true
     }
 
     metadata {

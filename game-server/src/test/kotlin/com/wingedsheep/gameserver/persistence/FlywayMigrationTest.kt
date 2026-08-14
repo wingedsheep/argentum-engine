@@ -1,9 +1,18 @@
 package com.wingedsheep.gameserver.persistence
 
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.registry.PrintingRegistry
+import com.wingedsheep.gameserver.stats.DeckProfiler
+import com.wingedsheep.gameserver.stats.GeoIpService
+import com.wingedsheep.gameserver.stats.StatsQueryService
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.longs.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.flywaydb.core.Flyway
+import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.testcontainers.DockerClientFactory
 import org.testcontainers.containers.PostgreSQLContainer
 import org.testcontainers.utility.DockerImageName
@@ -286,6 +295,54 @@ class FlywayMigrationTest : FunSpec({
         }
     }
 
+    test("databaseStats reports per-table row counts and sizes").config(enabled = dockerAvailable) {
+        val postgres = PostgreSQLContainer<Nothing>(DockerImageName.parse("postgres:16-alpine"))
+        postgres.start()
+        try {
+            migrateAll(postgres)
+
+            DriverManager.getConnection(postgres.jdbcUrl, postgres.username, postgres.password).use { conn ->
+                conn.createStatement().use { st ->
+                    st.execute("INSERT INTO users(id, email, display_name) VALUES ('$alice', 'a@test.com', 'Alice')")
+                    st.execute("INSERT INTO match_results(id, game_id) VALUES (10, 'g1'), (11, 'g2')")
+                    st.execute("INSERT INTO match_participants(match_id, user_id, player_name, won) VALUES (10, '$alice', 'Alice', true)")
+                }
+            }
+
+            val dataSource = DriverManagerDataSource(postgres.jdbcUrl, postgres.username, postgres.password)
+            val stats = StatsQueryService(
+                jdbc = JdbcTemplate(dataSource),
+                deckProfiler = DeckProfiler(CardRegistry()),
+                cardRegistry = CardRegistry(),
+                printingRegistry = PrintingRegistry(),
+                geoIp = GeoIpService(),
+            ).databaseStats()
+
+            stats.databaseName shouldBe postgres.databaseName
+            stats.databaseSizeBytes shouldBeGreaterThan 0L
+
+            val byName = stats.tables.associateBy { it.tableName }
+            // Exact counts, including an empty table (which must report 0, not an estimate).
+            byName["users"]?.rows shouldBe 1L
+            byName["match_results"]?.rows shouldBe 2L
+            byName["match_participants"]?.rows shouldBe 1L
+            byName["decks"]?.rows shouldBe 0L
+            // Flyway's own bookkeeping table is a table too — it shows up like any other.
+            byName.keys shouldContain "flyway_schema_history"
+
+            // A populated, indexed table has a real footprint, and total = data + indexes.
+            val users = byName.getValue("users")
+            users.tableBytes shouldBeGreaterThan 0L
+            users.indexBytes shouldBeGreaterThan 0L
+            users.totalBytes shouldBe users.tableBytes + users.indexBytes
+
+            // Largest total footprint first.
+            stats.tables.map { it.totalBytes } shouldBe stats.tables.map { it.totalBytes }.sortedDescending()
+        } finally {
+            postgres.stop()
+        }
+    }
+
     test("V9 adds tournament status and allows null ended_at for in-progress rows").config(enabled = dockerAvailable) {
         val postgres = PostgreSQLContainer<Nothing>(DockerImageName.parse("postgres:16-alpine"))
         postgres.start()
@@ -319,6 +376,106 @@ class FlywayMigrationTest : FunSpec({
                         rs.next(); val first = rs.getLong(1)
                         rs.next(); val second = rs.getLong(1)
                         setOf(first, second) shouldBe setOf(300L, 301L)
+                    }
+                }
+            }
+        } finally {
+            postgres.stop()
+        }
+    }
+
+    test("V10 makes game_replays the only replay home, seat-indexed and status-aware").config(enabled = dockerAvailable) {
+        val postgres = PostgreSQLContainer<Nothing>(DockerImageName.parse("postgres:16-alpine"))
+        postgres.start()
+        try {
+            migrateAll(postgres)
+
+            DriverManager.getConnection(postgres.jdbcUrl, postgres.username, postgres.password).use { conn ->
+                conn.createStatement().use { st ->
+                    // Existing rows keep working: status defaults to FINISHED, both payloads optional
+                    // except the input log.
+                    st.execute("INSERT INTO game_replays(id, game_id, data, ended_at) VALUES (1, 'g-old', 'GZIPPED', now() - interval '2 days')")
+                    st.executeQuery("SELECT status, presentation FROM game_replays WHERE id = 1").use { rs ->
+                        rs.next(); rs.getString(1) shouldBe "FINISHED"; rs.getString(2) shouldBe null
+                    }
+
+                    // A finished game with an archived frame stream and a seat roster.
+                    st.execute(
+                        "INSERT INTO game_replays(id, game_id, data, presentation, engine_version, ended_at) " +
+                            "VALUES (2, 'g-new', 'GZIPPED', 'FRAMES', 'abc123', now())"
+                    )
+                    st.execute("INSERT INTO game_replay_players(replay_id, seat, player_id, player_name) VALUES (2, 0, 'alice-seat', 'Alice'), (2, 1, 'bob-seat', 'Bob')")
+
+                    // ...and one still being recorded, which must not show up in anyone's history.
+                    st.execute(
+                        "INSERT INTO game_replays(id, game_id, data, status, resume_fingerprint, ended_at) " +
+                            "VALUES (3, 'g-live', 'GZIPPED', 'IN_PROGRESS', 'deadbeefdeadbeef', now())"
+                    )
+                    st.execute("INSERT INTO game_replay_players(replay_id, seat, player_id, player_name) VALUES (3, 0, 'alice-seat', 'Alice')")
+
+                    // The seat join backing GameReplayRepository.findRecentForPlayer.
+                    st.executeQuery(
+                        """
+                        SELECT r.game_id FROM game_replays r
+                        JOIN game_replay_players p ON p.replay_id = r.id
+                        WHERE p.player_id = 'alice-seat' AND r.status = 'FINISHED'
+                        ORDER BY r.ended_at DESC
+                        """.trimIndent()
+                    ).use { rs ->
+                        rs.next(); rs.getString(1) shouldBe "g-new"
+                        rs.next() shouldBe false
+                    }
+
+                    // In-progress records are findable for resume, with their fingerprint.
+                    st.executeQuery("SELECT game_id, resume_fingerprint FROM game_replays WHERE status = 'IN_PROGRESS'").use { rs ->
+                        rs.next(); rs.getString(1) shouldBe "g-live"; rs.getString(2) shouldBe "deadbeefdeadbeef"
+                    }
+
+                    // Seats are owned by their replay and go with it.
+                    st.execute("DELETE FROM game_replays WHERE id = 2")
+                    st.executeQuery("SELECT count(*) FROM game_replay_players WHERE replay_id = 2").use { rs ->
+                        rs.next(); rs.getInt(1) shouldBe 0
+                    }
+                }
+            }
+        } finally {
+            postgres.stop()
+        }
+    }
+
+    test("V11 gives pins a write-once column that the flush update leaves alone").config(enabled = dockerAvailable) {
+        val postgres = PostgreSQLContainer<Nothing>(DockerImageName.parse("postgres:16-alpine"))
+        postgres.start()
+        try {
+            migrateAll(postgres)
+
+            DriverManager.getConnection(postgres.jdbcUrl, postgres.username, postgres.password).use { conn ->
+                conn.createStatement().use { st ->
+                    // A pre-V11 row: pins are still inside `data`, the new column is null, and it has
+                    // to keep working — the read path only prefers the column when it is populated.
+                    st.execute("INSERT INTO game_replays(id, game_id, data, ended_at) VALUES (1, 'g-prev11', 'BLOB_WITH_PINS', now())")
+                    st.executeQuery("SELECT pinned_cards FROM game_replays WHERE id = 1").use { rs ->
+                        rs.next(); rs.getString(1) shouldBe null
+                    }
+
+                    // A recording inserted with its pins, then flushed the way
+                    // GameReplayRepository.updateRecording does — naming only the volatile columns.
+                    st.execute(
+                        "INSERT INTO game_replays(id, game_id, data, pinned_cards, status, frame_count, ended_at) " +
+                            "VALUES (2, 'g-live', 'BLOB_1', 'PINS', 'IN_PROGRESS', 20, now())"
+                    )
+                    st.execute(
+                        "UPDATE game_replays SET data = 'BLOB_2', status = 'IN_PROGRESS', frame_count = 40 " +
+                            "WHERE game_id = 'g-live'"
+                    )
+
+                    // The blob moved; the pins are untouched, which is the whole point — an UPDATE that
+                    // doesn't name a TOASTed column doesn't rewrite its storage.
+                    st.executeQuery("SELECT data, pinned_cards, frame_count FROM game_replays WHERE id = 2").use { rs ->
+                        rs.next()
+                        rs.getString(1) shouldBe "BLOB_2"
+                        rs.getString(2) shouldBe "PINS"
+                        rs.getInt(3) shouldBe 40
                     }
                 }
             }

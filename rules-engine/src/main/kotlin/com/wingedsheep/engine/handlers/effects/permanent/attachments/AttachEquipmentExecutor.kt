@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.PermanentAttachedEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
@@ -32,24 +33,20 @@ class AttachEquipmentExecutor : EffectExecutor<AttachEquipmentEffect> {
             ?: return EffectResult.error(state, "No valid target for attach equipment")
 
         var newState = state
+        val unattachEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
 
-        // Detach from current creature if already attached
+        // Detach from the current creature if already attached. Moving an Equipment onto a *new*
+        // host makes it become unattached from the old one first (CR 701.3d), so this goes through
+        // the shared chokepoint and reports a PermanentUnattachedEvent — that is how Stitcher's
+        // Graft's "sacrifice that permanent" fires when you equip it away. Re-affirming the same
+        // host is not an unattach, so it emits nothing.
         val currentAttachment = newState.getEntity(equipmentId)?.get<AttachedToComponent>()
-        if (currentAttachment != null) {
-            val oldTargetId = currentAttachment.targetId
-            newState = newState.updateEntity(oldTargetId) { container ->
-                val attachments = container.get<AttachmentsComponent>()
-                if (attachments != null) {
-                    val updatedIds = attachments.attachedIds.filter { it != equipmentId }
-                    if (updatedIds.isEmpty()) {
-                        container.without<AttachmentsComponent>()
-                    } else {
-                        container.with(AttachmentsComponent(updatedIds))
-                    }
-                } else {
-                    container
-                }
-            }
+        if (currentAttachment != null && currentAttachment.targetId != targetId) {
+            val (detachedState, events) = ZoneMovementUtils.unattachEmittingEvent(newState, equipmentId)
+            newState = detachedState
+            unattachEvents += events
+        } else if (currentAttachment != null) {
+            newState = ZoneMovementUtils.cleanupReverseAttachmentLink(newState, equipmentId)
         }
 
         // Attach to new creature
@@ -68,13 +65,11 @@ class AttachEquipmentExecutor : EffectExecutor<AttachEquipmentEffect> {
         // right moment.
         val events = if (currentAttachment?.targetId != targetId) {
             val container = newState.getEntity(equipmentId)
-            listOf(
-                PermanentAttachedEvent(
-                    attachmentId = equipmentId,
-                    attachmentName = container?.get<CardComponent>()?.name ?: "Equipment",
-                    attachedToId = targetId,
-                    controllerId = container?.get<ControllerComponent>()?.playerId ?: context.controllerId,
-                )
+            unattachEvents + PermanentAttachedEvent(
+                attachmentId = equipmentId,
+                attachmentName = container?.get<CardComponent>()?.name ?: "Equipment",
+                attachedToId = targetId,
+                controllerId = container?.get<ControllerComponent>()?.playerId ?: context.controllerId,
             )
         } else emptyList()
 

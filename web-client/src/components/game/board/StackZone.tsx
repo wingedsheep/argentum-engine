@@ -7,7 +7,7 @@ import type { EntityId } from '@/types'
 import type { ClientAbilityIdentity, ClientCard } from '@/types/gameState'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { ActiveEffectBadges } from '../card/CardOverlays'
-import { AbilityText } from '../../ui/ManaSymbols'
+import { AbilityText, ManaCost } from '../../ui/ManaSymbols'
 import { useResponsiveContext, handleImageError } from './shared'
 import { styles } from './styles'
 import { groupStackCards, type StackGroup } from './stackGrouping'
@@ -123,6 +123,11 @@ export function StackDisplay() {
     : null
   const stackImageWidth = responsive.isMobile ? 55 : 140
   const stackImageHeight = responsive.isMobile ? 77 : 196
+  // Pre-rotation dimensions for a sideways-printed card, chosen so that after `rotate(90deg)` the
+  // image occupies the full column width and proportional height: the rotation swaps the axes, so
+  // the element's *height* becomes its on-screen width.
+  const landscapeStackImageHeight = stackImageWidth
+  const landscapeStackImageWidth = Math.round(stackImageWidth * stackImageWidth / stackImageHeight)
 
   /**
    * Render one card slot in the fanned pile. `renderIndex` is the slot's position across the whole
@@ -159,6 +164,18 @@ export function StackDisplay() {
             ? { boxShadow: '0 0 8px 2px rgba(60, 140, 255, 0.5)', borderRadius: 6 }
             : {}
 
+    // Badges sharing the top-left corner stack downwards in a fixed order, so adding one never
+    // silently parks it on top of another. `topOf` returns the row a badge occupies, given which
+    // of the ones above it are showing.
+    const topLeftBadges = [
+      card.castProvenanceLabel ? 'provenance' : null,
+      card.costSacrificeLabel ? 'costSacrifice' : null,
+      card.optionalCostLabel ? 'optionalCost' : null,
+      card.giftPromised ? 'gift' : null,
+      card.wasBlightPaid ? 'blight' : null,
+    ].filter((b): b is string => b !== null)
+    const topOf = (badge: string) => 4 + Math.max(0, topLeftBadges.indexOf(badge)) * 22
+
     return (
       <div
         key={opts.domKey}
@@ -175,22 +192,45 @@ export function StackDisplay() {
         onMouseEnter={(e) => hoverCard(card.id, { x: e.clientX, y: e.clientY })}
         onMouseLeave={() => hoverCard(null)}
       >
-        <img
-          src={getCardImageUrl(card.name, card.imageUri, 'small')}
-          alt={card.name}
-          style={{
-            ...styles.stackItemImage,
-            width: stackImageWidth,
-            height: stackImageHeight,
-            cursor: isValidTarget || opts.onClick ? 'pointer' : 'default',
-            ...(card.sourceZone === 'GRAVEYARD' ? {
-              opacity: 0.7,
-              filter: 'saturate(0.6)',
-            } : {}),
-          }}
-          title={card.name}
-          onError={(e) => handleImageError(e, card.name, 'small')}
-        />
+        {(() => {
+          // A sideways-printed card (split layout, Room, battle) reads landscape only once rotated
+          // 90°. The slot keeps its portrait footprint — the pile's overlap maths assumes a uniform
+          // item height — so the rotated card is scaled to the column width and centred inside it,
+          // costing a little dead space above and below and nothing else.
+          const isLandscape = card.isLandscapeFace === true
+          const dimmed = card.sourceZone === 'GRAVEYARD'
+            ? { opacity: 0.7, filter: 'saturate(0.6)' }
+            : {}
+          const image = (
+            <img
+              src={getCardImageUrl(card.name, card.imageUri, 'small')}
+              alt={card.name}
+              style={{
+                ...styles.stackItemImage,
+                ...(isLandscape
+                  ? {
+                      position: 'absolute' as const,
+                      top: '50%',
+                      left: '50%',
+                      width: landscapeStackImageWidth,
+                      height: landscapeStackImageHeight,
+                      transform: 'translate(-50%, -50%) rotate(90deg)',
+                    }
+                  : { width: stackImageWidth, height: stackImageHeight }),
+                cursor: isValidTarget || opts.onClick ? 'pointer' : 'default',
+                ...dimmed,
+              }}
+              title={card.name}
+              onError={(e) => handleImageError(e, card.name, 'small')}
+            />
+          )
+          if (!isLandscape) return image
+          return (
+            <div style={{ position: 'relative', width: stackImageWidth, height: stackImageHeight }}>
+              {image}
+            </div>
+          )
+        })()}
         {/* Collapsed-pile count pip */}
         {opts.countBadge != null && (
           <div style={styles.stackCountBadge} title={`${opts.countBadge} identical items`}>
@@ -247,19 +287,59 @@ export function StackDisplay() {
             X={card.chosenX}
           </div>
         )}
-        {/* Show kicked badge */}
-        {card.wasKicked && (
-          <div style={styles.stackKickedBadge}>
-            Kicked
+        {/* Show how the spell was cast — "Disturb · Graveyard" — for anything but a plain hand cast.
+            The tooltip carries the whole story, since a spell with something on top of it is clipped
+            to its first badge row. */}
+        {card.castProvenanceLabel && (
+          <div
+            style={{ ...styles.stackCastProvenanceBadge, top: topOf('provenance') }}
+            title={[
+              `Cast: ${card.castProvenanceLabel}`,
+              card.costSacrificeLabel,
+              card.manaPaidCost && `Paid ${card.manaPaidCost}`,
+            ].filter(Boolean).join(' · ')}
+          >
+            {card.castProvenanceLabel}
+          </div>
+        )}
+        {/* The mana that actually paid, for any alternative-cost cast — the printed pips on the card
+            were never what was spent. Top-*right*, so it shares the one badge row that stays visible
+            when a cast trigger (or any later spell) covers the rest of this card. Shifted left when
+            an X badge already owns that corner. */}
+        {card.manaPaidCost && (
+          <div
+            style={{
+              ...styles.stackManaPaidBadge,
+              top: topOf('provenance'),
+              right: card.chosenX != null ? 44 : 4,
+            }}
+            title={`Paid ${card.manaPaidCost}`}
+          >
+            <span style={{ opacity: 0.75 }}>Paid</span>
+            <ManaCost cost={card.manaPaidCost} size={9} gap={1} />
+          </div>
+        )}
+        {/* What the alternative cost ate — "Sacrificed Niblis of the Urn". Emerge (CR 702.119a)
+            prices itself off that creature's mana value, so without this the cheap cast has no
+            visible cause from the other seat. */}
+        {card.costSacrificeLabel && (
+          <div
+            style={{ ...styles.stackCostSacrificeBadge, top: topOf('costSacrifice') }}
+            title={card.costSacrificeLabel}
+          >
+            {card.costSacrificeLabel}
+          </div>
+        )}
+        {/* Show the declared optional additional cost — Kicked / Bargained / Offspring */}
+        {card.optionalCostLabel && (
+          <div style={{ ...styles.stackKickedBadge, top: topOf('optionalCost') }}>
+            {card.optionalCostLabel}
           </div>
         )}
         {/* Show gift badge when the caster promised a gift (Bloomburrow) */}
         {card.giftPromised && (
           <div
-            style={{
-              ...styles.stackGiftBadge,
-              top: card.wasKicked ? 26 : 4,
-            }}
+            style={{ ...styles.stackGiftBadge, top: topOf('gift') }}
             title="Gift promised"
           >
             <i className="ms ms-ability-gift" style={{ fontSize: 12 }} />
@@ -269,10 +349,7 @@ export function StackDisplay() {
         {/* Show blight-paid badge when the optional Blight additional cost was paid (Lorwyn Eclipsed) */}
         {card.wasBlightPaid && (
           <div
-            style={{
-              ...styles.stackBlightPaidBadge,
-              top: 4 + (card.wasKicked ? 22 : 0) + (card.giftPromised ? 22 : 0),
-            }}
+            style={{ ...styles.stackBlightPaidBadge, top: topOf('blight') }}
             title="Blight cost paid"
           >
             <i className="ms ms-counter-minus" style={{ fontSize: 12 }} />

@@ -168,7 +168,9 @@
                         "fromZone": "Graveyard"
                     }
                 },
-                "activeZone": "Graveyard",
+                "activeZones": [
+                    "Graveyard"
+                ],
                 "descriptionOverride": "Whenever a Gate you control enters, you may put this card from your graveyard on top of your library."
             }
         ],

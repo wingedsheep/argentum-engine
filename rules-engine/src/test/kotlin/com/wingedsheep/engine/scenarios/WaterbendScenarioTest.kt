@@ -23,7 +23,7 @@ import io.kotest.matchers.shouldNotBe
  * Waterbend {N} means: "Pay {N}. For each generic mana in that cost, you may tap an untapped
  * artifact or creature you control rather than pay that mana." It is modelled on activated
  * abilities by [com.wingedsheep.sdk.scripting.ActivatedAbility.hasWaterbend] + the
- * [AlternativePaymentChoice.waterbendPermanents] carrier, mirroring Convoke but generic-only
+ * [AlternativePaymentChoice.tapForGenericPermanents] carrier, mirroring Convoke but generic-only
  * and widened to artifacts.
  *
  * Card used (defined inline — no real TLA waterbend card is registered in the test pool):
@@ -116,7 +116,7 @@ class WaterbendScenarioTest : ScenarioTestBase() {
                         playerId = game.player1Id,
                         sourceId = sourceId,
                         abilityId = abilityId(),
-                        alternativePayment = AlternativePaymentChoice(waterbendPermanents = creatures.toSet())
+                        alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = creatures.toSet())
                     )
                 )
                 withClue("activating by tapping 4 creatures should succeed: ${result.error}") {
@@ -153,7 +153,7 @@ class WaterbendScenarioTest : ScenarioTestBase() {
                         playerId = game.player1Id,
                         sourceId = sourceId,
                         abilityId = abilityId(),
-                        alternativePayment = AlternativePaymentChoice(waterbendPermanents = artifacts.toSet())
+                        alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = artifacts.toSet())
                     )
                 )
                 withClue("activating by tapping 4 artifacts should succeed: ${result.error}") {
@@ -188,7 +188,7 @@ class WaterbendScenarioTest : ScenarioTestBase() {
                         playerId = game.player1Id,
                         sourceId = sourceId,
                         abilityId = abilityId(),
-                        alternativePayment = AlternativePaymentChoice(waterbendPermanents = setOf(creature, artifact))
+                        alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = setOf(creature, artifact))
                     )
                 )
                 withClue("mixed mana + waterbend payment should succeed: ${result.error}") {
@@ -227,7 +227,7 @@ class WaterbendScenarioTest : ScenarioTestBase() {
                         playerId = game.player1Id,
                         sourceId = sourceId,
                         abilityId = abilityId(),
-                        alternativePayment = AlternativePaymentChoice(waterbendPermanents = creatures.toSet())
+                        alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = creatures.toSet())
                     )
                 )
                 withClue("activating should succeed: ${result.error}") { result.error shouldBe null }
@@ -318,7 +318,7 @@ class WaterbendScenarioTest : ScenarioTestBase() {
                         sourceId = sourceId,
                         abilityId = abilityId(),
                         paymentStrategy = PaymentStrategy.Explicit(emptyList()),
-                        alternativePayment = AlternativePaymentChoice(waterbendPermanents = creatures.toSet())
+                        alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = creatures.toSet())
                     )
                 )
                 withClue("waterbend taps + floating mana should pay the whole cost: ${result.error}") {
@@ -337,7 +337,7 @@ class WaterbendScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("legal action surfaces hasWaterbend and only untapped controlled permanents") {
+            test("legal action surfaces hasTapForGeneric and only untapped controlled permanents") {
                 val game = scenario()
                     .withPlayers("P1", "P2")
                     .withCardOnBattlefield(1, "Waterbend Tester")
@@ -360,8 +360,8 @@ class WaterbendScenarioTest : ScenarioTestBase() {
 
                 withClue("waterbend ability should be offered with waterbend info") {
                     action shouldNotBe null
-                    action!!.hasWaterbend shouldBe true
-                    action.validWaterbendPermanents shouldNotBe null
+                    action!!.hasTapForGeneric shouldBe true
+                    action.validTapForGenericPermanents shouldNotBe null
                 }
                 // The source creature itself is also untapped & eligible, so the pool is: the tester,
                 // the controlled Glory Seeker, and the Trinket — but NOT the opponent's creature.
@@ -369,7 +369,7 @@ class WaterbendScenarioTest : ScenarioTestBase() {
                     game.state.getEntity(it)!!.get<ControllerComponent>()?.playerId == game.player1Id
                 }
                 val myArtifact = game.findPermanent("Waterbend Trinket")!!
-                val offered = action!!.validWaterbendPermanents!!.map { it.entityId }.toSet()
+                val offered = action!!.validTapForGenericPermanents!!.map { it.entityId }.toSet()
                 withClue("only the controller's untapped artifacts/creatures are offered") {
                     offered shouldContainExactlyInAnyOrder setOf(sourceId, myCreature, myArtifact)
                 }

@@ -6,6 +6,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ExecutorModule
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantActivatedAbilityExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantActivatedAbilityToGroupExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantEmbalmExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantFlashbackExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantHarmonizeExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantKeywordExecutor
@@ -142,6 +143,8 @@ class PermanentExecutors(
         GrantCounterPlacementModifierExecutor(),
         RemoveCountersExecutor(),
         RemoveAnyNumberOfCountersExecutor(),
+        com.wingedsheep.engine.handlers.effects.permanent.counters.PayCountersExecutor(),
+        com.wingedsheep.engine.handlers.effects.permanent.counters.PayFixedCountersExecutor(),
         com.wingedsheep.engine.handlers.effects.permanent.counters.ConvertCountersToTokensExecutor(),
         MoveCountersEachKindMissingExecutor(),
         MoveCountersExecutor(),
@@ -165,7 +168,7 @@ class PermanentExecutors(
         AddSubtypeExecutor(),
         SetLandTypeExecutor(),
         AnimateLandExecutor(),
-        BecomeArtifactExecutor(),
+        BecomeArtifactExecutor(staticAbilityHandler),
         BecomeChosenManaColorExecutor(),
         BecomeCreatureExecutor(),
         BecomeSaddledExecutor(),
@@ -178,7 +181,7 @@ class PermanentExecutors(
         ChangeColorExecutor(),
         ChangeColorToChosenExecutor(),
         ChangeGroupColorExecutor(),
-        EachPermanentBecomesCopyOfTargetExecutor(),
+        EachPermanentBecomesCopyOfTargetExecutor(cardRegistry),
         BecomeCopyOfLinkedExileExecutor(),
         LoseAllCreatureTypesExecutor(),
         MassAnimateExecutor(),
@@ -202,6 +205,7 @@ class PermanentExecutors(
         // abilities
         GrantActivatedAbilityExecutor(),
         GrantActivatedAbilityToGroupExecutor(),
+        GrantEmbalmExecutor(),
         GrantFlashbackExecutor(),
         GrantHarmonizeExecutor(),
         GrantKeywordExecutor(),
@@ -222,6 +226,8 @@ class PermanentExecutors(
         // rooms / doors
         UnlockDoorExecutor(staticAbilityHandler),
         LockDoorExecutor(staticAbilityHandler),
+        // soulbond
+        PairWithSourceExecutor(),
         // phasing
         PhaseOutExecutor(),
         PhaseOutUntilLeavesExecutor(),

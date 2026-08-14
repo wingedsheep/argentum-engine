@@ -37,7 +37,7 @@ class EngineAiMomirMulliganTest : ScenarioTestBase() {
     init {
         test("engine AI keeps an all-lands opening hand in Momir Basic") {
             val game = scenario().withPlayers().withFormat(Format.MomirBasic()).build()
-            val controller = EngineAiPlayerController(aiRegistry, game.player1Id) { game.state }
+            val controller = EngineAiPlayerController(aiRegistry, game.player1Id, gameStateProvider = { game.state })
 
             controller.decideMulligan(sevenBasicLandHand()) shouldBe true
         }
@@ -45,7 +45,7 @@ class EngineAiMomirMulliganTest : ScenarioTestBase() {
         test("engine AI still mulligans a 7-land flood outside Momir Basic") {
             // Standard format: a seven-land opener is a genuine flood, so the heuristic mulligans.
             val game = scenario().withPlayers().build()
-            val controller = EngineAiPlayerController(aiRegistry, game.player1Id) { game.state }
+            val controller = EngineAiPlayerController(aiRegistry, game.player1Id, gameStateProvider = { game.state })
 
             controller.decideMulligan(sevenBasicLandHand()) shouldBe false
         }

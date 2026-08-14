@@ -1,0 +1,85 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Widow's Bite",
+      "HULK SMASH!",
+      "Go Nuts!",
+      "Murdock's Crusade",
+      "Atlantis Attacks"
+    ],
+    "battlefield": [
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Island" },
+      { "name": "Island" },
+      { "name": "Island" },
+      { "name": "Island" },
+      { "name": "Swamp" },
+      { "name": "Swamp" },
+      { "name": "Swamp" },
+      { "name": "Swamp" },
+      { "name": "Mountain" },
+      { "name": "Mountain" },
+      { "name": "Mountain" },
+      { "name": "Mountain" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Craw Wurm" },
+      { "name": "Serra Angel" },
+      { "name": "Serra Angel" },
+      { "name": "Hill Giant" },
+      { "name": "Hill Giant" },
+      { "name": "Grizzly Bears" },
+      { "name": "Grizzly Bears" }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      { "name": "Mountain" },
+      { "name": "Mountain" },
+      { "name": "Mountain" },
+      { "name": "Serra Angel" },
+      { "name": "Craw Wurm" },
+      { "name": "Hill Giant" },
+      { "name": "Grizzly Bears" },
+      { "name": "Wall of Stone" },
+      { "name": "Feldon's Cane" },
+      { "name": "Feldon's Cane" },
+      { "name": "Orcish Oriflamme" },
+      { "name": "Lifeforce" }
+    ],
+    "graveyard": [],
+    "library": [
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Swamp"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "AI"
+}

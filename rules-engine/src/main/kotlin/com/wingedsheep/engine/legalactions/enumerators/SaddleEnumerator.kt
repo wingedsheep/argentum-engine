@@ -33,7 +33,10 @@ class SaddleEnumerator : ActionEnumerator {
         for (entityId in context.battlefieldPermanents) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
-            val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
+            // By definition id, not name — `SaddleMountHandler` resolves the saddle keyword by id,
+            // so a renamed copy of a Mount (CR 707.9) would otherwise be saddleable by the engine
+            // but never offered the Saddle action.
+            val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
 
             val saddleAbility = cardDef.keywordAbilities
                 .filterIsInstance<KeywordAbility.Numeric>()

@@ -13,7 +13,8 @@ import kotlinx.serialization.Serializable
 /**
  * Where a [GroupFilter] applies. Most filters scan the battlefield (`Battlefield`),
  * but some refer to a specific permanent relative to the source — the source itself
- * (`Self`), the creature this Aura/Equipment is attached to (`AttachedTo`), or a
+ * (`Self`), the creature this Aura/Equipment is attached to (`AttachedTo`), the source
+ * together with the creature it's soulbond-paired with (`SoulbondPair`), or a
  * pre-bound entity (`Specific`).
  */
 @Serializable
@@ -29,6 +30,19 @@ sealed interface Scope {
     @SerialName("Self")
     @Serializable
     data object Self : Scope
+
+    /**
+     * The source **and** the creature it is soulbond-paired with (CR 702.95b) — the "both
+     * creatures" / "each of those creatures" of a soulbond payoff (Lightning Mauler's "as long as
+     * this creature is paired with another creature, both creatures have haste").
+     *
+     * Resolves to the empty set while the source is unpaired, which is what makes the payoff's
+     * "as long as … paired" clause self-enforcing: no separate condition gate is needed, and the
+     * bonus switches off the instant CR 702.95e breaks the pair.
+     */
+    @SerialName("SoulbondPair")
+    @Serializable
+    data object SoulbondPair : Scope
 
     @SerialName("Specific")
     @Serializable
@@ -92,6 +106,7 @@ data class GroupFilter(
     private fun buildDescription(): String = when (scope) {
         is Scope.Self -> "this creature"
         is Scope.AttachedTo -> "enchanted/equipped creature"
+        is Scope.SoulbondPair -> "this creature and the creature it's paired with"
         is Scope.Specific -> "the chosen permanent"
         is Scope.Battlefield -> buildString {
             append("all ")
@@ -191,6 +206,13 @@ data class GroupFilter(
 
         /** "Enchanted/equipped creature" — the creature this Aura/Equipment is attached to. */
         fun attachedCreature() = GroupFilter(GameObjectFilter.Permanent, scope = Scope.AttachedTo)
+
+        /**
+         * "Both creatures" of a soulbond pair — the source plus the creature it's paired with
+         * (CR 702.95b), and nothing at all while the source is unpaired. The affected set for
+         * every soulbond payoff static.
+         */
+        fun soulbondPair() = GroupFilter(GameObjectFilter.Permanent, scope = Scope.SoulbondPair)
 
         /** A specific pre-bound entity. */
         fun specific(entityId: EntityId) =

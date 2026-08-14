@@ -1,15 +1,15 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.dsl.Patterns
+import com.wingedsheep.sdk.dsl.gift
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ControlEnchantedPermanent
-import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.Mode
-import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.GiftKind
+import com.wingedsheep.sdk.scripting.effects.ConditionalEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -25,9 +25,10 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * put three stun counters on it.
  * You control enchanted creature.
  *
- * Gift is modeled as a modal choice on the ETB trigger.
- * Mode 1 (no gift): tap enchanted + 3 stun counters.
- * Mode 2 (gift): opponent draws + tap enchanted (no stun counters).
+ * The gift is promised as you cast (CR 702.174a) — `gift(...)` adds both the additional cost and
+ * the "when this permanent enters, if the gift was promised, the chosen player draws a card"
+ * ability. The printed enters ability below reads the same promise back through
+ * [Conditions.GiftWasPromised] for its "if the gift wasn't promised" rider.
  */
 val Kitnap = card("Kitnap") {
     manaCost = "{2}{U}{U}"
@@ -37,23 +38,17 @@ val Kitnap = card("Kitnap") {
 
     auraTarget = Targets.Creature
 
+    gift(GiftKind.CARD)
+
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Patterns.Mechanic.giftSpell(
-            // Mode 1: No gift — tap enchanted creature + 3 stun counters
-            Mode.noTarget(
-                Effects.Tap(EffectTarget.EnchantedCreature)
-                    .then(Effects.AddCounters("STUN", 3, EffectTarget.EnchantedCreature)),
-                "Don't promise a gift — tap enchanted creature and put three stun counters on it"
-            ),
-            // Mode 2: Gift a card — opponent draws a card, tap enchanted creature (no stun counters)
-            Mode.noTarget(
-                DrawCardsEffect(1, EffectTarget.PlayerRef(Player.ChosenOpponent))
-                    .then(Effects.Tap(EffectTarget.EnchantedCreature))
-                    .then(Effects.GiftGiven()),
-                "Promise a gift — an opponent draws a card, tap enchanted creature"
+        effect = Effects.Tap(EffectTarget.EnchantedCreature)
+            .then(
+                ConditionalEffect(
+                    condition = Conditions.Not(Conditions.GiftWasPromised),
+                    effect = Effects.AddCounters("STUN", 3, EffectTarget.EnchantedCreature)
+                )
             )
-        )
     }
 
     staticAbility {

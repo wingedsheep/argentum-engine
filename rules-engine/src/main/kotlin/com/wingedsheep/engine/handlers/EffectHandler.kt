@@ -16,9 +16,16 @@ import com.wingedsheep.sdk.scripting.effects.Effect
  */
 class EffectHandler(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
-    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
+    /**
+     * Executor registry to delegate to. [com.wingedsheep.engine.core.EngineServices] passes its
+     * own, so effects resolving off the stack share the fully-wired registry (in particular its
+     * [com.wingedsheep.engine.registry.TokenArtRegistry]) rather than a bare one built here.
+     * Left null, this builds its own — the standalone default for callers with no service graph.
+     */
+    registry: EffectExecutorRegistry? = null,
 ) {
-    private val registry = EffectExecutorRegistry(amountEvaluator, cardRegistry = cardRegistry)
+    private val registry = registry ?: EffectExecutorRegistry(amountEvaluator, cardRegistry = cardRegistry)
 
     /**
      * Execute an effect and return the result.

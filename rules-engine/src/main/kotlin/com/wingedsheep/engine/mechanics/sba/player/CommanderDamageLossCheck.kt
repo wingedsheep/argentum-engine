@@ -24,10 +24,9 @@ class CommanderDamageLossCheck : StateBasedActionCheck {
 
     override fun check(state: GameState): ExecutionResult {
         if (state.gameOver) return ExecutionResult.success(state)
-        val format = state.format as? Format.Commander ?: return ExecutionResult.success(state)
+        val threshold = state.format.commanderDamageThreshold ?: return ExecutionResult.success(state)
         if (state.commanderDamage.isEmpty()) return ExecutionResult.success(state)
 
-        val threshold = format.commanderDamageThreshold
         var newState = state
         val events = mutableListOf<GameEvent>()
 

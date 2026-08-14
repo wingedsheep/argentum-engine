@@ -226,12 +226,15 @@ sealed interface EffectTarget {
 
     /**
      * ATTACHED-TO TRIGGERING PERMANENT: the permanent that the triggering attachment (Aura/
-     * Equipment) became attached to. Only meaningful inside a
-     * [com.wingedsheep.sdk.scripting.EventPattern.BecomesAttachedEvent] trigger, where the
-     * triggering entity is the attachment and this resolves to the thing it attached to.
+     * Equipment) became attached to — or, for the unattach mirror, came off of. Only meaningful
+     * inside a [com.wingedsheep.sdk.scripting.EventPattern.BecomesAttachedEvent] or
+     * [com.wingedsheep.sdk.scripting.EventPattern.BecomesUnattachedEvent] trigger, where the
+     * triggering entity is the attachment and this resolves to the host on the other end.
      *
-     * Used by Eriette, the Beguiler ("gain control of that permanent") and Assimilation Aegis
-     * ("that creature becomes a copy …").
+     * Used by Eriette, the Beguiler ("gain control of that permanent"), Assimilation Aegis
+     * ("that creature becomes a copy …"), and Stitcher's Graft ("sacrifice that permanent"). On the
+     * unattach side the host may already have left the battlefield — it then resolves to nothing and
+     * the payoff is a no-op, which is exactly what Stitcher's Graft's ruling calls for.
      */
     @SerialName("AttachedToTriggeringPermanent")
     @Serializable

@@ -1,8 +1,11 @@
 package com.wingedsheep.gameserver.lobby
 
 import com.wingedsheep.gameserver.deck.SideboardDerivation
+import com.wingedsheep.gameserver.cube.CubeSetConfig
+import com.wingedsheep.gameserver.cube.ResolvedCube
 import com.wingedsheep.gameserver.protocol.ServerMessage
 import com.wingedsheep.engine.limited.BoosterGenerator
+import com.wingedsheep.engine.limited.CubeDealer
 import com.wingedsheep.gameserver.session.PlayerIdentity
 import com.wingedsheep.sdk.limited.BoosterStrategy
 import com.wingedsheep.sdk.limited.CommanderDraftBooster
@@ -41,7 +44,12 @@ enum class TournamentFormat {
     PREMADE_DECKS
     ;
 
-    /** True if this format produces a Commander-shaped match (Brawl / Commander 1v1). */
+    /**
+     * True for the two Commander-Legends-shaped pack formats — a fact about the **pool**, not about
+     * the rules the game runs under. It defaults [TournamentLobby.rules] to
+     * [com.wingedsheep.sdk.core.GameRules.COMMANDER] and picks the 20-card booster; it is not the
+     * answer to "does this game use commanders?". Ask [TournamentLobby.usesCommanderRules] for that.
+     */
     val isCommanderFormat: Boolean
         get() = this == COMMANDER_DRAFT || this == COMMANDER_SEALED
 
@@ -49,6 +57,34 @@ enum class TournamentFormat {
     val usesCommanderDraftBooster: Boolean
         get() = isCommanderFormat
 }
+
+/**
+ * Why Commander rules cannot be played at this table, or null.
+ *
+ * The single statement of the one Rules × Table conflict there is. CR 810.4 gives a Two-Headed
+ * Giant team **one shared life total** while Commander gives each player their own 40, so
+ * [com.wingedsheep.sdk.core.Format.TwoHeadedGiant] deliberately exposes no commander configuration
+ * and there is nothing for a commander-configured 2HG game to be. Every surface that has to refuse
+ * the combination — the tournament start gate, the Free-for-All game builder, the lobby's game-mode
+ * switch, and the quick lobby's start — reads this rather than restating it, which is what stopped
+ * the earlier copies from drifting apart (one refused at Start, another accepted and crashed).
+ *
+ * Free-for-All and Team vs. Team pods are fine: CR 808.5 keeps a Team-vs-Team player's life total
+ * their own, so a commander-configured [com.wingedsheep.sdk.core.Format.TeamVsTeam] is coherent.
+ *
+ * @param isTwoHeadedGiant whether the *prospective* table is 2HG — passed in rather than read off a
+ *   lobby so a settings handler can ask about a mode it has not applied yet.
+ */
+fun commanderRulesTableConflict(
+    rules: com.wingedsheep.sdk.core.GameRules,
+    isTwoHeadedGiant: Boolean,
+): String? =
+    if (rules.usesCommanders && isTwoHeadedGiant) COMMANDER_NEEDS_ITS_OWN_LIFE_TOTAL else null
+
+/** The reason behind [commanderRulesTableConflict], phrased for the host who has to act on it. */
+const val COMMANDER_NEEDS_ITS_OWN_LIFE_TOTAL: String =
+    "Commander can't be played as Two-Headed Giant — a 2HG team shares one life total (CR 810.4) " +
+        "and Commander gives every player their own 40. Free-for-All and Team vs. Team pods work."
 
 /**
  * What happens when the lobby's pool-building phase finishes (the *mode* axis, orthogonal to the
@@ -176,11 +212,21 @@ data class LobbyPlayerState(
      */
     var submittedSideboard: Map<String, Int> = emptyMap(),
     /**
-     * Commander card name when the lobby's [TournamentLobby.deckFormat] is commander-shape
-     * (Commander / Brawl / Standard Brawl). Null otherwise. The card name is expected to
-     * appear in [submittedDeck]; the engine and validator both rely on this invariant.
+     * Commander card name when the lobby runs Commander rules ([TournamentLobby.usesCommanderRules]).
+     * Null otherwise. The card name is expected to appear in [submittedDeck]; the engine and
+     * validator both rely on this invariant.
      */
     var commander: String? = null,
+    /**
+     * For an AI seat: what the host chose for it to play — the same [AiDeckSpec] vocabulary the
+     * quick lobby's single AI seat uses, held per seat because a pod has several and there is no
+     * reason they should all bring the same thing.
+     *
+     * Only consulted where the AI has no pool to build from ([TournamentFormat.PREMADE_DECKS]); in
+     * a limited lobby the deck comes from the cards it was dealt, which is the format working as
+     * intended and not something to override. Ignored entirely on a human seat.
+     */
+    var aiDeckSpec: AiDeckSpec = AiDeckSpec.Auto,
 ) {
     val hasSubmittedDeck: Boolean get() = submittedDeck != null
     /** Total number of packs held by this player (current + queued). */
@@ -266,6 +312,16 @@ class TournamentLobby(
      */
     var deckFormat: com.wingedsheep.sdk.core.DeckFormat? = null,
     /**
+     * Which rules this lobby's games run under — the Rules axis, independent of [format] (where the
+     * cards come from), [deckFormat] (what may go in a deck), and [gameMode] (who is at the table).
+     *
+     * Host-settable, and merely *defaulted* by the other two: choosing a Commander pack shape or a
+     * commander-shaped [deckFormat] sets it to `COMMANDER` unless the host said otherwise, and
+     * switching the pack shape back does not reset it. Read [usesCommanderRules] rather than this
+     * field wherever the question is "does this game use commanders?".
+     */
+    var rules: com.wingedsheep.sdk.core.GameRules = com.wingedsheep.sdk.core.GameRules.STANDARD,
+    /**
      * Minimum deck size enforced by the deck validator for [TournamentFormat.COMMANDER_DRAFT] and
      * [TournamentFormat.COMMANDER_SEALED]. Defaults to 60 (Brawl shape). Has no effect on other
      * formats.
@@ -278,8 +334,9 @@ class TournamentLobby(
      */
     var allowDuplicates: Boolean = true,
     /**
-     * Commander preset (Brawl vs. classic Commander) for Commander Draft / Sealed formats. Maps
-     * to a [com.wingedsheep.sdk.core.Format.Commander] instance at match start.
+     * The host's 1v1 Commander life tuning (Brawl 25 vs. classic Commander 30) for Commander Draft
+     * / Sealed formats. A multiplayer table ignores it — read [effectiveCommanderPreset], which is
+     * what actually becomes a [com.wingedsheep.sdk.core.Format.Commander] at match start.
      */
     var commanderPreset: com.wingedsheep.sdk.core.CommanderPreset =
         com.wingedsheep.sdk.core.CommanderPreset.BRAWL,
@@ -290,6 +347,11 @@ class TournamentLobby(
      * — only [boosterCount] matters.
      */
     var chaosBoosters: Boolean = false,
+    /**
+     * Include implemented cards from the selected set codes that were not present in the paper
+     * booster product (starter/beginner-box cards and promos). The default remains paper-accurate.
+     */
+    var includedSetProducts: Map<String, Set<String>> = emptyMap(),
     /**
      * Host-settable ban list: oracle card names excluded from every booster pack this lobby
      * generates (sealed pool, draft pack, Winston/Grid deck). Matched case-insensitively by
@@ -330,6 +392,151 @@ class TournamentLobby(
      */
     var ranked: Boolean = false,
 ) {
+    var cube: ResolvedCube? = null
+        private set
+
+    val isCube: Boolean get() = cube != null
+    val packSize: Int get() = cube?.packSize ?: 0
+
+    /**
+     * Cube Pool Play: instead of dealing packs, every player deckbuilds from the *entire* cube at
+     * once with copies unlimited (up to the normal 4-of cap). Because nothing is dealt there is no
+     * contention between players and no capacity constraint — a 100-card cube is a fine Pool Play
+     * pool. Host-set; only meaningful for a cube [TournamentFormat.SEALED] lobby, which is what
+     * [isCubePoolPlay] gates on (Commander shapes have their own singleton/identity rules and are
+     * deliberately excluded).
+     */
+    var cubePoolPlay: Boolean = false
+
+    /** Whether this lobby actually runs as Pool Play — the single source of that truth. */
+    val isCubePoolPlay: Boolean get() = isCube && cubePoolPlay && format == TournamentFormat.SEALED
+
+    private var cubeBoosterGenerator: BoosterGenerator? = null
+    private var cubeDealer: CubeDealer? = null
+
+    fun cubeDealerRemainingCards(): List<CardDefinition> = cubeDealer?.remainingCards().orEmpty()
+
+    fun restoreCubeDealer(remainingCards: List<CardDefinition>) {
+        val resolvedCube = requireNotNull(cube) { "Cannot restore a cube dealer without a cube" }
+        cubeDealer = CubeDealer.resume(remainingCards, resolvedCube.packSize)
+    }
+
+    fun configureCube(resolvedCube: ResolvedCube?) {
+        require(state == LobbyState.WAITING_FOR_PLAYERS) { "Cannot change cube after start" }
+        cube = resolvedCube
+        cubeDealer = null
+        // Pool Play is a cube-only mode; leaving it set on a lobby that has gone back to
+        // catalogued sets would be a control that silently does nothing.
+        if (resolvedCube == null) cubePoolPlay = false
+        cubeBoosterGenerator = resolvedCube?.let {
+            boosterGenerator.withSets(mapOf(CubeSetConfig.SET_CODE to CubeSetConfig.of(it, boosterGenerator)))
+        }
+        if (resolvedCube != null) {
+            setCodes = listOf(CubeSetConfig.SET_CODE)
+            setNames = listOf(resolvedCube.name)
+            boosterDistribution = emptyMap()
+            chaosBoosters = false
+        }
+    }
+
+    fun cubeCapacityError(): String? {
+        val resolvedCube = cube ?: return null
+        if (format == TournamentFormat.PREMADE_DECKS) return null
+        // Pool Play hands every player the whole cube instead of dealing from it, so no amount of
+        // players or packs can exhaust it.
+        if (isCubePoolPlay) return null
+        val packsNeeded = when (format) {
+            TournamentFormat.SEALED, TournamentFormat.COMMANDER_SEALED,
+            TournamentFormat.DRAFT, TournamentFormat.COMMANDER_DRAFT -> players.size * boosterCount
+            TournamentFormat.WINSTON_DRAFT, TournamentFormat.GRID_DRAFT -> boosterCount
+            TournamentFormat.PREMADE_DECKS -> 0
+        }
+        val usableCards = cubeCardsAfterBans().size
+        val cardsNeeded = packsNeeded * resolvedCube.packSize
+        if (cardsNeeded <= usableCards) return null
+        val calculation = when (format) {
+            TournamentFormat.SEALED, TournamentFormat.COMMANDER_SEALED,
+            TournamentFormat.DRAFT, TournamentFormat.COMMANDER_DRAFT ->
+                "${players.size} players × $boosterCount packs × ${resolvedCube.packSize}"
+            else -> "$boosterCount packs × ${resolvedCube.packSize}"
+        }
+        return "$calculation = $cardsNeeded cards needed, cube has $usableCards"
+    }
+
+    /** The cube's cards minus the host's ban list — the pack source and the Pool Play pool alike. */
+    fun cubeCardsAfterBans(): List<CardDefinition> =
+        cube?.cards?.filterNot { card ->
+            bannedCardNames.any { it.equals(card.name, ignoreCase = true) }
+        }.orEmpty()
+
+    private fun prepareCubeDealer(): Boolean {
+        val resolvedCube = cube ?: return true
+        if (cubeCapacityError() != null) return false
+        // Pool Play deals nothing — every player gets the whole cube (see [startDeckBuilding]).
+        if (isCubePoolPlay) return true
+        cubeDealer = CubeDealer(cubeCardsAfterBans(), resolvedCube.packSize, System.nanoTime())
+        return true
+    }
+
+    private fun packsFor(count: Int): List<List<CardDefinition>> {
+        cubeDealer?.let { return it.deal(count) }
+
+        val packGenerator = setPackGenerator()
+        val strategy = strategyOverrideForFormat()
+        val sequence = if (!chaosBoosters && boosterDistribution.isNotEmpty()) {
+            boosterDistribution.flatMap { (code, packs) -> List(packs) { code } }
+        } else {
+            emptyList()
+        }
+        return List(count) { index ->
+            val sequenceIndex =
+                if (format == TournamentFormat.DRAFT || format == TournamentFormat.COMMANDER_DRAFT) {
+                    currentPackNumber - 1
+                } else {
+                    index
+                }
+            val setCode = sequence.getOrNull(sequenceIndex)
+            if (setCode != null) {
+                packGenerator.generateBooster(setCode, strategy, bannedCardNames)
+            } else {
+                packGenerator.generateBooster(
+                    setCodes,
+                    strategy,
+                    chaos = chaosBoosters,
+                    bannedCardNames = bannedCardNames,
+                )
+            }
+        }
+    }
+
+    /** Lobby-scoped view that opts selected catalogued sets into their non-booster extras. */
+    private fun setPackGenerator(): BoosterGenerator {
+        if (includedSetProducts.isEmpty() || isCube) return boosterGenerator
+        val expanded = setCodes.mapNotNull { code ->
+            val config = boosterGenerator.getSetConfig(code) ?: return@mapNotNull null
+            val selectedProducts = includedSetProducts[code].orEmpty()
+            val extras = selectedProducts.flatMap { config.extraCardsByProduct[it].orEmpty() }
+            code to config.copy(cards = (config.cards + extras).distinctBy { it.name })
+        }.toMap()
+        return boosterGenerator.withSets(expanded)
+    }
+
+    /**
+     * **The** answer to "does this lobby's game run Commander rules?" — one property, one field.
+     *
+     * Before the Rules axis existed the same disjunction (`PREMADE_DECKS` with a commander-shaped
+     * `deckFormat`, or a Commander pack format) was written out at four call sites plus three more
+     * spellings elsewhere, and the copies could not see each other: the client's Table gate asked
+     * only about the pack format, so premade Commander in a pod was blocked by a rule that could not
+     * even observe it. Everything now reads this.
+     */
+    val usesCommanderRules: Boolean get() = rules.usesCommanders
+
+    /**
+     * Why this lobby's Rules and Table contradict each other, or null. See
+     * [commanderRulesTableConflict] — the reason lives there, once.
+     */
+    val rulesTableConflict: String? get() = commanderRulesTableConflict(rules, isTwoHeadedGiant)
 
     /** Whether this lobby may be ranked at all: only a TOURNAMENT-mode bracket has 1v1 matches. */
     val rankedEligible: Boolean get() = gameMode == LobbyGameMode.TOURNAMENT
@@ -357,6 +564,25 @@ class TournamentLobby(
      */
     val isTeamGame: Boolean get() = isTwoHeadedGiant || isTeamVsTeam
 
+    /**
+     * The Commander life/damage preset this lobby's games actually run at.
+     *
+     * Keyed on the *table*, not the seat count, so it is stable across a pod's play-again games even
+     * if someone leaves: a bracket plays 1v1 matches and honours the host's Brawl-vs-Commander
+     * choice, while every single-pod table plays [com.wingedsheep.sdk.core.CommanderPreset.POD] —
+     * paper Commander's 40 life. The 25/30 tunings exist to stop a 1v1 limited game dragging, and
+     * applying them to a pod was the bug: a Commander Draft pod would start at 25 life while the
+     * damage it has to survive is spread over three opponents instead of one.
+     *
+     * Read this rather than [commanderPreset] wherever a `Format.Commander` is being built.
+     */
+    val effectiveCommanderPreset: com.wingedsheep.sdk.core.CommanderPreset
+        get() = if (gameMode == LobbyGameMode.TOURNAMENT) {
+            commanderPreset
+        } else {
+            com.wingedsheep.sdk.core.CommanderPreset.POD
+        }
+
     // =========================================================================
     // Free-for-All mode state (unused in TOURNAMENT mode)
     // =========================================================================
@@ -381,6 +607,7 @@ class TournamentLobby(
      */
     fun updateSets(newSetCodes: List<String>): Boolean {
         if (state != LobbyState.WAITING_FOR_PLAYERS) return false
+        if (isCube) return false
         if (newSetCodes.isEmpty()) return false
 
         // Validate concrete codes; random placeholders are validated only when resolved at start.
@@ -429,7 +656,7 @@ class TournamentLobby(
      * Recalculate the booster distribution after boosterCount changes.
      */
     fun recalculateDistribution() {
-        boosterDistribution = calculateDefaultDistribution(setCodes, boosterCount)
+        boosterDistribution = if (isCube) emptyMap() else calculateDefaultDistribution(setCodes, boosterCount)
     }
 
     /** Players indexed by player ID */
@@ -469,15 +696,13 @@ class TournamentLobby(
     var completedAt: Long? = null
         private set
 
-    /** Basic lands available for deck building (one variant per type, for client display) */
-    val basicLands: Map<String, CardDefinition> by lazy {
-        if (setCodes.isEmpty()) emptyMap() else boosterGenerator.getBasicLands(setCodes)
-    }
-
-    /** All basic land art variants grouped by land name (for distributing across variants in decks) */
-    val allBasicLandVariants: Map<String, List<CardDefinition>> by lazy {
-        if (setCodes.isEmpty()) emptyMap() else boosterGenerator.getAllBasicLandVariants(setCodes)
-    }
+    /**
+     * Basic lands available for deck building: the set's standard art, one printing per type. Shown
+     * to the player while building and stamped onto the submitted deck, so both agree.
+     */
+    val basicLands: Map<String, CardDefinition>
+        get() = if (setCodes.isEmpty()) emptyMap()
+        else (cubeBoosterGenerator ?: boosterGenerator).getBasicLands(setCodes)
 
     /** Players who are ready for the next round */
     private val playersReadyForNextRound = mutableSetOf<EntityId>()
@@ -704,6 +929,26 @@ class TournamentLobby(
         if (state != LobbyState.WAITING_FOR_PLAYERS) return false
         if (players.size < 2) return false
         if (format != TournamentFormat.SEALED && format != TournamentFormat.COMMANDER_SEALED) return false
+        if (!prepareCubeDealer()) return false
+
+        if (isCubePoolPlay) {
+            // Every player builds from the same, whole cube. Nothing is consumed, so the pools are
+            // identical and no player's choices constrain another's.
+            val wholeCube = cubeCardsAfterBans()
+            players.forEach { (playerId, playerState) ->
+                players[playerId] = playerState.copy(cardPool = wholeCube)
+            }
+            state = LobbyState.DECK_BUILDING
+            return true
+        }
+
+        if (isCube) {
+            players.forEach { (playerId, playerState) ->
+                players[playerId] = playerState.copy(cardPool = packsFor(boosterCount).flatten())
+            }
+            state = LobbyState.DECK_BUILDING
+            return true
+        }
 
         val strategy = strategyOverrideForFormat()
 
@@ -713,7 +958,7 @@ class TournamentLobby(
 
         if (effectiveDistribution != null) {
             players.forEach { (playerId, playerState) ->
-                val pool = boosterGenerator.generateSealedPool(effectiveDistribution, strategy, chaos = chaosBoosters, bannedCardNames = bannedCardNames)
+                val pool = setPackGenerator().generateSealedPool(effectiveDistribution, strategy, chaos = chaosBoosters, bannedCardNames = bannedCardNames)
                 players[playerId] = playerState.copy(cardPool = pool)
             }
         } else {
@@ -721,7 +966,7 @@ class TournamentLobby(
             // set distribution (e.g., all get 3 Portal + 2 Onslaught boosters)
             val distributionSeed = System.currentTimeMillis()
             players.forEach { (playerId, playerState) ->
-                val pool = boosterGenerator.generateSealedPool(
+                val pool = setPackGenerator().generateSealedPool(
                     setCodes,
                     boosterCount,
                     distributionSeed,
@@ -754,6 +999,7 @@ class TournamentLobby(
         if (state != LobbyState.WAITING_FOR_PLAYERS) return false
         if (players.size < 2) return false
         if (format != TournamentFormat.DRAFT && format != TournamentFormat.COMMANDER_DRAFT) return false
+        if (!prepareCubeDealer()) return false
 
         // Set up player order (for pack passing)
         playerOrder = players.keys.toList().shuffled()
@@ -775,24 +1021,17 @@ class TournamentLobby(
      * E.g., with {ONS: 1, LGN: 1, SCG: 1}, pack 1 = ONS, pack 2 = LGN, pack 3 = SCG.
      */
     private fun distributeNewPacks() {
-        // Build a sequence of set codes from the distribution (e.g., [ONS, LGN, SCG] for 1/1/1).
-        // Chaos mode ignores per-pack assignments and pulls every pack from the combined pool.
-        val setSequence = if (!chaosBoosters && boosterDistribution.isNotEmpty()) {
-            boosterDistribution.flatMap { (code, count) -> List(count) { code } }
-        } else {
-            null
+        if (isCube) {
+            players.values.zip(packsFor(players.size)).forEach { (playerState, newPack) ->
+                playerState.currentPack = newPack
+                playerState.packQueue.clear()
+                playerState.poolSizeAtRoundStart = playerState.cardPool.size
+            }
+            return
         }
-        // Pick the set for this pack round (1-indexed currentPackNumber)
-        val packSetCode = setSequence?.getOrNull(currentPackNumber - 1)
-
-        val strategy = strategyOverrideForFormat()
 
         players.forEach { (_, playerState) ->
-            val newPack = if (packSetCode != null) {
-                boosterGenerator.generateBooster(packSetCode, strategy, bannedCardNames)
-            } else {
-                boosterGenerator.generateBooster(setCodes, strategy, chaos = chaosBoosters, bannedCardNames = bannedCardNames)
-            }
+            val newPack = packsFor(1).single()
             playerState.currentPack = newPack
             playerState.packQueue.clear()
             playerState.poolSizeAtRoundStart = playerState.cardPool.size
@@ -948,15 +1187,13 @@ class TournamentLobby(
         if (state != LobbyState.WAITING_FOR_PLAYERS) return false
         if (players.size != 2) return false
         if (format != TournamentFormat.WINSTON_DRAFT) return false
+        if (!prepareCubeDealer()) return false
 
         // Set up player order (randomize who goes first)
         playerOrder = players.keys.toList().shuffled()
 
         // Generate boosters and shuffle into main deck
-        val allCards = mutableListOf<CardDefinition>()
-        repeat(boosterCount) {
-            allCards.addAll(boosterGenerator.generateBooster(setCodes, chaos = chaosBoosters, bannedCardNames = bannedCardNames))
-        }
+        val allCards = packsFor(boosterCount).flatten().toMutableList()
         allCards.shuffle()
 
         winstonMainDeck.clear()
@@ -992,6 +1229,7 @@ class TournamentLobby(
         if (state != LobbyState.WAITING_FOR_PLAYERS) return false
         if (players.size < 2 || players.size > 4) return false
         if (format != TournamentFormat.GRID_DRAFT) return false
+        if (!prepareCubeDealer()) return false
 
         val allPlayers = players.keys.toList().shuffled()
 
@@ -1000,8 +1238,7 @@ class TournamentLobby(
             // (ensures balanced rarity distribution per group)
             val boostersPerGroup = boosterCount / 2
             fun generateGroupPool(count: Int): MutableList<CardDefinition> {
-                val pool = mutableListOf<CardDefinition>()
-                repeat(count) { pool.addAll(boosterGenerator.generateBooster(setCodes, chaos = chaosBoosters, bannedCardNames = bannedCardNames)) }
+                val pool = packsFor(count).flatten().toMutableList()
                 pool.shuffle()
                 return pool
             }
@@ -1011,8 +1248,7 @@ class TournamentLobby(
             )
         } else {
             // 2-3 players: 1 group with all players
-            val pool = mutableListOf<CardDefinition>()
-            repeat(boosterCount) { pool.addAll(boosterGenerator.generateBooster(setCodes, chaos = chaosBoosters, bannedCardNames = bannedCardNames)) }
+            val pool = packsFor(boosterCount).flatten().toMutableList()
             pool.shuffle()
             gridGroups = listOf(
                 GridGroup(mainDeck = pool, playerOrder = allPlayers)
@@ -1402,7 +1638,8 @@ class TournamentLobby(
     /**
      * Submit a deck for a player.
      *
-     * For commander-shape [deckFormat]s, [commander] designates the player's commander; it
+     * When the lobby runs Commander rules ([usesCommanderRules]), [commander] designates the
+     * player's commander; it
      * MUST already be counted inside [deckList] (the wire convention — picker emits the merged
      * deck). Storage follows that convention: the merged [deckList] is kept verbatim in
      * [LobbyPlayerState.submittedDeck] and the commander is held alongside in
@@ -1451,18 +1688,19 @@ class TournamentLobby(
         // Sideboard (CR 100.4). In Limited the pool is authoritative, so the sideboard is
         // *derived* as pool − maindeck (CR 100.4b) and any client-sent value is ignored. In
         // PREMADE_DECKS (constructed) there is no pool, so the explicit client sideboard is kept.
-        val effectiveSideboard = if (isPremade) {
-            sideboard
-        } else {
-            SideboardDerivation.fromPool(playerState.cardPool, deckList)
+        // Pool Play's "pool" is the whole cube, so deriving would seed a 300+ card SIDEBOARD zone
+        // (and hand wish effects the entire cube) — it gets no sideboard at all.
+        val effectiveSideboard = when {
+            isPremade -> sideboard
+            isCubePoolPlay -> emptyMap()
+            else -> SideboardDerivation.fromPool(playerState.cardPool, deckList)
         }
 
         players[playerId] = playerState.copy(
             submittedDeck = deckList,
             submittedSideboard = effectiveSideboard,
-            // Commander is meaningful only for commander-shape deckFormats; keep whatever the
-            // caller passed (LobbyHandler is responsible for clearing it for non-commander
-            // submissions).
+            // Commander is meaningful only under Commander rules; keep whatever the caller passed
+            // (LobbyHandler is responsible for clearing it for non-commander submissions).
             commander = commander,
         )
 
@@ -1482,20 +1720,31 @@ class TournamentLobby(
             return false
         }
 
-        val playerState = players[playerId] ?: return false
-
-        if (!playerState.hasSubmittedDeck) {
+        if (players[playerId]?.hasSubmittedDeck != true) {
             return false // Nothing to unsubmit
         }
 
-        // Clear deck and ready state
+        discardSubmittedDeck(playerId)
+        return true
+    }
+
+    /**
+     * Drop [playerId]'s submitted deck and ready state, whatever state the lobby is in.
+     *
+     * [unsubmitDeck] is the player-facing action and is gated on the lobby being at a point where
+     * *they* may change their mind. This is the same clearing without that question, for a deck the
+     * lobby itself has just invalidated — a generated AI deck after the host changes the format or
+     * the deck-legality axis out from under it, where the gate would refuse and leave the seat
+     * holding a deck built for a lobby that no longer exists.
+     */
+    internal fun discardSubmittedDeck(playerId: EntityId) {
+        val playerState = players[playerId] ?: return
         players[playerId] = playerState.copy(
             submittedDeck = null,
             submittedSideboard = emptyMap(),
             commander = null,
         )
         playersReadyForNextRound.remove(playerId)
-        return true
     }
 
     /**
@@ -1587,7 +1836,10 @@ class TournamentLobby(
                 isHost = isHost(ps.identity.playerId),
                 isConnected = ps.identity.isConnected,
                 deckSubmitted = ps.hasSubmittedDeck,
-                isAi = isAiPlayer(ps.identity.playerId)
+                isAi = isAiPlayer(ps.identity.playerId),
+                // Summary only — never the decklist itself. Lobby state is re-broadcast on every
+                // change, and the only thing the seat's row renders is a label and a card count.
+                aiDeck = if (isAiPlayer(ps.identity.playerId)) AiDeckSpecView.of(ps.aiDeckSpec) else null,
             )
         }
 
@@ -1599,7 +1851,10 @@ class TournamentLobby(
                 extensionSet = config.extensionSet,
                 block = config.block,
                 implementedCount = config.distinctCardCount,
-                releaseDate = config.releaseDate
+                releaseDate = config.releaseDate,
+                products = config.extraCardsByProduct.map { (id, cards) ->
+                    ServerMessage.SetProduct(id, cards.size)
+                },
             )
         }
 
@@ -1620,11 +1875,17 @@ class TournamentLobby(
                 gamesPerMatch = gamesPerMatch,
                 isPublic = isPublic,
                 deckFormat = deckFormat?.name,
+                rules = rules.name,
                 deckSizeMin = deckSizeMin,
                 allowDuplicates = allowDuplicates,
                 commanderPreset = commanderPreset.name,
                 chaosBoosters = chaosBoosters,
+                includedSetProducts = includedSetProducts.mapValues { (_, ids) -> ids.sorted() },
                 bannedCardNames = bannedCardNames.sorted(),
+                cubeName = cube?.name,
+                cubeCardCount = cube?.cards?.size,
+                packSize = cube?.packSize,
+                cubePoolPlay = cubePoolPlay,
                 aiAssistEnabled = aiAssistEnabled,
                 gameMode = gameMode.name,
                 attackMode = attackMode.name,
@@ -1657,13 +1918,22 @@ class TournamentLobby(
         }
         for ((cardName, count) in countsByBaseName) {
             if (cardName in basicLandNames) continue
-            if (count > 4) {
-                return "Cannot have more than 4 copies of $cardName (have $count)"
+            if (count > MAX_COPIES_PER_CARD) {
+                return "Cannot have more than $MAX_COPIES_PER_CARD copies of $cardName (have $count)"
             }
         }
         return null
     }
 
+    /**
+     * Limited deck validation: min 40 cards, every card present in the player's pool, no more copies
+     * than the pool holds, and a hard 4-of cap. Basic lands are exempt throughout (they're supplied,
+     * not drafted).
+     *
+     * In Pool Play ([isCubePoolPlay]) copies are unlimited: the pool is the whole cube and every
+     * player has the same one, so "how many copies did you open" is not a constraint — only
+     * membership in the cube and the 4-of cap survive.
+     */
     private fun validateDeck(pool: List<CardDefinition>, deckList: Map<String, Int>): String? {
         val totalCards = deckList.values.sum()
         if (totalCards < 40) {
@@ -1676,6 +1946,7 @@ class TournamentLobby(
             .eachCount()
 
         val basicLandNames = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
+        val unlimitedCopies = isCubePoolPlay
 
         for ((cardName, count) in deckList) {
             if (count <= 0) continue
@@ -1683,15 +1954,15 @@ class TournamentLobby(
 
             val availableInPool = poolCounts[cardName] ?: 0
             if (availableInPool == 0) {
-                return "Card not in pool: $cardName"
+                return if (unlimitedCopies) "Card not in cube: $cardName" else "Card not in pool: $cardName"
             }
-            if (count > availableInPool) {
+            if (!unlimitedCopies && count > availableInPool) {
                 return "Not enough copies of $cardName in pool (have $availableInPool, trying to use $count)"
             }
 
             // Enforce 4-copy limit
-            if (count > 4) {
-                return "Cannot have more than 4 copies of $cardName (have $count)"
+            if (count > MAX_COPIES_PER_CARD) {
+                return "Cannot have more than $MAX_COPIES_PER_CARD copies of $cardName (have $count)"
             }
         }
 
@@ -1855,6 +2126,13 @@ class TournamentLobby(
          * key in [setCodes] / [boosterDistribution] and resolves independently.
          */
         const val RANDOM_SET_CODE = "RANDOM"
+
+        /**
+         * Hard per-card copy cap for every deck this lobby validates, and the *only* copy constraint
+         * left in Cube Pool Play (where the pool itself imposes none). Basic lands are exempt
+         * everywhere — they're supplied, not opened.
+         */
+        const val MAX_COPIES_PER_CARD = 4
 
         /** Display name shown for an unresolved [RANDOM_SET_CODE] slot. */
         const val RANDOM_SET_NAME = "Random Set"

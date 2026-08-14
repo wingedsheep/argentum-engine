@@ -1,8 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.lci.cards
 
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
@@ -10,11 +8,8 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.TriggeredAbility
-import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**
  * Pirate Hat (LCI #70) — {1}{U} Artifact — Equipment
@@ -31,9 +26,8 @@ import com.wingedsheep.sdk.scripting.targets.TargetCreature
  *   lives on the creature and fires when that creature attacks. The loot resolves for that
  *   creature's controller via [Patterns.Hand.loot] (draw uses [EffectTarget.Controller]).
  * - "Equip Pirate {1}" is a variant equip keyword ("{1}: Attach to target Pirate creature you
- *   control. Equip only as a sorcery."), modeled as a sorcery-speed activated ability whose
- *   target is restricted to a Pirate creature you control — mirroring Dúnedain Blade's
- *   "Equip Human {1}". The unrestricted "Equip {2}" uses the [equipAbility] facade.
+ *   control. Equip only as a sorcery.", CR 702.6c) — authored as `equipAbility(quality = "Pirate")`
+ *   so it stays a real equip ability, exactly like the unrestricted "Equip {2}".
  */
 val PirateHat = card("Pirate Hat") {
     manaCost = "{1}{U}"
@@ -61,17 +55,12 @@ val PirateHat = card("Pirate Hat") {
         )
     }
 
-    // Equip Pirate {1}: attach only to a Pirate creature you control, sorcery speed.
-    activatedAbility {
-        cost = Costs.Mana(ManaCost.parse("{1}"))
-        timing = TimingRule.SorcerySpeed
-        val creature = target(
-            "Pirate creature you control",
-            TargetCreature(filter = TargetFilter.CreatureYouControl.withSubtype(Subtype.PIRATE))
-        )
-        effect = AttachEquipmentEffect(creature)
-        description = "Equip Pirate {1}"
-    }
+    // Equip Pirate {1}: attach only to a Pirate creature you control, sorcery speed (CR 702.6c).
+    equipAbility(
+        "{1}",
+        quality = "Pirate",
+        targetFilter = TargetFilter.CreatureYouControl.withSubtype(Subtype.PIRATE),
+    )
 
     // Equip {2}: attach to any creature you control, sorcery speed.
     equipAbility("{2}")

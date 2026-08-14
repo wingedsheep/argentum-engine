@@ -1,0 +1,194 @@
+# Marvel's Spider-Man (SPM) - Card Checklist
+
+**Set Size:** 188 booster cards (excluding basic lands and tokens)
+**Release Date:** September 26, 2025
+**Implemented:** 188 / 188
+**Status:** ✅ Complete — every card human-authored with a passing scenario test; archived.
+- [x] Agent Venom
+- [x] Alien Symbiosis
+- [x] Angry Rabble
+- [x] Amazing Acrobatics
+- [x] Anti-Venom, Horrifying Healer
+- [x] Arachne, Psionic Weaver
+- [x] Araña, Heart of the Spider
+- [x] Aunt May
+- [x] Bagel and Schmear
+- [x] Beetle, Legacy Criminal
+- [x] Behold the Sinister Six!
+- [x] Biorganic Carapace
+- [x] Black Cat, Cunning Thief
+- [x] Carnage, Crimson Chaos
+- [x] Chameleon, Master of Disguise
+- [x] Cheering Crowd
+- [x] City Pigeon
+- [x] Common Crook
+- [x] Cosmic Spider-Man
+- [x] Costume Closet
+- [x] Daily Bugle Building
+- [x] Daily Bugle Reporters
+- [x] Damage Control Crew
+- [x] Doc Ock's Henchmen
+- [x] Doc Ock's Tentacles
+- [x] Doc Ock, Sinister Scientist
+- [x] Doctor Octopus, Master Planner
+- [x] Eddie Brock // Venom, Lethal Protector
+- [x] Eerie Gravestone
+- [x] Electro's Bolt
+- [x] Electro, Assaulting Battery
+- [x] Ezekiel Sims, Spider-Totem
+- [x] Flash Thompson, Spider-Fan
+- [x] Flying Octobot
+- [x] Friendly Neighborhood
+- [x] Gallant Citizen
+- [x] Green Goblin, Revenant
+- [x] Grow Extra Arms
+- [x] Guy in the Chair
+- [x] Gwen Stacy // Ghost-Spider
+- [x] Gwenom, Remorseless
+- [x] Heroes' Hangout
+- [x] Hide on the Ceiling
+- [x] Hobgoblin, Mantled Marauder
+- [x] Hot Dog Cart
+- [x] Hydro-Man, Fluid Felon
+- [x] Impostor Syndrome
+- [x] Inner Demons Gangsters
+- [x] Interdimensional Web Watch
+- [x] Iron Spider, Stark Upgrade
+- [x] J. Jonah Jameson
+- [x] Jackal, Genius Geneticist
+- [x] Kapow!
+- [x] Kraven the Hunter
+- [x] Kraven's Cats
+- [x] Kraven's Last Hunt
+- [x] Kraven, Proud Predator
+- [x] Lady Octopus, Inspired Inventor
+- [x] Living Brain, Mechanical Marvel
+- [x] Lizard, Connors's Curse
+- [x] Lurking Lizards
+- [x] Madame Web, Clairvoyant
+- [x] Mary Jane Watson
+- [x] Masked Meower
+- [x] Maximum Carnage
+- [x] Mechanical Mobster
+- [x] Merciless Enforcers
+- [x] Miles Morales // Ultimate Spider-Man
+- [x] Mister Negative
+- [x] Mob Lookout
+- [x] Molten Man, Inferno Incarnate
+- [x] Morbius the Living Vampire
+- [x] Morlun, Devourer of Spiders
+- [x] Multiversal Passage
+- [x] Mysterio's Phantasm
+- [x] Mysterio, Master of Illusion
+- [x] News Helicopter
+- [x] Norman Osborn // Green Goblin
+- [x] Ominous Asylum
+- [x] Origin of Spider-Man
+- [x] Oscorp Industries
+- [x] Oscorp Research Team
+- [x] Parker Luck
+- [x] Passenger Ferry
+- [x] Peter Parker // Amazing Spider-Man
+- [x] Peter Parker's Camera
+- [x] Pictures of Spider-Man
+- [x] Prison Break
+- [x] Professional Wrestler
+- [x] Prowler, Clawed Thief
+- [x] Pumpkin Bombardment
+- [x] Radioactive Spider
+- [x] Raging Goblinoids
+- [x] Rent Is Due
+- [x] Rhino's Rampage
+- [x] Rhino, Barreling Brute
+- [x] Risky Research
+- [x] Robotics Mastery
+- [x] Rocket-Powered Goblin Glider
+- [x] Romantic Rendezvous
+- [x] SP//dr, Piloted by Peni
+- [x] Sandman's Quicksand
+- [x] Sandman, Shifting Scoundrel
+- [x] Savage Mansion
+- [x] Scarlet Spider, Ben Reilly
+- [x] Scarlet Spider, Kaine
+- [x] School Daze
+- [x] Scorpion's Sting
+- [x] Scorpion, Seething Striker
+- [x] Scout the City
+- [x] Secret Identity
+- [x] Selfless Police Captain
+- [x] Shadow of the Goblin
+- [x] Shock
+- [x] Shocker, Unshakable
+- [x] Shriek, Treblemaker
+- [x] Silk, Web Weaver
+- [x] Silver Sable, Mercenary Leader
+- [x] Sinister Hideout
+- [x] Skyward Spider
+- [x] Spectacular Spider-Man
+- [x] Spectacular Tactics
+- [x] Spider Manifestation
+- [x] Spider-Bot
+- [x] Spider-Byte, Web Warden
+- [x] Spider-Girl, Legacy Hero
+- [x] Spider-Gwen, Free Spirit
+- [x] Spider-Ham, Peter Porker
+- [x] Spider-Islanders
+- [x] Spider-Man 2099
+- [x] Spider-Man India
+- [x] Spider-Man No More
+- [x] Spider-Man Noir
+- [x] Spider-Man, Brooklyn Visionary
+- [x] Spider-Man, Web-Slinger
+- [x] Spider-Mobile
+- [x] Spider-Punk
+- [x] Spider-Rex, Daring Dino
+- [x] Spider-Sense
+- [x] Spider-Slayer, Hatred Honed
+- [x] Spider-Suit
+- [x] Spider-UK
+- [x] Spider-Verse
+- [x] Spider-Woman, Stunning Savior
+- [x] Spiders-Man, Heroic Horde
+- [x] Spinneret and Spiderling
+- [x] Starling, Aerial Ally
+- [x] Steel Wrecking Ball
+- [x] Stegron the Dinosaur Man
+- [x] Strength of Will
+- [x] Suburban Sanctuary
+- [x] Subway Train
+- [x] Sudden Strike
+- [x] Sun-Spider, Nimble Webber
+- [x] Superior Foes of Spider-Man
+- [x] Superior Spider-Man
+- [x] Supportive Parents
+- [x] Swarm, Being of Bees
+- [x] Symbiote Spider-Man
+- [x] Taxi Driver
+- [x] Terrific Team-Up
+- [x] The Clone Saga
+- [x] The Death of Gwen Stacy
+- [x] The Soul Stone
+- [x] The Spot's Portal
+- [x] The Spot, Living Portal
+- [x] Thwip!
+- [x] Tombstone, Career Criminal
+- [x] Ultimate Green Goblin
+- [x] University Campus
+- [x] Unstable Experiment
+- [x] Urban Retreat
+- [x] Venom's Hunger
+- [x] Venom, Evil Unleashed
+- [x] Venomized Cat
+- [x] Vibrant Cityscape
+- [x] Villainous Wrath
+- [x] Vulture, Scheming Scavenger
+- [x] Wall Crawl
+- [x] Web Up
+- [x] Web of Life and Destiny
+- [x] Web-Shooters
+- [x] Web-Warriors
+- [x] Whoosh!
+- [x] Wild Pack Squad
+- [x] Wisecrack
+- [x] With Great Power . . .
+- [x] Wraith, Vicious Vigilante

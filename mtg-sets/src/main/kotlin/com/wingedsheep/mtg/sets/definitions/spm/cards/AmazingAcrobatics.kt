@@ -44,7 +44,7 @@ val AmazingAcrobatics = card("Amazing Acrobatics") {
     }
 
     metadata {
-        rarity = Rarity.UNCOMMON
+        rarity = Rarity.COMMON
         collectorNumber = "25"
         artist = "Justyna Dura"
         flavorText = "\"Hey, who added these deadly laser beams? Rude.\""

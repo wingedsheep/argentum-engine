@@ -31,7 +31,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *    keys on.
  *  - **Counting down and casting** — [countdownAbility] below, a single triggered ability
  *    the engine synthesizes for every exiled card carrying the suspend marker. It fires on
- *    the owner's upkeep (the trigger detector already scans exile for `activeZone == EXILE`
+ *    the owner's upkeep (the trigger detector already scans exile for `EXILE in activeZones`
  *    triggers and treats exiled cards as owner-controlled), removes one time counter, and —
  *    when that empties the pile — grants haste and plays the card for free through the
  *    ordinary [CastFromCollectionWithoutPayingCostEffect] pipeline (which handles target / X
@@ -59,7 +59,7 @@ object Suspend {
         id = AbilityId("suspend_countdown"),
         trigger = EventPattern.StepEvent(Step.UPKEEP, Player.You),
         binding = TriggerBinding.SELF,
-        activeZone = Zone.EXILE,
+        activeZones = setOf(Zone.EXILE),
         // Only count down while counters remain; this also makes a leftover marker inert.
         triggerCondition = hasTimeCounter,
         effect = CompositeEffect(

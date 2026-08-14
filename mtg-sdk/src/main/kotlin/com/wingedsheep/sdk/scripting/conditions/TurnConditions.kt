@@ -211,13 +211,25 @@ data class PlayerCastSpellsThisTurn(
     val player: Player = Player.You,
     val filter: GameObjectFilter = GameObjectFilter.Any,
     val atLeast: Int,
-    val fromZone: Zone? = null
+    val fromZone: Zone? = null,
+    /**
+     * When set, counts only spells cast from a zone **other than** this one — "cast a spell this
+     * turn from anywhere other than your hand" (Spider-Man 2099) is `fromZoneOtherThan = Zone.HAND`.
+     * Mutually exclusive with [fromZone] (which requires that specific zone).
+     */
+    val fromZoneOtherThan: Zone? = null
 ) : Condition {
+    init {
+        require(fromZone == null || fromZoneOtherThan == null) {
+            "PlayerCastSpellsThisTurn: fromZone and fromZoneOtherThan are mutually exclusive"
+        }
+    }
     override val description: String = buildString {
         append("if ${player.description} cast $atLeast or more ")
         if (filter != GameObjectFilter.Any) append("${DynamicAmount.pluralize(filter.description)} ")
         append("spells")
         if (fromZone != null) append(" from ${fromZone.name.lowercase()}")
+        if (fromZoneOtherThan != null) append(" from anywhere other than ${fromZoneOtherThan.name.lowercase()}")
         append(" this turn")
     }
     override fun applyTextReplacement(replacer: TextReplacer): Condition {
@@ -246,6 +258,26 @@ data class PlayerDrewCardsThisTurn(
 }
 
 /**
+ * Condition: "as long as [player] has activated [atLeast] or more exhaust abilities this turn"
+ * (CR 702.177).
+ *
+ * Backed by the per-player `ExhaustAbilitiesActivatedThisTurnComponent`, incremented as each exhaust
+ * ability is activated and cleared with the other per-turn trackers at cleanup. Elvish Refueler
+ * wants the *negation* — "as long as you haven't activated an exhaust ability this turn" — so it
+ * wraps this in `Conditions.Not`; the `Conditions.YouActivatedExhaustAbilitiesThisTurn` /
+ * `Conditions.YouHaventActivatedAnExhaustAbilityThisTurn` DSL helpers pass [Player.You].
+ */
+@SerialName("PlayerActivatedExhaustAbilitiesThisTurn")
+@Serializable
+data class PlayerActivatedExhaustAbilitiesThisTurn(
+    val player: Player = Player.You,
+    val atLeast: Int = 1
+) : Condition {
+    override val description: String =
+        "if ${player.description} activated $atLeast or more exhaust abilities this turn"
+}
+
+/**
  * Condition: "If [player] has committed a crime this turn" (CR Outlaws of Thunder Junction —
  * a player commits a crime as they cast a spell, activate an ability, or put a triggered ability
  * on the stack that targets one or more opponents, permanents/spells/abilities an opponent controls,
@@ -266,6 +298,37 @@ data class PlayerCommittedCrimeThisTurn(
     val player: Player = Player.You
 ) : Condition {
     override val description: String = "if ${player.description} committed a crime this turn"
+}
+
+/**
+ * Condition: "if [player] has played a land this turn" (CR 305.1 special land-play action), reading
+ * the per-player `LandsPlayedThisTurnComponent` provenance recorded by `PlayLandHandler`. Mirrors
+ * [PlayerCastSpellsThisTurn]'s zone qualifiers:
+ * - no qualifier — any land played this turn;
+ * - [fromZone] — a land played from that specific zone;
+ * - [fromZoneOtherThan] — a land played from a zone other than that one (`Zone.HAND` is the land half
+ *   of Spider-Man 2099's end-step intervening-if, "played a land … from anywhere other than your hand").
+ *
+ * [fromZone] and [fromZoneOtherThan] are mutually exclusive.
+ */
+@SerialName("PlayerPlayedLandThisTurn")
+@Serializable
+data class PlayerPlayedLandThisTurn(
+    val player: Player = Player.You,
+    val fromZone: Zone? = null,
+    val fromZoneOtherThan: Zone? = null
+) : Condition {
+    init {
+        require(fromZone == null || fromZoneOtherThan == null) {
+            "PlayerPlayedLandThisTurn: fromZone and fromZoneOtherThan are mutually exclusive"
+        }
+    }
+    override val description: String = buildString {
+        append("if ${player.description} played a land")
+        if (fromZone != null) append(" from ${fromZone.name.lowercase()}")
+        if (fromZoneOtherThan != null) append(" from anywhere other than ${fromZoneOtherThan.name.lowercase()}")
+        append(" this turn")
+    }
 }
 
 /**
@@ -354,6 +417,34 @@ data class SourceAbilityResolvedNTimesThisTurn(val count: Int) : Condition {
 data object VoidCondition : Condition {
     override val description: String =
         "if a nonland permanent left the battlefield this turn or a spell was warped this turn"
+}
+
+// =============================================================================
+// Day and Night (CR 731)
+// =============================================================================
+
+/**
+ * Condition: "if it's day" (CR 731). Satisfied only while the game's day/night designation is day —
+ * *not* while it's neither day nor night (CR 731.1: the game starts with neither designation, and a
+ * "neither" game is not day). Read straight off `GameState.dayNight` by the engine's
+ * `ConditionEvaluator`. Backs "… if it's day" riders (e.g. Wolf Strike's mirror is the [IsNight]
+ * form). Use [com.wingedsheep.sdk.dsl.Conditions.IsDay].
+ */
+@SerialName("IsDay")
+@Serializable
+data object IsDay : Condition {
+    override val description: String = "if it's day"
+}
+
+/**
+ * Condition: "if it's night" (CR 731) — the mirror of [IsDay]. Satisfied only while the game's
+ * designation is night, never while it's neither. Backs Wolf Strike's "… if it's night". Use
+ * [com.wingedsheep.sdk.dsl.Conditions.IsNight].
+ */
+@SerialName("IsNight")
+@Serializable
+data object IsNight : Condition {
+    override val description: String = "if it's night"
 }
 
 // =============================================================================
@@ -497,6 +588,21 @@ data object SourceForetoldOnPriorTurn : Condition {
     override val description: String = "if this card was foretold on a prior turn"
 }
 
+/**
+ * Gate condition for the Mayhem keyword's cast-from-graveyard permission (CR 702.187b).
+ *
+ * True when the source card's entity id is recorded in its controller's
+ * `CardsDiscardedThisTurnComponent` — i.e. "you discarded this card this turn". Entity ids are
+ * stable across the hand→graveyard move, so the id recorded at discard equals the id of the object
+ * now sitting in the graveyard. Used as the Mayhem gate in both the legal-action enumerator and the
+ * cast-permission check.
+ */
+@SerialName("YouDiscardedThisCardThisTurn")
+@Serializable
+data object YouDiscardedThisCardThisTurn : Condition {
+    override val description: String = "if you discarded this card this turn"
+}
+
 // =============================================================================
 // City's Blessing (Ixalan, CR 702.131 / 700.5)
 // =============================================================================
@@ -518,6 +624,28 @@ data object SourceForetoldOnPriorTurn : Condition {
 @Serializable
 data class PlayerHasCitysBlessing(val player: Player = Player.You) : Condition {
     override val description: String = "if ${player.description} has the city's blessing"
+}
+
+// =============================================================================
+// Enduring story (The Hobbit, CR 702.195)
+// =============================================================================
+
+/**
+ * Intervening-if / static condition: "if [player] has an enduring story".
+ *
+ * Enduring story is a permanent player designation (CR 702.195b) gained from the **storied** keyword
+ * once its controller controls three or more permanents that are artifacts, Sagas, and/or legendary,
+ * and never lost thereafter. The designation is the sole payoff hook the storied cards read — every
+ * one of them is shaped "As long as you have an enduring story, …".
+ *
+ * The `Conditions.YouHaveEnduringStory` DSL constant passes [Player.You], resolved to the source's
+ * controller in both resolution and static-ability (projection) contexts, so it works equally as a
+ * [ConditionalStaticAbility] gate (Ori, Keeper of Songs) and as a resolution-time check.
+ */
+@SerialName("PlayerHasEnduringStory")
+@Serializable
+data class PlayerHasEnduringStory(val player: Player = Player.You) : Condition {
+    override val description: String = "if ${player.description} has an enduring story"
 }
 
 /**

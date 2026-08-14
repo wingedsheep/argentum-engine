@@ -3,7 +3,8 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.ManifestedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.dsk.cards.FearOfImpostors
@@ -78,7 +79,7 @@ class FearOfImpostorsScenarioTest : FunSpec({
         d.getPermanents(opp) shouldContain oppCreature
         val entity = d.state.getEntity(oppCreature)
         entity?.get<FaceDownComponent>() shouldBe FaceDownComponent
-        entity?.get<ManifestedComponent>() shouldBe ManifestedComponent
+        entity?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
         d.state.projectedState.getPower(oppCreature) shouldBe 2
         d.getGraveyard(opp) shouldContain oppLand
     }

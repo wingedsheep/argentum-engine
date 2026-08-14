@@ -19,8 +19,9 @@ import kotlin.reflect.KClass
  * Copies a targeted spell on the stack, allowing the controller to choose new targets.
  *
  * Reads the targeted spell's effect and target requirements from its components on the stack,
- * then creates a copy. If the original spell has targets, prompts for new target selection
- * (reusing StormCopyTargetContinuation with remainingCopies=1).
+ * then creates [CopyTargetSpellEffect.copies] copies (one by default). If the original spell has
+ * targets, prompts for new target selection once per copy (reusing StormCopyTargetContinuation,
+ * whose resumer walks the remaining copies).
  */
 class CopyTargetSpellExecutor(
     private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
@@ -29,6 +30,8 @@ class CopyTargetSpellExecutor(
 
     override val effectType: KClass<CopyTargetSpellEffect> = CopyTargetSpellEffect::class
 
+    private val dynamicAmountEvaluator = com.wingedsheep.engine.handlers.DynamicAmountEvaluator()
+
     override fun execute(
         state: GameState,
         effect: CopyTargetSpellEffect,
@@ -36,6 +39,11 @@ class CopyTargetSpellExecutor(
     ): EffectResult {
         val spellEntityId = context.resolveTarget(effect.target)
             ?: return EffectResult.error(state, "No target spell to copy")
+
+        // "Copy it for each …" clauses resolve their count here (Thousand-Year Storm). Zero
+        // matching prior spells means no copies at all — the ability still resolved.
+        val copyCount = dynamicAmountEvaluator.evaluate(state, effect.copies, context)
+        if (copyCount <= 0) return EffectResult.success(state)
 
         val container = state.getEntity(spellEntityId)
             ?: return EffectResult.error(state, "Target spell entity not found on stack")
@@ -74,25 +82,18 @@ class CopyTargetSpellExecutor(
         // Modal source (700.2g): modes are fixed for the copy, but per 707.10c the
         // copy controller may pick new targets per mode. If no mode has target
         // requirements, inherit verbatim; otherwise drive per-mode retargeting via
-        // StormCopyEffectExecutor.driveStormModalCopies with a single copy.
+        // StormCopyEffectExecutor.driveStormModalCopies, once per copy.
         if (inheritedChosenModes.isNotEmpty()) {
             val hasAnyTargetedMode = inheritedChosenModes.any { modeIdx ->
                 inheritedModeTargetRequirements[modeIdx]?.isNotEmpty() == true
             }
             if (!hasAnyTargetedMode) {
-                val copyResult = stackResolver.putSpellCopy(
-                    state = state,
-                    sourceSpellId = spellEntityId,
-                    copyIndex = 1,
-                    copyTotal = 1,
-                    controllerId = context.controllerId
+                return EffectResult.from(
+                    putInheritedCopies(
+                        state, stackResolver, spellEntityId, context.controllerId, copyCount,
+                        effect.keywordsForCopy.toSet(), effect.removeLegendary, tokenRiders
+                    )
                 )
-                if (!copyResult.isSuccess) return EffectResult.from(copyResult)
-                val mutated = StormCopyEffectExecutor.applyCopyMutations(
-                    copyResult.newState, copyResult.events,
-                    effect.keywordsForCopy.toSet(), effect.removeLegendary, tokenRiders
-                )
-                return EffectResult.from(ExecutionResult.success(mutated, copyResult.events))
             }
             return EffectResult.from(StormCopyEffectExecutor.driveStormModalCopies(
                 state = state,
@@ -105,8 +106,8 @@ class CopyTargetSpellExecutor(
                 modeTargetRequirements = inheritedModeTargetRequirements,
                 accumulatedOrdinalTargets = emptyList(),
                 currentOrdinal = 0,
-                remainingCopies = 1,
-                totalCopies = 1,
+                remainingCopies = copyCount,
+                totalCopies = copyCount,
                 priorEvents = emptyList(),
                 keywordsForCopy = effect.keywordsForCopy.toSet(),
                 removeLegendary = effect.removeLegendary
@@ -121,37 +122,38 @@ class CopyTargetSpellExecutor(
         // path is sufficient.
         if (targetRequirements.isEmpty()) {
             if (effect.removeLegendary || spellEffect == null) {
-                val copyResult = stackResolver.putSpellCopy(
-                    state = state,
-                    sourceSpellId = spellEntityId,
-                    copyIndex = 1,
-                    copyTotal = 1,
-                    controllerId = context.controllerId
+                return EffectResult.from(
+                    putInheritedCopies(
+                        state, stackResolver, spellEntityId, context.controllerId, copyCount,
+                        effect.keywordsForCopy.toSet(), effect.removeLegendary, tokenRiders
+                    )
                 )
-                if (!copyResult.isSuccess) return EffectResult.from(copyResult)
-                val mutated = StormCopyEffectExecutor.applyCopyMutations(
-                    copyResult.newState, copyResult.events,
-                    effect.keywordsForCopy.toSet(), effect.removeLegendary, tokenRiders
+            }
+            var currentState = state
+            val allEvents = mutableListOf<GameEvent>()
+            val contextSourceId = context.sourceId
+            repeat(copyCount) {
+                val sourceId = if (contextSourceId != null) contextSourceId else {
+                    val (id, s) = currentState.newEntity()
+                    currentState = s
+                    id
+                }
+                val copyAbility = TriggeredAbilityOnStackComponent(
+                    sourceId = sourceId,
+                    sourceName = spellName,
+                    controllerId = context.controllerId,
+                    effect = spellEffect,
+                    description = "Copy of $spellName"
                 )
-                return EffectResult.from(ExecutionResult.success(mutated, copyResult.events))
+                val pushed = applyKeywordsToCopy(
+                    stackResolver.putTriggeredAbility(currentState, copyAbility),
+                    effect.keywordsForCopy
+                )
+                if (!pushed.isSuccess) return EffectResult.from(pushed)
+                currentState = pushed.newState
+                allEvents.addAll(pushed.events)
             }
-            val (effectiveState, sourceId) = if (context.sourceId != null) {
-                state to context.sourceId
-            } else {
-                val (id, s) = state.newEntity()
-                s to id
-            }
-            val copyAbility = TriggeredAbilityOnStackComponent(
-                sourceId = sourceId,
-                sourceName = spellName,
-                controllerId = context.controllerId,
-                effect = spellEffect,
-                description = "Copy of $spellName"
-            )
-            return EffectResult.from(applyKeywordsToCopy(
-                stackResolver.putTriggeredAbility(effectiveState, copyAbility),
-                effect.keywordsForCopy
-            ))
+            return EffectResult.success(currentState, allEvents)
         }
 
         // Spell has targets — prompt for new target selection. Permanent spells
@@ -160,8 +162,44 @@ class CopyTargetSpellExecutor(
         // CR 707.10f token tagging happens at resolution in StackResolver.
         return promptForCopyTargets(
             state, context, spellEntityId, spellEffect, targetRequirements, spellName,
-            effect.keywordsForCopy.toSet(), effect.removeLegendary
+            effect.keywordsForCopy.toSet(), effect.removeLegendary, copyCount, stackResolver
         )
+    }
+
+    /**
+     * Push [copyCount] copies that inherit the source's targets and modes verbatim — the
+     * no-retarget paths (no targets at all, modal with no targeted mode, or no legal replacement
+     * target under CR 707.10c). Each copy is a real spell entity via
+     * [StackResolver.putSpellCopy] so [StormCopyEffectExecutor.applyCopyMutations] can patch it.
+     */
+    private fun putInheritedCopies(
+        state: GameState,
+        stackResolver: StackResolver,
+        spellEntityId: EntityId,
+        controllerId: EntityId,
+        copyCount: Int,
+        keywordsForCopy: Set<String>,
+        removeLegendary: Boolean,
+        tokenRiders: com.wingedsheep.engine.state.components.stack.SpellCopyTokenRidersComponent?
+    ): ExecutionResult {
+        var currentState = state
+        val allEvents = mutableListOf<GameEvent>()
+        for (i in 1..copyCount) {
+            val copyResult = stackResolver.putSpellCopy(
+                state = currentState,
+                sourceSpellId = spellEntityId,
+                copyIndex = i,
+                copyTotal = copyCount,
+                controllerId = controllerId
+            )
+            if (!copyResult.isSuccess) return copyResult
+            currentState = StormCopyEffectExecutor.applyCopyMutations(
+                copyResult.newState, copyResult.events,
+                keywordsForCopy, removeLegendary, tokenRiders
+            )
+            allEvents.addAll(copyResult.events)
+        }
+        return ExecutionResult.success(currentState, allEvents)
     }
 
     private fun applyKeywordsToCopy(
@@ -195,7 +233,9 @@ class CopyTargetSpellExecutor(
         targetRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement>,
         spellName: String,
         keywordsForCopy: Set<String> = emptySet(),
-        removeLegendary: Boolean = false
+        removeLegendary: Boolean = false,
+        copyCount: Int = 1,
+        stackResolver: StackResolver = StackResolver(cardRegistry = cardRegistry)
     ): EffectResult {
         val decisionId = "copy-spell-target-${System.nanoTime()}"
 
@@ -207,25 +247,34 @@ class CopyTargetSpellExecutor(
             legalTargetsMap[index] = legalTargets
         }
 
-        // If no legal targets for any requirement, skip copy
+        // CR 707.10c: no legal replacement for some requirement, so nothing can be re-chosen —
+        // the copies still go on the stack inheriting the source's (now-illegal) targets and
+        // fizzle on resolution per 608.2b / 112.3b, exactly as the Storm path does.
         val hasNoLegalTargets = legalTargetsMap.any { (_, targets) -> targets.isEmpty() }
         if (hasNoLegalTargets) {
-            return EffectResult.success(state)
+            return EffectResult.from(
+                putInheritedCopies(
+                    state, stackResolver, spellEntityId, context.controllerId, copyCount,
+                    keywordsForCopy, removeLegendary, tokenRiders = null
+                )
+            )
         }
 
-        // Reuse StormCopyTargetContinuation with 1 copy. The resumer clones the
+        // Reuse StormCopyTargetContinuation. The resumer clones the
         // SpellOnStackComponent off this sourceId via putSpellCopy (Phase 1 of
         // spell-copies-as-spells), so it must point at the targeted spell on the
         // stack — not the trigger source (e.g., Mischievous Quanar / Naru Meha are
-        // creatures with no SpellOnStackComponent).
+        // creatures with no SpellOnStackComponent). It also walks any copies beyond
+        // the first, prompting once per copy.
         val continuation = StormCopyTargetContinuation(
             decisionId = decisionId,
-            remainingCopies = 1,
+            remainingCopies = copyCount,
             spellEffect = spellEffect,
             spellTargetRequirements = targetRequirements,
             spellName = spellName,
             controllerId = context.controllerId,
             sourceId = spellEntityId,
+            totalCopies = copyCount,
             keywordsForCopy = keywordsForCopy,
             removeLegendary = removeLegendary
         )
@@ -236,10 +285,12 @@ class CopyTargetSpellExecutor(
             )
         }
 
+        // Matches the Storm path's labelling so a multi-copy prompt says which copy it is for.
+        val copyLabel = if (copyCount > 1) "copy 1 of $copyCount of $spellName" else "copy of $spellName"
         val decision = ChooseTargetsDecision(
             id = decisionId,
             playerId = context.controllerId,
-            prompt = "Choose new targets for copy of $spellName",
+            prompt = "Choose new targets for $copyLabel",
             context = DecisionContext(
                 phase = DecisionPhase.CASTING,
                 sourceName = spellName,

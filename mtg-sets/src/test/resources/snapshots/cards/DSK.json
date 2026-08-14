@@ -1414,7 +1414,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Break Down the Door
@@ -1913,7 +1914,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Chainsaw
@@ -2122,7 +2124,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Clammy Prowler
@@ -2545,6 +2548,15 @@
                     "storeMatching": "clobberers"
                 },
                 {
+                    "type": "FilterCollection",
+                    "from": "allTargets",
+                    "filter": {
+                        "type": "MatchesFilter",
+                        "filter": "creature ctrl:opponent"
+                    },
+                    "storeMatching": "victim"
+                },
+                {
                     "type": "ForEach",
                     "space": {
                         "type": "IterationSpace.Collection",
@@ -2569,8 +2581,8 @@
                             "numericProperty": "Power"
                         },
                         "target": {
-                            "type": "ContextTarget",
-                            "index": 0
+                            "type": "PipelineTarget",
+                            "collectionName": "victim"
                         },
                         "damageSource": "Self"
                     }
@@ -3360,7 +3372,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Defiant Survivor
@@ -3527,7 +3540,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Demonic Counsel
@@ -3735,7 +3749,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Dissection Tools
@@ -4151,7 +4166,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Don't Make a Sound
@@ -5824,7 +5840,9 @@
                         "destination": "Hand"
                     }
                 },
-                "activeZone": "Graveyard",
+                "activeZones": [
+                    "Graveyard"
+                ],
                 "descriptionOverride": "Eerie — Whenever an enchantment you control enters, you may return this card from your graveyard to your hand."
             },
             {
@@ -5840,7 +5858,9 @@
                         "destination": "Hand"
                     }
                 },
-                "activeZone": "Graveyard",
+                "activeZones": [
+                    "Graveyard"
+                ],
                 "descriptionOverride": "Eerie — Whenever you fully unlock a Room, you may return this card from your graveyard to your hand."
             }
         ],
@@ -6735,7 +6755,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Get Out
@@ -7263,7 +7284,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Glimmer Seeker
@@ -7665,7 +7687,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Grasping Longneck
@@ -7815,7 +7838,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Gremlin Tamer
@@ -9316,7 +9340,7 @@
                     },
                     "descriptionOverride": "You may discard a card. If you do, draw a card."
                 },
-                "oncePerTurn": true
+                "effectOncePerTurn": true
             }
         ]
     },
@@ -11107,7 +11131,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Meathook Massacre II
@@ -11482,7 +11507,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Moldering Gym // Weight Room
@@ -11635,7 +11661,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Monstrous Emergence
@@ -12362,7 +12389,10 @@
                     "effects": [
                         {
                             "type": "DistributeCountersAmongTargets",
-                            "totalCounters": 2
+                            "totalCounters": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
                         },
                         {
                             "type": "Gated",
@@ -12422,7 +12452,10 @@
                     "effects": [
                         {
                             "type": "DistributeCountersAmongTargets",
-                            "totalCounters": 2
+                            "totalCounters": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
                         },
                         {
                             "type": "Gated",
@@ -13835,7 +13868,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Paranormal Analyst
@@ -14351,7 +14385,10 @@
         "collectorNumber": "25",
         "artist": "Edgar Sánchez Hidalgo",
         "flavorText": "When their would-be sacrifice wandered back to their encampment, the survivors breathed a sigh of relief, assuming the demon had departed.",
-        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd02b8ff-ff65-4a38-b8fb-f8dd130edbf7.jpg?1726285949"
+        "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd02b8ff-ff65-4a38-b8fb-f8dd130edbf7.jpg?1726285949",
+        "imageUriByCreatureSubtype": {
+            "Demon": "/images/custom/possessed-goat.jpeg"
+        }
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -14855,7 +14892,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Resurrected Cultist
@@ -15220,7 +15258,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Rootwise Survivor
@@ -16531,7 +16570,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Spectral Snatcher
@@ -17221,7 +17261,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // The Jolly Balloon Man
@@ -18182,7 +18223,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Toby, Beastie Befriender
@@ -19169,7 +19211,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Unholy Annex // Ritual Chamber
@@ -19294,7 +19337,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Unidentified Hovership
@@ -21071,7 +21115,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Waltz of Rage

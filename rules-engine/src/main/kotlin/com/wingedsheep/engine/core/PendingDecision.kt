@@ -53,6 +53,22 @@ data class DecisionContext(
     val effectHint: String? = null,
 
     /**
+     * The specific object this decision is *about*, when one effect raises the same prompt once per
+     * object. Distinct from [sourceId] (the spell/ability doing the asking) and
+     * [triggeringEntityId] (what caused the ability to trigger): Killing Wave asks
+     * "pay X life or sacrifice it" once per creature, and without this the player sees N identical
+     * prompts with no way to tell which creature each one covers.
+     *
+     * Set from the enclosing per-entity iteration (`pipeline.iterationTarget` — the same binding
+     * `EffectTarget.Self` reads inside a `ForEachInGroup` body), so any gate raised inside such a
+     * loop names its subject for free.
+     *
+     * Only the id travels: the client resolves the card through its already-masked state map, so a
+     * face-down subject can never leak its name through the prompt.
+     */
+    val subjectEntityId: EntityId? = null,
+
+    /**
      * Definition-scoped identity of the ability that raised this decision, when it was raised by a
      * triggered or activated ability of a card. Lets the client offer "always yes/no to this
      * ability" and the engine match the answer against every current and future instance of the
@@ -129,7 +145,13 @@ data class TargetRequirementInfo(
      * [DecisionValidators.validateTargets] rejects a selection whose summed `manaValue` exceeds it.
      * `null` imposes no aggregate cap.
      */
-    val totalManaValueAtMost: Int? = null
+    val totalManaValueAtMost: Int? = null,
+    /**
+     * When true, no two chosen targets for this requirement may share a name — "target creature
+     * cards with different names" (Behold the Sinister Six!). Enforced against each selected
+     * target's name in [DecisionValidators.validateTargets].
+     */
+    val differentNames: Boolean = false
 )
 
 /**
@@ -195,6 +217,21 @@ data class SelectCardsDecision(
      * over the cap; the server also trims oversubmits in selection order.
      */
     val maxTotalManaValue: Int? = null,
+    /**
+     * **Minimum** sum of mana values across selected cards — the mirror of [maxTotalManaValue],
+     * for collect evidence N (CR 701.59a: "exile any number of cards from your graveyard with
+     * total mana value N or greater"). null means no floor.
+     *
+     * The selection is otherwise unbounded in count: the player may exile as many cards as they
+     * like and any number *beyond* the floor is legal (CR 701.59a), so this — not
+     * [minSelections] — is the real gate. The UI must keep the confirm button disabled until the
+     * running total reaches it and show that total; the server re-validates on submit and rejects
+     * an under-total selection rather than trimming it, because there is no correct way to
+     * complete an insufficient payment.
+     *
+     * {X} contributes 0 (CR 202.3e for cards not on the stack), as it does for [maxTotalManaValue].
+     */
+    val minTotalManaValue: Int? = null,
     /**
      * Maximum sum of (projected) power across selected creatures (Destined Confrontation).
      * null means no cap. A creature with undefined power contributes 0. The UI is expected
@@ -826,8 +863,34 @@ data class ManaSourcesSelectedResponse(
      * Untapped artifacts/creatures the player taps to help pay a Ward—Waterbend cost (Avatar:
      * The Last Airbender) — each pays {1} of the generic. Empty for an ordinary mana payment.
      */
-    val waterbendPermanents: Set<EntityId> = emptySet()
-) : DecisionResponse
+    val waterbendPermanents: Set<EntityId> = emptySet(),
+    /**
+     * The player explicitly refused to pay (only meaningful when
+     * [SelectManaSourcesDecision.canDecline]).
+     *
+     * Declining used to be inferred purely from an empty submission, which stopped being
+     * unambiguous once a player could activate mana abilities during the payment itself
+     * (CR 605.3a — see [com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow]): "I tapped my
+     * own sources and the mana is already floating, just take it" also submits nothing. The flag
+     * separates the two; [isDecline] keeps the old inference as the fallback for clients and AI
+     * players that don't set it.
+     */
+    val declined: Boolean = false
+) : DecisionResponse {
+
+    /**
+     * Whether this submission refuses the payment.
+     *
+     * @param floatingCoversCost true when the player's mana pool already covers the whole cost, in
+     *   which case an empty submission means "pay with what I floated", not "decline".
+     */
+    fun isDecline(floatingCoversCost: Boolean): Boolean = when {
+        declined -> true
+        autoPay -> false
+        selectedSources.isNotEmpty() || waterbendPermanents.isNotEmpty() -> false
+        else -> !floatingCoversCost
+    }
+}
 
 /**
  * Response to cancel a decision and go back to the previous choice.

@@ -3,13 +3,13 @@ package com.wingedsheep.mtg.sets.definitions.tdm.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
@@ -43,30 +43,10 @@ val TersaLightshatter = card("Tersa Lightshatter") {
 
     keywords(Keyword.HASTE)
 
-    // ETB loot: discard up to two, then draw that many. The draw count reads the actual number
-    // discarded via the pipeline collection's `_count` (declining discards draws zero).
+    // ETB loot run backwards: discard up to two, then draw that many (declining discards draws zero).
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.FromZone(Zone.HAND, Player.You),
-                    storeAs = "hand"
-                ),
-                SelectFromCollectionEffect(
-                    from = "hand",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(2)),
-                    storeSelected = "discarded",
-                    prompt = "Discard up to two cards"
-                ),
-                MoveCollectionEffect(
-                    from = "discarded",
-                    destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
-                    moveType = MoveType.Discard
-                ),
-                DrawCardsEffect(DynamicAmount.VariableReference("discarded_count"))
-            )
-        )
+        effect = Patterns.Hand.discardUpToThenDraw(2)
         description = "When Tersa Lightshatter enters, discard up to two cards, then draw that many cards."
     }
 

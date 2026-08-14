@@ -401,6 +401,59 @@ internal fun EmitCtx.renderEachPlayer(node: JsonObject): Dsl? {
         val amt = findInteger(inner["args"]) as? Int ?: return null
         return call("Effects.LoseLife", arg("$amt"), arg("EffectTarget.PlayerRef(Player.Each)"))
     }
+    // "each player discards N cards" (Rankle's Prank's first mode). Symmetric twin of the
+    // Opponent-scoped shape above, fanned over every player by `Patterns.Hand.eachPlayerDiscards`.
+    // Same lossiness guard as the opponent branch: the discard must be the player's SOLE action
+    // (an `EachPlayerActions` list carrying a second clause would be silently dropped), and only a
+    // fixed Integer count renders — a derived/X count scaffolds.
+    if (jsonContains(node, "_Players", "AnyPlayer") && "Discard" in blob) {
+        val playerActions = when (val second = node["args"].asArr?.getOrNull(1)) {
+            is JsonArray -> second.filterIsInstance<JsonObject>()
+            is JsonObject -> listOf(second)
+            else -> emptyList()
+        }
+        val inner = playerActions.singleOrNull()
+        val n = when (inner?.strField("_Action")) {
+            "DiscardACard" -> 1
+            "DiscardNumberCards" -> findInteger(inner["args"]) as? Int
+            else -> null
+        }
+        // Fall through (don't consume the node) when this isn't a lone renderable discard — a
+        // discard bundled with another clause is still handled by the shapes further down.
+        if (n != null) return call("Patterns.Hand.eachPlayerDiscards", arg("$n"))
+    }
+    // "each player sacrifices N <filter>s of their choice" (Rankle's Prank's third mode). Like the
+    // Opponent-scoped sacrifice above but scoped to every player via PlayerRef(Player.Each); each
+    // player picks their own. Only a renderable filter and a fixed Integer count render.
+    if (jsonContains(node, "_Players", "AnyPlayer") &&
+        (jsonContains(node, "_Action", "SacrificeAPermanent") || jsonContains(node, "_Action", "SacrificeNumberPermanents"))
+    ) {
+        val inner = node["args"].asArr?.filterIsInstance<JsonObject>()
+            ?.firstOrNull { it.strField("_Action") in setOf("SacrificeAPermanent", "SacrificeNumberPermanents") }
+        val rendered = if (inner == null) {
+            null
+        } else if (inner.strField("_Action") == "SacrificeAPermanent") {
+            gameObjectFilterExpr(inner["args"])?.let { filter ->
+                call("Effects.Sacrifice", arg("filter", filter), arg("target", "EffectTarget.PlayerRef(Player.Each)"))
+            }
+        } else {
+            // args = [<Integer N>, <permanent filter>]
+            val outer = inner["args"].asArr
+            val amt = findInteger(outer?.getOrNull(0)) as? Int
+            val filter = outer?.getOrNull(1)?.let { gameObjectFilterExpr(it) }
+            if (amt != null && filter != null) {
+                call(
+                    "Effects.Sacrifice",
+                    arg("filter", filter),
+                    arg("count", "$amt"),
+                    arg("target", "EffectTarget.PlayerRef(Player.Each)"),
+                )
+            } else {
+                null
+            }
+        }
+        if (rendered != null) return rendered
+    }
     // "each opponent mills N cards" (Deepmuck Desperado). Mill is a pipeline composite, so it can't be
     // scoped via a PlayerRef target the way LoseLife/Sacrifice are — it is fanned over every opponent
     // with ForEachPlayerEffect wrapping the standard mill pipeline. Only a fixed Integer count renders;

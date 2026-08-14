@@ -68,10 +68,16 @@ class OneRingToRuleThemAllScenarioTest : FunSpec({
         }
     }
 
-    fun GameTestDriver.advanceToMain(targetRound: Int) {
+    /**
+     * Advance to the precombat main phase of the starting player's [nth] turn — the clock a Saga's
+     * lore counters run on. `GameState.turnNumber` counts player turns, and these are duels where
+     * the two seats alternate, so the starting player's nth turn is turn `2n - 1`.
+     */
+    fun GameTestDriver.advanceToMain(nth: Int) {
+        val targetTurn = nth * 2 - 1
         var guard = 0
-        while (!(state.turnNumber == targetRound && state.step == Step.PRECOMBAT_MAIN) && guard < 600) {
-            if (state.gameOver) throw AssertionError("Game ended while advancing to round $targetRound")
+        while (!(state.turnNumber == targetTurn && state.step == Step.PRECOMBAT_MAIN) && guard < 600) {
+            if (state.gameOver) throw AssertionError("Game ended while advancing to turn $targetTurn")
             when {
                 state.pendingDecision != null -> autoResolveDecision()
                 state.priorityPlayerId != null -> {

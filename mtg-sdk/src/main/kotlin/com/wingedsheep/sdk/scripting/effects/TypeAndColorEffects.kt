@@ -221,7 +221,10 @@ data class SetLandTypeEffect(
  * Creates a floating effect on Layer.TYPE with AddType modification.
  * Unlike AnimateLandEffect, this does NOT set P/T — it only adds the type.
  *
- * @property cardType The card type to add (e.g., "ARTIFACT", "CREATURE")
+ * @property cardType The card type to add (e.g., "ARTIFACT", "CREATURE"). Also accepts a
+ *   *supertype* — "LEGENDARY" for Origin of Spider-Man's "it becomes a legendary Spider Hero" —
+ *   since the engine projects supertypes into the same type set; there is no separate
+ *   AddSupertypeEffect and none is needed.
  * @property target The permanent to modify
  * @property duration How long the type change lasts (default: Permanent)
  */

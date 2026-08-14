@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.GrantKeywordByCounter
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.scripting.EventPattern.DealsDamageEvent
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect
@@ -34,7 +35,12 @@ val Aurification = card("Aurification") {
     oracleText = "Whenever a creature deals damage to you, put a gold counter on it.\nEach creature with a gold counter on it is a Wall in addition to its other creature types and has defender. (Those creatures can't attack.)\nWhen this enchantment leaves the battlefield, remove all gold counters from all creatures."
 
     triggeredAbility {
-        trigger = TriggerSpec(DealsDamageEvent(recipient = RecipientFilter.You), TriggerBinding.ANY)
+        // "a creature deals damage to you" — the creature restriction is the trigger's own
+        // sourceFilter, not an assumption the detector makes on its behalf.
+        trigger = TriggerSpec(
+            DealsDamageEvent(recipient = RecipientFilter.You, sourceFilter = GameObjectFilter.Creature),
+            TriggerBinding.ANY
+        )
         effect = AddCountersEffect(Counters.GOLD, 1, EffectTarget.TriggeringEntity)
     }
 

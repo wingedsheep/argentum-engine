@@ -15,6 +15,8 @@ export interface ScenarioBattlefieldCard {
   attachedTo?: string
   chosenCreatureType?: string
   chosenColor?: string
+  /** Durable chosen card type, e.g. Arachne, Psionic Weaver (CR 205.2a). */
+  chosenCardType?: string
 }
 
 export interface ScenarioPlayerConfig {
@@ -70,12 +72,36 @@ export interface ScenarioCreateResponse {
 }
 
 /** The zones a card can be added to in the builder. */
-export type ScenarioZone = 'hand' | 'battlefield' | 'graveyard' | 'exile' | 'library'
+export type ScenarioZone =
+  | 'battlefield'
+  | 'hand'
+  | 'graveyard'
+  | 'exile'
+  | 'library'
+  | 'commanders'
 
+/** Display order — the board leads with the battlefield, then the zones around it. */
 export const SCENARIO_ZONES: readonly ScenarioZone[] = [
-  'hand',
   'battlefield',
+  'hand',
   'graveyard',
   'exile',
   'library',
+  'commanders',
 ]
+
+export const ZONE_LABEL: Record<ScenarioZone, string> = {
+  battlefield: 'Battlefield',
+  hand: 'Hand',
+  graveyard: 'Graveyard',
+  exile: 'Exile',
+  library: 'Library',
+  commanders: 'Command',
+}
+
+/**
+ * Zones rendered as a pile — duplicates collapse into one tile with a ×N badge, because a
+ * 40-card library as 40 separate tiles is unreadable. The battlefield, hand and command zone
+ * stay one tile per card (each is individually meaningful).
+ */
+export const PILE_ZONES: readonly ScenarioZone[] = ['graveyard', 'exile', 'library']

@@ -63,7 +63,7 @@ val CharmingScoundrel = card("Charming Scoundrel") {
     }
 
     metadata {
-        rarity = Rarity.COMMON
+        rarity = Rarity.RARE
         collectorNumber = "124"
         artist = "Caroline Gariba"
         imageUri = "https://cards.scryfall.io/normal/front/c/8/c8090bcf-e17a-4110-a518-77ccd045b18f.jpg?1783915097"

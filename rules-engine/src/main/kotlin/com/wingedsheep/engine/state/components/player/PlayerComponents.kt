@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.HijackScope
 import com.wingedsheep.sdk.scripting.effects.ManaExpiry
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
@@ -689,6 +690,17 @@ data class CantCastFromNonHandZonesComponent(
 data object PlayerCitysBlessingComponent : Component
 
 /**
+ * Marks a player as having an enduring story (The Hobbit, CR 702.195b).
+ *
+ * Written by the **storied** state-based action once its controller controls three or more permanents
+ * that are artifacts, Sagas, and/or legendary. Like [PlayerCitysBlessingComponent] — and for the same
+ * reason, CR 702.195a's "for the rest of the game" — the designation is never removed once granted,
+ * so this component has no `removeOn` field and cleanup never touches it.
+ */
+@Serializable
+data object PlayerEnduringStoryComponent : Component
+
+/**
  * Marks a player as having no maximum hand size for the rest of the game.
  *
  * Conferred by resolution effects like Wisdom of Ages ("You have no maximum hand size for the
@@ -736,6 +748,31 @@ data class PlayerMaximumHandSizeReductionComponent(
 @Serializable
 data class TheRingComponent(
     val temptCount: Int = 0
+) : Component
+
+/**
+ * Tracks a player's **speed** (Aetherdrift, CR 702.179).
+ *
+ * *Presence* of this component means the player has speed at all; its absence is CR 702.179b's "no
+ * speed". The distinction matters for one thing only — whether the CR 704.5z state-based action
+ * fires (it sets speed to 1 for a player who has *no* speed) and whether the inherent speed trigger
+ * exists (only for a player with 1 or more speed, CR 702.179d). Everything that *reads* speed treats
+ * "no speed" as 0 (CR 702.179f), which is what [com.wingedsheep.engine.state.GameState.speed] does,
+ * so callers never need a has-speed guard.
+ *
+ * [speed] is always in `1..`[com.wingedsheep.sdk.core.Speed.MAX] — the component is never created
+ * with 0, and every increase is clamped by
+ * [com.wingedsheep.engine.mechanics.speed.SpeedService].
+ *
+ * Like the city's blessing and The Ring emblem, speed is never removed once gained: it survives the
+ * granting permanent leaving play, so there is no `removeOn` field and cleanup never touches it. The
+ * "only once each turn" cap on the inherent trigger is *not* tracked here — that rides on the
+ * generic [com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityFiredThisTurnComponent]
+ * stamped on the player entity, which cleanup already resets.
+ */
+@Serializable
+data class PlayerSpeedComponent(
+    val speed: Int
 ) : Component
 
 /**
@@ -886,6 +923,21 @@ data class CardsDrawnThisTurnComponent(
  */
 @Serializable
 data class EquipActivationsThisTurnComponent(
+    val count: Int = 0
+) : Component
+
+/**
+ * Number of exhaust abilities (CR 702.177) this player has activated during the current turn. Reset
+ * to 0 at turn start by TurnManager, alongside the other per-turn player trackers.
+ *
+ * Read by [com.wingedsheep.sdk.scripting.conditions.PlayerActivatedExhaustAbilitiesThisTurn], whose
+ * negation gates Elvish Refueler's
+ * [com.wingedsheep.sdk.scripting.IgnoreExhaustActivationLimit] permission — "as long as you haven't
+ * activated an exhaust ability this turn". Counted at activation time (CR 602.2), so it includes an
+ * exhaust ability that was later countered or whose source has left the battlefield.
+ */
+@Serializable
+data class ExhaustAbilitiesActivatedThisTurnComponent(
     val count: Int = 0
 ) : Component
 
@@ -1049,6 +1101,20 @@ data class LifeGainedAmountThisTurnComponent(val amount: Int = 0) : Component
 data object LifeLostThisTurnComponent : Component
 
 /**
+ * Tracks the total amount of life this player has lost during the current turn — damage taken,
+ * life-loss effects and life paid as a cost all accumulate here. Cleared at end of turn by
+ * CleanupPhaseManager.
+ *
+ * The amount-carrying sibling of [LifeLostThisTurnComponent], mirroring
+ * [LifeGainedAmountThisTurnComponent]. Read by
+ * `DynamicAmount.TurnTracking(player, TurnTracker.LIFE_LOST_AMOUNT)` — e.g. Rowan, Scion of War's
+ * "where X is the amount of life you lost this turn". Life *gained* is tracked separately and
+ * never nets against this total (Rowan's rulings: gaining 3 and losing 3 leaves X = 3).
+ */
+@Serializable
+data class LifeLostAmountThisTurnComponent(val amount: Int = 0) : Component
+
+/**
  * Tracks the number of cards that left this player's graveyard this turn.
  * Cleared at end of turn by CleanupPhaseManager.
  *
@@ -1080,6 +1146,19 @@ data class CardsPutIntoExileThisTurnComponent(val count: Int = 0) : Component
 data object SacrificedFoodThisTurnComponent : Component
 
 /**
+ * Marker component indicating that this player has sacrificed an artifact this turn.
+ * Cleared at end of turn by CleanupPhaseManager.
+ *
+ * The card-type sibling of [SacrificedFoodThisTurnComponent], set by the same
+ * `ZoneTransitionService.trackPermanentSacrifice` hook off the *projected* type line, so an
+ * animated or type-changed permanent that was an artifact when sacrificed counts. Backs
+ * `TurnTracker.ARTIFACT_SACRIFICED` — "if you've sacrificed an artifact this turn"
+ * (Suspicious Detonation, Furtive Courier).
+ */
+@Serializable
+data object SacrificedArtifactThisTurnComponent : Component
+
+/**
  * Tracks the number of permanents this player has sacrificed this turn (controller-scoped,
  * any permanent type). Incremented by `ZoneTransitionService.trackPermanentSacrifice` on the
  * sacrificing player and cleared at end of turn by `CleanupPhaseManager`.
@@ -1092,6 +1171,46 @@ data object SacrificedFoodThisTurnComponent : Component
  */
 @Serializable
 data class PermanentsSacrificedThisTurnComponent(val count: Int = 0) : Component
+
+/**
+ * Tracks the (graveyard-resident) entity ids of this player's cards that were discarded this turn.
+ * Every discard site records its cards here via `ZoneTransitionService.trackDiscard`, regardless of
+ * where the card ultimately ends up (a discard diverted onto the battlefield by a replacement still
+ * counts as a discard). Reset to an empty list for every player at the start of each turn by
+ * [com.wingedsheep.engine.core.TurnManager].
+ *
+ * Two roles with deliberately different lifetimes:
+ *  - [count] — total cards discarded this turn (monotonic). Backs `TurnTracker.CARDS_DISCARDED`
+ *    (`DynamicAmount.TurnTracking`) — e.g. Green Goblin, Revenant "draw a card for each card you've
+ *    discarded this turn". Never decremented mid-turn: a discarded card that later leaves the
+ *    graveyard was still discarded this turn.
+ *  - [cardIds] — entity ids of discarded-this-turn cards **still identifiable as that discarded
+ *    object**. Membership (`sourceId in cardIds`) backs the `YouDiscardedThisCardThisTurn` condition
+ *    that gates the Mayhem keyword (CR 702.187b). Entity ids are stable across the hand→graveyard
+ *    move, so the id recorded at discard equals the object now in the graveyard — but per CR 400.7 a
+ *    card that leaves the graveyard (cast via Mayhem, reanimated, exiled, bounced) becomes a **new
+ *    object** on any later return, so its id is pruned from this list when it leaves the graveyard or
+ *    is cast via Mayhem. That stops a Mayhem spell being recast every time it resolves back.
+ */
+@Serializable
+data class CardsDiscardedThisTurnComponent(
+    val cardIds: List<EntityId> = emptyList(),
+    val count: Int = 0
+) : Component
+
+/**
+ * The zone each land this player **played** this turn (CR 305.1 special action) was played from —
+ * one entry per land play, HAND for a normal land drop and GRAVEYARD / EXILE / LIBRARY for a play
+ * permission (Mayhem, Muldrotha, Crucible, …). Appended by `PlayLandHandler` on every land play,
+ * reset per-turn in `TurnManager`. Backs `Conditions.YouPlayedLandThisTurn(fromZone/fromZoneOtherThan)`
+ * — e.g. the land half of Spider-Man 2099's end-step intervening-if is `fromZoneOtherThan = Zone.HAND`.
+ * Mirrors the spell path's per-cast `castFromZone` provenance; land plays are otherwise tracked only
+ * as a count (`LandDropsComponent`) with no zone-of-origin.
+ */
+@Serializable
+data class LandsPlayedThisTurnComponent(
+    val fromZones: List<Zone> = emptyList()
+) : Component
 
 /**
  * Tracks the total noncombat damage red sources this player controlled have dealt this turn
@@ -1155,6 +1274,22 @@ data class TurnedPermanentFaceUpThisTurnComponent(val count: Int = 0) : Componen
 data class PlayerDescendedThisTurnComponent(val count: Int = 0) : Component
 
 /**
+ * Tracks the number of creature cards put into this player's graveyard from any zone during
+ * the current turn. Cleared at end of turn by CleanupPhaseManager.
+ *
+ * The creature-typed sibling of [PlayerDescendedThisTurnComponent], recorded by the same
+ * `moveToZone` hook and keyed the same way — on the card's **owner** ("your graveyard" is the
+ * owner's graveyard), from any origin zone, tokens excluded (a token isn't a card, CR 111.6).
+ * Like descend it is pure turn history: the card need not still be in the graveyard, so
+ * reanimating it later in the turn doesn't clear the count.
+ *
+ * Backs Murders at Karlov Manor's "if a creature card was put into your graveyard from anywhere
+ * this turn" (Macabre Reconstruction's cost reduction).
+ */
+@Serializable
+data class CreatureCardsPutIntoGraveyardThisTurnComponent(val count: Int = 0) : Component
+
+/**
  * Marks that this player has flipped one or more coins already this turn. Presence alone is the
  * signal — it is set the first time the player flips (regardless of who controls any coin-flip
  * replacement) so that a "the first time you flip one or more coins each turn" effect
@@ -1165,69 +1300,54 @@ data class PlayerDescendedThisTurnComponent(val count: Int = 0) : Component
 data object FlippedCoinsThisTurnComponent : Component
 
 /**
- * Tracks which card types have entered the battlefield under this player's control this turn.
- * Populated by `BattlefieldEntry.place` (via `PermanentEntryTracker.record`) from the projected
- * types at the moment of entry, so a permanent that's an artifact-by-effect at ETB is recorded
- * just like a printed artifact. Once recorded, the entry is insensitive to later state changes
- * — the entry of an artifact remains recorded even if the permanent is destroyed, loses its
- * artifact type, or changes controllers later in the turn.
- *
- * Cleared at end of turn by CleanupPhaseManager.
- *
- * Used for conditions like Mechan Shieldmate's "as long as an artifact entered the battlefield
- * under your control this turn".
- */
-@Serializable
-data class PermanentTypesEnteredBattlefieldThisTurnComponent(
-    val cardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet()
-) : Component
-
-/**
- * Tracks the number of lands that have entered the battlefield under this player's control
- * during the current turn. Counts every ETB regardless of how the land arrived — normal land
- * drops, Lander-token search, Cultivate-style "put a land onto the battlefield" effects,
- * gift-a-land effects, etc. — so it diverges from `LandDropsComponent` (which only counts
- * the from-hand action).
- *
- * Populated by `PermanentEntryTracker.record` whenever the entering permanent's projected
- * types include `LAND`. Cleared at end of turn by [CleanupPhaseManager].
- *
- * Used for `DynamicAmount.TurnTracking(player, TurnTracker.LANDS_ENTERED_UNDER_CONTROL)` —
- * e.g. Bioengineered Future's "for each land that entered the battlefield under your
- * control this turn".
- */
-@Serializable
-data class LandsEnteredUnderControlThisTurnComponent(val count: Int = 0) : Component
-
-/**
- * One permanent that entered the battlefield under a player's control this turn, captured for
- * subtype-keyed "for each [creature type] that entered the battlefield under your control this
- * turn" counts (Geralf, the Fleshwright). [subtypes] is snapshotted from the **projected** state
- * at the instant of entry, so a permanent that was a Zombie when it entered still counts even
- * after it leaves the battlefield or loses the type (CR 603.10 last-known style — the entry event
- * is what matters, not current state). [entityId] lets a triggered ability exclude the permanent
- * that caused it to trigger ("each *other* Zombie", and simultaneous entries per the 2024-04-12
- * ruling).
+ * One permanent that entered the battlefield under a player's control this turn. [cardTypes] and
+ * [subtypes] are snapshotted from the **projected** state at the instant of entry, so a permanent
+ * that was an artifact (or a Zombie) when it entered still counts even after it leaves the
+ * battlefield, loses the type, or changes controllers (CR 603.10 last-known style — the entry
+ * event is what matters, not current state). [entityId] lets a triggered ability exclude the
+ * permanent that caused it to trigger ("each *other* Zombie", and simultaneous entries per the
+ * 2024-04-12 ruling).
  */
 @Serializable
 data class EnteredPermanentRecord(
     val entityId: EntityId,
+    val cardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet(),
     val subtypes: Set<String> = emptySet()
-)
+) {
+    val isLand: Boolean get() = com.wingedsheep.sdk.core.CardType.LAND in cardTypes
+}
 
 /**
- * Tracks every permanent that entered the battlefield under this player's control during the
- * current turn, with the subtypes each had at entry. Populated by `PermanentEntryTracker.record`
- * (exactly once per ETB) and cleared at end of turn by [CleanupPhaseManager].
+ * The single per-player log of every permanent that entered the battlefield under this player's
+ * control during the current turn, one [EnteredPermanentRecord] per entry. Populated by
+ * `PermanentEntryTracker.record` (exactly once per ETB) and cleared at end of turn by
+ * [CleanupPhaseManager].
  *
- * Backs `DynamicAmount.SubtypeEnteredUnderControlThisTurn(player, subtype, excludeTriggeringEntity)`
- * — "for each [other] [subtype] that entered the battlefield under your control this turn"
- * (Geralf, the Fleshwright). Counts entries even if the permanent has since left or changed type.
+ * One entry per *entry event*, not per permanent: a permanent that leaves and re-enters is a new
+ * object (CR 400.7) and is logged twice.
+ *
+ * Every "an X entered the battlefield under your control this turn" reader derives from this log
+ * rather than keeping its own counter:
+ *  - [countNonland] → `TurnTracker.NONLAND_PERMANENTS_ENTERED`, the Celebration ability word's
+ *    "two or more nonland permanents entered the battlefield under your control this turn" (WOE).
+ *  - [countOfType] → `TurnTracker.LANDS_ENTERED_UNDER_CONTROL` ("for each land that entered the
+ *    battlefield under your control this turn", Bioengineered Future) and the
+ *    `PermanentTypeEnteredBattlefieldThisTurn` condition (Mechan Shieldmate's "as long as an
+ *    artifact entered the battlefield under your control this turn").
+ *  - [entries] directly → `DynamicAmount.SubtypeEnteredUnderControlThisTurn` ("each other Zombie
+ *    that entered the battlefield under your control this turn", Geralf, the Fleshwright).
  */
 @Serializable
 data class PermanentsEnteredUnderControlThisTurnComponent(
     val entries: List<EnteredPermanentRecord> = emptyList()
-) : Component
+) : Component {
+    /** Number of logged entries that were **not** lands at the moment they entered. */
+    fun countNonland(): Int = entries.count { !it.isLand }
+
+    /** Number of logged entries that had [cardType] at the moment they entered. */
+    fun countOfType(cardType: com.wingedsheep.sdk.core.CardType): Int =
+        entries.count { cardType in it.cardTypes }
+}
 
 /**
  * Marker component indicating that this player has put a counter on a creature this turn.

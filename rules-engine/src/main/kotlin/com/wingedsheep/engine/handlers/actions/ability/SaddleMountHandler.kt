@@ -2,6 +2,8 @@ package com.wingedsheep.engine.handlers.actions.ability
 
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.CrewOrSaddleContributionEvent
+import com.wingedsheep.engine.core.CrewOrSaddleKind
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.SaddleMount
 import com.wingedsheep.engine.core.tap
@@ -104,7 +106,12 @@ class SaddleMountHandler(
                 return "Creature is already tapped: $creatureId"
             }
 
-            totalPower += projected.getPower(creatureId) ?: 0
+            totalPower += CrewSaddleContributionEvaluator.evaluate(
+                state = state,
+                projected = projected,
+                cardRegistry = cardRegistry,
+                creatureId = creatureId
+            )
         }
 
         if (totalPower < saddleAbility.n) {
@@ -128,7 +135,17 @@ class SaddleMountHandler(
         for (creatureId in action.saddleCreatures) {
             val (tappedState, tapEvent) = tap(currentState, creatureId)
             currentState = tappedState
-            tapEvent?.let(events::add)
+            tapEvent?.let {
+                events.add(it)
+                events.add(
+                    CrewOrSaddleContributionEvent(
+                        contributorId = creatureId,
+                        permanentId = action.mountId,
+                        controllerId = action.playerId,
+                        kind = CrewOrSaddleKind.SADDLE
+                    )
+                )
+            }
         }
 
         // Record the saddlers so Mount payoffs can read "creatures that saddled it this turn".

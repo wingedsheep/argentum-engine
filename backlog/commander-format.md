@@ -1,8 +1,8 @@
 # Commander Format
 
 Add Commander format support to the Argentum Engine. Commander is a 100-card singleton format with a designated
-legendary creature commander, 40 starting life, and a 21-commander-damage loss condition. Phase 1 targets **1v1
-Commander** only — multiplayer (3-4 player free-for-all) is its own project.
+legendary creature commander, 40 starting life, and a 21-commander-damage loss condition. Phase 1 targeted **1v1
+Commander**; multiplayer pods landed later on top of the N-player work — see § Phase 3.
 
 ## Status (2026-05-08)
 
@@ -273,16 +273,51 @@ for Muldrotha-shaped plays).
 - Hook for "can be your commander" / "partner" / "friends forever" oracle-text detection so non-legendary commanders
   (planeswalkers in commander variants) can be supported by data, not by special-casing.
 
-## Phase 3 — Multiplayer (3-4 player free-for-all)
+## Phase 3 — Multiplayer pods — **done** (issue #1456)
 
-This is its own project — large in scope and surface area.
+Most of this fell out of `backlog/multiplayer.md` rather than needing commander-specific work: the
+"choose an opponent" audit, the attacker-declares-defender step and the >2-player lobby paths all landed
+there. What was left was small, and it shipped:
 
-- Audit "the opponent" assumptions across the engine: every `players.first { it != active }` and every
-  auto-target-the-opponent shortcut must become "choose an opponent." Probably a few dozen call sites.
-- Range of influence (multiplayer rule).
-- Politics-aware UI/UX (target-an-opponent dialogs, attacker-declares-defender step).
+- ✅ Commander runs at any table size. `Format.Commander` has no player-count field, commander damage is
+  tallied per *(commander, defending player)* pair (`GameState.commanderDamage`), the command zone is
+  per player, and the CR 903.9a zone choice loops `turnOrder`. `CommanderPodTest` pins all of it at
+  four seats; `FreeForAllLobbyTest` plays a four-player premade Commander pod end to end.
+- ✅ Drafted / sealed Commander at a pod table. The client's 1v1-only gate is gone; the one remaining
+  block is Two-Headed Giant, whose shared team life total (CR 810.4) contradicts Commander's per-player
+  40 — `LobbyHandler.handleStartTournamentLobby` refuses it server-side and the lobby says why.
+- ✅ Pod-tuned config. `CommanderPreset.POD` (60 cards / 40 life / 21 damage) is what every multiplayer
+  table plays at, resolved from the table by `TournamentLobby.effectiveCommanderPreset`. The host's
+  Brawl-25 / Commander-30 choice stays a 1v1 pacing knob.
+- ✅ **Commander is a lobby axis, not three fields.** Opening pods up exposed the taxonomy problem
+  underneath: "this game runs Commander" was reachable through the pool-building `TournamentFormat`, the
+  deck-legality `DeckFormat`, and the quick lobby's own format, so every consumer re-derived it — and the
+  gate that blocked premade Commander pods was a copy that structurally could not see the premade path.
+  `GameRules` (`mtg-sdk/.../core/Format.kt`) is now the lobby's counterpart to `Format.usesCommanders`:
+  `TournamentLobby.rules` / `usesCommanderRules` is the single authority, `commanderRulesTableConflict`
+  is the single statement of the 2HG conflict, and the client renders a **Rules** row between Cards and
+  Table. The Commander pack formats and commander deck legality now only *default* the axis.
+
+- ✅ **Commander with AI seats** (issue #1453). `CommanderDeckGenerator` (`:ai`) picks a legal commander
+  (CR 903.3, via the SDK's shared `CommanderEligibility`) and builds a singleton deck inside its colour
+  identity to the format's exact size — CR 903.5a/b/c, with a basics-only manabase so CR 903.5d holds by
+  construction. `RandomDeckResolver` returns a `GeneratedDeck` (list *plus* commander) so the two halves
+  are decided together, and it asks for commander-ness on the **Rules** axis rather than reading it off
+  `DeckFormat`, which is what a premade Commander pod with no legality restriction needs. Every entry
+  point is un-gated: quick-lobby Auto / From sets, a human's Random pool, premade tournament seats, and
+  limited pools (`generateFromPool`, for a drafted or sealed Commander seat).
+
+Deliberately still open:
+
+- Commander-aware *play* — commander tax when evaluating casts, commander damage as a win/loss axis, and
+  an intentional CR 903.9a command-zone choice. The AI plays legal Commander today (it answers the zone
+  choice by simulating both branches, and `CostCalculator` already charges it the tax), just not well.
+  See "AI advisor coverage" under Risks below.
+- Commander deck *synergy* — the generator picks on rating and curve, not on what the commander wants.
+  Partners / Backgrounds and colourless-identity commanders are out of its scope too (Phase 4).
 - AI politics (group dynamics, kingmaker avoidance) — separate research project.
-- Server lobby support for >2 players (likely already there for tournaments, but verify the play-flow paths).
+- **Out of scope permanently:** range of influence (CR 801) — `backlog/multiplayer.md` says so too — and
+  the politics mechanics (monarch / initiative / voting).
 
 ## Phase 4 — Partner / Background / Companion / commander variants
 
@@ -293,7 +328,8 @@ This is its own project — large in scope and surface area.
 - Companion sideboard slot (Companion is technically a separate mechanic, but lives naturally near commander zone
   setup).
 - Commander variants: Brawl (60 cards, standard-legal), Oathbreaker (planeswalker + signature spell, 60 cards,
-  30 starting life), Pauper Commander (uncommon commander, common deck).
+  30 starting life), Pauper Commander (uncommon commander, common deck). These are **values of `GameRules`**,
+  not new draft shapes or deck formats — that is the slot the Rules axis was built to have (see Phase 3).
 
 ---
 

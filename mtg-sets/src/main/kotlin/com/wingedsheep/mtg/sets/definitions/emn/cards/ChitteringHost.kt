@@ -21,9 +21,15 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * Haste
  * Menace (This creature can't be blocked except by two or more creatures.)
  * When this creature enters, other creatures you control get +1/+0 and gain menace until end of turn.
+ *
+ * This is a meld result (Graf Rats + Midnight Scavengers). Meld is out of scope, so Chittering Host
+ * is authored as a normal creature with its printed abilities and the meld linkage is ignored.
+ * `meldResult = true` keeps it out of booster, draft and deckbuilding pools — it's only ever
+ * created by melding the pair, never opened or drafted as a card of its own.
  */
 val ChitteringHost = card("Chittering Host") {
     manaCost = ""
+    meldResult = true
     colorIdentity = "B"
     typeLine = "Creature — Eldrazi Horror"
     oracleText = "Haste\nMenace (This creature can't be blocked except by two or more creatures.)\nWhen this creature enters, other creatures you control get +1/+0 and gain menace until end of turn."

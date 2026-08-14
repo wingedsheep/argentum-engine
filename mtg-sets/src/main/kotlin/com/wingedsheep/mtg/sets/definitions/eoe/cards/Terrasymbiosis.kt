@@ -20,9 +20,12 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * trigger and exposes the placed count via `TRIGGER_COUNTERS_PLACED_AMOUNT`. The "may"
  * is a `MayEffect` wrapping the draw — a bare `optional = true` flag on a no-target
  * triggered ability is a silent no-op (the engine only honours it on targeted abilities
- * or ones with an `elseEffect`), so the player would never have been prompted. The
- * "do this only once each turn" gate uses the existing `oncePerTurn = true` flag on
- * `TriggeredAbility` (the same mechanism as Scavenger's Talent).
+ * or ones with an `elseEffect`), so the player would never have been prompted.
+ *
+ * "Do this only once each turn" is `effectOncePerTurn = true` — CR 603.2h, the rider keyed to the
+ * *action*: the ability keeps triggering until the draw is actually taken, so declining one
+ * placement leaves a later, bigger one still on offer. Not `oncePerTurn` (Scavenger's Talent's
+ * "**this ability triggers** only once each turn"), which the first declined trigger would burn.
  */
 val Terrasymbiosis = card("Terrasymbiosis") {
     manaCost = "{2}{G}"
@@ -33,7 +36,7 @@ val Terrasymbiosis = card("Terrasymbiosis") {
 
     triggeredAbility {
         trigger = Triggers.PlusOneCountersPlacedOnYourCreature
-        oncePerTurn = true
+        effectOncePerTurn = true
         effect = MayEffect(
             Effects.DrawCards(
                 DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_COUNTERS_PLACED_AMOUNT)

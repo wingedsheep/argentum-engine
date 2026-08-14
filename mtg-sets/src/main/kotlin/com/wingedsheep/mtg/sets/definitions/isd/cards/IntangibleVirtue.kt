@@ -28,11 +28,11 @@ val IntangibleVirtue = card("Intangible Virtue") {
         ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 1,
-            filter = GroupFilter(GameObjectFilter.Creature.youControl())
+            filter = GroupFilter(GameObjectFilter.Creature.token().youControl())
         )
     }
     staticAbility {
-        ability = GrantKeyword(Keyword.VIGILANCE, GroupFilter(GameObjectFilter.Creature.youControl()))
+        ability = GrantKeyword(Keyword.VIGILANCE, GroupFilter(GameObjectFilter.Creature.token().youControl()))
     }
     metadata {
         rarity = Rarity.UNCOMMON

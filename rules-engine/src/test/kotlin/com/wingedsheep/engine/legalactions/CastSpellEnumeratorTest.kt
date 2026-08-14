@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.legalactions
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.legalactions.support.EnumerationFixtures
 import com.wingedsheep.engine.legalactions.support.setupP1
@@ -11,6 +12,7 @@ import com.wingedsheep.engine.state.components.player.CantCastSpellsComponent
 import com.wingedsheep.mtg.sets.definitions.dom.cards.StrongholdConfessor
 import com.wingedsheep.mtg.sets.definitions.ktk.cards.TormentingVoice
 import com.wingedsheep.mtg.sets.definitions.ecl.cards.BrigidsCommand
+import com.wingedsheep.mtg.sets.definitions.ecl.cards.MorningtidesLight
 import com.wingedsheep.sdk.core.Step
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -143,6 +145,28 @@ class CastSpellEnumeratorTest : FunSpec({
         // AnyTarget allows both players; both should be in the valid set.
         cast.validTargets!! shouldContain driver.player1
         cast.validTargets shouldContain driver.player2
+    }
+
+    test("'any number of target creatures' caps at the legal-target count, not the static count of 1") {
+        // Morningtide's Light declares TargetCreature(unlimited = true), whose static `count`
+        // is the default 1. The enumerated cap must be "every legal target" — a single-
+        // requirement action ships no targetRequirements, so `targetCount` is the only max
+        // the client and the AI ever see.
+        val driver = setupP1(
+            hand = listOf("Morningtide's Light"),
+            battlefield = listOf(
+                "Plains", "Plains", "Plains", "Plains",
+                "Grizzly Bears", "Grizzly Bears", "Grizzly Bears"
+            ),
+            extraSetCards = listOf(MorningtidesLight)
+        )
+
+        val cast = driver.enumerateFor(driver.player1).castActionsFor("Morningtide's Light").first()
+
+        cast.requiresTargets shouldBe true
+        cast.targetCount shouldBe 3
+        cast.minTargets shouldBe 0   // "any number" — targeting nothing is legal
+        cast.validTargets!! shouldHaveSize 3
     }
 
     test("CastSpell action carries the card's entity id") {
@@ -291,7 +315,7 @@ class CastSpellEnumeratorTest : FunSpec({
         kicked.affordable shouldBe true
         // Kicker adds {3} to the base {B} cost.
         kicked.manaCostString shouldBe "{3}{B}"
-        (kicked.action as CastSpell).wasKicked shouldBe true
+        (kicked.action as CastSpell).declaredCostSlot shouldBe ChoiceSlot.KICKED
     }
 
     test("Kicker action is emitted as unaffordable when the kicked cost can't be paid") {
@@ -307,6 +331,20 @@ class CastSpellEnumeratorTest : FunSpec({
             .single { it.actionType == "CastWithKicker" }
 
         kicked.affordable shouldBe false
+    }
+
+    test("a sorcery-speed card on the optional-cost rail offers nothing at instant speed") {
+        // Upkeep: neither the kicked variant nor the base cast may be offered. The optional-cost
+        // pass owns its own timing gate, and it has to skip the card whole — including the
+        // unaffordable-base-cast fallback it emits when only the kicked variant is payable.
+        val driver = setupP1(
+            hand = listOf("Stronghold Confessor"),
+            battlefield = listOf("Swamp"),
+            extraSetCards = listOf(StrongholdConfessor),
+            atStep = Step.UPKEEP
+        )
+
+        driver.enumerateFor(driver.player1).castActionsFor("Stronghold Confessor").shouldBeEmpty()
     }
 
     // -------------------------------------------------------------------------
@@ -424,10 +462,15 @@ class CastSpellEnumeratorTest : FunSpec({
         enumeration.unavailableIndices.size shouldBe 2
     }
 
-    test("choose-N modal spell is dropped entirely when every mode is unavailable") {
-        // No creatures anywhere, no Kithkin. Mode 1 (target player) still works,
-        // but let's construct a case where the spell still surfaces since
-        // mode 1 has no prerequisites — so just verify mode 1 remains available.
+    test("choose-N modal spell is dropped when fewer modes are available than it must choose") {
+        // Brigid's Command is "Choose two —", so `minChooseCount` is 2 and repeats are not
+        // allowed. With no creatures and no Kithkin anywhere, only mode 1 (target player) has a
+        // legal target; a mode that would be illegal can't be chosen (CR 700.2a), so there is no
+        // legal pair to announce and the cast can't be proposed at all (CR 601.2). Wizards' own
+        // Cryptic Command ruling states the same: "You must choose two different modes."
+        //
+        // The gate is the effective *minimum*, not the maximum: a "choose one or both" spell in
+        // this position is still castable for its one available mode.
         val driver = setupP1(
             hand = listOf("Brigid's Command"),
             battlefield = listOf("Forest", "Plains", "Forest"),
@@ -436,13 +479,7 @@ class CastSpellEnumeratorTest : FunSpec({
 
         val casts = driver.enumerateFor(driver.player1).castActionsFor("Brigid's Command")
 
-        casts shouldHaveSize 1
-        val enumeration = casts.single().modalEnumeration.shouldNotBeNull()
-        // Player target stays available; everything else requires a creature we don't control or a Kithkin or an opponent creature.
-        enumeration.modes[1].available shouldBe true
-        enumeration.unavailableIndices shouldContain 0
-        enumeration.unavailableIndices shouldContain 2
-        enumeration.unavailableIndices shouldContain 3
+        casts.shouldBeEmpty()
     }
 
 })

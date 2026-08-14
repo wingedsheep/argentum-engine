@@ -20,6 +20,8 @@ class ColorChoiceContinuationResumer(
         resumer(ChooseNumberThenContinuation::class, ::resumeChooseNumberThen),
         resumer(ChooseNumberForSourceContinuation::class, ::resumeChooseNumberForSource),
         resumer(ChooseOpponentForSourceContinuation::class, ::resumeChooseOpponentForSource),
+        resumer(ChooseCardTypeForSourceContinuation::class, ::resumeChooseCardTypeForSource),
+        resumer(ChooseOpponentDeciderContinuation::class, ::resumeChooseOpponentDecider),
         resumer(ChooseManaColorContinuation::class, ::resumeChooseManaColor),
         resumer(ChooseColorForTargetContinuation::class, ::resumeChooseColorForTarget),
         resumer(ChooseAnyColorTapBonusContinuation::class, ::resumeChooseAnyColorTapBonus)
@@ -115,6 +117,60 @@ class ColorChoiceContinuationResumer(
             container.withCastChoice(ChoiceSlot.OPPONENT, ChoiceValue.EntityChoice(chosen))
         }
         return checkForMore(newState, emptyList())
+    }
+
+    fun resumeChooseCardTypeForSource(
+        state: GameState,
+        continuation: ChooseCardTypeForSourceContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for ChooseCardTypeForSource effect")
+        }
+        val chosen = continuation.cardTypes.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Card type choice index ${response.optionIndex} out of range")
+        // Record the chosen card type durably on the source permanent so
+        // CardPredicate.CardTypeEqualsChosenComponent reads it at cost-calculation / projection time.
+        if (state.getEntity(continuation.sourceId) == null) {
+            return checkForMore(state, emptyList())
+        }
+        val newState = state.updateEntity(continuation.sourceId) { container ->
+            container.withCastChoice(continuation.slot, ChoiceValue.TextChoice(chosen))
+        }
+        return checkForMore(newState, emptyList())
+    }
+
+    /**
+     * The controller picked which opponent makes a `Chooser.Opponent` decision (CR 601.7a /
+     * 602.3a and the matching resolution-time rulings). Stamp the pick onto the context and
+     * re-run the effect, which now resolves its chooser to that opponent and pauses with its
+     * own decision.
+     */
+    fun resumeChooseOpponentDecider(
+        state: GameState,
+        continuation: ChooseOpponentDeciderContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for the opponent-decider pick")
+        }
+        val chosen = continuation.opponentIds.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Opponent choice index ${response.optionIndex} out of range")
+
+        val contextWithDecider = continuation.baseContext.copy(opponentDeciderId = chosen)
+        val effectResult = effectRunner.executeRemainingEffects(
+            state,
+            listOf(continuation.effect),
+            contextWithDecider
+        )
+
+        if (effectResult.isPaused) return effectResult.toExecutionResult()
+        // The re-run finished without pausing (nothing left to decide). Publish whatever it
+        // stored so the composite's remaining steps still see it.
+        val published = exposeCollectionsToNextFrame(effectResult.state, effectResult.updatedCollections)
+        return checkForMore(published, effectResult.events.toList())
     }
 
     fun resumeChooseManaColor(

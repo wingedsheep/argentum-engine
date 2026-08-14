@@ -22,7 +22,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * that creature is legendary, its controller loses 3 life.
  * When the Ring tempts you, return this card from your graveyard to your hand.
  *
- * Gap 21 (graveyard-functional triggered ability) is engine-landed (`TriggeredAbility.activeZone`,
+ * Gap 21 (graveyard-functional triggered ability) is engine-landed (`TriggeredAbility.activeZones`,
  * DSL `triggerZone = Zone.GRAVEYARD`; templates Pyre Zombie, Persistent Marshstalker). The legendary
  * rider is checked mid-resolution (the targeted creature is still on the battlefield until SBAs run
  * after the ability finishes), so printed order works.

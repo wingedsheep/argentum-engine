@@ -16,7 +16,6 @@ object SpiderManSet : MtgSet {
     override val code = "SPM"
     override val displayName = "Marvel's Spider-Man"
     override val releaseDate = "2025-09-26"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

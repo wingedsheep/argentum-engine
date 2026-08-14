@@ -1,6 +1,5 @@
 package com.wingedsheep.engine.legalactions.enumerators
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
-import com.wingedsheep.engine.state.components.battlefield.chosenColor
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.legalactions.ActionEnumerator
@@ -27,8 +26,9 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.core.Color
-import com.wingedsheep.sdk.scripting.OverrideEnchantedLandManaColor
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
+import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
@@ -71,7 +71,11 @@ class ManaAbilityEnumerator : ActionEnumerator {
 
             val entityLostAllAbilities = projected.hasLostAllAbilities(entityId)
 
-            val cardDef = context.cardRegistry.getCard(cardComponent.name)
+            // By definition id, not name: a renamed copy (CR 707.9 — Absorbing Man copying a mana
+            // rock "except his name is Absorbing Man") keeps its printed name but presents the
+            // copied definition. `ActivateAbilityHandler` resolves by id, so a name lookup here
+            // would hide a mana ability the engine would still let the player activate.
+            val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId)
 
             // Include granted activated abilities that are mana abilities (both temporary and static)
             val grantedManaAbilities = state.grantedActivatedAbilities
@@ -156,6 +160,12 @@ class ManaAbilityEnumerator : ActionEnumerator {
                             )
                             if (sacrificeTargets.size < atom.count) affordable = false
                         }
+                        // CR 701.17b — a mill cost is unpayable when the library holds fewer cards,
+                        // so the mana ability isn't legal at all (Deranged Assistant on an empty
+                        // library).
+                        is CostAtom.Mill -> {
+                            if (state.getZone(ZoneKey(playerId, Zone.LIBRARY)).size < atom.count) affordable = false
+                        }
                         // Other atoms (mana, life, discard, …) — engine validates at payment.
                         else -> {}
                     }
@@ -215,6 +225,12 @@ class ManaAbilityEnumerator : ActionEnumerator {
                                     is CostAtom.ReturnToHand -> {
                                         // Bounce costs not typical for mana abilities but handle for completeness
                                     }
+                                    // CR 701.17b — see the single-atom branch above.
+                                    is CostAtom.Mill -> {
+                                        if (state.getZone(ZoneKey(playerId, Zone.LIBRARY)).size < atom.count) {
+                                            affordable = false; break
+                                        }
+                                    }
                                     // Other atoms (life, discard, exile, reveal) — engine validates at payment.
                                     else -> {}
                                 }
@@ -262,7 +278,7 @@ class ManaAbilityEnumerator : ActionEnumerator {
                 // Check activation restrictions
                 var restrictionsMet = true
                 for (restriction in ability.restrictions) {
-                    if (!context.castPermissionUtils.checkActivationRestriction(state, playerId, restriction, entityId, ability.id)) {
+                    if (!context.castPermissionUtils.checkActivationRestriction(state, playerId, restriction, entityId, ability.id, ability.isExhaust)) {
                         restrictionsMet = false
                         break
                     }
@@ -328,6 +344,35 @@ class ManaAbilityEnumerator : ActionEnumerator {
      * Also overrides the description when an aura attached to the source forces the land
      * to produce a different color (e.g., Shimmerwilds Growth → "{T}: Add {U}").
      */
+    /**
+     * The combined [com.wingedsheep.sdk.scripting.MultiplyManaOnSourceTap] factor for [entityId]
+     * (Virtue of Strength: 3), for labelling only — the authoritative scaling happens in
+     * `ActivateAbilityHandler` (manual tap) and `ManaSolver` (auto-tap). Instances multiply
+     * together, matching both of those.
+     */
+    private fun sourceTapManaMultiplier(
+        state: com.wingedsheep.engine.state.GameState,
+        entityId: EntityId,
+        context: EnumerationContext
+    ): Int {
+        if (context.manaStatics.sourceTapMultipliers.isEmpty()) return 1
+        var multiplier = 1
+        for (entry in context.manaStatics.sourceTapMultipliers) {
+            if (entry.static.multiplier <= 1) continue
+            val filterContext = PredicateContext(
+                controllerId = entry.sourceControllerId,
+                sourceId = entry.sourceId
+            )
+            if (context.predicateEvaluator.matches(
+                    state, state.projectedState, entityId, entry.static.sourceFilter, filterContext
+                )
+            ) {
+                multiplier *= entry.static.multiplier
+            }
+        }
+        return multiplier
+    }
+
     private fun runtimeDescription(
         ability: com.wingedsheep.sdk.scripting.ActivatedAbility,
         state: com.wingedsheep.engine.state.GameState,
@@ -339,10 +384,30 @@ class ManaAbilityEnumerator : ActionEnumerator {
 
         // Mana-color override from an attached aura (Shimmerwilds Growth etc.).
         if (effect is AddManaEffect) {
-            val override = findEnchantedLandManaColorOverride(state, entityId, context)
+            val override = context.manaStatics.landColorOverrideByTarget[entityId]
             if (override != null) {
                 val costDesc = ability.cost.description
                 return "$costDesc: Add {${override.symbol}}"
+            }
+        }
+
+        // Multiplied output (Virtue of Strength) — label what the tap will actually produce, so
+        // the button reads "{T}: Add {G}{G}{G}" rather than the printed "{T}: Add {G}".
+        val manaMultiplier = sourceTapManaMultiplier(state, entityId, context)
+        if (manaMultiplier > 1) {
+            val symbol = when {
+                effect is AddManaEffect && effect.amount is DynamicAmount.Fixed -> "{${effect.color.symbol}}"
+                effect is AddColorlessManaEffect && effect.amount is DynamicAmount.Fixed -> "{C}"
+                else -> null
+            }
+            if (symbol != null) {
+                val baseAmount = when (effect) {
+                    is AddManaEffect -> (effect.amount as DynamicAmount.Fixed).amount
+                    is AddColorlessManaEffect -> (effect.amount as DynamicAmount.Fixed).amount
+                    else -> 0
+                }
+                val total = baseAmount * manaMultiplier
+                if (total > 0) return "${ability.cost.description}: Add ${symbol.repeat(total)}"
             }
         }
 
@@ -375,34 +440,6 @@ class ManaAbilityEnumerator : ActionEnumerator {
 
         val costDesc = ability.cost.description
         return "$costDesc: Add $count mana of any color ($count ${chosenType}s)"
-    }
-
-    /**
-     * Resolves the mana-color override contributed by auras attached to the source
-     * (via [OverrideEnchantedLandManaColor]). Returns `null` if none applies.
-     * Kept in sync with the identical helpers in `ActivateAbilityHandler` and
-     * `ManaSolver` — all three must agree or UI/label/solver/resolver drift apart.
-     */
-    private fun findEnchantedLandManaColorOverride(
-        state: com.wingedsheep.engine.state.GameState,
-        sourceId: EntityId,
-        context: EnumerationContext
-    ): Color? {
-        var override: Color? = null
-        for (id in state.getBattlefield()) {
-            val container = state.getEntity(id) ?: continue
-            val attachedTo = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-            if (attachedTo?.targetId != sourceId) continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = context.cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            for (staticAbility in cardDef.script.staticAbilities) {
-                val o = staticAbility as? OverrideEnchantedLandManaColor ?: continue
-                override = o.color
-                    ?: container.chosenColor()
-                    ?: continue
-            }
-        }
-        return override
     }
 
     /**

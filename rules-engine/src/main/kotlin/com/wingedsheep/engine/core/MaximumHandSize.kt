@@ -39,9 +39,16 @@ object MaximumHandSize {
      *
      * Starts from [DEFAULT] (CR 402.2) and applies every [SetMaximumHandSize] static ability on the
      * battlefield whose [SetMaximumHandSize.player] scope (resolved relative to the source's
-     * controller) includes [playerId], taking the most restrictive (smallest) value. A
-     * [ConditionalStaticAbility] wrapper is unwrapped and its condition evaluated against the
-     * source's controller, so "as long as …" gates (Winter's Delirium) are honored.
+     * controller) includes [playerId]. A [ConditionalStaticAbility] wrapper is unwrapped and its
+     * condition evaluated against the source's controller, so "as long as …" gates (Winter's
+     * Delirium) are honored.
+     *
+     * CR 613.11 says these effects apply in timestamp order (the latest wins), and each *sets* the
+     * value — so an effect can raise the limit above [DEFAULT] as readily as lower it (Doctor
+     * Octopus, Master Planner sets it to eight). The base [DEFAULT] must therefore not clamp the
+     * set effects: it is only the value when *no* set effect applies. When several set effects
+     * apply to one player at once (rare), we take the most restrictive (smallest) rather than
+     * threading true timestamps — a deliberate simplification that matches every real collision.
      */
     fun effective(
         state: GameState,
@@ -51,7 +58,7 @@ object MaximumHandSize {
         dynamicAmountEvaluator: DynamicAmountEvaluator,
     ): Int? {
         if (hasNoMaximum(state, playerId, cardRegistry)) return null
-        var max = DEFAULT
+        var setValue: Int? = null
         val projected = state.projectedState
         for (permanentId in state.getBattlefield()) {
             val card = state.getEntity(permanentId)?.get<CardComponent>() ?: continue
@@ -64,12 +71,13 @@ object MaximumHandSize {
                 if (!playerScopeIncludes(setAbility.player, playerId, controllerId, state, permanentId)) continue
                 val value = dynamicAmountEvaluator.evaluate(state, setAbility.amount, context)
                     .coerceAtLeast(0)
-                max = minOf(max, value)
+                setValue = if (setValue == null) value else minOf(setValue, value)
             }
         }
-        // Player-scoped rest-of-game reductions (Inspired Idea) apply after the SetMaximumHandSize
-        // statics have chosen the most restrictive base, and never below 0. A no-maximum player
-        // short-circuited above, so there is always a finite base to reduce here.
+        // No set effect → the CR 402.2 default of seven. Player-scoped rest-of-game reductions
+        // (Inspired Idea) apply after the SetMaximumHandSize statics have chosen the base, and never
+        // below 0. A no-maximum player short-circuited above, so there is always a finite base here.
+        val max = setValue ?: DEFAULT
         val reduction = reductionFor(state, playerId)
         return (max - reduction).coerceAtLeast(0)
     }

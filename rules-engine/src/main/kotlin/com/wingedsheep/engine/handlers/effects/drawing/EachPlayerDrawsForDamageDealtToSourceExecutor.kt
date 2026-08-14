@@ -39,13 +39,7 @@ class EachPlayerDrawsForDamageDealtToSourceExecutor(
         for (playerId in ordered) {
             val baseCount = perPlayer[playerId] ?: continue
             if (baseCount <= 0) continue
-            // Each player's draw is its own announcement (CR 121.2c — each player's draws
-            // resolve in turn order as separate instructions), so ModifyDrawAmount (CR 121.2a)
-            // applies per-player. Without this, e.g. Quantum Riddler on a player's side
-            // wouldn't add +1 to their Grothama-LTB draw while their hand-size restriction held.
-            val count = drawCardsExecutor.applyDrawAmountModifier(currentState, playerId, baseCount)
-            if (count <= 0) continue
-            val result = drawCardsExecutor.executeDraws(currentState, playerId, count)
+            val result = drawCardsExecutor.executeDraws(currentState, playerId, baseCount, context = context)
             currentState = result.state
             events.addAll(result.events)
             if (result.pendingDecision != null) {

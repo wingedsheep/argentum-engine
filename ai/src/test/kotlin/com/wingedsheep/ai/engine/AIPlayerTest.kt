@@ -177,43 +177,6 @@ class AIPlayerTest : FunSpec({
         (p1Life < 20 || p2Life < 20 || state.gameOver).shouldBeTrue()
     }
 
-    test("searcher evaluates deeper than 1-ply without errors") {
-        val registry = createCardRegistry()
-        // Deck with instants — opponent can respond, triggering deeper search
-        val deck = Deck.of("Mountain" to 12, "Raging Goblin" to 4, "Volcanic Hammer" to 4)
-        val (state, _) = initGame(registry, deck)
-
-        val playerId = state.turnOrder[0]
-        val simulator = GameSimulator(registry)
-        val evaluator = AIPlayer.defaultEvaluator()
-        val searcher = Searcher(simulator, evaluator)
-
-        val actions = simulator.getLegalActions(state, playerId).filter { it.affordable }
-        // Search each action at depth 2 — should not throw
-        for (action in actions.take(5)) {
-            val score = searcher.searchAction(state, action, playerId, depth = 2)
-            score.isFinite().shouldBeTrue()
-        }
-    }
-
-    test("searcher at depth 2+ respects node limit") {
-        val registry = createCardRegistry()
-        val deck = Deck.of("Mountain" to 12, "Raging Goblin" to 4, "Volcanic Hammer" to 4)
-        val (state, _) = initGame(registry, deck)
-
-        val playerId = state.turnOrder[0]
-        val simulator = GameSimulator(registry)
-        val evaluator = AIPlayer.defaultEvaluator()
-        // Very tight node limit
-        val searcher = Searcher(simulator, evaluator, SearchConfig(maxDepth = 3, maxNodes = 50))
-
-        val actions = simulator.getLegalActions(state, playerId).filter { it.affordable }
-        for (action in actions.take(3)) {
-            val score = searcher.searchAction(state, action, playerId, depth = 3)
-            score.isFinite().shouldBeTrue()
-        }
-    }
-
     test("simulating CastSpell resolves the spell onto the battlefield") {
         val registry = createCardRegistry()
         val deck = Deck.of("Mountain" to 17, "Raging Goblin" to 3)

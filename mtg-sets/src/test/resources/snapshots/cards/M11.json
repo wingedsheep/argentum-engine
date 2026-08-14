@@ -35,6 +35,96 @@
     ]
 }
 
+// Captivating Vampire
+{
+    "name": "Captivating Vampire",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Vampire",
+    "oracleText": "Other Vampire creatures you control get +1/+1.\nTap five untapped Vampires you control: Gain control of target creature. It becomes a Vampire in addition to its other types.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 5,
+                        "filter": "creature Vampire ctrl:you"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GainControl",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        },
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Vampire",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    }
+                ],
+                "descriptionOverride": "Gain control of target creature. It becomes a Vampire in addition to its other types."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Vampire ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f99b0735-cc3c-48dc-a7ad-b7d9eea45e54.jpg?1783941818",
+        "rulings": [
+            {
+                "date": "2010-08-15",
+                "text": "Since Captivating Vampire's activated ability doesn't have a tap symbol in its cost, you can tap a Vampire (including Captivating Vampire itself) that hasn't been under your control since your most recent turn began to pay the cost."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "The effect of Captivating Vampire's activated ability has no duration. You retain control of the affected creature until the game ends, the creature leaves the battlefield, or a later effect causes someone else to gain control of it. It doesn't matter whether Captivating Vampire remains on the battlefield. Similarly, the affected creature remains a Vampire in addition to its other types until the game ends, the creature leaves the battlefield, or a later effect changes its types or subtypes."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "Gaining control of a creature doesn't cause you gain control of any Auras or Equipment attached to it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Cultivate
 {
     "name": "Cultivate",

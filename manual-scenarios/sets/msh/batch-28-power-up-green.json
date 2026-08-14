@@ -1,0 +1,119 @@
+{
+    "player1Name": "Alice",
+    "player2Name": "Bob",
+    "player1": {
+        "lifeTotal": 20,
+        "hand": [
+            "Hercules, Prince of Power",
+            "Pet Avengers",
+            "Serpent Specialist",
+            "She-Hulk, Jade Defender",
+            "White Tiger, Ava Ayala"
+        ],
+        "battlefield": [
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            },
+            {
+                "name": "Forest"
+            }
+        ],
+        "graveyard": [],
+        "library": [
+            "Grizzly Bears",
+            "Hill Giant",
+            "Serra Angel",
+            "Grizzly Bears",
+            "Hill Giant"
+        ]
+    },
+    "player2": {
+        "lifeTotal": 20,
+        "hand": [],
+        "battlefield": [
+            {
+                "name": "Grizzly Bears"
+            },
+            {
+                "name": "Jalum Tome"
+            },
+            {
+                "name": "Feldon's Cane"
+            }
+        ],
+        "graveyard": [],
+        "library": [
+            "Grizzly Bears",
+            "Hill Giant",
+            "Serra Angel"
+        ]
+    },
+    "phase": "PRECOMBAT_MAIN",
+    "activePlayer": 1,
+    "priorityPlayer": 1,
+    "player1StopAtSteps": [],
+    "player2StopAtSteps": [],
+    "player1OpponentStopAtSteps": [],
+    "player2OpponentStopAtSteps": [],
+    "mode": "AI"
+}

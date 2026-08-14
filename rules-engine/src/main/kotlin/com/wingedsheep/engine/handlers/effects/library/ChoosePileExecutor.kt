@@ -2,13 +2,11 @@ package com.wingedsheep.engine.handlers.effects.library
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.ChooserResolution
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
-import com.wingedsheep.sdk.scripting.effects.Chooser
 import java.util.UUID
 import kotlin.reflect.KClass
 
@@ -16,9 +14,9 @@ import kotlin.reflect.KClass
  * Executor for [ChoosePileEffect].
  *
  * Reads two named card collections from the pipeline, presents a binary
- * [ChooseOptionDecision] to the configured [Chooser], and (on response)
- * routes the picked pile to [ChoosePileEffect.storeChosenAs] and the other
- * to [ChoosePileEffect.storeOtherAs].
+ * [ChooseOptionDecision] to the player [ChooserResolution] derives from the effect's
+ * [com.wingedsheep.sdk.scripting.effects.Chooser], and (on response) routes the picked pile to
+ * [ChoosePileEffect.storeChosenAs] and the other to [ChoosePileEffect.storeOtherAs].
  */
 class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
 
@@ -32,36 +30,18 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
         val pileA = context.pipeline.storedCollections[effect.pileA] ?: emptyList()
         val pileB = context.pipeline.storedCollections[effect.pileB] ?: emptyList()
 
-        val deciderId = when (effect.chooser) {
-            Chooser.Controller -> context.controllerId
-            Chooser.Opponent -> state.getOpponents(context.controllerId).firstOrNull()
-                ?: return EffectResult.error(state, "No opponent for ChoosePile chooser")
-            Chooser.TargetPlayer -> context.targets.firstOrNull()?.let {
-                TargetResolutionUtils.run { it.toEntityId() }
-            } ?: return EffectResult.error(state, "No target player for ChoosePile chooser")
-            Chooser.TriggeringPlayer -> context.triggeringEntityId
-                ?: return EffectResult.error(state, "No triggering player for ChoosePile chooser")
-            Chooser.SourceController -> {
-                val sourceId = context.sourceId
-                    ?: return EffectResult.error(state, "No source entity for ChoosePile chooser")
-                state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-                    ?: return EffectResult.error(state, "Source entity has no ControllerComponent for ChoosePile chooser")
-            }
-            Chooser.ControllerOfSelection -> {
-                val deriveFrom = (pileA + pileB).firstOrNull()
-                    ?: return EffectResult.error(state, "No card to derive controller for ChoosePile ControllerOfSelection chooser")
-                state.projectedState.getController(deriveFrom)
-                    ?: state.getEntity(deriveFrom)?.get<ControllerComponent>()?.playerId
-                    ?: return EffectResult.error(state, "Could not resolve controller for ChoosePile ControllerOfSelection chooser")
-            }
-            Chooser.ControllerOfTarget -> {
-                val targetId = context.targets.firstOrNull()?.let {
-                    TargetResolutionUtils.run { it.toEntityId() }
-                } ?: return EffectResult.error(state, "No target for ChoosePile ControllerOfTarget chooser")
-                state.getEntity(targetId)?.get<ControllerComponent>()?.playerId
-                    ?: state.getEntity(targetId)?.get<CardComponent>()?.ownerId
-                    ?: return EffectResult.error(state, "Could not resolve controller for ChoosePile ControllerOfTarget chooser")
-            }
+        val deciderId = when (
+            val outcome = ChooserResolution.resolve(state, effect.chooser, context, pileA + pileB)
+        ) {
+            is ChooserResolution.Outcome.Resolved -> outcome.playerId
+            // "An opponent chooses one of those piles" — with several opponents the controller
+            // says which one, then this same effect runs again for the pile choice itself.
+            is ChooserResolution.Outcome.NeedsOpponentPick -> return ChooserResolution.pauseForOpponentPick(
+                state, outcome.opponents, effect, context,
+                prompt = "Choose which opponent chooses a pile"
+            )
+            is ChooserResolution.Outcome.Unresolvable ->
+                return EffectResult.error(state, "ChoosePile chooser: ${outcome.reason}")
         }
 
         val sourceName = context.sourceId?.let { sourceId ->

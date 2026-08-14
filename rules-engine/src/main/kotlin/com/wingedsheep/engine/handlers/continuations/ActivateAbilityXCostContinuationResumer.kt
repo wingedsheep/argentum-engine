@@ -4,7 +4,8 @@ import com.wingedsheep.engine.core.ActivateAbilityChooseManaXContinuation
 import com.wingedsheep.engine.core.ActivateAbilityChooseXContinuation
 import com.wingedsheep.engine.core.ActivateAbilityControllerTargetContinuation
 import com.wingedsheep.engine.core.ActivateAbilityExileFromGraveyardContinuation
-import com.wingedsheep.engine.core.ActivateAbilityExilePermanentsContinuation
+import com.wingedsheep.engine.core.ActivateAbilityVariablePermanentsContinuation
+import com.wingedsheep.engine.core.ActivateAbilityExileXFromGraveyardContinuation
 import com.wingedsheep.engine.core.ActivateAbilitySacrificeContinuation
 import com.wingedsheep.engine.core.ActivateAbilityTapXTargetsContinuation
 import com.wingedsheep.engine.core.CancelDecisionResponse
@@ -52,10 +53,11 @@ class ActivateAbilityXCostContinuationResumer(
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(ActivateAbilityChooseXContinuation::class, ::resumeChooseX),
         resumer(ActivateAbilityChooseManaXContinuation::class, ::resumeChooseManaX),
+        resumer(ActivateAbilityExileXFromGraveyardContinuation::class, ::resumeExileXFromGraveyard),
         resumer(ActivateAbilityTapXTargetsContinuation::class, ::resumeTapXTargets),
         resumer(ActivateAbilityExileFromGraveyardContinuation::class, ::resumeExileFromGraveyard),
         resumer(ActivateAbilitySacrificeContinuation::class, ::resumeSacrifice),
-        resumer(ActivateAbilityExilePermanentsContinuation::class, ::resumeExilePermanents),
+        resumer(ActivateAbilityVariablePermanentsContinuation::class, ::resumeVariablePermanents),
         resumer(ActivateAbilityControllerTargetContinuation::class, ::resumeControllerTargets)
     )
 
@@ -74,7 +76,7 @@ class ActivateAbilityXCostContinuationResumer(
             return ExecutionResult.error(state, "Expected number response for ActivateAbility mana-X choice")
         }
         val chosenX = response.number.coerceAtLeast(0)
-        return handler.execute(state, continuation.action.copy(xValue = chosenX))
+        return reenter(handler.execute(state, continuation.action.copy(xValue = chosenX)), checkForMore)
     }
 
     private fun resumeChooseX(
@@ -98,7 +100,7 @@ class ActivateAbilityXCostContinuationResumer(
                 costPayment = (action.costPayment ?: AdditionalCostPayment())
                     .copy(tappedPermanents = emptyList())
             )
-            return handler.execute(state, replay)
+            return reenter(handler.execute(state, replay), checkForMore)
         }
 
         // Raise the follow-up tap-target selection. minSelections == maxSelections == chosenX so
@@ -169,7 +171,48 @@ class ActivateAbilityXCostContinuationResumer(
             costPayment = (action.costPayment ?: AdditionalCostPayment())
                 .copy(exiledCards = response.selectedCards)
         )
-        return handler.execute(state, replay)
+        return reenter(handler.execute(state, replay), checkForMore)
+    }
+
+    /**
+     * Resume after the player picks the graveyard cards for an `ExileXFromGraveyard` cost. X *is*
+     * the size of that selection, so a single decision settles both: re-enter the handler with the
+     * chosen cards in `costPayment.exiledCards` and `xValue` bound to how many were chosen.
+     *
+     * When a `{X}` mana symbol already fixed X (Necropolis Fiend), [fixedCount] pins the selection
+     * size and `xValue` on the action is left as it was — the two agree by construction.
+     */
+    private fun resumeExileXFromGraveyard(
+        state: GameState,
+        continuation: ActivateAbilityExileXFromGraveyardContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(
+                state,
+                "Expected card-selection response for ActivateAbility ExileXFromGraveyard"
+            )
+        }
+        val selected = response.selectedCards
+        if (selected.any { it !in continuation.exileCandidates }) {
+            return ExecutionResult.error(state, "Selected card is not in the list of valid exile candidates")
+        }
+        val fixedCount = continuation.fixedCount
+        if (fixedCount != null && selected.size != fixedCount) {
+            return ExecutionResult.error(
+                state,
+                "Expected $fixedCount cards to exile, got ${selected.size}"
+            )
+        }
+
+        val action = continuation.action
+        val replay = action.copy(
+            xValue = fixedCount ?: selected.size,
+            costPayment = (action.costPayment ?: AdditionalCostPayment())
+                .copy(exiledCards = selected)
+        )
+        return reenter(handler.execute(state, replay), checkForMore)
     }
 
     /**
@@ -210,52 +253,52 @@ class ActivateAbilityXCostContinuationResumer(
             costPayment = (action.costPayment ?: AdditionalCostPayment())
                 .copy(sacrificedPermanents = response.selectedCards)
         )
-        return handler.execute(state, replay)
+        return reenter(handler.execute(state, replay), checkForMore)
     }
 
     /**
-     * Resume after the controller picks which permanents to exile for a variable-count
-     * `CostAtom.ExilePermanents` cost — "Exile one or more other [filter] you control with total
-     * mana value X" (Fabrication Foundry). Fills the chosen permanents into
-     * `costPayment.exiledCards` and re-enters the handler, which computes X (their total mana value)
-     * and pauses again for the X-bounded target.
+     * Resume after the controller picks which permanents pay a variable-count
+     * `CostAtom.VariablePermanents` cost — "Exile one or more other [filter] you control with total
+     * mana value X" (Fabrication Foundry) or "Sacrifice one or more [filter]" (Radiant Lotus).
+     * Fills the chosen permanents into `costPayment.variableCostPermanents` and re-enters the
+     * handler, which computes X from them and pauses again for the ability's target.
      */
-    private fun resumeExilePermanents(
+    private fun resumeVariablePermanents(
         state: GameState,
-        continuation: ActivateAbilityExilePermanentsContinuation,
+        continuation: ActivateAbilityVariablePermanentsContinuation,
         response: DecisionResponse,
-        @Suppress("UNUSED_PARAMETER") checkForMore: CheckForMore
+        checkForMore: CheckForMore
     ): ExecutionResult {
         if (response is CancelDecisionResponse) {
-            // The exile cost is paid after this pause, so bailing here is side-effect-free.
+            // The cost is paid after this pause, so bailing here is side-effect-free.
             return ExecutionResult.success(state.withPriority(continuation.action.playerId))
         }
         if (response !is CardsSelectedResponse) {
-            return ExecutionResult.error(state, "Expected card-selection response for ActivateAbility ExilePermanents")
+            return ExecutionResult.error(state, "Expected card-selection response for ActivateAbility VariablePermanents")
         }
         val selected = response.selectedCards
         if (selected.size < continuation.minCount) {
             return ExecutionResult.error(
                 state,
-                "Must exile at least ${continuation.minCount} permanent(s), got ${selected.size}"
+                "Must choose at least ${continuation.minCount} permanent(s), got ${selected.size}"
             )
         }
         if (selected.toSet().size != selected.size) {
-            return ExecutionResult.error(state, "Cannot exile the same permanent twice for one cost")
+            return ExecutionResult.error(state, "Cannot choose the same permanent twice for one cost")
         }
-        if (selected.any { it !in continuation.exileCandidates }) {
-            return ExecutionResult.error(state, "Selected permanent is not in the list of valid exile candidates")
+        if (selected.any { it !in continuation.candidates }) {
+            return ExecutionResult.error(state, "Selected permanent is not in the list of valid candidates")
         }
         val action = continuation.action
         val replay = action.copy(
             costPayment = (action.costPayment ?: AdditionalCostPayment())
-                .copy(exiledCards = selected)
+                .copy(variableCostPermanents = selected)
         )
-        return handler.execute(state, replay)
+        return reenter(handler.execute(state, replay), checkForMore)
     }
 
     /**
-     * Resume after the controller picks the X-bounded target of an `ExilePermanents` ability
+     * Resume after the controller picks the X-bounded target of an `VariablePermanents` ability
      * (Fabrication Foundry: "Return target artifact card with mana value X or less …"). The exile
      * selection — and thus X — is already on the action; convert the response into [ChosenTarget]s,
      * fill `action.targets`, and re-enter the handler to pay the cost and put the ability on the
@@ -265,7 +308,7 @@ class ActivateAbilityXCostContinuationResumer(
         state: GameState,
         continuation: ActivateAbilityControllerTargetContinuation,
         response: DecisionResponse,
-        @Suppress("UNUSED_PARAMETER") checkForMore: CheckForMore
+        checkForMore: CheckForMore
     ): ExecutionResult {
         if (response is CancelDecisionResponse) {
             // The cost still hasn't been paid at this point, so cancelling is side-effect-free.
@@ -282,7 +325,7 @@ class ActivateAbilityXCostContinuationResumer(
             return ExecutionResult.error(state, "Not enough targets chosen")
         }
         val replay = continuation.action.copy(targets = chosen)
-        return handler.execute(state, replay)
+        return reenter(handler.execute(state, replay), checkForMore)
     }
 
     private fun resumeTapXTargets(
@@ -310,6 +353,20 @@ class ActivateAbilityXCostContinuationResumer(
             costPayment = (action.costPayment ?: AdditionalCostPayment())
                 .copy(tappedPermanents = response.selectedCards)
         )
-        return handler.execute(state, replay)
+        return reenter(handler.execute(state, replay), checkForMore)
     }
+
+    /**
+     * Chains a handler re-entry into `checkForMore` so a continuation pushed *beneath* this
+     * activation still resumes.
+     *
+     * These resumers finish by calling [ActivateAbilityHandler.execute] again with the player's
+     * choice filled in. Returning that result directly strands anything underneath — most visibly a
+     * [com.wingedsheep.engine.core.ReopenManaPaymentDecisionContinuation], which is how a mana
+     * ability activated during a mana payment (CR 605.3a) puts the payment window back up. A paused
+     * or failed re-entry is passed through untouched; its own frame is still in flight.
+     */
+    private fun reenter(result: ExecutionResult, checkForMore: CheckForMore): ExecutionResult =
+        if (result.isPaused || result.error != null) result
+        else checkForMore(result.newState, result.events)
 }

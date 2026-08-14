@@ -3,13 +3,13 @@ package com.wingedsheep.engine.mechanics.sba.player
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEndReason
 import com.wingedsheep.engine.core.PlayerLostEvent
+import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.mechanics.sba.SbaOrder
 import com.wingedsheep.engine.mechanics.sba.StateBasedActionCheck
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameFromLifeComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsOpponentsCantWinGameComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
@@ -58,11 +58,7 @@ internal fun playerCantLoseGame(state: GameState, playerId: EntityId): Boolean {
     // games the grant protects only its own controller.
     val team = (if (state.format.playersWinLoseAsTeam) state.teamOf(playerId) else listOf(playerId))
         .toHashSet()
-    return state.getBattlefield().any { entityId ->
-        val container = state.getEntity(entityId) ?: return@any false
-        container.has<GrantsCantLoseGameComponent>() &&
-            container.get<ControllerComponent>()?.playerId in team
-    }
+    return ControllerGrants.anyGranting<GrantsCantLoseGameComponent>(state) { it in team }
 }
 
 /**
@@ -72,11 +68,7 @@ internal fun playerCantLoseGame(state: GameState, playerId: EntityId): Boolean {
  * to the controller itself — it is not a team-wide "can't lose" grant.
  */
 internal fun playerCantLoseGameFromLife(state: GameState, playerId: EntityId): Boolean =
-    state.getBattlefield().any { entityId ->
-        val container = state.getEntity(entityId) ?: return@any false
-        container.has<GrantsCantLoseGameFromLifeComponent>() &&
-            container.get<ControllerComponent>()?.playerId == playerId
-    }
+    ControllerGrants.grantedTo<GrantsCantLoseGameFromLifeComponent>(state, playerId)
 
 /**
  * True when [playerId] can't win the game because one of its opponents controls a permanent
@@ -86,9 +78,5 @@ internal fun playerCantLoseGameFromLife(state: GameState, playerId: EntityId): B
  */
 internal fun playerCantWinGame(state: GameState, playerId: EntityId): Boolean {
     val opponents = state.getOpponents(playerId).toHashSet()
-    return state.getBattlefield().any { entityId ->
-        val container = state.getEntity(entityId) ?: return@any false
-        container.has<GrantsOpponentsCantWinGameComponent>() &&
-            container.get<ControllerComponent>()?.playerId in opponents
-    }
+    return ControllerGrants.anyGranting<GrantsOpponentsCantWinGameComponent>(state) { it in opponents }
 }

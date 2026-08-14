@@ -166,7 +166,7 @@ class GameInitializer(
         // commander card name. The commander is NOT counted in [Deck.cards] (matches the deck
         // validator's convention and CR 903.6a) — it's instantiated separately in step 3 below
         // and routed to Zone.COMMAND.
-        if (config.format is Format.Commander) {
+        if (config.format.usesCommanders) {
             for (playerConfig in config.players) {
                 val name = playerConfig.commanderCardName
                 require(!name.isNullOrBlank()) {
@@ -296,7 +296,7 @@ class GameInitializer(
             val playerId = playerIds[index]
 
             val commanderName: String? = when {
-                config.format is Format.Commander -> playerConfig.commanderCardName
+                config.format.usesCommanders -> playerConfig.commanderCardName
                 else -> null
             }
             val commanderEntityIds = mutableListOf<EntityId>()

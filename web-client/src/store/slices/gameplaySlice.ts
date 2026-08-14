@@ -2,7 +2,7 @@
  * Gameplay slice - handles game state, actions, events, and core game mechanics.
  */
 import type { SliceCreator, EntityId, LogEntry, MulliganState, GameOverState, ErrorState } from './types'
-import type { ClientGameState, ClientEvent, GameAction, LegalActionInfo, PendingDecision, OpponentDecisionStatus } from '@/types'
+import type { ClientGameState, GameAction, LegalActionInfo, PendingDecision, OpponentDecisionStatus } from '@/types'
 import {
   createCreateGameMessage,
   createJoinGameMessage,
@@ -37,7 +37,6 @@ export interface GameplaySliceState {
   opponentDecisionStatus: OpponentDecisionStatus | null
   mulliganState: MulliganState | null
   waitingForOpponentMulligan: boolean
-  pendingEvents: readonly ClientEvent[]
   eventLog: readonly LogEntry[]
   gameOverState: GameOverState | null
   lastError: ErrorState | null
@@ -102,7 +101,6 @@ export interface GameplaySliceActions {
    */
   setError: (error: ErrorState) => void
   clearError: () => void
-  consumeEvent: () => ClientEvent | undefined
 }
 
 export type GameplaySlice = GameplaySliceState & GameplaySliceActions
@@ -115,7 +113,6 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
   opponentDecisionStatus: null,
   mulliganState: null,
   waitingForOpponentMulligan: false,
-  pendingEvents: [],
   eventLog: [],
   gameOverState: null,
   lastError: null,
@@ -422,6 +419,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
     selectedSources: readonly EntityId[],
     autoPay: boolean,
     waterbendPermanents: readonly EntityId[] = [],
+    declined = false,
   ) => {
     const { pendingDecision, playerId } = get()
     if (!pendingDecision || !playerId) return
@@ -439,6 +437,9 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
         autoPay,
         // Artifacts/creatures tapped to pay {1} each via Waterbend (Ward—Waterbend).
         waterbendPermanents: [...waterbendPermanents],
+        // Explicit refusal. An empty submission alone is ambiguous now that the player can float
+        // mana themselves during the payment (CR 605.3a) and then confirm with nothing selected.
+        declined,
       },
     }
     getWebSocket()?.send(createSubmitActionMessage(action))
@@ -578,7 +579,7 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
       combatState: null,
       xSelectionState: null,
       convokeSelectionState: null,
-      waterbendSelectionState: null,
+      tapForGenericSelectionState: null,
       decisionSelectionState: null,
       damageDistributionState: null,
       distributeState: null,
@@ -595,7 +596,6 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
       stopOverrides: { myTurnStops: [], opponentTurnStops: [] },
       nextStopPoint: null,
       opponentDisconnectCountdown: null,
-      pendingEvents: [],
       eventLog: [],
       gameOverState: null,
       lastError: null,
@@ -625,14 +625,5 @@ export const createGameplaySlice: SliceCreator<GameplaySlice> = (set, get) => ({
       errorDismissTimer = null
     }
     set({ lastError: null })
-  },
-
-  consumeEvent: () => {
-    const { pendingEvents } = get()
-    if (pendingEvents.length === 0) return undefined
-
-    const [event, ...rest] = pendingEvents
-    set({ pendingEvents: rest })
-    return event
   },
 })

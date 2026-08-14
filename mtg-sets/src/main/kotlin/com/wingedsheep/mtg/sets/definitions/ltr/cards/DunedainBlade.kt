@@ -1,19 +1,11 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
-import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.ModifyStats
-import com.wingedsheep.sdk.scripting.TimingRule
-import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**
  * Dúnedain Blade
@@ -35,17 +27,12 @@ val DunedainBlade = card("Dúnedain Blade") {
         ability = ModifyStats(+2, +1, Filters.EquippedCreature)
     }
 
-    // Equip Human {1}: attach only to a Human creature you control, sorcery speed.
-    activatedAbility {
-        cost = Costs.Mana(ManaCost.parse("{1}"))
-        timing = TimingRule.SorcerySpeed
-        val creature = target(
-            "Human creature you control",
-            TargetCreature(filter = TargetFilter.CreatureYouControl.withSubtype(Subtype.HUMAN))
-        )
-        effect = AttachEquipmentEffect(creature)
-        description = "Equip Human {1}"
-    }
+    // Equip Human {1}: attach only to a Human creature you control, sorcery speed (CR 702.6c).
+    equipAbility(
+        "{1}",
+        quality = "Human",
+        targetFilter = TargetFilter.CreatureYouControl.withSubtype(Subtype.HUMAN),
+    )
 
     // Equip {3}: attach to any creature you control, sorcery speed.
     equipAbility("{3}")

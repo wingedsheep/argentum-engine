@@ -12,15 +12,15 @@ import kotlin.reflect.KClass
 
 /**
  * Tail of the [com.wingedsheep.sdk.dsl.Patterns.Library.scry] composite: emits a
- * [ScriedEvent] so "Whenever you scry" triggers (CR 701.18) fire exactly once per
+ * [ScriedEvent] so "Whenever you scry" triggers (CR 701.22) fire exactly once per
  * scry, after the top/bottom moves have all resolved.
  *
  * The carried count is the size of the named gather collection (`"scried"` by default)
  * at resolution time — the cards `GatherCardsEffect` actually pulled, which equals
- * the scry N parameter unless the library held fewer (CR 701.18a). That count can be
- * zero when the library was empty; the event is still emitted, because CR 701.18d fires
+ * the scry N parameter unless the library held fewer (CR 701.22a). That count can be
+ * zero when the library was empty; the event is still emitted, because CR 701.22d fires
  * "whenever you scry" triggers "even if some or all of those actions were impossible."
- * A literal "scry 0" (CR 701.18b: no scry event occurs) never reaches this executor —
+ * A literal "scry 0" (CR 701.22b: no scry event occurs) never reaches this executor —
  * [com.wingedsheep.sdk.dsl.Patterns.Library.scry] omits the tail entirely for N == 0.
  */
 class EmitScriedEventExecutor : EffectExecutor<EmitScriedEventEffect> {
@@ -32,8 +32,8 @@ class EmitScriedEventExecutor : EffectExecutor<EmitScriedEventEffect> {
         effect: EmitScriedEventEffect,
         context: EffectContext
     ): EffectResult {
-        // Actual cards looked at (CR 701.18a); may be 0 if the library was empty, in
-        // which case the trigger still fires per CR 701.18d.
+        // Actual cards looked at (CR 701.22a); may be 0 if the library was empty, in
+        // which case the trigger still fires per CR 701.22d.
         val count = context.pipeline.storedCollections[effect.gatherCollection]?.size ?: 0
 
         val playerId = context.controllerId

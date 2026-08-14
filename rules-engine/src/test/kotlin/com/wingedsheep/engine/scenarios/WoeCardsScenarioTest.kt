@@ -2,7 +2,9 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -26,6 +28,8 @@ import io.kotest.matchers.shouldNotBe
  *  - **Wicked Visitor** — an enchantment you control hitting the graveyard drains each opponent.
  *  - **Knight of Doves** — an enchantment you control hitting the graveyard makes a 1/1 white flying Bird.
  *  - **Gnawing Crescendo** — team +2/+0, and a turn-long delayed trigger that Rats each nontoken death.
+ *  - **Restless Bivouac** — animate for {1}{R}{W}, attack, put a +1/+1 counter on a chosen creature.
+ *  - **Restless Fortress** — animate for {2}{W}{B}, attack, drain the defending player for 2.
  */
 class WoeCardsScenarioTest : ScenarioTestBase() {
 
@@ -38,6 +42,10 @@ class WoeCardsScenarioTest : ScenarioTestBase() {
     private val tabbyDeathtouchAbility by lazy {
         cardRegistry.requireCard("Warehouse Tabby").activatedAbilities[0].id
     }
+
+    /** The animate ability of a Restless land — after the two `{T}: Add …` mana abilities. */
+    private fun animateAbility(landName: String) =
+        cardRegistry.requireCard(landName).activatedAbilities[2].id
 
     init {
         context("Hopeless Nightmare") {
@@ -512,6 +520,94 @@ class WoeCardsScenarioTest : ScenarioTestBase() {
                     val rat = game.findPermanent("Rat Token")
                     rat shouldNotBe null
                     game.state.projectedState.cantBlock(rat!!) shouldBe true
+                }
+            }
+        }
+
+        context("Restless Bivouac") {
+
+            test("animates into a 2/2 Ox and its attack trigger counters a chosen creature") {
+                val game = scenario()
+                    .withPlayers()
+                    .withCardOnBattlefield(1, "Restless Bivouac")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withLandsOnBattlefield(1, "Mountain", 2)
+                    .withLandsOnBattlefield(1, "Plains", 1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bivouac = game.findPermanent("Restless Bivouac")!!
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = bivouac,
+                        abilityId = animateAbility("Restless Bivouac")
+                    )
+                ).error shouldBe null
+                game.resolveStack()
+
+                val animated = projector.project(game.state)
+                withClue("{1}{R}{W} makes it a 2/2 that is still a land") {
+                    animated.isCreature(bivouac) shouldBe true
+                    animated.getPower(bivouac) shouldBe 2
+                    animated.getToughness(bivouac) shouldBe 2
+                }
+
+                val bears = game.findPermanent("Grizzly Bears")!!
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Restless Bivouac" to 2)).error shouldBe null
+
+                withClue("the attack trigger asks for a target creature you control") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                game.selectTargets(listOf(bears)).error shouldBe null
+                game.resolveStack()
+
+                val counters = game.state.getEntity(bears)?.get<CountersComponent>()
+                withClue("Grizzly Bears should carry exactly one +1/+1 counter") {
+                    counters?.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1
+                }
+            }
+        }
+
+        context("Restless Fortress") {
+
+            test("animates into a 1/4 Nightmare and its attack trigger drains the defender for 2") {
+                val game = scenario()
+                    .withPlayers()
+                    .withCardOnBattlefield(1, "Restless Fortress")
+                    .withLandsOnBattlefield(1, "Plains", 3)
+                    .withLandsOnBattlefield(1, "Swamp", 1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val fortress = game.findPermanent("Restless Fortress")!!
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = fortress,
+                        abilityId = animateAbility("Restless Fortress")
+                    )
+                ).error shouldBe null
+                game.resolveStack()
+
+                val animated = projector.project(game.state)
+                withClue("{2}{W}{B} makes it a 1/4") {
+                    animated.isCreature(fortress) shouldBe true
+                    animated.getPower(fortress) shouldBe 1
+                    animated.getToughness(fortress) shouldBe 4
+                }
+
+                val ourLife = game.getLifeTotal(1)
+                val theirLife = game.getLifeTotal(2)
+
+                game.passUntilPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
+                game.declareAttackers(mapOf("Restless Fortress" to 2)).error shouldBe null
+                game.resolveStack()
+
+                withClue("the attack trigger drains before combat damage is dealt") {
+                    game.getLifeTotal(2) shouldBe theirLife - 2
+                    game.getLifeTotal(1) shouldBe ourLife + 2
                 }
             }
         }

@@ -1,27 +1,15 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.effects.Mode
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.RevealHandEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
-import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Cruelclaw's Heist
@@ -46,24 +34,7 @@ val CruelclawsHeist = card("Cruelclaw's Heist") {
         "Target opponent reveals their hand. You choose a nonland card from it. Exile that card. If the gift was promised, you may cast that card for as long as it remains exiled, and mana of any type can be spent to cast it."
 
     // Common pipeline for both modes: reveal hand, choose nonland, exile
-    val revealChooseExile = listOf(
-        RevealHandEffect(EffectTarget.ContextTarget(0)),
-        GatherCardsEffect(
-            source = CardSource.FromZone(Zone.HAND, Player.ContextPlayer(0), GameObjectFilter.Nonland),
-            storeAs = "nonlandCards"
-        ),
-        SelectFromCollectionEffect(
-            from = "nonlandCards",
-            selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
-            chooser = Chooser.Controller,
-            storeSelected = "chosenCard",
-            prompt = "Choose a nonland card to exile"
-        ),
-        MoveCollectionEffect(
-            from = "chosenCard",
-            destination = CardDestination.ToZone(Zone.EXILE, Player.ContextPlayer(0))
-        )
-    )
+    val revealChooseExile = listOf(Patterns.Hand.revealHandAndExileChosen())
 
     spell {
         effect = Patterns.Mechanic.giftSpell(

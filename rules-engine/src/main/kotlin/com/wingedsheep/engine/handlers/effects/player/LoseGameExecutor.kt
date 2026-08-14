@@ -6,7 +6,7 @@ import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent
+import com.wingedsheep.engine.mechanics.sba.player.playerCantLoseGame
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.LossReason
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
@@ -36,13 +36,10 @@ class LoseGameExecutor : EffectExecutor<LoseGameEffect> {
             return EffectResult.success(state)
         }
 
-        // Check if player can't lose the game
-        val cantLose = state.getBattlefield().any { entityId ->
-            val c = state.getEntity(entityId) ?: return@any false
-            c.has<GrantsCantLoseGameComponent>() &&
-                c.get<ControllerComponent>()?.playerId == targetId
-        }
-        if (cantLose) {
+        // Check if player can't lose the game. Shared with the state-based-action checks so the
+        // gate on a conditional grant and the CR 810.8a team reach are applied identically
+        // wherever a player would lose.
+        if (playerCantLoseGame(state, targetId)) {
             return EffectResult.success(state)
         }
 

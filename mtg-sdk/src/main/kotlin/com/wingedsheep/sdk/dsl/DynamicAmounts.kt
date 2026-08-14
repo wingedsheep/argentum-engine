@@ -342,6 +342,13 @@ object DynamicAmounts {
         filter: com.wingedsheep.sdk.scripting.events.CounterTypeFilter
     ): DynamicAmount = DynamicAmount.LastKnownSourceCounters(filter)
 
+    /**
+     * The total damage dealt to the source this turn, captured as last-known information when it
+     * left the battlefield — "where X is the amount of damage dealt to it this turn" (Tangled
+     * Colony). See [DynamicAmount.LastKnownDamageDealtToSource].
+     */
+    fun lastKnownDamageDealtToSource(): DynamicAmount = DynamicAmount.LastKnownDamageDealtToSource
+
     // =========================================================================
     // Spell-cast trigger values
     // =========================================================================
@@ -416,14 +423,30 @@ object DynamicAmounts {
         DynamicAmount.TurnTracking(player, TurnTracker.LIFE_GAINED)
 
     /**
+     * "The amount of life [player] lost this turn" (Rowan, Scion of War) — damage taken,
+     * life-loss effects and life paid as a cost. Life gained never nets against it.
+     */
+    fun lifeLostThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.LIFE_LOST_AMOUNT)
+
+    /**
      * "The number of lands that entered the battlefield under [player]'s control this turn"
      * (Bioengineered Future). Counts every land ETB under the player — land drops, Lander
      * search, Cultivate-style "put a land onto the battlefield" effects — not just land
-     * drops. Reads the per-player [LandsEnteredUnderControlThisTurnComponent] populated by
+     * drops. Reads the per-player permanent-entry log populated by
      * `PermanentEntryTracker`.
      */
     fun landsEnteredUnderControlThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.LANDS_ENTERED_UNDER_CONTROL)
+
+    /**
+     * "The number of nonland permanents that entered the battlefield under [player]'s control this
+     * turn" — the complement of [landsEnteredUnderControlThisTurn] over the same per-player entry
+     * log. Tokens count; a land creature does not. The threshold form is the Celebration ability
+     * word (`Conditions.Celebration`); this is the raw count for "for each …" scaling.
+     */
+    fun nonlandPermanentsEnteredUnderControlThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.NONLAND_PERMANENTS_ENTERED)
 
     /**
      * "The number of [other] [subtype]s that entered the battlefield under [player]'s control
@@ -438,7 +461,19 @@ object DynamicAmounts {
         player: Player = Player.You,
         excludeTriggeringEntity: Boolean = false
     ): DynamicAmount =
-        DynamicAmount.SubtypeEnteredUnderControlThisTurn(player, subtype, excludeTriggeringEntity)
+        DynamicAmount.SubtypeEnteredUnderControlThisTurn(player, setOf(subtype), excludeTriggeringEntity)
+
+    /**
+     * "The number of As and/or Bs that entered the battlefield under [player]'s control this turn"
+     * (Cloudspire Coordinator — "Mounts and/or Vehicles"). Any-of over [subtypes], so a permanent
+     * carrying several of them still counts once; summing per-subtype amounts would not.
+     */
+    fun subtypesEnteredUnderControlThisTurn(
+        subtypes: Set<com.wingedsheep.sdk.core.Subtype>,
+        player: Player = Player.You,
+        excludeTriggeringEntity: Boolean = false
+    ): DynamicAmount =
+        DynamicAmount.SubtypeEnteredUnderControlThisTurn(player, subtypes, excludeTriggeringEntity)
 
     /**
      * "The number of times [player] descended this turn" (CR 700.11) — count of
@@ -447,6 +482,15 @@ object DynamicAmounts {
      */
     fun descendedThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.DESCENDED)
+
+    /**
+     * "The number of cards [player] has discarded this turn" (CR 701.8). Reads the per-player
+     * `CardsDiscardedThisTurnComponent`; every discard site (cost, effect, cycling, hand-size
+     * cleanup) feeds it. Used by Green Goblin, Revenant ("draw a card for each card you've
+     * discarded this turn").
+     */
+    fun cardsDiscardedThisTurn(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.CARDS_DISCARDED)
 
     /**
      * "The number of permanents [player] sacrificed this turn" (controller-scoped, any permanent
@@ -470,18 +514,54 @@ object DynamicAmounts {
      *
      * Pass [fromZone] to count only spells cast from that zone (e.g. `Zone.HAND`), matched
      * independently of [filter].
+     *
+     * Pass [beforeTriggeringSpell] for the storm-style "each other spell you've cast **before it**
+     * this turn" clause: only casts recorded ahead of the triggering spell count, so neither the
+     * triggering spell nor anything cast in response to the trigger is included.
+     *
+     * ```kotlin
+     * // Thousand-Year Storm: "for each other instant and sorcery spell you've cast before it"
+     * DynamicAmounts.spellsCastThisTurn(
+     *     filter = GameObjectFilter.InstantOrSorcery, beforeTriggeringSpell = true)
+     * ```
      */
     fun spellsCastThisTurn(
         player: Player = Player.You,
         filter: GameObjectFilter = GameObjectFilter.Any,
         excludeSelf: Boolean = false,
-        fromZone: Zone? = null
+        fromZone: Zone? = null,
+        beforeTriggeringSpell: Boolean = false
     ): DynamicAmount =
-        DynamicAmount.SpellsCastThisTurn(player, filter, excludeSelf, fromZone)
+        DynamicAmount.SpellsCastThisTurn(
+            player, filter, excludeSelf, fromZone, beforeTriggeringSpell = beforeTriggeringSpell
+        )
+
+    /** The total number of spells cast during the immediately preceding turn. */
+    fun spellsCastLastTurn(): DynamicAmount = DynamicAmount.SpellsCastLastTurn
 
     /** The starting life total of a player (20 in standard, 40 in commander). */
     fun startingLifeTotal(player: Player = Player.You): DynamicAmount =
         DynamicAmount.StartingLifeTotal(player)
+
+    /**
+     * A player's speed, 0–4 (Aetherdrift, CR 702.179) — "where X is your speed". A player with no
+     * speed reads as 0 (CR 702.179f), so this never needs a guard.
+     */
+    fun speed(player: Player = Player.You): DynamicAmount = DynamicAmount.Speed(player)
+
+    /**
+     * How many counters of [counterType] a player currently has (CR 122.1 — counters placed on a
+     * player rather than a permanent). Poison, energy, and rad counters all live here.
+     */
+    fun playerCounterCount(counterType: String, player: Player = Player.You): DynamicAmount =
+        DynamicAmount.PlayerCounterCount(counterType, player)
+
+    /**
+     * A player's current energy counter total (CR 107.14) — "where X is the number of energy
+     * counters you have" (Longtusk Cub, Electrostatic Pummeler).
+     */
+    fun energyCount(player: Player = Player.You): DynamicAmount =
+        DynamicAmount.PlayerCounterCount(com.wingedsheep.sdk.core.Counters.ENERGY, player)
 
     // =========================================================================
     // Entity property shortcuts (composable entity + property)
@@ -529,8 +609,33 @@ object DynamicAmounts {
     fun countersOnTarget(type: CounterTypeFilter, index: Int = 0): DynamicAmount =
         DynamicAmount.EntityProperty(EntityReference.Target(index), EntityNumericProperty.CounterCount(type))
 
+    /**
+     * Number of counters (of [type]; defaults to counters of every kind) on the triggering
+     * permanent — "X is the number of counters on it" for an ANY-bound triggered ability such as
+     * Spider-Man Noir's "whenever a creature you control attacks alone."
+     */
+    fun countersOnTriggering(type: CounterTypeFilter = CounterTypeFilter.Any): DynamicAmount =
+        DynamicAmount.EntityProperty(EntityReference.Triggering, EntityNumericProperty.CounterCount(type))
+
     fun attachmentsOnSelf(): DynamicAmount =
         DynamicAmount.EntityProperty(EntityReference.Source, EntityNumericProperty.AttachmentCount())
+
+    /**
+     * Number of attachments of [kind] on the creature the source is attached to — the *enchanted*
+     * creature for an Aura, the *equipped* creature for an Equipment; both read the same attachment
+     * link. Defaults to [AttachmentKind.ANY]: every Aura and Equipment (With Great Power…:
+     * "enchanted creature gets +2/+2 for each Aura and Equipment attached to it"). Pass
+     * [AttachmentKind.EQUIPMENT] for the Equipment-only count an Equipment buffing its own host by
+     * that host's Equipment needs (Golem-Skin Gauntlets: "equipped creature gets +1/+0 for each
+     * Equipment attached to it" — which includes the Gauntlets themselves).
+     *
+     * Distinct from [attachmentsOnSelf], which counts attachments on the source itself.
+     */
+    fun attachmentsOnEnchantedCreature(kind: AttachmentKind = AttachmentKind.ANY): DynamicAmount =
+        DynamicAmount.EntityProperty(
+            EntityReference.EnchantedCreature,
+            EntityNumericProperty.AttachmentCount(kind)
+        )
 
     /** Number of Equipment attached to the source (Shagrat, Loot Bearer's amass amount). */
     fun equipmentAttachedToSelf(): DynamicAmount =

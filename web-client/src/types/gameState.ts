@@ -1,4 +1,4 @@
-import { AbilityFlag, Color, CounterType, Keyword, Phase, Step, ZoneType } from './enums'
+import { AbilityFlag, Color, CounterType, DayNight, Keyword, Phase, Step, ZoneType } from './enums'
 import { EntityId, ZoneId } from './entities'
 import { ClientEvent } from './events'
 
@@ -50,6 +50,13 @@ export interface ClientGameState {
    * with Void abilities (Edge of Eternities).
    */
   readonly voidActive?: boolean
+
+  /**
+   * The game's day/night designation (Innistrad, CR 731), or absent/null while it's neither — the
+   * state the game starts in and never returns to once a designation is gained. Public information,
+   * so never masked. Drives the day/night indicator. See {@link DayNight}.
+   */
+  readonly dayNight?: DayNight | null
 
   /**
    * If non-null, the affected player whose turn the viewing player is currently driving
@@ -202,6 +209,8 @@ export interface ClientCard {
 
   /** State flags */
   readonly isTapped: boolean
+  /** Exerted (CR 701.43a) — won't untap during its controller's next untap step. */
+  readonly isExerted?: boolean
   readonly hasSummoningSickness: boolean
   readonly isTransformed: boolean
   /** Phased out (Rule 702.26) — treated as though it doesn't exist; rendered translucent. */
@@ -229,6 +238,14 @@ export interface ClientCard {
   /** Controller (who controls it now) */
   readonly controllerId: EntityId
 
+  /**
+   * For a battle (CR 310): the player designated as its protector — the one who defends it, may
+   * never attack it, and is the only player who may block creatures attacking it. Usually *not*
+   * the controller: a Siege is protected by an opponent of the player who cast it. Absent on every
+   * non-battle permanent. The battle's defense is its `defense` counter count, not a field.
+   */
+  readonly protectorId?: EntityId | null
+
   /** Owner (who started with it in their deck) */
   readonly ownerId: EntityId
 
@@ -249,6 +266,13 @@ export interface ClientCard {
    */
   readonly isRingBearer?: boolean
 
+  /**
+   * The creature this one is soulbond-paired with (CR 702.95b), or absent while unpaired.
+   * Battlefield only, and always symmetric — the server drops both halves together the moment the
+   * pair breaks — so `SoulbondBonds` can dedupe on the id pair and draw one bond per pair.
+   */
+  readonly pairedWithId?: EntityId | null
+
   /** Zone this card is currently in */
   readonly zone: ZoneId | null
 
@@ -264,8 +288,11 @@ export interface ClientCard {
   /** Whether this card is face-down (for morph, manifest, hidden info) */
   readonly isFaceDown: boolean
 
-  /** Whether this face-down permanent is a manifest (CR 701.40), not a morph — picks the token art. */
-  readonly isManifested?: boolean
+  /**
+   * Which mechanic made this permanent face down — 'MORPH' | 'MANIFEST' | 'DISGUISE' | 'CLOAK'.
+   * Public information (CR 708.6); picks the face-down helper-card art.
+   */
+  readonly faceDownMode?: string
 
   /** Whether this permanent is suspected (CR 701.60 — has menace and can't block). Battlefield only. */
   readonly isSuspected?: boolean
@@ -277,6 +304,11 @@ export interface ClientCard {
    * exiled and casts a free copy of itself each precombat main phase. Surfaced in a dedicated public
    * pile so both players can read it. Exile only. */
   readonly isParadigm?: boolean
+
+  /** Whether this card is actively suspended in exile (CR 702.62 — has at least one time counter left).
+   * Surfaced in a dedicated public pile so both players can read it. False once the last time counter
+   * is removed, even if the card lingers in exile after the owner declines the free cast. Exile only. */
+  readonly isSuspended?: boolean
 
   /** Whether this permanent is prepared (Secrets of Strixhaven — Prepared keyword): a copy of its
    * prepare spell sits castable in its controller's exile. Battlefield only. */
@@ -290,6 +322,11 @@ export interface ClientCard {
   /** Whether this permanent was cast for its warp cost (CR 702.185, Edge of Eternities): it will be
    * exiled at the next end step, then can be recast from exile. Drives the cosmic warp cue. Battlefield only. */
   readonly isWarped?: boolean
+
+  /** Whether this permanent was cast for its dash cost (CR 702.109, Khans of Tarkir): it has haste
+   * and will be returned to its owner's hand at the next end step (not exiled — unlike warp).
+   * Battlefield only. */
+  readonly isDashed?: boolean
 
   /** Morph cost for face-down creatures (only visible to controller) */
   readonly morphCost?: string | null
@@ -313,8 +350,30 @@ export interface ClientCard {
   /** Official rulings for this card (for card details view) */
   readonly rulings?: readonly ClientRuling[]
 
-  /** Whether this spell was kicked (only present on stack) */
-  readonly wasKicked?: boolean
+  /**
+   * Name of the optional additional cost this spell declared — "Kicked", "Bargained", "Offspring"
+   * — or absent when it declared none. Server-derived label; render verbatim (only on the stack).
+   */
+  readonly optionalCostLabel?: string
+
+  /**
+   * How this spell was cast — "Disturb · Graveyard", "Command zone" — or absent for an ordinary
+   * cast from hand. Server-derived label; render verbatim (only on the stack).
+   */
+  readonly castProvenanceLabel?: string
+
+  /**
+   * What this spell's alternative cost consumed — "Sacrificed Niblis of the Urn" — or absent when it
+   * consumed nothing. Server-derived label; render verbatim (only on the stack). Emerge
+   * (CR 702.119a) needs it: the sacrifice is what made the spell cheap.
+   */
+  readonly costSacrificeLabel?: string
+
+  /**
+   * The mana actually spent on this cast ("{W}{W}{W}{U}"), or absent for a normal cast. Only sent for
+   * alternative-cost casts, whose printed cost says nothing about what was paid (only on the stack).
+   */
+  readonly manaPaidCost?: string
 
   /** Whether this spell promised a gift (Bloomburrow gift mechanic — only present on stack) */
   readonly giftPromised?: boolean
@@ -351,6 +410,9 @@ export interface ClientCard {
 
   /** Chosen card name for "as enters, choose a card name" permanents (e.g., Petrified Hamlet) */
   readonly chosenCardName?: string | null
+
+  /** Chosen card type for "choose a card type" permanents (e.g., Arachne, Psionic Weaver) */
+  readonly chosenCardType?: string | null
 
   /** Triggering entity ID for triggered abilities on the stack (for source arrows) */
   readonly triggeringEntityId?: EntityId | null
@@ -393,9 +455,34 @@ export interface ClientCard {
    * True when the printed card is legendary but this permanent's projected type line is not —
    * a copy effect explicitly stripped legendariness ("except it isn't legendary" /
    * Impostor Syndrome). The UI badges this so a non-legendary token copy of a legendary
-   * creature is visually distinguishable from the original.
+   * creature is visually distinguishable from the original. The server keeps this mutually
+   * exclusive with {@link legendaryByEffect} — an effect that grants the supertype back wins,
+   * because the permanent then really is legendary.
    */
   readonly nonLegendaryCopy?: boolean
+
+  /**
+   * The mirror of {@link nonLegendaryCopy}: the printed card is not legendary but a continuous
+   * effect has granted the Legendary supertype (Origin of Spider-Man, the Ring emblem's
+   * "your Ring-bearer is legendary"). The printed art shows a non-legendary frame, so the UI
+   * badges it to make the legend rule visible.
+   */
+  readonly legendaryByEffect?: boolean
+
+  /**
+   * Subtypes granted by a continuous effect rather than printed on the card (Super-Soldier Serum's
+   * "is a legendary Soldier in addition to its other types"). The battlefield shows the printed card
+   * image and the preview only prints the type line for tokens, so without surfacing these the grant
+   * is invisible. Empty when nothing was granted.
+   */
+  readonly grantedSubtypes?: readonly string[]
+
+  /**
+   * Card types granted by a continuous effect rather than printed (I Am Iron Man's "becomes an
+   * artifact creature", a manland's animation). Uppercase, matching {@link cardTypes}. Invisible on
+   * the battlefield for the same reason as {@link grantedSubtypes} — the printed image is drawn.
+   */
+  readonly grantedCardTypes?: readonly string[]
 
   /** Damage distribution for DividedDamageEffect spells on the stack (target entity ID -> damage amount) */
   readonly damageDistribution?: Record<EntityId, number> | null
@@ -441,6 +528,26 @@ export interface ClientCard {
 
   /** True if this is a split-layout Room (CR 709.5). Drives split-card rendering + lock UI. */
   readonly isRoom?: boolean
+
+  /**
+   * True when the face currently shown is **printed sideways** — its image is a portrait file
+   * holding a card on its side. Drives the 90° rotation and the landscape footprint wherever the
+   * card is drawn: battlefield, stack, and hover previews.
+   *
+   * The server decides which cards qualify (`CardDefinition.isLandscapePrint` — split layouts
+   * including Rooms, and battles). Renderers must read this rather than re-deriving orientation
+   * from `isRoom` / `cardFaces` / type lines, which is how battles ended up rendering sideways.
+   * Per *face*: a Siege reports true, and the portrait back face it becomes when defeated reports
+   * false.
+   */
+  readonly isLandscapeFace?: boolean
+
+  /**
+   * {@link isLandscapeFace} for the card's *other* face — what a hover preview shows when flipped.
+   * Flipping swaps the image in both directions, so peeking at a Siege's portrait back must not
+   * rotate and peeking at the landscape front of an already-transformed permanent must.
+   */
+  readonly backFaceIsLandscape?: boolean
 
   /**
    * For split-layout cards (currently Rooms): one entry per face. `isUnlocked` reflects the live
@@ -532,6 +639,16 @@ export interface ClientPlayer {
    * Rendered as a progress badge under the life orb.
    */
   readonly commanderDamage?: readonly ClientCommanderDamage[]
+  /**
+   * This player's speed, 0–4 (Aetherdrift, CR 702.179). `0` means they have no speed and no gauge is
+   * rendered; `4` is max speed, which switches on every "Max speed —" ability they control.
+   */
+  readonly speed?: number
+  /**
+   * This player's current energy counter total (Kaladesh block onward, CR 107.14). `0` means no
+   * badge is rendered.
+   */
+  readonly energyCounters?: number
 }
 
 /**

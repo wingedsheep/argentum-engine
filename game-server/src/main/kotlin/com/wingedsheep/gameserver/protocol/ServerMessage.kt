@@ -341,11 +341,18 @@ sealed interface ServerMessage {
         val setCode: String? = null,
         val collectorNumber: String? = null,
         /**
-         * Printed layout (`NORMAL`, `SPLIT`, `ADVENTURE`, …). Lets the sealed/draft deckbuilder
-         * rotate split cards (Rooms like Unholy Annex // Ritual Chamber, Pain // Suffering) to
-         * landscape in the hover preview, since their single image is printed sideways.
+         * Printed layout (`NORMAL`, `SPLIT`, `ADVENTURE`, …). Kept for anything that needs the raw
+         * layout; orientation is [isLandscape]'s job, not this field's.
          */
-        val layout: String = "NORMAL"
+        val layout: String = "NORMAL",
+        /**
+         * Whether this card's image is **printed sideways** and must be rotated 90° in the hover
+         * preview. Straight from [com.wingedsheep.sdk.model.CardDefinition.isLandscapePrint], the
+         * single place that decides what counts — split layouts (Rooms, Pain // Suffering) and
+         * battles (CR 310), whose layout is `TRANSFORM` and so was invisible to the old
+         * `layout == "SPLIT"` check the client used to make on its own.
+         */
+        val isLandscape: Boolean = false
     )
 
     /**
@@ -373,7 +380,12 @@ sealed interface ServerMessage {
         /** 90 cards from 6 boosters */
         val cardPool: List<SealedCardInfo>,
         /** 5 basic land types available for deck building */
-        val basicLands: List<SealedCardInfo>
+        val basicLands: List<SealedCardInfo>,
+        /**
+         * Cube Pool Play: [cardPool] is the entire cube and copies are unlimited (bounded only by
+         * the deckbuilder's usual 4-of cap), so adding a card must not consume it from the pool.
+         */
+        val poolPlay: Boolean = false,
     ) : ServerMessage
 
     /**
@@ -411,12 +423,24 @@ sealed interface ServerMessage {
         val isHost: Boolean,
         val isConnected: Boolean,
         val deckSubmitted: Boolean = false,
-        val isAi: Boolean = false
+        val isAi: Boolean = false,
+        /**
+         * For an AI seat: a summary of what the host chose for it to play, so the row re-hydrates
+         * after a reconnect. Null on a human seat, and never the decklist itself — see
+         * [com.wingedsheep.gameserver.lobby.AiDeckSpecView].
+         */
+        val aiDeck: com.wingedsheep.gameserver.lobby.AiDeckSpecView? = null,
     )
 
     /**
      * An available card set for selection in the lobby.
      */
+    @Serializable
+    data class SetProduct(
+        val id: String,
+        val cardCount: Int,
+    )
+
     @Serializable
     data class AvailableSet(
         val code: String,
@@ -436,7 +460,8 @@ sealed interface ServerMessage {
         val extensionSet: Boolean = false,
         val block: String? = null,
         val implementedCount: Int? = null,
-        val releaseDate: String? = null
+        val releaseDate: String? = null,
+        val products: List<SetProduct> = emptyList(),
     )
 
     /**
@@ -457,6 +482,12 @@ sealed interface ServerMessage {
         val isPublic: Boolean = false,
         /** Optional deck-construction format (Standard/Modern/Commander/...). Null = no restriction. */
         val deckFormat: String? = null,
+        /**
+         * Rules axis: [com.wingedsheep.sdk.core.GameRules] name — "STANDARD" or "COMMANDER". The one
+         * field a client should read to answer "does this game run Commander rules?"; independent of
+         * [format] (where the cards come from) and [deckFormat] (what may go in a deck).
+         */
+        val rules: String = "STANDARD",
         /** Commander Draft/Sealed only — minimum deck size enforced by the validator. */
         val deckSizeMin: Int = 60,
         /** Commander Draft/Sealed only — when true, drafted/sealed decks may include duplicates. */
@@ -465,11 +496,22 @@ sealed interface ServerMessage {
         val commanderPreset: String = "BRAWL",
         /** When true, each booster mixes cards from the union of all selected sets. */
         val chaosBoosters: Boolean = false,
+        /** Optional non-booster product ids selected per set code. */
+        val includedSetProducts: Map<String, List<String>> = emptyMap(),
         /**
          * Host ban list: oracle card names excluded from generated boosters. Sorted for a stable
          * UI order. Empty = no exclusions. Ignored by [TournamentFormat.PREMADE_DECKS].
          */
         val bannedCardNames: List<String> = emptyList(),
+        /** Per-lobby cube summary. Null fields mean catalogued sets are the pack source. */
+        val cubeName: String? = null,
+        val cubeCardCount: Int? = null,
+        val packSize: Int? = null,
+        /**
+         * Cube Pool Play: no draft, every player deckbuilds from the whole cube with copies limited
+         * only by the 4-of cap. Cube Sealed lobbies only; ignored (and hidden) elsewhere.
+         */
+        val cubePoolPlay: Boolean = false,
         /**
          * Master switch for in-app AI assistance (draft "Suggest Pick" + deckbuild "Auto-build").
          * When false the client hides the controls and the server rejects assist requests.
@@ -1098,6 +1140,12 @@ sealed interface ServerMessage {
         val canStart: Boolean,
         val isPublic: Boolean = false,
         val format: com.wingedsheep.sdk.core.DeckFormat? = null,
+        /**
+         * Rules axis: [com.wingedsheep.sdk.core.GameRules] name — "STANDARD" or "COMMANDER". Derived
+         * from [format] on this lobby kind (it has no separate Rules control), but sent so the client
+         * reads commander-ness from one field on either lobby kind.
+         */
+        val rules: String = "STANDARD",
         /** True for a Momir Basic lobby: fixed 60-basic decks, no deckbuilding, [setCode] scopes the creature pool. */
         val momirBasic: Boolean = false,
         /** True for a Two-Headed Giant lobby (CR 810): four seats, two teams (see [QuickGameLobbyPlayerView.teamIndex]). */
@@ -1108,6 +1156,11 @@ sealed interface ServerMessage {
         val ranked: Boolean = false,
         /** Whether ranked is even offered for this lobby: a standard 1v1 human-vs-human lobby. */
         val rankedEligible: Boolean = false,
+        /**
+         * What the AI seat will play, when [vsAi]. A summary rather than the spec itself — the
+         * decklist behind a "deck" choice never rides the lobby broadcast. Null in a human lobby.
+         */
+        val aiDeck: com.wingedsheep.gameserver.lobby.AiDeckSpecView? = null,
     ) : ServerMessage
 
     /**
@@ -1127,6 +1180,8 @@ sealed interface ServerMessage {
         val deckLabel: String,
         /** Per-player set choice for Random pools; null = "any set". */
         val setCode: String? = null,
+        /** All set choices for Random decks; empty = "any set". */
+        val setCodes: List<String> = listOfNotNull(setCode),
         /**
          * Team membership in a Two-Headed Giant lobby (CR 810): seats sharing a [teamIndex] are
          * teammates. Derived from the seat's join order (0+1 = team 0, 2+3 = team 1). Null in a

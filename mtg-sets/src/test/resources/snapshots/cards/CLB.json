@@ -1,0 +1,63 @@
+// Carnelian Orb of Dragonkind
+{
+    "name": "Carnelian Orb of Dragonkind",
+    "manaCost": "{2}{R}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {R}. If that mana is spent on a Dragon creature spell, it gains haste until end of turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "riders": [
+                        {
+                            "type": "GrantsKeywordWhenSpent",
+                            "keyword": "HASTE",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Dragon"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "artist": "Olena Richards",
+        "flavorText": "The essence of a red dragon burns within, always ready to rise with wrath.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e7e41166-bdaa-4aed-986a-7be1d043240c.jpg?1783922743",
+        "rulings": [
+            {
+                "date": "2022-06-10",
+                "text": "The mana created by Carnelian Orb of Dragonkind can be spent on anything, not just Dragon creature spells."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If the mana from Carnelian Orb of Dragonkind is spent to pay any part of the Dragon creature spell's cost, including an alternative or additional cost, the Dragon will gain haste until end of turn."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "An instant or sorcery spell is not a creature spell, even if that spell creates Dragon creature tokens."
+            },
+            {
+                "date": "2022-06-10",
+                "text": "If the mana is spent on a non-Dragon spell that becomes a Dragon later in the turn, that creature won't have haste."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}

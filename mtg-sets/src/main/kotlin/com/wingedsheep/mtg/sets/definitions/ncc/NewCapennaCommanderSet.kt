@@ -4,6 +4,7 @@ import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
 import com.wingedsheep.sdk.model.Printing
+import com.wingedsheep.sdk.model.TokenPrinting
 
 /**
  * New Capenna Commander (2022)
@@ -27,6 +28,14 @@ object NewCapennaCommanderSet : MtgSet {
     override val printings: List<Printing> by lazy {
         CardDiscovery.findPrintingsIn(CARDS_PACKAGE)
     }
+
+    /**
+     * Scryfall's `tncc` sync covers 32 New Capenna Commander tokens but not its Treasure, so
+     * that one is self-hosted under `web-client/public/images/tokens/` and declared here.
+     */
+    override val tokenArt: List<TokenPrinting> = listOf(
+        TokenPrinting(name = "Treasure", imageUri = "/images/tokens/ncc-treasure.jpeg"),
+    )
 
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.ncc.cards"
 }

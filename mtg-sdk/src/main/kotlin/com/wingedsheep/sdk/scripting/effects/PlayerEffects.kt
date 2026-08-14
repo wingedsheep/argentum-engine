@@ -232,6 +232,32 @@ data object EndTheTurnEffect : Effect {
 }
 
 /**
+ * "It becomes day" / "It becomes night" (CR 731.1) — set the game's day/night designation to
+ * [designation].
+ *
+ * Day and night are a *game*-level designation, not a player or permanent property, so this effect
+ * takes no target: it always sets the whole game's designation. It's the resolution-time counterpart
+ * to the untap-step turn-based action (CR 502.2) and the daybound/nightbound designation starts
+ * (CR 702.145d/g) — the text form other effects use, e.g. Into the Night's "It becomes night."
+ *
+ * Setting a designation the game already has is a no-op (CR 731.1 — once it's day or night the game
+ * always has exactly one), and the change cascades the daybound/nightbound transforms it entails
+ * (CR 702.145b/e): the engine's `DayNightService` — the single writer for `GameState.dayNight` — both
+ * flips the designation and emits the resulting `TransformedEvent`s in one batch. Use the
+ * [com.wingedsheep.sdk.dsl.Effects.BecomeDay] / [com.wingedsheep.sdk.dsl.Effects.BecomeNight] facades.
+ */
+@SerialName("SetDayNight")
+@Serializable
+data class SetDayNightEffect(
+    val designation: com.wingedsheep.sdk.core.DayNight
+) : Effect {
+    override val description: String = when (designation) {
+        com.wingedsheep.sdk.core.DayNight.DAY -> "It becomes day"
+        com.wingedsheep.sdk.core.DayNight.NIGHT -> "It becomes night"
+    }
+}
+
+/**
  * Prevent the target player from playing lands for the rest of this turn.
  * Sets the player's remaining land drops to 0.
  * Defaults to the controller (e.g. Rock Jockey); pass a [EffectTarget.PlayerRef]
@@ -663,19 +689,29 @@ data class GrantSpellsCantBeCounteredEffect(
  *
  * Composes with `Effects.Composite(ChooseCreatureTypeEffect, CreatePermanentEmblem(...))`.
  *
- * @property groupFilter Which permanents the emblem affects.
+ * An emblem whose text affects its **controller** rather than a group of permanents ("You may cast
+ * spells from your hand without paying their mana costs" — Tamiyo, Field Researcher's −7) carries
+ * that wording in [ownedStaticAbilities] instead, and leaves [groupFilter] at its default. The
+ * emblem entity then reads as a source of those statics exactly as a battlefield permanent printing
+ * them would, so no separate "player permission" concept is needed.
+ *
+ * @property groupFilter Which permanents the emblem affects. Unused — and so left at its default —
+ *   by an emblem that carries no group modification at all, only [ownedStaticAbilities].
  * @property powerBonus Power modification applied to each affected creature.
  * @property toughnessBonus Toughness modification applied to each affected creature.
  * @property grantedKeywords Keywords granted to each affected creature.
+ * @property ownedStaticAbilities Static abilities the *emblem itself* has, as though printed on it.
  * @property emblemDescription Human-readable description of the emblem (without the "You get an emblem with" prefix).
  */
 @SerialName("CreatePermanentEmblem")
 @Serializable
 data class CreatePermanentEmblemEffect(
-    val groupFilter: GroupFilter,
+    val groupFilter: GroupFilter = GroupFilter(GameObjectFilter.Any),
     val powerBonus: Int = 0,
     val toughnessBonus: Int = 0,
     val grantedKeywords: List<String> = emptyList(),
+    val grantedActivatedAbilities: List<com.wingedsheep.sdk.scripting.ActivatedAbility> = emptyList(),
+    val ownedStaticAbilities: List<com.wingedsheep.sdk.scripting.StaticAbility> = emptyList(),
     val emblemDescription: String
 ) : Effect {
     override val description: String = "You get an emblem with \"$emblemDescription\""
@@ -700,6 +736,60 @@ data class GainCitysBlessingEffect(
     val target: EffectTarget = EffectTarget.Controller
 ) : Effect {
     override val description: String = "${target.description.replaceFirstChar { it.uppercase() }} gets the city's blessing"
+}
+
+/**
+ * Changes the target player's **speed** by a signed [amount] (Aetherdrift, CR 702.179).
+ *
+ * One effect covers both directions because the set needs both: the inherent speed trigger raises
+ * speed ("your speed increases by 1", CR 702.179d) while Spikeshell Harrier lowers it ("reduce that
+ * opponent's speed by 1. This effect can't reduce their speed below 1"). Splitting them would mean two
+ * near-identical types and executors over one concept, so a negative [amount] plus [minimum] expresses
+ * the reducing half. Reach for the [com.wingedsheep.sdk.dsl.Effects.IncreaseSpeed] /
+ * [com.wingedsheep.sdk.dsl.Effects.ReduceSpeed] facades rather than constructing this directly — they
+ * keep the call site reading like the card.
+ *
+ * Speed is a player designation like the city's blessing: it survives the source leaving play, so it
+ * lives on the player, not the permanent. Three rules are folded into the executor rather than the
+ * call site:
+ *
+ * - CR 702.179c — a player who has *no* speed and is told to increase it simply ends up at that
+ *   amount. Since [com.wingedsheep.sdk.core.Speed.NONE] is 0 this falls out of plain addition.
+ * - CR 702.179e — "max speed" is a speed of exactly 4, so the result is clamped to
+ *   [com.wingedsheep.sdk.core.Speed.MAX]. Changing a player already at max speed by a positive amount
+ *   is a no-op.
+ * - A change never moves speed the *wrong* way. A reduction can't push a player who has no speed up to
+ *   [minimum] (that would hand them the designation they don't have), and can't be turned into a gain
+ *   by a floor above their current speed.
+ *
+ * @param target The player whose speed changes. Defaults to the ability's controller ("your speed").
+ * @param amount The signed change, before clamping. Positive raises, negative reduces.
+ * @param minimum Floor for a reduction — Spikeshell Harrier's "can't reduce their speed below 1"
+ *   passes [com.wingedsheep.sdk.core.Speed.STARTING]. Ignored when [amount] is positive.
+ */
+@SerialName("ChangeSpeed")
+@Serializable
+data class ChangeSpeedEffect(
+    val target: EffectTarget = EffectTarget.Controller,
+    val amount: DynamicAmount = DynamicAmount.Fixed(1),
+    val minimum: Int = 0
+) : Effect {
+    override val description: String = buildString {
+        append(if (target == EffectTarget.Controller) "Your" else "${target.description}'s")
+        val fixed = (amount as? DynamicAmount.Fixed)?.amount
+        when {
+            fixed != null && fixed < 0 -> append(" speed decreases by ${-fixed}")
+            else -> append(" speed increases by ${amount.description}")
+        }
+        if (minimum > 0 && (fixed == null || fixed < 0)) {
+            append(", but not below $minimum")
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newAmount !== amount) copy(amount = newAmount) else this
+    }
 }
 
 /**
@@ -896,4 +986,44 @@ data class ChooseOpponentForSourceEffect(
     val prompt: String = "Choose an opponent"
 ) : Effect {
     override val description: String = "choose an opponent"
+}
+
+/**
+ * The controller chooses a card type (CR 205.2a); the choice is written durably onto the source
+ * entity's cast-choices bag under [com.wingedsheep.sdk.scripting.ChoiceSlot.CARD_TYPE], where a
+ * static ability reads it back at cost-calculation / projection time through
+ * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.CardTypeEqualsChosenComponent].
+ *
+ * The on-resolution, durable-slot analogue of an as-enters card-type choice — the same relationship
+ * [ChooseNumberForSourceEffect] has to the `NUMBER` [com.wingedsheep.sdk.scripting.ReplacementEffect
+ * .ChoiceType]. Modeled as a `When ~ enters` triggered ability rather than a replacement because the
+ * chosen type only feeds a continuous tax, so it need not be locked in strictly *during* entry.
+ *
+ * When [lookAtOpponentHand] is true the controller first sees an opponent's hand (a durable reveal,
+ * CR 402.3) before choosing — the "look at an opponent's hand, then choose a card type" clause of
+ * Arachne, Psionic Weaver. The look is purely informational.
+ *
+ * @property allowedCardTypes Restrict the offered set to these card types (values from CR 205.2a:
+ *   "Artifact", "Battle", "Creature", "Enchantment", "Instant", "Land", "Planeswalker", "Sorcery").
+ *   `null` offers all of them. Arachne passes the seven non-creature types ("other than creature").
+ * @property lookAtOpponentHand Reveal an opponent's hand to the controller before the choice.
+ * @property slot Durable cast-choices slot to write (default
+ *   [com.wingedsheep.sdk.scripting.ChoiceSlot.CARD_TYPE]).
+ * @property prompt Player-facing prompt text.
+ */
+@SerialName("ChooseCardTypeForSource")
+@Serializable
+data class ChooseCardTypeForSourceEffect(
+    val allowedCardTypes: List<String>? = null,
+    val lookAtOpponentHand: Boolean = false,
+    val slot: com.wingedsheep.sdk.scripting.ChoiceSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.CARD_TYPE,
+    val prompt: String = "Choose a card type"
+) : Effect {
+    override val description: String = buildString {
+        if (lookAtOpponentHand) append("look at an opponent's hand, then ")
+        append("choose a card type")
+        if (allowedCardTypes != null && !allowedCardTypes.contains("Creature")) {
+            append(" other than creature")
+        }
+    }
 }

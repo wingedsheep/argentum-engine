@@ -299,7 +299,7 @@ class DampingSphereTest : FunSpec({
         driver.putPermanentOnBattlefield(activePlayer, "Damping Sphere")
         val doubleLand = driver.putPermanentOnBattlefield(activePlayer, "Double Land")
 
-        driver.giveRestrictedMana(activePlayer, Color.RED, 2, ManaRestriction.SpellsMV4OrGreater)
+        driver.giveRestrictedMana(activePlayer, Color.RED, 2, ManaRestriction.SpellsWithManaValueAtLeast(4))
 
         val manaAbility = DoubleLand.script.activatedAbilities.first()
         driver.submitSuccess(

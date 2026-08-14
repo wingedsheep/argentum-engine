@@ -53,7 +53,7 @@ class GameBenchmark : FunSpec({
 
         val runtime = Runtime.getRuntime()
 
-        log("=== BENCHMARK: $numGames games on $cores threads (random sealed decks, maxTurns=50) ===")
+        log("=== BENCHMARK: $numGames games on $cores threads (random sealed decks, maxTurns=100) ===")
         log("CSV output: ${csvFile.absolutePath}")
 
         val wallTime = measureTime {
@@ -64,7 +64,7 @@ class GameBenchmark : FunSpec({
                     if (i <= 10 || i % 10 == 0) {
                         log("  [Game $i] started [${deckSummary(deck1)} vs ${deckSummary(deck2)}]")
                     }
-                    playGame(registry, deck1, deck2, i, maxTurns = 50) { turn, p1Life, p2Life, actions ->
+                    playGame(registry, deck1, deck2, i, maxTurns = 100) { turn, p1Life, p2Life, actions ->
                         if (i <= 10 && turn % 5 == 0) {
                             log("  [Game $i] turn $turn: P1=$p1Life P2=$p2Life ($actions actions)")
                         }
@@ -159,7 +159,8 @@ private fun deckSummary(deck: Deck): String {
 }
 
 private fun playGame(
-    registry: CardRegistry, deck1: Deck, deck2: Deck, id: Int, maxTurns: Int = 50,
+    // maxTurns counts player turns (`GameState.turnNumber`), so 100 is 50 turns each.
+    registry: CardRegistry, deck1: Deck, deck2: Deck, id: Int, maxTurns: Int = 100,
     onTurn: (turn: Int, p1Life: Int, p2Life: Int, actions: Int) -> Unit = { _, _, _, _ -> }
 ): GameResult {
     val processor = ActionProcessor(registry)

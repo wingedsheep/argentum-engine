@@ -405,6 +405,16 @@ object TokenCreationReplacementHelper {
                 )
                 newState = afterCounters
                 events.addAll(counterEvents)
+
+                // CR 306.5b: an Aura can enchant a planeswalker, so a copy of the attached
+                // permanent may be one — it enters with the copied printed loyalty (a copiable
+                // value, CR 707.2) or state-based actions (CR 704.5i) bin it on arrival.
+                val (afterLoyalty, loyaltyEvents) = com.wingedsheep.engine.handlers.effects
+                    .ZoneMovementUtils.applyIntrinsicEntryCountersIfNeeded(
+                        newState, tokenId, controllerId, cardRegistry
+                    )
+                newState = afterLoyalty
+                events.addAll(loyaltyEvents)
             }
 
             events.add(

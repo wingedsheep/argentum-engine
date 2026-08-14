@@ -1,0 +1,45 @@
+{
+  "_comment": [
+    "Cards we have deliberately decided NOT to implement, so set completion means",
+    "'everything we intend to build is built' rather than 'literally every card exists'.",
+    "",
+    "This is a policy list, not a backlog. A card belongs here only when the reason is",
+    "permanent — the card needs a mechanic the engine will never carry (ante, subgames,",
+    "physical dexterity). A card that is merely hard, or blocked on a feature we do plan",
+    "to build, stays a normal missing card and keeps counting against the set.",
+    "",
+    "Card names are unique across Magic, so entries are keyed by name alone and apply to",
+    "every set that prints them (Contract from Below covers LEA, LEB, 2ED, 3ED at once).",
+    "",
+    "Every entry MUST carry a `reason` that resolves to a sentence in the `reasons` block",
+    "below — the sentence is what the CLI, the API and the /set-completion tooltip show, so",
+    "an exclusion can never read as an unexplained 'we skipped this'. A missing or unknown",
+    "reason is a hard error, not a skipped card.",
+    "",
+    "Consumers: scripts/card-status (CLI report) and scripts/gen-set-totals, which bakes",
+    "the flag into game-server/src/main/resources/coverage/set-totals.json for the",
+    "/set-completion view. Re-run `scripts/gen-set-totals` after editing this file.",
+    "",
+    "An excluded card that someone implements anyway simply counts as implemented — the",
+    "exclusion only ever removes a card from the denominator while it is still missing."
+  ],
+  "reasons": {
+    "ante": "Ante is not supported — the engine has no ante zone, and ante play is banned in every sanctioned format.",
+    "subgame": "Playing a Magic subgame inside a game is out of scope for the engine.",
+    "dexterity": "Requires physical dexterity with a real card, which has no digital equivalent."
+  },
+  "cards": [
+    { "name": "Amulet of Quoz", "reason": "ante" },
+    { "name": "Bronze Tablet", "reason": "ante" },
+    { "name": "Contract from Below", "reason": "ante" },
+    { "name": "Darkpact", "reason": "ante" },
+    { "name": "Demonic Attorney", "reason": "ante" },
+    { "name": "Jeweled Bird", "reason": "ante" },
+    { "name": "Rebirth", "reason": "ante" },
+    { "name": "Tempest Efreet", "reason": "ante" },
+    { "name": "Timmerian Fiends", "reason": "ante" },
+    { "name": "Shahrazad", "reason": "subgame" },
+    { "name": "Chaos Orb", "reason": "dexterity" },
+    { "name": "Falling Star", "reason": "dexterity" }
+  ]
+}

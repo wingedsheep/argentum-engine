@@ -52,9 +52,9 @@ class AdditionalCombatPhaseTest : FunSpec({
      * postcombat main phase right after the natural one emits its own StepChangedEvent).
      */
     fun GameTestDriver.recordStepsThroughTurn(maxRounds: Int = 400): List<Step> {
-        // `turnNumber` is a round counter (it only bumps when the first player starts a turn), so it
-        // is shared by both players' turns within a round. Bound the recording to the *active
-        // player's* turn instead, stopping as soon as the turn passes to the opponent.
+        // Bound the recording to the *active player's* turn, stopping as soon as the turn passes to
+        // the opponent — an inserted extra combat phase is part of the same turn, so watching the
+        // active player is what distinguishes "still this turn" from "the turn ended".
         val startPlayer = activePlayer
         val startStep = currentStep
         val firstEventIndex = events.size

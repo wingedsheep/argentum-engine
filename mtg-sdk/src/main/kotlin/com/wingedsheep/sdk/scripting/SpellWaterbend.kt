@@ -10,7 +10,7 @@ import kotlinx.serialization.Serializable
  * untapped artifacts and/or creatures they control, each paying for {1} generic (a generic-only
  * convoke+improvise). It mirrors the activated-ability waterbend cost ([ActivatedAbility.hasWaterbend])
  * but applies to a spell, and the chosen tap permanents travel in
- * [AlternativePaymentChoice.waterbendPermanents] on the cast action — only the *uncovered* part of
+ * [AlternativePaymentChoice.tapForGenericPermanents] on the cast action — only the *uncovered* part of
  * the waterbend amount (`N` minus the number of permanents tapped) is owed as real mana, which keeps
  * the tap payment bounded to the waterbend cost and never to the spell's own generic.
  *

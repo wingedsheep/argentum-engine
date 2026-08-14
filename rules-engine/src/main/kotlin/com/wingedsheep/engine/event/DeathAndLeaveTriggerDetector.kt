@@ -72,6 +72,7 @@ class DeathAndLeaveTriggerDetector(
 
     fun detectDeathTriggers(
         state: GameState,
+        statics: BattlefieldStaticsIndex,
         event: ZoneChangeEvent,
         triggers: MutableList<PendingTrigger>
     ) {
@@ -86,7 +87,7 @@ class DeathAndLeaveTriggerDetector(
 
         // For "When this creature dies" - the creature might be in graveyard now
         // Look up abilities by card definition
-        val abilities = abilityResolver.getTriggeredAbilities(entityId, info.cardDefinitionId, state)
+        val abilities = abilityResolver.getTriggeredAbilities(entityId, info.cardDefinitionId, state, statics)
         val controllerId = event.ownerId
 
         for (ability in abilities) {
@@ -141,6 +142,7 @@ class DeathAndLeaveTriggerDetector(
      */
     fun detectSimultaneousDeathTriggers(
         state: GameState,
+        statics: BattlefieldStaticsIndex,
         events: List<EngineGameEvent>,
         triggers: MutableList<PendingTrigger>
     ) {
@@ -165,7 +167,7 @@ class DeathAndLeaveTriggerDetector(
 
             val info = resolveDyingEntity(state, deadEvent) ?: continue
 
-            val abilities = abilityResolver.getTriggeredAbilities(deadEntityId, info.cardDefinitionId, state)
+            val abilities = abilityResolver.getTriggeredAbilities(deadEntityId, info.cardDefinitionId, state, statics)
             val controllerId = deadEvent.ownerId
 
             for (ability in abilities) {
@@ -198,6 +200,7 @@ class DeathAndLeaveTriggerDetector(
      */
     fun detectDeadAuraAttachmentTriggers(
         state: GameState,
+        statics: BattlefieldStaticsIndex,
         event: ZoneChangeEvent,
         triggers: MutableList<PendingTrigger>
     ) {
@@ -212,7 +215,7 @@ class DeathAndLeaveTriggerDetector(
         val container = state.getEntity(auraEntityId) ?: return
         val cardComponent = container.get<CardComponent>() ?: return
 
-        val abilities = abilityResolver.getTriggeredAbilities(auraEntityId, cardComponent.cardDefinitionId, state)
+        val abilities = abilityResolver.getTriggeredAbilities(auraEntityId, cardComponent.cardDefinitionId, state, statics)
         val controllerId = event.ownerId
 
         for (ability in abilities) {
@@ -255,7 +258,7 @@ class DeathAndLeaveTriggerDetector(
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
                 if (trigger !is EventPattern.CreatureDealtDamageBySourceDiesEvent) continue
-                if (ability.activeZone != Zone.BATTLEFIELD) continue
+                if (Zone.BATTLEFIELD !in ability.activeZones) continue
 
                 val sourceFilter = trigger.sourceFilter
                 val fires = if (sourceFilter == null) {
@@ -383,6 +386,58 @@ class DeathAndLeaveTriggerDetector(
     }
 
     /**
+     * Detect undying triggers (CR 702.93) when a permanent dies with no +1/+1 counters on it.
+     *
+     * The keyword is read from the event's projected last-known information, so printed and granted
+     * instances follow the same path. The synthesized ability resolves from the graveyard and returns
+     * the card under its owner's control with a +1/+1 counter. Tokens are not suppressed here: undying
+     * still triggers for a token, but the token ceases to exist before that trigger can return it.
+     */
+    fun detectUndyingTriggers(
+        state: GameState,
+        event: ZoneChangeEvent,
+        triggers: MutableList<PendingTrigger>
+    ) {
+        if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) return
+        if ((event.lastKnown?.plusOnePlusOneCounters ?: 0) > 0) return
+        if (Keyword.UNDYING.name !in (event.lastKnown?.keywords ?: emptySet())) return
+
+        val info = resolveDyingEntity(state, event) ?: return
+
+        val undyingAbility = TriggeredAbility.create(
+            trigger = EventPattern.ZoneChangeEvent(
+                from = Zone.BATTLEFIELD,
+                to = Zone.GRAVEYARD
+            ),
+            binding = TriggerBinding.SELF,
+            effect = CompositeEffect(
+                listOf(
+                    MoveToZoneEffect(
+                        target = EffectTarget.Self,
+                        destination = Zone.BATTLEFIELD
+                    ),
+                    AddCountersEffect(
+                        counterType = Counters.PLUS_ONE_PLUS_ONE,
+                        count = 1,
+                        target = EffectTarget.Self
+                    )
+                )
+            ),
+            descriptionOverride = "Undying — Return ${info.name} to the battlefield with a +1/+1 counter on it"
+        )
+
+        triggers.add(
+            PendingTrigger(
+                ability = undyingAbility,
+                sourceId = event.entityId,
+                sourceName = info.name,
+                controllerId = event.ownerId,
+                triggerContext = TriggerContext.fromEvent(event)
+            )
+        )
+    }
+
+    /**
      * Detect Enduring triggers (Duskmourn Glimmer cycle) when a permanent dies.
      *
      * Enduring: "When this permanent dies, if it was a creature, return it to the battlefield
@@ -412,7 +467,7 @@ class DeathAndLeaveTriggerDetector(
         if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) return
         if (event.lastKnown?.wasToken == true) return
         if (event.lastKnown?.typeLine?.isCreature != true) return
-        if (Keyword.ENDURING.name !in (event.lastKnown?.keywords ?: emptySet())) return
+        if (Keyword.ENDURING.name !in event.lastKnown.keywords) return
 
         val info = resolveDyingEntity(state, event) ?: return
 
@@ -463,6 +518,7 @@ class DeathAndLeaveTriggerDetector(
      */
     fun detectLeavesBattlefieldTriggers(
         state: GameState,
+        statics: BattlefieldStaticsIndex,
         event: ZoneChangeEvent,
         triggers: MutableList<PendingTrigger>
     ) {
@@ -473,7 +529,7 @@ class DeathAndLeaveTriggerDetector(
         val entityId = event.entityId
         val info = resolveDyingEntity(state, event) ?: return
 
-        val abilities = abilityResolver.getTriggeredAbilities(entityId, info.cardDefinitionId, state)
+        val abilities = abilityResolver.getTriggeredAbilities(entityId, info.cardDefinitionId, state, statics)
         val controllerId = event.ownerId
 
         for (ability in abilities) {

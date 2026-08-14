@@ -19,7 +19,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
  * card. When you discard a nonland card this way, put a +1/+1 counter on target creature you
  * control.
  *
- * The looting + conditional +1/+1 counter is connive-shaped (CR 702.166), but the counter lands on
+ * The looting + conditional +1/+1 counter is connive-shaped (CR 701.50), but the counter lands on
  * a *chosen target* creature rather than the source. The "When you discard a nonland card this way"
  * clause is a reflexive trigger: the target creature is chosen only after a nonland card is actually
  * discarded, so it's modeled via [Effects.ConniveTargeting] (which selects the recipient at

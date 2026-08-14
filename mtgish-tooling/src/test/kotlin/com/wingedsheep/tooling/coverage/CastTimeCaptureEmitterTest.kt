@@ -1,6 +1,7 @@
 package com.wingedsheep.tooling.coverage
 
 import com.wingedsheep.tooling.coverage.emitter.Emitter
+import com.wingedsheep.tooling.coverage.emitter.subtypeArg
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
@@ -32,7 +33,10 @@ class CastTimeCaptureEmitterTest : StringSpec({
         result.complete shouldBe true
         // The capture is declared as you cast, and read back at resolution — not a board re-check.
         result.text shouldContain "captureAtCast(\"controlledMount\", Conditions.YouControl"
-        result.text shouldContain "withSubtype(\"Mount\")"
+        // Via the emitter's own renderer, not a literal: whether this reads `Subtype.MOUNT` or
+        // `"Mount"` depends on whether the SDK names the constant today, which is not what this
+        // test is about — pinning the literal broke it the day someone added `Subtype.MOUNT`.
+        result.text shouldContain "withSubtype(${subtypeArg("Mount")})"
         result.text shouldContain "condition = Conditions.CapturedAtCast(\"controlledMount\")"
         // 4-damage then-branch, 2-damage else-branch, both on the one shared target.
         result.text shouldContain "effect = DealDamageEffect(4, t)"

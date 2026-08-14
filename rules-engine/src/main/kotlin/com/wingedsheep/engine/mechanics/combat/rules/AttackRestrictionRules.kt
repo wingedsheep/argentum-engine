@@ -16,6 +16,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CantAttackUnless
 import com.wingedsheep.sdk.scripting.CantBeAttackedWithout
+import com.wingedsheep.sdk.scripting.CantBeAttackedWhileAttached
 
 // =========================================================================
 // Per-creature attack restrictions (AttackRestrictionRule)
@@ -249,6 +250,20 @@ class CantBeAttackedWithoutDefenderRule : AttackDefenderRule {
     }
 }
 
+/** Prevents an attached permanent with [CantBeAttackedWhileAttached] from being attacked. */
+class CantBeAttackedWhileAttachedDefenderRule : AttackDefenderRule {
+    override fun check(ctx: AttackCheckContext, defenderId: EntityId): String? {
+        val defender = ctx.state.getEntity(defenderId) ?: return null
+        if (defender.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>() == null) {
+            return null
+        }
+        val card = defender.get<CardComponent>() ?: return null
+        val cardDef = ctx.cardRegistry.getCard(card.cardDefinitionId) ?: return null
+        if (cardDef.staticAbilities.none { it is CantBeAttackedWhileAttached }) return null
+        return "${card.name} can't be attacked while it's attached"
+    }
+}
+
 /**
  * AttackMode (CR 802 / 803): when the game uses attack-left or attack-right, a creature may only
  * attack the opponent in the adjacent seat (or a planeswalker/battle that opponent controls). The
@@ -302,5 +317,6 @@ fun defaultAttackRestrictionRules(): List<AttackRestrictionRule> = listOf(
 fun defaultAttackDefenderRules(): List<AttackDefenderRule> = listOf(
     CantAttackUnlessDefenderRule(),
     CantBeAttackedWithoutDefenderRule(),
+    CantBeAttackedWhileAttachedDefenderRule(),
     AttackModeDefenderRule()
 )

@@ -116,8 +116,8 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
         // Effects.DamageCantBePreventedThisTurn() (Impractical Joke). Any other game effect or a non-turn
         // expiration has no calibrated facade, so decline -> SCAFFOLD rather than emit a wrong effect.
         val arr = node["args"].asArr ?: return@on null
-        val expiration = arr.firstOrNull { it is JsonObject && (it as JsonObject).containsKey("_Expiration") } as? JsonObject
-        val gameEffect = arr.firstOrNull { it is JsonObject && (it as JsonObject).containsKey("_GameEffect") } as? JsonObject
+        val expiration = arr.firstOrNull { it is JsonObject && it.containsKey("_Expiration") } as? JsonObject
+        val gameEffect = arr.firstOrNull { it is JsonObject && it.containsKey("_GameEffect") } as? JsonObject
         if (expiration?.strField("_Expiration") != "UntilEndOfTurn") return@on null
         if (gameEffect?.strField("_GameEffect") != "DamageCantBePrevented") return@on null
         call("Effects.DamageCantBePreventedThisTurn")
@@ -179,6 +179,12 @@ internal val damageDrawLifeHandlers: Map<String, ActionHandler> = actionHandlers
     // Willbender). Pairs with `Targets.SpellOrAbilityWithSingleTarget`.
     simple("ChangeTargetsOfSpellOrAbility", dsl = "Effects.ChangeTarget()")
     simple("Shuffle", dsl = "ShuffleLibraryEffect()")
+    // "It becomes day/night" (CR 731.1). Both are argument-free constants — the DayNight designation
+    // is baked into the `Effects.BecomeDay` / `Effects.BecomeNight` vals (SetDayNight), which cascade
+    // the daybound/nightbound transforms the change entails. Member-qualified vals, so paren-free like
+    // `Effects.AddCombatPhase`; importsFor resolves the single `Effects` import (Into the Night).
+    simple("BecomeDay", dsl = "Effects.BecomeDay")
+    simple("BecomeNight", dsl = "Effects.BecomeNight")
     // Investigate (keyword action, CR 701.36): create a Clue token. Argument-free constant action
     // (Malcolm, the Eyes — "investigate"). "Investigate N times" appears as N stacked actions.
     simple("Investigate", dsl = "Effects.Investigate()")

@@ -20,11 +20,10 @@ import io.kotest.matchers.shouldBe
  * top three cards instead. Until the end of your next turn, you may play those cards.
  *
  * Regression guard for "until the end of your next turn" when the controller is NOT the starting
- * player. `GameState.turnNumber` is round-based — it only increments when the starting player
- * begins a new turn — so two players share a turn number within a round. The expiry must be gated
+ * player. The permission records a turn *floor* ("not this turn"), so the expiry must also be gated
  * on the *controller's own* turn; otherwise the non-starting player loses the permission at the end
- * of the starting player's turn in the target round, one full turn too early, and can no longer
- * play the exiled land on their next turn (the reported bug).
+ * of whichever opponent's turn comes first, one full turn too early, and can no longer play the
+ * exiled land on their next turn (the reported bug).
  */
 class BurningCuriosityTest : FunSpec({
 
@@ -88,7 +87,7 @@ class BurningCuriosityTest : FunSpec({
         val land = exiled.first()
         driver.state.mayPlayPermissions.any { land in it.cardIds } shouldBe true
 
-        // Advance through P1's next turn (same round number as P2's next turn) into P2's next turn.
+        // Advance through P1's next turn into P2's next turn — the one the window must cover.
         advanceToNextTurnMain(driver)
         driver.state.activePlayerId shouldBe p1
         advanceToNextTurnMain(driver)

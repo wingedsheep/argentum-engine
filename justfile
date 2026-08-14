@@ -10,7 +10,7 @@ default:
 build:
     scripts/gradle-locked build
 
-# Run all tests
+# Run all tesats
 [group: 'build']
 test:
     scripts/gradle-locked test
@@ -25,6 +25,11 @@ test-rules:
 test-server:
     scripts/gradle-locked :game-server:test
 
+# Run tests for the AI module only (advisors, deckbuild/draft heuristics)
+[group: 'build']
+test-ai:
+    scripts/gradle-locked :ai:test
+
 # Run tests for gym only
 [group: 'build']
 test-gym:
@@ -35,9 +40,29 @@ test-gym:
 test-class CLASS:
     scripts/gradle-locked :rules-engine:test --tests "{{CLASS}}"
 
+# Re-bless per-set card snapshot goldens after an intentional change (review the diff: only your cards should move)
+[group: 'build']
+rebless-cards:
+    scripts/gradle-locked :mtg-sets:test --tests "*CardDefinitionSnapshotTest" -DupdateSnapshots=true
+
+# List every token our cards create that has no set-scoped art, so it renders with generic
+# stand-in art. Writes backlog/token-art-gaps.md with a suggested image path and a paste-ready
+# TokenPrinting row per gap. Mostly pre-2001 sets, which have no Scryfall token set to sync.
+[group: 'build']
+token-art-gaps:
+    scripts/gradle-locked :mtg-sets:tokenArtGaps
+
+# Refresh mtg-sets/src/main/resources/tokens.json from Scryfall's token sets (t<code>). Hand-authored
+# art belongs in a set's `tokenArt` (which wins over synced rows) — this file is regenerated wholesale.
+[group: 'build']
+token-art-sync:
+    scripts/gradle-locked :mtg-sets:syncTokenArt
+
 # CLASS options (all in :ai): AdvisorBenchmark   - AI advisor vs random, per-card timing
 #                             GameBenchmark      - full AI-vs-AI games, sealed decks
 #                             RandomActionBenchmark - raw engine throughput (see benchmark-random)
+#                             SimulationThroughputBenchmark - AI-game process/simulate/projection rates
+#                                                     and branching factor (see benchmark-throughput)
 #                             StateCloneBenchmark   - GameState clone speed (uses -DbenchmarkIterations, not GAMES)
 # Run an engine benchmark (e.g., just benchmark, just benchmark GameBenchmark 50)
 [group: 'build']
@@ -48,6 +73,92 @@ benchmark CLASS="AdvisorBenchmark" GAMES="100":
 [group: 'build']
 benchmark-random GAMES="100" SET="POR":
     ./gradlew :ai:test --tests "*.RandomActionBenchmark" -Dbenchmark=true -DbenchmarkGames={{GAMES}} -DbenchmarkSet={{SET}}
+
+# Measure what a rollout evaluator can afford: process()/simulate()/projection rates
+# and branching factor over real AI games (e.g., just benchmark-throughput 40 BLB).
+# Baseline numbers live in docs/ai/baseline-metrics.md.
+[group: 'build']
+benchmark-throughput GAMES="20" SET="BLB":
+    ./gradlew :ai:test --tests "*.SimulationThroughputBenchmark" -Dbenchmark=true -DbenchmarkGames={{GAMES}} -DbenchmarkSet={{SET}}
+
+# Play two AI agents head-to-head over paired-swap games and report a win rate with a confidence
+# interval (e.g., just arena v0 blb-advisors 1000). Agents: v0, current, production, blb-advisors,
+# ons-advisors, v0-blind. 1000 games is the merge gate; 300 is directional; 100 is a smoke test.
+# Results land in benchmarks/arena/. How to read one: docs/ai/measurement.md.
+[group: 'ai']
+arena A B GAMES="300" SET="BLB" SEED="20260727" ARTIFACT_DIR="":
+    scripts/gradle-locked :ai:test --tests "*.ArenaBenchmark" -Dbenchmark=true -Darena=true \
+        -DarenaA={{A}} -DarenaB={{B}} -DarenaGames={{GAMES}} -DarenaSet={{SET}} -DarenaSeed={{SEED}} \
+        -Dargentum.ai.apprentice.dir={{ARTIFACT_DIR}}
+
+# ECL apprentice promotion ladder. Artifacts are installed outside the repository and selected with
+# -Dargentum.ai.apprentice.dir; missing or invalid files safely use the production evaluator.
+[group: 'ai']
+arena-ecl-smoke ARTIFACT_DIR GAMES="100" SEED="20260801":
+    just arena ecl-apprentice production {{GAMES}} ECL {{SEED}} {{ARTIFACT_DIR}}
+
+[group: 'ai']
+arena-ecl-directional ARTIFACT_DIR GAMES="300" SEED="20260801":
+    just arena ecl-apprentice production {{GAMES}} ECL {{SEED}} {{ARTIFACT_DIR}}
+
+# Fit the dependency-free linear apprentice from a pairwise-example JSON file.
+[group: 'ai']
+train-ecl-apprentice EXAMPLES OUTPUT:
+    python3 scripts/train_ecl_apprentice.py {{EXAMPLES}} {{OUTPUT}}
+
+# Collect clean ECL games. Failed/recovered games are quarantined and never appended.
+[group: 'ai']
+collect-ecl-training OUTPUT GAMES="100" SEED="20260801" RUN_ID="ecl-{{SEED}}":
+    scripts/gradle-locked :ai:test --tests "*.EclTrainingBenchmark" -Dbenchmark=true -DeclCollect=true \
+        -DeclCollectGames={{GAMES}} -DeclCollectSeed={{SEED}} -DeclCollectOutput={{OUTPUT}} \
+        -DeclCollectBaseDir={{justfile_directory()}} -DeclCollectRunId={{RUN_ID}}
+
+# Play the rollout evaluator against itself at 4 / 8 / 16 / 32 playouts per decision. Same claim as
+# arena-budget-scaling one level down: strength must never FALL with more playouts, or the search is
+# generating noise. Measured: it rises to ~8 and then plateaus, which is why NORMAL_PLAYOUTS is 16.
+# Also how you afford a rollout arena at all — a rollout game is ~50x a v0 game.
+# Pick rungs far apart: 4-vs-8 is below this harness's resolution (see docs/ai/measurement.md).
+[group: 'ai']
+arena-rollout-scaling A="v0-rollout-4" B="v0-rollout-32" GAMES="100" SET="BLB" SEED="20260727":
+    just arena {{A}} {{B}} {{GAMES}} {{SET}} {{SEED}}
+
+# Run the 66-puzzle tactical suite (11 categories x 6). Seconds, not minutes: the arena says *that*
+# the AI regressed, a puzzle category says *what*. The gate is "the failing set equals
+# KNOWN_FAILURES", so an unexpected fix fails the test too. Baseline: docs/ai/baseline-metrics.md.
+[group: 'ai']
+arena-puzzles:
+    scripts/gradle-locked :ai:test --tests "*.PuzzleSuiteTest"
+
+# Same 66 puzzles across AI profiles (v0, production) with a side-by-side per-category table.
+[group: 'ai']
+arena-puzzles-compare:
+    scripts/gradle-locked :ai:test --tests "*.PuzzleComparisonBenchmark" -Dbenchmark=true
+
+# Play one agent against a field of another at a multiplayer table and report a win share with a
+# confidence interval (e.g. just arena-pod ffa3 current v0-blind 300). Tables: ffa3, ffa4, 2hg.
+# NOTE the null hypothesis is 1/teams — 33% at ffa3, 25% at ffa4, 50% at 2hg — not 50% everywhere.
+# Results land in benchmarks/arena/. How to read one: docs/ai/measurement.md.
+[group: 'ai']
+arena-pod TABLE A B GAMES="300" SET="BLB" SEED="20260727":
+    scripts/gradle-locked :ai:test --tests "*.ArenaBenchmark" -Dbenchmark=true -DarenaPod=true \
+        -DarenaTable={{TABLE}} -DarenaA={{A}} -DarenaB={{B}} -DarenaGames={{GAMES}} \
+        -DarenaSet={{SET}} -DarenaSeed={{SEED}}
+
+# Run every agent in ai/src/test/resources/arena/gauntlet.json against every other and print the
+# full pairwise matrix plus Bradley-Terry Elo. The matrix is the deliverable — MTG agents are
+# frequently non-transitive, and a single rating erases exactly that.
+[group: 'ai']
+arena-gauntlet GAMES="200" SET="BLB" SEED="20260727":
+    scripts/gradle-locked :ai:test --tests "*.ArenaBenchmark" -Dbenchmark=true -DarenaGauntlet=true \
+        -DarenaGames={{GAMES}} -DarenaSet={{SET}} -DarenaSeed={{SEED}}
+
+# Play the same agent against itself at 100 / 1000 / 3000 ms of decision budget. Strength must be
+# MONOTONE in the budget; if it isn't, the search is generating noise and the fix is a better leaf
+# evaluator (phases 6 and 9), not more samples. Runs four matchups, so budget 4x GAMES.
+[group: 'ai']
+arena-budget-scaling GAMES="300" SET="BLB" SEED="20260727":
+    scripts/gradle-locked :ai:test --tests "*.ArenaBudgetScalingTest" -Dbenchmark=true \
+        -DarenaBudgetScaling=true -DarenaGames={{GAMES}} -DarenaSet={{SET}} -DarenaSeed={{SEED}}
 
 # Clean build artifacts
 [group: 'build']
@@ -88,6 +199,15 @@ coverage *ARGS: _coverage-tool
 [group: 'build']
 coverage-dashboard *ARGS: _coverage-tool
     @mtgish-tooling/build/install/mtgish-tooling/bin/mtgish-tooling dashboard {{ARGS}}
+
+# Cross-set capability index, non-interactively — the same ranking as the dashboard's `c` view
+# ("what engine work unlocks the most cards everywhere"), printed as a plain table so it can be
+# piped, diffed, or pasted into a backlog doc. Use the TUI when you want to DRILL into the cards.
+#   just coverage-cross              # every capability, ranked by blocked cards it would unlock
+#   just coverage-cross --top 50     # just the head of the ranking
+[group: 'build']
+coverage-cross *ARGS: _coverage-tool
+    @mtgish-tooling/build/install/mtgish-tooling/bin/mtgish-tooling dashboard --cross {{ARGS}}
 
 # Generation fidelity — could we AUTO-AUTHOR a card from mtgish? Diffs the bridge's output
 # against each card's compiled golden snapshot, tiering AUTO / SCAFFOLD / MISS.
@@ -197,6 +317,18 @@ check-card-printing CARD:
 [group: 'dev']
 server:
     @if [ -f .env ]; then set -a && . ./.env && set +a; fi && ./gradlew :game-server:bootRun --args='--spring.profiles.active=local'
+
+# Start the game server and web client together
+[group: 'dev']
+dev:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    just server &
+    server_pid=$!
+    just client &
+    client_pid=$!
+    trap 'kill "$server_pid" "$client_pid" 2>/dev/null || true; wait "$server_pid" "$client_pid" 2>/dev/null || true' EXIT INT TERM
+    wait "$server_pid" "$client_pid"
 
 # Start the game server with Onslaught set enabled
 [group: 'dev']

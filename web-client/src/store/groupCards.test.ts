@@ -37,6 +37,7 @@ function token({ id, ...over }: { id: string } & Record<string, unknown>): Clien
     isRingBearer: false,
     isCommander: false,
     nonLegendaryCopy: false,
+    legendaryByEffect: false,
     ...over,
   } as unknown as ClientCard
 }
@@ -63,6 +64,10 @@ describe('groupCards — token quantity aggregation (display layer)', () => {
     ['summoning sickness', { hasSummoningSickness: true }],
     ['a granted keyword', { keywords: ['FLYING'] }],
     ['transformed', { isTransformed: true }],
+    // Both legend badges change what the card looks like and whether the legend rule bites, so a
+    // badged permanent must never hide inside a stack of unbadged twins.
+    ['a stripped Legendary supertype', { nonLegendaryCopy: true }],
+    ['a granted Legendary supertype', { legendaryByEffect: true }],
   ])('splits a member that diverges by %s back into its own group', (_label, diff) => {
     const groups = groupCards([
       token({ id: 'plain1' }),

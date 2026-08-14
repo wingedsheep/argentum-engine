@@ -26,7 +26,7 @@ val PlunderingPirate = card("Plundering Pirate") {
     toughness = 2
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Effects.CreateTreasure(imageUri = LciTokenArt.TREASURE)
+        effect = Effects.CreateTreasure()
     }
     metadata {
         rarity = Rarity.COMMON

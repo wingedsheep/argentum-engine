@@ -1,7 +1,9 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -15,6 +17,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -267,9 +270,8 @@ class WordsOfWarTest : FunSpec({
         driver.getLifeTotal(opponent) shouldBe 20
     }
 
-    // --- promptOnDraw tests ---
 
-    test("draw step prompts to activate Words of War, player accepts, targets creature") {
+    test("manual activation shield replaces draw during the draw step") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -282,226 +284,158 @@ class WordsOfWarTest : FunSpec({
         driver.putPermanentOnBattlefield(activePlayer, "Words of War")
         val bearId = driver.putPermanentOnBattlefield(opponent, "Grizzly Bears")
 
-        // Give an untapped land for mana
-        driver.putPermanentOnBattlefield(activePlayer, "Mountain")
-
-        // Advance past turn 1 to reach active player's draw step on turn 3
-        driver.passPriorityUntil(Step.PRECOMBAT_MAIN) // turn 1, past skipped draw
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN) // still turn 1
-        driver.passPriorityUntil(Step.UPKEEP) // turn 2 upkeep (opponent's turn)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN) // turn 2 postcombat
-        driver.passPriorityUntil(Step.UPKEEP) // turn 3 upkeep (active player's turn again)
-
-        driver.state.activePlayerId shouldBe activePlayer
-
-        // Pass through upkeep to reach draw step
-        driver.bothPass()
-
-        // Should now be at DRAW with a mana source selection decision
-        driver.state.step shouldBe Step.DRAW
-        val decision = driver.pendingDecision
-        decision shouldNotBe null
-        (decision is SelectManaSourcesDecision) shouldBe true
-        val manaDecision = decision as SelectManaSourcesDecision
-        manaDecision.canDecline shouldBe true
-
-        // Accept: auto-pay to activate Words of War
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Now we should get a target selection decision
-        val targetDecision = driver.pendingDecision
-        targetDecision shouldNotBe null
-        (targetDecision is ChooseTargetsDecision) shouldBe true
-
-        // Select the opponent's Grizzly Bears as target
-        driver.submitTargetSelection(activePlayer, listOf(bearId))
-
-        // Draw is replaced with 2 damage to Grizzly Bears (2/2 dies)
-        driver.findPermanent(opponent, "Grizzly Bears") shouldBe null
-        driver.getLifeTotal(opponent) shouldBe 20
-    }
-
-    test("draw step prompts to activate Words of War, player accepts, targets player") {
-        val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Grizzly Bears" to 40),
-            startingLife = 20
-        )
-
-        val activePlayer = driver.activePlayer!!
-        val opponent = driver.getOpponent(activePlayer)
-
-        driver.putPermanentOnBattlefield(activePlayer, "Words of War")
-        driver.putPermanentOnBattlefield(activePlayer, "Mountain")
-
-        // Advance past turn 1 to reach active player's draw step on turn 3
-        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-
-        driver.state.activePlayerId shouldBe activePlayer
-
-        // Pass through upkeep to reach draw step
-        driver.bothPass()
-
-        driver.state.step shouldBe Step.DRAW
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-
-        // Accept: auto-pay
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Target the opponent player
-        (driver.pendingDecision is ChooseTargetsDecision) shouldBe true
-        driver.submitTargetSelection(activePlayer, listOf(opponent))
-
-        // 2 damage to opponent
-        driver.getLifeTotal(opponent) shouldBe 18
-    }
-
-    test("draw step allows declining Words of War activation") {
-        val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Grizzly Bears" to 40),
-            startingLife = 20
-        )
-
-        val activePlayer = driver.activePlayer!!
-        val opponent = driver.getOpponent(activePlayer)
-
-        driver.putPermanentOnBattlefield(activePlayer, "Words of War")
-        driver.putPermanentOnBattlefield(activePlayer, "Mountain")
-
-        // Advance past turn 1 to reach active player's draw step on turn 3
-        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-
-        val initialHandSize = driver.getHandSize(activePlayer)
-
-        // Pass through upkeep to reach draw step (prompt fires)
-        driver.bothPass()
-        driver.state.step shouldBe Step.DRAW
-
-        // Decline the activation
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Normal draw happens - no damage
-        driver.getLifeTotal(opponent) shouldBe 20
-
-        // Active player drew a card normally
-        driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
-    }
-
-    test("spell draw prompts to activate Words of War for each draw with target selection") {
-        val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Grizzly Bears" to 40),
-            startingLife = 20
-        )
-
-        val activePlayer = driver.activePlayer!!
-        val opponent = driver.getOpponent(activePlayer)
-
-        driver.putPermanentOnBattlefield(activePlayer, "Words of War")
-        val bear1 = driver.putPermanentOnBattlefield(opponent, "Grizzly Bears")
-        driver.putPermanentOnBattlefield(opponent, "Grizzly Bears")
-
-        // Give untapped lands for mana to pay for activations
-        driver.putPermanentOnBattlefield(activePlayer, "Mountain")
-        driver.putPermanentOnBattlefield(activePlayer, "Mountain")
-        driver.putPermanentOnBattlefield(activePlayer, "Mountain")
-
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        // Give mana to cast Concentrate ({2}{U}{U})
+        val wordsId = driver.findPermanent(activePlayer, "Words of War")!!
+
+        // Activate Words of War targeting opponent's creature
+        driver.giveMana(activePlayer, Color.RED, 1)
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = wordsId,
+                abilityId = abilityId,
+                targets = listOf(ChosenTarget.Permanent(bearId))
+            )
+        )
+        driver.bothPass()
+
+        // Cast Inspiration (draw 2) — 1st draw replaced with 2 damage, 2nd normal
         driver.giveMana(activePlayer, Color.BLUE, 4)
-
-        // Cast Concentrate (draw 3)
-        val concentrate = driver.putCardInHand(activePlayer, "Concentrate")
-        driver.castSpell(activePlayer, concentrate)
-        driver.bothPass()
-
-        // Draw 1: Prompted to activate Words of War
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Target selection for draw 1 - target opponent player
-        (driver.pendingDecision is ChooseTargetsDecision) shouldBe true
-        driver.submitTargetSelection(activePlayer, listOf(opponent))
-
-        // Draw 2: Prompted again
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Target selection for draw 2 - target opponent player
-        (driver.pendingDecision is ChooseTargetsDecision) shouldBe true
-        driver.submitTargetSelection(activePlayer, listOf(opponent))
-
-        // Draw 3: Prompted again
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Target selection for draw 3 - target opponent player
-        (driver.pendingDecision is ChooseTargetsDecision) shouldBe true
-        driver.submitTargetSelection(activePlayer, listOf(opponent))
-
-        // All 3 draws replaced with 2 damage each = 6 total
-        driver.getLifeTotal(opponent) shouldBe 14
-    }
-
-    test("spell draw prompt can be declined per-draw with target selection") {
-        val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Grizzly Bears" to 40),
-            startingLife = 20
-        )
-
-        val activePlayer = driver.activePlayer!!
-        val opponent = driver.getOpponent(activePlayer)
-
-        driver.putPermanentOnBattlefield(activePlayer, "Words of War")
-
-        // Give untapped land for mana
-        driver.putPermanentOnBattlefield(activePlayer, "Mountain")
-
-        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-
-        // Give mana to cast Inspiration ({3}{U})
-        driver.giveMana(activePlayer, Color.BLUE, 4)
-
-        val initialHandSize = driver.getHandSize(activePlayer)
-
-        // Cast Inspiration (draw 2)
         val inspiration = driver.putCardInHand(activePlayer, "Inspiration")
         driver.castSpell(activePlayer, inspiration)
         driver.bothPass()
 
-        // Draw 1: Prompted - DECLINE
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
+        // Grizzly Bears (2/2) killed by the 2 damage
+        driver.findPermanent(opponent, "Grizzly Bears") shouldBe null
+    }
 
-        // Draw 1 happened normally.
-        // Draw 2: Prompted again - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
+    test("unactivated Words of War does nothing during draw step and disappears if not used") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
 
-        // Target selection for draw 2 - target opponent
-        (driver.pendingDecision is ChooseTargetsDecision) shouldBe true
-        driver.submitTargetSelection(activePlayer, listOf(opponent))
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
 
-        // 1 normal draw + 1 replaced with 2 damage
-        driver.getLifeTotal(opponent) shouldBe 18
-        // initialHandSize + 1 (putCardInHand) - 1 (cast Inspiration) + 1 (normal draw 1) = initialHandSize + 1
+        val wordsId = driver.putPermanentOnBattlefield(activePlayer, "Words of War")
+
+        // Advance to draw step on turn 3
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.passPriorityUntil(Step.UPKEEP)
+        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
+        driver.passPriorityUntil(Step.UPKEEP)
+
+        val initialHandSize = driver.getHandSize(activePlayer)
+
+        // Pass through upkeep to reach draw step — normal draw
+        driver.bothPass()
+
         driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
+
+        // Activate once
+        driver.giveMana(activePlayer, Color.RED, 1)
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = wordsId,
+                abilityId = abilityId,
+                targets = listOf(ChosenTarget.Player(opponent))
+            )
+        )
+        driver.bothPass()
+
+        driver.currentStep shouldBe Step.DRAW
+        driver.state.floatingEffects.size shouldBe 1
+        driver.passPriorityUntil(Step.UPKEEP)
+        driver.state.floatingEffects.size shouldBe 0
+    }
+
+    test("shield only replaces one draw per activation") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of War")
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val wordsId = driver.findPermanent(activePlayer, "Words of War")!!
+
+        // Activate once
+        driver.giveMana(activePlayer, Color.RED, 1)
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = wordsId,
+                abilityId = abilityId,
+                targets = listOf(ChosenTarget.Player(opponent))
+            )
+        )
+        driver.bothPass()
+
+        // Cast Inspiration (draw 2) — 1 draw replaced, 1 normal
+        driver.giveMana(activePlayer, Color.BLUE, 4)
+        val inspiration = driver.putCardInHand(activePlayer, "Inspiration")
+        val handSizeBeforeCast = driver.getHandSize(activePlayer)
+        driver.castSpell(activePlayer, inspiration)
+        driver.bothPass()
+
+        driver.getLifeTotal(opponent) shouldBe 18
+        driver.getHandSize(activePlayer) shouldBe handSizeBeforeCast
+    }
+
+    test("activating for each draw of a multi-draw spell shields each draw") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of War")
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val wordsId = driver.findPermanent(activePlayer, "Words of War")!!
+
+        // Activate 3 times to shield 3 draws
+        driver.giveMana(activePlayer, Color.RED, 3)
+        repeat(3) {
+            driver.submitSuccess(
+                ActivateAbility(
+                    playerId = activePlayer,
+                    sourceId = wordsId,
+                    abilityId = abilityId,
+                    targets = listOf(ChosenTarget.Player(opponent))
+                )
+            )
+            driver.bothPass()
+        }
+
+        // Cast Concentrate (draw 3) — all 3 replaced
+        driver.giveMana(activePlayer, Color.BLUE, 4)
+        val concentrate = driver.putCardInHand(activePlayer, "Concentrate")
+        driver.castSpell(activePlayer, concentrate)
+        driver.bothPass()
+
+        // 3 × 2 damage = 6
+        driver.getLifeTotal(opponent) shouldBe 14
     }
 
     // --- Multiple Words cards tests ---
 
-    fun GameTestDriver.countBears(playerId: com.wingedsheep.sdk.model.EntityId): Int {
+    fun GameTestDriver.countBears(playerId: EntityId): Int {
         return getCreatures(playerId).count { entityId ->
             state.getEntity(entityId)?.get<CardComponent>()?.name == "Bear Token"
         }
@@ -513,62 +447,7 @@ class WordsOfWarTest : FunSpec({
         return driver
     }
 
-    test("multiple Words cards: declining one still prompts for the other on draw step") {
-        val driver = createMultiWordsDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Grizzly Bears" to 40),
-            startingLife = 20
-        )
-
-        val activePlayer = driver.activePlayer!!
-
-        driver.putPermanentOnBattlefield(activePlayer, "Words of War")
-        driver.putPermanentOnBattlefield(activePlayer, "Words of Wilding")
-        driver.putPermanentOnBattlefield(activePlayer, "Forest")
-        driver.putPermanentOnBattlefield(activePlayer, "Forest")
-
-        // Advance to draw step on turn 3
-        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-
-        val initialHandSize = driver.getHandSize(activePlayer)
-
-        // Pass through upkeep to reach draw step
-        driver.bothPass()
-        driver.state.step shouldBe Step.DRAW
-
-        // First prompt - decline it (could be either Words card)
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        val firstPrompt = driver.pendingDecision as SelectManaSourcesDecision
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Should get prompted for the other Words card
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        val secondPrompt = driver.pendingDecision as SelectManaSourcesDecision
-        secondPrompt.prompt shouldNotBe firstPrompt.prompt // Different card
-
-        // Accept the second one
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // The second prompt could be Words of War (needs targets) or Words of Wilding (no targets)
-        if (driver.pendingDecision is ChooseTargetsDecision) {
-            // It was Words of War - pick opponent as target
-            val opponent = driver.getOpponent(activePlayer)
-            driver.submitTargetSelection(activePlayer, listOf(opponent))
-            // Draw replaced with damage, no card drawn
-            driver.getHandSize(activePlayer) shouldBe initialHandSize
-            driver.getLifeTotal(opponent) shouldBe 18
-        } else {
-            // It was Words of Wilding - draw replaced with Bear
-            driver.getHandSize(activePlayer) shouldBe initialHandSize
-            driver.countBears(activePlayer) shouldBe 1
-        }
-    }
-
-    test("multiple Words cards: declining all results in normal draw") {
+    test("multiple Words cards: activating one replaces the draw step draw") {
         val driver = createMultiWordsDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -581,85 +460,96 @@ class WordsOfWarTest : FunSpec({
         driver.putPermanentOnBattlefield(activePlayer, "Words of War")
         driver.putPermanentOnBattlefield(activePlayer, "Words of Wilding")
         driver.putPermanentOnBattlefield(activePlayer, "Forest")
-        driver.putPermanentOnBattlefield(activePlayer, "Forest")
 
-        // Advance to draw step on turn 3
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
 
-        val initialHandSize = driver.getHandSize(activePlayer)
+        val warId = driver.findPermanent(activePlayer, "Words of War")!!
 
-        // Pass through upkeep to reach draw step
-        driver.bothPass()
-        driver.state.step shouldBe Step.DRAW
-
-        // Decline first prompt
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Decline second prompt
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Both declined - normal draw happens
-        driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
-        driver.getLifeTotal(opponent) shouldBe 20
-        driver.countBears(activePlayer) shouldBe 0
-    }
-
-    test("multiple Words cards: spell draw prompts for each card per draw") {
-        val driver = createMultiWordsDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Grizzly Bears" to 40),
-            startingLife = 20
+        // Activate only Words of War
+        driver.giveMana(activePlayer, Color.RED, 1)
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = warId,
+                abilityId = abilityId,
+                targets = listOf(ChosenTarget.Player(opponent))
+            )
         )
+        driver.bothPass()
 
-        val activePlayer = driver.activePlayer!!
-        val opponent = driver.getOpponent(activePlayer)
-
-        driver.putPermanentOnBattlefield(activePlayer, "Words of War")
-        driver.putPermanentOnBattlefield(activePlayer, "Words of Wilding")
-
-        // Give untapped lands for mana to pay for activations
-        driver.putPermanentOnBattlefield(activePlayer, "Forest")
-        driver.putPermanentOnBattlefield(activePlayer, "Forest")
-
-        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-
-        // Give mana to cast Inspiration ({3}{U})
+        // Cast Inspiration (draw 2) — 1 draw replaced, 1 normal
         driver.giveMana(activePlayer, Color.BLUE, 4)
-
-        val initialHandSize = driver.getHandSize(activePlayer)
-
-        // Cast Inspiration (draw 2)
         val inspiration = driver.putCardInHand(activePlayer, "Inspiration")
         driver.castSpell(activePlayer, inspiration)
         driver.bothPass()
 
-        // Draw 1: First prompt - decline
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Draw 1: Second prompt (other card) - decline too
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Draw 1 happened normally. Draw 2: First prompt - decline
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Draw 2: Second prompt (other card) - decline too
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Both draws happened normally
-        // initialHandSize + 1 (putCardInHand) - 1 (cast Inspiration) + 2 (normal draws) = initialHandSize + 2
-        driver.getHandSize(activePlayer) shouldBe initialHandSize + 2
-        driver.getLifeTotal(opponent) shouldBe 20
+        // Words of War replaced one draw with 2 damage
+        driver.getLifeTotal(opponent) shouldBe 18
+        // Words of Wilding (unactivated) did nothing
         driver.countBears(activePlayer) shouldBe 0
+    }
+
+    test("multiple Words cards: both activated stack shields for spell draws") {
+        val driver = createMultiWordsDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        val opponent = driver.getOpponent(activePlayer)
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of War")
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Wilding")
+
+        // Lands for mana
+        driver.putPermanentOnBattlefield(activePlayer, "Forest")
+        driver.putPermanentOnBattlefield(activePlayer, "Forest")
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val warId = driver.findPermanent(activePlayer, "Words of War")!!
+        val wildingId = driver.findPermanent(activePlayer, "Words of Wilding")!!
+        val warAbility = WordsOfWar.activatedAbilities.first().id
+        val wildingAbility = WordsOfWilding.activatedAbilities.first().id
+
+        // Activate both Words cards
+        driver.giveMana(activePlayer, Color.RED, 1)
+        driver.giveMana(activePlayer, Color.GREEN, 1)
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = warId,
+                abilityId = warAbility,
+                targets = listOf(ChosenTarget.Player(opponent))
+            )
+        )
+        driver.bothPass()
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = wildingId,
+                abilityId = wildingAbility,
+                targets = emptyList()
+            )
+        )
+        driver.bothPass()
+
+        // Cast Inspiration (draw 2) — both draws replaced by one shield each
+        driver.giveMana(activePlayer, Color.BLUE, 4)
+        val inspiration = driver.putCardInHand(activePlayer, "Inspiration")
+        driver.castSpell(activePlayer, inspiration)
+        driver.bothPass()
+
+        // Two different shields (War + Wilding) — engine pauses for choice (CR 616.1e)
+        val warIdx = (driver.pendingDecision as ChooseOptionDecision)
+            .options.indexOfFirst { it.contains("War", ignoreCase = true) }
+        driver.submitDecision(activePlayer, OptionChosenResponse(driver.pendingDecision!!.id, warIdx))
+
+        // Words of War replaced draw 1 with 2 damage to opponent
+        driver.getLifeTotal(opponent) shouldBe 18
+        // Words of Wilding replaced draw 2 with a Bear token
+        driver.countBears(activePlayer) shouldBe 1
     }
 
     test("draw step does not prompt when Words of War activation is not affordable") {

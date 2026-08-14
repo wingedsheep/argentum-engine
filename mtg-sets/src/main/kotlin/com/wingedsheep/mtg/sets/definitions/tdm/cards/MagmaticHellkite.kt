@@ -43,7 +43,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *  - Gather basic lands from *the land controller's* library (after destruction the
  *    relational player reference falls back to the land's owner, which for a land equals
  *    its controller, so the correct opponent still searches).
- *  - That player selects up to one (a search may always fail to find — CR 701.18c).
+ *  - That player selects up to one (a search may always fail to find — CR 701.23b).
  *  - The chosen basic enters *their* battlefield tapped with a stun counter via
  *    [MoveCollectionEffect.addCounterType].
  *  - Then that player shuffles.

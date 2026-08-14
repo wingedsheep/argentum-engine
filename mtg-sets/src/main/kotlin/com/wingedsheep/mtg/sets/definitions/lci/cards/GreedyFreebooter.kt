@@ -29,7 +29,7 @@ val GreedyFreebooter = card("Greedy Freebooter") {
         trigger = Triggers.Dies
         effect = Effects.Composite(
             Patterns.Library.scry(1),
-            Effects.CreateTreasure(imageUri = LciTokenArt.TREASURE)
+            Effects.CreateTreasure()
         )
     }
     metadata {

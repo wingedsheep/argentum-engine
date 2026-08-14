@@ -42,7 +42,7 @@ If you're unsure which mode applies, try card-status mode first and fall back to
      ...
    ```
 3. Collect every "Missing" entry (both draft and extras sections) into a single numbered list (0-indexed). Continue to Step 3.
-4. **If `scripts/card-status` errors with "no set found with code X"**: the set isn't scaffolded under `mtg-sets/.../definitions/<code>/` yet. Stop and tell the user — they'll need to scaffold the empty set first (an empty `<Set>Set.kt` registered via ServiceLoader) before this mode can work. Do NOT fall back to picking a card from Scryfall directly; the add-card skill assumes the set is registered.
+4. **If `scripts/card-status` errors with "no set found with code X"**: the set isn't scaffolded under `mtg-sets/.../definitions/<code>/` yet. Stop and tell the user — they'll need to scaffold the empty set first (an empty `<Set>Set.kt` under `definitions/<code>/`, which `MtgSetCatalog` discovers on the classpath) before this mode can work. Do NOT fall back to picking a card from Scryfall directly; the add-card skill assumes the set is scaffolded.
 
 ## Step 3: Pick a truly random card
 
@@ -76,5 +76,5 @@ This handles: Scryfall lookup, card definition, set registration, effect impleme
 
 After the add-card skill completes:
 
-- **Backlog mode**: confirm the `cards.md` file has the card checked off, the colour count in the header is updated, and the total implementation count is updated (add-card handles this in its Step 9).
+- **Backlog mode**: confirm the `cards.md` file has the card checked off, the colour count in the header is updated, and the total implementation count is updated (add-card does this in its final step, via `just fix-backlog`).
 - **Card-status mode**: re-run `scripts/card-status --set <CODE>` and confirm the implemented count went up by 1 and the picked card no longer appears in `--list` output. No backlog file to update.

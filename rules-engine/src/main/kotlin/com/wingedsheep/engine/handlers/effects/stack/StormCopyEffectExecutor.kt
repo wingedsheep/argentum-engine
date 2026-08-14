@@ -373,7 +373,7 @@ class StormCopyEffectExecutor(
                     )
                 }
                 if (hasRiders) {
-                    updated = updated.with(tokenRiders!!)
+                    updated = updated.with(tokenRiders)
                 }
                 updated
             }

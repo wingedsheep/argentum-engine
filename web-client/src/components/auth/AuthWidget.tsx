@@ -1,9 +1,14 @@
 /**
  * Account presence widget for the landing screen — deliberately separate from the navigation
- * buttons so the sign-in state reads as a distinct, persistent affordance. Anchored top-right.
+ * buttons so the sign-in state reads as a distinct, persistent affordance. It occupies the
+ * top-right of the landing top bar, opposite the fullscreen and help controls.
  *
- *  - signed in  → "Signed in as <name>" (opens the profile) + a Log out action
+ *  - signed in  → "Signed in as <name>" (opens the profile), Friends, Stats, and Log out
  *  - anonymous  → a single Log in button that opens the magic-link modal
+ *
+ * Every account-scoped page hangs off this widget rather than off the landing card's navigation
+ * tiers: they are all "things about *your* account", and having them in both places made the card's
+ * BUILD & BROWSE row read as a grab-bag.
  *
  * Renders nothing when the server has accounts disabled, so a no-accounts deployment shows no
  * sign-in UI at all (the whole point — a login form there can only fail).
@@ -59,10 +64,9 @@ export function AuthWidget() {
           </button>
           <button
             type="button"
-            className={styles.logout}
+            className={styles.action}
             onClick={() => navigate('/friends')}
             title="Friends"
-            style={{ position: 'relative' }}
           >
             Friends
             {onlineCount > 0 && (
@@ -113,10 +117,18 @@ export function AuthWidget() {
               </span>
             )}
           </button>
+          <button
+            type="button"
+            className={styles.action}
+            onClick={() => navigate('/stats')}
+            title="Your win rate, ELO and game history"
+          >
+            Stats
+          </button>
           {user.isAdmin && (
             <button
               type="button"
-              className={styles.admin}
+              className={styles.action}
               onClick={() => navigate('/admin')}
               title="Open the admin dashboard"
             >

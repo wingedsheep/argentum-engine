@@ -23,18 +23,38 @@ import kotlinx.serialization.Serializable
  *
  * The [keyword] field stores the enum name (e.g., "FLYING", "DOESNT_UNTAP")
  * which the engine uses for string-based keyword checks in projected state.
+ *
+ * @property condition When non-null, the granted keyword is only *live* while this condition
+ *   holds. This is not a gate on whether the grant happens — the grant always happens and lasts
+ *   for [duration]; the condition rides along on the resulting continuous effect and is
+ *   re-evaluated on every projection, exactly like the condition of a printed
+ *   [com.wingedsheep.sdk.scripting.ConditionalStaticAbility]. It is the durational sibling of a
+ *   printed "as long as …, this creature has …" clause, and the way to model a quoted conditional
+ *   ability handed out by an animate effect: Restless Spire's "{U}{R}: … becomes a 2/1 … creature
+ *   with 'During your turn, this creature has first strike.'" composes
+ *   `BecomeCreature(...)` with `GrantKeyword(FIRST_STRIKE, Self, EndOfTurn, Conditions.IsYourTurn)`.
+ *   "You" in the condition is the *source's* current controller under projection, so the clause
+ *   correctly stops applying if another player gains control of the permanent mid-turn. Unlike the
+ *   `Duration.While…` family this never latches off: the keyword comes back if the condition
+ *   becomes true again within [duration].
  */
 @SerialName("GrantKeyword")
 @Serializable
 data class GrantKeywordEffect(
     val keyword: String,
     val target: EffectTarget,
-    val duration: Duration = Duration.EndOfTurn
+    val duration: Duration = Duration.EndOfTurn,
+    val condition: com.wingedsheep.sdk.scripting.conditions.Condition? = null
 ) : Effect {
-    constructor(keyword: Keyword, target: EffectTarget, duration: Duration = Duration.EndOfTurn) :
-        this(keyword.name, target, duration)
+    constructor(
+        keyword: Keyword,
+        target: EffectTarget,
+        duration: Duration = Duration.EndOfTurn,
+        condition: com.wingedsheep.sdk.scripting.conditions.Condition? = null
+    ) : this(keyword.name, target, duration, condition)
 
     override val description: String = buildString {
+        if (condition != null) append("${condition.description.replaceFirstChar { it.uppercase() }}, ")
         append("${target.description} gains ${keyword.lowercase().replace('_', ' ')}")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
@@ -195,6 +215,37 @@ data class GrantFlashbackEffect(
     override val description: String = buildString {
         append("${target.description} gains flashback")
         append(if (cost != null) " $cost" else " (the flashback cost is equal to its mana cost)")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+}
+
+/**
+ * Grant Embalm (CR 702.128) to a target creature card in a graveyard.
+ * "Target creature card in your graveyard gains embalm until end of turn. The embalm cost is equal
+ * to its mana cost." — Cursecloth Wrappings.
+ *
+ * The runtime sibling of printed embalm ([com.wingedsheep.sdk.dsl.embalm]). Embalm is an ordinary
+ * graveyard-*activated* ability, not an alternative way to cast, so unlike [GrantHarmonizeEffect] /
+ * [GrantFlashbackEffect] this records a plain granted **activated** ability keyed to the card
+ * entity — the same object [com.wingedsheep.sdk.dsl.embalmAbility] builds for a printed embalm
+ * card — which the engine's zone-activated-ability enumerator surfaces while the card sits in the
+ * graveyard. Nothing about the cast pipeline is involved.
+ *
+ * @property target The creature card (in a graveyard) gaining embalm
+ * @property cost The embalm cost. `null` (the default) means "equal to the card's mana cost" per
+ *   Cursecloth Wrappings; a non-null value grants a fixed embalm cost for any future card.
+ * @property duration How long the grant lasts (until end of turn for Cursecloth Wrappings)
+ */
+@SerialName("GrantEmbalm")
+@Serializable
+data class GrantEmbalmEffect(
+    val target: EffectTarget,
+    val cost: ManaCost? = null,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        append("${target.description} gains embalm")
+        append(if (cost != null) " $cost" else " (the embalm cost is equal to its mana cost)")
         if (duration.description.isNotEmpty()) append(" ${duration.description}")
     }
 }

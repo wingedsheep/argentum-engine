@@ -188,12 +188,27 @@ export function CardSelectionDecision({
     return manaValueFromCost(typeof cost === 'string' ? cost : '')
   }
 
-  // TotalManaValueAtMost: running sum of selected cards' mana values.
+  // Running sum of selected cards' mana values — used by both the `maxTotalManaValue` cap
+  // (Scout for Survivors) and the `minTotalManaValue` floor (collect evidence N, CR 701.59a).
   const totalManaValueSelected = useMemo(() => {
-    if (decision.maxTotalManaValue == null) return 0
+    if (decision.maxTotalManaValue == null && decision.minTotalManaValue == null) return 0
     return selectedCards.reduce((sum, id) => sum + manaValueForCard(id), 0)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [decision.maxTotalManaValue, selectedCards, decision.cardInfo, gameState?.cards])
+  }, [
+    decision.maxTotalManaValue,
+    decision.minTotalManaValue,
+    selectedCards,
+    decision.cardInfo,
+    gameState?.cards,
+  ])
+
+  // Collect evidence (CR 701.59a): the gate is the summed mana value, not the card count. An
+  // *empty* selection is exempt so an optional collection (a ward cost you may decline) can still
+  // be declined via "Select None" — the server applies the same exemption.
+  const meetsManaValueFloor =
+    decision.minTotalManaValue == null ||
+    selectedCards.length === 0 ||
+    totalManaValueSelected >= decision.minTotalManaValue
 
   // TotalPowerAtMost: running sum of selected creatures' (projected) power.
   const totalPowerSelected = useMemo(() => {
@@ -297,7 +312,9 @@ export function CardSelectionDecision({
       )}
 
       <p className={styles.hint}>
-        {conditionalMinimums.length > 0
+        {decision.minTotalManaValue != null
+          ? `Select any number of cards with total mana value ${decision.minTotalManaValue} or greater`
+          : conditionalMinimums.length > 0
           ? `Selected: ${selectedCards.length} / ${requiredMinimum}; fewer is allowed if the selection matches the requirement`
           : decision.minSelections === 0
           ? `Select up to ${decision.maxSelections}`
@@ -367,6 +384,21 @@ export function CardSelectionDecision({
           }}
         >
           Total mana value: {totalManaValueSelected} / {decision.maxTotalManaValue}
+        </div>
+      )}
+
+      {decision.minTotalManaValue != null && (
+        <div
+          style={{
+            margin: '0 0 8px',
+            fontSize: 12,
+            opacity: 0.85,
+            color:
+              totalManaValueSelected >= decision.minTotalManaValue ? '#7ddba3' : '#ffd668',
+          }}
+        >
+          Total mana value: {totalManaValueSelected} / {decision.minTotalManaValue}
+          {totalManaValueSelected < decision.minTotalManaValue && ' (need more)'}
         </div>
       )}
 
@@ -450,7 +482,7 @@ export function CardSelectionDecision({
         </button>
         <button
           onClick={handleConfirm}
-          disabled={!canConfirm}
+          disabled={!canConfirm || !meetsManaValueFloor}
           className={styles.confirmButton}
         >
           {decision.minSelections === 0 && selectedCards.length === 0

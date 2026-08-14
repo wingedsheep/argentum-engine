@@ -48,7 +48,7 @@ class CrashingWaveScenarioTest : ScenarioTestBase() {
             val oppB = game.findPermanent("Iguana Parrot")!!
 
             val action = game.getLegalActions(1).firstOrNull {
-                it.actionType == "CastSpell" && it.action is CastSpell && it.isAffordable && it.hasWaterbend
+                it.actionType == "CastSpell" && it.action is CastSpell && it.isAffordable && it.hasTapForGeneric
             }
             withClue("Crashing Wave should be offered as an X-carrying waterbend cast") {
                 action shouldNotBe null
@@ -59,7 +59,7 @@ class CrashingWaveScenarioTest : ScenarioTestBase() {
             val cast = (action!!.action as CastSpell).copy(
                 xValue = 2,
                 targets = listOf(ChosenTarget.Permanent(oppA), ChosenTarget.Permanent(oppB)),
-                alternativePayment = AlternativePaymentChoice(waterbendPermanents = tappers.toSet()),
+                alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = tappers.toSet()),
             )
             val result = game.execute(cast)
             withClue("casting Crashing Wave for waterbend {X=2} should succeed: ${result.error}") {

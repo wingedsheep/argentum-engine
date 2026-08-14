@@ -489,7 +489,7 @@ val AvacynianPriest = card("Avacynian Priest") {
         cost = Costs.Composite(Costs.Mana("{1}"), Costs.Tap)
         val t = target(
             "target",
-            TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.notSubtype(Subtype("Human"))))
+            TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.notSubtype(Subtype.HUMAN)))
         )
         effect = Effects.Tap(t)
     }
@@ -2476,6 +2476,7 @@ val EliteInquisitor = card("Elite Inquisitor") {
 package com.wingedsheep.mtg.sets.generated.demo.cards
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -2500,7 +2501,7 @@ val EndlessRanksOfTheDead = card("Endless Ranks of the Dead") {
         trigger = Triggers.YourUpkeep
         effect = Effects.CreateToken(
             count = DynamicAmount.Divide(
-                DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature.withSubtype("Zombie")),
+                DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature.withSubtype(Subtype.ZOMBIE)),
                 DynamicAmount.Fixed(2),
                 roundUp = false
             ),
@@ -4275,11 +4276,11 @@ val IntangibleVirtue = card("Intangible Virtue") {
         ability = ModifyStats(
             powerBonus = 1,
             toughnessBonus = 1,
-            filter = GroupFilter(GameObjectFilter.Creature.youControl())
+            filter = GroupFilter(GameObjectFilter.Creature.token().youControl())
         )
     }
     staticAbility {
-        ability = GrantKeyword(Keyword.VIGILANCE, GroupFilter(GameObjectFilter.Creature.youControl()))
+        ability = GrantKeyword(Keyword.VIGILANCE, GroupFilter(GameObjectFilter.Creature.token().youControl()))
     }
     metadata {
         rarity = Rarity.UNCOMMON
@@ -6284,7 +6285,7 @@ val PreyUpon = card("Prey Upon") {
     oracleText = "Target creature you control fights target creature you don't control. (Each deals damage equal to its power to the other.)"
     spell {
         val t1 = target("t1", TargetCreature(filter = TargetFilter.Creature.youControl()))
-        val t2 = target("t2", TargetCreature(filter = TargetFilter.Creature.youControl()))
+        val t2 = target("t2", TargetCreature(filter = TargetFilter.Creature.opponentControls()))
         effect = Effects.Fight(t1, t2)
     }
     metadata {
@@ -6553,7 +6554,7 @@ val ReaperFromTheAbyss = card("Reaper from the Abyss") {
         triggerCondition = Conditions.CreatureDiedThisTurn
         val t = target(
             "target",
-            TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.notSubtype(Subtype("Demon"))))
+            TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.notSubtype(Subtype.DEMON)))
         )
         effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
     }
@@ -7414,6 +7415,7 @@ val SkirsdagHighPriest = card("Skirsdag High Priest") {
 
 package com.wingedsheep.mtg.sets.generated.demo.cards
 
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
@@ -7446,8 +7448,8 @@ val SlayerOfTheWicked = card("Slayer of the Wicked") {
             TargetCreature(
                 filter = TargetFilter(
                     GameObjectFilter.Creature.withSubtype(
-                        "Vampire"
-                    ) or GameObjectFilter.Creature.withSubtype("Werewolf") or GameObjectFilter.Creature.withSubtype("Zombie")
+                        Subtype.VAMPIRE
+                    ) or GameObjectFilter.Creature.withSubtype(Subtype.WEREWOLF) or GameObjectFilter.Creature.withSubtype(Subtype.ZOMBIE)
                 )
             )
         )
@@ -8573,7 +8575,7 @@ val UnbreathingHorde = card("Unbreathing Horde") {
     replacementEffect(
         EntersWithDynamicCounters(
             count = DynamicAmount.Add(
-                DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature.withSubtype("Zombie")),
+                DynamicAmount.AggregateBattlefield(Player.You, GameObjectFilter.Creature.withSubtype(Subtype.ZOMBIE)),
                 DynamicAmount.Count(Player.You, Zone.GRAVEYARD, GameObjectFilter.Creature.withSubtype(Subtype.ZOMBIE))
             )
         )
@@ -8870,8 +8872,8 @@ val VictimOfNight = card("Victim of Night") {
             TargetCreature(
                 filter = TargetFilter(
                     GameObjectFilter.Creature.notSubtype(
-                        Subtype("Vampire")
-                    ).notSubtype(Subtype("Werewolf")).notSubtype(Subtype("Zombie"))
+                        Subtype.VAMPIRE
+                    ).notSubtype(Subtype.WEREWOLF).notSubtype(Subtype.ZOMBIE)
                 )
             )
         )

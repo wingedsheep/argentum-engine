@@ -17,7 +17,7 @@ import io.kotest.matchers.shouldBe
  * "As an additional cost to cast this spell, behold a Dragon or pay {1}.
  *  Target creature gets -3/-3 until end of turn."
  *
- * Exercises the `AdditionalCost.BeholdOrPay` cost (Dragon filter) plus the {1}-mana
+ * Exercises the behold leg of `AdditionalCost.OrPay` (Dragon filter) plus the {1}-mana
  * alternative, with the -3/-3 spell effect on a targeted creature.
  */
 class CausticExhaleScenarioTest : ScenarioTestBase() {

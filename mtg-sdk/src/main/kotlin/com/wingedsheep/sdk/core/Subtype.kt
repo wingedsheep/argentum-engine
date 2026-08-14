@@ -131,6 +131,7 @@ value class Subtype(val value: String) {
         val MINION = Subtype("Minion")
         val MINOTAUR = Subtype("Minotaur")
         val MOONFOLK = Subtype("Moonfolk")
+        val MOUNT = Subtype("Mount")
         val MOUSE = Subtype("Mouse")
         val MUTANT = Subtype("Mutant")
         val MYR = Subtype("Myr")
@@ -207,6 +208,7 @@ value class Subtype(val value: String) {
         val SAGA = Subtype("Saga")
 
         // Spell (instant/sorcery) subtypes
+        val ARCANE = Subtype("Arcane")
         val LESSON = Subtype("Lesson")
 
         // Artifact subtypes
@@ -215,6 +217,9 @@ value class Subtype(val value: String) {
         val LANDER = Subtype("Lander")
         val TREASURE = Subtype("Treasure")
         val VEHICLE = Subtype("Vehicle")
+
+        // Battle subtypes (CR 205.3q). Every printed battle is a Siege (CR 310.11).
+        val SIEGE = Subtype("Siege")
 
         // Planeswalker subtypes
         val AJANI = Subtype("Ajani")

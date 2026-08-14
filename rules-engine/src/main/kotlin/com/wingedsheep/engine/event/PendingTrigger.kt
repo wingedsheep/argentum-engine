@@ -33,7 +33,13 @@ data class PendingTrigger(
      * [com.wingedsheep.engine.core.SagaChapterResolvedEvent] (the cue for "whenever the final
      * chapter ability of a Saga you control resolves" — Tom Bombadil).
      */
-    val sagaChapterInfo: SagaChapterInfo? = null
+    val sagaChapterInfo: SagaChapterInfo? = null,
+    /**
+     * Pipeline state carried from a `ReflexiveTriggerEffect`'s action half into this synthetic
+     * reflexive ability, threaded onto [com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent]
+     * when this pending trigger is placed on the stack. Null for ordinary triggered abilities.
+     */
+    val carriedPipeline: com.wingedsheep.engine.handlers.PipelineState? = null
 )
 
 /**

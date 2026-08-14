@@ -173,6 +173,7 @@ object PermanentEntryReplacements {
             toughnessOverride = effect.toughnessOverride,
             exileCopiedCard = effect.exileCopiedCard,
             tappedIfCopied = effect.tappedIfCopied,
+            additionalCounters = effect.additionalCounters,
         )
         val paused = state.pushContinuation(continuation).withPendingDecision(decision)
         return ExecutionResult.paused(paused, decision, carryEvents)
@@ -203,6 +204,8 @@ object PermanentEntryReplacements {
         fromZone: Zone?,
         carryEvents: List<GameEvent> = emptyList(),
         cardNameOptions: List<String> = emptyList(),
+        syntheticRiot: Boolean = false,
+        syntheticRiotRemaining: Int = 0,
     ): ExecutionResult? {
         val chooserId = when (choice.chooser) {
             Player.AnOpponent -> state.getOpponents(controllerId).firstOrNull() ?: controllerId
@@ -262,9 +265,8 @@ object PermanentEntryReplacements {
             ChoiceType.CREATURE_ON_BATTLEFIELD -> {
                 val creatures = state.getBattlefield().filter { eid ->
                     if (eid == entityId) return@filter false
-                    val container = state.getEntity(eid) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
-                    state.projectedState.getController(eid) == controllerId && card.typeLine.isCreature
+                    state.projectedState.getController(eid) == controllerId &&
+                        state.projectedState.isCreature(eid)
                 }
                 if (creatures.isEmpty()) return null
                 val id = "choose-creature-enters-${entityId.value}"
@@ -291,7 +293,10 @@ object PermanentEntryReplacements {
 
             ChoiceType.MODE -> {
                 if (choice.modeOptions.isEmpty()) return null
-                val id = "choose-mode-enters-${entityId.value}"
+                // A permanent granted multiple riot instances re-pauses on the same entity; suffix
+                // the id with the remaining count so each instance's decision is distinct (702.136b).
+                val id = "choose-mode-enters-${entityId.value}" +
+                    if (syntheticRiot) "-riot$syntheticRiotRemaining" else ""
                 pause(
                     ChooseOptionDecision(
                         id = id,
@@ -309,7 +314,9 @@ object PermanentEntryReplacements {
                         controllerId = controllerId,
                         choiceType = ChoiceType.MODE,
                         modeOptionIds = choice.modeOptions.map { it.id },
-                        fromZone = fromZone
+                        fromZone = fromZone,
+                        syntheticRiot = syntheticRiot,
+                        syntheticRiotRemaining = syntheticRiotRemaining
                     )
                 )
             }
@@ -375,9 +382,7 @@ object PermanentEntryReplacements {
                     revealOpponentHandForEntersChoice(state, controllerId)
                 } else state to emptyList()
                 val id = "choose-card-name-enters-${entityId.value}"
-                val prompt = if (choice.cardNamePool == CardNamePool.ANY) {
-                    "Choose a card name"
-                } else "Choose a land card name"
+                val prompt = choice.cardNamePool.prompt
                 val decision = ChooseOptionDecision(
                     id = id,
                     playerId = chooserId,

@@ -1,0 +1,32 @@
+{
+  "player1Name": "Werewolf Player",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Lightning Bolt", "Lightning Bolt"],
+    "battlefield": [
+      {"name": "Village Messenger", "summoningSickness": false},
+      {"name": "Hinterland Logger", "summoningSickness": false},
+      {"name": "Villagers of Estwald", "summoningSickness": false},
+      {"name": "Mountain"},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": ["Forest", "Forest", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 2,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": ["UPKEEP", "PRECOMBAT_MAIN"],
+  "player2StopAtSteps": ["UPKEEP"],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

@@ -1,3 +1,90 @@
+// Abyssal Harvester
+{
+    "name": "Abyssal Harvester",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Demon Warlock",
+    "oracleText": "{T}: Exile target creature card from a graveyard that was put there this turn. Create a token that's a copy of it, except it's a Nightmare in addition to its other types. Then exile all other Nightmare tokens you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "permanent token Nightmare ctrl:you"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "creature card in a graveyard that was put there this turn"
+                            },
+                            "destination": "Exile",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "creature card in a graveyard that was put there this turn"
+                            },
+                            "addedSubtypes": [
+                                "Nightmare"
+                            ]
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "PutIntoGraveyardThisTurn"
+                                ]
+                            },
+                            "zone": "Graveyard"
+                        },
+                        "id": "creature card in a graveyard that was put there this turn"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "rarity": "RARE",
+        "artist": "Diana Franco",
+        "flavorText": "\"Till the soil, spare no soul. / Neath the darkness, nightmares grow.\"\n—Children's nursery rhyme",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2e0f538-5825-47e9-883c-3ec6fd5b25ea.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Alesha, Who Laughs at Fate
 {
     "name": "Alesha, Who Laughs at Fate",
@@ -1442,6 +1529,177 @@
     ]
 }
 
+// Chandra, Flameshaper
+{
+    "name": "Chandra, Flameshaper",
+    "manaCost": "{5}{R}{R}",
+    "typeLine": "Legendary Planeswalker — Chandra",
+    "oracleText": "+2: Add {R}{R}{R}. Exile the top three cards of your library. Choose one. You may play that card this turn.\n+1: Create a token that's a copy of target creature you control, except it has haste and \"At the beginning of the end step, sacrifice this token.\"\n−4: Chandra deals 8 damage divided as you choose among any number of target creatures and/or planeswalkers.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "RED",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected3",
+                            "prompt": "Choose a card you may play this turn"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "selected3"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature you control"
+                    },
+                    "addedKeywords": [
+                        "HASTE"
+                    ],
+                    "sacrificeAtStep": "END"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "target creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -4
+                },
+                "effect": {
+                    "type": "DividedDamage",
+                    "totalDamage": 8,
+                    "maxTargets": 8
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "unlimited": true,
+                        "filter": {
+                            "baseFilter": "creature|planeswalker"
+                        },
+                        "id": "any number of target creatures and/or planeswalkers",
+                        "dynamicMaxCount": {
+                            "type": "Fixed",
+                            "amount": 8
+                        }
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "rarity": "MYTHIC",
+        "artist": "Mark Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a22d21ec-0fb3-4574-a803-6442ec13167e.jpg?1783909105",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Chandra's first ability is not a mana ability. It uses the stack and players can respond to it."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You pay all costs and follow all timing rules for cards played with the permission granted by Chandra's first ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The token created by Chandra's second ability copies exactly what was printed on the original creature and nothing else, with the listed exceptions (unless that creature is copying something else or is a token; see below). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, or so on. If it is a Vehicle, it is not crewed."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If the copied creature is a token, the token that's created copies the original characteristics of that token as stated by the effect that created the token, with the listed exceptions."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If the copied creature is copying something else, then the token enters as whatever that creature copied, with the listed exceptions."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "Any enters abilities of the copied creature will trigger when the token enters. Any \"as [this permanent] enters\" or \"[this permanent] enters with\" abilities of the copied creature will also work."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You choose the targets and how damage will be divided as you activate Chandra's last ability. Each chosen target must receive at least 1 damage."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If some of the targets of Chandra's last ability become illegal, the original division of damage still applies, but the damage that would have been dealt to illegal targets isn't dealt at all."
+            }
+        ]
+    },
+    "startingLoyalty": 6,
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Claws Out
 {
     "name": "Claws Out",
@@ -1748,6 +2006,133 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Curator of Destinies
+{
+    "name": "Curator of Destinies",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Creature — Sphinx",
+    "oracleText": "This spell can't be countered.\nFlying\nWhen this creature enters, look at the top five cards of your library and separate them into a face-down pile and a face-up pile. An opponent chooses one of those piles. Put that pile into your hand and the other into your graveyard.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 5
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "ConditionalOnCollection",
+                            "collection": "looked",
+                            "ifNotEmpty": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "looked",
+                                        "selection": "ChooseAnyNumber",
+                                        "storeSelected": "faceUp",
+                                        "storeRemainder": "faceDown",
+                                        "prompt": "Separate the top five cards into a face-up pile and a face-down pile. The cards you select are placed face up; the rest stay face down.",
+                                        "selectedLabel": "Face-up pile",
+                                        "remainderLabel": "Face-down pile",
+                                        "showAllCards": true,
+                                        "alwaysPrompt": true
+                                    },
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromVariable",
+                                            "variableName": "faceUp"
+                                        },
+                                        "storeAs": "faceUpRevealed",
+                                        "revealed": true
+                                    },
+                                    {
+                                        "type": "ChoosePile",
+                                        "pileA": "faceUpRevealed",
+                                        "pileB": "faceDown",
+                                        "pileALabel": "Face-up pile",
+                                        "pileBLabel": "Face-down pile",
+                                        "chooser": "Opponent",
+                                        "storeChosenAs": "chosenPile4",
+                                        "storeOtherAs": "otherPile4",
+                                        "prompt": "Choose a pile. That pile goes to your opponent's hand; the other goes to their graveyard."
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "chosenPile4",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Hand"
+                                        }
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "otherPile4",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Ralph Horsley",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9ff79da7-c3f7-4541-87a0-503544c699b5.jpg?1783909120",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "A spell or ability that counters spells can still target Curator of Destinies. When that spell or ability resolves, Curator of Destinies won't be countered, but any additional effects of the countering spell or ability will still happen."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You may split the cards into one pile of five and one pile of zero. The pile of five cards could be the face-up pile or the face-down pile. The opponent may choose the empty pile to be put into your hand."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You decide which opponent chooses the pile while resolving Curator of Destinies's last ability."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If the opponent chooses the face-down pile to be put into your hand, you don't have to reveal the cards in that pile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -4832,6 +5217,364 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Kaito, Cunning Infiltrator
+{
+    "name": "Kaito, Cunning Infiltrator",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Kaito",
+    "oracleText": "Whenever a creature you control deals combat damage to a player, put a loyalty counter on Kaito.\n+1: Up to one target creature you control can't be blocked this turn. Draw a card, then discard a card.\n−2: Create a 2/1 blue Ninja creature token.\n−9: You get an emblem with \"Whenever a player casts a spell, you create a 2/1 blue Ninja creature token.\"",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer",
+                    "sourceFilter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "loyalty",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever a creature you control deals combat damage to a player, put a loyalty counter on Kaito."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "CANT_BE_BLOCKED",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one target creature you control"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GatherCards",
+                                            "source": {
+                                                "type": "FromZone",
+                                                "zone": "Hand"
+                                            },
+                                            "storeAs": "hand"
+                                        },
+                                        {
+                                            "type": "SelectFromCollection",
+                                            "from": "hand",
+                                            "selection": {
+                                                "type": "ChooseExactly",
+                                                "count": {
+                                                    "type": "Fixed",
+                                                    "amount": 1
+                                                }
+                                            },
+                                            "storeSelected": "discarded",
+                                            "prompt": "Choose 1 card to discard"
+                                        },
+                                        {
+                                            "type": "MoveCollection",
+                                            "from": "discarded",
+                                            "destination": {
+                                                "type": "ToZone",
+                                                "zone": "Graveyard"
+                                            },
+                                            "moveType": "Discard"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "up to one target creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 1,
+                    "colors": [
+                        "BLUE"
+                    ],
+                    "creatureTypes": [
+                        "Ninja"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/a/e/aeec04b1-475c-4e55-b72f-327ea5258146.jpg?1783908590"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "ability_4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "ability_5",
+                        "trigger": {
+                            "type": "SpellCastEvent",
+                            "player": "Each"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 1,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Ninja"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/a/e/aeec04b1-475c-4e55-b72f-327ea5258146.jpg?1783908590"
+                        },
+                        "descriptionOverride": "Whenever a player casts a spell, you create a 2/1 blue Ninja creature token."
+                    },
+                    "descriptionOverride": "Whenever a player casts a spell, you create a 2/1 blue Ninja creature token."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "MYTHIC",
+        "artist": "Evyn Fong",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5dabdea9-2015-49b9-853d-4f7e1262eab3.jpg?1783909117",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "You don't have to choose a target for Kaito's first loyalty ability. However, if you do and that target is illegal when the ability tries to resolve, it won't resolve and none of its effects will happen. You won't draw or discard. The loyalty counter that was added to Kaito to pay the cost of the ability will remain on Kaito, however."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The ability of the emblem created by Kaito's last ability resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack without resolving."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Kellan, Planar Trailblazer
+{
+    "name": "Kellan, Planar Trailblazer",
+    "manaCost": "{R}",
+    "typeLine": "Legendary Creature — Human Faerie Scout",
+    "oracleText": "{1}{R}: If Kellan is a Scout, it becomes a Human Faerie Detective and gains \"Whenever Kellan deals combat damage to a player, exile the top card of your library. You may play that card this turn.\"\n{2}{R}: If Kellan is a Detective, it becomes a 3/2 Human Faerie Rogue and gains double strike.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Scout"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Human",
+                                    "Faerie",
+                                    "Detective"
+                                ]
+                            },
+                            {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "ability_2",
+                                    "trigger": {
+                                        "type": "DealsDamageEvent",
+                                        "damageType": "DamageCombat",
+                                        "recipient": "AnyPlayer"
+                                    },
+                                    "effect": {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "TopOfLibrary",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeAs": "kellanImpulseExiled"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "kellanImpulseExiled",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Exile"
+                                                }
+                                            },
+                                            {
+                                                "type": "GrantMayPlayFromExile",
+                                                "from": "kellanImpulseExiled"
+                                            }
+                                        ]
+                                    },
+                                    "descriptionOverride": "Whenever Kellan deals combat damage to a player, exile the top card of your library. You may play that card this turn."
+                                },
+                                "target": "Self",
+                                "duration": "Permanent"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "If Kellan is a Scout, it becomes a Human Faerie Detective and gains \"Whenever Kellan deals combat damage to a player, exile the top card of your library. You may play that card this turn.\""
+            },
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "Self",
+                            "filter": "Detective"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "SetBaseStats",
+                                "target": "Self",
+                                "power": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "toughness": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            {
+                                "type": "SetCreatureSubtypes",
+                                "subtypes": [
+                                    "Human",
+                                    "Faerie",
+                                    "Rogue"
+                                ]
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DOUBLE_STRIKE",
+                                "target": "Self",
+                                "duration": "Permanent"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "If Kellan is a Detective, it becomes a 3/2 Human Faerie Rogue and gains double strike."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "RARE",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f46a9329-7b91-441d-8653-50c1152c9120.jpg?1783909101",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Neither of these abilities have durations. If one of them resolves, it will remain in effect until the game ends, Kellan leaves the battlefield, or some subsequent effect changes its characteristics, whichever comes first."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "Kellan's abilities overwrite its existing creature types. For example, once Kellan's first ability resolves, if he was a Scout when it resolved, Kellan will be a Human Faerie Detective. He won't have the Scout creature type."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You can activate Kellan's abilities regardless of what creature types he currently has. Each ability checks Kellan's creature types when it resolves. If Kellan doesn't have the appropriate creature type at that time, the ability will do nothing."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The effects from Kellan's abilities overwrite other effects that set power and/or toughness if and only if those effects existed before the ability resolved. They will not overwrite effects that modify power or toughness without setting it (whether from a static ability, counters, or a resolved spell or ability), nor will they overwrite effects that set power and toughness which come into existence after they resolve. Effects that switch the creature's power and toughness are always applied after any other power or toughness changing effects, including these two, regardless of the order in which they are created."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -7986,6 +8729,133 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Tinybones, Bauble Burglar
+{
+    "name": "Tinybones, Bauble Burglar",
+    "manaCost": "{1}{B}",
+    "typeLine": "Legendary Creature — Skeleton Rogue",
+    "oracleText": "Whenever an opponent discards a card, exile it from their graveyard with a stash counter on it.\nDuring your turn, you may play cards you don't own with stash counters on them from exile, and mana of any type can be spent to cast those spells.\n{3}{B}, {T}: Each opponent discards a card. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DiscardEvent",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Exile",
+                    "fromZone": "Graveyard",
+                    "addCounterType": "STASH"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Each opponent discards a card."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayPlayCardsFromExile",
+                "filter": {
+                    "statePredicates": [
+                        {
+                            "type": "HasCounter",
+                            "counterType": "stash"
+                        }
+                    ],
+                    "controllerPredicate": "OwnedByOpponent"
+                },
+                "condition": "IsYourTurn",
+                "withAnyManaType": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "RARE",
+        "artist": "Leonardo Santanna",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff3d85bc-ef2d-4251-baf4-a14bd0cee61e.jpg?1783909107",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "Tinybones's second ability allows you to play all exiled cards you don't own with stash counters on them, regardless of whether they were put there by the Tinybones you currently control or a Tinybones that was previously on the battlefield."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You pay all costs and follow all normal timing rules for cards played with the permission granted by Tinybones's second ability. For example, if the exiled card is a land card, you may play it only during your main phase while the stack is empty."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

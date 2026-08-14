@@ -166,6 +166,188 @@
     ]
 }
 
+// Invasion of Innistrad
+{
+    "name": "Invasion of Innistrad",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nFlash\nWhen this Siege enters, target creature an opponent controls gets -13/-13 until end of turn.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -13
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -13
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature an opponent controls"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "target creature an opponent controls"
+                },
+                "descriptionOverride": "When this Siege enters, target creature an opponent controls gets -13/-13 until end of turn."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Deluge of the Dead",
+        "manaCost": "",
+        "typeLine": "Enchantment",
+        "oracleText": "When this enchantment enters, create two 2/2 black Zombie creature tokens.\n{2}{B}: Exile target card from a graveyard. If it was a creature card, create a 2/2 black Zombie creature token.",
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_2",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "to": "Battlefield"
+                    },
+                    "effect": {
+                        "type": "CreateToken",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "power": 2,
+                        "toughness": 2,
+                        "colors": [
+                            "BLACK"
+                        ],
+                        "creatureTypes": [
+                            "Zombie"
+                        ]
+                    },
+                    "descriptionOverride": "When this enchantment enters, create two 2/2 black Zombie creature tokens."
+                }
+            ],
+            "activatedAbilities": [
+                {
+                    "id": "ability_3",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}{B}"
+                        }
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target card in a graveyard"
+                                },
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.WhenCondition",
+                                    "condition": "TargetIsCreatureCard"
+                                },
+                                "then": {
+                                    "type": "CreateToken",
+                                    "power": 2,
+                                    "toughness": 2,
+                                    "colors": [
+                                        "BLACK"
+                                    ],
+                                    "creatureTypes": [
+                                        "Zombie"
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Graveyard"
+                            },
+                            "id": "target card in a graveyard"
+                        }
+                    ],
+                    "descriptionOverride": "{2}{B}: Exile target card from a graveyard. If it was a creature card, create a 2/2 black Zombie creature token."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "115",
+            "rarity": "MYTHIC",
+            "artist": "Alexey Kruglov",
+            "flavorText": "The eerie magic animating Innistrad's zombies rendered them immune to phyresis, making them crucial to the plane's defense.",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/7/77720d2e-2b7b-492b-852c-eea5061eb31b.jpg?1783917010"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "MYTHIC",
+        "artist": "Alexey Kruglov",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77720d2e-2b7b-492b-852c-eea5061eb31b.jpg?1783917010",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Sieges each have an intrinsic triggered ability. That ability is \"When the last defense counter is removed from this permanent, exile it, then you may cast it transformed without paying its mana cost.\""
+            },
+            {
+                "date": "2023-04-14",
+                "text": "As a Siege enters the battlefield, its controller chooses an opponent to be its protector."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "A battle can be attacked by all players other than its protector. Notably, this means a Siege's controller can attack it."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Damage dealt to a battle causes that many defense counters to be removed from it."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If a battle has no defense counters, and it isn't the source of a triggered ability that has triggered but not yet left the stack, that battle is put into its owner's graveyard. This is a state-based action. This doesn't cause a Siege's intrinsic triggered ability to trigger."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If a Siege never had defense counters on it (perhaps because a permanent became a copy of one), it can't have its last defense counter removed. It will be put into its owner's graveyard. You won't exile it or cast the other face."
+            }
+        ]
+    },
+    "startingDefense": 5,
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Wary Thespian
 {
     "name": "Wary Thespian",

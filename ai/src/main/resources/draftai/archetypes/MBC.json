@@ -1,0 +1,2202 @@
+{
+  "citadel gate": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "gleam of resistance": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "karoo": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "C"
+    ],
+    "splashable": false
+  },
+  "minimus containment": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "mistveil plains": {
+    "archetypes": [],
+    "fixing": [
+      "W"
+    ],
+    "splashable": false
+  },
+  "an offer you can't refuse": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "apprentice wizard": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "dreamscape artist": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "eldrazi skyspawner": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "emrakul's messenger": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "halimar depths": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "pirate's prize": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "prosperous pirates": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "saprazzan skerry": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "sea gate": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "sea scryer": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "C"
+    ],
+    "splashable": false
+  },
+  "silver myr": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "tolaria west": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "absorb vis": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "black dragon gate": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "blightsoil druid": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "blood celebrant": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "bubbling muck": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "cabal pit": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "carrier thrall": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "charcoal diamond": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "deadly dispute": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dread drone": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "grim bounty": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "pawn of ulamog": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "peat bog": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "priest of gix": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "rain of filth": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "ruthless knave": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "shambling ghast": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "skirge familiar": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "skullport merchant": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "songs of the damned": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "treasure dredger": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "alena, kessig trapper": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "big score": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "chandra, novice pyromancer": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "cliffgate": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "curse of opulence": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "desert of the fervent": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "diamond pick-axe": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "explosive welcome": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "ganax, astral hunter": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "generator servant": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "glimpse the impossible": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "hoarding ogre": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "impulsive pilferer": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "inspired tinkering": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "mana geyser": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "mardu warshrieker": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "B",
+      "R"
+    ],
+    "splashable": false
+  },
+  "orcish lumberjack": {
+    "archetypes": [],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "plundering barbarian": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "ramunap ruins": {
+    "archetypes": [],
+    "fixing": [
+      "R",
+      "C"
+    ],
+    "splashable": false
+  },
+  "rapacious dragon": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "rapacious one": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "reckless barbarian": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "sandstone needle": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "seize the spoils": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "shiny impetus": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "sticky fingers": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "storm-kiln artist": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "strike it rich": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "sunset strikemaster": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "thermopod": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "treasonous ogre": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "unexpected windfall": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "young red dragon": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "bathe in gold": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "abundant growth": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "argothian opportunist": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "avacyn's pilgrim": {
+    "archetypes": [],
+    "fixing": [
+      "W"
+    ],
+    "splashable": false
+  },
+  "axebane guardian": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "basking broodscale": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "beanstalk giant": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "fertile footsteps": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "beneath the sands": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "birchlore rangers": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "borderland ranger": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "brood monitor": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "bushwhack": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "changeling wayfinder": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "cultivate": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dance of the tumbleweeds": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dawn's reflection": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dawntreader elk": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "devoted druid": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "diligent farmhand": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "drumhunter": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "elvish harbinger": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "evolution charm": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "explosive vegetation": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "fae offering": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "far wanderings": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "fertile ground": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "fyndhorn elder": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "fyndhorn elves": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "gemhide sliver": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "gilanra, caller of wirewood": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "glacier godmaw": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "harrow": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "harvester druid": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "heart warden": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "hickory woodlot": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "jaspera sentinel": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "jewel thief": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "joraga treespeaker": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "khalni garden": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "kozilek's predator": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "krosan tusker": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "llanowar visionary": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "manor gate": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "nantuko elder": {
+    "archetypes": [],
+    "fixing": [
+      "G",
+      "C"
+    ],
+    "splashable": false
+  },
+  "one with nature": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "overgrown battlement": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "overgrowth": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "path of annihilation": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G",
+      "C"
+    ],
+    "splashable": false
+  },
+  "poison dart frog": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "priest of titania": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "primal growth": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "prizefight": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "prosperous innkeeper": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "quirion elves": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "rampant growth": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "silverglade pathfinder": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "song of freyalise": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "spinewoods armadillo": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "tireless provisioner": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "treetop village": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "utopia sprawl": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "vastwood surge": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "viridian joiner": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "wall of roots": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "werebear": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "wirewood channeler": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "woodland mystic": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "yavimaya elder": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "yavimaya granger": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "battle angels of tyr": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "biomechan engineer": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "birds of paradise": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "buried in the garden": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "commander's sphere": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "component pouch": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "ebony fly": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "escape tunnel": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "everflowing chalice": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "goldlust triad": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "mikokoro, center of the sea": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "misleading signpost": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "myriad landscape": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G",
+      "C"
+    ],
+    "splashable": false
+  },
+  "patriar's seal": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "relic of legends": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "rogue's passage": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "stonespeaker crystal": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "su-chi cave guard": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "writhing chrysalis": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "ashling, flame dancer": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "baeloth barrityl, entertainer": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "fain, the broker": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "gluntch, the bestower": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "gwenna, eyes of gaea": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "jaheira, friend of the forest": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "jolene, the plunder queen": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "neheb, the eternal": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "omnath, locus of creation": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "ramos, dragon engine": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "rev, tithe extractor": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "runadi, behemoth caller": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "selvala, heart of the wilds": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "tivit, seller of secrets": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "arzakon": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "autumn willow, harmony": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "chira, all in": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "davvol, evincar of rath": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "dyfed, the guiding hand": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "rikala, homarid king": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "the unluckiest planeswalker": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "thomil, the destroyer": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "zagorka, mother of sanctum": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "arcane signet": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "basalt monolith": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "cabal ritual": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "command tower": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dark ritual": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "fellwar stone": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "jeweled amulet": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "krark-clan ironworks": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "lotus petal": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "mind stone": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "path of ancestry": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "sol ring": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "thought vessel": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "tinder wall": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "chromatic lantern": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "city of brass": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "exotic orchard": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "karn, legacy reforged": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "mana flare": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "reflecting pool": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "rishadan port": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "serum powder": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "tower of the magistrate": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "urza, lord high artificer": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "built bear": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "chea, friend to maybe too many": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "common black removal": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dwarven confluencer": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "fetching garden": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "G"
+    ],
+    "splashable": false
+  },
+  "glade of the pump spells": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "gobland": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "keeper of the crown": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "coronation of the wilds": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "lazotep archway": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "B"
+    ],
+    "splashable": false
+  },
+  "madlands": {
+    "archetypes": [],
+    "fixing": [
+      "B",
+      "R"
+    ],
+    "splashable": false
+  },
+  "maestros' totally safe hideout": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "B",
+      "R"
+    ],
+    "splashable": false
+  },
+  "mox poison": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "oddric, lunar marquis": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "omenpath to naya": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "orb of origin": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "planeswalkerificate": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "plant a sapling": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "fully-grown treefolk": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "processing plant": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "C"
+    ],
+    "splashable": false
+  },
+  "slumbering waterways": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "G"
+    ],
+    "splashable": false
+  },
+  "tax taker": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "temur elevator": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "the heron moon": {
+    "archetypes": [],
+    "fixing": [
+      "C"
+    ],
+    "splashable": false
+  },
+  "under-construction skyscraper": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "B",
+      "G",
+      "C"
+    ],
+    "splashable": false
+  },
+  "value town": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "R"
+    ],
+    "splashable": false
+  },
+  "take a trip to...": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "R"
+    ],
+    "splashable": false
+  },
+  "wrenn and one": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "yawgmoth's day planner": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "you compleat me": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  }
+}

@@ -1,47 +1,35 @@
 package com.wingedsheep.gameserver.priority
 
+import com.wingedsheep.engine.legalactions.MeaningfulActionFilter
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
-import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
-import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
-import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.engine.view.LegalActionInfo
+import com.wingedsheep.engine.view.asPriorityAction
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 import org.slf4j.LoggerFactory
 
 /**
- * Arena-style auto-pass manager that implements intelligent priority passing.
+ * The client-facing half of Arena-style priority passing: *should this player be prompted*, and
+ * *where will the game stop next* if they don't act.
  *
- * This follows the 4 Rules of Arena-style Instants:
+ * The rules themselves live in [MeaningfulActionFilter] in the rules engine, because the AI and the
+ * gym hold engine `LegalAction`s and never build a [LegalActionInfo]. This class adapts the DTO,
+ * delegates the decision, and logs the reason. What stays here is presentation: the "Pass to
+ * Combat" button label and the step lookahead that computes it.
  *
- * ## Rule 1: The "Meaningful Action" Filter
- * Filters out actions that shouldn't stop the game:
- * - Mana abilities are invisible (don't count for stopping)
- * - Zero-target spells are invisible (if requiresTargets but no validTargets)
- * - Counterspells only visible if stack is non-empty
+ * The rules, in short (full detail on [MeaningfulActionFilter]):
  *
- * ## Rule 2: The "Opponent's Turn" Compression
- * When it's the opponent's turn:
- * - Upkeep/Draw: AUTO-PASS
- * - Main Phase: STOP if you have instant-speed responses
- * - Combat (Start/Attackers): STOP (crucial window for tapping/killing attackers)
- * - End Step: STOP if you have instant-speed responses (golden rule for control players)
- *
- * ## Rule 3: The "My Turn" Optimization
- * When it's your own turn:
- * - Upkeep/Draw: AUTO-PASS
- * - Combat: STOP (for combat tricks like Giant Growth)
- *
- * ## Rule 4: The Stack Response
- * - If YOUR spell/ability is on top of the stack: AUTO-PASS (let opponent respond)
- * - If OPPONENT's permanent spell is on top and you have no responses: AUTO-PASS (auto-resolve)
- * - If OPPONENT's non-permanent spell or ability is on top: STOP (so you can see what they're doing)
+ * 1. **Meaningful-action filter** — mana abilities, zero-target spells and unaffordable casts don't
+ *    stop the game.
+ * 2. **Opponent's-turn compression** — upkeep/draw pass; main phases, combat windows and the end
+ *    step stop when you have an instant-speed response; declare blockers stops when you can block.
+ * 3. **Your-turn optimization** — you stop at your main phases and at declare attackers.
+ * 4. **Stack response** — your own object on top auto-passes; an opponent's non-permanent spell or
+ *    ability stops.
  */
 class AutoPassManager(
     /**
@@ -54,61 +42,6 @@ class AutoPassManager(
 ) {
 
     private val logger = LoggerFactory.getLogger(AutoPassManager::class.java)
-
-    companion object {
-        /** Combat steps the engine auto-skips when no creatures are attacking (CR 508.8) */
-        private val COMBAT_STEPS_SKIPPED_WITHOUT_ATTACKERS = setOf(
-            Step.DECLARE_BLOCKERS,
-            Step.FIRST_STRIKE_COMBAT_DAMAGE,
-            Step.COMBAT_DAMAGE
-        )
-
-        /**
-         * Every action type that represents casting a spell, across *all* cost paths. The
-         * enumerators emit a distinct `actionType` per cost variant (a plain cast, each modal
-         * shape, and every alternative cost — flashback, harmonize, warp, evoke/impending/granted
-         * via [CastWithAlternativeCost], kicker, conspire, a free cast, morph). The auto-pass
-         * logic must treat them all as "a spell you can cast"; missing one (e.g. Sneak, which is
-         * only ever a `CastWithAlternativeCost`) makes the client speed past the window where it's
-         * legal. The server only sends legal actions, so any of these present means the player can
-         * actually cast it now.
-         */
-        val SPELL_CAST_ACTION_TYPES = setOf(
-            "CastSpell",
-            "CastSpellMode",
-            "CastSpellModal",
-            "CastWithAlternativeCost",
-            "CastWithFlashback",
-            "CastWithHarmonize",
-            "CastWithWarp",
-            "CastWithKicker",
-            "CastWithConspire",
-            "CastWithoutPayingManaCost",
-            "CastFaceDown",
-        )
-
-        /** Spell casts plus the activated / special abilities that count as instant-speed responses. */
-        val INSTANT_RESPONSE_ACTION_TYPES = SPELL_CAST_ACTION_TYPES + setOf(
-            "ActivateAbility",
-            "CycleCard",
-            "TypecycleCard",
-            "PlotCard",
-            "ForetellCard",
-            // Crew is an activated ability (CR 702.122a) with no timing restriction, so it can be
-            // activated any time you have priority (CR 117.1b) — making it a valid instant-speed
-            // response (e.g. crewing during the opponent's declare-attackers window). Saddle is
-            // sorcery-speed and deliberately absent.
-            "CrewVehicle",
-        )
-    }
-
-    /**
-     * True if this action is an instant-speed response — a spell the player can cast or an
-     * ability they can activate right now — with a legal target if it needs one.
-     */
-    private fun LegalActionInfo.isInstantSpeedResponse(): Boolean =
-        actionType in INSTANT_RESPONSE_ACTION_TYPES &&
-            (!requiresTargets || !validTargets.isNullOrEmpty())
 
     /**
      * Determines if the player with priority should automatically pass.
@@ -126,511 +59,24 @@ class AutoPassManager(
         opponentTurnStops: Set<Step> = emptySet(),
         stopsMode: Boolean = false
     ): Boolean {
-        // If player doesn't have priority, can't pass
-        if (state.priorityPlayerId != playerId) {
-            return false
-        }
-
-        // If there's a pending decision, never auto-pass
-        if (state.pendingDecision != null) {
-            return false
-        }
-
-        // Get meaningful actions (Rule 1) - needed for stack response check
-        val meaningfulActions = getMeaningfulActions(legalActions, state)
-
-        // Rule 4: Stack Response - Check who controls the top of the stack
-        // - If YOUR spell/ability is on top → AUTO-PASS (let opponent respond)
-        // - If OPPONENT's spell/ability is on top → STOP (so you can see what they're doing)
-        if (state.stack.isNotEmpty()) {
-            val topOfStack = state.stack.last() // Stack is LIFO, last = top
-            val topController = getStackItemController(state, topOfStack)
-
-            if (topController == playerId) {
-                // Our own spell/ability is on top - auto-pass to let opponent respond,
-                // unless an available action has holdPriority set (e.g., copy-spell abilities)
-                val shouldHold = meaningfulActions.any { it.holdPriority }
-                if (shouldHold) {
-                    logger.debug("STOP: Own spell/ability on top of stack but player has holdPriority action")
-                    return false
-                }
-                logger.debug("AUTO-PASS: Own spell/ability on top of stack")
-                return true
-            } else {
-                // Opponent's item on top.
-                // Persistent yield (backlog §C): the player explicitly asked to stop being stopped
-                // by this ability, so auto-pass even though it's an opponent's object — an opt-in
-                // per-ability override of the usual "stop on opponent's stack item" rule. A
-                // holdPriority action (a response the player deliberately lined up) still wins, and
-                // this is one more pass reason layered on top of the meaningful-action filter, not
-                // a replacement for it.
-                val topContainer = state.getEntity(topOfStack)
-                val yieldedIdentity = topContainer?.get<TriggeredAbilityOnStackComponent>()?.abilityIdentity
-                    ?: topContainer?.get<ActivatedAbilityOnStackComponent>()?.abilityIdentity
-                if (yieldedIdentity != null &&
-                    state.isYieldingTo(playerId, yieldedIdentity) &&
-                    meaningfulActions.none { it.holdPriority }
-                ) {
-                    logger.debug("AUTO-PASS: Yielded to opponent's ability $yieldedIdentity")
-                    return true
-                }
-
-                // In Stops mode: always stop on opponent's stack items (regardless of type)
-                if (stopsMode) {
-                    logger.debug("STOP (Stops mode): Opponent's spell/ability on stack")
-                    return false
-                }
-
-                // Auto mode: check what type it is
-                val container = state.getEntity(topOfStack)
-                val cardComponent = container?.get<CardComponent>()
-                val isPermanentSpell = container?.get<SpellOnStackComponent>()?.let {
-                    isPermanentSpell(cardComponent, it)
-                } ?: false
-                val isAura = cardComponent?.isAura ?: false
-
-                if (isPermanentSpell && !isAura) {
-                    // Non-aura permanent spells (creatures, artifacts, non-aura enchantments, planeswalkers):
-                    // Auto-pass if we have no meaningful instant-speed responses.
-                    // Auras are excluded because they target, and the opponent should see what's being targeted.
-                    val hasResponses = meaningfulActions.any { it.actionType in INSTANT_RESPONSE_ACTION_TYPES }
-                    if (!hasResponses) {
-                        logger.debug("AUTO-PASS: Opponent's permanent spell on stack, no responses")
-                        return true
-                    }
-                }
-
-                // Non-permanent spells (instants/sorceries) and abilities: always stop
-                logger.debug("STOP: Opponent's spell/ability on stack")
-                return false
-            }
-        }
-
-        // Determine if this is our turn or opponent's turn. Team-aware (CR 805/810): in a shared
-        // Two-Headed Giant turn BOTH teammates are "on their turn", so the non-active-player
-        // teammate still stops in their own main phase instead of being auto-passed as if it were
-        // the opponents' turn. Reduces to `activePlayerId == playerId` in a non-team game.
-        val isMyTurn = state.isActiveTurnFor(playerId)
-
-        // Check per-step stop overrides (only when stack is empty, which it is at this point)
-        val relevantStops = if (isMyTurn) myTurnStops else opponentTurnStops
-        if (state.step in relevantStops) {
-            logger.debug("STOP: Per-step stop override set for ${state.step}")
-            return false
-        }
-
-        // Stops mode: stop at combat damage step when creatures are attacking you
-        if (stopsMode && !isMyTurn && (state.step == Step.COMBAT_DAMAGE || state.step == Step.FIRST_STRIKE_COMBAT_DAMAGE)) {
-            val hasAttackers = state.getBattlefield().any { entityId ->
-                state.getEntity(entityId)?.get<AttackingComponent>() != null
-            }
-            if (hasAttackers) {
-                logger.debug("STOP (Stops mode): Combat damage step with attackers")
-                return false
-            }
-        }
-
-        // Never auto-pass the active player's own main phases
-        if (isMyTurn && (state.step == Step.PRECOMBAT_MAIN || state.step == Step.POSTCOMBAT_MAIN)) {
-            logger.debug("STOP: My main phase (always stop)")
-            return false
-        }
-
-        // If no meaningful actions, auto-pass
-        if (meaningfulActions.isEmpty()) {
-            logger.debug("AUTO-PASS: No meaningful actions available")
-            return true
-        }
-
-        // Special handling for DECLARE_BLOCKERS on your own turn.
-        // After the opponent declares blockers, you may want to cast combat tricks
-        // (like Giant Growth) before damage. On opponent's turn, this is handled
-        // by shouldAutoPassOnOpponentTurn which only stops if you have blockers.
-        if (state.step == Step.DECLARE_BLOCKERS && isMyTurn) {
-            val hasInstantSpeedResponses = meaningfulActions.any { it.isInstantSpeedResponse() }
-
-            if (hasInstantSpeedResponses) {
-                logger.debug("STOP: Declare blockers step (have instant-speed responses)")
-                return false
-            }
-        }
-
-        // On opponent's declare attackers, auto-pass if they didn't attack — nothing to respond to
-        if (!isMyTurn && state.step == Step.DECLARE_ATTACKERS) {
-            val hasAttackers = state.getBattlefield().any { entityId ->
-                state.getEntity(entityId)?.get<AttackingComponent>() != null
-            }
-            if (!hasAttackers) {
-                logger.debug("AUTO-PASS: Opponent's declare attackers (no attackers declared)")
-                return true
-            }
-        }
-
-        return if (isMyTurn) {
-            shouldAutoPassOnMyTurn(state.step, meaningfulActions)
-        } else {
-            shouldAutoPassOnOpponentTurn(state.step, meaningfulActions)
-        }
+        val verdict = MeaningfulActionFilter.autoPassVerdict(
+            state = state,
+            playerId = playerId,
+            legalActions = legalActions.map { it.asPriorityAction() },
+            myTurnStops = myTurnStops,
+            opponentTurnStops = opponentTurnStops,
+            stopsMode = stopsMode,
+            cardRegistry = cardRegistry,
+        )
+        logger.debug(verdict.reason)
+        return verdict.autoPass
     }
 
     /**
-     * Rule 1: Filter legal actions to only "meaningful" actions that should stop the game.
+     * Filter legal actions to only the "meaningful" ones that should stop the game.
      */
-    private fun getMeaningfulActions(
-        legalActions: List<LegalActionInfo>,
-        state: GameState
-    ): List<LegalActionInfo> {
-        return legalActions.filter { action ->
-            // PassPriority is never meaningful (it's the default)
-            if (action.actionType == "PassPriority") {
-                return@filter false
-            }
-
-            // Mana abilities are invisible - they don't stop the game
-            // Exception: mana abilities with sacrifice costs (e.g., Skirk Prospector)
-            // are meaningful because sacrificing a creature is a significant game action
-            if (action.isManaAbility) {
-                val hasSacrificeCost = action.additionalCostInfo?.costType == "SacrificePermanent"
-                if (!hasSacrificeCost) {
-                    return@filter false
-                }
-            }
-
-            // DeclareAttackers is meaningful if there are valid attackers
-            if (action.actionType == "DeclareAttackers") {
-                val hasValidAttackers = !action.validAttackers.isNullOrEmpty()
-                return@filter hasValidAttackers
-            }
-
-            // DeclareBlockers is meaningful only if there are valid blockers
-            if (action.actionType == "DeclareBlockers") {
-                val hasValidBlockers = !action.validBlockers.isNullOrEmpty()
-                return@filter hasValidBlockers
-            }
-
-            // PlayLand is always meaningful when available
-            if (action.actionType == "PlayLand") {
-                return@filter true
-            }
-
-            // For spells that require targets, check if they have valid targets
-            if (action.requiresTargets) {
-                val hasValidTargets = !action.validTargets.isNullOrEmpty()
-                if (!hasValidTargets) {
-                    // Zero-target spell - invisible
-                    return@filter false
-                }
-            }
-
-            // ActivateAbility (non-mana) is meaningful
-            if (action.actionType == "ActivateAbility") {
-                return@filter true
-            }
-
-            // A spell cast (any cost path) is meaningful only if the player can afford it.
-            // (Regular spells are only added when affordable, but companion actions for
-            // cycling/morph cards can be added with isAffordable=false.)
-            if (action.actionType in SPELL_CAST_ACTION_TYPES) {
-                return@filter action.isAffordable
-            }
-
-            // Cycling/typecycling is meaningful only if the player can afford it
-            if (action.actionType == "CycleCard" || action.actionType == "TypecycleCard" ||
-                action.actionType == "PlotCard" || action.actionType == "ForetellCard") {
-                return@filter action.isAffordable
-            }
-
-            // Crewing a Vehicle is meaningful only if there's enough untapped power to pay the
-            // crew cost (otherwise there's nothing to stop for).
-            if (action.actionType == "CrewVehicle") {
-                return@filter action.isAffordable
-            }
-
-            // Other actions are meaningful by default
-            true
-        }
-    }
-
-    /**
-     * Rule 3: Determine auto-pass behavior on your own turn (TRUE Arena-style).
-     *
-     * Arena is VERY aggressive about auto-passing on your own turn. You only stop at:
-     * - Main phases (to play lands and spells)
-     * - Declare attackers (to declare attacks)
-     *
-     * EVERYTHING ELSE auto-passes, even if you have instant-speed actions available.
-     * If you want to act at other times, you need Full Control or manual stops.
-     *
-     * This matches how Arena actually works - it speeds through your turn so you can
-     * play your main phase cards and attack, then quickly passes to opponent's turn.
-     */
-    private fun shouldAutoPassOnMyTurn(
-        step: Step,
-        meaningfulActions: List<LegalActionInfo>
-    ): Boolean {
-        return when (step) {
-            // Main Phases - STOP (this is where you play lands and cast spells)
-            Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> {
-                logger.debug("STOP: My main phase")
-                false
-            }
-
-            // Declare Attackers - STOP only if we still need to declare attacks
-            // Once attackers are confirmed, auto-pass to let opponent declare blockers.
-            Step.DECLARE_ATTACKERS -> {
-                val needsToDeclare = meaningfulActions.any { it.actionType == "DeclareAttackers" }
-                if (needsToDeclare) {
-                    logger.debug("STOP: My declare attackers step (need to declare)")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: My declare attackers step (already declared)")
-                    true
-                }
-            }
-
-            // EVERYTHING ELSE - AUTO-PASS (Arena-style aggressive passing)
-            // This includes: upkeep, draw, begin combat, declare blockers (after opponent blocks),
-            // first strike damage, combat damage, end combat, end step, cleanup
-            Step.UPKEEP, Step.DRAW -> {
-                logger.debug("AUTO-PASS: My upkeep/draw step")
-                true
-            }
-
-            Step.BEGIN_COMBAT -> {
-                logger.debug("AUTO-PASS: My begin combat")
-                true
-            }
-
-            Step.DECLARE_BLOCKERS -> {
-                val hasResponses = meaningfulActions.any { it.isInstantSpeedResponse() }
-                if (hasResponses) {
-                    logger.debug("STOP: My declare blockers step (have instant-speed responses)")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: My declare blockers step (no responses, moving to damage)")
-                    true
-                }
-            }
-
-            Step.FIRST_STRIKE_COMBAT_DAMAGE -> {
-                val hasResponses = meaningfulActions.any { it.isInstantSpeedResponse() }
-                if (hasResponses) {
-                    logger.debug("STOP: My first strike damage step (have instant-speed responses)")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: My first strike damage step (no responses)")
-                    true
-                }
-            }
-
-            Step.COMBAT_DAMAGE, Step.END_COMBAT -> {
-                logger.debug("AUTO-PASS: My combat damage/end combat")
-                true
-            }
-
-            Step.END -> {
-                logger.debug("AUTO-PASS: My end step")
-                true
-            }
-
-            Step.CLEANUP, Step.UNTAP -> {
-                logger.debug("AUTO-PASS: Cleanup/Untap")
-                true
-            }
-        }
-    }
-
-    /**
-     * Rule 2: Determine auto-pass behavior on opponent's turn (TRUE Arena-style).
-     *
-     * Arena is very aggressive about auto-passing on opponent's turn too.
-     * You only stop when you actually need to make a blocking decision.
-     * Having instants in hand doesn't mean you stop at every phase.
-     *
-     * - Upkeep/Draw: AUTO-PASS
-     * - Main: STOP if you have instant-speed responses
-     * - Begin Combat: AUTO-PASS
-     * - Declare Attackers (after declaration): STOP if you have instant-speed responses
-     * - Declare Blockers: STOP if you have blockers or instant-speed actions
-     * - Combat Damage: AUTO-PASS
-     * - End Step: AUTO-PASS (use per-step stop override to hold here)
-     */
-    private fun shouldAutoPassOnOpponentTurn(
-        step: Step,
-        meaningfulActions: List<LegalActionInfo>
-    ): Boolean {
-        // Check if we have blockers available
-        val hasBlockers = meaningfulActions.any { it.actionType == "DeclareBlockers" && !it.validBlockers.isNullOrEmpty() }
-
-        // Check if we have instant-speed responses (spells/abilities, not blockers)
-        val hasInstantSpeedResponses = meaningfulActions.any { it.isInstantSpeedResponse() }
-
-        return when (step) {
-            // Beginning Phase - auto-pass
-            Step.UPKEEP, Step.DRAW -> {
-                logger.debug("AUTO-PASS: Opponent's upkeep/draw")
-                true
-            }
-
-            // Main Phases - STOP if we have instant-speed responses
-            // (like Arena stopping at begin combat / end step, but also catching
-            // the case where the opponent does nothing on main phase and we could act)
-            Step.PRECOMBAT_MAIN, Step.POSTCOMBAT_MAIN -> {
-                if (hasInstantSpeedResponses) {
-                    logger.debug("STOP: Opponent's main phase (have instant-speed responses)")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: Opponent's main phase (no responses)")
-                    true
-                }
-            }
-
-            // Begin Combat - AUTO-PASS (Arena-style)
-            Step.BEGIN_COMBAT -> {
-                logger.debug("AUTO-PASS: Opponent's begin combat (Arena-style)")
-                true
-            }
-
-            // Declare Attackers (after declaration) - STOP if we have instant-speed responses.
-            // This is the priority window after attackers are declared (CR 508.2) where
-            // the defending player can cast instants/activate abilities before blockers.
-            Step.DECLARE_ATTACKERS -> {
-                if (hasInstantSpeedResponses) {
-                    logger.debug("STOP: Opponent's declare attackers (have instant-speed responses)")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: Opponent's declare attackers (no responses)")
-                    true
-                }
-            }
-
-            // Declare Blockers - STOP if we have creatures that can block OR
-            // instant-speed actions we can actually perform (combat tricks, cycling with mana, etc.)
-            // The server only sends legal actions, so having them in meaningfulActions
-            // means the player can actually pay for them.
-            Step.DECLARE_BLOCKERS -> {
-                if (hasBlockers || hasInstantSpeedResponses) {
-                    logger.debug("STOP: Opponent's declare blockers (have ${if (hasBlockers) "blockers" else "instant-speed responses"})")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: Opponent's declare blockers (no blockers or responses)")
-                    true
-                }
-            }
-
-            // First Strike Damage - STOP if we have instant-speed responses
-            Step.FIRST_STRIKE_COMBAT_DAMAGE -> {
-                if (hasInstantSpeedResponses) {
-                    logger.debug("STOP: Opponent's first strike damage step (have instant-speed responses)")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: Opponent's first strike damage step (no responses)")
-                    true
-                }
-            }
-
-            // Combat Damage - AUTO-PASS (no meaningful priority window to hold for here)
-            Step.COMBAT_DAMAGE -> {
-                logger.debug("AUTO-PASS: Opponent's combat damage")
-                true
-            }
-
-            // End Combat - STOP if we have instant-speed responses. This is a real priority
-            // window (CR 511.1) where the defending player can still act — and it's the *only*
-            // window for abilities restricted to it (e.g. Desert's "{T}: deals 1 damage to
-            // target attacking creature. Activate only during the end of combat step."), whose
-            // targets (still-attacking creatures) also vanish once the step ends (CR 511.3).
-            // Mirrors the END step / declare-attackers / first-strike handling above.
-            Step.END_COMBAT -> {
-                if (hasInstantSpeedResponses) {
-                    logger.debug("STOP: Opponent's end combat step (have instant-speed responses)")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: Opponent's end combat step (no responses)")
-                    true
-                }
-            }
-
-            // End Step - STOP if we have instant-speed responses
-            Step.END -> {
-                if (hasInstantSpeedResponses) {
-                    logger.debug("STOP: Opponent's end step (have instant-speed responses)")
-                    false
-                } else {
-                    logger.debug("AUTO-PASS: Opponent's end step (no responses)")
-                    true
-                }
-            }
-
-            // Cleanup - no priority normally
-            Step.CLEANUP, Step.UNTAP -> {
-                logger.debug("AUTO-PASS: Cleanup/Untap")
-                true
-            }
-        }
-    }
-
-    /**
-     * Check if the player has any instant-speed responses available.
-     * Used for stack response checking.
-     */
-    fun hasInstantSpeedResponses(legalActions: List<LegalActionInfo>): Boolean {
-        return legalActions.any { action ->
-            // Exclude mana abilities (unless they have a sacrifice cost)
-            (!action.isManaAbility || action.additionalCostInfo?.costType == "SacrificePermanent") &&
-            // Must be a spell cast or activatable ability (not land play or combat action)
-            action.isInstantSpeedResponse()
-        }
-    }
-
-    /**
-     * Whether a spell on the stack is a permanent spell, respecting the actually-cast face.
-     *
-     * Split-layout cards (Omen, Adventure, MDFC — CR 709 / 715) keep their *base* characteristics
-     * (a creature) in [CardComponent] even when cast as their instant/sorcery face. Casting the
-     * instant/sorcery face stamps [SpellOnStackComponent.faceIndex]; resolving the type from that
-     * face (like [com.wingedsheep.engine.mechanics.stack.StackResolver] does) is what keeps the
-     * spell off the "permanent spell → auto-resolve" path, so the opponent still stops and sees it
-     * on the stack. Falls back to the base type line when there's no cast face or no registry.
-     */
-    private fun isPermanentSpell(cardComponent: CardComponent?, spell: SpellOnStackComponent): Boolean {
-        if (cardComponent == null) return false
-        val faceTypeLine = spell.faceIndex?.let { idx ->
-            cardRegistry?.getCard(cardComponent.name)?.cardFaces?.getOrNull(idx)?.typeLine
-        }
-        return faceTypeLine?.isPermanent ?: cardComponent.isPermanent
-    }
-
-    /**
-     * Get the controller of a stack item.
-     * Checks various component types since abilities use different components than spells.
-     */
-    private fun getStackItemController(state: GameState, entityId: EntityId): EntityId? {
-        val container = state.getEntity(entityId) ?: return null
-
-        // Check for activated ability
-        container.get<ActivatedAbilityOnStackComponent>()?.let {
-            return it.controllerId
-        }
-
-        // Check for triggered ability
-        container.get<TriggeredAbilityOnStackComponent>()?.let {
-            return it.controllerId
-        }
-
-        // Check for spell (uses casterId)
-        container.get<SpellOnStackComponent>()?.let {
-            return it.casterId
-        }
-
-        // Fall back to ControllerComponent (for permanents that somehow end up here)
-        container.get<ControllerComponent>()?.let {
-            return it.playerId
-        }
-
-        return null
-    }
-
+    fun getMeaningfulActions(legalActions: List<LegalActionInfo>): List<LegalActionInfo> =
+        legalActions.filter { MeaningfulActionFilter.isMeaningful(it.asPriorityAction()) }
 
     /**
      * Calculates the next step/phase where the game will stop for this player.
@@ -655,7 +101,7 @@ class AutoPassManager(
         }
 
         val currentStep = state.step
-        // Team-aware (see the stop-decision above): a Two-Headed Giant teammate shares the turn.
+        // Team-aware (see [MeaningfulActionFilter]): a Two-Headed Giant teammate shares the turn.
         val isMyTurn = state.isActiveTurnFor(playerId)
 
         // Special combat damage labels when there are attacking creatures
@@ -703,7 +149,7 @@ class AutoPassManager(
             step = nextStep
 
             // Skip combat steps that the engine auto-skips when there are no attackers (CR 508.8)
-            if (!hasAttackers && step in COMBAT_STEPS_SKIPPED_WITHOUT_ATTACKERS) {
+            if (!hasAttackers && step in MeaningfulActionFilter.COMBAT_STEPS_SKIPPED_WITHOUT_ATTACKERS) {
                 continue
             }
 
@@ -737,7 +183,7 @@ class AutoPassManager(
     }
 
     /**
-     * Simplified version of shouldAutoPassOnMyTurn for calculating next stop point.
+     * Simplified version of the my-turn rules for calculating the next stop point.
      * Arena-style: Only stop at main phases, declare attackers, and first strike damage
      * (when player has meaningful actions) on your own turn.
      */
@@ -754,7 +200,7 @@ class AutoPassManager(
     }
 
     /**
-     * Simplified version of shouldAutoPassOnOpponentTurn for calculating next stop point.
+     * Simplified version of the opponent's-turn rules for calculating the next stop point.
      * Arena-style: Very aggressive auto-passing, only stop at declare blockers, declare attackers
      * (if have responses), and end step.
      */

@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
  * no new engine subsystem is involved:
  *  - the cost is the given mana [cost] plus [AbilityCost.ExileSelf] (the card exiles itself
  *    from the graveyard as part of the cost),
- *  - `activateFromZone = Zone.GRAVEYARD` so the engine's GraveyardAbilityEnumerator surfaces it
+ *  - `activateFromZone = Zone.GRAVEYARD` so the engine's ZoneActivatedAbilityEnumerator surfaces it
  *    while the card sits in the graveyard, and
  *  - `timing = TimingRule.SorcerySpeed` to enforce "Activate only as a sorcery".
  *

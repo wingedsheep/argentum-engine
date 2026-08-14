@@ -127,6 +127,95 @@
 }
 
 /* =========================================================================
+ * Decision Context Cards (the source of a prompt, and the object it is about)
+ *
+ * A prompt raised once per object — Killing Wave's "sacrifice it unless you pay X life", asked
+ * for each of your creatures in turn — is indistinguishable from its siblings unless the subject
+ * is shown. The subject is the card the player is actually judging, so it is rendered larger than
+ * the source and ringed in the same orange the battlefield highlight uses.
+ * ========================================================================= */
+.contextCards {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  margin-bottom: var(--space-2);
+}
+
+.contextCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.contextCardLabel {
+  color: var(--text-tertiary);
+  margin: 0;
+  font-size: var(--font-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.contextCardName {
+  color: var(--text-primary);
+  margin: 0;
+  max-width: 190px;
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.contextCardImage {
+  width: 150px;
+  height: auto;
+  border-radius: var(--radius-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+/* Secondary context (what triggered the ability) — present but visibly subordinate. */
+.contextCardImageSecondary {
+  composes: contextCardImage;
+  width: 110px;
+  opacity: 0.85;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.contextCardImageSubject {
+  composes: contextCardImage;
+  width: 176px;
+  outline: 3px solid var(--color-decision-subject);
+  outline-offset: 2px;
+  box-shadow:
+    0 0 16px var(--color-decision-subject-glow),
+    0 0 32px var(--color-decision-subject-shadow);
+}
+
+.contextCardLabelSubject {
+  composes: contextCardLabel;
+  color: var(--color-decision-subject);
+  font-weight: var(--font-weight-bold);
+}
+
+@media (max-width: 639px) {
+  .contextCards {
+    gap: var(--space-3);
+  }
+
+  .contextCardImage {
+    width: 96px;
+  }
+
+  .contextCardImageSecondary {
+    width: 76px;
+  }
+
+  .contextCardImageSubject {
+    width: 112px;
+  }
+}
+
+/* =========================================================================
  * Typography
  * ========================================================================= */
 .title {

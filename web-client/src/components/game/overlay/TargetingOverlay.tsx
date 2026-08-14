@@ -5,10 +5,13 @@ import type { ResponsiveSizes } from '@/hooks/useResponsive.ts'
 import { calculateFittingCardWidth } from '@/hooks/useResponsive.ts'
 import { useDraggable } from '@/hooks/useDraggable.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { routeTargetsByZone } from '@/utils/targeting.ts'
 import { useResponsiveContext, handleImageError } from '../board/shared'
 import { styles } from '../board/styles'
 import { TARGET_COLOR, TARGET_COLOR_BRIGHT } from '@/styles/targetingColors.ts'
 import { CraftMaterialOverlay } from '@/components/decisions/CraftMaterialOverlay'
+import { ManaSymbol } from '@/components/ui/ManaSymbols'
+import { parseManaCost } from '@/utils/manaCost'
 
 /**
  * Cross-zone card targeting overlay — shows when targeting mode requires selecting card(s) from a
@@ -25,9 +28,10 @@ function ZoneCardTargetingOverlay({
   onConfirm,
   onCancel,
   onBack,
+  onViewBattlefield,
 }: {
   zoneCards: ClientCard[]
-  targetingState: { selectedTargets: readonly EntityId[]; minTargets: number; maxTargets: number; targetDescription?: string; currentRequirementIndex?: number; totalRequirements?: number; sourceCardName?: string }
+  targetingState: { selectedTargets: readonly EntityId[]; minTargets: number; maxTargets: number; targetDescription?: string; currentRequirementIndex?: number; totalRequirements?: number; sourceCardName?: string; minTotalManaValue?: number }
   responsive: ResponsiveSizes
   onSelect: (cardId: EntityId) => void
   onDeselect: (cardId: EntityId) => void
@@ -35,6 +39,14 @@ function ZoneCardTargetingOverlay({
   onCancel: () => void
   /** Present when an earlier target requirement can be revised (multi-target spells). */
   onBack?: () => void
+  /**
+   * Present when the caller owns the "look at the board instead" state — a mixed
+   * battlefield ∪ pile requirement, where dismissing the picker hands control back to the
+   * targeting banner (which keeps Confirm/Cancel and leaves permanents clickable). Absent for a
+   * pile-only requirement, where there is nothing to pick on the board and the overlay minimizes
+   * itself into a "return to card selection" button instead.
+   */
+  onViewBattlefield?: () => void
 }) {
   const hoverCard = useGameStore((s) => s.hoverCard)
   const gameState = useGameStore((s) => s.gameState)
@@ -44,8 +56,23 @@ function ZoneCardTargetingOverlay({
   const selectedCount = targetingState.selectedTargets.length
   const minTargets = targetingState.minTargets
   const maxTargets = targetingState.maxTargets
-  const hasEnoughTargets = selectedCount >= minTargets
-  const hasMaxTargets = selectedCount >= maxTargets
+
+  // Collect evidence N (CR 701.59a): the cost constrains the *summed mana value* of the picked
+  // cards, not how many there are, so Confirm is gated on the running total rather than the count.
+  // An empty selection is exempt — that is how an optional collection is declined.
+  const manaFloor = targetingState.minTotalManaValue
+  const totalManaValueSelected =
+    manaFloor == null
+      ? 0
+      : targetingState.selectedTargets.reduce(
+          (sum, id) => sum + (gameState?.cards[id]?.manaValue ?? 0),
+          0,
+        )
+  const meetsManaFloor =
+    manaFloor == null || selectedCount === 0 || totalManaValueSelected >= manaFloor
+
+  const hasEnoughTargets = selectedCount >= minTargets && meetsManaFloor
+  const hasMaxTargets = manaFloor != null ? false : selectedCount >= maxTargets
 
   // A group key combines the owning player and the card's zone, so graveyard and exile piles for
   // the same player are separate tabs. Zone defaults to Graveyard when the card carries none.
@@ -126,7 +153,7 @@ function ZoneCardTargetingOverlay({
     60
   )
 
-  if (minimized) {
+  if (minimized && !onViewBattlefield) {
     return (
       <button
         onClick={() => setMinimized(false)}
@@ -416,7 +443,7 @@ function ZoneCardTargetingOverlay({
           </button>
         )}
         <button
-          onClick={() => setMinimized(true)}
+          onClick={() => (onViewBattlefield ? onViewBattlefield() : setMinimized(true))}
           style={{
             padding: responsive.isMobile ? '10px 24px' : '12px 36px',
             fontSize: responsive.fontSize.large,
@@ -446,7 +473,13 @@ function ZoneCardTargetingOverlay({
             transition: 'all 0.15s',
           }}
         >
-          {minTargets === 0 && selectedCount === 0 ? 'Skip' : selectedCount > 0 ? `Confirm (${selectedCount})` : 'Confirm Target'}
+          {manaFloor != null
+            ? `Confirm (${totalManaValueSelected}/${manaFloor} mana value)`
+            : minTargets === 0 && selectedCount === 0
+              ? 'Skip'
+              : selectedCount > 0
+                ? `Confirm (${selectedCount})`
+                : 'Confirm Target'}
         </button>
         <button
           onClick={onCancel}
@@ -485,6 +518,18 @@ export function TargetingOverlay() {
   const addTarget = useGameStore((state) => state.addTarget)
   const removeTarget = useGameStore((state) => state.removeTarget)
 
+  // Whether the pile picker is open on a *mixed* battlefield ∪ pile requirement (see below).
+  // This overlay is mounted for the whole game, so the flag is reset whenever targeting ends or
+  // advances to the next requirement — otherwise a picker left open would reopen over an unrelated
+  // spell's board targeting.
+  const [pilePickerOpen, setPilePickerOpen] = React.useState(false)
+  const requirementKey = targetingState
+    ? `${targetingState.currentRequirementIndex ?? 0}`
+    : null
+  React.useEffect(() => {
+    setPilePickerOpen(false)
+  }, [requirementKey])
+
   // Only show when in targeting mode
   if (!targetingState) return null
 
@@ -497,7 +542,17 @@ export function TargetingOverlay() {
   const selectedCount = targetingState.selectedTargets.length
   const minTargets = targetingState.minTargets
   const maxTargets = targetingState.maxTargets
-  const hasEnoughTargets = selectedCount >= minTargets
+  // Teamwork N (CR 702.194a) and any other "tap any number … with total power N or more" cost:
+  // how many permanents are picked is free, so the confirm gate is the summed power the server
+  // sent with the candidates — never a client-derived one.
+  const requiredTotalPower = targetingState.requiredTotalPower ?? 0
+  const selectedTotalPower = targetingState.selectedTargets.reduce(
+    (sum, id) => sum + (targetingState.powerByEntityId?.[id] ?? 0),
+    0,
+  )
+  const hasEnoughTargets = requiredTotalPower > 0
+    ? selectedTotalPower >= requiredTotalPower
+    : selectedCount >= minTargets
   const hasMaxTargets = selectedCount >= maxTargets
   const canGoBack = (targetingState.previousRequirementStates?.length ?? 0) > 0
   const isSacrifice = targetingState.isSacrificeSelection
@@ -507,34 +562,33 @@ export function TargetingOverlay() {
   const isReveal = targetingState.isRevealSelection
   const isBehold = targetingState.isBeholdSelection
 
-  // Collect valid-target cards that live in a selectable card zone (graveyard or exile). These
-  // route to the cross-zone card picker rather than on-battlefield clicking — the picker shows
-  // the actual cards (a graveyard/exile pile isn't individually clickable on the board). This
-  // covers single-zone graveyard targeting (the common case), exile targeting (Blade of the
-  // Swarm), and cross-zone unions (Sorceress's Schemes: graveyard ∪ exile). `targetZone` is the
-  // server's single-zone hint when present; when absent (single-target or union) we detect from
-  // the valid-target set, requiring *every* valid target to be a card-zone card so we don't
-  // hijack mixed battlefield/player targeting.
-  const CARD_ZONES = new Set(['Graveyard', 'Exile'])
-  const zoneCards: ClientCard[] = []
-  let allTargetsAreZoneCards = targetingState.validTargets.length > 0
-  for (const targetId of targetingState.validTargets) {
-    const card = gameState?.cards[targetId]
-    const zoneType = card?.zone?.zoneType
-    if (card && (zoneType ? CARD_ZONES.has(zoneType) : targetingState.targetZone === 'Graveyard')) {
-      zoneCards.push(card)
-    } else {
-      allTargetsAreZoneCards = false
-    }
-  }
-  const useCardPicker =
-    (targetingState.targetZone === 'Graveyard' || allTargetsAreZoneCards) && zoneCards.length > 0
+  // Split the server's valid targets by how the player can physically reach them: a graveyard or
+  // exile pile isn't individually clickable on the board, so those cards need the cross-zone
+  // picker, while permanents, players and stack objects are clicked on the board. Zones come from
+  // server-sent card state — nothing here decides legality.
+  //
+  // Three shapes fall out, and all three occur:
+  //  - pile only (a graveyard reanimation spell, Sorceress's Schemes' graveyard ∪ exile): the
+  //    picker owns the screen, exactly as before.
+  //  - board only: the draggable banner, and the player clicks the board.
+  //  - **both** (Taskmaster, Mercenary Mimic: "target creature on the battlefield *or* creature
+  //    card in a graveyard"): the banner stays up so permanents remain clickable, *and* it offers
+  //    a button that opens the picker for the pile half. Selections live in the shared targeting
+  //    store, so a pick made on either side counts toward the same requirement and either side's
+  //    Confirm submits them. Before this, a mixed union fell through to board-only clicking and
+  //    the graveyard half was simply unreachable.
+  const { mode, pileCards, pileZoneLabel } = routeTargetsByZone(
+    targetingState.validTargets,
+    gameState?.cards,
+    targetingState.targetZone,
+  )
+  const isMixedZoneTargeting = mode === 'mixed'
 
-  // If targets are graveyard/exile cards, show the cross-zone card selection UI
-  if (useCardPicker) {
+  // Pile-only: the picker is the whole UI (unchanged behaviour).
+  if (mode === 'pile') {
     return (
       <ZoneCardTargetingOverlay
-        zoneCards={zoneCards}
+        zoneCards={pileCards}
         targetingState={targetingState}
         responsive={responsive}
         onSelect={addTarget}
@@ -546,10 +600,31 @@ export function TargetingOverlay() {
     )
   }
 
-  // Build the target count display
-  const targetDisplay = minTargets === maxTargets
-    ? `${selectedCount}/${maxTargets}`
-    : `${selectedCount} (${minTargets}-${maxTargets})`
+  // Mixed union, picker open: same picker, but "View Battlefield" hands control back to the
+  // banner below rather than minimising into a bare re-open button — the banner is where Confirm
+  // and Cancel live for this requirement, and the board half still has to be clickable.
+  if (isMixedZoneTargeting && pilePickerOpen) {
+    return (
+      <ZoneCardTargetingOverlay
+        zoneCards={pileCards}
+        targetingState={targetingState}
+        responsive={responsive}
+        onSelect={addTarget}
+        onDeselect={removeTarget}
+        onConfirm={confirmTargeting}
+        onCancel={cancelTargeting}
+        onViewBattlefield={() => setPilePickerOpen(false)}
+        {...(canGoBack ? { onBack: goBackTargeting } : {})}
+      />
+    )
+  }
+
+  // Build the target count display. A total-power cost counts power, not permanents.
+  const targetDisplay = requiredTotalPower > 0
+    ? `power ${selectedTotalPower}/${requiredTotalPower}`
+    : minTargets === maxTargets
+      ? `${selectedCount}/${maxTargets}`
+      : `${selectedCount} (${minTargets}-${maxTargets})`
 
   // Multi-target step info
   const isMultiTarget = targetingState.totalRequirements && targetingState.totalRequirements > 1
@@ -567,20 +642,44 @@ export function TargetingOverlay() {
       : isReveal
         ? `Select card to reveal (${targetDisplay})`
         : isTapPermanent
-          ? `Select permanents to tap (${targetDisplay})`
+          ? // The server already sends the cost description sentence-cased ("Tap any number of
+            // creatures you control with total power 2 or more"), so it is shown verbatim.
+            requiredTotalPower > 0 && targetingState.targetDescription
+            ? `${targetingState.targetDescription} (${targetDisplay})`
+            : `Select permanents to tap (${targetDisplay})`
           : isBounce
             ? `Select ${targetingState.targetDescription ?? 'a creature to return to its owner’s hand'} (${targetDisplay})`
             : isSacrifice
-              ? `Select creature to sacrifice (${targetDisplay})`
+              ? // The cost description reads "sacrifice an artifact" / "sacrifice two creatures";
+                // capitalise it rather than assuming a creature.
+                targetingState.targetDescription
+                ? `${targetingState.targetDescription.charAt(0).toUpperCase()}${targetingState.targetDescription.slice(1)} (${targetDisplay})`
+                : `Select permanent to sacrifice (${targetDisplay})`
               : targetingState.targetDescription
                 ? `Select ${targetingState.targetDescription} (${targetDisplay})`
                 : `Select targets (${targetDisplay})`
 
-  const hintText = hasMaxTargets
-    ? isBehold ? 'Card selected' : isDiscard ? 'Card selected' : isReveal ? 'Card selected' : isTapPermanent ? 'Permanents selected' : isBounce ? 'Creature selected' : isSacrifice ? 'Creature selected' : 'Maximum targets selected'
+  // Emerge (CR 702.119): the sacrifice is the only cost choice that changes the mana owed, so the
+  // banner shows the server's per-candidate arithmetic live — "{5}{U} → {2}{U}" the moment a
+  // creature is picked. Without it the player has to know the generic-only reduction rule and do
+  // the subtraction in their head against a cost label that never moves.
+  const costBeforeSacrifice = targetingState.costBeforeSacrifice
+  const costAfterMap = targetingState.costAfterSacrifice
+  const chosenSacrifice = targetingState.selectedTargets[0]
+  const costAfterSacrifice =
+    costAfterMap && chosenSacrifice ? costAfterMap[chosenSacrifice] : undefined
+  const showSacrificeCost = !!costBeforeSacrifice && !!costAfterMap
+
+  const baseHintText = hasMaxTargets
+    ? isBehold ? 'Card selected' : isDiscard ? 'Card selected' : isReveal ? 'Card selected' : isTapPermanent ? 'Permanents selected' : isBounce ? 'Creature selected' : isSacrifice ? 'Selected' : 'Maximum targets selected'
     : hasEnoughTargets
       ? 'Click Confirm or select more'
-      : isBehold ? `Click a highlighted card on the battlefield or in your hand` : isDiscard ? 'Click a card in your hand' : isReveal ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isBounce ? 'Click an attacking creature you control' : isSacrifice ? 'Click a creature you control' : 'Click a highlighted target'
+      : isBehold ? `Click a highlighted card on the battlefield or in your hand` : isDiscard ? 'Click a card in your hand' : isReveal ? 'Click a card in your hand' : isTapPermanent ? 'Click a highlighted permanent' : isBounce ? 'Click an attacking creature you control' : isSacrifice ? 'Click a highlighted permanent you control' : 'Click a highlighted target'
+  // On a mixed union the board is only half the answer — say so, since the other half lives
+  // behind the button below and there is nothing on the board to hint at it.
+  const hintText = isMixedZoneTargeting && !hasMaxTargets
+    ? `${baseHintText}, or open the ${pileZoneLabel.toLowerCase()}`
+    : baseHintText
 
   return (
     <div
@@ -639,6 +738,45 @@ export function TargetingOverlay() {
       <div style={{ color: '#aaa', fontSize: responsive.fontSize.small, marginTop: 4 }}>
         {hintText}
       </div>
+      {showSacrificeCost && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexWrap: 'wrap',
+            gap: 6,
+            marginTop: 8,
+            padding: '5px 10px',
+            borderRadius: 6,
+            background: 'rgba(255, 255, 255, 0.06)',
+            fontSize: responsive.fontSize.small,
+          }}
+        >
+          <span style={{ color: '#aaa' }}>You pay</span>
+          <span style={{ display: 'inline-flex', gap: 2, opacity: costAfterSacrifice ? 0.45 : 1 }}>
+            {parseManaCost(costBeforeSacrifice!).map((symbol, i) => (
+              <ManaSymbol key={i} symbol={symbol} size={16} />
+            ))}
+          </span>
+          <span style={{ color: '#888' }}>→</span>
+          {costAfterSacrifice !== undefined ? (
+            parseManaCost(costAfterSacrifice).length > 0 ? (
+              <span style={{ display: 'inline-flex', gap: 2 }}>
+                {parseManaCost(costAfterSacrifice).map((symbol, i) => (
+                  <ManaSymbol key={i} symbol={symbol} size={16} />
+                ))}
+              </span>
+            ) : (
+              <span style={{ color: '#86efac', fontWeight: 700 }}>free</span>
+            )
+          ) : (
+            <span style={{ color: '#888', fontStyle: 'italic' }}>
+              pick a creature — its mana value comes off
+            </span>
+          )}
+        </div>
+      )}
       {targetingState.warning && (
         <div
           role="alert"
@@ -659,6 +797,19 @@ export function TargetingOverlay() {
         </div>
       )}
       <div style={{ display: 'flex', gap: 8, marginTop: 8, pointerEvents: 'auto' }}>
+        {isMixedZoneTargeting && (
+          <button
+            onClick={() => setPilePickerOpen(true)}
+            style={{
+              ...styles.actionButton,
+              padding: responsive.isMobile ? '8px 12px' : '10px 16px',
+              fontSize: responsive.fontSize.normal,
+              backgroundColor: '#1e40af',
+            }}
+          >
+            {pileZoneLabel} ({pileCards.length})
+          </button>
+        )}
         {canGoBack && (
           <button onClick={goBackTargeting} style={{
             ...styles.cancelButton,

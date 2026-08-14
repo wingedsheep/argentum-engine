@@ -1,0 +1,145 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-sm);
+  color: var(--text-primary);
+}
+
+.cubeName {
+  font-weight: var(--font-weight-semibold);
+}
+
+.meta {
+  font-size: var(--font-xs);
+  color: var(--text-disabled);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.button {
+  padding: 4px var(--space-3);
+  font-size: var(--font-xs);
+  color: var(--text-primary);
+  background-color: var(--bg-surface-4);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.button:hover {
+  border-color: var(--color-accent-dark);
+}
+
+.capacityOk {
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.capacityBad {
+  font-size: var(--font-xs);
+  color: #f0a0a0;
+}
+
+.library {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.libraryItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.libraryPick {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+  padding: 5px var(--space-3);
+  font-size: var(--font-sm);
+  color: var(--text-primary);
+  background-color: var(--bg-surface-4);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  text-align: left;
+}
+
+.libraryPick:hover {
+  border-color: var(--color-accent-dark);
+}
+
+.libraryName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.libraryMeta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-xs);
+  color: var(--text-disabled);
+  white-space: nowrap;
+}
+
+.onlineBadge {
+  padding: 0 5px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #c8ebc9;
+  background: rgba(76, 175, 80, 0.2);
+  border-radius: 999px;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: none;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  color: var(--text-primary);
+  border-color: var(--color-accent-dark);
+}
+
+.empty {
+  margin: 0;
+  font-size: var(--font-xs);
+  color: var(--text-disabled);
+}

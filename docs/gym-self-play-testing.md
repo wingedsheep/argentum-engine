@@ -170,7 +170,7 @@ empty. Post a typed `DecisionResponse` to `POST /envs/{id}/decision`. The JSON d
 | `CHOOSE_OPTION` | `OptionChosenResponse` | `optionIndex: int` |
 | `CHOOSE_REPLACEMENT` | `ReplacementChosenResponse` | `fromIndex: int, toIndex: int` |
 | `ASSIGN_DAMAGE` | `DamageAssignmentResponse` | `assignments: { "<entityId>": int }` |
-| `SELECT_MANA_SOURCES` | `ManaSourcesSelectedResponse` | `selectedSources: ["<id>",…]` or `autoPay: true` |
+| `SELECT_MANA_SOURCES` | `ManaSourcesSelectedResponse` | `selectedSources: ["<id>",…]`, `autoPay: true`, or `declined: true` |
 | `BUDGET_MODAL` | `BudgetModalResponse` | `selectedModeIndices: [int, …]` |
 
 Every response also needs `decisionId` (copy it from `pendingDecision.decisionId`). The

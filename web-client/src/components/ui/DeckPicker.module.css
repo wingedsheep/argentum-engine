@@ -1,11 +1,13 @@
 /* DeckPicker — layout for the tabbed deck builder used by quick-game and (later) tournament Custom Decks. */
 
+/* No width cap of its own: both call sites are panels inside the lobby card, which is already
+   capped at `--screen-card-w`. The 540px it used to carry was a second, narrower answer to the same
+   question, so the picker sat short of its own panel's right edge once the card grew. */
 .picker {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
   width: 100%;
-  max-width: 540px;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
@@ -100,6 +102,62 @@
   display: flex;
   gap: var(--space-2);
   align-items: center;
+}
+
+/* ── Random tab ─────────────────────────────────────────────────────────────
+ * The only tab whose answer is "nothing to do", and therefore the only one that could be mistaken
+ * for a panel that failed to load: it was one grey line of helper text in a 220px box. Saying what
+ * the server is going to do — and giving the set, the one thing there *is* to decide, a row of its
+ * own — makes it read as a choice that landed rather than an empty screen.
+ */
+.randomCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  text-align: center;
+  padding: var(--space-3);
+  border: 1px dashed rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.randomDie {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.randomTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.randomBody {
+  margin: 0;
+  max-width: 42ch;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+/* Label plus the shared SetSelector. Top-aligned rather than centred because the selector is a
+ * column (chips over its own button) that grows downwards as sets are added. */
+.randomSetRow {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  align-self: stretch;
+  margin-top: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.randomSetRow > label {
+  padding-top: 6px;
 }
 
 .nameInput {

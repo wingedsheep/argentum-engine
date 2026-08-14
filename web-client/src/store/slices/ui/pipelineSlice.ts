@@ -7,7 +7,7 @@
  * current subscriptions.
  */
 import type { SliceCreator, ActionPipelineState, PhaseResult } from '../types'
-import type { CastSpellAction, EntityId, LegalActionInfo } from '@/types'
+import type { ActivateAbilityAction, CastSpellAction, EntityId, LegalActionInfo } from '@/types'
 import { computePhases, mergeResult, enterPhase } from './pipelinePhases'
 import type { PipelineStoreMethods } from './pipelinePhases'
 import {
@@ -37,7 +37,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
 
   startPipeline: (actionInfo, options) => {
     // Refuse to start a new cast/activation while one is already in progress — you must finish or
-    // cancel the current pipeline (e.g. the waterbend tap step) first. Guards against casting a
+    // cancel the current pipeline (e.g. the improvise/waterbend tap step) first. Guards against casting a
     // second spell from hand mid-cast even if some interaction path slips past the UI gating.
     if (get().pipelineState != null) return
     const autoTapEnabled = options?.forceManualTap ? false : get().autoTapEnabled
@@ -162,12 +162,12 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
       }
     }
 
-    // If waterbend tapped permanents, reduce the generic cost shown to subsequent phases
-    // (each tapped artifact/creature pays {1} generic). Mirrors the convoke block above.
-    if (result.type === 'waterbend') {
+    // If a tap-for-generic payment (improvise / waterbend) tapped permanents, reduce the generic
+    // cost shown to subsequent phases (each tapped permanent pays {1} generic). Mirrors convoke.
+    if (result.type === 'tapForGeneric') {
       const originalSymbols = parseManaCostUtil(actionInfo.manaCostString ?? '')
       const remainingSymbols = [...originalSymbols]
-      for (let i = 0; i < result.waterbendPermanents.length; i++) {
+      for (let i = 0; i < result.tapForGenericPermanents.length; i++) {
         const gIdx = remainingSymbols.findIndex((s) => /^\d+$/.test(s))
         if (gIdx < 0) break
         const val = parseInt(remainingSymbols[gIdx]!, 10)
@@ -179,9 +179,17 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
         actionInfo.autoTapPreview && actionInfo.availableManaSources
           ? trimAutoTapPreview(actionInfo.autoTapPreview, actionInfo.availableManaSources, remainingSymbols)
           : actionInfo.autoTapPreview
+      // A permanent tapped for improvise/waterbend is spent — it can't also be tapped for mana
+      // (the Whir of Invention rulings say so explicitly, and the server rejects it). Drop the
+      // tapped ids from the source list the manaSource phase offers, or a mana rock the player
+      // just improvised with still shows up in the land picker and clicking it bounces.
+      const tappedIds = new Set<EntityId>(result.tapForGenericPermanents)
+      const remainingSources = actionInfo.availableManaSources?.filter(
+        (source) => !tappedIds.has(source.entityId),
+      )
       const {
-        hasWaterbend: _,
-        validWaterbendPermanents: _2,
+        hasTapForGeneric: _,
+        validTapForGenericPermanents: _2,
         autoTapPreview: _3,
         ...restActionInfo
       } = actionInfo
@@ -189,6 +197,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
         ...restActionInfo,
         manaCostString: modifiedManaCost,
         ...(trimmedPreview !== undefined ? { autoTapPreview: trimmedPreview } : {}),
+        ...(remainingSources !== undefined ? { availableManaSources: remainingSources } : {}),
         action: mergedAction,
       }
     }
@@ -211,6 +220,17 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
       nextPhases = [{ type: 'costPayment' }, ...nextPhases]
     }
 
+    // Dynamic phase injection: a non-mana escalate cost (CR 702.120a) is owed once per mode
+    // chosen beyond the first, so how much there is to pay — and whether anything is owed at
+    // all — is only known once the modal panel has confirmed its picks.
+    if (
+      result.type === 'modalModes' &&
+      actionInfo.modalEnumeration?.additionalCostPerExtraMode &&
+      result.chosenModes.length > 1
+    ) {
+      nextPhases = [{ type: 'escalateCost' }, ...nextPhases]
+    }
+
     // Dynamic phase injection: damage distribution after targeting with >1 targets
     if (
       result.type === 'targeting' &&
@@ -218,7 +238,10 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
       actionInfo.totalDamageToDistribute &&
       result.selectedTargets.length > 1
     ) {
-      const cardName = actionInfo.description.replace('Cast ', '')
+      // Spells read "Cast <name>", activated abilities "Activate <name>: …" — strip either verb so
+      // the modal header names the source (Chandra, Flameshaper's −4 divides damage the same way
+      // Arc Lightning does).
+      const cardName = actionInfo.description.replace(/^(Cast|Activate) /, '')
       const minPerTarget = actionInfo.minDamagePerTarget ?? 1
       const initialDistribution: Record<string, number> = {}
       for (const targetId of result.selectedTargets) {
@@ -235,7 +258,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
 
       get().startDamageDistribution({
         actionInfo,
-        action: mergedAction as CastSpellAction,
+        action: mergedAction as CastSpellAction | ActivateAbilityAction,
         cardName,
         targetIds: [...result.selectedTargets],
         totalDamage: actionInfo.totalDamageToDistribute,
@@ -274,7 +297,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
       blightVariableSelectionState: null,
       payXLifeSelectionState: null,
       convokeSelectionState: null,
-      waterbendSelectionState: null,
+      tapForGenericSelectionState: null,
       harmonizeSelectionState: null,
       delveSelectionState: null,
       manaSelectionState: null,
@@ -293,7 +316,7 @@ function getStoreMethods(get: () => import('../types').GameStore): PipelineStore
     startBlightVariableSelection: state.startBlightVariableSelection,
     startPayXLifeSelection: state.startPayXLifeSelection,
     startConvokeSelection: state.startConvokeSelection,
-    startWaterbendSelection: state.startWaterbendSelection,
+    startTapForGenericSelection: state.startTapForGenericSelection,
     startHarmonizeSelection: state.startHarmonizeSelection,
     startDelveSelection: state.startDelveSelection,
     startCounterDistribution: state.startCounterDistribution,

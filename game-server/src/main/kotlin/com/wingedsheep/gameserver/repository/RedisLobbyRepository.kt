@@ -19,8 +19,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Primary
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
+import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
 
 /**
  * Redis-backed implementation of LobbyRepository.
@@ -70,8 +70,7 @@ class RedisLobbyRepository(
             redisTemplate.opsForValue().set(
                 lobbyKey(lobby.lobbyId),
                 json,
-                redisProperties.ttlMinutes,
-                TimeUnit.MINUTES
+                Duration.ofMinutes(redisProperties.ttlMinutes)
             )
             logger.debug("Persisted lobby ${lobby.lobbyId} to Redis")
         } catch (e: Exception) {
@@ -127,8 +126,7 @@ class RedisLobbyRepository(
             redisTemplate.opsForValue().set(
                 sealedKey(session.sessionId),
                 json,
-                redisProperties.ttlMinutes,
-                TimeUnit.MINUTES
+                Duration.ofMinutes(redisProperties.ttlMinutes)
             )
             logger.debug("Persisted sealed session ${session.sessionId} to Redis")
         } catch (e: Exception) {
@@ -180,8 +178,7 @@ class RedisLobbyRepository(
             redisTemplate.opsForValue().set(
                 tournamentKey(lobbyId),
                 json,
-                redisProperties.ttlMinutes,
-                TimeUnit.MINUTES
+                Duration.ofMinutes(redisProperties.ttlMinutes)
             )
             logger.debug("Persisted tournament for lobby $lobbyId to Redis")
         } catch (e: Exception) {

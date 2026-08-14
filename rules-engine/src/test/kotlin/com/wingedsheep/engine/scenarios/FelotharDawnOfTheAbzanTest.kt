@@ -57,6 +57,7 @@ class FelotharDawnOfTheAbzanTest : FunSpec({
 
         // Choose the Hill Giant as the sacrifice.
         driver.submitCardSelection(me, listOf(fodder))
+        driver.bothPass() // CR 603.12: the reflexive payoff is a real stack object now
 
         // Each creature you control still in play gets a +1/+1 counter (Felothar + the Bears).
         plusCounters(driver, felotharCard) shouldBe 1
@@ -105,6 +106,7 @@ class FelotharDawnOfTheAbzanTest : FunSpec({
         driver.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
         driver.submitYesNo(me, true)
         driver.submitCardSelection(me, listOf(fodder))
+        driver.bothPass() // CR 603.12: the reflexive payoff is a real stack object now
 
         plusCounters(driver, felothar) shouldBe 1
         plusCounters(driver, bears) shouldBe 1

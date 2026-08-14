@@ -1,4 +1,26 @@
-import type { SpectatorStateUpdate } from '../components/admin/ReplayViewer'
+/**
+ * One replay frame, as the server sends it. Lives here rather than in a component because it is
+ * the wire shape every replay surface reads — it used to be declared inside the admin overlay,
+ * which meant the public `/replay` route imported its core type from `components/admin/`.
+ */
+export interface SpectatorStateUpdate {
+  gameSessionId: string
+  gameState: unknown
+  /** N-player seat roster (turn order), carrying team membership for team variants. */
+  players?: ReadonlyArray<{ playerId: string; teamIndex?: number | null; teamSharedLife?: boolean }>
+  player1Id: string | null
+  player2Id: string | null
+  player1Name: string | null
+  player2Name: string | null
+  player1: unknown
+  player2: unknown
+  currentPhase: string
+  activePlayerId: string | null
+  priorityPlayerId: string | null
+  combat: unknown
+  decisionStatus: unknown
+}
+
 
 /**
  * A delta representation of a SpectatorStateUpdate change.
@@ -58,6 +80,19 @@ export interface PublicReplayData {
     startedAt: string
     endedAt: string
     snapshotCount: number
+    /**
+     * How the server produced these frames. EXACT / UNVERIFIED mean it re-simulated the recorded
+     * inputs; DIVERGED means the current engine can no longer reproduce the game and the frames
+     * came out of the archive stored when it was played.
+     */
+    fidelity?: 'EXACT' | 'UNVERIFIED' | 'DIVERGED'
+    /** Player-facing explanation to show when the replay isn't a faithful re-simulation. */
+    degradedReason?: string | null
+    /**
+     * Whether the server can still rebuild a real game state for these frames — i.e. whether
+     * "share frame as scenario" will work. False when watching archived frames.
+     */
+    stateReproducible?: boolean
   }
   initialSnapshot: SpectatorStateUpdate
   deltas: SpectatorReplayDelta[]

@@ -5,7 +5,8 @@ import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
 
 /**
- * Represents the player's choice for alternative payment methods like Delve, Convoke and Waterbend.
+ * Represents the player's choice for alternative payment methods like Delve, Convoke, Improvise
+ * and Waterbend.
  *
  * These are specified when casting a spell or activating an ability and affect how the mana
  * cost is paid:
@@ -13,31 +14,37 @@ import kotlinx.serialization.Serializable
  * - **Convoke**: Tap creatures, each pays {1} or one mana of the creature's color
  * - **Harmonize**: Tap a single creature you control to reduce the (harmonize) cost
  *   by an amount of generic mana equal to its power
- * - **Waterbend**: Tap untapped artifacts and/or creatures you control, each paying {1}
- *   generic mana of a waterbend cost (Avatar: The Last Airbender). Generic-only — unlike
- *   Convoke a tapped permanent never pays a colored pip, and artifacts qualify alongside
- *   creatures.
+ * - **Tap-for-generic** ([tapForGenericPermanents]): the one rail shared by every "tap untapped
+ *   permanents you control, each paying {1} *generic*" mechanic. Which permanents are eligible
+ *   and how many taps are allowed is decided by the mechanic that is being paid, not by this
+ *   field:
+ *   - **Improvise** (CR 702.126) — artifacts only, bounded by the generic mana in the spell's
+ *     total cost.
+ *   - **Waterbend** (Avatar: The Last Airbender) — artifacts *and* creatures, bounded by the
+ *     waterbend amount {N}.
+ *   Unlike Convoke, a permanent tapped this way never pays a colored pip.
  *
  * @property delvedCards Cards to exile from graveyard for Delve payment
  * @property convokedCreatures Creatures to tap for Convoke payment, with color choice
  * @property harmonizeCreature Single creature tapped for Harmonize, reducing the generic
  *           portion of the cost by its power. Null when no creature is tapped.
- * @property waterbendPermanents Untapped artifacts/creatures you control tapped to pay the
- *           generic portion of a Waterbend cost — each pays {1} generic.
+ * @property tapForGenericPermanents Untapped permanents you control tapped to pay generic mana —
+ *           each pays {1} generic. Used by Improvise (artifacts) and Waterbend
+ *           (artifacts/creatures); the paying mechanic supplies the eligibility filter and cap.
  */
 @Serializable
 data class AlternativePaymentChoice(
     val delvedCards: List<EntityId> = emptyList(),
     val convokedCreatures: Map<EntityId, ConvokePayment> = emptyMap(),
     val harmonizeCreature: EntityId? = null,
-    val waterbendPermanents: Set<EntityId> = emptySet()
+    val tapForGenericPermanents: Set<EntityId> = emptySet()
 ) {
     /**
      * Whether any alternative payment is being used.
      */
     val isEmpty: Boolean
         get() = delvedCards.isEmpty() && convokedCreatures.isEmpty() &&
-            harmonizeCreature == null && waterbendPermanents.isEmpty()
+            harmonizeCreature == null && tapForGenericPermanents.isEmpty()
 
     /**
      * Total generic mana reduction from Delve.

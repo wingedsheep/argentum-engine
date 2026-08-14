@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.util.quantify
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -23,10 +24,18 @@ import kotlinx.serialization.Serializable
  * its own `Atom` wrapper.
  *
  * **What lives here:** payable things whose meaning is identical across contexts — the *what* is paid,
- * not the *when* or *why*. Counts are plain [Int]s because every current shared cost has a fixed count;
- * genuinely *variable* costs (exile X cards, pay X life, blight X) and context-specific oddities (Forage,
- * Behold, Echo timing, kicker linkage) are deliberately **not** atoms — they stay as subtypes on the
- * wrapper that owns their context-specific behavior.
+ * not the *when* or *why*. Most counts are plain [Int]s because most shared costs have a fixed count.
+ *
+ * **The line is context-dependence, not variability.** A cost belongs on a wrapper when its *meaning*
+ * changes with the context that asks for it — Echo's timing, kicker's linkage, Forage's mode choice
+ * wired into cast-time action enumeration. Being *variable* is not by itself disqualifying: an atom
+ * whose count is a player choice is still the same payable thing everywhere, and [VariablePermanents]
+ * ("exile/sacrifice one or more … with total mana value X") and [CollectEvidence] (CR 701.59 — "exile
+ * any number of cards from your graveyard with total mana value N or greater") both live here for that
+ * reason. What stays off them is the context-specific *rider*: [CollectEvidence] carries the payment
+ * but not the "if evidence was collected" linkage, which belongs to the optional-additional-cost
+ * wrapper. Costs that are variable *and* context-bound — pay X life, blight X, kicker linkage — remain
+ * subtypes on the wrapper that owns that behavior.
  *
  * Each atom's [description] is a canonical, lower-case-leading phrase ("sacrifice a Goblin"); the wrapper
  * adapts casing for its context (mid-sentence "unless you sacrifice a Goblin" vs. leading "Sacrifice a
@@ -57,6 +66,24 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     @Serializable
     data class PayLife(val amount: Int) : CostAtom {
         override val description: String get() = "pay $amount life"
+    }
+
+    /**
+     * Mill [count] cards — put that many cards from the top of your library into your graveyard
+     * (CR 701.17a).
+     *
+     * Takes no selection: the cards milled are the top [count], not a player choice. Per CR 701.17b
+     * a player *can't pay a cost that includes milling more cards than their library holds*, so
+     * affordability is a plain library-size check — unlike the mill *effect*, which mills as many as
+     * possible. A `ModifyMillAmount` replacement (Bruvac) still applies to the announced number when
+     * the cost is actually paid, and the resulting library→graveyard zone changes fire mill triggers
+     * exactly as an effect's mill does.
+     */
+    @SerialName("AtomMill")
+    @Serializable
+    data class Mill(val count: Int = 1) : CostAtom {
+        override val description: String get() =
+            if (count == 1) "mill a card" else "mill $count cards"
     }
 
     /**
@@ -93,34 +120,68 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     }
 
     /**
-     * Exile one or more permanents matching [filter] you control — a *variable-count* cost: the
-     * payer chooses how many to exile (at least [minCount]). Unlike the fixed-count [Sacrifice] /
-     * [ExileFrom] atoms, the number exiled is a player choice made as the ability is activated (CR
-     * 601.2b — the value of a variable defined by a cost choice is announced at activation). The
-     * resolving ability reads the **total mana value** of the exiled permanents as its X value
-     * ([com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue]), so a target/effect can be
-     * bounded "with mana value X or less".
+     * Put one or more permanents matching [filter] you control into another zone — a
+     * *variable-count* cost: the payer chooses how many (at least [minCount]). Unlike the
+     * fixed-count [Sacrifice] / [ExileFrom] atoms, the number is a player choice made as the ability
+     * is activated (CR 601.2b — the value of a variable defined by a cost choice is announced at
+     * activation), and the resolving ability reads it as its X value
+     * ([com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue]).
      *
-     * @property filter which permanents you control may be exiled.
-     * @property minCount minimum number to exile (default 1 — "one or more").
+     * Three orthogonal axes cover the printed shapes:
+     *
+     *  - [action] — what happens to the chosen permanents. `EXILE` for "exile one or more …"
+     *    (Fabrication Foundry), `SACRIFICE` for "sacrifice one or more …" (Radiant Lotus), `TAP`
+     *    for "tap any number of …" (Teamwork N, CR 702.194a). A sacrifice fires "whenever you
+     *    sacrifice" triggers; an exile and a tap do not.
+     *  - [xMeasure] — how the choice is measured. `TOTAL_MANA_VALUE` for "… with total mana value X"
+     *    (bounds a "mana value X or less" target); `COUNT` for "… for each permanent chosen this
+     *    way", where X is simply how many were chosen; `TOTAL_POWER` for "… with total power N or
+     *    more" (Teamwork). The measure doubles as the ability's X when it resolves.
+     *  - [minMeasure] — a *floor on the measure* rather than on the count: "with total power N or
+     *    more". 0 means unbounded, in which case only [minCount] constrains the choice.
+     *
+     * @property filter which permanents you control may be chosen.
+     * @property minCount minimum number to choose (default 1 — "one or more"). Set 0 alongside a
+     *   [minMeasure] for "any number … with total power N or more", where the count itself is free.
      * @property excludeSelf when true the cost's source permanent is excluded — "exile one or more
-     *   *other* [filter] you control" (Fabrication Foundry).
+     *   *other* [filter] you control" (Fabrication Foundry). Leave false when the source may pay for
+     *   itself (Radiant Lotus is an artifact and may sacrifice itself to its own cost), and for
+     *   spell additional costs, which have no source permanent on the battlefield to exclude.
+     * @property action what the cost does with the chosen permanents.
+     * @property xMeasure how the chosen set is measured.
+     * @property minMeasure minimum total the chosen set's [xMeasure] must reach (0 = no floor).
      */
-    @SerialName("AtomExilePermanents")
+    @SerialName("AtomVariablePermanents")
     @Serializable
-    data class ExilePermanents(
+    data class VariablePermanents(
         val filter: GameObjectFilter = GameObjectFilter.Any,
         val minCount: Int = 1,
-        val excludeSelf: Boolean = true
+        val excludeSelf: Boolean = true,
+        val action: PermanentCostAction = PermanentCostAction.EXILE,
+        val xMeasure: VariableCostMeasure = VariableCostMeasure.TOTAL_MANA_VALUE,
+        val minMeasure: Int = 0
     ) : CostAtom {
         // Variable count — the floor the payer must at least select. The picker's max is the number
         // of eligible permanents, resolved by the engine at activation time.
         override val selectionCount: Int get() = minCount
         override val description: String get() = buildString {
-            append("exile ")
-            append(if (minCount <= 1) "one or more " else "$minCount or more ")
+            append(when (action) {
+                PermanentCostAction.EXILE -> "exile "
+                PermanentCostAction.SACRIFICE -> "sacrifice "
+                PermanentCostAction.TAP -> "tap "
+            })
+            append(when {
+                minCount <= 0 -> "any number of "
+                minCount == 1 -> "one or more "
+                else -> "$minCount or more "
+            })
             if (excludeSelf) append("other ")
             append("${filter.description}s you control")
+            if (minMeasure > 0) when (xMeasure) {
+                VariableCostMeasure.TOTAL_POWER -> append(" with total power $minMeasure or more")
+                VariableCostMeasure.TOTAL_MANA_VALUE -> append(" with total mana value $minMeasure or more")
+                VariableCostMeasure.COUNT -> {}
+            }
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): CostAtom {
@@ -296,6 +357,47 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
         }
     }
 
+    /**
+     * Collect evidence [amount] — exile any number of cards from your graveyard with total mana
+     * value [amount] or greater (CR 701.59a, Murders at Karlov Manor).
+     *
+     * An atom rather than a per-wrapper subtype because the *payable thing* means exactly the same
+     * in all three cost contexts, and every one of them has printed cards: an activated-ability
+     * cost ([com.wingedsheep.sdk.scripting.AbilityCost.Atom] — Cryptex, Polygraph Orb, Forensic
+     * Researcher, Hedge Whisperer, Tenth District Hero, Kylox's Voltstrider), a cast-time
+     * additional cost ([com.wingedsheep.sdk.scripting.AdditionalCost.Atom] — Extract a Confession,
+     * Vitu-Ghazi Inspector, …), and a payable cost ([PayCost.Atom] — Axebane Ferox's
+     * "Ward—Collect evidence 4"). Splitting it per wrapper would have re-created the exact
+     * duplication this vocabulary exists to prevent.
+     *
+     * **What is deliberately *not* here:** the CR 701.59c *linkage* — "if evidence was collected".
+     * That is a property of the optional-additional-cost wrapper, not of the payable thing, and
+     * rides the existing rail
+     * ([com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost] stamping
+     * [com.wingedsheep.sdk.scripting.ChoiceSlot.EVIDENCE_COLLECTED], read back through
+     * `Conditions.WasEvidenceCollected`) exactly as bargain's linkage does. Keeping the linkage
+     * off the atom is what lets the same atom serve the six *unlinked* contexts above.
+     *
+     * **Variable by nature, like [VariablePermanents].** The payer chooses *how many* cards; the
+     * constraint is a floor on their **total mana value**, not on their count, so [selectionCount]
+     * is only the floor of 1 card and the real gate is [amount]. Exiling more than [amount] worth
+     * is legal, and land cards (mana value 0) are legal selections that contribute nothing.
+     *
+     * Per CR 701.59b a player who cannot reach [amount] **can't choose to collect evidence** — the
+     * option must be *hidden*, not offered and refused. Every affordability check therefore fails
+     * closed on "sum of available mana values < [amount]".
+     *
+     * @property amount The mana-value floor N — the total the exiled cards must meet or exceed.
+     */
+    @SerialName("AtomCollectEvidence")
+    @Serializable
+    data class CollectEvidence(val amount: Int) : CostAtom {
+        // Variable count: at least one card must be exiled, but the binding constraint is the
+        // total mana value, carried separately to the picker.
+        override val selectionCount: Int get() = 1
+        override val description: String get() = "collect evidence $amount"
+    }
+
     /** Reveal [count] cards matching [filter] from your hand (the cards stay in hand). */
     @SerialName("AtomRevealFromHand")
     @Serializable
@@ -317,28 +419,52 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     }
 }
 
-/**
- * "a Goblin" / "three Goblins" — the article-or-count phrase shared by the selection atoms. Small
- * counts are spelled out (oracle convention); the article respects a vowel-leading filter description.
- */
-private fun quantify(count: Int, filterDescription: String): String =
-    if (count == 1) {
-        val article = if (filterDescription.firstOrNull()?.lowercaseChar() in listOf('a', 'e', 'i', 'o', 'u')) "an" else "a"
-        "$article $filterDescription"
-    } else {
-        "${numberToWord(count)} ${filterDescription}s"
-    }
 
-private fun numberToWord(n: Int): String = when (n) {
-    1 -> "one"
-    2 -> "two"
-    3 -> "three"
-    4 -> "four"
-    5 -> "five"
-    6 -> "six"
-    7 -> "seven"
-    8 -> "eight"
-    9 -> "nine"
-    10 -> "ten"
-    else -> n.toString()
+/**
+ * What a [CostAtom.VariablePermanents] cost does with the permanents the payer chose.
+ *
+ * The distinction is not cosmetic: a sacrifice puts the permanents into their owners' graveyards
+ * and fires "whenever you sacrifice a permanent" triggers (CR 701.17), while an exile moves them
+ * to exile and fires none of those.
+ */
+@Serializable
+enum class PermanentCostAction {
+    /** "Exile one or more artifacts you control …" (Fabrication Foundry). */
+    EXILE,
+
+    /** "Sacrifice one or more artifacts …" (Radiant Lotus). */
+    SACRIFICE,
+
+    /**
+     * "Tap any number of creatures you control …" (Teamwork N, CR 702.194a). Only untapped
+     * permanents may be chosen (CR 701.26a); this is a cost, not the `{T}` symbol, so summoning
+     * sickness (CR 302.6) does not apply — the same rule crew and saddle already follow.
+     */
+    TAP
+}
+
+/**
+ * How a [CostAtom.VariablePermanents] choice is measured — both as the ability's X (CR 601.2b) and
+ * as the quantity a [CostAtom.VariablePermanents.minMeasure] floor is compared against.
+ */
+@Serializable
+enum class VariableCostMeasure {
+    /**
+     * X is the sum of the chosen permanents' mana values — "… with total mana value X"
+     * (Fabrication Foundry, whose reanimation target is then bounded "mana value X or less").
+     */
+    TOTAL_MANA_VALUE,
+
+    /**
+     * X is simply how many permanents were chosen — the "… for each permanent sacrificed this way"
+     * shape (Radiant Lotus adds three mana per artifact sacrificed).
+     */
+    COUNT,
+
+    /**
+     * The measure is the sum of the chosen permanents' **projected** power — "… with total power N
+     * or more" (Teamwork N, CR 702.194a; the same quantity crew and saddle sum). Read from
+     * projected state so a lord bonus or a +1/+1 counter counts toward the threshold.
+     */
+    TOTAL_POWER
 }

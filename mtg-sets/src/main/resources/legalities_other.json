@@ -126,5 +126,23 @@
     "LEGACY",
     "OATHBREAKER",
     "VINTAGE"
+  ],
+  "Óin the Brave": [
+    "BRAWL",
+    "COMMANDER",
+    "COMPETITIVEBRAWL",
+    "DUEL",
+    "GLADIATOR",
+    "HISTORIC",
+    "LEGACY",
+    "MODERN",
+    "OATHBREAKER",
+    "PAUPER",
+    "PIONEER",
+    "STANDARD",
+    "STANDARDBRAWL",
+    "TIMELESS",
+    "TLR",
+    "VINTAGE"
   ]
 }

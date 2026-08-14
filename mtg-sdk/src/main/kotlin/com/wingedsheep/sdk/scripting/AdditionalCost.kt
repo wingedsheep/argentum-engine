@@ -19,9 +19,10 @@ import kotlinx.serialization.Serializable
  *
  * The payable things shared with the other cost contexts (sacrifice, discard, pay life, exile from a
  * zone, tap permanents) live in the [CostAtom] vocabulary and are carried here by [Atom]. The remaining
- * subtypes are genuinely casting-context-specific: alternative "X or pay mana" shapes (Blight/Behold),
- * pipeline-storage flow (Behold/ExileFromStorage/Composite), per-target life, variable exile, and the
- * cross-zone [ChooseEntity] pick.
+ * subtypes are genuinely casting-context-specific: the "X or pay mana" wrapper ([OrPay], plus
+ * [BlightOrPay] which has no standalone cost to wrap), pipeline-storage flow
+ * (Behold/ExileFromStorage/Composite), per-target life, variable exile, and the cross-zone
+ * [ChooseEntity] pick.
  */
 @Serializable
 sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
@@ -140,9 +141,9 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      * options compose the same atoms every other cost uses (Sacrifice / Discard / ExileFrom / …).
      *
      * **Boundary — what this is *not*:** [Choice] is for options that are each *independently payable
-     * non-mana costs*. Options where one branch instead pays *additional mana* ("… or pay {2}") are the
-     * separate `*OrPay` family ([SacrificeOrPay], [ExileFromGraveyardOrPay], [BeholdOrPay],
-     * [BlightOrPay]) — those fold the alternative into the spell's mana cost, which [Choice] never does.
+     * non-mana costs*. Options where one branch instead pays *additional mana* ("… or pay {2}") are
+     * [OrPay] (and [BlightOrPay], the one shape it can't wrap) — those fold the alternative into the
+     * spell's mana cost, which [Choice] never does.
      * [Forage] (CR 701.61) is the named keyword shortcut for a fixed two-option cost-vs-cost (exile
      * three from your graveyard / sacrifice a Food); [Choice] is its open, parameterized generalization.
      *
@@ -233,6 +234,11 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      * The enumerator produces two legal actions: one for the blight path (base cost + creature selection)
      * and one for the pay path (base cost + [alternativeManaCost]).
      *
+     * Its own type rather than an [OrPay] leg because there is no standalone blight [AdditionalCost]
+     * for [OrPay] to wrap: blighting places counters on a chosen creature and exposes the amount to
+     * the spell's effects (`ChoiceSlot.BLIGHT_AMOUNT`), and only ever appears as this or-pay shape
+     * and as [BlightVariable]. Give it one and this collapses into [OrPay] too.
+     *
      * @property blightAmount Number of -1/-1 counters to place
      * @property alternativeManaCost Extra mana to pay instead of blighting (e.g., "{1}")
      */
@@ -287,124 +293,53 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
     }
 
     /**
-     * Behold a matching card or pay additional mana: the caster must either behold
-     * (choose a matching permanent they control or reveal a matching card from their hand)
-     * or pay extra mana on top of the spell's base mana cost. Unlike [BeholdAndExile],
-     * this does not exile the beheld card.
-     * Used by Lorwyn Eclipsed cards (e.g., Lys Alana Dignitary).
+     * Pay [cost], **or** pay [alternativeManaCost] on top of the spell's mana cost — the whole
+     * "do X or pay {N}" shape, parameterized by the cost on the non-mana leg. One type covers every
+     * printed variant: Louisoix's Sacrifice ("sacrifice a legendary creature or pay {2}"), Pumpkin
+     * Bombardment ("discard a card or pay {2}"), Soaring Stoneglider ("exile two cards from your
+     * graveyard or pay {1}{W}") and Lys Alana Dignitary ("behold an Elf or pay {2}") differ only in
+     * which cost sits on that leg.
      *
-     * The enumerator produces two legal actions: one for the behold path (base cost +
-     * card selection) and one for the pay path (base cost + [alternativeManaCost]).
+     * The enumerator produces up to two legal actions: the **leg path** (base cost + [cost]'s
+     * ordinary selection prompt — the same picker that cost uses on its own, so no new client UI)
+     * and the **pay path** (base cost + [alternativeManaCost] folded in). The leg path is offered
+     * only when the board actually affords it — with nothing to sacrifice / discard / exile /
+     * behold, only the pay path is castable. The pay path is always available, so the cost as a
+     * whole is always payable.
      *
-     * @property filter Which cards/permanents can be beheld
-     * @property alternativeManaCost Extra mana to pay instead of beholding (e.g., "{2}")
-     * @property storeAs Pipeline storage key for the chosen cards (unused by cost itself,
-     *   reserved for downstream composition)
+     * Which leg the caster took is recovered at payment time from **which
+     * [AdditionalCostPayment] field the client populated** — the same disambiguation [Choice] uses.
+     * Two consequences:
+     *
+     *  - [cost] must be a *selection-carrying* cost, i.e. one whose payment lands in its own field:
+     *    [Behold], or an [Atom] over [CostAtom.Sacrifice], [CostAtom.Discard], [CostAtom.ExileFrom],
+     *    [CostAtom.TapPermanents], [CostAtom.ReturnToHand]. Costs that are auto-paid with no
+     *    selection ([CostAtom.PayLife], [CostAtom.Mill]) leave no trace to read the choice from, so
+     *    they can't sit on this leg.
+     *  - Don't pair it on one card with another additional cost that consumes the *same* payment
+     *    field (e.g. a mandatory discard cost alongside a "discard a card or pay {2}") — the two
+     *    would be indistinguishable.
+     *
+     * Once the leg is known, it is paid through [cost]'s own ordinary machinery (`CastSpellHandler`
+     * reduces this to plain `cost`), so validation, payment, LKI snapshots, behold's pipeline
+     * storage and the turn's discard tracking (CR 701.8) all behave exactly as for that cost
+     * standing alone.
+     *
+     * @property cost The non-mana leg — what the caster pays instead of the extra mana.
+     * @property alternativeManaCost Extra mana to pay instead of [cost] (e.g. "{2}", "{1}{W}").
      */
-    @SerialName("BeholdOrPay")
+    @SerialName("OrPay")
     @Serializable
-    data class BeholdOrPay(
-        val filter: GameObjectFilter = GameObjectFilter.Any,
+    data class OrPay(
+        val cost: AdditionalCost,
         val alternativeManaCost: String,
-        val storeAs: String = "beheld"
     ) : AdditionalCost {
-        override val description: String = buildString {
-            append("Behold ")
-            val filterDesc = filter.description
-            val article = if (filterDesc.firstOrNull()?.lowercase() in listOf("a", "e", "i", "o", "u")) "an" else "a"
-            append("$article ")
-            append(filterDesc)
-            append(" or pay ")
-            append(alternativeManaCost)
-        }
+        // Both Atom and Behold already lead with a capital, as additional-cost clauses do.
+        override val description: String get() = "${cost.description} or pay $alternativeManaCost"
 
         override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
-            val newFilter = filter.applyTextReplacement(replacer)
-            return if (newFilter !== filter) copy(filter = newFilter) else this
-        }
-    }
-
-    /**
-     * Exile [exileCount] cards matching [filter] from your graveyard, or pay additional mana:
-     * the caster must either exile that many matching cards from their graveyard, or pay extra mana
-     * on top of the spell's base mana cost. The sibling of [BlightOrPay] / [BeholdOrPay] for the
-     * "exile from graveyard or pay" shape (e.g. Soaring Stoneglider — "exile two cards from your
-     * graveyard or pay {1}{W}").
-     *
-     * The enumerator produces up to two legal actions: one for the exile path (base cost + card
-     * selection from the graveyard) and one for the pay path (base cost + [alternativeManaCost]).
-     * The exile path is only offered when the graveyard holds at least [exileCount] matching cards.
-     * The chosen path is recovered at payment time from whether
-     * [AdditionalCostPayment.exiledCards] is non-empty.
-     *
-     * @property exileCount How many matching cards to exile from the graveyard
-     * @property alternativeManaCost Extra mana to pay instead of exiling (e.g., "{1}{W}")
-     * @property filter Which graveyard cards qualify (default any card)
-     */
-    @SerialName("ExileFromGraveyardOrPay")
-    @Serializable
-    data class ExileFromGraveyardOrPay(
-        val exileCount: Int,
-        val alternativeManaCost: String,
-        val filter: GameObjectFilter = GameObjectFilter.Any,
-    ) : AdditionalCost {
-        override val description: String = buildString {
-            append("Exile $exileCount ")
-            append(filter.description)
-            append(if (exileCount == 1) " card from your graveyard or pay " else " cards from your graveyard or pay ")
-            append(alternativeManaCost)
-        }
-
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
-            val newFilter = filter.applyTextReplacement(replacer)
-            return if (newFilter !== filter) copy(filter = newFilter) else this
-        }
-    }
-
-    /**
-     * Sacrifice [count] permanent(s) matching [filter] you control, or pay additional mana: the
-     * caster must either sacrifice that many matching permanents, or pay extra mana on top of the
-     * spell's base mana cost. The sibling of [BlightOrPay] / [BeholdOrPay] /
-     * [ExileFromGraveyardOrPay] for the "sacrifice a permanent or pay" shape (e.g. Louisoix's
-     * Sacrifice — "sacrifice a legendary creature or pay {2}").
-     *
-     * The enumerator produces up to two legal actions: one for the sacrifice path (base cost +
-     * permanent selection from the battlefield, surfaced with `costType = "SacrificePermanent"`
-     * like Natural Order's plain sacrifice cost) and one for the pay path (base cost +
-     * [alternativeManaCost]). The sacrifice path is only offered when the caster controls at least
-     * [count] permanents matching [filter]. The chosen path is recovered at payment time from
-     * whether [AdditionalCostPayment.sacrificedPermanents] is non-empty.
-     *
-     * @property filter Which permanents you control qualify (e.g. legendary creature)
-     * @property alternativeManaCost Extra mana to pay instead of sacrificing (e.g. "{2}")
-     * @property count How many matching permanents to sacrifice on the sacrifice path
-     */
-    @SerialName("SacrificeOrPay")
-    @Serializable
-    data class SacrificeOrPay(
-        val filter: GameObjectFilter = GameObjectFilter.Any,
-        val alternativeManaCost: String,
-        val count: Int = 1,
-    ) : AdditionalCost {
-        override val description: String = buildString {
-            append("Sacrifice ")
-            if (count == 1) {
-                val filterDesc = filter.description
-                val article = if (filterDesc.firstOrNull()?.lowercase() in listOf("a", "e", "i", "o", "u")) "an" else "a"
-                append("$article ")
-                append(filterDesc)
-            } else {
-                append("$count ")
-                append(filter.description)
-                append("s")
-            }
-            append(" or pay ")
-            append(alternativeManaCost)
-        }
-
-        override fun applyTextReplacement(replacer: TextReplacer): AdditionalCost {
-            val newFilter = filter.applyTextReplacement(replacer)
-            return if (newFilter !== filter) copy(filter = newFilter) else this
+            val newCost = cost.applyTextReplacement(replacer)
+            return if (newCost !== cost) copy(cost = newCost) else this
         }
     }
 
@@ -553,6 +488,18 @@ data class AdditionalCostPayment(
     /** Cards that were exiled */
     val exiledCards: List<EntityId> = emptyList(),
 
+    /**
+     * Permanents chosen for a [com.wingedsheep.sdk.scripting.costs.CostAtom.VariablePermanents]
+     * variable-count cost — "exile/sacrifice **one or more** [filter] you control".
+     *
+     * Its own channel rather than [exiledCards] / [sacrificedPermanents] because the count is the
+     * payer's choice (CR 601.2b) and the same ability may also carry a fixed-count sacrifice or
+     * exile cost: mixing them into one list would make "which permanents paid which leg" ambiguous.
+     * The engine derives the ability's X from this list — its size, or the total mana value of its
+     * members, per the atom's `xMeasure`.
+     */
+    val variableCostPermanents: List<EntityId> = emptyList(),
+
     /** Cards chosen via Behold (from battlefield or hand) */
     val beheldCards: List<EntityId> = emptyList(),
 
@@ -591,6 +538,7 @@ data class AdditionalCostPayment(
                 discardedCards.isEmpty() &&
                 lifePaid == 0 &&
                 exiledCards.isEmpty() &&
+                variableCostPermanents.isEmpty() &&
                 beheldCards.isEmpty() &&
                 tappedPermanents.isEmpty() &&
                 bouncedPermanents.isEmpty() &&

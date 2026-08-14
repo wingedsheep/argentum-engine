@@ -283,6 +283,44 @@ class CombatAdvisorTest : FunSpec({
         result.blockers shouldNotContainKey blocker
     }
 
+    test("does not gang block an attacker that can only be blocked by one creature") {
+        val cappedAttacker = com.wingedsheep.sdk.dsl.card("Capped Attacker") {
+            manaCost = "{3}{G}"
+            typeLine = "Creature — Warrior"
+            power = 4
+            toughness = 4
+            staticAbility {
+                ability = com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan(1)
+            }
+        }
+        val gangBlocker = CardDefinition.creature(
+            name = "Gang Blocker",
+            manaCost = ManaCost.parse("{2}{G}"),
+            subtypes = setOf(Subtype("Beast")),
+            power = 2,
+            toughness = 3,
+        )
+        val cards = listOf(cappedAttacker, gangBlocker)
+        val (driver, _, advisor) = setup(cards)
+        val p1 = driver.player1
+        val p2 = driver.player2
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val attacker = driver.putCreatureOnBattlefield(p1, "Capped Attacker")
+        driver.removeSummoningSickness(attacker)
+        val blocker1 = driver.putCreatureOnBattlefield(p2, "Gang Blocker")
+        val blocker2 = driver.putCreatureOnBattlefield(p2, "Gang Blocker")
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.submit(DeclareAttackers(p1, mapOf(attacker to p2)))
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+
+        val result = advisor.chooseBlockers(
+            driver.state, buildBlockAction(p2, listOf(blocker1, blocker2)), p2
+        ) as DeclareBlockers
+
+        result.blockers.values.flatten().count { it == attacker } shouldBe 1
+        driver.submit(result).isSuccess shouldBe true
+    }
+
     // ═════════════════════════════════════════════════════════════════════
     // Phase 3: Smarter attacks
     // ═════════════════════════════════════════════════════════════════════

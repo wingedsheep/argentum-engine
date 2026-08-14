@@ -5,23 +5,24 @@ description: Pick the next unchecked Bloomburrow card from the AI advisor checkl
 
 # Review Next AI Advisor Card
 
-Pick the next unchecked card from `backlog/bloomburrow-ai-advisors.md`, evaluate whether it needs
-a custom AI advisor, implement one if necessary, and check it off the list.
+Pick the next unchecked card from `backlog/archived/bloomburrow-ai-advisors.md`, evaluate whether it
+needs a custom AI advisor, implement one if necessary, and check it off the list.
 
 ## Step 1: Pick the Next Card
 
-1. Read `backlog/bloomburrow-ai-advisors.md`
+1. Read `backlog/archived/bloomburrow-ai-advisors.md`
 2. Find the first line matching `- [ ] **Card Name**` (unchecked, not N/A)
 3. Note the card name and any existing comments about it
 
 ## Step 2: Read the Card Definition
 
-1. Find the card's definition file in `mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/bloomburrow/cards/`
+1. Find the card's definition file in `mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/blb/cards/`
 2. Read it fully. Understand what the card does: its type, effects, targets, triggers, keywords.
 
 ## Step 3: Read the Current Advisor Module
 
-1. Read `rules-engine/src/main/kotlin/com/wingedsheep/engine/ai/advisor/modules/BloomburrowAdvisorModule.kt`
+1. Read `ai/src/main/kotlin/com/wingedsheep/ai/engine/advisor/modules/BloomburrowAdvisorModule.kt`
+   (advisors live in the `:ai` module, alongside `CardAdvisorModule.kt`)
 2. Understand what advisor patterns already exist and which cards are already covered.
 
 ## Step 4: Evaluate Whether an Advisor Is Needed
@@ -101,12 +102,10 @@ If no advisor is needed:
 
 ## Step 7: Compile and Test
 
-1. Run `./gradlew :rules-engine:compileKotlin` to verify compilation
-2. Run `./gradlew :rules-engine:test` to verify no tests break
-3. Optionally run a quick benchmark:
-   ```bash
-   ./gradlew :rules-engine:test --tests "*.AdvisorBenchmark" -Dbenchmark=true -DbenchmarkGames=5 --rerun
-   ```
+Run `just test-ai` (see the **`verify`** skill — always `just`, never raw `./gradlew`; parallel agents
+otherwise thrash the machine into watchdog timeouts).
+
+For a quick sanity check on advisor quality: `just benchmark AdvisorBenchmark 5`.
 
 ## Step 8: Update the Checklist
 

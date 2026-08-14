@@ -2,8 +2,12 @@ package com.wingedsheep.ai.engine
 
 import com.wingedsheep.ai.engine.advisor.AdvisorDecisionContext
 import com.wingedsheep.ai.engine.advisor.CardAdvisorRegistry
+import com.wingedsheep.ai.engine.budget.BudgetPolicy
+import com.wingedsheep.ai.engine.budget.DecisionBudget
+import com.wingedsheep.ai.engine.budget.LegacyBudgetPolicy
 import com.wingedsheep.ai.engine.evaluation.BoardEvaluator
 import com.wingedsheep.ai.engine.evaluation.BoardPresence
+import com.wingedsheep.ai.engine.knowledge.IntentCatalog
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -21,11 +25,26 @@ import com.wingedsheep.sdk.model.EntityId
  * simulates each option. For larger spaces, it uses MTG-aware heuristics.
  *
  * Card-specific overrides are checked first via [CardAdvisorRegistry].
+ *
+ * **On the decision budget:** every scan in here is already bounded to at most ~11 simulations by
+ * construction (a yes/no is 2, a colour is 5, a number is sampled to 11, targets are pre-ranked and
+ * truncated), which is at or below what even [com.wingedsheep.ai.engine.budget.BudgetTier.ROUTINE]
+ * allows. The one place a budget can genuinely bind is the target pre-rank cut, so that is the one
+ * place it is wired. Threading it through the other twenty responders would be plumbing that
+ * changes no number.
  */
 class DecisionResponder(
     private val simulator: GameSimulator,
     private val evaluator: BoardEvaluator,
-    private val advisorRegistry: CardAdvisorRegistry = CardAdvisorRegistry()
+    private val advisorRegistry: CardAdvisorRegistry = CardAdvisorRegistry(),
+    private val budgetPolicy: BudgetPolicy = LegacyBudgetPolicy,
+    /**
+     * Phase 6: structural card knowledge. Reaches the two places this class ranks *permanents* —
+     * which one to sacrifice, and which one a removal decision should kill — so a mid-resolution
+     * decision prices an opposing Icy Manipulator the way `Strategist` now does.
+     * [IntentCatalog.NONE] is the off position and leaves both at their pre-Phase-6 behaviour.
+     */
+    private val intents: IntentCatalog = IntentCatalog.NONE,
 ) {
     fun respond(state: GameState, decision: PendingDecision, playerId: EntityId): DecisionResponse {
         // Try card-specific advisor first
@@ -48,7 +67,8 @@ class DecisionResponder(
 
         // Fall through to generic logic
         return when (decision) {
-            is ChooseTargetsDecision -> respondTargets(state, decision, playerId)
+            is ChooseTargetsDecision ->
+                respondTargets(state, decision, playerId, budgetPolicy.budgetForDecision(state, playerId))
             is SelectCardsDecision -> respondSelectCards(state, decision, playerId)
             is YesNoDecision -> respondYesNo(state, decision, playerId)
             is BatchYesNoDecision -> respondBatchYesNo(state, decision, playerId)
@@ -90,19 +110,20 @@ class DecisionResponder(
     private fun respondTargets(
         state: GameState,
         decision: ChooseTargetsDecision,
-        playerId: EntityId
+        playerId: EntityId,
+        budget: DecisionBudget,
     ): DecisionResponse {
+        val maxCandidates = budget.allowances.targetCandidates
         if (decision.targetRequirements.size == 1) {
             val req = decision.targetRequirements.first()
             val targets = decision.legalTargets[req.index] ?: return cancelOrFirst(decision)
             if (targets.isEmpty()) return cancelOrFirst(decision)
 
             // For small target pools, simulate each; for large pools, use heuristics then simulate top candidates
-            val candidates = if (targets.size <= 8) {
+            val candidates = if (targets.size <= maxCandidates) {
                 targets
             } else {
-                // Pre-rank by heuristic, then simulate top 8
-                targets.sortedByDescending { targetHeuristic(state, it, playerId) }.take(8)
+                targets.sortedByDescending { targetHeuristic(state, it, playerId) }.take(maxCandidates)
             }
 
             val best = pickBestBySimulation(state, candidates, playerId) { target ->
@@ -127,7 +148,7 @@ class DecisionResponder(
             if (targets.isEmpty()) {
                 req.index to emptyList()
             } else {
-                val best = pickBestBySimulation(state, targets.take(8), playerId) { target ->
+                val best = pickBestBySimulation(state, targets.take(maxCandidates), playerId) { target ->
                     TargetsResponse(decision.id, mapOf(req.index to listOf(target)))
                 }
                 // For optional targets, compare best pick against skipping
@@ -159,9 +180,8 @@ class DecisionResponder(
             return if (controller != playerId) value + 5.0 else -value
         }
 
-        // Players — prefer opponent
-        val isOpponent = targetId == state.soleOpponent(playerId)
-        if (isOpponent) return 3.0
+        // Players — prefer an opponent (any of them; CR 810 teammates are not opponents)
+        if (state.isOpponentTo(targetId, playerId)) return 3.0
 
         return 0.0
     }
@@ -181,6 +201,24 @@ class DecisionResponder(
             return CardsSelectedResponse(decision.id, options)
         }
 
+        // A `minTotalManaValue` floor (collect evidence N, CR 701.59a) is a *sum* gate, so none of
+        // the count-based branches below can satisfy it — taking `min` cheap cards submits an
+        // illegal selection the validator rejects, and taking zero silently declines an optional
+        // one (a ward cost) every time. Pay it with the fewest cards, highest mana values first,
+        // which is the same choice `CollectEvidenceResolver.autoSelect` makes; submit nothing when
+        // the pool can't reach the floor, which CR 701.59b makes the only legal answer anyway.
+        decision.minTotalManaValue?.let { floor ->
+            val byValueDesc = options.sortedByDescending { manaValueOf(state, it) }
+            val payment = mutableListOf<EntityId>()
+            var total = 0
+            for (cardId in byValueDesc) {
+                if (total >= floor || payment.size >= max) break
+                payment.add(cardId)
+                total += manaValueOf(state, cardId)
+            }
+            return CardsSelectedResponse(decision.id, if (total >= floor) payment else emptyList())
+        }
+
         // Context-aware ranking
         val prompt = decision.prompt.lowercase()
         val isDiscard = prompt.contains("discard")
@@ -192,13 +230,13 @@ class DecisionResponder(
             isDiscard || isScryBottom -> {
                 // Pick cards we want LEAST (to discard / put on bottom)
                 val ranked = rankCardsContextual(state, options, playerId, wantToKeep = false)
-                CardsSelectedResponse(decision.id, ranked.take(min.coerceAtLeast(1).coerceAtMost(max)))
+                CardsSelectedResponse(decision.id, minimumLegalSelection(decision, ranked))
             }
             isSacrifice -> {
                 // Sacrifice least valuable permanents
                 val ranked = options.sortedBy { entityId ->
                     val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@sortedBy 0.0
-                    BoardPresence.permanentValue(state, state.projectedState, entityId, card)
+                    BoardPresence.permanentValue(state, state.projectedState, entityId, card, intents)
                 }
                 CardsSelectedResponse(decision.id, ranked.take(min.coerceAtLeast(1).coerceAtMost(max)))
             }
@@ -217,6 +255,32 @@ class DecisionResponder(
                 CardsSelectedResponse(decision.id, ranked.take(min.coerceAtLeast(0)))
             }
         }
+    }
+
+    /**
+     * Mana value of a card in a non-battlefield zone — intrinsic to the card (CR 202.3), so the
+     * base [CardComponent] is the correct read. Unreadable entities count 0, which keeps a
+     * mana-value floor failing closed.
+     */
+    private fun manaValueOf(state: GameState, cardId: EntityId): Int =
+        state.getEntity(cardId)?.get<CardComponent>()?.manaValue ?: 0
+
+    /** Prefer the smallest legal selection, honoring reductions such as “discard two unless one is a creature.” */
+    private fun minimumLegalSelection(
+        decision: SelectCardsDecision,
+        ranked: List<EntityId>,
+    ): List<EntityId> {
+        val ordinaryCount = decision.minSelections.coerceAtLeast(1).coerceAtMost(decision.maxSelections)
+        val reduced = decision.conditionalMinimums
+            .sortedBy { it.minimumSelections }
+            .firstNotNullOfOrNull { condition ->
+                val matches = ranked.filter { it in condition.matchingOptions }.take(condition.requiredMatches)
+                if (matches.size < condition.requiredMatches) return@firstNotNullOfOrNull null
+                val count = condition.minimumSelections.coerceAtLeast(matches.size)
+                if (count > decision.maxSelections) return@firstNotNullOfOrNull null
+                matches + ranked.filterNot(matches::contains).take(count - matches.size)
+            }
+        return reduced ?: ranked.take(ordinaryCount)
     }
 
     // ── Yes / No ─────────────────────────────────────────────────────────
@@ -319,7 +383,6 @@ class DecisionResponder(
         playerId: EntityId
     ): DecisionResponse {
         val projected = state.projectedState
-        val opponentId = state.soleOpponent(playerId)
 
         val distribution = mutableMapOf<EntityId, Int>()
         var remaining = decision.totalAmount
@@ -333,8 +396,9 @@ class DecisionResponder(
         // Smart distribution: try to kill creatures, then hit opponent
         val targetPriority = decision.targets.sortedByDescending { target ->
             when {
-                // Opponent player — good target but creatures first
-                target == opponentId -> 5.0
+                // Opponent player — good target but creatures first. Any opponent, not just the
+                // first one in turn order; a teammate is never one (CR 810).
+                state.isOpponentTo(target, playerId) -> 5.0
 
                 // Opponent creature — value killing it
                 isOpponentCreature(state, target, playerId) -> {
@@ -435,6 +499,13 @@ class DecisionResponder(
         val selected = mutableListOf<Int>()
         var remaining = decision.budget
         for ((idx, mode) in sorted) {
+            if (mode.cost > remaining) continue
+            // A free mode never consumes budget, so repeating it would spin forever.
+            // Take it once and move on. (Rare in production, frequent under playouts.)
+            if (mode.cost <= 0) {
+                selected.add(idx)
+                continue
+            }
             while (mode.cost <= remaining) {
                 selected.add(idx)
                 remaining -= mode.cost
@@ -703,6 +774,6 @@ class DecisionResponder(
 
     private fun creatureKillValue(state: GameState, entityId: EntityId): Double {
         val card = state.getEntity(entityId)?.get<CardComponent>() ?: return 0.0
-        return BoardPresence.permanentValue(state, state.projectedState, entityId, card)
+        return BoardPresence.permanentValue(state, state.projectedState, entityId, card, intents)
     }
 }

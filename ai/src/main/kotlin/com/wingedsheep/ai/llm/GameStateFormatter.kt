@@ -510,6 +510,14 @@ class GameStateFormatter(
                 sb.append(" [Convoke: tap creatures to help pay — ${creatureNames.joinToString(", ")}]")
             }
 
+            // Tap-for-generic (improvise CR 702.126 / waterbend): show the tappable permanents
+            val tapForGenericPermanents = action.validTapForGenericPermanents
+            if (action.hasTapForGeneric && !tapForGenericPermanents.isNullOrEmpty()) {
+                val verb = action.tapForGenericLabel ?: "waterbend"
+                val names = tapForGenericPermanents.joinToString(", ") { it.name }
+                sb.append(" [${verb.replaceFirstChar { it.uppercase() }}: tap permanents to pay {1} each — $names]")
+            }
+
             // Delve: show that graveyard cards can reduce cost
             val delveCards = action.validDelveCards
             if (action.hasDelve && !delveCards.isNullOrEmpty()) {

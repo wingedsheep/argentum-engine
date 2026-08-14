@@ -71,6 +71,7 @@ class GigapedeTest : FunSpec({
         // Find a card in hand to discard
         val hand = driver.state.getZone(ZoneKey(activePlayer, Zone.HAND))
         driver.submitCardSelection(activePlayer, listOf(hand.first()))
+        driver.bothPass() // CR 603.12: the reflexive payoff is a real stack object now
 
         // Gigapede should be in the player's hand now
         val newHand = driver.state.getZone(ZoneKey(activePlayer, Zone.HAND))

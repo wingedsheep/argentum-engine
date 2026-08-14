@@ -448,16 +448,12 @@ class ChainSpellContinuationResumer(
                 }
             }
             is CostAtom.Discard -> {
-                val handZone = ZoneKey(controllerId, Zone.HAND)
-                val graveyardZone = ZoneKey(controllerId, Zone.GRAVEYARD)
-
-                for (cardId in selectedCards) {
-                    newState = newState.removeFromZone(handZone, cardId)
-                    newState = newState.addToZone(graveyardZone, cardId)
-                }
-
-                val cardNames = selectedCards.map { newState.getEntity(it)?.get<CardComponent>()?.name ?: state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
-                events.add(CardsDiscardedEvent(controllerId, selectedCards, cardNames))
+                // Shared discard path — a card-intrinsic discard replacement (madness,
+                // CR 702.35a) applies to a card discarded to pay a chained spell's cost too.
+                val discardResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                    .discardCards(newState, controllerId, selectedCards)
+                newState = discardResult.state
+                events.addAll(discardResult.events)
             }
             else -> { /* Unsupported cost type — no-op */ }
         }

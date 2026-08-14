@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -38,7 +39,7 @@ class KickedEntersWithReplacementScenarioTest : FunSpec({
             CastSpell(
                 playerId = playerId,
                 cardId = cardId,
-                wasKicked = true,
+                declaredCostSlot = ChoiceSlot.KICKED,
                 paymentStrategy = PaymentStrategy.FromPool
             )
         )

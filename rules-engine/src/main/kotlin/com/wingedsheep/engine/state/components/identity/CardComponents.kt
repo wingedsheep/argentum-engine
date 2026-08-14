@@ -31,6 +31,18 @@ data class CardComponent(
     val imageUri: String? = null,
     val backFaceImageUri: String? = null,
     /**
+     * Set code of the printing this entity actually presents — the reprint the deck pinned when it
+     * pinned one, otherwise the canonical printing's set. Distinct from [originalSetCode], which is
+     * always the canonical set and is a *rules* characteristic ("originally printed in X"); this one
+     * is presentation, and is the set whose token art the card should mint.
+     *
+     * It can't be read back off [cardDefinitionId]: that id deliberately keeps the oracle
+     * definition's coordinates so ability lookups resolve, so a Garruk from an Innistrad Remastered
+     * pool is still keyed `Garruk Relentless#ISD-181`. Null only for entities minted outside
+     * `CardEntityFactory` (tokens, scenario builders).
+     */
+    val printingSetCode: String? = null,
+    /**
      * Precomputed from the card definition: does this card have at least one intrinsic
      * activated ability that isn't a mana ability (and isn't a loyalty ability)? Used by
      * static filters such as Tsabo's Web ("each land with an activated ability that isn't
@@ -60,6 +72,23 @@ data class CardComponent(
      * (Frantic Firebolt tallies adventurer cards in the graveyard). False for tokens.
      */
     val hasAdventure: Boolean = false,
+    /**
+     * Mana value that stands in for the one [manaCost] would give. Set **only** while a *nonmodal*
+     * double-faced object has its back face up: CR 712.8c (on the stack, a disturb cast) and
+     * CR 712.8e (on the battlefield, after a transform) both calculate such an object's mana value
+     * from the *front* face's mana cost, even though every other characteristic is the back's. The
+     * back face of a transform card prints no mana cost at all, so without this it would read 0 —
+     * a transformed Delver of Secrets would be mana value 0 rather than 1.
+     *
+     * Null everywhere else, including for a **modal** DFC: CR 712.8f gives one "only the
+     * characteristics of the face that's up" with no mana-value exception, so The Sensational
+     * She-Hulk keeps her own 6. Also null once the object flips back to its front face, whose own
+     * cost is the answer again.
+     *
+     * Set through [com.wingedsheep.engine.handlers.effects.permanent.types.dfcBackFaceManaValue],
+     * which is the one place the modal/nonmodal split is decided.
+     */
+    val manaValueOverride: Int? = null,
 ) : Component {
     // Convenience accessors
     val isCreature: Boolean get() = typeLine.isCreature
@@ -67,7 +96,8 @@ data class CardComponent(
     val isPermanent: Boolean get() = typeLine.isPermanent
     val isAura: Boolean get() = typeLine.isAura
     val isPlaneswalker: Boolean get() = CardType.PLANESWALKER in typeLine.cardTypes
-    val manaValue: Int get() = manaCost.cmc
+    val isBattle: Boolean get() = typeLine.isBattle
+    val manaValue: Int get() = manaValueOverride ?: manaCost.cmc
 }
 
 /**
@@ -135,6 +165,28 @@ data object RevertCopyAtEndOfTurnComponent : Component
 data object RevertCopyAtNextEndStepComponent : Component
 
 /**
+ * Marks a permanent whose current copy identity lasts "until your next turn" — reverted to its
+ * pre-copy [CardComponent] after the untap step of [playerId]'s next turn, the same hook every
+ * other `Duration.UntilYourNextTurn` effect expires on
+ * (`CleanupPhaseManager.expireUntilYourNextTurnEffects`).
+ *
+ * Set by "until your next turn, this becomes a copy of …" effects (Absorbing Man, Taskmaster,
+ * Volrath, the Shapestealer). Unlike its end-of-turn siblings the marker has to remember *whose*
+ * next turn ends it, since the window spans at least one opponent's turn.
+ *
+ * The revert deliberately lands before the copying permanent's own "at the beginning of your first
+ * main phase" trigger would fire again, which is what lets a permanent whose only ability is the
+ * copy trigger keep re-copying: the printed ability is gone while the copy is up (the copy replaced
+ * the card component wholesale) and back by the time the next trigger would check.
+ *
+ * @property playerId The player whose next untap step ends the copy — the copy effect's controller.
+ */
+@Serializable
+data class RevertCopyAtYourNextTurnComponent(
+    val playerId: com.wingedsheep.sdk.model.EntityId
+) : Component
+
+/**
  * Marks a permanent whose current copy identity lasts only "for as long as [attachmentId] remains
  * attached to it" (Assimilation Aegis: "for as long as this Equipment remains attached to it, that
  * creature becomes a copy …"). The pre-copy snapshot lives on the entity's
@@ -167,18 +219,28 @@ data object CantBeCounteredComponent : Component
 data object CantBeCopiedComponent : Component
 
 /**
- * Marker: this card entered a graveyard *from the battlefield* during the current turn.
+ * Marker: this card entered a graveyard during the current turn, recording whether it came
+ * from the battlefield.
  *
  * "Current turn" follows MTG turn boundaries — a new turn begins whenever a player starts
  * their turn (BeginningPhaseManager wipes the marker from every entity at the untap step
- * of every turn). The marker is set by `ZoneTransitionService` whenever a card moves
- * battlefield → graveyard, and stripped when the card leaves the graveyard so a later
- * arrival via a different path (mill, exile → graveyard, hand → graveyard) does not
- * carry the "from battlefield" claim.
+ * of every turn). The marker is set by `ZoneTransitionService` on every arrival in a
+ * graveyard, and stripped when the card leaves the graveyard so a later arrival via a
+ * different path does not carry the earlier claim.
  *
- * Backs `StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn` (LTR — Samwise the
- * Stouthearted's "permanent card in your graveyard that was put there from the
- * battlefield this turn" and Lobelia Sackville-Baggins's analogous exile target).
+ * Backs two predicates, so the "from battlefield" refinement stays a flag on one stamp
+ * rather than two markers that can drift apart:
+ *  - `StatePredicate.PutIntoGraveyardThisTurn` — marker present, [fromBattlefield] ignored
+ *    (FDN — Abyssal Harvester's "creature card from a graveyard that was put there this turn").
+ *  - `StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn` — marker present *and*
+ *    [fromBattlefield] (LTR — Samwise the Stouthearted's "permanent card in your graveyard
+ *    that was put there from the battlefield this turn" and Lobelia Sackville-Baggins's
+ *    analogous exile target).
+ *
+ * @property fromBattlefield true when the graveyard arrival was a battlefield → graveyard
+ *   move; false for mill, discard, a countered or resolved spell, or exile → graveyard.
  */
 @Serializable
-data object PutIntoGraveyardFromBattlefieldThisTurnMarker : Component
+data class PutIntoGraveyardThisTurnComponent(
+    val fromBattlefield: Boolean
+) : Component

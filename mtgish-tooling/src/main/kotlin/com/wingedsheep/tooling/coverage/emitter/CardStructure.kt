@@ -22,6 +22,7 @@ import com.wingedsheep.tooling.coverage.call
 import com.wingedsheep.tooling.coverage.compact
 import com.wingedsheep.tooling.coverage.field
 import com.wingedsheep.tooling.coverage.findInteger
+import com.wingedsheep.tooling.coverage.hasTag
 import com.wingedsheep.tooling.coverage.firstArgStringTagged
 import com.wingedsheep.tooling.coverage.jsonContains
 import com.wingedsheep.tooling.coverage.nodesTagged
@@ -1921,6 +1922,14 @@ internal fun EmitCtx.triggerBlock(
     oncePerTurn: Boolean = false,
     triggerCondition: String? = null,
     triggersOnce: Boolean = false,
+    /** Rendered `triggerZones` rider — the zones the trigger functions in (CR 113.6b). */
+    triggerZones: String? = null,
+    /**
+     * Rendered condition to gate the whole effect on, supplying CR 603.4's resolution-time re-check
+     * for an ability whose intervening-"if" must hold *again* as it resolves. Wraps the effect in a
+     * `ConditionalEffect`, which is what the hand-authored eminence idiom does.
+     */
+    gateEffectOn: String? = null,
 ): List<Stmt>? {
     // A "choose one —" modal triggered ability hosts its modal as a plain effect:
     // `triggeredAbility { trigger = …; effect = ModalEffect.chooseOne(Mode.…, Mode.…) }`. Render the
@@ -2013,13 +2022,21 @@ internal fun EmitCtx.triggerBlock(
     } ?: return null
 
     val stmts = mutableListOf<Stmt>(Assign("trigger", Lit(spec)))
+    if (triggerZones != null) stmts.add(Assign("triggerZones", Lit(triggerZones)))
     val triggerCond = effTriggerCondition ?: condFromIf
     if (triggerCond != null) stmts.add(Assign("triggerCondition", Lit(triggerCond)))
     if (oncePerTurn) stmts.add(Assign("oncePerTurn", Lit("true")))
     if (triggersOnce) stmts.add(Assign("triggersOnce", Lit("true")))
     if (mayWrapped && !selfOptional) stmts.add(Assign("optional", Lit("true")))
     if (tvar != null) stmts.add(targetLocal(tnode!!))
-    stmts.add(Assign("effect", edsl))
+    stmts.add(
+        Assign(
+            "effect",
+            if (gateEffectOn != null) {
+                call("ConditionalEffect", arg("condition", Lit(gateEffectOn)), arg("effect", edsl))
+            } else edsl
+        )
+    )
     return listOf(Sub(Block("triggeredAbility", stmts)))
 }
 
@@ -2457,6 +2474,32 @@ private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
             }
         }
     }
+    // Celebration (WOE ability word, CR 207.2c) — "if two or more nonland permanents entered the
+    // battlefield under your control this turn":
+    //   NumberPermanentsEnteredTheBattlefieldUnderPlayersControlThisTurn(
+    //     GreaterThanOrEqualTo N, And(IsNonCardtype Land, IsPermanent), You)
+    // -> Conditions.Celebration (N = 2, the printed threshold) / Conditions.NonlandPermanentsEnteredThisTurn(N).
+    // Only the You scope, a GTE comparison, and exactly the bare "nonland permanent" filter render —
+    // a narrower filter (a card type, a subtype) would need a per-type entry tracker we don't have,
+    // so it declines -> SCAFFOLD rather than silently widening to "any nonland permanent".
+    if (cond.strField("_Condition") == "NumberPermanentsEnteredTheBattlefieldUnderPlayersControlThisTurn") {
+        val condArgs = cond["args"].asArr
+        val cmp = condArgs?.getOrNull(0) as? JsonObject
+        val filt = condArgs?.getOrNull(1) as? JsonObject
+        val player = (condArgs?.getOrNull(2) as? JsonObject)?.strField("_Player")
+        val arms = filt?.takeIf { it.strField("_Permanents") == "And" }
+            ?.get("args").asArr?.filterIsInstance<JsonObject>().orEmpty()
+        val bareNonlandPermanent = arms.size == 2 &&
+            arms.any { it.strField("_Permanents") == "IsNonCardtype" && it.field("args").asStr() == "Land" } &&
+            arms.any { it.strField("_Permanents") == "IsPermanent" && it.size == 1 }
+        if (player == "You" && cmp?.strField("_Comparison") == "GreaterThanOrEqualTo" && bareNonlandPermanent) {
+            val n = findInteger(cmp["args"])
+            if (n is Int) {
+                return if (n == 2) "Conditions.Celebration"
+                else "Conditions.NonlandPermanentsEnteredThisTurn($n)"
+            }
+        }
+    }
     // "if it's tapped" — PermanentPassesFilter(<subject>, IsTapped) over a bare IsTapped filter (no
     // other clause). Two subjects render:
     //  - Ref_TargetPermanent (the ability's first targeted permanent) -> Conditions.TargetIsTapped()
@@ -2572,7 +2615,7 @@ private fun EmitCtx.singleInterveningIfDsl(cond: JsonObject): String? {
         val perms = ((cond["args"].asArr?.getOrNull(1)) as? JsonObject)?.get("args") as? JsonObject
         val isThisPermanent = perms?.strField("_Permanents") == "SinglePermanent" &&
             perms.field("args").strField("_Permanent") == "ThisPermanent"
-        return if (isThisPermanent) "Conditions.SourceReceivedCounterThisTurn" else null
+        return if (isThisPermanent) "Conditions.SourceReceivedCounterThisTurn()" else null
     }
     // "if you gained N or more life this turn" — PlayerPassesFilter(You, GainedLifeAmountThisTurn(
     // [Comparison GreaterThanOrEqualTo Integer N])) (Scheming Silvertongue's "if you gained 2 or more
@@ -2805,6 +2848,23 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
         ) return "Triggers.YouDraw"
     }
 
+    // "Whenever an opponent discards a card" (Entropic Battlecruiser, Tinybones, Bauble Burglar) /
+    // "whenever you discard a card". Fires once per discarded card, and each firing binds that card as
+    // the triggering entity, so a payoff can reference "it". Only the *unfiltered* `AnyCard` shape
+    // renders: a card-type filter ("whenever an opponent discards a creature card") needs the
+    // `discards(player, cardFilter)` factory with a recovered filter, so it declines -> SCAFFOLD rather
+    // than silently widen to "any card". The batch wording ("one or more cards") is a different IR tag.
+    if (jsonContains(trig, "_Trigger", "WhenAPlayerDiscardsACard") &&
+        jsonContains(trig, "_CardsInHand", "AnyCard")
+    ) {
+        val args = trig["args"].asArr?.filterIsInstance<JsonObject>() ?: emptyList()
+        val scope = args.firstOrNull { it.containsKey("_Players") || it.containsKey("_Player") }
+        if (scope?.strField("_Players") == "Opponent") return "Triggers.AnyOpponentDiscards"
+        if (scope?.strField("_Player") == "You" ||
+            (scope?.strField("_Players") == "SinglePlayer" && jsonContains(scope["args"], "_Player", "You"))
+        ) return "Triggers.YouDiscard"
+    }
+
     // "Whenever you gain life" (You) — Pest Mascot, Essence Channeler. Only the You scope maps to
     // Triggers.YouGainLife; an any-player / opponent scope has no calibrated card yet, so it
     // declines -> SCAFFOLD rather than guess a binding.
@@ -2862,6 +2922,13 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
             jsonContains(subj["args"], "_Permanents", "ControlledByAPlayer") &&
             jsonContains(subj["args"], "_Player", "You")
         if (selfOrYours) return "Triggers.CreatureTurnedFaceUp()"
+        // "When this creature is turned face up" — the plain SELF-scoped form, which is every
+        // disguise card's payoff (Dog Walker, Faerie Snoop, Alley Assailant, …) as well as the
+        // classic morph unmorph triggers. `SinglePermanent(ThisPermanent)` maps exactly to the
+        // SELF-bound Triggers.TurnedFaceUp; any wider subject falls through to the decline below.
+        val selfOnly = subj?.strField("_Permanents") == "SinglePermanent" &&
+            jsonContains(subj["args"], "_Permanent", "ThisPermanent")
+        if (selfOnly) return "Triggers.TurnedFaceUp"
     }
 
     // "Whenever this creature becomes the target of a spell or ability an opponent controls"
@@ -2945,6 +3012,28 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
         return "Triggers.YouAttackWithFilter($filter)"
     }
 
+    // "Whenever you tap an untapped [filter]" — WhenAPlayerTapsAPermanent(playerScope, permanentFilter),
+    // the tap-*attribution* trigger (Wilds of Eldraine's Hylda of the Icy Crown, Icewrought Sentry,
+    // Solitary Sanctuary, Sharae of Numbing Depths). Distinct from WhenAPermanentBecomesTapped in
+    // TRIGGER_SPEC above, which is the passive SELF "becomes tapped" observer. Maps to
+    // Triggers.YouTap(<filter>); only the You scope has a calibrated form, so any other scope declines
+    // -> SCAFFOLD.
+    //
+    // The IR's `IsUntapped` clause must be *dropped*, not round-tripped: the filter is evaluated when
+    // the trigger is detected, i.e. after the permanent has already become tapped, so a recovered
+    // `.untapped()` predicate would read false and the trigger would never fire. The engine gets the
+    // "untapped" half for free — tapping is a transition (CR 603.2f), so an already-tapped permanent
+    // emits no tap event at all. [withoutIsUntapped] strips exactly that clause and nothing else; if
+    // any `IsUntapped` survives (a shape it doesn't understand), decline rather than misrender.
+    if (jsonContains(trig, "_Trigger", "WhenAPlayerTapsAPermanent")) {
+        val argv = trig["args"].asArr ?: return null
+        if (castScope(argv.getOrNull(0) as? JsonObject) != CastScope.YOU) return null
+        val permanents = withoutIsUntapped(argv.getOrNull(1))
+        if (permanents.hasTag("IsUntapped")) return null
+        val filter = gameObjectFilterDsl(permanents) ?: return null
+        return "Triggers.YouTap($filter)"
+    }
+
     // "Whenever you attack" — WhenAPlayerAttacks scoped to a SinglePlayer(You). The batched trigger
     // fires once per combat when you declare one or more attackers. Maps to Triggers.YouAttack
     // (Living History). Only the You scope renders; any other player scope has no calibrated
@@ -3002,7 +3091,7 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
         val bareSubtype = subtype != null && "ControlledByAPlayer" !in blob &&
             "_Color" !in blob && "_Comparison" !in blob && "\"Other\"" !in blob
         if (bareSubtype) return "TriggerSpec(EventPattern.DealsDamageEvent(damageType = DamageType.Combat, " +
-            "recipient = RecipientFilter.AnyPlayer, sourceFilter = GameObjectFilter.Creature.withSubtype(\"$subtype\")), " +
+            "recipient = RecipientFilter.AnyPlayer, sourceFilter = GameObjectFilter.Creature.withSubtype(${subtypeArg(subtype)})), " +
             "TriggerBinding.ANY)"
         // "Whenever a [filtered] creature you control deals combat damage to a player, …" — a
         // controller/supertype-scoped source filter beyond a bare subtype (Vraska Joins Up's
@@ -3067,6 +3156,18 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
         return castTriggerDsl(scope, category)
     }
 
+    // "Whenever you activate an exhaust ability". Render only the exact You + ExhaustAbility
+    // shape; other activation filters decline rather than widening to every activated ability.
+    if (jsonContains(trig, "_Trigger", "WhenAPlayerActivatesAnAbility")) {
+        val argv = trig["args"].asArr
+        val scope = castScope(argv?.getOrNull(0) as? JsonObject)
+        val abilityFilter = argv?.getOrNull(1) as? JsonObject
+        if (scope == CastScope.YOU && abilityFilter?.strField("_ActivatedAbilities") == "ExhaustAbility") {
+            return "Triggers.YouActivateExhaustAbility"
+        }
+        return null
+    }
+
     // "Whenever you commit a crime" — WhenAPlayerCommitsACrime scoped to SinglePlayer(You). Only the
     // You scope maps to Triggers.YouCommitCrime; any other player scope (AnyPlayer / Opponent) has no
     // matching Triggers.* constant yet, so it declines -> SCAFFOLD. Pairs with the TriggerOnceEachTurn
@@ -3109,6 +3210,21 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
             "filter = GameObjectFilter.Any), TriggerBinding.SELF)"
     }
 
+    // "Whenever a <counter> counter is removed from this permanent, …" — the removal mirror of the
+    // tag above (Protean Hydra). Args are [counter type, subject]; render only the SELF subject +
+    // nameable counter type as a SELF-bound CountersRemovedEvent, and decline anything else to
+    // SCAFFOLD rather than widening the subject.
+    if (jsonContains(trig, "_Trigger", "WhenACounterOfTypeIsRemovedFromAPermanent")) {
+        val targs = trig["args"].asArr ?: return null
+        val counter = counterTypeDsl(targs.getOrNull(0)) ?: return null
+        val subject = targs.getOrNull(1) as? JsonObject
+        val selfSubject = subject?.strField("_Permanents") == "SinglePermanent" &&
+            subject.field("args").strField("_Permanent") == "ThisPermanent"
+        if (!selfSubject) return null
+        return "TriggerSpec(EventPattern.CountersRemovedEvent(counterType = $counter, " +
+            "filter = GameObjectFilter.Any), TriggerBinding.SELF)"
+    }
+
     // "Whenever one or more tokens you control enter, …" — the batched
     // WhenAnyNumberOfPermanentsEnterTheBattlefield (distinct from the singular
     // WhenAPermanentEntersTheBattlefield above). Fires once per enter batch. The controller scope is
@@ -3116,8 +3232,8 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
     // OneOrMoreOpponentPermanentsEnter for opponents), so the rendered filter must NOT re-encode the
     // controller clause. Only the exact "token" subject renders today — the bare GameObjectFilter.Token
     // (Spiritcall Enthusiast's "tokens you control", Kambal's "tokens your opponents control"). Any other
-    // subject filter declines -> SCAFFOLD rather than widening (gameObjectFilterDsl has no positive
-    // IsToken rendering, so it would silently drop the token restriction).
+    // subject filter declines -> SCAFFOLD rather than widening (gameObjectFilterDsl composes `.token()`
+    // onto a *cardtype* base, so a bare `IsToken` subject has no base to hang it on there).
     if (jsonContains(trig, "_Trigger", "WhenAnyNumberOfPermanentsEnterTheBattlefield")) {
         val subject = (trig["args"] as? JsonArray)?.firstOrNull() ?: trig["args"]
         val opponentControlled = jsonContains(subject, "_Players", "Opponent")
@@ -3150,6 +3266,23 @@ private fun EmitCtx.triggerSpecFor(rule: JsonObject): String? {
  *  search — a `_Player: You` buried in the spell filter (e.g. WasCastFromAPlayersGraveyard(You))
  *  must not be mistaken for the caster. */
 private enum class CastScope { YOU, ANY, OPPONENT }
+
+/**
+ * Drop the `IsUntapped` clause from an `And(...)` permanent filter, leaving every other clause alone.
+ *
+ * Only used by the "whenever you tap an untapped …" trigger, where the IR spells out a state the
+ * engine already guarantees structurally and recovering it would invert the filter's meaning (see the
+ * `WhenAPlayerTapsAPermanent` branch). Returns the node unchanged when there is nothing to strip, and
+ * collapses a one-clause remainder out of its `And` wrapper.
+ */
+private fun withoutIsUntapped(node: JsonElement?): JsonElement? {
+    val obj = node as? JsonObject ?: return node
+    if (obj.strField("_Permanents") != "And") return node
+    val args = obj["args"].asArr ?: return node
+    val kept = args.filterNot { (it as? JsonObject)?.strField("_Permanents") == "IsUntapped" }
+    if (kept.size == args.size) return node
+    return kept.singleOrNull() ?: JsonObject(obj.toMutableMap().apply { put("args", JsonArray(kept)) })
+}
 
 private fun castScope(players: JsonObject?): CastScope? = when (players?.strField("_Players")) {
     "AnyPlayer" -> CastScope.ANY
@@ -3319,9 +3452,45 @@ internal fun EmitCtx.wardKeywordLine(rule: JsonObject): List<Stmt>? {
             val filter = gameObjectFilterDsl(cost.field("args")) ?: return null
             call("KeywordAbility.wardSacrifice", arg(Lit(filter)))
         }
+        // "Ward—<cost> or <cost>" (Titania, Rugged Rumbler) — the OR disjunction, WardCost.Choice.
+        // Every leg must render to a faithful WardCost or the whole line declines -> SCAFFOLD,
+        // rather than emitting a ward that silently drops one of its options.
+        "Or" -> {
+            val legs = (cost["args"] as? JsonArray) ?: return null
+            if (legs.size < 2) return null
+            val rendered = legs.map { leg ->
+                (leg as? JsonObject)?.let { wardCostExpr(it) } ?: return null
+            }
+            Call("KeywordAbility.wardChoice", rendered.map { arg(it) })
+        }
         else -> return null  // compound / dynamic ward costs -> SCAFFOLD
     }
     return listOf(Eval(call("keywordAbility", arg(ability))))
+}
+
+/**
+ * Render one ward cost node as a `WardCost.*` value expression — the leg-level counterpart of
+ * [wardKeywordLine], which renders a whole ward line as a named `KeywordAbility.ward*` facade.
+ * Only shapes with a faithful [com.wingedsheep.sdk.scripting.effects.WardCost] variant render;
+ * anything else returns null so the caller declines to SCAFFOLD.
+ *
+ * Not used for the top-level single-cost cases: those keep their facade rendering so the large
+ * existing ward corpus golden stays byte-identical.
+ */
+private fun EmitCtx.wardCostExpr(cost: JsonObject): Dsl? = when (cost.strField("_Cost")) {
+    "PayMana" -> {
+        val mana = renderMana(cost.field("args"))
+        if (mana.isEmpty()) null else call("WardCost.Mana", arg("\"$mana\""))
+    }
+    "DiscardACard" -> call("WardCost.Discard")
+    "DiscardACardAtRandom" -> call("WardCost.Discard", arg("random", "true"))
+    "PayLife" -> {
+        val n = (cost["args"].asInt()) ?: ((cost["args"] as? JsonObject)?.get("args").asInt())
+        if (n == null) null else call("WardCost.Life", arg("$n"))
+    }
+    "SacrificeAPermanent" -> gameObjectFilterDsl(cost.field("args"))
+        ?.let { call("WardCost.Sacrifice", arg(Lit(it))) }
+    else -> null
 }
 
 /** Impending N—[cost] (CR 702.176) -> the `impending(n, cost)` CardBuilder helper. The rule's args are
@@ -3418,6 +3587,45 @@ internal fun EmitCtx.asEntersBlock(rule: JsonObject, condition: String? = null):
     // ("~ enters …"), where the counter/tap applies to THIS permanent (`selfOnly`); a group scope
     // ("creatures you control enter …") would need a different rendering, so it scaffolds.
     val onSelf = (rule["args"].asArr?.getOrNull(0) as? JsonObject)?.strField("_Permanent") == "ThisPermanent"
+    // Correlated linked-exile entry replacement:
+    // "exile up to X creature cards from your graveyard; enters with three +1/+1 counters for
+    // each creature card exiled this way". Both IR nodes must be present and have the exact shape;
+    // rendering either independently would lose the "this way" linkage.
+    if (onSelf && replacements.size == 2 &&
+        replacements[0].strField("_ReplacementActionWouldEnter") == "ExileUptoNumberGraveyardCards" &&
+        replacements[1].strField("_ReplacementActionWouldEnter") == "EntersWithNumberCountersForEach"
+    ) {
+        val exileArgs = replacements[0]["args"].asArr
+        val counterArgs = replacements[1]["args"].asArr
+        val max = exileArgs?.getOrNull(0) as? JsonObject
+        val graveyardFilter = exileArgs?.getOrNull(1) as? JsonObject
+        val multiplier = (counterArgs?.getOrNull(0) as? JsonObject)?.get("args").asInt()
+        val counter = counterArgs?.getOrNull(1) as? JsonObject
+        val pt = counter?.get("args").asArr
+        val counted = counterArgs?.getOrNull(2) as? JsonObject
+        val exactMimeoplasmShape =
+            max?.strField("_GameNumber") == "ValueX" &&
+                graveyardFilter?.strField("_CardsInGraveyards") == "And" &&
+                jsonContains(graveyardFilter, "_CardsInGraveyards", "IsCardtype") &&
+                jsonContains(graveyardFilter, "_CardsInGraveyards", "InAPlayersGraveyard") &&
+                multiplier == 3 &&
+                counter?.strField("_CounterType") == "PTCounter" &&
+                pt?.getOrNull(0).asInt() == 1 && pt?.getOrNull(1).asInt() == 1 &&
+                counted?.strField("_GameNumber") == "NumberOfCardsOfTypeExiledThisWay" &&
+                jsonContains(counted, "_Cards", "IsCardtype")
+        if (exactMimeoplasmShape) {
+            return listOf(Eval(call(
+                "replacementEffect",
+                arg(Call("EntersWithExileCounters", listOf(
+                    arg("filter", "GameObjectFilter.Creature"),
+                    arg("sourceZone", "Zone.GRAVEYARD"),
+                    arg("maxCards", "DynamicAmount.XValue"),
+                    arg("counterType", "CounterTypeFilter.PlusOnePlusOne"),
+                    arg("countersPerCard", "3"),
+                )))
+            )))
+        }
+    }
     val stmts = mutableListOf<Stmt>()
     for (rep in replacements) {
         val dsl: Dsl = when (rep.strField("_ReplacementActionWouldEnter")) {
@@ -3532,7 +3740,7 @@ internal fun EmitCtx.asEntersBlock(rule: JsonObject, condition: String? = null):
                 val condDsl = singleInterveningIfDsl(cond) ?: run { reasons.add("AsPermanentEnters"); return null }
                 // Rebuild an AsPermanentEnters node carrying the inner replacements, preserving the same
                 // scope permanent (first arg), and render it with the recovered condition.
-                val scopePermanent = rule["args"].asArr?.getOrNull(0) as? JsonElement
+                val scopePermanent = rule["args"].asArr?.getOrNull(0)
                     ?: run { reasons.add("AsPermanentEnters"); return null }
                 val synthetic = buildJsonObject {
                     put("_Rule", JsonPrimitive("AsPermanentEnters"))
@@ -3622,6 +3830,59 @@ internal fun EmitCtx.fromGraveyardBlock(rule: JsonObject): List<Stmt>? {
         "Activated", "ActivatedWithModifiers" -> activatedBlock(inner, activateFromZone = "Zone.GRAVEYARD")
         else -> { reasons.add("FromGraveyard"); return null }
     }
+}
+
+/**
+ * `FromCommandZoneOrBattlefield(TriggerI(trigger, ThisCardIsInTheCommandZoneOrOnTheBattlefield, actions))`
+ * -> the **eminence** ability word (C17's commander cycle: Edgar Markov, Arahbo, Inalla, Mirri, …).
+ *
+ * "Eminence — Whenever you cast another Vampire spell, if Edgar is in the command zone or on the
+ * battlefield, create a 1/1 black Vampire creature token."
+ * →
+ * ```
+ * triggeredAbility {
+ *     trigger = Triggers.YouCastSubtype(Subtype.VAMPIRE)
+ *     triggerZones = setOf(Zone.BATTLEFIELD, Zone.COMMAND)
+ *     effect = ConditionalEffect(
+ *         condition = Conditions.SourceInZone(Zone.BATTLEFIELD, Zone.COMMAND),
+ *         effect = Effects.CreateToken(…))
+ * }
+ * ```
+ *
+ * Two halves, because the printed zone clause does two jobs. As a CR 113.6b zone statement it makes
+ * the trigger *function* from the command zone — `triggerZones`. As an intervening-"if" (CR 603.4) it
+ * is checked again on resolution, which the engine does not do for `triggerCondition`, so it is also
+ * rendered as a `ConditionalEffect` gate over the body. Dropping either half would be lossy: without
+ * the first the ability never fires from the command zone, and without the second a source that left
+ * both zones still produces its effect.
+ *
+ * Renders only the exact shape above — a lone `TriggerI` whose condition node is
+ * `ThisCardIsInTheCommandZoneOrOnTheBattlefield`. The inner trigger and actions go through the shared
+ * [triggerBlock] path, so anything it can't render whole still declines to SCAFFOLD.
+ */
+internal fun EmitCtx.fromCommandZoneOrBattlefieldBlock(rule: JsonObject): List<Stmt>? {
+    val inner = rule["args"] as? JsonObject
+    if (inner?.strField("_Rule") != "TriggerI") { reasons.add("FromCommandZoneOrBattlefield"); return null }
+
+    val args = inner["args"].asArr ?: run { reasons.add("FromCommandZoneOrBattlefield"); return null }
+    val cond = args.getOrNull(1) as? JsonObject
+    if (cond?.strField("_Condition") != "ThisCardIsInTheCommandZoneOrOnTheBattlefield") {
+        reasons.add("FromCommandZoneOrBattlefield")
+        return null
+    }
+
+    // Re-key [trigger, condition, actions] into the TriggerA-shaped [trigger, actions] the shared
+    // renderer expects; the condition is re-expressed by the two riders below rather than as a
+    // `triggerCondition` (which would only cover the fire-time half).
+    val triggerA = buildJsonObject {
+        put("_Rule", JsonPrimitive("TriggerA"))
+        put("args", JsonArray(listOfNotNull(args.getOrNull(0)) + listOfNotNull(args.getOrNull(2))))
+    }
+    return triggerBlock(
+        triggerA,
+        triggerZones = "setOf(Zone.BATTLEFIELD, Zone.COMMAND)",
+        gateEffectOn = "Conditions.SourceInZone(Zone.BATTLEFIELD, Zone.COMMAND)",
+    )
 }
 
 /**
@@ -3771,6 +4032,10 @@ private fun EmitCtx.activatedAbilityStmts(
     // "Exhaust — [cost]: [effect]" (CR 702.177) -> isExhaust = true. The DSL adds the
     // ActivationRestriction.Once enforcement, so the modifier is dropped from the restriction lines.
     if (hasExhaustModifier(rule)) stmts.add(Assign("isExhaust", Lit("true")))
+    // "Power-up — [cost]: [effect]" (CR 702.193) -> isPowerUp = true. Same arrangement as Exhaust:
+    // the DSL adds the ActivationRestriction.Once enforcement and the engine adds the pip-wise
+    // entered-this-turn cost reduction, so the modifier carries no restriction line of its own.
+    if (hasPowerUpModifier(rule)) stmts.add(Assign("isPowerUp", Lit("true")))
     activationRestrictionLines(rule)?.let { lines -> lines.forEach { stmts.add(RawLine(it)) } } ?: return null
     activationCostReductionLines(rule)?.let { lines -> lines.forEach { stmts.add(RawLine(it)) } } ?: return null
     if (tvar != null) stmts.add(targetLocal(tnode!!))
@@ -3779,9 +4044,6 @@ private fun EmitCtx.activatedAbilityStmts(
     // of the restriction lines above (it's a timing rule, not an ActivationRestriction).
     if (hasSorcerySpeedModifier(rule)) stmts.add(Assign("timing", Lit("TimingRule.SorcerySpeed")))
     if (activateFromZone != null) stmts.add(Assign("activateFromZone", Lit(activateFromZone)))
-    // A ReplaceNextDraw effect ("the next time you would draw … instead") prompts on the replaced draw,
-    // not at activation — the activated-ability flag the Words cycle's golden carries.
-    if (actions.any { it.strField("_Action") == "CreateFutureReplaceWouldDraw" }) stmts.add(Assign("promptOnDraw", Lit("true")))
     if (isManaAbility(tvar, actions)) {
         stmts.add(Assign("manaAbility", Lit("true")))
         stmts.add(Assign("timing", Lit("TimingRule.ManaAbility")))
@@ -3928,7 +4190,7 @@ internal fun EmitCtx.abilityCostDsl(node: JsonElement?): String? {
             // "Tap N untapped X you control" — TapPermanents implies untapped + you-control, so only the
             // creature-subtype distinguishes it; bail if there's no recognisable creature-type filter.
             val ctype = creatureTypeIn(a.getOrNull(1)) ?: return null
-            "Costs.TapPermanents($n, GameObjectFilter.Creature.withSubtype(\"$ctype\"))"
+            "Costs.TapPermanents($n, GameObjectFilter.Creature.withSubtype(${subtypeArg(ctype)}))"
         }
         // "Remove N <type> counters from this permanent" as an activation cost (Bandit's Haul). IR args
         // are [<N Integer>, <CounterType>, <Permanent ThisPermanent>]. Only the self-subject and a
@@ -3986,8 +4248,8 @@ internal fun EmitCtx.abilityCostDsl(node: JsonElement?): String? {
 private fun EmitCtx.costFilterDsl(node: JsonElement?): String? {
     val obj = node as? JsonObject
     when (obj?.strField("_Permanents")) {
-        "IsCreatureType" -> return obj["args"].asStr()?.let { "GameObjectFilter.Creature.withSubtype(\"$it\")" }
-        "IsArtifactType" -> return obj["args"].asStr()?.let { "GameObjectFilter.Artifact.withSubtype(\"$it\")" }
+        "IsCreatureType" -> return obj["args"].asStr()?.let { "GameObjectFilter.Creature.withSubtype(${subtypeArg(it)})" }
+        "IsArtifactType" -> return obj["args"].asStr()?.let { "GameObjectFilter.Artifact.withSubtype(${subtypeArg(it)})" }
         "AnyPermanent" -> return "GameObjectFilter.Permanent"
         "IsToken" -> return "GameObjectFilter.Token"  // "Sacrifice a token" (Fountainport)
     }
@@ -3995,7 +4257,7 @@ private fun EmitCtx.costFilterDsl(node: JsonElement?): String? {
     // "Sacrifice a Goblin creature" = And[IsCreatureType X, IsCardtype Creature]: gameObjectFilterDsl
     // sees the Creature cardtype but skips the creature subtype, so re-apply it here.
     val ctype = creatureTypeIn(node)
-    return if (ctype != null && base == "GameObjectFilter.Creature") "GameObjectFilter.Creature.withSubtype(\"$ctype\")" else base
+    return if (ctype != null && base == "GameObjectFilter.Creature") "GameObjectFilter.Creature.withSubtype(${subtypeArg(ctype)})" else base
 }
 
 /** First `IsCreatureType` subtype anywhere in a (possibly `And`-nested) cost filter. */
@@ -4025,6 +4287,12 @@ private fun hasSorcerySpeedModifier(rule: JsonObject): Boolean =
 private fun hasExhaustModifier(rule: JsonObject): Boolean =
     activatedModifiers(rule).any { it.strField("_ActivateModifier") == "Exhaust" }
 
+/** True iff the activated rule carries a `PowerUp` modifier ("Power-up — …" — rendered as
+ *  `isPowerUp = true`, which the DSL desugars to ActivationRestriction.Once plus the engine's
+ *  entered-this-turn cost reduction, not a restriction line). */
+private fun hasPowerUpModifier(rule: JsonObject): Boolean =
+    activatedModifiers(rule).any { it.strField("_ActivateModifier") == "PowerUp" }
+
 private fun EmitCtx.activationRestrictionLines(rule: JsonObject): List<String>? {
     if (rule.strField("_Rule") != "ActivatedWithModifiers") return emptyList()
     // ActivateOnlyAsASorcery is a timing rule, not an ActivationRestriction — it's emitted as
@@ -4041,6 +4309,8 @@ private fun EmitCtx.activationRestrictionLines(rule: JsonObject): List<String>? 
         // not a restriction line. Drop it so an ability whose only modifier is Exhaust needs no
         // `restrictions =` line.
         .filter { it.strField("_ActivateModifier") != "Exhaust" }
+        // PowerUp is emitted as `isPowerUp = true` for the same reason (CR 702.193).
+        .filter { it.strField("_ActivateModifier") != "PowerUp" }
     if (nonTimingModifiers.isEmpty()) return emptyList()
     val blob = compact(rule)
     if ("ActivateOnlyIf" in blob && "IsTheirTurn" in blob && "IsBeforeAttackersDeclared" in blob) {

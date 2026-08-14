@@ -43,7 +43,7 @@ val DailyBugleBuilding = card("Daily Bugle Building") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "179"
         artist = "David Álvarez"
-        flavorText = "Known as \"New York's Finest Newspaper,\" the Daily Bugle takes pride in always being fair and impartial."
+        flavorText = "Known as \"New York's Finest Newspaper,\" the *Daily Bugle* takes pride in always being fair and impartial."
         imageUri = "https://cards.scryfall.io/normal/front/6/6/669bbcb1-0981-40e7-905e-b94e74bc4861.jpg?1757378130"
     }
 }

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.TargetsResponse
@@ -24,7 +25,7 @@ class SunBlessedHealerScenarioTest : ScenarioTestBase() {
 
             val healer = game.findCardsInHand(1, "Sun-Blessed Healer").first()
             game.execute(
-                CastSpell(playerId = game.player1Id, cardId = healer, wasKicked = true)
+                CastSpell(playerId = game.player1Id, cardId = healer, declaredCostSlot = ChoiceSlot.KICKED)
             ).error shouldBe null
             game.resolveStack()
 

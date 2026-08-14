@@ -1,4 +1,5 @@
 import { test, expect, Page, BrowserContext } from '@playwright/test'
+import { createLobby, enterName, joinLobby, GROUP_DRAFT } from '../../helpers/homeScreen'
 
 /**
  * E2E test for a draft tournament with 4 players.
@@ -41,52 +42,19 @@ test.describe('Draft Tournament with 4 Players', () => {
     // =========================================================================
 
     const host = players[0]
-    await host.page.goto('/')
+    await enterName(host.page, host.name)
 
-    // Enter name
-    await host.page.getByPlaceholder('Your name').fill(host.name)
-    await host.page.getByRole('button', { name: 'Continue' }).click()
-
-    // Wait for connection
-    await expect(host.page.getByRole('button', { name: 'Tournament' })).toBeVisible({ timeout: 10000 })
-
-    // Select Tournament mode
-    await host.page.getByRole('button', { name: 'Tournament' }).click()
-
-    // Create lobby
-    await host.page.getByRole('button', { name: 'Create Lobby' }).click()
-
-    // Wait for lobby to be created
-    await expect(host.page.getByText('Invite Code')).toBeVisible({ timeout: 10000 })
-    lobbyId = await host.page.getByTestId('invite-code').textContent() ?? ''
-    expect(lobbyId).toBeTruthy()
+    // Booster draft, straight from the wizard. This used to open a sealed lobby and then switch the
+    // format inside it, because the home screen's only limited entry point was labelled
+    // "Draft & Sealed"; the wizard asks for the draft shape directly.
+    lobbyId = await createLobby(host.page, GROUP_DRAFT)
     console.log(`Lobby created: ${lobbyId}`)
-
-    // Switch to Draft format
-    await host.page.getByRole('button', { name: 'Draft' }).click()
-    console.log('Switched to Draft format')
 
     // Other players join
     for (let i = 1; i < 4; i++) {
       const player = players[i]
-      await player.page.goto('/')
-
-      // Enter name
-      await player.page.getByPlaceholder('Your name').fill(player.name)
-      await player.page.getByRole('button', { name: 'Continue' }).click()
-
-      // Wait for connection
-      await expect(player.page.getByRole('button', { name: 'Tournament' })).toBeVisible({ timeout: 10000 })
-
-      // Select Tournament mode
-      await player.page.getByRole('button', { name: 'Tournament' }).click()
-
-      // Enter lobby ID and join
-      await player.page.getByPlaceholder('Enter Lobby ID').fill(lobbyId)
-      await player.page.getByRole('button', { name: 'Join' }).click()
-
-      // Wait for lobby view
-      await expect(player.page.getByText('Invite Code')).toBeVisible({ timeout: 10000 })
+      await enterName(player.page, player.name)
+      await joinLobby(player.page, lobbyId)
     }
 
     // Verify all players see 4 players in the lobby
@@ -220,27 +188,14 @@ test.describe('Draft Tournament with 4 Players', () => {
       contexts.push(ctx)
       pages.push(pg)
 
-      await pg.goto('/')
-      await pg.getByPlaceholder('Your name').fill(name)
-      await pg.getByRole('button', { name: 'Continue' }).click()
-      await expect(pg.getByRole('button', { name: 'Tournament' })).toBeVisible({ timeout: 10000 })
+      await enterName(pg, name)
     }
 
     // Host creates draft lobby
-    await pages[0].getByRole('button', { name: 'Tournament' }).click()
-    await pages[0].getByRole('button', { name: 'Create Lobby' }).click()
-    await expect(pages[0].getByText('Invite Code')).toBeVisible({ timeout: 10000 })
-
-    // Switch to Draft
-    await pages[0].getByRole('button', { name: 'Draft' }).click()
-
-    const lid = await pages[0].getByTestId('invite-code').textContent() ?? ''
+    const lid = await createLobby(pages[0], GROUP_DRAFT)
 
     // Guest joins
-    await pages[1].getByRole('button', { name: 'Tournament' }).click()
-    await pages[1].getByPlaceholder('Enter Lobby ID').fill(lid)
-    await pages[1].getByRole('button', { name: 'Join' }).click()
-    await expect(pages[1].getByText('Invite Code')).toBeVisible({ timeout: 10000 })
+    await joinLobby(pages[1], lid)
 
     // Verify both in lobby (look for player names in the player list)
     for (const pg of pages) {

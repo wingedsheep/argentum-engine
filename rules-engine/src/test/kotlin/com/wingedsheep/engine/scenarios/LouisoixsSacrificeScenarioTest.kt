@@ -22,8 +22,8 @@ import io.kotest.matchers.shouldBe
  * As an additional cost to cast this spell, sacrifice a legendary creature or pay {2}.
  * Counter target activated ability, triggered ability, or noncreature spell.
  *
- * Exercises the new [com.wingedsheep.sdk.scripting.AdditionalCost.SacrificeOrPay] additional cost
- * (sacrifice path vs pay path) and the union target "(ability) OR (noncreature spell)" that
+ * Exercises the sacrifice leg of [com.wingedsheep.sdk.scripting.AdditionalCost.OrPay] (sacrifice
+ * path vs pay path) and the union target "(ability) OR (noncreature spell)" that
  * excludes creature spells.
  */
 class LouisoixsSacrificeScenarioTest : ScenarioTestBase() {
@@ -45,7 +45,7 @@ class LouisoixsSacrificeScenarioTest : ScenarioTestBase() {
     init {
         cardRegistry.register(listOf(testLegend, testVanillaCreature))
 
-        context("SacrificeOrPay additional cost") {
+        context("sacrifice-or-pay additional cost") {
             test("sacrifice path counters a noncreature spell and sacrifices the legendary creature") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")

@@ -113,8 +113,24 @@ internal fun EmitCtx.staticBlock(rule: JsonObject): List<Stmt>? {
         return stmts
     }
     val stmts = mutableListOf<Stmt>()
+    var crewSaddleModifier: Int? = null
     for (r in rules) {
         val name = r.strField("_PermanentRule")!!
+        if (name == "CrewsVehiclesAsThoughPowerWereGreater" ||
+            name == "SaddlesMountsAsThoughPowerWereGreater"
+        ) {
+            val modifier = (r["args"] as? JsonObject)
+                ?.takeIf { it.strField("_GameNumber") == "Integer" }
+                ?.get("args")
+                .asInt()
+                ?: run { reasons.add(name); return null }
+            if (crewSaddleModifier == modifier) continue
+            if (crewSaddleModifier != null) {
+                reasons.add("CrewSaddleContribution")
+                return null
+            }
+            crewSaddleModifier = modifier
+        }
         if (name == "CantBeBlocked") {
             stmts.add(Eval(call("flags", arg("AbilityFlag.CANT_BE_BLOCKED")))); continue
         }
@@ -275,7 +291,7 @@ private fun EmitCtx.selfDynamicStatsBlock(rule: JsonObject): List<Stmt>? {
         if (countNode.firstArgWordTagged("IsEnchantmentType") != null &&
             countNode.firstArgWordTagged("IsCreatureType") == null) return null
         val subtype = countNode.firstArgWordTagged("IsCreatureType")
-        val filter = if (subtype != null) Lit("GameObjectFilter.Creature").dot("withSubtype", arg("\"$subtype\""))
+        val filter = if (subtype != null) Lit("GameObjectFilter.Creature").dot("withSubtype", arg(subtypeArg(subtype)))
                      else landSearchFilterExpr(countNode)
         val count: Dsl = call("DynamicAmount.Count", arg("Player.You"), arg("Zone.BATTLEFIELD"), arg(filter))
         fun bonus(mult: Int): Dsl =
@@ -592,6 +608,15 @@ private fun EmitCtx.lordGroupFilterExpr(filterNode: JsonElement?): Dsl? {
 
 internal fun EmitCtx.staticAbilityExpr(ruleName: String, ruleNode: JsonObject): Dsl? {
     when (ruleName) {
+        "CrewsVehiclesAsThoughPowerWereGreater",
+        "SaddlesMountsAsThoughPowerWereGreater" -> {
+            val modifier = (ruleNode["args"] as? JsonObject)
+                ?.takeIf { it.strField("_GameNumber") == "Integer" }
+                ?.get("args")
+                .asInt()
+            if (modifier == null) return null
+            return call("CrewSaddleContribution", arg("modifier", "$modifier"))
+        }
         "CantBlock" -> return call("CantBlock")
         "CantBeBlockedByMoreThanOne" -> return call("CantBeBlockedByMoreThan", arg("maxBlockers", "1"))
         "CanBlockOnly" -> {

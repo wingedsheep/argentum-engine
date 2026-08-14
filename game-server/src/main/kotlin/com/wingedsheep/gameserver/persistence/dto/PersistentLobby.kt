@@ -11,6 +11,18 @@ data class PersistentTournamentLobby(
     val setCodes: List<String> = emptyList(),
     val setNames: List<String> = emptyList(),
     val format: String = "SEALED",  // TournamentFormat enum name
+    /**
+     * Rules axis: [com.wingedsheep.sdk.core.GameRules] name, or **null for a row written before the
+     * axis existed** — which is why this is nullable rather than defaulting to "STANDARD". With a
+     * non-null default a legacy row would be indistinguishable from a host who explicitly chose
+     * Standard, so restore would have to OR the two and a deliberate "Commander Draft, Standard
+     * rules" lobby would silently flip back to Commander after a restart. Null means *infer*.
+     *
+     * Note this row still carries neither `deckFormat` nor `commanderPreset` — a pre-existing gap
+     * (`backlog/menu-lobby-restructure-and-help.md:534`). Persisting `rules` closes the part of it
+     * that decides whether a restored lobby plays Commander at all.
+     */
+    val rules: String? = null,
     val boosterCount: Int,
     val maxPlayers: Int,
     val pickTimeSeconds: Int = 45,
@@ -18,6 +30,16 @@ data class PersistentTournamentLobby(
     val state: String,  // LobbyState enum name
     val hostPlayerId: String?,
     val players: Map<String, PersistentLobbyPlayer>,  // playerId.value -> player state
+    /** Cube definition plus the ordered undealt tail, so a restart cannot redeal drafted cards. */
+    val cubeName: String? = null,
+    val cubeCardNames: List<String> = emptyList(),
+    val cubeBasicLandSetCode: String? = null,
+    val cubePackSize: Int? = null,
+    val cubeDealerRemainingCardNames: List<String> = emptyList(),
+    /** Cube Pool Play (no draft, whole cube as everyone's pool). Meaningless without a cube. */
+    val cubePoolPlay: Boolean = false,
+    val bannedCardNames: Set<String> = emptySet(),
+    val includedSetProducts: Map<String, Set<String>> = emptyMap(),
     // Draft-specific state
     val currentPackNumber: Int = 0,
     val currentPickNumber: Int = 0,

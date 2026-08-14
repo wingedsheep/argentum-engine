@@ -38,10 +38,10 @@ import io.kotest.matchers.shouldBe
  * and fired for *every* permanent that entered (opponents' permanents, lands, the Saga itself,
  * etc.). The "does NOT ping" tests below are the regression guard for that bug.
  *
- * Note on turn numbers: `GameState.turnNumber` is the round number (both players' turns within a
- * round share it — see `TurnManager.startTurn`), so the controller's Saga gains a lore counter on
- * rounds 1/2/3 → chapter I is round 1, chapter II is round 2, chapter III is round 3 (after which
- * the Saga is sacrificed).
+ * Note on turn numbers: the Saga's lore counters run on its *controller's* turns, so chapter I is
+ * the controller's first turn, II their second and III their third (after which the Saga is
+ * sacrificed). `GameState.turnNumber` counts player turns, so in this duel those are turns 1/3/5 —
+ * the `advanceToMain` helper below does that conversion.
  */
 class ThunderOfUnityTest : FunSpec({
 
@@ -97,10 +97,16 @@ class ThunderOfUnityTest : FunSpec({
      * Stops the instant we enter that step, so any Saga chapter trigger queued by the lore-counter
      * turn-based action is still sitting on the stack (resolve it with [resolveStack]).
      */
-    fun GameTestDriver.advanceToMain(targetRound: Int) {
+    /**
+     * Advance to the precombat main phase of the starting player's [nth] turn — the clock a Saga's
+     * lore counters run on. `GameState.turnNumber` counts player turns, and these are duels where
+     * the two seats alternate, so the starting player's nth turn is turn `2n - 1`.
+     */
+    fun GameTestDriver.advanceToMain(nth: Int) {
+        val targetTurn = nth * 2 - 1
         var guard = 0
-        while (!(state.turnNumber == targetRound && state.step == Step.PRECOMBAT_MAIN) && guard < 500) {
-            if (state.gameOver) throw AssertionError("Game ended while advancing to round $targetRound")
+        while (!(state.turnNumber == targetTurn && state.step == Step.PRECOMBAT_MAIN) && guard < 500) {
+            if (state.gameOver) throw AssertionError("Game ended while advancing to turn $targetTurn")
             when {
                 state.pendingDecision != null -> autoResolveDecision()
                 state.priorityPlayerId != null -> {

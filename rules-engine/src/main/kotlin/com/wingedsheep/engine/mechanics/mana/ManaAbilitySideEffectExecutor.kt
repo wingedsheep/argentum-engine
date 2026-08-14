@@ -7,6 +7,7 @@ import com.wingedsheep.engine.core.TappedEvent
 import com.wingedsheep.engine.core.tap
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -110,11 +111,10 @@ class ManaAbilitySideEffectExecutor(
         // priority, but never deducts the life.
         val lifeCost = payLifeCost(matchingAbility.cost)
         if (lifeCost > 0) {
-            val (afterLife, lifeEvent) = DamageUtils.loseLife(
-                currentState, controllerId, lifeCost, LifeChangeReason.PAYMENT
-            )
-            currentState = afterLife
-            lifeEvent?.let(events::add)
+            LifePaymentService.pay(currentState, controllerId, lifeCost)?.let { (afterLife, lifeEvents) ->
+                currentState = afterLife
+                events.addAll(lifeEvents)
+            }
         }
 
         val sideEffects = nonManaSubEffects(matchingAbility.effect)

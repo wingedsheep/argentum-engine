@@ -96,7 +96,7 @@ class QueensBayPaladinScenarioTest : ScenarioTestBase() {
             val returned = game.findPermanent("Highborn Vampire")
             withClue("Highborn Vampire returned with a finality counter") {
                 returned.shouldNotBeNull()
-                game.state.getEntity(returned!!)?.get<CountersComponent>()
+                game.state.getEntity(returned)?.get<CountersComponent>()
                     ?.getCount(CounterType.FINALITY) shouldBe 1
             }
             withClue("controller lost 4 life (Highborn Vampire's mana value)") {

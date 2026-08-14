@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  cheapestCost,
   computeAutoTapPreview,
   manaCostCastableWith,
   manaCostColors,
@@ -119,5 +120,27 @@ describe('Harmonize-X mana pre-selection', () => {
   it('without the tap it would need all 6 Forests for X=5', () => {
     const reduced = reduceCostByHarmonizeTap('{X}{G}{G}{G}{G}', 5, 0)
     expect(computeAutoTapPreview(forests, reduced)).toHaveLength(6)
+  })
+})
+
+describe('cheapestCost', () => {
+  // Emerge {5}{U} (CR 702.119a) after the server priced each sacrificeable creature: a 2-drop
+  // leaves {3}{U} (4 mana), a 3-drop leaves {2}{U} (3 mana). The cast button shows the best case,
+  // so it can't claim {5}{U} while sitting enabled on four lands.
+  it('picks the option with the lowest total mana, not the fewest symbols', () => {
+    expect(cheapestCost(['{3}{U}', '{2}{U}'])).toBe('{2}{U}')
+    expect(cheapestCost(['{U}{U}{U}', '{4}'])).toBe('{U}{U}{U}')
+  })
+
+  it('a lone candidate is its own cheapest', () => {
+    expect(cheapestCost(['{3}{U}'])).toBe('{3}{U}')
+  })
+
+  it('a cost the reduction wiped out entirely is cheaper than any mana cost', () => {
+    expect(cheapestCost(['{U}', ''])).toBe('')
+  })
+
+  it('no candidates means no cost to show', () => {
+    expect(cheapestCost([])).toBeUndefined()
   })
 })

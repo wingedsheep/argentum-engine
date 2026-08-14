@@ -4,7 +4,6 @@
 
 package com.wingedsheep.mtg.sets.definitions.woe.cards
 
-import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
@@ -29,13 +28,7 @@ val StrokeOfMidnight = card("Stroke of Midnight") {
         val t = target("target", TargetPermanent(filter = TargetFilter.NonlandPermanent))
         effect = Effects.Composite(
             Effects.Move(t, Zone.GRAVEYARD, byDestruction = true),
-            Effects.CreateToken(
-                power = 1,
-                toughness = 1,
-                colors = setOf(Color.WHITE),
-                creatureTypes = setOf("Human"),
-                controller = EffectTarget.TargetController
-            )
+            woeHumanToken(controller = EffectTarget.TargetController)
         )
     }
     metadata {

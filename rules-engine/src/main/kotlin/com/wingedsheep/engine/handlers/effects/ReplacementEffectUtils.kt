@@ -79,7 +79,11 @@ object ReplacementEffectUtils {
                 if (counterEvent !is com.wingedsheep.sdk.scripting.EventPattern.CounterPlacementEvent) continue
 
                 // Gate on "If YOU would put..." — skip when an opponent is the placer.
-                if (effect is DoubleCounterPlacement && effect.placedByYou && placerId != sourceControllerId) continue
+                val placedByYouOnly = when (effect) {
+                    is ModifyCounterPlacement -> effect.placedByYou
+                    is DoubleCounterPlacement -> effect.placedByYou
+                }
+                if (placedByYouOnly && placerId != sourceControllerId) continue
 
                 if (!matchesCounterTypeFilter(counterEvent.counterType, counterType)) continue
 

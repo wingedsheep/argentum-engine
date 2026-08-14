@@ -115,6 +115,28 @@ data class GlobalOverview(
 /** One day's game count for the games-per-day chart. */
 data class DailyCount(val day: String, val count: Long)
 
+/** One table's row count and on-disk footprint, for the admin dashboard's database panel. */
+data class DatabaseTableStat(
+    val tableName: String,
+    /** Exact `count(*)`. */
+    val rows: Long,
+    /** Heap + TOAST + free-space/visibility maps, excluding indexes (`pg_table_size`). */
+    val tableBytes: Long,
+    /** Every index on the table (`pg_indexes_size`). */
+    val indexBytes: Long,
+    /** [tableBytes] + [indexBytes] (`pg_total_relation_size`) — what the table really costs. */
+    val totalBytes: Long,
+)
+
+/** Storage overview of the accounts database: whole-database size plus a row per table. */
+data class DatabaseStats(
+    val databaseName: String,
+    /** `pg_database_size` — includes catalogs, so it exceeds the sum of [tables]. */
+    val databaseSizeBytes: Long,
+    /** Tables in the app schema, largest total footprint first. */
+    val tables: List<DatabaseTableStat>,
+)
+
 /** One IP and how many games connected from it (admin-only; resolved to a location elsewhere). */
 data class IpCount(val ip: String, val count: Long)
 
@@ -254,6 +276,10 @@ class StatsQueryService(
     private val printingRegistry: PrintingRegistry,
     private val geoIp: GeoIpService,
 ) {
+    private companion object {
+        /** Table names safe to splice into `count(*)` SQL — see [databaseStats]. */
+        val SAFE_IDENTIFIER = Regex("[A-Za-z_][A-Za-z0-9_]*")
+    }
 
     // ---- Per-user ----------------------------------------------------------------------------
 
@@ -879,6 +905,48 @@ class StatsQueryService(
         ) ?: 0
         val totalTournaments = jdbc.queryForObject("SELECT count(*) FROM tournaments", Long::class.java) ?: 0
         return GlobalOverview(totalGames, totalPlayers, totalAccounts, totalTournaments, games24h, games7d)
+    }
+
+    /**
+     * Storage overview of the accounts database: total database size plus every table in the current
+     * schema (largest first) with its exact row count and heap/index footprint. Postgres-specific —
+     * sizes come from `pg_total_relation_size` and friends.
+     *
+     * Row counts are exact `count(*)`s rather than `pg_class.reltuples` estimates: the estimate is
+     * `-1` for a table that has never been analyzed and drifts between autovacuum runs, which reads
+     * as a bug on a dashboard. That means one sequential scan per table, so this is admin-only and
+     * not something to poll.
+     */
+    fun databaseStats(): DatabaseStats {
+        val databaseName = jdbc.queryForObject("SELECT current_database()", String::class.java) ?: "?"
+        val databaseSize = jdbc.queryForObject(
+            "SELECT pg_database_size(current_database())",
+            Long::class.java,
+        ) ?: 0
+        // Sizes first (one catalog query), then a count per table.
+        data class Sizes(val name: String, val tableBytes: Long, val indexBytes: Long, val totalBytes: Long)
+        val sizes = jdbc.query(
+            """
+            SELECT c.relname AS name,
+                   pg_table_size(c.oid) AS table_bytes,
+                   pg_indexes_size(c.oid) AS index_bytes,
+                   pg_total_relation_size(c.oid) AS total_bytes
+            FROM pg_class c
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE c.relkind = 'r' AND n.nspname = current_schema()
+            ORDER BY pg_total_relation_size(c.oid) DESC, c.relname
+            """.trimIndent(),
+        ) { rs, _ ->
+            Sizes(rs.getString("name"), rs.getLong("table_bytes"), rs.getLong("index_bytes"), rs.getLong("total_bytes"))
+        }
+        val tables = sizes
+            // Catalog-sourced names, but the count below interpolates them — refuse anything unquotable.
+            .filter { SAFE_IDENTIFIER.matches(it.name) }
+            .map { s ->
+                val rows = jdbc.queryForObject("SELECT count(*) FROM \"${s.name}\"", Long::class.java) ?: 0
+                DatabaseTableStat(s.name, rows, s.tableBytes, s.indexBytes, s.totalBytes)
+            }
+        return DatabaseStats(databaseName, databaseSize, tables)
     }
 
     /** Games per calendar day (UTC) over the last [days] days, oldest first. */

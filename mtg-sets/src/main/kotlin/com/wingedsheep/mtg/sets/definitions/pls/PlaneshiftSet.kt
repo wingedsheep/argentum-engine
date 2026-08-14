@@ -2,9 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.pls
 
 import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
 import com.wingedsheep.sdk.model.Printing
+import com.wingedsheep.sdk.model.TokenPrinting
 
 /**
  * Planeshift (2001)
@@ -32,6 +34,21 @@ object PlaneshiftSet : MtgSet {
     override val printings: List<Printing> by lazy {
         CardDiscovery.findPrintingsIn(CARDS_PACKAGE)
     }
+
+    /**
+     * Planeshift predates token *cards* — Scryfall has no `tpls` set to sync from — so its
+     * token art is self-hosted under `web-client/public/images/tokens/` and declared here, the
+     * same route Invasion, Apocalypse and Odyssey take.
+     */
+    override val tokenArt: List<TokenPrinting> = listOf(
+        TokenPrinting(
+            name = "Saproling",
+            imageUri = "/images/tokens/pls-saproling.jpeg",
+            power = 1,
+            toughness = 1,
+            colors = setOf(Color.GREEN),
+        ),
+    )
 
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.pls.cards"
 }

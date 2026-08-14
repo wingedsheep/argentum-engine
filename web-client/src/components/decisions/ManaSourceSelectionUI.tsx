@@ -1,74 +1,29 @@
 import { useEffect, useMemo } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
+import { usePlayer } from '@/store/selectors'
 import type { DecisionSelectionState } from '@/store/slices'
 import type {
-  EntityId,
   ManaSourceOption,
   SelectManaSourcesDecision,
 } from '@/types'
 import { parseManaCost } from '@/utils/manaCost'
-import { AbilityText } from '../ui/ManaSymbols'
+import { computeCoverage, isCovered } from './manaCoverage'
+import { AbilityText, ManaSymbol } from '../ui/ManaSymbols'
 import { DraggableBanner } from './DraggableBanner'
 import styles from './DecisionUI.module.css'
 
-// Server serializes Color enums by name ("BLACK"), but cost symbols use pip letters ("B").
-const COLOR_NAME_TO_PIP: Record<string, string> = {
-  WHITE: 'W', BLUE: 'U', BLACK: 'B', RED: 'R', GREEN: 'G',
-}
-
-const toPip = (color: string): string => COLOR_NAME_TO_PIP[color] ?? color
 
 /**
- * Greedy check: do the selected sources produce enough mana to cover `costSymbols`?
- * Mirrors the engine's solver well enough for a UI hint — the server still re-solves
- * on submit. Skips X (variable). `extraGeneric` folds in non-mana payment (each tapped
- * Waterbend permanent pays {1} generic).
- */
-function selectionCoversCost(
-  selectedIds: readonly EntityId[],
-  availableSources: readonly ManaSourceOption[],
-  costSymbols: readonly string[],
-  extraGeneric = 0,
-): boolean {
-  const sourceById = new Map(availableSources.map((s) => [s.entityId, s]))
-  const coloredReqs: Record<string, number> = {}
-  let genericReq = 0
-  for (const s of costSymbols) {
-    if (s === 'X') continue
-    const num = parseInt(s, 10)
-    if (!isNaN(num)) genericReq += num
-    else coloredReqs[s] = (coloredReqs[s] ?? 0) + 1
-  }
-
-  // Waterbend taps pay generic only (CR — each tapped artifact/creature pays {1}).
-  genericReq = Math.max(0, genericReq - extraGeneric)
-
-  for (const id of selectedIds) {
-    const src = sourceById.get(id)
-    if (!src) continue
-    const colors = (src.producesColors ?? []).map(toPip)
-    let consumed = false
-    for (const color of colors) {
-      if ((coloredReqs[color] ?? 0) > 0) {
-        coloredReqs[color]!--
-        consumed = true
-        break
-      }
-    }
-    if (!consumed && genericReq > 0) {
-      genericReq--
-    }
-  }
-
-  if (genericReq > 0) return false
-  for (const v of Object.values(coloredReqs)) if (v > 0) return false
-  return true
-}
-
-/**
- * Mana source selection UI for SelectManaSourcesDecision.
- * Shows a side banner and allows clicking lands/sources on the battlefield,
- * with an "Auto Pay" shortcut button.
+ * Payment UI for a [SelectManaSourcesDecision] — the engine asking one player for mana outside of
+ * casting a spell (ward, "you may pay {B}", an attack tax, a draw replacement).
+ *
+ * There are two ways to produce the mana, and the banner has to make both discoverable:
+ *  1. **Click a highlighted source.** The engine pre-computed a menu of `{T}`-shaped sources; they
+ *     light up on the battlefield and are tapped when the player confirms.
+ *  2. **Activate a mana ability from a permanent's menu.** CR 605.3a allows this whenever a rule or
+ *     effect asks for a mana payment, and it is the only route for anything the solver can't model
+ *     — Ashnod's Altar, a Forage sub-cost, an ability with no `{T}` in its activation cost. That
+ *     mana lands in the pool immediately, so the readout below counts it as already paid.
  */
 export function ManaSourceSelectionUI({
   decision,
@@ -79,6 +34,7 @@ export function ManaSourceSelectionUI({
   const decisionSelectionState = useGameStore((s) => s.decisionSelectionState)
   const cancelDecisionSelection = useGameStore((s) => s.cancelDecisionSelection)
   const submitManaSourcesDecision = useGameStore((s) => s.submitManaSourcesDecision)
+  const manaPool = usePlayer(decision.playerId)?.manaPool ?? null
 
   const waterbendPermanents = decision.waterbendPermanents ?? []
   const waterbendIds = useMemo(
@@ -88,6 +44,13 @@ export function ManaSourceSelectionUI({
 
   // Start decision selection state when this component mounts. Both mana sources and
   // Waterbend-eligible permanents are clickable on the battlefield; they're partitioned on submit.
+  //
+  // Re-runs on `autoPaySuggestion` as well as on a new decision id. Activating a mana ability
+  // mid-payment re-raises the *same* decision, refreshed: the source just tapped is gone from
+  // `availableSources` and the suggestion now covers only what the new floating mana doesn't. That
+  // is the signal that the board moved under the player, so the selection is re-seeded from it —
+  // otherwise a pre-selected land stays ticked and Pay taps it on top of mana already in the pool.
+  const suggestionKey = decision.autoPaySuggestion.join(',')
   useEffect(() => {
     const validOptions = [
       ...decision.availableSources.map((s) => s.entityId),
@@ -96,7 +59,7 @@ export function ManaSourceSelectionUI({
     const selectionState: DecisionSelectionState = {
       decisionId: decision.id,
       validOptions,
-      selectedOptions: [...decision.autoPaySuggestion],
+      selectedOptions: decision.autoPaySuggestion.filter((id) => validOptions.includes(id)),
       minSelections: 1,
       maxSelections: validOptions.length,
       prompt: decision.prompt,
@@ -106,9 +69,8 @@ export function ManaSourceSelectionUI({
     return () => {
       cancelDecisionSelection()
     }
-  }, [decision.id])
+  }, [decision.id, suggestionKey])
 
-  const selectedCount = decisionSelectionState?.selectedOptions.length ?? 0
   const selectedOptions = decisionSelectionState?.selectedOptions
 
   // Partition the clicked permanents: mana sources vs Waterbend taps (each pays {1} generic).
@@ -133,16 +95,19 @@ export function ManaSourceSelectionUI({
     () => parseManaCost(decision.requiredCost),
     [decision.requiredCost],
   )
-  const isSelectionSufficient = useMemo(
+  const coverage = useMemo(
     () =>
-      selectionCoversCost(
+      computeCoverage(
+        costSymbols,
+        manaPool,
         selectedManaSources,
         decision.availableSources,
-        costSymbols,
         selectedWaterbend.length,
       ),
-    [selectedManaSources, selectedWaterbend, decision.availableSources, costSymbols],
+    [costSymbols, manaPool, selectedManaSources, selectedWaterbend, decision.availableSources],
   )
+  const isCostCovered = coverage.every(isCovered)
+  const floatingCoversAll = coverage.every((pip) => pip.floating || pip.symbol === 'X')
 
   const handleAutoPay = () => {
     submitManaSourcesDecision([], true)
@@ -150,31 +115,57 @@ export function ManaSourceSelectionUI({
   }
 
   const handleConfirm = () => {
-    if (decisionSelectionState && isSelectionSufficient) {
-      submitManaSourcesDecision(selectedManaSources, false, selectedWaterbend)
-      cancelDecisionSelection()
-    }
+    if (!isCostCovered) return
+    // A payment made entirely from mana the player floated themselves submits no sources; the
+    // server distinguishes it from a refusal by the absence of the `declined` flag.
+    submitManaSourcesDecision(selectedManaSources, false, selectedWaterbend)
+    cancelDecisionSelection()
   }
 
   const handleDecline = () => {
-    submitManaSourcesDecision([], false)
+    submitManaSourcesDecision([], false, [], true)
     cancelDecisionSelection()
   }
+
+  const payLabel = floatingCoversAll && selectedManaSources.length === 0 ? 'Pay' : `Pay (${selectedManaSources.length})`
 
   return (
     <DraggableBanner className={styles.sideBannerSelection}>
       <div className={styles.bannerTitleSelection}>
-        {decision.canDecline ? 'Activate Ability?' : 'Select Mana Sources'}
+        {decision.canDecline ? 'Pay cost?' : 'Pay cost'}
       </div>
       {decision.context.sourceName && (
         <div className={styles.hint}>
           <AbilityText text={decision.prompt} size={13} />
         </div>
       )}
+
+      {/* Live readout: solid = already floating, outlined = will be tapped on Pay, dim = missing. */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '6px 0' }}>
+        {coverage.map((pip, i) => (
+          <span
+            key={i}
+            title={pip.floating ? 'Paid from your mana pool' : pip.pending ? 'Covered by a selected source' : 'Not yet covered'}
+            style={{
+              display: 'inline-flex',
+              borderRadius: '50%',
+              opacity: pip.floating ? 1 : pip.pending ? 0.85 : 0.3,
+              filter: isCovered(pip) ? 'none' : 'grayscale(70%)',
+              boxShadow: pip.pending ? '0 0 0 2px rgba(120, 220, 140, 0.9)' : 'none',
+              transition: 'opacity 0.15s, filter 0.15s, box-shadow 0.15s',
+            }}
+          >
+            <ManaSymbol symbol={pip.symbol} size={20} />
+          </span>
+        ))}
+      </div>
+
       <div className={styles.hint}>
-        {selectedCount > 0
-          ? `${selectedCount} source${selectedCount !== 1 ? 's' : ''} selected`
-          : 'Click lands to select'}
+        {isCostCovered ? 'Cost covered — press Pay.' : 'Click a highlighted source to tap it.'}
+      </div>
+      {/* Always visible: the escape hatch for costs the highlighted menu can't cover. */}
+      <div className={styles.hint} style={{ opacity: 0.7, fontSize: 11 }}>
+        You can also click any permanent to use its mana ability.
       </div>
       {waterbendPermanents.length > 0 && (
         <div className={styles.hint}>
@@ -187,11 +178,6 @@ export function ManaSourceSelectionUI({
           )}
         </div>
       )}
-      {!isSelectionSufficient && (
-        <div className={styles.effectHint}>
-          Not enough mana selected
-        </div>
-      )}
       {sacrificedSources.length > 0 && (
         <div className={styles.effectHint}>
           Will sacrifice: {sacrificedSources.map((s) => s.name).join(', ')}
@@ -199,38 +185,28 @@ export function ManaSourceSelectionUI({
       )}
 
       <div className={styles.buttonContainerSmall}>
-        {decision.canDecline ? (
-          <>
-            <button
-              onClick={handleConfirm}
-              disabled={!isSelectionSufficient}
-              className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
-            >
-              Confirm
-            </button>
-            <button
-              onClick={handleDecline}
-              className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
-            >
-              Decline
-            </button>
-          </>
-        ) : (
-          <>
-            <button
-              onClick={handleAutoPay}
-              className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
-            >
-              Auto Pay
-            </button>
-            <button
-              onClick={handleConfirm}
-              disabled={!isSelectionSufficient}
-              className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
-            >
-              Confirm ({selectedCount})
-            </button>
-          </>
+        {!decision.canDecline && (
+          <button
+            onClick={handleAutoPay}
+            className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
+          >
+            Auto Pay
+          </button>
+        )}
+        <button
+          onClick={handleConfirm}
+          disabled={!isCostCovered}
+          className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
+        >
+          {payLabel}
+        </button>
+        {decision.canDecline && (
+          <button
+            onClick={handleDecline}
+            className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}
+          >
+            Decline
+          </button>
         )}
       </div>
     </DraggableBanner>

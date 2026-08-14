@@ -5,6 +5,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 /**
@@ -25,6 +26,7 @@ fun GameState.addFloatingEffect(
     context: EffectContext,
     sublayer: Sublayer? = null,
     dynamicGroupFilter: GroupFilter? = null,
+    sourceCondition: Condition? = null,
     timestamp: Long = this.timestamp
 ): GameState {
     val (effectId, stateWithId) = newEntity()
@@ -37,6 +39,7 @@ fun GameState.addFloatingEffect(
         context = context,
         sublayer = sublayer,
         dynamicGroupFilter = dynamicGroupFilter,
+        sourceCondition = sourceCondition,
         timestamp = timestamp
     )
     return stateWithId.copy(floatingEffects = stateWithId.floatingEffects + effect)
@@ -59,6 +62,7 @@ fun GameState.createFloatingEffect(
     context: EffectContext,
     sublayer: Sublayer? = null,
     dynamicGroupFilter: GroupFilter? = null,
+    sourceCondition: Condition? = null,
     timestamp: Long = this.timestamp,
     id: EntityId
 ): ActiveFloatingEffect {
@@ -70,7 +74,8 @@ fun GameState.createFloatingEffect(
             sublayer = sublayer,
             modification = modification,
             affectedEntities = affectedEntities,
-            dynamicGroupFilter = dynamicGroupFilter
+            dynamicGroupFilter = dynamicGroupFilter,
+            sourceCondition = sourceCondition
         ),
         duration = duration,
         sourceId = context.sourceId,

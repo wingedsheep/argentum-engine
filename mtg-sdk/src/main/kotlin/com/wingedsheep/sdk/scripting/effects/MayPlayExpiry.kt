@@ -38,6 +38,24 @@ sealed interface MayPlayExpiry {
     }
 
     /**
+     * Permission persists indefinitely — across turns, and it survives the granting source
+     * leaving play (the permission's lifecycle is owned by the game state, not the source) —
+     * EXCEPT that it is revoked the moment that *same source* grants another such permission,
+     * i.e. exiles another card. Only one card exiled by a given source is playable at a time;
+     * each new exile supersedes the previous.
+     *
+     * Models "you may play that card until you exile another card with this [permanent]"
+     * (Superior Foes of Spider-Man). The engine keys the superseding on the granting effect's
+     * source id; a grant with no source id can't identify its siblings and so behaves like
+     * [Permanent].
+     */
+    @SerialName("UntilSourceExilesAnother")
+    @Serializable
+    data object UntilSourceExilesAnother : MayPlayExpiry {
+        override val description = "until you exile another card with this permanent"
+    }
+
+    /**
      * Permission ends at the controller's next [step]. When the trigger fires on the
      * controller's own turn and that step has not yet been reached, [includeCurrentTurn]
      * decides whether THIS turn's instance counts as "next":

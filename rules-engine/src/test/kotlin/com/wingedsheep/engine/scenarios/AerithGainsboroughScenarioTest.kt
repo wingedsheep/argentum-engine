@@ -93,7 +93,7 @@ class AerithGainsboroughScenarioTest : FunSpec({
 
         // A legendary creature you control should receive the counters (distinct name, so no
         // legend-rule conflict with Aerith).
-        val myLegend = driver.putCreatureOnBattlefield(active, "Ragavan, Nimble Pilferer")
+        val myLegend = driver.putCreatureOnBattlefield(active, "Test Hasty Prospector")
         // A non-legendary creature you control must NOT receive counters.
         val myNonLegend = driver.putCreatureOnBattlefield(active, "Grizzly Bears")
         // An opponent's legendary creature must NOT receive counters (legendary "you control").

@@ -35,10 +35,10 @@ data class ShuffleLibraryEffect(
  *
  * The count is the size of the named gather collection (`"scried"` by default) at
  * resolution time — i.e. the cards `GatherCardsEffect` actually pulled, which equals
- * the scry N parameter unless the library held fewer (CR 701.18a). The count can be
- * zero when the library was empty; the event still fires, because CR 701.18d triggers
+ * the scry N parameter unless the library held fewer (CR 701.22a). The count can be
+ * zero when the library was empty; the event still fires, because CR 701.22d triggers
  * "whenever you scry" abilities "even if some or all of those actions were impossible."
- * Suppression of a literal "scry 0" (CR 701.18b) is handled by `scry()` omitting this
+ * Suppression of a literal "scry 0" (CR 701.22b) is handled by `scry()` omitting this
  * tail entirely, not here.
  *
  * Card authors should not use this directly; it is wired into the scry primitive.
@@ -62,9 +62,9 @@ data class EmitScriedEventEffect(
  *
  * The count is the size of the named gather collection (`"surveiled"` by default) at resolution
  * time — the cards `GatherCardsEffect` actually pulled, which equals the surveil N parameter unless
- * the library held fewer (CR 701.42a). The count can be zero when the library was empty; the event
- * still fires, because CR 701.42d triggers "whenever you surveil" abilities "even if some or all of
- * those actions were impossible." Suppression of a literal "surveil 0" (CR 701.42c) is handled by
+ * the library held fewer (CR 701.25a). The count can be zero when the library was empty; the event
+ * still fires, because CR 701.25d triggers "whenever you surveil" abilities "even if some or all of
+ * those actions were impossible." Suppression of a literal "surveil 0" (CR 701.25c) is handled by
  * `surveil()` omitting this tail entirely, not here.
  *
  * Card authors should not use this directly; it is wired into the surveil primitive.
@@ -151,7 +151,7 @@ data object EmitLibrarySearchedEventEffect : Effect {
 
 
 /**
- * "Scry [count]" (CR 701.18) as a single compact node.
+ * "Scry [count]" (CR 701.22) as a single compact node.
  *
  * This is a *macro effect*: a serializable marker that, at execution time, expands into the
  * shared Gather → Select → Move → Move → emit pipeline built by
@@ -174,7 +174,7 @@ data class ScryEffect(val count: Int) : Effect {
 }
 
 /**
- * "Surveil [count]" (CR 701.42) as a single compact node — the surveil twin of [ScryEffect].
+ * "Surveil [count]" (CR 701.25) as a single compact node — the surveil twin of [ScryEffect].
  *
  * Expands at execution time into the shared pipeline built by
  * [com.wingedsheep.sdk.dsl.LibraryPatterns.surveilPipeline]; see [ScryEffect] for the macro-effect
@@ -327,9 +327,22 @@ data class CastFromCollectionWithoutPayingCostEffect(
     val payManaCost: Boolean = false,
     /** When set, the cast card's id is published to this pipeline collection on a successful cast. */
     val storeCastTo: String? = null,
+    /**
+     * Cast the card **transformed** — back face up (CR 712.8c), the way disturb casts a card from
+     * the graveyard. The back face supplies the spell's characteristics: its card types, targets,
+     * and the permanent it becomes. Set for "exile it, then you may cast it transformed" (CR
+     * 310.11b, the Siege defeat trigger).
+     *
+     * A card with no back face is cast normally, so this is safe to set on a collection that may
+     * hold single-faced cards.
+     */
+    val castTransformed: Boolean = false,
 ) : Effect {
-    override val description: String =
-        if (payManaCost) "Cast that card" else "Cast that card without paying its mana cost"
+    override val description: String = buildString {
+        append("Cast that card")
+        if (castTransformed) append(" transformed")
+        if (!payManaCost) append(" without paying its mana cost")
+    }
 }
 
 /**

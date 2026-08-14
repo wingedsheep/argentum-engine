@@ -10,6 +10,11 @@ server:
     mime-types: application/json,application/octet-stream,text/plain,text/html,text/css,application/javascript
     min-response-size: 2KB
 
+app:
+  # Build identity, stamped onto every recorded replay so one that later fails to re-simulate can be
+  # traced to the build that recorded it. The Dockerfile sets this from the deploy's git sha.
+  version: ${APP_VERSION:dev}
+
 spring:
   application:
     name: argentum-game-server
@@ -76,6 +81,12 @@ cache:
 
 game:
   debug-mode: ${GAME_DEBUG_MODE:false}
+  replay:
+    # Cap on the archived viewer stream stored alongside a replay's input log — the fallback that
+    # keeps old replays watchable after the engine changes (see ReplayPresentation). Measured on the
+    # gzipped form, which is ~160 KB for a full game, so 4 MB only bites on something pathological
+    # (a mill-loop stalemate, an AI grinding 400 turns). 0 disables archiving entirely.
+    presentation-max-stored-bytes: ${GAME_REPLAY_PRESENTATION_MAX_STORED_BYTES:4194304}
   dev-endpoints:
     # Enable development endpoints for manual testing. NEVER enable in production.
     enabled: ${GAME_DEV_ENDPOINTS_ENABLED:false}
@@ -92,6 +103,11 @@ game:
     # flattens an empty collection to an empty-string property that fails to
     # bind to the Map/Set target. Override them in a profile (see
     # application-local.yml) when you actually need entries.
+  easter-eggs:
+    # Name-based joke cards slipped into a player's deck (EasterEggDeckInjector). Off by default so
+    # production stays clean — the deploy passes no GAME_EASTER_EGGS_ENABLED, so a redeploy can't
+    # switch them back on. Local dev opts in via .env.
+    enabled: ${GAME_EASTER_EGGS_ENABLED:false}
   admin:
     # Password for admin replay feature. Feature is disabled if not set.
     password: ${GAME_ADMIN_PASSWORD:}
@@ -106,6 +122,9 @@ game:
     open-router-api-key: ${OPENROUTER_API_KEY:}
     # When true, AI sealed decks always use the deterministic heuristic builder (skips the LLM).
     heuristic-deckbuilding: ${GAME_AI_HEURISTIC_DECKBUILDING:false}
+    # Local testing mode: record the engine AI's candidate actions + scores and serve them from
+    # /api/dev/ai-insight. Off in production — recording retains a GameState per decision.
+    insight-enabled: ${GAME_AI_INSIGHT_ENABLED:false}
 
 # Swagger UI - only enabled when dev endpoints are enabled
 springdoc:

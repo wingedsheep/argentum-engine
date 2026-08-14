@@ -33,17 +33,30 @@ class CyclingEnumerator : ActionEnumerator {
             val typedCycling = cyclingAbilities.firstOrNull { it.searchFilter != null }
 
             if (plainCycling != null) {
-                val canAfford = context.manaSolver.canPay(state, playerId, plainCycling.cost, precomputedSources = context.availableManaSources)
+                // An `{X}` cycling cost (Webstrike Elite's "Cycling {X}{G}{G}") is affordable as
+                // soon as its fixed part is payable — X = 0 is always a legal announcement (CR
+                // 107.3a). Substituting X = 0 gives that baseline for both the check and the
+                // auto-tap preview; the displayed cost string keeps the `{X}` so the player sees
+                // the real cost, and hasXCost/maxAffordableX drive the client's X chooser.
+                val hasXCost = plainCycling.cost.hasX
+                val baseCost = plainCycling.cost.withXAs(0)
+                val canAfford = context.manaSolver.canPay(state, playerId, baseCost, precomputedSources = context.availableManaSources)
                 val autoTapPreview = if (context.skipAutoTapPreview) null else {
-                    context.manaSolver.solve(state, playerId, plainCycling.cost, precomputedSources = context.availableManaSources)
+                    context.manaSolver.solve(state, playerId, baseCost, precomputedSources = context.availableManaSources)
                         ?.sources?.map { it.entityId }
                 }
+                val maxAffordableX = if (hasXCost) {
+                    val available = context.manaSolver.getAvailableManaCount(state, playerId, context.availableManaSources)
+                    ((available - baseCost.cmc).coerceAtLeast(0)) / plainCycling.cost.xCount.coerceAtLeast(1)
+                } else null
                 result.add(
                     LegalAction(
                         actionType = "CycleCard",
                         description = "Cycle ${cardComponent.name}",
                         action = CycleCard(playerId, cardId),
                         affordable = canAfford,
+                        hasXCost = hasXCost,
+                        maxAffordableX = maxAffordableX,
                         manaCostString = plainCycling.cost.toString(),
                         autoTapPreview = autoTapPreview
                     )

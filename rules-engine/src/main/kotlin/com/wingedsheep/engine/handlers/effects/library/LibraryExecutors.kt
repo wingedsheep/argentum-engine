@@ -95,6 +95,7 @@ class LibraryExecutors(
         SelectTargetPipelineExecutor(targetFinder = targetFinder ?: TargetFinder()),
         MoveCollectionExecutor(cardRegistry = cardRegistry, targetFinder = targetFinder),
         FilterCollectionExecutor(),
+        ChooseOnePerCategoryExecutor(),
         PutOnTopOrBottomOfLibraryExecutor(),
         StoreNumberExecutor(),
         StoreCardNameExecutor(),

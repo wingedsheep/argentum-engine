@@ -58,6 +58,42 @@ internal fun BridgeBuilder.zoneMovement() {
     composed("Scry", "Patterns.Library.scry -> Gather/Select/MoveCollection", composes = listOf("MoveCollection"))
     composed("ManifestDread", "Patterns.Library.manifestDread -> Gather/Select/MoveCollection(face-down MANIFEST)", composes = listOf("MoveCollection"))
 
+    // Cloak (CR 701.58) is manifest plus ward {2}, and on our side it is exactly one FaceDownMode
+    // variant: `MoveCollectionEffect(faceDown = FaceDownMode.CLOAK)` / `MoveToZoneEffect`. The engine
+    // derives the turn-up procedure (the card's own mana cost, creature cards only) and the ward {2}
+    // characteristic at entry, so every cloak shape is expressible — which is what these rows record.
+    //
+    // The emitter renders only the look-at-top form it has a proven card for
+    // (`CloakNumberGenericCards`, Hide in Plain Sight — see ZoneHandlers.renderLook). The other four
+    // tags each wrap the cloak in a different gather (top of a *target* player's library, an
+    // exiled-and-shuffled pile, a card chosen from hand), so they stay capability-only -> SCAFFOLD
+    // rather than guess at the surrounding pipeline.
+    composed(
+        "CloakNumberGenericCards",
+        "look-top pipeline -> Patterns.Library.lookAtTopAndKeep(keepFaceDown = FaceDownMode.CLOAK)",
+        composes = listOf("MoveCollection")
+    )
+    composed(
+        "CloakTheTopCardOfPlayersLibrary",
+        "Gather(TopOfLibrary, player) -> MoveCollection(battlefield, faceDown = CLOAK); emitter scaffolds the surrounding pipeline",
+        composes = listOf("MoveCollection")
+    )
+    composed(
+        "CloakEachExiledCard",
+        "Gather(linked exile) -> MoveCollection(battlefield, faceDown = CLOAK); emitter scaffolds the exile-and-shuffle pile",
+        composes = listOf("MoveCollection")
+    )
+    composed(
+        "CloakCardFromHand",
+        "Gather/Select(hand) -> MoveCollection(battlefield, faceDown = CLOAK); emitter scaffolds",
+        composes = listOf("MoveCollection")
+    )
+    composed(
+        "CloakACardFromHand",
+        "Gather/Select(hand) -> MoveCollection(battlefield, faceDown = CLOAK); emitter scaffolds",
+        composes = listOf("MoveCollection")
+    )
+
     composed("PutACardFromHandOnBattlefield", "Patterns.Hand.putFromHand -> Gather/Select/MoveCollection", composes = listOf("MoveCollection"))
     composed("PutTopOfLibraryInHand", "look-top pipeline -> MoveCollection (library->hand)", composes = listOf("MoveCollection", "MoveToZone"))
     composed("PutTopOfLibraryInGraveyard", "look-top pipeline -> MoveCollection (library->graveyard)", composes = listOf("MoveCollection", "MoveToZone"))
@@ -109,6 +145,16 @@ internal fun BridgeBuilder.zoneMovement() {
     // MoveCollection -> exile. Capability-only; the emitter declines the card-specific surrounding
     // pipeline (the may-gate + become-a-copy follow-up) -> SCAFFOLD.
     composed("Exile", "MoveToZone / Gather+MoveCollection -> exile (any exilable card)", composes = listOf("MoveToZone", "MoveCollection"))
+    // "…with a <kind> counter on it" — the exile flag riding an Exile action (Tinybones, Bauble
+    // Burglar's stash counter; Goliath Daydreamer's dream counter). One counter of the named type is
+    // put on the card as it lands in exile: `addCounterType` on MoveToZone (single target) or
+    // MoveCollection (a gathered pile).
+    supported("ExilesWithACounter", "exile flag: exile it with one counter of a type on it (MoveToZone/MoveCollection addCounterType)")
+    // "…from their graveyard" — the exilable selector for a card sitting in a graveyard, including the
+    // `Trigger_ThatGraveyardCard` self-reference to the card the current trigger put there. Maps to
+    // MoveToZone(fromZone = GRAVEYARD), which skips the move when the card has since left the graveyard
+    // (by then it's a new object, CR 400.7).
+    supported("CardInGraveyards", "exilable selector: a card in a graveyard (MoveToZone fromZone = GRAVEYARD; Trigger_ThatGraveyardCard -> EffectTarget.TriggeringEntity)")
     // "exile target <permanent> until this <permanent> leaves the battlefield" — the Banishing Light
     // O-Ring shape (Mystical Tether, Lassoed by the Law). Maps to the ExileUntilLeaves effect paired
     // with a synthesized leaves-battlefield ReturnLinkedExile trigger; only the

@@ -167,21 +167,67 @@ data class SetLifeTotalEffect(
     }
 }
 
-/**
- * Exchange a player's life total with a creature's power.
- * "{4}: Exchange your life total with Evra's power."
- *
- * Per MTG Rule 701.12g, the exchange is simultaneous — the creature's power becomes the
- * player's former life total, and the player's life total becomes the creature's former power.
- * The life change follows Rule 119.3 (gain or lose the necessary amount of life).
- * The power change creates a floating effect at Layer 7b (SET_VALUES).
- *
- * @property target The creature whose power is being exchanged (defaults to Self)
- */
-@SerialName("ExchangeLifeAndPower")
+/** Which of a creature's two combat stats an effect reads and writes. */
 @Serializable
-data class ExchangeLifeAndPowerEffect(
-    val target: EffectTarget = EffectTarget.Self
+enum class CreatureStat {
+    POWER,
+    TOUGHNESS;
+
+    /** Lowercase name for description strings ("power" / "toughness"). */
+    val displayName: String get() = name.lowercase()
+}
+
+/**
+ * Exchange a player's life total with a creature's power or toughness (CR 701.12g).
+ *
+ * - Evra, Halcyon Witness: "{4}: Exchange your life total with Evra's power."
+ * - Tree of Perdition: "{T}: Exchange target opponent's life total with this creature's toughness."
+ *
+ * The exchange is simultaneous — the creature's chosen base stat becomes the player's former life
+ * total, and the player's life total becomes the creature's former *projected* stat. The life change
+ * follows Rule 119.3 (gain or lose the necessary amount of life), so life-gain prevention and
+ * gain/loss triggers apply. The stat change creates a floating effect at Layer 7b (SET_VALUES), so
+ * counters, Auras, and Equipment apply *on top of* the newly set base value.
+ *
+ * If the creature isn't on the battlefield when the effect resolves, nothing happens.
+ *
+ * @property target The creature whose stat is being exchanged (defaults to Self)
+ * @property stat Which of the creature's stats takes part in the exchange (defaults to power)
+ * @property player The player whose life total is exchanged (defaults to the controller)
+ */
+@SerialName("ExchangeLifeAndStat")
+@Serializable
+data class ExchangeLifeAndStatEffect(
+    val target: EffectTarget = EffectTarget.Self,
+    val stat: CreatureStat = CreatureStat.POWER,
+    val player: EffectTarget = EffectTarget.Controller
 ) : Effect {
-    override val description: String = "Exchange your life total with ${target.description}'s power"
+    override val description: String = run {
+        val whose = if (player == EffectTarget.Controller) "your" else "${player.description}'s"
+        "Exchange $whose life total with ${target.description}'s ${stat.displayName}"
+    }
+}
+
+/**
+ * Exchange the controller's life total with [target] player's (CR 701.12c): each player gains or
+ * loses the life needed to reach the other's former total. Applied through the shared gain/lose-life
+ * primitives, so life-gain prevention/replacements and life-loss modification apply, and both
+ * players' `LifeChangedEvent`s fire for "whenever you gain/lose life" triggers.
+ *
+ * When [drawEqualToLifeLost] is true, the controller then draws a card for each point of life they
+ * **lost** in the exchange (their former total minus their new total, when positive) — Mister
+ * Negative's "If you lost life this way, draw that many cards." Modelled as one self-contained
+ * effect because the draw amount is the controller's life-loss delta, which no `DynamicAmount`
+ * otherwise exposes.
+ */
+@SerialName("ExchangeLifeTotals")
+@Serializable
+data class ExchangeLifeTotalsEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0),
+    val drawEqualToLifeLost: Boolean = false
+) : Effect {
+    override val description: String = buildString {
+        append("Exchange life totals with ${target.description}")
+        if (drawEqualToLifeLost) append(". If you lost life this way, draw that many cards")
+    }
 }

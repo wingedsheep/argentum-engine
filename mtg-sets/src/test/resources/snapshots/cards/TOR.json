@@ -474,6 +474,47 @@
     ]
 }
 
+// Fiery Temper
+{
+    "name": "Fiery Temper",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Fiery Temper deals 3 damage to any target.\nMadness {R} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "ContextTarget",
+                "index": 0
+            }
+        },
+        "targetRequirements": [
+            "AnyTarget"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "artist": "Greg Hildebrandt",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/918e46b7-cbca-4acf-8e83-94b5fcadcc49.jpg?1783945148"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hypochondria
 {
     "name": "Hypochondria",

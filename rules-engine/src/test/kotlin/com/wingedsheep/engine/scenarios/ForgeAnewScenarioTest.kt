@@ -121,7 +121,10 @@ class ForgeAnewScenarioTest : FunSpec({
         // The first equip each turn is free — it must read as {0}, not blank (which the client
         // would render as the Equipment's printed {3} via `manaCostString || cardInfo.manaCost`).
         equip.manaCostString shouldBe "{0}"
-        equip.description.startsWith("{0}:") shouldBe true
+        // An equip ability renders as its printed keyword line (CR 702.6a), and because that line is
+        // derived rather than a frozen descriptionOverride it picks up the discount: "Equip {0}",
+        // not the printed "Equip {3}".
+        equip.description shouldBe "Equip {0}"
     }
 
     test("grants instant-speed equip during your turn (equip in combat)") {

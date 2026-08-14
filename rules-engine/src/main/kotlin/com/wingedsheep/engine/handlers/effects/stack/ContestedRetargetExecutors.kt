@@ -166,7 +166,7 @@ object ContestedRetargetLogic {
         val requirements = state.getEntity(stackObjectId)?.get<TargetsComponent>()?.targetRequirements
             ?: emptyList()
         val updatedState = state.updateEntity(stackObjectId) { container ->
-            container.with(TargetsComponent(acc, requirements))
+            container.with(TargetsComponent.capture(state, acc, requirements))
         }
         return EffectResult.success(updatedState)
     }

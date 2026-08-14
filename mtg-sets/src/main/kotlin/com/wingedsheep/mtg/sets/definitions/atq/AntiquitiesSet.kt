@@ -13,8 +13,9 @@ import com.wingedsheep.sdk.model.Printing
  * Release Date: 1994-03-04
  *
  * Scaffolded as the canonical home for cards reprinted in later sets (e.g. Eighth
- * Edition). Only the cards relocated here so far are implemented; the set is
- * otherwise incomplete.
+ * Edition), and since filled in: all 84 buildable cards are implemented, so the set is
+ * draftable (not `incomplete`). The 85th, Bronze Tablet, needs the ante zone the engine
+ * doesn't have and is listed in `coverage/card-exclusions.json` as never-to-implement.
  */
 object AntiquitiesSet : MtgSet {
 
@@ -22,7 +23,6 @@ object AntiquitiesSet : MtgSet {
     override val displayName = "Antiquities"
     override val releaseDate = "1994-03-04"
     override val basicLandsFallback = PortalSet
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         // Self-stamp [code] onto every card, honouring the MtgSet contract that `cards` is already

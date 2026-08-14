@@ -28,7 +28,11 @@ import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.booleans.shouldBeTrue
+import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContain
+import io.kotest.matchers.collections.shouldNotContain
+import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
+import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
@@ -69,7 +73,44 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             game.state = pending.state
             game.submitDecision(YesNoResponse(pending.pendingDecision.id, true))
 
+            // Agreeing to a mana cost now opens the source window (CR 605.3a) instead of handing
+            // the cost straight to the auto-tap solver. Auto-pay picks the Forest.
+            val sources = game.state.pendingDecision.shouldBeInstanceOf<SelectManaSourcesDecision>()
+            sources.availableSources.map { it.entityId } shouldBe listOf(forest)
+            game.submitDecision(ManaSourcesSelectedResponse(sources.id, autoPay = true))
+
             game.state.getEntity(forest)!!.has<TappedComponent>().shouldBeTrue()
+        }
+
+        test("Mana: a Treasure auto-pay refuses can still be picked by hand in the source window") {
+            val game = scenario().withPlayers()
+                .withCardOnBattlefield(1, "Goblin Guide")
+                .withCardOnBattlefield(1, "Treasure")
+                .build()
+            val service = CostPaymentService(EngineServices(cardRegistry))
+            val source = bfCardByName(game.state, game.player1Id, "Goblin Guide")
+            val treasure = bfCardByName(game.state, game.player1Id, "Treasure")
+
+            // The solver won't auto-tap a Treasure (paying its sacrifice sub-cost silently isn't
+            // something auto-pay may do), but the cost is affordable and the window offers it.
+            service.canAfford(game.state, game.player1Id, Costs.pay.Mana(ManaCost.parse("{G}")), source).shouldBeTrue()
+
+            val pending = service.pay(game.state, game.player1Id, Costs.pay.Mana(ManaCost.parse("{G}")), source)
+                as PaymentResult.Pending
+            game.state = pending.state
+            game.submitDecision(YesNoResponse(pending.pendingDecision.id, true))
+
+            val window = game.state.pendingDecision.shouldBeInstanceOf<SelectManaSourcesDecision>()
+            window.availableSources.single().requiresSacrifice.shouldBeTrue()
+            window.autoPaySuggestion.shouldBeEmpty()
+
+            game.submitDecision(
+                ManaSourcesSelectedResponse(window.id, selectedSources = listOf(treasure))
+            )
+
+            // Sacrificed for the mana, and the cost is paid.
+            game.state.getBattlefield(game.player1Id) shouldNotContain treasure
+            game.state.getZone(ZoneKey(game.player1Id, Zone.GRAVEYARD)) shouldContain treasure
         }
 
         test("Mana: declining leaves the source untapped and runs onDeclined") {
@@ -111,6 +152,9 @@ class CostPaymentServiceTest : ScenarioTestBase() {
             val pending = service.pay(game.state, game.player1Id, PayCost.OwnManaCost, source) as PaymentResult.Pending
             game.state = pending.state
             game.submitDecision(YesNoResponse(pending.pendingDecision.id, true))
+            game.submitDecision(
+                ManaSourcesSelectedResponse(game.state.pendingDecision!!.id, autoPay = true)
+            )
 
             game.state.getEntity(mountain)!!.has<TappedComponent>().shouldBeTrue()
         }

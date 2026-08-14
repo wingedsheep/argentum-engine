@@ -1,0 +1,3005 @@
+{
+  "agent 13, sharon carter": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "agent maria hill": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "agent of atlas": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "agent phil coulson": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "agents of s.h.i.e.l.d.": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "avengers assemble!": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "borough backup": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "brave brawler": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "captain america, super-soldier": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "captain america, wings of freedom": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "captain marvel, earth's protector": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "captain mar-vell, space-born": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Attack Alone",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "colleen wing, street samurai": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "crowd of true believers": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "helicarrier strike": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hero in training": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "invisible woman, sue storm": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "jennifer walters": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the sensational she-hulk": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "kree commandos": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "luke cage, power man": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the mind stone": {
+    "archetypes": [],
+    "fixing": [
+      "W"
+    ],
+    "splashable": false
+  },
+  "mockingbird, ace agent": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "monica rambeau": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "photon, living light": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "murdock's crusade": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "night nurse, healer of heroes": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "okoye, dora milaje leader": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "origin of the avengers": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "panther pounce": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "patriot, shield wielder": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "political triumph": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "quake, agent of s.h.i.e.l.d.": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the sentry, golden guardian": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "s.h.i.e.l.d. spy kit": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "super-soldier serum": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "white widow, free agent": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "aerial doombot": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "a.i.m. scientists": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "atlantean cavalry": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "atlantis attacks": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "attuma, atlantean warlord": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "member"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bold biochemist": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bruce banner": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the incredible hulk": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "depower": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "falcon, winged wonder": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "falcon's wing harness": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "futurist forge": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "giant-sized flying ant": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hydraulic helper": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "i am iron man": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "iron lad, diverging destiny": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ironheart, clever champion": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "justice, vance astrovik": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "kang the conqueror": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "kid loki": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "leader, super-genius": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "loki, god of mischief": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "mister fantastic, reed richards": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ms. marvel, kamala khan": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "namor the sub-mariner": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "pym particles": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "rewrite history": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "s.h.i.e.l.d. deployment drone": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "s.h.i.e.l.d. flying car": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "shuri, wakandan inventor": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "stature, size shifter": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "super intelligence": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "super suit": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "thirst for knowledge": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tony stark": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the invincible iron man": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "trickster's stratagem": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "we say thee nay!": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "wiccan, rising magician": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "agents of hydra": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "arnim zola, bio-fanatic": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "baron helmut zemo": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "baron strucker, hydra overlord": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "construct a cosmic cube": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "crossbones, malicious mercenary": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "decoy ploy": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "doctor doom": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "doom reigns supreme": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "elektra, daughter of the hand": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "grim reaper, lethal legionnaire": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hour of defeat": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hydra infiltration": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hydra troopers": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "kingpin's enforcers": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "klaw, sonic subjugator": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "madame masque": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the masters of evil": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "m.o.d.o.k.": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "moonstone, harsh mistress": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ninja of the hand": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "project deathlok soldier": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "red room recruit": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "robot domination": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ronin, shadow stalker": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Attack Alone",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "roxxon brutes": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "stolen stark tech": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "super-skrull": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "swordsman, sharp scoundrel": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "thunderbolts conspiracy": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "too evil to stay dead": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "unliving legionnaire": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "visions of villainy": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "whiplash, vengeful engineer": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "yellowjacket, heartless marauder": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "blazing crescendo": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "crimson operative": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "death to our enemies": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "evil's thrall": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hawkeye, young avenger": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hawkeye's bow": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hex magic": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hire a crew": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "human torch, johnny storm": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hydra assault robot": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "iron fist, living weapon": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "jessica jones, private eye": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "k'un-lun warrior": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "kree sentinel": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "lightning strike": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "loki laufeyson": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "machinesmith automaton": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "mjolnir, hammer of thor": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "quicksilver, brash blur": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the scarlet witch": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "speed, young avenger": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "stark industries executive": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "super speed": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "team tactics": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power-up Stompy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "thor, god of thunder": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "vision of love": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "volcanic villain": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power-up Stompy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "wonder man, hollywood hero": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ant-man's army": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "call damage control": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "claim the kingdom": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "doc samson, super psychiatrist": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "epic fight": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "go nuts!": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "guerrilla gorilla": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hellcat, undying vigilante": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hercules, prince of power": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "heroic feast": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hulkling, burgeoning bruiser": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ka-zar of the savage land": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "knight of wundagore": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Power-up Stompy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "mister hyde, monster within": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counters",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Power-up Stompy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "mole man, moloid master": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "pet avengers": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "powerful broker": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "punishing punch": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "rapid rescue": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "reptil, dinomorpher": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "restorative technique": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "rick jones, destined sidekick": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "savage land dinosaur": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "serpent specialist": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "shang-chi, master of kung fu": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "she-hulk, jade defender": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the thing, ben grimm": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tigra, feline fury": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "training regimen": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counters",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Power-up Stompy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the unbeatable squirrel girl": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "undercover skrull": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "wakandan royal guard": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "white tiger, ava ayala": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "world war hulk": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "abomination, terrifying titan": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "alien invasion": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ant-man, colony commander": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Counters",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ares, god of war": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "armor wars": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the astonishing ant-man": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Draw-Two",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Counters",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "avengers: under siege": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "beast, erudite aerialist": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "black panther, vanguard": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "black widow, double agent": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bullseye, death dealer": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "captain america, living legend": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "cloak and dagger, entwined": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "daredevil, man without fear": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ghost, spectral saboteur": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "hulk, gamma goliath": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "iron man, master of machines": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "kang, temporal tyrant": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Draw-Two",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "killmonger, scourge of wakanda": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Graveyard",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "king t'challa": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Draw-Two",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "black panther, hope enduring": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Draw-Two",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the kingpin of crime": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "madame hydra": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "moon girl and devil dinosaur": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the ruinous wrecking crew": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "scientist supreme of a.i.m.": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "speedball, new warrior": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "spider-man, to the rescue": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "spider-woman, secret agent": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "storm, windrider": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the super hero civil war": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "thanos, the mad titan": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": true
+  },
+  "thor odinson": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "titania, rugged rumbler": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "u.s.agent, john walker": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "vision quest": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "war machine, legacy of iron": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "winter soldier, icy assassin": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "wolverine, fierce fighter": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "a.i.m. synthoids": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "arc reactor": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "captain america's shield": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Attack Alone",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "cosmic cube": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dependable quinjet": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "h.e.r.b.i.e. scout unit": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "iron man armor": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "s.h.i.e.l.d. helicarrier": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "super-adaptoid": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the ten rings": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ultron, artificial malevolence": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ultron drone": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "vibranium energy daggers": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the vision": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Non-creature Spells",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "viv vision, teen synthezoid": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "a.i.m. labs": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "B"
+    ],
+    "splashable": false
+  },
+  "asgardian citadel": {
+    "archetypes": [
+      {
+        "archetype": "Non-creature Spells",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "R"
+    ],
+    "splashable": false
+  },
+  "avengers hangar": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U"
+    ],
+    "splashable": false
+  },
+  "avengers tower": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Heroes",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "baxter building": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "birnin zana plaza": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "G"
+    ],
+    "splashable": false
+  },
+  "castle doom": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "dark fortress": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B",
+      "R"
+    ],
+    "splashable": false
+  },
+  "fisk tower": {
+    "archetypes": [
+      {
+        "archetype": "Attack Alone",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "B"
+    ],
+    "splashable": false
+  },
+  "gathering place": {
+    "archetypes": [
+      {
+        "archetype": "Heroes",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "G"
+    ],
+    "splashable": false
+  },
+  "gleaming bastion": {
+    "archetypes": [
+      {
+        "archetype": "Teamwork",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U"
+    ],
+    "splashable": false
+  },
+  "hell's kitchen": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B",
+      "R"
+    ],
+    "splashable": false
+  },
+  "hidden lair": {
+    "archetypes": [
+      {
+        "archetype": "Draw-Two",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "B"
+    ],
+    "splashable": false
+  },
+  "los diablos missile base": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "pym technologies": {
+    "archetypes": [
+      {
+        "archetype": "Counters",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "G"
+    ],
+    "splashable": false
+  },
+  "stark industries": {
+    "archetypes": [
+      {
+        "archetype": "Artifacts",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "U",
+      "R"
+    ],
+    "splashable": false
+  },
+  "subterranean cavern": {
+    "archetypes": [
+      {
+        "archetype": "Graveyard",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "B",
+      "G"
+    ],
+    "splashable": false
+  },
+  "surveillance room": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "training compound": {
+    "archetypes": [
+      {
+        "archetype": "Power-up Stompy",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "villainous hideout": {
+    "archetypes": [
+      {
+        "archetype": "Villains",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Villains",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "plains": {
+    "archetypes": [],
+    "fixing": [
+      "W"
+    ],
+    "splashable": false
+  },
+  "island": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "swamp": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "mountain": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "forest": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "deadly dispute": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  }
+}

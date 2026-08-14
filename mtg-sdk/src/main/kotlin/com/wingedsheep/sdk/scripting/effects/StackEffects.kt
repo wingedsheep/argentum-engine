@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.util.numberToWord
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -236,13 +237,21 @@ data class CounterEffect(
  *   [com.wingedsheep.sdk.dsl.Triggers.YouBend], but only if the spell was actually exiled (a target
  *   that already left the stack exiles nothing → no bend). Set via [com.wingedsheep.sdk.dsl.Effects.AirbendSpell];
  *   left false for a plain non-airbend exile-spell (Aven Interrupter).
+ * @property linkToSource When true, the exiled card is appended to the effect source's
+ *   `LinkedExileComponent`, so a later ability of that same source can say "the exiled card" — the
+ *   stack-side counterpart of [ExileLinkedToSourceEffect] and of `MoveCollection(linkToSource = true)`.
+ *   Nothing returns automatically; the link is only a handle. **Spell Queller** pairs it with a
+ *   leaves-the-battlefield trigger that gathers `CardSource.FromLinkedExile()` and grants the card's
+ *   owner a free cast. The link survives the source's own zone change, so the leaves trigger still
+ *   finds it.
  */
 @SerialName("ExileTargetSpell")
 @Serializable
 data class ExileTargetSpellEffect(
     val makePlotted: Boolean = false,
     val fixedAlternativeManaCost: ManaCost? = null,
-    val emitAirbend: Boolean = false
+    val emitAirbend: Boolean = false,
+    val linkToSource: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append("Exile target spell")
@@ -250,6 +259,26 @@ data class ExileTargetSpellEffect(
         if (fixedAlternativeManaCost != null) {
             append(". Its owner may cast it for $fixedAlternativeManaCost rather than its mana cost")
         }
+    }
+}
+
+/**
+ * Exile every spell on the stack matching the controller scope.
+ *
+ * This is not a counter: spells that can't be countered are still exiled. [excludeSource]
+ * supports the common "all other spells" wording when this effect is resolving from a spell.
+ */
+@SerialName("ExileSpellsOnStack")
+@Serializable
+data class ExileSpellsOnStackEffect(
+    val opponentsOnly: Boolean = false,
+    val excludeSource: Boolean = true,
+) : Effect {
+    override val description: String = buildString {
+        append("Exile all ")
+        if (excludeSource) append("other ")
+        if (opponentsOnly) append("opponents' ")
+        append("spells")
     }
 }
 
@@ -386,6 +415,19 @@ sealed interface WardCost {
     val description: String
 
     /**
+     * The **self-contained verb phrase** for this cost — "pay {2}", "pay 2 life", "discard a card",
+     * "sacrifice a Food", "get five poison counters".
+     *
+     * [description] is deliberately *not* that: for most variants it is only the object phrase
+     * ("a card", "a Food"), because each of the three ward renderers supplies the verb itself
+     * ("Ward—Discard " + description). That works only while a ward cost is rendered alone. A
+     * disjunction ([Choice]) has to render each option *with its own verb* — "discard a card or
+     * pay {2}" — so it joins [clause]s instead. Keep the two in sync when adding a variant: the
+     * clause is what a player is asked to do, standing on its own, lowercase and unpunctuated.
+     */
+    val clause: String
+
+    /**
      * Ward with a mana cost — e.g. Ward {1}.
      *
      * When [waterbend] is true the cost is a **Ward—Waterbend** (Avatar: The Last Airbender):
@@ -393,13 +435,15 @@ sealed interface WardCost {
      * may tap their untapped artifacts and creatures to help — each tapped permanent pays {1}
      * of the generic (a generic-only convoke+improvise, identical to the waterbend additional
      * cost / activated-ability waterbend). The waterbend taps are surfaced and applied through
-     * the same machinery as those (`AlternativePaymentChoice.waterbendPermanents`).
+     * the same machinery as those (`AlternativePaymentChoice.tapForGenericPermanents`).
      */
     @SerialName("WardCost.Mana")
     @Serializable
     data class Mana(val manaCost: String, val waterbend: Boolean = false) : WardCost {
         override val description: String =
             if (waterbend) "Waterbend $manaCost" else manaCost
+        override val clause: String =
+            if (waterbend) "waterbend $manaCost" else "pay $manaCost"
     }
 
     /** Ward with a life cost — e.g. Ward—Pay 2 life. */
@@ -407,6 +451,7 @@ sealed interface WardCost {
     @Serializable
     data class Life(val amount: Int) : WardCost {
         override val description: String = "pay $amount life"
+        override val clause: String = description
     }
 
     /**
@@ -423,6 +468,7 @@ sealed interface WardCost {
     @Serializable
     data class DynamicLife(val amount: DynamicAmount) : WardCost {
         override val description: String = "pay life equal to ${amount.description}"
+        override val clause: String = description
     }
 
     /**
@@ -449,6 +495,7 @@ sealed interface WardCost {
             }
             if (random) append(" at random")
         }
+        override val clause: String = "discard $description"
     }
 
     /**
@@ -460,6 +507,57 @@ sealed interface WardCost {
     data class Sacrifice(val filter: GameObjectFilter, val count: Int = 1) : WardCost {
         override val description: String =
             if (count == 1) "a ${filter.description}" else "$count ${filter.description}s"
+        override val clause: String = "sacrifice $description"
+    }
+
+    /**
+     * Ward with a cost paid in **counters placed on the paying player** (CR 122.1 — a counter is a
+     * marker placed on an object *or player*) — "Ward—Get five poison counters." (The Serpent
+     * Society). [counterType] is a `Counters.*` symbol (`Counters.POISON`, `Counters.ENERGY`, …),
+     * matching every other player-scoped counter surface in the SDK.
+     *
+     * Unlike every other ward cost this one has no affordability precondition: a player can always
+     * get counters, so the payment is a plain yes/no and can never be "unpayable" the way an empty
+     * hand or an empty board makes a discard or sacrifice unpayable. That asymmetry is exactly why
+     * it is its own variant rather than a re-skin of [Life] — the payer is *receiving* a marker,
+     * not spending a resource they must already hold.
+     *
+     * "Always payable" is an assumption, not a proof: it holds because nothing grants a *player*
+     * `CANT_RECEIVE_COUNTERS` today. A Melira / Solemnity-shaped card would make the counter
+     * placement a silent no-op and the ward would then be paid for free — revisit the can-pay
+     * branch in `WardCounterEffectExecutor` if one ever lands.
+     */
+    @SerialName("WardCost.PlayerCounters")
+    @Serializable
+    data class PlayerCounters(val counterType: String, val amount: Int) : WardCost {
+        override val description: String =
+            if (amount == 1) "a $counterType counter" else "${numberToWord(amount)} $counterType counters"
+        override val clause: String = "get $description"
+    }
+
+    /**
+     * Ward—Collect evidence N (CR 701.59) — e.g. Axebane Ferox's "Ward—Collect evidence 4."
+     *
+     * The payment is the ordinary keyword action: exile any number of cards from your graveyard
+     * with total mana value [amount] or greater. Because the constraint is a **sum** and not a
+     * count, this is not expressible as a [Sacrifice]-style counted selection; the engine routes it
+     * through the same `CollectEvidenceResolver` every other collect-evidence context uses, so the
+     * reachability gate, the legal-selection rule and the exile can't drift from the activated-cost
+     * and cast-cost forms.
+     *
+     * CR 701.59b fails closed here as everywhere else: a controller whose graveyard cannot reach
+     * [amount] *can't choose to collect evidence*, so the spell or ability is countered without a
+     * prompt rather than offering a payment they'd have to refuse.
+     *
+     * This is an **unlinked** cost — nothing on the card asks "was evidence collected", so it
+     * stamps no `ChoiceSlot` (the linkage of CR 701.59c belongs only to the optional cast-cost
+     * shape, `card { collectEvidence(n) }`).
+     */
+    @SerialName("WardCost.CollectEvidence")
+    @Serializable
+    data class CollectEvidence(val amount: Int) : WardCost {
+        override val description: String = "collect evidence $amount"
+        override val clause: String = description
     }
 
     /**
@@ -475,6 +573,33 @@ sealed interface WardCost {
     @Serializable
     data class Composite(val parts: List<WardCost>) : WardCost {
         override val description: String = parts.joinToString(", ") { it.description }
+        override val clause: String = parts.joinToString(", ") { it.clause }
+    }
+
+    /**
+     * A ward cost that is a **disjunction**: the paying player picks exactly *one* of [options] and
+     * pays it — "Ward—Discard a card or pay {2}." (Titania, Rugged Rumbler). The OR to
+     * [Composite]'s AND; the two are the only two ways a printed ward cost combines sub-costs, and
+     * keeping them as sibling variants is what stops "or" from being smuggled in as an
+     * ad-hoc third state on [Composite].
+     *
+     * Modelled on [com.wingedsheep.sdk.scripting.AdditionalCost.Choice] / `PayCost.Choice`, the
+     * cost-vs-cost shape the other two cost vocabularies already use: options are themselves
+     * fully-formed costs of the same vocabulary, only options the payer can actually pay are
+     * offered, and declining is always available (declining a ward cost counters the spell or
+     * ability, CR 702.21a). A mana option is just a [Mana] in the list — unlike
+     * `AdditionalCost.OrPay`, where the mana leg has to fold into the spell's own mana cost at
+     * cast time, a ward cost is paid on its own as the ward trigger resolves, so no leg is special.
+     *
+     * Nesting another [Choice] inside [options] is not supported (and not needed by any printed
+     * card); keep [options] a flat list. A [Composite] option *is* supported — "or" over an
+     * all-of group would be its natural use — and pays its parts in order.
+     */
+    @SerialName("WardCost.Choice")
+    @Serializable
+    data class Choice(val options: List<WardCost>) : WardCost {
+        override val clause: String = options.joinToString(" or ") { it.clause }
+        override val description: String = clause
     }
 }
 
@@ -491,20 +616,34 @@ sealed interface WardCost {
 data class WardCounterEffect(
     val cost: WardCost
 ) : Effect {
-    override val description: String = when (cost) {
-        is WardCost.Mana ->
-            if (cost.waterbend) {
-                "Counter it unless its controller pays ${cost.manaCost} (they may tap " +
-                    "artifacts and creatures to help; each pays for {1})"
-            } else {
-                "Counter it unless its controller pays ${cost.manaCost}"
-            }
-        is WardCost.Life -> "Counter it unless its controller pays ${cost.amount} life"
-        is WardCost.DynamicLife -> "Counter it unless its controller pays life equal to ${cost.amount.description}"
-        is WardCost.Discard -> "Counter it unless its controller discards ${cost.description}"
-        is WardCost.Sacrifice -> "Counter it unless its controller sacrifices ${cost.description}"
-        is WardCost.Composite -> "Counter it unless its controller pays ${cost.description}"
-    }
+    override val description: String = "Counter it unless its controller ${wardPaymentVerbPhrase(cost)}"
+}
+
+/**
+ * The ward payment as a **third-person** verb phrase — "pays {2}", "discards a card" — for
+ * [WardCounterEffect.description], whose subject is "its controller".
+ *
+ * Deliberately not [WardCost.clause]: that one is the bare imperative ("pay {2}") because it labels
+ * an option in the payment picker. A [WardCost.Choice] joins these conjugated phrases rather than
+ * its clauses, so a disjunction reads "…unless its controller discards a card or pays {2}" like
+ * every other branch, instead of "…unless its controller discard a card or pay {2}".
+ */
+private fun wardPaymentVerbPhrase(cost: WardCost): String = when (cost) {
+    is WardCost.Mana ->
+        if (cost.waterbend) {
+            "pays ${cost.manaCost} (they may tap artifacts and creatures to help; each pays for {1})"
+        } else {
+            "pays ${cost.manaCost}"
+        }
+    is WardCost.Life -> "pays ${cost.amount} life"
+    is WardCost.DynamicLife -> "pays life equal to ${cost.amount.description}"
+    is WardCost.Discard -> "discards ${cost.description}"
+    is WardCost.Sacrifice -> "sacrifices ${cost.description}"
+    is WardCost.CollectEvidence ->
+        "exiles cards with total mana value ${cost.amount} or greater from their graveyard"
+    is WardCost.PlayerCounters -> "gets ${cost.description}"
+    is WardCost.Choice -> cost.options.joinToString(" or ") { wardPaymentVerbPhrase(it) }
+    is WardCost.Composite -> "pays ${cost.description}"
 }
 
 // =============================================================================
@@ -709,9 +848,62 @@ data class CopyTargetSpellEffect(
      * copy controller's turn — i.e. "at the beginning of *your* next end step" rather than the very
      * next end step of any player. Mirrors [CreateTokenCopyOfTargetEffect.sacrificeOnlyOnControllersTurn].
      */
-    val sacrificeTokenOnlyOnControllersTurn: Boolean = false
+    val sacrificeTokenOnlyOnControllersTurn: Boolean = false,
+    /**
+     * How many copies to create (CR 707.10 — each is an independent copy, and the controller may
+     * choose new targets for each one separately). Defaults to a single copy. Pass a [DynamicAmount]
+     * for "copy it for each …" clauses whose count is only known at resolution — Thousand-Year Storm
+     * copies the triggering spell once per other instant or sorcery cast before it this turn. A
+     * count of zero or less makes no copies at all.
+     */
+    val copies: DynamicAmount = DynamicAmount.Fixed(1)
 ) : Effect {
-    override val description: String = "Copy target spell"
+    override val description: String =
+        if (copies == DynamicAmount.Fixed(1)) "Copy target spell"
+        else "Copy target spell ${copies.description} times"
+}
+
+/**
+ * Copy a spell once **for each other object it could target** (CR 707.10d), auto-assigning every
+ * copy a distinct one of those objects as its target. Models the Zada family:
+ *
+ *  - Zada, Hedron Grinder — "copy it for each other creature you control that the spell could target"
+ *  - Mirrorwing Dragon — "that player copies that spell for each other creature they control that
+ *    the spell could target"
+ *
+ * This is the 707.10d shape, not the 707.10c one: **no player decision is involved.** Contrast
+ * [CopyTargetSpellEffect] with a `copies` count, which makes N copies and pauses so the controller
+ * *may choose* new targets for each — here both the number of copies and each copy's target fall out
+ * of the board, so the copies go straight onto the stack.
+ *
+ * The candidate set is every object matching [candidates] that is a legal target for **every**
+ * instance of the word "target" on the copied spell (707.10d: "if that player or object isn't a legal
+ * target for each instance of the word *target*, a copy isn't created for that player or object"),
+ * minus the objects the spell already targets — the "each **other** …" in the card text. Each copy is
+ * put onto the stack with its object filling all of the spell's target slots.
+ *
+ * **Both [candidates] and control of the copies belong to the copied spell's controller, not to this
+ * ability's controller.** That is what lets one effect express both wordings: Zada says "you control"
+ * on a trigger only its own controller's casts fire, while Mirrorwing Dragon watches every seat and
+ * says "**they** control" / "**that player** copies". So `candidates` written as
+ * `GameObjectFilter.Creature.youControl()` reads as "creature the caster controls".
+ *
+ * A spell flagged "can't be copied" yields no copies.
+ *
+ * @property spell The spell to copy — [EffectTarget.TriggeringEntity] for the "copy that spell" wording.
+ * @property candidates Which objects the copies are distributed over, one copy each.
+ */
+@SerialName("CopySpellForEachOtherPossibleTarget")
+@Serializable
+data class CopySpellForEachOtherPossibleTargetEffect(
+    val spell: EffectTarget = EffectTarget.TriggeringEntity,
+    val candidates: GameObjectFilter
+) : Effect {
+    override val description: String =
+        "Copy that spell for each other ${candidates.description} it could target"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect =
+        copy(candidates = candidates.applyTextReplacement(replacer))
 }
 
 /**
@@ -771,7 +963,7 @@ data class CopyTargetTriggeredAbilityEffect(
  * [DynamicAmount.XValue] models "copy … X times" (Gogo, Master of Mimicry: "{X}{X}, {T}: Copy
  * target activated or triggered ability you control X times"). When more than one copy is made and
  * the source ability has targets, the controller may choose new targets independently for every
- * copy. Only the ability branches honor [copies] > 1; the spell branch always makes a single copy.
+ * copy. [copies] > 1 is honored on both branches — spells and abilities alike.
  *
  * @property target The effect target referencing the spell or ability to copy (typically ContextTarget(0))
  * @property copies How many copies to create (defaults to a single copy)
@@ -886,6 +1078,44 @@ data class GrantNextSpellAffinityEffect(
 ) : Effect {
     override val description: String =
         "The next ${spellFilter.description} spell you cast this turn has affinity for ${forType.displayName.lowercase()}s"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect =
+        copy(spellFilter = spellFilter.applyTextReplacement(replacer))
+}
+
+/**
+ * "Spells you cast this turn that match [spellFilter] cost {X} less to cast" — a turn-scoped,
+ * controller-scoped generic cost reduction installed when this effect resolves.
+ *
+ * The *repeating* counterpart of [GrantNextSpellAffinityEffect]: that rider is consumed by the
+ * first matching spell, this one applies to every matching spell for the rest of the turn.
+ *
+ * [amount] is evaluated **once, when this effect resolves**, and the resolved number is what the
+ * cost calculator uses for the rest of the turn. That is what the Scion cycle's rulings require —
+ * "the value of X is determined only once, at the time the ability resolves" — so life gained or
+ * lost after activation does not change the discount. Use a static
+ * [com.wingedsheep.sdk.scripting.ModifySpellCost] instead when the reduction should track board
+ * state continuously.
+ *
+ * The reduction lives on the game state rather than on the source permanent, so it survives the
+ * source leaving the battlefield (the ability has already resolved; its effect lasts the turn),
+ * and it only reduces the generic portion of a cost (CR 601.2f) — never colored mana.
+ *
+ * Will, Scion of Peace: `ReduceSpellCostsThisTurnEffect(Filters.whiteOrBlue,
+ * DynamicAmount.TurnTracking(Player.You, TurnTracker.LIFE_GAINED))`.
+ *
+ * @property spellFilter Which of the controller's spells are discounted.
+ * @property amount How much generic mana to take off, resolved at execution time.
+ */
+@SerialName("ReduceSpellCostsThisTurn")
+@Serializable
+data class ReduceSpellCostsThisTurnEffect(
+    val spellFilter: GameObjectFilter,
+    val amount: com.wingedsheep.sdk.scripting.values.DynamicAmount,
+) : Effect {
+    override val description: String =
+        "Spells you cast this turn that are ${spellFilter.description} cost {X} less to cast, " +
+            "where X is ${amount.description}"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect =
         copy(spellFilter = spellFilter.applyTextReplacement(replacer))

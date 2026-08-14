@@ -29,7 +29,9 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AttackTax
 import com.wingedsheep.sdk.scripting.AttackerCountLimit
 import com.wingedsheep.sdk.scripting.CantAttackUnlessCoAttacker
+import com.wingedsheep.sdk.scripting.MustAttack
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
+import com.wingedsheep.engine.mechanics.battle.Battles
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.PredicateContext
 
@@ -82,13 +84,22 @@ internal class AttackPhaseManager(
             if (validation != null) {
                 return ExecutionResult.error(state, validation)
             }
-            // Validate defender is either an opponent player or a planeswalker controlled by an opponent
+            // Validate the defender: an opponent player, a planeswalker controlled by an opponent,
+            // or a battle protected by an opponent. A battle is keyed off its *protector*, never
+            // its controller (CR 310.8b), which is what lets a player attack a Siege they control.
             if (defenderId !in opponents) {
-                if (!projected.isPlaneswalker(defenderId) || projected.getController(defenderId) in attackingTeam) {
-                    return ExecutionResult.error(state, "Invalid attack target: must be an opponent or their planeswalker")
+                val isAttackableBattle = projected.isBattle(defenderId) &&
+                    Battles.canBeAttackedBy(state, defenderId, attackingPlayer, opponents.toSet())
+                val isAttackablePlaneswalker = projected.isPlaneswalker(defenderId) &&
+                    projected.getController(defenderId) !in attackingTeam
+                if (!isAttackableBattle && !isAttackablePlaneswalker) {
+                    return ExecutionResult.error(
+                        state,
+                        "Invalid attack target: must be an opponent, their planeswalker, or a battle they protect"
+                    )
                 }
                 if (defenderId !in state.getBattlefield()) {
-                    return ExecutionResult.error(state, "Planeswalker is not on the battlefield")
+                    return ExecutionResult.error(state, "Attacked permanent is not on the battlefield")
                 }
             }
             // Check per-defender restrictions (CantAttackUnless, CantBeAttackedWithout, etc.)
@@ -200,15 +211,8 @@ internal class AttackPhaseManager(
         // either a player directly, or a planeswalker/battle whose controller is the defending
         // player. Record the set so "did player X attack player Y this turn?" can be answered
         // after combat (Faramir, Prince of Ithilien).
-        val defendingPlayers: Set<EntityId> = attackers.values.mapNotNull { defenderId ->
-            if (defenderId in state.turnOrder) {
-                defenderId
-            } else {
-                state.getEntity(defenderId)
-                    ?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()
-                    ?.playerId
-            }
-        }.toSet()
+        val defendingPlayers: Set<EntityId> =
+            attackers.values.mapTo(mutableSetOf()) { CombatDefenders.defendingPlayerOf(state, it) }
 
         // Attackers seen earlier this turn (across prior combat phases) — read before the per-turn
         // set is unioned below so we can flag which of these attackers are attacking for the *first
@@ -613,13 +617,34 @@ internal class AttackPhaseManager(
         return null
     }
 
+    /**
+     * The player an attack aimed at [defenderId] is really aimed at: the player themselves, a
+     * planeswalker's controller, or — for a battle — its protector rather than its controller
+     * (CR 310.8d).
+     */
     private fun defenderControllerOf(
         state: GameState,
         projected: ProjectedState,
         defenderId: EntityId
     ): EntityId {
         if (state.getEntity(defenderId)?.has<LifeTotalComponent>() == true) return defenderId
+        Battles.protectorOf(state, defenderId)?.let { return it }
         return projected.getController(defenderId) ?: defenderId
+    }
+
+    /**
+     * Whether [attackerId] is required to attack this combat by a "must attack" static — either the
+     * projected one (printed `MustAttack`: Valley Dasher, Grand Melee) or an entity-scoped
+     * `MustAttack` granted at runtime and stored in [GameState.grantedStaticAbilities] (Carnage's
+     * reanimated target: "attacks each combat if able"). Granted statics never reach projection, so
+     * they must be consulted here at the point of use, alongside the projected value.
+     */
+    private fun mustAttackThisCombat(state: GameState, attackerId: EntityId): Boolean {
+        if (state.projectedState.mustAttack(attackerId)) return true
+        return state.grantedStaticAbilities.any {
+            it.entityId == attackerId && it.ability is MustAttack &&
+                it.ability.filter.scope is Scope.Self
+        }
     }
 
     /**
@@ -631,10 +656,9 @@ internal class AttackPhaseManager(
         attackers: Map<EntityId, EntityId>
     ): String? {
         val validAttackers = getValidAttackers(state, attackingPlayer)
-        val projected = state.projectedState
 
         for (attackerId in validAttackers) {
-            if (!projected.mustAttack(attackerId)) continue
+            if (!mustAttackThisCombat(state, attackerId)) continue
 
             if (attackerId !in attackers.keys) {
                 val cardName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Creature"
@@ -670,7 +694,6 @@ internal class AttackPhaseManager(
      */
     fun getMandatoryAttackers(state: GameState, attackingPlayer: EntityId): List<EntityId> {
         val validAttackers = getValidAttackers(state, attackingPlayer)
-        val projected = state.projectedState
         val mandatory = mutableSetOf<EntityId>()
 
         // 1. MustAttackPlayerComponent (Taunt effect) — all valid attackers must attack
@@ -687,9 +710,10 @@ internal class AttackPhaseManager(
             }
         }
 
-        // 3. Projected mustAttack (static ability like Valley Dasher, Grand Melee)
+        // 3. Projected mustAttack (static ability like Valley Dasher, Grand Melee) or a granted
+        // entity-scoped MustAttack (Carnage's reanimated target), which never reaches projection.
         for (attackerId in validAttackers) {
-            if (projected.mustAttack(attackerId)) {
+            if (mustAttackThisCombat(state, attackerId)) {
                 mandatory.add(attackerId)
             }
         }

@@ -21,16 +21,16 @@
                     "target1": "Self",
                     "target2": {
                         "type": "BoundVariable",
-                        "name": "target"
+                        "name": "target creature you don't control"
                     }
                 },
                 "optional": true,
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature ctrl:you"
+                        "baseFilter": "creature ctrl:opponent"
                     },
-                    "id": "target"
+                    "id": "target creature you don't control"
                 }
             }
         ]
@@ -302,6 +302,94 @@
     },
     "colorIdentityOverride": [
         "WHITE",
+        "RED"
+    ]
+}
+
+// Thousand-Year Storm
+{
+    "name": "Thousand-Year Storm",
+    "manaCost": "{4}{U}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever you cast an instant or sorcery spell, copy it for each other instant and sorcery spell you've cast before it this turn. You may choose new targets for the copies.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": "TriggeringEntity",
+                    "copies": {
+                        "type": "SpellsCastThisTurn",
+                        "filter": "instant|sorcery",
+                        "beforeTriggeringSpell": true
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "MYTHIC",
+        "artist": "Dimitar Marinski",
+        "flavorText": "Ral's storm crackled with mystical detections: Planeswalkers were infiltrating Ravnica.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/270a0863-7d07-43f0-925d-a8ce0383a1cb.jpg?1783934119",
+        "rulings": [
+            {
+                "date": "2018-10-05",
+                "text": "Spells you've cast that were countered were still cast, and so will add copies when Thousand-Year Storm's ability resolves for later spells in the turn."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Thousand-Year Storm's ability will copy any instant or sorcery spell, not just one with targets."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "Copies are created even if the spell that caused Thousand-Year Storm's ability to trigger has been countered by the time that ability resolves. The copies resolve before the original spell."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "The copies will have the same targets as the spell they're copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. The new targets must be legal."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one —\" or the like), the copies will have the same mode or modes. You can't choose different ones."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the spell that's copied has an X whose value was determined as it was cast, the copies will have the same value of X."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "If the spell has damage divided as it was cast, the division can't be changed (although the targets receiving that damage still can). The same is true of spells that distribute counters."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "You can't choose to pay any additional costs for the copies. However, effects based on any additional costs that were paid for the original spell are copied as though those same costs were paid for the copy too."
+            },
+            {
+                "date": "2018-10-05",
+                "text": "The copies that Thousand-Year Storm's ability creates are created on the stack, so they're not \"cast.\" Abilities that trigger when a player casts a spell (such as that of Thousand-Year Storm itself) won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
         "RED"
     ]
 }

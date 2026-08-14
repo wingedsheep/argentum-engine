@@ -159,14 +159,17 @@ data class DistributeCountersContinuation(
  * When [remainingBudget] is non-null, a *total* cap is in force (`maxTotal` on the effect —
  * Heartless Act's "remove up to N counters"): each prompt is capped at `min(kindCount, budget)`,
  * the budget is decremented on resume, and prompting stops once it hits zero. Null means no cap
- * ("remove any number").
+ * ("remove any number"). [remainingFloor] is the mirror image — the `minTotal` still owed, which
+ * raises a later prompt's minimum once the kinds after it can no longer cover it.
  *
  * @property targetId The permanent whose counters are being removed
  * @property controllerId The player making the choices
  * @property currentCounterType The counter kind the active decision is for
- * @property currentMaxAmount Cap shown to the player (0..currentMaxAmount)
+ * @property currentMinAmount Floor shown to the player, and enforced on resume
+ * @property currentMaxAmount Cap shown to the player (currentMinAmount..currentMaxAmount)
  * @property remainingBudget Counters still removable in total after the active decision, or null for no cap
- * @property remainingCounterTypes Pending (counterType, maxAmount) prompts
+ * @property remainingFloor Counters still owed toward the effect's `minTotal`
+ * @property remainingCounterTypes Counter kinds still to be walked, in prompt order
  * @property targetName Display name for follow-up prompts
  * @property sourceId Source emitting the effect (for prompt context)
  * @property sourceName Source name for prompt context
@@ -178,11 +181,13 @@ data class RemoveAnyNumberOfCountersContinuation(
     val controllerId: EntityId,
     val currentCounterType: String,
     val currentMaxAmount: Int,
-    val remainingCounterTypes: List<Pair<String, Int>>,
+    val remainingCounterTypes: List<String>,
     val targetName: String,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val remainingBudget: Int? = null
+    val remainingBudget: Int? = null,
+    val currentMinAmount: Int = 0,
+    val remainingFloor: Int = 0
 ) : ContinuationFrame
 
 /**
@@ -202,6 +207,28 @@ data class AddCountersUpToContinuation(
     val targetId: EntityId,
     val controllerId: EntityId,
     val counterType: String,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
+ * Resume after a player picks how many [counterType] counters to pay (0..their current total),
+ * for `PayCountersEffect` (CR 107.14's "pay {E}" generalized to a chosen amount — "you may pay
+ * any amount of {E}", Galvanic Discharge). The chosen amount is removed from [playerId] through
+ * the standard `RemoveCountersEffect` path and stored in the next frame's pipeline under
+ * [storeAmountAs] so a composed follow-up effect (e.g. `DealDamage(VariableReference(...))`) can
+ * read it. Choosing 0 removes nothing but still stores 0.
+ *
+ * @property playerId The player paying (and whose counters are removed)
+ * @property counterType The counter kind being paid
+ * @property storeAmountAs Pipeline variable name the paid amount is stored under
+ * @property sourceId Source emitting the effect (for the decision prompt context)
+ */
+@Serializable
+data class PayCountersContinuation(
+    override val decisionId: String,
+    val playerId: EntityId,
+    val counterType: String,
+    val storeAmountAs: String,
     val sourceId: EntityId?
 ) : ContinuationFrame
 
@@ -507,6 +534,23 @@ data class CommanderZoneChoiceContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after a battle's controller picks its protector for the CR 704.5w/x state-based action
+ * (see [com.wingedsheep.engine.mechanics.sba.permanent.BattleProtectorCheck]). Only raised when
+ * two or more players are eligible — a forced choice is applied without a prompt.
+ *
+ * @property battleId The battle awaiting a protector.
+ * @property candidateIds The eligible players, positionally aligned with the decision's options,
+ *   captured at prompt time so the resumer maps the chosen index back to a player even if the
+ *   board changes while the prompt is open.
+ */
+@Serializable
+data class BattleProtectorChoiceContinuation(
+    override val decisionId: String,
+    val battleId: EntityId,
+    val candidateIds: List<EntityId>
+) : ContinuationFrame
+
+/**
  * Resume after a player picks X for an activated ability with an X-variable cost
  * (currently [com.wingedsheep.sdk.scripting.AbilityCost.TapXPermanents]).
  *
@@ -590,6 +634,30 @@ data class ActivateAbilityExileFromGraveyardContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after a player picks the graveyard cards for an
+ * [com.wingedsheep.sdk.scripting.AbilityCost.ExileXFromGraveyard] cost.
+ *
+ * X *is* the size of that selection, so this is a single decision rather than a number picker
+ * followed by a selection: the resumer re-enters the handler with the chosen cards in
+ * `costPayment.exiledCards` **and** `xValue` set to how many were chosen.
+ *
+ * @property action The original [ActivateAbility] (`costPayment.exiledCards` still empty).
+ * @property exileCandidates The graveyard cards matching the cost's filter, offered as options;
+ *   used to validate the response is a subset of the originally legal candidates.
+ * @property fixedCount Non-null when a `{X}` mana symbol already fixed X (Necropolis Fiend:
+ *   "{X}, {T}, Exile X cards from your graveyard"), in which case the selection must be exactly
+ *   this many. Null when the cost has no mana X (Winter, Cursed Rider), in which case any number
+ *   of candidates may be chosen and the count becomes X.
+ */
+@Serializable
+data class ActivateAbilityExileXFromGraveyardContinuation(
+    override val decisionId: String,
+    val action: ActivateAbility,
+    val exileCandidates: List<EntityId>,
+    val fixedCount: Int? = null
+) : ContinuationFrame
+
+/**
  * Resume after an opponent picks the target(s) for an activated ability's "… of an opponent's
  * choice" requirement (Cuombajj Witches: "{T}: This creature deals 1 damage to any target and 1
  * damage to any target of an opponent's choice").
@@ -668,37 +736,38 @@ data class ActivateAbilitySacrificeContinuation(
 ) : ContinuationFrame
 
 /**
- * Resume after the controller picks which permanents to exile for a variable-count
- * [com.wingedsheep.sdk.scripting.costs.CostAtom.ExilePermanents] cost — "Exile one or more other
- * [filter] you control with total mana value X" (Fabrication Foundry).
+ * Resume after the controller picks which permanents pay a variable-count
+ * [com.wingedsheep.sdk.scripting.costs.CostAtom.VariablePermanents] cost — "Exile one or more other
+ * [filter] you control with total mana value X" (Fabrication Foundry) or "Sacrifice one or more
+ * [filter]" (Radiant Lotus).
  *
- * The bare [ActivateAbility] arrives with no exile selection; the handler raised a
- * [SelectCardsDecision] over the eligible permanents (min [minCount], max = all eligible) and pushed
- * this frame. The resumer validates the pick, fills it into `costPayment.exiledCards`, and re-enters
- * the handler — which then computes X (the exiled set's total mana value) and pauses again for the
- * X-bounded target ([ActivateAbilityControllerTargetContinuation]). The exile pause happens before
- * any cost is paid, so cancellation pops this frame with no side effects.
+ * The bare [ActivateAbility] arrives with no selection; the handler raised a [SelectCardsDecision]
+ * over the eligible permanents (min [minCount], max = all eligible) and pushed this frame. The
+ * resumer validates the pick, fills it into `costPayment.variableCostPermanents`, and re-enters the
+ * handler — which then computes X from it and pauses again for the target
+ * ([ActivateAbilityControllerTargetContinuation]). The selection pause happens before any cost is
+ * paid, so cancellation pops this frame with no side effects.
  *
- * @property action The original [ActivateAbility] (`costPayment.exiledCards` still empty).
- * @property exileCandidates The eligible permanents offered as options (used to validate the pick).
- * @property minCount Minimum number of permanents that must be exiled (the cost's floor).
+ * @property action The original [ActivateAbility] (`costPayment.variableCostPermanents` still empty).
+ * @property candidates The eligible permanents offered as options (used to validate the pick).
+ * @property minCount Minimum number of permanents that must be chosen (the cost's floor).
  */
 @Serializable
-data class ActivateAbilityExilePermanentsContinuation(
+data class ActivateAbilityVariablePermanentsContinuation(
     override val decisionId: String,
     val action: ActivateAbility,
-    val exileCandidates: List<EntityId>,
+    val candidates: List<EntityId>,
     val minCount: Int
 ) : ContinuationFrame
 
 /**
  * Resume after the controller picks the target for an activated ability whose target legality
  * depends on a value determined during activation — specifically the X-bounded reanimation target of
- * a [com.wingedsheep.sdk.scripting.costs.CostAtom.ExilePermanents] ability (Fabrication Foundry:
+ * a [com.wingedsheep.sdk.scripting.costs.CostAtom.VariablePermanents] ability (Fabrication Foundry:
  * "Return target artifact card with mana value X or less from your graveyard to the battlefield").
  *
  * Because X isn't known until the exile selection is made, the target is chosen *after* the exile
- * ([ActivateAbilityExilePermanentsContinuation]) rather than up front. The handler raised a
+ * ([ActivateAbilityVariablePermanentsContinuation]) rather than up front. The handler raised a
  * [ChooseTargetsDecision] whose legal targets were found with X threaded through the predicate
  * context, and pushed this frame. The resumer converts the response into [ChosenTarget]s, fills
  * `action.targets`, and re-enters the handler to pay the cost and put the ability on the stack.

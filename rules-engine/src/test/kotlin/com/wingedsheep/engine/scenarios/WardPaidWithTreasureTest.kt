@@ -121,7 +121,7 @@ class WardPaidWithTreasureTest : FunSpec({
     test("auto-pay refuses to silently sacrifice treasures for ward") {
         // If the caster only has treasures available (no other mana), auto-pay should
         // not silently sacrifice them — the player must opt in explicitly. canPay still
-        // reports the cost as affordable (via calculateSacrificeSelfBonusMana), but
+        // reports the cost as affordable (via sacrificeSelfManaBySource), but
         // solve() filters sacrifice sources, so auto-pay produces no solution and the
         // caller falls back to declining.
         val driver = createDriver()

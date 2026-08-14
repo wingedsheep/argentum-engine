@@ -1,14 +1,15 @@
 package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
-import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EventPattern
-import com.wingedsheep.sdk.scripting.ModifyDrawAmount
 import com.wingedsheep.sdk.scripting.ModifyLifeGain
+import com.wingedsheep.sdk.scripting.ReplaceDrawWithEffect
+import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
@@ -22,7 +23,7 @@ import com.wingedsheep.sdk.scripting.values.ManaColorSet
  * If you would gain life while you have 5 or less life, you gain twice that much life instead.
  * {T}: Add one mana of any color.
  *
- * The two replacements compose from existing primitives: `ModifyDrawAmount(+1)` gated on an empty
+ * The two replacements compose from existing primitives: `ReplaceDrawWithEffect(draw 2)` gated on an empty
  * hand, and `ModifyLifeGain(×2)` gated on the new `restrictions` field (life ≤ 5).
  */
 val PhialOfGaladriel = card("Phial of Galadriel") {
@@ -33,10 +34,10 @@ val PhialOfGaladriel = card("Phial of Galadriel") {
         "{T}: Add one mana of any color."
 
     replacementEffect(
-        ModifyDrawAmount(
-            modifier = 1,
-            restrictions = listOf(Conditions.CardsInHandAtMost(0)),
-            appliesTo = EventPattern.DrawEvent(player = Player.You),
+        ReplaceDrawWithEffect(
+            replacementEffect = DrawCardsEffect(2),
+            appliesTo = EventPattern.DrawEvent(),
+            restrictions = listOf(Conditions.EmptyHand),
         )
     )
 

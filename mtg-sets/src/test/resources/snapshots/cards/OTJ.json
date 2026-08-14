@@ -1825,72 +1825,6 @@
     ]
 }
 
-// Blooming Marsh
-{
-    "name": "Blooming Marsh",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "This land enters tapped unless you control two or fewer other lands.\n{T}: Add {B} or {G}.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "BLACK"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            },
-            {
-                "id": "ability_2",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "GREEN"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ],
-        "replacementEffects": [
-            {
-                "type": "EntersTapped",
-                "unlessCondition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "AggregateBattlefield",
-                        "player": "You",
-                        "filter": "land"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 3
-                    }
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "266",
-        "rarity": "RARE",
-        "artist": "Yeong-Hao Han",
-        "imageUri": "https://cards.scryfall.io/normal/front/8/6/861caabb-0573-4e94-8b03-342f90465064.jpg?1723149884",
-        "rulings": [
-            {
-                "date": "2024-04-19",
-                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "BLACK",
-        "GREEN"
-    ]
-}
-
 // Boneyard Desecrator
 {
     "name": "Boneyard Desecrator",
@@ -2183,72 +2117,6 @@
         "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea61d964-6d73-422e-9e08-360ac66f237a.jpg?1712356258"
     },
     "colorIdentityOverride": []
-}
-
-// Botanical Sanctum
-{
-    "name": "Botanical Sanctum",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "This land enters tapped unless you control two or fewer other lands.\n{T}: Add {G} or {U}.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "GREEN"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            },
-            {
-                "id": "ability_2",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "BLUE"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ],
-        "replacementEffects": [
-            {
-                "type": "EntersTapped",
-                "unlessCondition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "AggregateBattlefield",
-                        "player": "You",
-                        "filter": "land"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 3
-                    }
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "267",
-        "rarity": "RARE",
-        "artist": "Jorge Jacinto",
-        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc18d5f4-a56a-4f7d-9f56-ccc92cbfb7f7.jpg?1712356371",
-        "rulings": [
-            {
-                "date": "2024-04-19",
-                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "GREEN",
-        "BLUE"
-    ]
 }
 
 // Bounding Felidar
@@ -4012,72 +3880,6 @@
     },
     "colorIdentityOverride": [
         "GREEN"
-    ]
-}
-
-// Concealed Courtyard
-{
-    "name": "Concealed Courtyard",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "This land enters tapped unless you control two or fewer other lands.\n{T}: Add {W} or {B}.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "WHITE"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            },
-            {
-                "id": "ability_2",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "BLACK"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ],
-        "replacementEffects": [
-            {
-                "type": "EntersTapped",
-                "unlessCondition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "AggregateBattlefield",
-                        "player": "You",
-                        "filter": "land"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 3
-                    }
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "268",
-        "rarity": "RARE",
-        "artist": "Rockey Chen",
-        "imageUri": "https://cards.scryfall.io/normal/front/b/7/b75df1f0-0513-40e4-a449-454f75de6434.jpg?1712356373",
-        "rulings": [
-            {
-                "date": "2024-04-19",
-                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "WHITE",
-        "BLACK"
     ]
 }
 
@@ -6494,7 +6296,9 @@
                         "destination": "Battlefield"
                     }
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ],
         "staticAbilities": [
@@ -7035,7 +6839,9 @@
                     "amount": {
                         "type": "SubtypeEnteredUnderControlThisTurn",
                         "player": "You",
-                        "subtype": "Zombie",
+                        "subtypes": [
+                            "Zombie"
+                        ],
                         "excludeTriggeringEntity": true
                     },
                     "target": "TriggeringEntity"
@@ -8894,72 +8700,6 @@
     },
     "colorIdentityOverride": [
         "BLACK"
-    ]
-}
-
-// Inspiring Vantage
-{
-    "name": "Inspiring Vantage",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "This land enters tapped unless you control two or fewer other lands.\n{T}: Add {R} or {W}.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "RED"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            },
-            {
-                "id": "ability_2",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "WHITE"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ],
-        "replacementEffects": [
-            {
-                "type": "EntersTapped",
-                "unlessCondition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "AggregateBattlefield",
-                        "player": "You",
-                        "filter": "land"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 3
-                    }
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "269",
-        "rarity": "RARE",
-        "artist": "Volkan Baǵa",
-        "imageUri": "https://cards.scryfall.io/normal/front/8/5/85df6b6a-2dcf-4828-a4a8-e07d52e1fddd.jpg?1723149865",
-        "rulings": [
-            {
-                "date": "2024-04-19",
-                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "RED",
-        "WHITE"
     ]
 }
 
@@ -17988,72 +17728,6 @@
     },
     "colorIdentityOverride": [
         "GREEN"
-    ]
-}
-
-// Spirebluff Canal
-{
-    "name": "Spirebluff Canal",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "This land enters tapped unless you control two or fewer other lands.\n{T}: Add {U} or {R}.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "BLUE"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            },
-            {
-                "id": "ability_2",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "RED"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ],
-        "replacementEffects": [
-            {
-                "type": "EntersTapped",
-                "unlessCondition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "AggregateBattlefield",
-                        "player": "You",
-                        "filter": "land"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 3
-                    }
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "270",
-        "rarity": "RARE",
-        "artist": "Ron Spears",
-        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59a04e16-a767-4112-ab01-6ca1b09c286c.jpg?1712356382",
-        "rulings": [
-            {
-                "date": "2024-04-19",
-                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "BLUE",
-        "RED"
     ]
 }
 

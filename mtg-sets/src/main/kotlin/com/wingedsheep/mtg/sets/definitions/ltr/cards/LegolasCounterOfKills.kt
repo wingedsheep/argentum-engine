@@ -40,7 +40,13 @@ val LegolasCounterOfKills = card("Legolas, Counter of Kills") {
     triggeredAbility {
         trigger = Triggers.WheneverYouScry
         triggerCondition = Conditions.SourceIsTapped
-        oncePerTurn = true
+        // "Do this only once each turn" is CR 603.2h — keyed to the untap, not to the trigger.
+        // The official ruling is the clearest statement of the difference there is: "'Do this only
+        // once each turn' lets you choose whether or not to untap Legolas as the triggered ability
+        // resolves. If you don't untap it, the ability will trigger again the next time the
+        // condition is met. Once you choose to do so, the ability will no longer trigger for the
+        // rest of the turn." `oncePerTurn` would burn the turn's untap on a declined first scry.
+        effectOncePerTurn = true
         effect = MayEffect(Effects.Untap(EffectTarget.Self))
     }
 

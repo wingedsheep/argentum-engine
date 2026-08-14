@@ -2,6 +2,7 @@ package com.wingedsheep.engine.mechanics.layers
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.Supertype
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -162,6 +163,9 @@ class ProjectedState(
 
     fun isPlaneswalker(entityId: EntityId): Boolean = hasType(entityId, "PLANESWALKER")
 
+    /** CR 310 — a battle: it has defense counters, a protector, and can be attacked. */
+    fun isBattle(entityId: EntityId): Boolean = hasType(entityId, "BATTLE")
+
     fun isLegendary(entityId: EntityId): Boolean = hasType(entityId, "LEGENDARY")
 
     fun getSubtypes(entityId: EntityId): Set<String> = projectedValues[entityId]?.subtypes ?: emptySet()
@@ -171,7 +175,7 @@ class ProjectedState(
      * projected [types] set as card types, so they are isolated by name here for protection checks.
      */
     fun getSupertypes(entityId: EntityId): Set<String> =
-        getTypes(entityId).intersect(setOf("BASIC", "LEGENDARY", "SNOW", "WORLD"))
+        Supertype.fromProjectedTypes(getTypes(entityId)).mapTo(mutableSetOf()) { it.name }
 
     fun hasSubtype(entityId: EntityId, subtype: String): Boolean =
         getSubtypes(entityId).any { it.equals(subtype, ignoreCase = true) }

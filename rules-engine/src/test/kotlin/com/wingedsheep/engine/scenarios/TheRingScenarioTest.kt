@@ -117,6 +117,13 @@ class TheRingScenarioTest : FunSpec({
             .transform(driver.state, viewingPlayerId = active)
         view.cards[bear]?.isRingBearer shouldBe true
         view.cards[ogre]?.isRingBearer shouldBe false
+
+        // CR 701.54c makes the bearer legendary, and the client type line has to say so — the
+        // emblem's supertype grant lives only in the projection, never on the base CardComponent.
+        view.cards[bear]?.typeLine shouldBe "Legendary Creature"
+        view.cards[bear]?.legendaryByEffect shouldBe true
+        view.cards[ogre]?.typeLine shouldBe "Creature"
+        view.cards[ogre]?.legendaryByEffect shouldBe false
     }
 
     test("CR 701.54a: another player gaining control ends the Ring-bearer designation permanently") {

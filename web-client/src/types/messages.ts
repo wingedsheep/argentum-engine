@@ -2,7 +2,7 @@ import { ErrorCode, GameOverReason } from './enums'
 import { EntityId } from './entities'
 import { GameAction } from './actions'
 import { ClientEvent } from './events'
-import { ClientGameState, ClientCard, ClientZone, ClientPlayer, ClientCombatState, ClientCommanderDamage, ClientDeckCard } from './gameState'
+import { ClientGameState, ClientCard, ClientZone, ClientPlayer, ClientCombatState, ClientCommanderDamage, ClientDeckCard, ClientRestrictedManaEntry } from './gameState'
 
 // ============================================================================
 // Server Messages (received from server)
@@ -240,6 +240,8 @@ export interface StateDelta {
   readonly turnNumber?: number | null
   readonly isGameOver?: boolean | null
   readonly winnerId?: EntityId | null
+  /** Day/night designation (CR 731). Null means unchanged — the game never returns to neither. */
+  readonly dayNight?: ClientGameState['dayNight'] | null
   /** Combat state changes */
   readonly combat?: ClientCombatState | null
   readonly combatCleared?: boolean | null
@@ -299,6 +301,12 @@ export interface DecisionContext {
   readonly inlineOnTrigger?: boolean
   /** Resolved effect description (e.g., "-6/-6 until end of turn") */
   readonly effectHint?: string
+  /**
+   * The permanent this prompt is *about*, when one effect asks the same question once per object
+   * (Killing Wave: "pay X life or sacrifice it", once per creature). Resolve it through
+   * `gameState.cards` — the server sends only the id, so masking still applies.
+   */
+  readonly subjectEntityId?: EntityId
 }
 
 /**
@@ -359,6 +367,13 @@ export interface SelectCardsDecision extends PendingDecisionBase {
    * UI tracks the running total and disables cards whose mana value would push it over.
    */
   readonly maxTotalManaValue?: number | null
+  /**
+   * Minimum total mana value across selected cards — collect evidence N (CR 701.59a). The mirror
+   * of `maxTotalManaValue`: the UI tracks the running total and keeps Confirm disabled until it
+   * reaches this floor. Card count is unconstrained; only the sum matters. An empty selection is
+   * exempt so an optional collection can still be declined.
+   */
+  readonly minTotalManaValue?: number | null
   /**
    * Maximum total (projected) power across selected creatures (Destined Confrontation). When
    * set, the UI tracks the running total and disables creatures whose power would push it over.
@@ -776,6 +791,12 @@ export interface LegalActionTargetInfo {
    */
   readonly xConstrainsManaValue?: boolean
   /**
+   * True when this requirement filters by "mana value X" *exactly* (Likeness Looter, Rydia,
+   * Summoner of Mist) — the client must intersect [validTargets] with `card.manaValue === chosenX`
+   * after X selection, since the server enumerates targets permissively before X is bound.
+   */
+  readonly xConstrainsManaValueExactly?: boolean
+  /**
    * True when this requirement filters by "power X" (Ent-Draught Basin) — the client must
    * intersect [validTargets] with `card.power === chosenX` after X selection, since the
    * server enumerates targets permissively before X is bound.
@@ -816,6 +837,13 @@ export interface LegalActionInfo {
    */
   readonly xConstrainsTargetManaValue?: boolean
   /**
+   * True when the (single) target requirement filters by "mana value X" *exactly*
+   * (Likeness Looter). The client must narrow [validTargets] to cards whose mana value equals
+   * the chosen X. For multi-requirement abilities, see the per-requirement
+   * [LegalActionTargetInfo.xConstrainsManaValueExactly].
+   */
+  readonly xConstrainsTargetManaValueExactly?: boolean
+  /**
    * True when the (single) target requirement filters by "power X" (Ent-Draught Basin).
    * The client must re-filter [validTargets] to creatures whose power equals the chosen X
    * after X selection. For multi-requirement abilities, see the per-requirement
@@ -853,16 +881,22 @@ export interface LegalActionInfo {
   readonly hasConvoke?: boolean
   /** Creatures that can be tapped to help pay for Convoke */
   readonly validConvokeCreatures?: readonly ConvokeCreatureInfo[]
-  /** Whether this ability/spell has a Waterbend cost (Avatar: The Last Airbender) */
-  readonly hasWaterbend?: boolean
-  /** Artifacts/creatures that can be tapped to help pay a Waterbend cost (each pays {1} generic) */
-  readonly validWaterbendPermanents?: readonly WaterbendPermanentInfo[]
+  /**
+   * Whether this ability/spell offers a tap-for-generic payment — tap untapped permanents you
+   * control, each paying {1} of the generic in the cost. Improvise (CR 702.126, artifacts only)
+   * and Waterbend (artifacts or creatures) both arrive this way; `tapForGenericLabel` says which.
+   */
+  readonly hasTapForGeneric?: boolean
+  /** Permanents that can be tapped to help pay, each for {1} generic */
+  readonly validTapForGenericPermanents?: readonly TapForGenericPermanentInfo[]
   /**
    * Tap cap for a spell-level waterbend cost — at most this many permanents may be tapped (one
-   * per generic in the waterbend {N}). Absent for an ability waterbend (cap = the cost's generic)
-   * and for the "waterbend {X}" shape (cap = the chosen xValue).
+   * per generic in the waterbend {N}). Absent when the cap is just the generic in the cost:
+   * improvise, an ability waterbend, and the "waterbend {X}" shape (cap = the chosen xValue).
    */
-  readonly waterbendAmount?: number
+  readonly tapForGenericAmount?: number
+  /** Player-facing verb for the tap payment — `"improvise"` / `"waterbend"`. */
+  readonly tapForGenericLabel?: string
   /** Whether this spell has Delve */
   readonly hasDelve?: boolean
   /** Cards in graveyard that can be exiled for Delve */
@@ -875,6 +909,17 @@ export interface LegalActionInfo {
   readonly validHarmonizeCreatures?: readonly HarmonizeCreatureInfo[]
   /** The spell's mana cost string for Convoke/Delve UI display */
   readonly manaCostString?: string
+  /**
+   * The cheapest [manaCostString] can end up being once this action's own alternative payments are
+   * spent to the maximum — convoke taps, delve exiles, waterbend taps, a harmonize tap. Absent when
+   * nothing can move the cost.
+   *
+   * For those keywords `manaCostString` is the *pre-reduction* price, so showing it alone advertises
+   * a number the player never pays. The pair is rendered as a span ("{5}{G} → as low as {G}"). The
+   * server computes it because each keyword's reduction is a rule — convoke matches colors, delve
+   * and waterbend are generic-only, harmonize taps one creature.
+   */
+  readonly minimumManaCostString?: string
   /** Whether this spell requires damage distribution at cast time (for DividedDamageEffect) */
   readonly requiresDamageDistribution?: boolean
   /** Total damage to distribute for DividedDamageEffect spells */
@@ -885,6 +930,14 @@ export interface LegalActionInfo {
   readonly autoTapPreview?: readonly EntityId[]
   /** Available mana sources for pre-cast selection */
   readonly availableManaSources?: readonly ManaSourceInfo[]
+  /**
+   * Floating restricted ("spend this mana only to …") mana that the server has determined is
+   * eligible to pay for *this* action — one entry per mana unit. Sent alongside
+   * `availableManaSources`. The client must count these as spendable when it does its own cost
+   * math (convoke / waterbend / harmonize bars); it cannot judge eligibility itself, since the
+   * mana pool payload carries only a human-readable restriction string.
+   */
+  readonly eligibleRestrictedMana?: readonly ClientRestrictedManaEntry[]
   /** Whether this ability produces mana of any color and needs a color choice from the player */
   readonly requiresManaColorChoice?: boolean
   /**
@@ -928,6 +981,14 @@ export interface ModalLegalEnumerationInfo {
   readonly minChooseCount: number
   /** When true, the same mode may be chosen more than once (Escalate-style repeat). */
   readonly allowRepeat: boolean
+  /** Additional mana paid for every selected mode beyond the first (Escalate). */
+  readonly additionalManaCostPerExtraMode?: string
+  /**
+   * Non-mana escalate (CR 702.120a — Collective Brutality's "discard a card"): the cost of **one**
+   * extra mode. Its counts are per extra mode, so the picker multiplies them by
+   * `chosenModes.length - 1`. `chooseCount` is already capped by what the caster can pay.
+   */
+  readonly additionalCostPerExtraMode?: AdditionalCostInfo
   /** One entry per declared mode, in printed order. */
   readonly modes: readonly ModalEnumerationModeInfo[]
   /** Mode indices that cannot currently be chosen (no legal target / unaffordable). */
@@ -972,10 +1033,11 @@ export interface ConvokeCreatureInfo {
 }
 
 /**
- * Information about an artifact/creature that can be tapped for Waterbend. Generic-only,
+ * Information about a permanent that can be tapped for a tap-for-generic payment (improvise /
+ * waterbend). Generic-only,
  * so no color is carried. [isCreature] distinguishes creatures from artifacts for UI only.
  */
-export interface WaterbendPermanentInfo {
+export interface TapForGenericPermanentInfo {
   readonly entityId: EntityId
   readonly name: string
   readonly isCreature: boolean
@@ -1009,6 +1071,14 @@ export interface AdditionalCostInfo {
   readonly costType: string
   readonly validSacrificeTargets?: readonly EntityId[]
   readonly sacrificeCount?: number
+  /**
+   * Emerge (CR 702.119): the mana cost that remains after sacrificing each candidate, keyed by
+   * that candidate. Emerge is the only cost whose mana half depends on which permanent pays its
+   * non-mana half, so `manaCostString` alone can't say what a given choice costs — and the client
+   * must never re-derive it, since the generic-only reduction is a rule. Absent/empty for every
+   * other sacrifice cost, whose mana is fixed regardless of the choice.
+   */
+  readonly costAfterSacrifice?: Readonly<Record<EntityId, string>>
   readonly validTapTargets?: readonly EntityId[]
   readonly tapCount?: number
   /**
@@ -1025,6 +1095,13 @@ export interface AdditionalCostInfo {
   readonly validExileTargets?: readonly EntityId[]
   readonly exileMinCount?: number
   readonly exileMaxCount?: number
+  /**
+   * Floor on the summed mana value of the exiled cards — collect evidence N (CR 701.59a).
+   * Set only for `costType === 'CollectEvidence'`, where the constraint is a sum rather than a
+   * count and `exileMinCount` / `exileMaxCount` merely bound the selection at 1 and the whole
+   * graveyard.
+   */
+  readonly exileMinTotalManaValue?: number
   readonly validBeholdTargets?: readonly EntityId[]
   readonly beholdCount?: number
   readonly counterRemovalCreatures?: readonly CounterRemovalCreatureInfo[]
@@ -1050,6 +1127,15 @@ export interface AdditionalCostInfo {
   readonly craftMinCount?: number
   /** Cap on material count for exact-count crafts ("Craft with artifact"); absent = unbounded. */
   readonly craftMaxCount?: number
+  /**
+   * `TapForTotalPower` cost (Teamwork N, CR 702.194a): the creatures that may be tapped and their
+   * server-computed (projected) power. How *many* are chosen is free — the constraint is that
+   * their total power reaches `tapForPowerRequired`. Chosen ids are submitted as
+   * `additionalCostPayment.variableCostPermanents`.
+   */
+  readonly tapForPowerCreatures?: readonly TapForPowerCreatureInfo[]
+  /** Total power the `tapForPowerCreatures` selection must reach. */
+  readonly tapForPowerRequired?: number
 }
 
 export interface CounterRemovalCreatureInfo {
@@ -1174,11 +1260,17 @@ export interface SealedCardInfo {
   readonly setCode?: string | null
   readonly collectorNumber?: string | null
   /**
-   * Printed layout code ('NORMAL', 'SPLIT', 'ADVENTURE', …). Split cards (Pain // Suffering,
-   * Rooms like Unholy Annex // Ritual Chamber) are 'SPLIT' — the deckbuilder rotates their
-   * hover preview 90° to landscape since the single image is printed sideways.
+   * Printed layout code ('NORMAL', 'SPLIT', 'ADVENTURE', …). Kept for anything needing the raw
+   * layout; orientation is {@link isLandscape}'s job.
    */
   readonly layout?: string
+
+  /**
+   * True when this card's image is printed sideways and the hover preview must rotate it 90°.
+   * Straight from `CardDefinition.isLandscapePrint` — split layouts and battles (CR 310), the
+   * latter being `TRANSFORM` and so invisible to a `layout === 'SPLIT'` check.
+   */
+  readonly isLandscape?: boolean
 }
 
 /**
@@ -1200,6 +1292,11 @@ export interface SealedPoolGeneratedMessage {
   readonly setNames: readonly string[]
   readonly cardPool: readonly SealedCardInfo[]
   readonly basicLands: readonly SealedCardInfo[]
+  /**
+   * Cube Pool Play: `cardPool` is the entire cube and copies are unlimited (bounded only by the
+   * 4-of cap), so adding a card must not consume it from the pool.
+   */
+  readonly poolPlay?: boolean
 }
 
 /**
@@ -1235,6 +1332,8 @@ export interface LobbyPlayerInfo {
   readonly isConnected: boolean
   readonly deckSubmitted: boolean
   readonly isAi: boolean
+  /** For an AI seat: what the host chose for it to play. Null on a human seat. */
+  readonly aiDeck?: AiDeckSpecView | null
 }
 
 export interface AvailableSet {
@@ -1254,6 +1353,7 @@ export interface AvailableSet {
   readonly implementedCount?: number
   /** Set release date in ISO `YYYY-MM-DD` form, or undefined if unknown. */
   readonly releaseDate?: string
+  readonly products?: readonly { readonly id: string; readonly cardCount: number }[]
 }
 
 export interface LobbySettings {
@@ -1270,16 +1370,35 @@ export interface LobbySettings {
   readonly isPublic: boolean
   /** Optional deck-construction format restriction (Standard/Modern/Commander/...). */
   readonly deckFormat?: DeckFormat | null
+  /**
+   * Rules axis — the one field that answers "does this game run Commander rules?". Optional only for
+   * a server older than the axis; `rulesFromLobbySettings` falls back to inferring it.
+   */
+  readonly rules?: GameRules
   /** Commander Draft/Sealed only — minimum deck size enforced by the validator (default 60). */
   readonly deckSizeMin: number
   /** Commander Draft/Sealed only — when true, drafted/sealed decks may include duplicates. */
   readonly allowDuplicates: boolean
-  /** Commander Draft/Sealed only — preset shape ('BRAWL' = 25 life / 16 cmdr damage; 'COMMANDER' = 30/21). */
+  /**
+   * Commander Draft/Sealed only — the host's 1v1 preset ('BRAWL' = 25 life / 16 cmdr damage;
+   * 'COMMANDER' = 30/21). A multiplayer table overrides it with 'POD' (40/21) at game start.
+   */
   readonly commanderPreset: CommanderPreset
   /** When true, each booster mixes cards from the union of all selected sets. */
   readonly chaosBoosters: boolean
+  /** Optional non-booster product ids selected per set code. */
+  readonly includedSetProducts: Readonly<Record<string, readonly string[]>>
   /** Host ban list — oracle card names excluded from generated boosters (sorted). */
   readonly bannedCardNames: readonly string[]
+  /** Per-lobby cube summary. Undefined means catalogued sets are the pack source. */
+  readonly cubeName?: string | null
+  readonly cubeCardCount?: number | null
+  /**
+   * Cube Pool Play: no draft — every player deckbuilds from the whole cube, copies limited only by
+   * the 4-of cap. Cube Sealed lobbies only.
+   */
+  readonly cubePoolPlay?: boolean
+  readonly packSize?: number | null
   /** Master switch for in-app AI assistance (Suggest Pick / Auto-build). */
   readonly aiAssistEnabled: boolean
   /** Lobby mode axis: bracket of 2-player matches vs one multiplayer Free-for-All game. */
@@ -1313,7 +1432,21 @@ export type TournamentFormat =
   | 'COMMANDER_SEALED'
   | 'PREMADE_DECKS'
 
-export type CommanderPreset = 'BRAWL' | 'COMMANDER'
+/**
+ * Commander life / commander-damage tuning — mirrors `CommanderPreset` in `mtg-sdk/.../core/Format.kt`.
+ * `BRAWL` and `COMMANDER` are the 1v1 choices a host makes; `POD` is what every multiplayer table
+ * plays at regardless (see `effectiveCommanderPreset` in `components/lobby/axes.ts`).
+ */
+export type CommanderPreset = 'BRAWL' | 'COMMANDER' | 'POD'
+
+/**
+ * Which rules a lobby's games run under — mirrors `GameRules` in `mtg-sdk/.../core/Format.kt`.
+ *
+ * Its own axis, independent of `DeckFormat` (what may go in a deck), of where the cards came from
+ * (`TournamentFormat`), and of the table. This is the one field to read when asking "does this game
+ * run Commander rules?"; see `rulesFromLobbySettings` in `components/lobby/axes.ts`.
+ */
+export type GameRules = 'STANDARD' | 'COMMANDER'
 
 export interface LobbyCreatedMessage {
   readonly type: 'lobbyCreated'
@@ -1816,6 +1949,7 @@ export type ClientMessage =
   | LeaveLobbyMessage
   | AddAiToLobbyMessage
   | RemoveAiFromLobbyMessage
+  | SetLobbyAiDeckMessage
   | StopLobbyMessage
   | UnsubmitDeckMessage
   | UpdateLobbySettingsMessage
@@ -1851,6 +1985,9 @@ export type ClientMessage =
   | SetQuickGameLobbySetCodeMessage
   | SetQuickGameLobbyPublicMessage
   | SetQuickGameLobbyRankedMessage
+  | SetQuickGameAiDeckMessage
+  | AddQuickGameAiMessage
+  | RemoveQuickGameAiMessage
   | SetQuickGameLobbyFormatMessage
 
 /**
@@ -2186,6 +2323,8 @@ export interface CreateTournamentLobbyMessage {
   readonly isPublic: boolean
   /** Lobby mode axis. Omit for the default bracket tournament. */
   readonly gameMode?: LobbyGameMode
+  /** Rules axis. Omit and the server derives it from `format` (a Commander pack shape ⇒ Commander). */
+  readonly rules?: GameRules
 }
 
 export interface JoinLobbyMessage {
@@ -2228,6 +2367,13 @@ export interface RemoveAiFromLobbyMessage {
   readonly playerId: string
 }
 
+/** Host picks what one AI seat plays — the per-seat twin of `setQuickGameAiDeck`. */
+export interface SetLobbyAiDeckMessage {
+  readonly type: 'setLobbyAiDeck'
+  readonly playerId: string
+  readonly spec: AiDeckSpec
+}
+
 export interface StopLobbyMessage {
   readonly type: 'stopLobby'
 }
@@ -2249,6 +2395,11 @@ export interface UpdateLobbySettingsMessage {
   readonly isPublic?: boolean
   /** Deck-construction format. Empty string (or 'NONE') clears the restriction. */
   readonly deckFormat?: DeckFormat | '' | null
+  /**
+   * Rules axis. Omit to leave it alone — except that a message switching `format` to a Commander
+   * pack shape, or setting commander-shaped `deckFormat`, defaults it to 'COMMANDER' server-side.
+   */
+  readonly rules?: GameRules
   /** Commander Draft/Sealed only — minimum deck size (default 60). */
   readonly deckSizeMin?: number
   /** Commander Draft/Sealed only — singleton toggle (default true = duplicates allowed). */
@@ -2257,8 +2408,17 @@ export interface UpdateLobbySettingsMessage {
   readonly commanderPreset?: CommanderPreset
   /** Toggle Chaos boosters: each pack pulls from the union of selected sets. */
   readonly chaosBoosters?: boolean
+  /** Optional non-booster product ids selected per set code. */
+  readonly includedSetProducts?: Readonly<Record<string, readonly string[]>>
   /** Replace the host ban list (full list, not a delta). Omit to leave unchanged. */
   readonly bannedCardNames?: readonly string[]
+  /** Full cube list; duplicate names represent duplicate physical cards. Empty clears cube mode. */
+  readonly cubeCards?: readonly string[]
+  readonly cubeName?: string
+  readonly packSize?: number
+  readonly cubeBasicLandSetCode?: string
+  /** Cube Sealed only: skip the draft and let everyone build from the whole cube. */
+  readonly cubePoolPlay?: boolean
   /** Master switch for in-app AI assistance (Suggest Pick / Auto-build). Omit to leave unchanged. */
   readonly aiAssistEnabled?: boolean
   /** Lobby mode axis ('TOURNAMENT' / 'FREE_FOR_ALL'). Omit to leave unchanged. */
@@ -2420,9 +2580,10 @@ export function createCreateTournamentLobbyMessage(
   maxPlayers: number = 8,
   pickTimeSeconds: number = 45,
   isPublic: boolean = false,
-  gameMode: LobbyGameMode = 'TOURNAMENT'
+  gameMode: LobbyGameMode = 'TOURNAMENT',
+  rules: GameRules = 'STANDARD'
 ): CreateTournamentLobbyMessage {
-  return { type: 'createTournamentLobby', setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic, gameMode }
+  return { type: 'createTournamentLobby', setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic, gameMode, rules }
 }
 
 // Backwards compatibility alias
@@ -2475,6 +2636,10 @@ export function createRemoveAiFromLobbyMessage(playerId: string): RemoveAiFromLo
   return { type: 'removeAiFromLobby', playerId }
 }
 
+export function createSetLobbyAiDeckMessage(playerId: string, spec: AiDeckSpec): SetLobbyAiDeckMessage {
+  return { type: 'setLobbyAiDeck', playerId, spec }
+}
+
 export function createStopLobbyMessage(): StopLobbyMessage {
   return { type: 'stopLobby' }
 }
@@ -2495,8 +2660,15 @@ export function createUpdateLobbySettingsMessage(
     picksPerRound?: number
     isPublic?: boolean
     deckFormat?: DeckFormat | '' | null
+    rules?: GameRules
     chaosBoosters?: boolean
+    includedSetProducts?: Readonly<Record<string, readonly string[]>>
     bannedCardNames?: readonly string[]
+    cubeCards?: readonly string[]
+    cubeName?: string
+    packSize?: number
+    cubeBasicLandSetCode?: string
+    cubePoolPlay?: boolean
     aiAssistEnabled?: boolean
     gameMode?: LobbyGameMode
     attackMode?: AttackMode
@@ -2694,6 +2866,8 @@ export interface QuickGameLobbyPlayerView {
   readonly deckLabel: string
   /** Per-player set choice for Random pools; null = "any set". */
   readonly setCode: string | null
+  /** All sets used to build a Random deck; empty means any set. */
+  readonly setCodes?: readonly string[]
 }
 
 export type DeckFormat =
@@ -2718,12 +2892,59 @@ export interface QuickGameLobbyStateMessage {
   readonly canStart: boolean
   readonly isPublic: boolean
   readonly format?: DeckFormat | null
+  /** Rules axis, derived from `format` on this lobby kind. Absent on a server older than the axis. */
+  readonly rules?: GameRules
   /** True for a Momir Basic lobby: no deckbuilding, set scopes the creature pool. */
   readonly momirBasic?: boolean
   /** Ranked toggle (host-controlled); only meaningful when [rankedEligible]. */
   readonly ranked?: boolean
   /** Whether ranked is offered for this lobby: a standard 1v1 human-vs-human lobby. */
   readonly rankedEligible?: boolean
+  /** What the AI seat will play. Present only in a vs-AI lobby. See [AiDeckSpecView]. */
+  readonly aiDeck?: AiDeckSpecView | null
+}
+
+/**
+ * What the host has chosen for the AI opponent's deck.
+ *
+ * `auto` — the server picks: a sealed pool mirroring your set, or a format-legal constructed deck
+ * when the lobby carries a deck-format restriction.
+ * `sets` — the server builds the AI a deck from [setCodes].
+ * `deck` — the AI plays an exact list the host supplied (example deck / saved deck / pasted).
+ */
+export type AiDeckSpec =
+  | { readonly type: 'auto' }
+  | { readonly type: 'sets'; readonly setCodes: readonly string[] }
+  | {
+      readonly type: 'deck'
+      readonly deckList: Record<string, number>
+      readonly label?: string
+      readonly commander?: string | null
+    }
+
+/**
+ * The lobby-broadcast summary of an [AiDeckSpec]. The decklist behind a `deck` choice never rides
+ * the lobby broadcast — only its label and card count — so this is a summary, not the spec.
+ */
+export interface AiDeckSpecView {
+  readonly kind: 'auto' | 'sets' | 'deck'
+  readonly setCodes?: readonly string[]
+  readonly label?: string | null
+  readonly cardCount?: number
+  readonly commander?: string | null
+}
+
+export interface SetQuickGameAiDeckMessage {
+  readonly type: 'setQuickGameAiDeck'
+  readonly spec: AiDeckSpec
+}
+
+export interface AddQuickGameAiMessage {
+  readonly type: 'addQuickGameAi'
+}
+
+export interface RemoveQuickGameAiMessage {
+  readonly type: 'removeQuickGameAi'
 }
 
 export interface QuickGameLobbyClosedMessage {
@@ -2806,7 +3027,8 @@ export interface SetQuickGameLobbyReadyMessage {
 
 export interface SetQuickGameLobbySetCodeMessage {
   readonly type: 'setQuickGameLobbySetCode'
-  readonly setCode: string | null
+  readonly setCode?: string | null
+  readonly setCodes: readonly string[]
 }
 
 export interface SetQuickGameLobbyPublicMessage {
@@ -2867,11 +3089,20 @@ export function createSubmitQuickGameLobbyDeckMessage(
 export function createSetQuickGameLobbyReadyMessage(ready: boolean): SetQuickGameLobbyReadyMessage {
   return { type: 'setQuickGameLobbyReady', ready }
 }
-export function createSetQuickGameLobbySetCodeMessage(setCode: string | null): SetQuickGameLobbySetCodeMessage {
-  return { type: 'setQuickGameLobbySetCode', setCode }
+export function createSetQuickGameLobbySetCodeMessage(setCodes: readonly string[]): SetQuickGameLobbySetCodeMessage {
+  return { type: 'setQuickGameLobbySetCode', setCodes }
 }
 export function createSetQuickGameLobbyPublicMessage(isPublic: boolean): SetQuickGameLobbyPublicMessage {
   return { type: 'setQuickGameLobbyPublic', isPublic }
+}
+export function createSetQuickGameAiDeckMessage(spec: AiDeckSpec): SetQuickGameAiDeckMessage {
+  return { type: 'setQuickGameAiDeck', spec }
+}
+export function createAddQuickGameAiMessage(): AddQuickGameAiMessage {
+  return { type: 'addQuickGameAi' }
+}
+export function createRemoveQuickGameAiMessage(): RemoveQuickGameAiMessage {
+  return { type: 'removeQuickGameAi' }
 }
 export function createSetQuickGameLobbyRankedMessage(ranked: boolean): SetQuickGameLobbyRankedMessage {
   return { type: 'setQuickGameLobbyRanked', ranked }

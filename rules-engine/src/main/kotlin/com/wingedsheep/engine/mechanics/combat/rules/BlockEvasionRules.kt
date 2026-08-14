@@ -12,11 +12,13 @@ import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptBy
 import com.wingedsheep.sdk.scripting.CantBeBlockedIfCastSpellType
+import com.wingedsheep.sdk.scripting.CantBeBlockedIfDefenderControls
 import com.wingedsheep.sdk.scripting.CantBeBlockedUnlessDefenderSharesCreatureType
-import com.wingedsheep.sdk.scripting.GrantCantBeBlockedToSmallCreatures
+import com.wingedsheep.sdk.scripting.CantBeBlockedWhilePropertyAtMost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.Scope
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 
 /**
  * Unblockable: Cannot be blocked at all (CANT_BE_BLOCKED flag).
@@ -219,6 +221,8 @@ class CantBeBlockedByRule(
                     is Scope.AttachedTo -> container.get<AttachedToComponent>()?.targetId == ctx.attackerId
                     is Scope.Specific -> scope.entityId == ctx.attackerId
                     is Scope.Battlefield -> true
+                    is Scope.SoulbondPair ->
+                        com.wingedsheep.engine.mechanics.SoulbondPairing.isInPairOf(ctx.state, hostId, ctx.attackerId)
                     is Scope.Self -> false // already covered by the attacker's own printed read
                 }
                 if (!scopeMatches) continue
@@ -353,6 +357,57 @@ class CantBeBlockedUnlessDefenderSharesCreatureTypeRule : BlockEvasionRule {
             }
         }
         return subtypeCounts.values.any { it >= minCount }
+    }
+}
+
+/**
+ * CantBeBlockedIfDefenderControls: Attacker can't be blocked while the **defending player**
+ * controls at least N permanents matching a filter — the landwalk shape generalized past land
+ * types (Neurok Spy: "can't be blocked as long as defending player controls an artifact").
+ *
+ * Counts against [BlockCheckContext.blockingPlayer], which is the defending player for this
+ * declaration, so a multiplayer attack at a player with no matching permanent stays blockable even
+ * when another opponent has one. The candidate set comes from projected state
+ * ([ProjectedState.getBattlefieldControlledBy]) and each candidate is matched with the projection in
+ * hand, so a permanent that only *became* an artifact (Ensoul Artifact, March of the Machines) counts
+ * and control-changing effects are honored. The filter is evaluated with the defender bound as
+ * "you", so an unscoped filter such as `GameObjectFilter.Artifact` reads "an artifact the defending
+ * player controls" without the card having to spell out a controller predicate.
+ */
+class CantBeBlockedIfDefenderControlsRule(
+    private val predicateEvaluator: PredicateEvaluator
+) : BlockEvasionRule {
+    override fun check(ctx: BlockCheckContext): String? {
+        // Face-down creatures have no abilities — the evasion doesn't apply.
+        if (ctx.state.getEntity(ctx.attackerId)?.has<FaceDownComponent>() == true) return null
+        val attackerCard = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>() ?: return null
+        val cardDef = ctx.cardRegistry.getCard(attackerCard.cardDefinitionId)
+        val printed = cardDef?.staticAbilities
+            ?.filterIsInstance<CantBeBlockedIfDefenderControls>()
+            ?.filter { it.filter.scope is Scope.Self }
+            .orEmpty()
+        val granted = ctx.state.grantedStaticAbilities
+            .filter { it.entityId == ctx.attackerId }
+            .map { it.ability }
+            .filterIsInstance<CantBeBlockedIfDefenderControls>()
+        val abilities = printed + granted
+        if (abilities.isEmpty()) return null
+
+        val predicateContext = PredicateContext(
+            controllerId = ctx.blockingPlayer,
+            sourceId = ctx.attackerId
+        )
+        for (ability in abilities) {
+            val matches = ctx.projected.getBattlefieldControlledBy(ctx.blockingPlayer).count { entityId ->
+                predicateEvaluator.matches(
+                    ctx.state, ctx.projected, entityId, ability.permanentFilter, predicateContext
+                )
+            }
+            if (matches >= ability.minCount) {
+                return "${attackerCard.name} ${ability.description}"
+            }
+        }
+        return null
     }
 }
 
@@ -534,14 +589,16 @@ class CantBeBlockedByCreaturesWithLessPowerRule : BlockEvasionRule {
 }
 
 /**
- * GrantCantBeBlockedToSmallCreatures: Attacker can't be blocked if it has power or toughness
- * at most N and its controller controls a permanent with this static ability
- * (e.g., Tetsuko Umezawa, Fugitive).
+ * CantBeBlockedWhilePropertyAtMost: Attacker can't be blocked while its projected power (or
+ * toughness) is at most N — Tetsuko Umezawa, Fugitive granting it across its controller's
+ * creatures, Stature, Size Shifter granting it only to herself.
  *
- * Scans the attacking player's battlefield for permanents with GrantCantBeBlockedToSmallCreatures,
- * then checks whether the attacker's projected power or toughness meets the threshold.
+ * Scans the attacking player's battlefield for permanents with the ability; a `Scope.Self` filter
+ * narrows that to the attacker being the source itself. `StateProjector` already grants
+ * CANT_BE_BLOCKED for the same condition and [UnblockableRule] runs first, so in practice this rule
+ * exists to name *why* in the rejection message.
  */
-class GrantCantBeBlockedToSmallCreaturesRule : BlockEvasionRule {
+class CantBeBlockedWhilePropertyAtMostRule : BlockEvasionRule {
     override fun check(ctx: BlockCheckContext): String? {
         val attackerController = ctx.projected.getController(ctx.attackerId) ?: return null
         val attackerPower = ctx.projected.getPower(ctx.attackerId) ?: return null
@@ -551,10 +608,15 @@ class GrantCantBeBlockedToSmallCreaturesRule : BlockEvasionRule {
         for (entityId in ctx.projected.getBattlefieldControlledBy(attackerController)) {
             val card = ctx.state.getEntity(entityId)?.get<CardComponent>() ?: continue
             val cardDef = ctx.cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            for (ability in cardDef.staticAbilities.filterIsInstance<GrantCantBeBlockedToSmallCreatures>()) {
-                if (attackerPower <= ability.maxValue || attackerToughness <= ability.maxValue) {
+            for (ability in cardDef.staticAbilities.filterIsInstance<CantBeBlockedWhilePropertyAtMost>()) {
+                if (ability.filter.scope is Scope.Self && entityId != ctx.attackerId) continue
+                val checks = ability.properties
+                val qualifies =
+                    (EntityNumericProperty.Power in checks && attackerPower <= ability.maxValue) ||
+                        (EntityNumericProperty.Toughness in checks && attackerToughness <= ability.maxValue)
+                if (qualifies) {
                     val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
-                    return "$attackerName can't be blocked (power or toughness ${ability.maxValue} or less)"
+                    return "$attackerName can't be blocked (${ability.propertyDescription} ${ability.maxValue} or less)"
                 }
             }
         }
@@ -625,7 +687,8 @@ fun defaultBlockEvasionRules(
     CantBeBlockedByColorRule(),
     CantBeBlockedExceptByRule(predicateEvaluator),
     CantBeBlockedUnlessDefenderSharesCreatureTypeRule(),
-    GrantCantBeBlockedToSmallCreaturesRule(),
+    CantBeBlockedIfDefenderControlsRule(predicateEvaluator),
+    CantBeBlockedWhilePropertyAtMostRule(),
     CantBeBlockedIfCastSpellTypeRule(predicateEvaluator),
     ProtectionFromColorRule(),
     ProtectionFromSubtypeRule(),

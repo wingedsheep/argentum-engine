@@ -38,7 +38,7 @@ val MutagenManLivingOoze = card("Mutagen Man, Living Ooze") {
                     cardPredicates = listOf(CardPredicate.IsArtifact, CardPredicate.IsToken)
                 ).youControl()
             ),
-            amount = 1
+            amount = DynamicAmount.Fixed(1)
         )
     }
 

@@ -2,6 +2,9 @@ package com.wingedsheep.gameserver.replay
 
 import com.wingedsheep.ai.engine.buildHeuristicSealedDeck
 import com.wingedsheep.engine.core.*
+import com.wingedsheep.gameserver.protocol.ServerMessage
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.gameserver.ScenarioTestBase
 import com.wingedsheep.gameserver.persistence.persistenceJson
@@ -65,7 +68,7 @@ class CompactReplaySizeBenchmark : ScenarioTestBase() {
                 session.keepHand(p1)
                 session.keepHand(p2)
 
-                val outcome = playRandomGame(session, enumerator, rng, maxTurns = 40)
+                val outcome = playRandomGame(session, enumerator, rng, maxTurns = 80)
 
                 val setup = session.getReplaySetup()
                 if (setup == null) {
@@ -81,6 +84,8 @@ class CompactReplaySizeBenchmark : ScenarioTestBase() {
                     winnerName = null,
                     setup = setup,
                     actions = actions,
+                    pinnedCards = session.getPinnedCards(),
+                    checkpoints = session.getReplayCheckpoints(),
                 )
 
                 // Sanity: the stored form round-trips losslessly (same guarantee the codec test proves).
@@ -91,6 +96,13 @@ class CompactReplaySizeBenchmark : ScenarioTestBase() {
                 val encoded = ReplayCodec.encode(replay)
                 val gzipBytes = Base64.getDecoder().decode(encoded).size
 
+                // The durability fallback: the frames the input log produces, archived at record
+                // time. Measured here because it is the expensive half of the storage decision.
+                val reconstructed = ReplayReconstructor(cardRegistry, null).reconstruct(replay)
+                val presentation = buildPresentation(reconstructed)
+                val presentationBody = presentation.toByteArray(Charsets.UTF_8).size
+                val presentationGzip = Base64.getDecoder().decode(ReplayCodec.encodeText(presentation)).size
+
                 val row = ReplaySizeRow(
                     actions = actions.size,
                     frames = replay.frameCount,
@@ -98,13 +110,17 @@ class CompactReplaySizeBenchmark : ScenarioTestBase() {
                     jsonBytes = jsonBytes,
                     gzipBytes = gzipBytes,
                     base64Chars = encoded.length,
+                    pinnedCardCount = replay.pinnedCards.size,
+                    presentationJsonBytes = presentationBody,
+                    presentationGzipBytes = presentationGzip,
                 )
                 rows.add(row)
                 if (i < 5 || (i + 1) % 10 == 0 || i == numGames - 1) {
                     println(
                         "  [${i + 1}/$numGames] ${row.turns} turns, ${row.actions} actions -> " +
-                            "json=${fmtBytes(row.jsonBytes)}, gzip+b64=${fmtBytes(row.gzipBytes)} " +
-                            "(${row.bytesPerAction().roundToInt()} B/action)"
+                            "inputs gzip=${fmtBytes(row.gzipBytes)} " +
+                            "(${row.pinnedCardCount} pinned cards), " +
+                            "frames gzip=${fmtBytes(row.presentationGzipBytes)}"
                     )
                 }
             }
@@ -128,6 +144,13 @@ class CompactReplaySizeBenchmark : ScenarioTestBase() {
             println("  compression:  ~${(100 - avgGzip * 100 / avgJson).roundToInt()}% smaller than raw JSON")
             println("  per action:   ~${(avgGzip / rows.map { it.actions }.avg()).roundToInt()} B/action (stored)")
             println("  total stored: ${fmtBytes(rows.sumOf { it.gzipBytes })} for ${rows.size} games")
+            println("  pinned cards: avg=${rows.map { it.pinnedCardCount }.avg().roundToInt()} definitions per game")
+            println()
+            val avgPres = rows.map { it.presentationGzipBytes }.avg()
+            println("Archived frame stream (the deploy-proof fallback):")
+            println("  JSON (raw):   avg=${fmtBytes(rows.map { it.presentationJsonBytes }.avg().roundToInt())}, max=${fmtBytes(rows.maxOf { it.presentationJsonBytes })}")
+            println("  gzip+base64:  avg=${fmtBytes(avgPres.roundToInt())}, max=${fmtBytes(rows.maxOf { it.presentationGzipBytes })}  (the stored form)")
+            println("  vs inputs:    ~${(avgPres / avgGzip).roundToInt()}x the input log")
         }
     }
 }
@@ -139,8 +162,30 @@ private data class ReplaySizeRow(
     val jsonBytes: Int,
     val gzipBytes: Int,
     val base64Chars: Int,
+    val pinnedCardCount: Int = 0,
+    val presentationJsonBytes: Int = 0,
+    val presentationGzipBytes: Int = 0,
 ) {
     fun bytesPerAction(): Double = if (actions == 0) 0.0 else gzipBytes.toDouble() / actions
+}
+
+/** Compose the viewer body the way [ReplayPresentation] does, without needing the Spring bean. */
+private fun buildPresentation(reconstructed: ReconstructedReplay): String {
+    val initial = benchmarkWireJson.encodeToString(
+        ServerMessage.SpectatorStateUpdate.serializer(), reconstructed.initialSnapshot
+    )
+    val deltas = benchmarkWireJson.encodeToString(
+        ListSerializer(SpectatorReplayDelta.serializer()), reconstructed.deltas
+    )
+    return """{"initialSnapshot":$initial,"deltas":$deltas}"""
+}
+
+/** Mirrors MessageSender.json — the archive is stored exactly as the wire would serialize it. */
+private val benchmarkWireJson = Json {
+    ignoreUnknownKeys = true
+    encodeDefaults = true
+    classDiscriminator = "type"
+    serializersModule = engineSerializersModule
 }
 
 private data class GameOutcome(val turns: Int, val actions: Int, val gameOver: Boolean)

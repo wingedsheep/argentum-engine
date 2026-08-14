@@ -20,10 +20,10 @@ import io.kotest.matchers.shouldBe
  *
  * Regression guard for the reported bug: when the counter-bearing creature dies during the
  * OPPONENT's turn, "until your next end step" must close at the controller's own next end step — not
- * a full turn later. The expiry is driven by the cleanup step, and `GameState.turnNumber` is
- * round-based (it only increments when the starting player begins a new turn), so counting
- * player-turns until the controller's turn over-counted whenever the grant happened on an opponent's
- * turn, leaking the may-play window across an extra turn ("second turn from then still playable").
+ * a full turn later. The expiry is driven by the cleanup step, and the turn it records is only a
+ * floor: trying to compute the controller's exact next turn from seat positions over-counted
+ * whenever the grant happened on an opponent's turn, leaking the may-play window across an extra
+ * turn ("second turn from then still playable").
  */
 class ShadowUrchinTest : FunSpec({
 
@@ -39,9 +39,9 @@ class ShadowUrchinTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN, maxPasses = 300)
     }
 
-    // P1 is the starting player; P2 controls Shadow Urchin. P2 sits *after* P1 in the round, so when
-    // Shadow Urchin dies on P1's turn, P2's next end step is still this same round — the case the old
-    // round-based math pushed a full turn too late.
+    // P1 is the starting player; P2 controls Shadow Urchin. When Shadow Urchin dies on P1's turn,
+    // P2's own next end step is the very next turn — the case that seat-index arithmetic over the
+    // old round counter pushed a full turn too late.
     test("may-play window closes at the controller's own next end step when granted on the opponent's turn") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 30), startingLife = 20)

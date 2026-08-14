@@ -14,6 +14,8 @@ import com.wingedsheep.sdk.scripting.CostZone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
+import com.wingedsheep.sdk.scripting.costs.PermanentCostAction
+import com.wingedsheep.sdk.scripting.costs.VariableCostMeasure
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -54,6 +56,11 @@ object Costs {
      * Untap this permanent ({Q}).
      */
     val Untap: AbilityCost = AbilityCost.Untap
+
+    /**
+     * Exert this permanent (CR 701.43a) — it won't untap during your next untap step.
+     */
+    val Exert: AbilityCost = AbilityCost.Exert
 
     // =========================================================================
     // Mana Costs
@@ -148,6 +155,24 @@ object Costs {
      */
     val DiscardHand: AbilityCost = AbilityCost.DiscardHand
 
+    // =========================================================================
+    // Mill Costs
+    // =========================================================================
+
+    /**
+     * Mill a card as a cost — "{T}, Mill a card: Add {C}" (Deranged Assistant).
+     *
+     * Unpayable with an empty library (CR 701.17b), and takes no player selection: the milled card
+     * is the top of the library.
+     */
+    val MillCard: AbilityCost = AbilityCost.Atom(CostAtom.Mill())
+
+    /**
+     * Mill [count] cards as a cost. Unpayable unless the library holds at least [count] cards
+     * (CR 701.17b).
+     */
+    fun Mill(count: Int): AbilityCost = AbilityCost.Atom(CostAtom.Mill(count))
+
     /**
      * Discard this card (for cycling and similar abilities).
      */
@@ -228,18 +253,54 @@ object Costs {
         AbilityCost.ExileXFromGraveyard(filter)
 
     /**
+     * Collect evidence [amount] (CR 701.59) — exile any number of cards from your graveyard with
+     * total mana value [amount] or greater. Unlike [ExileFromGraveyard] the constraint is a floor on
+     * the exiled cards' **total mana value**, not on their count. Per CR 701.59b the ability is not
+     * activatable at all when the graveyard can't reach [amount].
+     *
+     * For the *linked* cast-time shape ("you may collect evidence N" + "if evidence was collected")
+     * use the `collectEvidence()` DSL helper on [CardBuilder] instead — it rides the
+     * optional-additional-cost rail so the declaration is observable.
+     */
+    fun CollectEvidence(amount: Int): AbilityCost =
+        AbilityCost.Atom(CostAtom.CollectEvidence(amount))
+
+    /**
      * Exile one or more permanents matching [filter] you control (variable count, at least
      * [minCount]); with [excludeSelf] the ability's own source is excluded ("one or more *other*
-     * …"). The exiled set's **total mana value** becomes the ability's X value — read it with
-     * `DynamicAmount.XValue` (e.g. to bound a reanimation target "with mana value X or less").
+     * …"). By default the exiled set's **total mana value** becomes the ability's X value — read it
+     * with `DynamicAmount.XValue` (e.g. to bound a reanimation target "with mana value X or less");
+     * pass [xMeasure] `COUNT` for the "for each permanent exiled this way" shape instead.
      * Backs Fabrication Foundry's "Exile one or more other artifacts you control with total mana
      * value X" activation cost. Pair with a sorcery-speed timing rule where the card demands it.
      */
     fun ExilePermanents(
         filter: GameObjectFilter = GameObjectFilter.Any,
         minCount: Int = 1,
-        excludeSelf: Boolean = true
-    ): AbilityCost = AbilityCost.Atom(CostAtom.ExilePermanents(filter, minCount, excludeSelf))
+        excludeSelf: Boolean = true,
+        xMeasure: VariableCostMeasure = VariableCostMeasure.TOTAL_MANA_VALUE
+    ): AbilityCost = AbilityCost.Atom(
+        CostAtom.VariablePermanents(filter, minCount, excludeSelf, PermanentCostAction.EXILE, xMeasure)
+    )
+
+    /**
+     * Sacrifice one or more permanents matching [filter] you control (variable count, at least
+     * [minCount]) — the sacrificing twin of [ExilePermanents]. The number sacrificed becomes the
+     * ability's X value by default, so the resolving effect can scale with it via
+     * `DynamicAmount.XValue` ("for each artifact sacrificed this way" — Radiant Lotus).
+     *
+     * [excludeSelf] defaults to false: the ability's own source is usually a legal choice for its
+     * own cost (Radiant Lotus is an artifact and may sacrifice itself). Pass [xMeasure]
+     * `TOTAL_MANA_VALUE` for the "with total mana value X" shape.
+     */
+    fun SacrificePermanents(
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        minCount: Int = 1,
+        excludeSelf: Boolean = false,
+        xMeasure: VariableCostMeasure = VariableCostMeasure.COUNT
+    ): AbilityCost = AbilityCost.Atom(
+        CostAtom.VariablePermanents(filter, minCount, excludeSelf, PermanentCostAction.SACRIFICE, xMeasure)
+    )
 
     // =========================================================================
     // Loyalty Costs
@@ -340,12 +401,18 @@ object Costs {
     /**
      * Remove X counters of any type from among creatures you control.
      * X is the value chosen for this ability's variable cost.
+     *
+     * Pass [self] for "remove any number of counters from ~" (The Astonishing Ant-Man), where the
+     * counters come off the ability's own source. That takes the direct payment path; the default
+     * filter-based form instead asks the player to distribute the removal across matching
+     * permanents, which is wrong — and unpayable — for a self-scoped cost.
      */
     fun RemoveXCounters(
             counterType: String? = null,
             count: DynamicAmount = DynamicAmount.XValue,
-            filter: GameObjectFilter = GameObjectFilter.Permanent
-        ): AbilityCost = AbilityCost.Atom(CostAtom.RemoveCounters(counterType, count, filter))
+            filter: GameObjectFilter = GameObjectFilter.Permanent,
+            self: Boolean = false
+        ): AbilityCost = AbilityCost.Atom(CostAtom.RemoveCounters(counterType, count, filter, self))
 
     // =========================================================================
     // Composite Costs
@@ -402,6 +469,29 @@ object Costs {
             AdditionalCost.Atom(CostAtom.Sacrifice(filter, count))
 
         /**
+         * Tap any number of permanents matching [filter] you control whose **total projected
+         * power** is [totalPower] or more — the "tap creatures for total power N" selection crew
+         * and saddle already use, re-exposed as a spell's additional cost (Teamwork N,
+         * CR 702.194a). The count is free; the power floor is the constraint.
+         *
+         * Tapping this way is a cost, not the `{T}` symbol, so summoning sickness (CR 302.6)
+         * doesn't apply; only untapped permanents may be chosen (CR 701.26a).
+         */
+        fun TapForTotalPower(
+            totalPower: Int,
+            filter: GameObjectFilter = GameObjectFilter.Creature
+        ): AdditionalCost = AdditionalCost.Atom(
+            CostAtom.VariablePermanents(
+                filter = filter,
+                minCount = 0,
+                excludeSelf = false,
+                action = PermanentCostAction.TAP,
+                xMeasure = VariableCostMeasure.TOTAL_POWER,
+                minMeasure = totalPower
+            )
+        )
+
+        /**
          * Return [count] permanents matching [filter] you control to their owner's hand
          * (Fear of Isolation — "As an additional cost to cast this spell, return a permanent
          * you control to its owner's hand").
@@ -451,6 +541,18 @@ object Costs {
         val Forage: AdditionalCost = AdditionalCost.Forage
 
         /**
+         * Collect evidence [amount] (CR 701.59a) — exile any number of cards from your graveyard
+         * with total mana value [amount] or greater, as an additional cost to cast.
+         *
+         * This is the **mandatory** shape (Urgent Necropsy's "collect evidence X"). For the far more
+         * common *optional linked* shape — "you may collect evidence N", read back by
+         * `Conditions.WasEvidenceCollected` — use the `collectEvidence()` DSL helper on
+         * [CardBuilder], which wraps this on the optional-additional-cost rail.
+         */
+        fun CollectEvidence(amount: Int): AdditionalCost =
+            AdditionalCost.Atom(CostAtom.CollectEvidence(amount))
+
+        /**
          * Cost-vs-cost — the caster pays exactly one of [options] ("discard a card **or** sacrifice a
          * permanent"; Souls of the Lost). For options that are each independently payable non-mana
          * costs; use the `*OrPay` family instead when one branch pays extra *mana*. See
@@ -480,12 +582,24 @@ object Costs {
             storeAs: String = "beheld"
         ): AdditionalCost = AdditionalCost.Behold(filter, count, storeAs)
 
-        /** Behold a [filter] card or pay [alternativeManaCost] instead. */
+        /**
+         * Pay [cost] or pay [alternativeManaCost] instead — the general "do X or pay {N}" shape
+         * ([AdditionalCost.OrPay]). [cost] must be a selection-carrying cost: a [Behold], or an
+         * atom cost over sacrifice / discard / exile-from-a-zone / tap / return-to-hand. The named
+         * shapes below are the printed wordings, and a new one is a one-line facade over this.
+         */
+        fun OrPay(cost: AdditionalCost, alternativeManaCost: String): AdditionalCost =
+            AdditionalCost.OrPay(cost, alternativeManaCost)
+
+        /** Behold a [filter] card or pay [alternativeManaCost] instead (Lys Alana Dignitary). */
         fun BeholdOrPay(
             filter: GameObjectFilter = GameObjectFilter.Any,
             alternativeManaCost: String,
             storeAs: String = "beheld"
-        ): AdditionalCost = AdditionalCost.BeholdOrPay(filter, alternativeManaCost, storeAs)
+        ): AdditionalCost = OrPay(
+            AdditionalCost.Behold(filter, count = 1, storeAs = storeAs),
+            alternativeManaCost
+        )
 
         /**
          * Exile [exileCount] cards matching [filter] from your graveyard, or pay
@@ -495,8 +609,10 @@ object Costs {
             exileCount: Int,
             alternativeManaCost: String,
             filter: GameObjectFilter = GameObjectFilter.Any,
-        ): AdditionalCost =
-            AdditionalCost.ExileFromGraveyardOrPay(exileCount, alternativeManaCost, filter)
+        ): AdditionalCost = OrPay(
+            AdditionalCost.Atom(CostAtom.ExileFrom(Zone.GRAVEYARD, filter, exileCount)),
+            alternativeManaCost
+        )
 
         /**
          * Sacrifice [count] permanent(s) matching [filter] you control, or pay
@@ -506,8 +622,23 @@ object Costs {
             filter: GameObjectFilter = GameObjectFilter.Any,
             alternativeManaCost: String,
             count: Int = 1,
-        ): AdditionalCost =
-            AdditionalCost.SacrificeOrPay(filter, alternativeManaCost, count)
+        ): AdditionalCost = OrPay(
+            AdditionalCost.Atom(CostAtom.Sacrifice(filter, count)),
+            alternativeManaCost
+        )
+
+        /**
+         * Discard [count] card(s) matching [filter] from your hand, or pay
+         * [alternativeManaCost] instead (Pumpkin Bombardment — "discard a card or pay {2}").
+         */
+        fun DiscardOrPay(
+            alternativeManaCost: String,
+            filter: GameObjectFilter = GameObjectFilter.Any,
+            count: Int = 1,
+        ): AdditionalCost = OrPay(
+            AdditionalCost.Atom(CostAtom.Discard(count, filter)),
+            alternativeManaCost
+        )
 
         /** "Behold a [filter] and exile it" — [Behold] + [ExileFromStorage] composed. */
         fun BeholdAndExile(

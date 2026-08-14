@@ -6,6 +6,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
@@ -46,9 +47,12 @@ val MyojinOfNightsReach = card("Myojin of Night's Reach") {
         )
     )
 
+    // Filters.Self, not GrantKeyword's default filter: the default is attached-scope (the
+    // Aura/Equipment shape), which on a creature nothing is attached to matches no permanent and
+    // grants indestructible to nobody.
     staticAbility {
         ability = ConditionalStaticAbility(
-            ability = GrantKeyword(Keyword.INDESTRUCTIBLE),
+            ability = GrantKeyword(Keyword.INDESTRUCTIBLE, Filters.Self),
             condition = Conditions.SourceHasCounter(CounterTypeFilter.Named(Counters.DIVINITY)),
         )
     }

@@ -37,7 +37,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * the placer selector (CR 122.6a), not from a "you control" recipient filter; a counter placed by
  * an opponent doesn't fire it. Gains `TRIGGER_COUNTERS_PLACED_AMOUNT` ("that much") life, wrapped in
  * `MayEffect` for the "may" (a bare `optional = true` is ignored on a no-target ability, like
- * Terrasymbiosis) plus `oncePerTurn = true` for "Do this only once each turn".
+ * Terrasymbiosis) plus `effectOncePerTurn = true` for "Do this only once each turn" — CR 603.2h,
+ * the rider keyed to the action rather than the trigger cap.
  */
 val EarthKingdomGeneral = card("Earth Kingdom General") {
     manaCost = "{3}{G}"
@@ -66,7 +67,10 @@ val EarthKingdomGeneral = card("Earth Kingdom General") {
             binding = TriggerBinding.ANY,
             placedBy = Player.You,
         )
-        oncePerTurn = true
+        // CR 603.2h — keyed to the life gain, not to the trigger: "Once you choose to gain life
+        // using Earth Kingdom General's second ability, that ability won't trigger again that
+        // turn" (Scryfall ruling). Declining a small placement keeps a bigger one later live.
+        effectOncePerTurn = true
         // The "you may" is a MayEffect, not a bare `optional = true` — the engine ignores that
         // flag on a no-target ability with no elseEffect (same as Terrasymbiosis), gaining the life
         // unconditionally instead of offering the choice.

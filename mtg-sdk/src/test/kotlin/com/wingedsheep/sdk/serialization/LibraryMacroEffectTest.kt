@@ -57,7 +57,7 @@ class LibraryMacroEffectTest : FunSpec({
         surveilPipeline.effects.last().shouldBeInstanceOf<EmitSurveiledEventEffect>()
     }
 
-    test("a literal scry/surveil 0 expands without an emit-event tail (CR 701.18b / 701.42c)") {
+    test("a literal scry/surveil 0 expands without an emit-event tail (CR 701.22b / 701.25c)") {
         LibraryPatterns.scryPipeline(0).effects.none { it is EmitScriedEventEffect } shouldBe true
         LibraryPatterns.surveilPipeline(0).effects.none { it is EmitSurveiledEventEffect } shouldBe true
     }

@@ -2,6 +2,7 @@ package com.wingedsheep.gameserver.ranking
 
 import com.wingedsheep.gameserver.lobby.TournamentFormat
 import com.wingedsheep.sdk.core.DeckFormat
+import com.wingedsheep.sdk.core.GameRules
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.doubles.plusOrMinus
 import io.kotest.matchers.shouldBe
@@ -61,24 +62,30 @@ class EloTest : FunSpec({
         Elo.tier(3000.0, g) shouldBe RatingTier.MYTHIC
     }
 
-    test("quick-game mode derivation maps format to the right queue") {
-        Ranked.modeForQuickGame(format = null, momirBasic = false) shouldBe RankedMode.LIMITED
-        Ranked.modeForQuickGame(format = null, momirBasic = true) shouldBe RankedMode.CONSTRUCTED
-        Ranked.modeForQuickGame(format = DeckFormat.STANDARD, momirBasic = false) shouldBe RankedMode.CONSTRUCTED
-        Ranked.modeForQuickGame(format = DeckFormat.MODERN, momirBasic = false) shouldBe RankedMode.CONSTRUCTED
-        Ranked.modeForQuickGame(format = DeckFormat.COMMANDER, momirBasic = false) shouldBe RankedMode.COMMANDER
-        Ranked.modeForQuickGame(format = DeckFormat.BRAWL, momirBasic = false) shouldBe RankedMode.COMMANDER
+    test("quick-game mode derivation maps the rules axis and format to the right queue") {
+        val standard = GameRules.STANDARD
+        Ranked.modeForQuickGame(standard, format = null, momirBasic = false) shouldBe RankedMode.LIMITED
+        Ranked.modeForQuickGame(standard, format = null, momirBasic = true) shouldBe RankedMode.CONSTRUCTED
+        Ranked.modeForQuickGame(standard, format = DeckFormat.STANDARD, momirBasic = false) shouldBe RankedMode.CONSTRUCTED
+        Ranked.modeForQuickGame(standard, format = DeckFormat.MODERN, momirBasic = false) shouldBe RankedMode.CONSTRUCTED
+        // Commander-shaped deck legality is what *derives* the rules on this lobby kind, but the queue
+        // follows the rules — so a Commander-legal deck list under Standard rules is CONSTRUCTED.
+        Ranked.modeForQuickGame(standard, format = DeckFormat.COMMANDER, momirBasic = false) shouldBe RankedMode.CONSTRUCTED
+        Ranked.modeForQuickGame(GameRules.COMMANDER, format = DeckFormat.COMMANDER, momirBasic = false) shouldBe RankedMode.COMMANDER
+        Ranked.modeForQuickGame(GameRules.COMMANDER, format = DeckFormat.BRAWL, momirBasic = false) shouldBe RankedMode.COMMANDER
     }
 
-    test("tournament mode derivation maps format + deckFormat to the right queue") {
-        Ranked.modeForTournament(TournamentFormat.SEALED, null) shouldBe RankedMode.LIMITED
-        Ranked.modeForTournament(TournamentFormat.DRAFT, null) shouldBe RankedMode.LIMITED
-        Ranked.modeForTournament(TournamentFormat.WINSTON_DRAFT, null) shouldBe RankedMode.LIMITED
-        Ranked.modeForTournament(TournamentFormat.GRID_DRAFT, null) shouldBe RankedMode.LIMITED
-        Ranked.modeForTournament(TournamentFormat.COMMANDER_DRAFT, null) shouldBe RankedMode.COMMANDER
-        Ranked.modeForTournament(TournamentFormat.COMMANDER_SEALED, null) shouldBe RankedMode.COMMANDER
-        Ranked.modeForTournament(TournamentFormat.PREMADE_DECKS, null) shouldBe RankedMode.CONSTRUCTED
-        Ranked.modeForTournament(TournamentFormat.PREMADE_DECKS, DeckFormat.STANDARD) shouldBe RankedMode.CONSTRUCTED
-        Ranked.modeForTournament(TournamentFormat.PREMADE_DECKS, DeckFormat.COMMANDER) shouldBe RankedMode.COMMANDER
+    test("tournament mode derivation asks the rules axis first, then where the cards came from") {
+        val standard = GameRules.STANDARD
+        Ranked.modeForTournament(standard, TournamentFormat.SEALED) shouldBe RankedMode.LIMITED
+        Ranked.modeForTournament(standard, TournamentFormat.DRAFT) shouldBe RankedMode.LIMITED
+        Ranked.modeForTournament(standard, TournamentFormat.WINSTON_DRAFT) shouldBe RankedMode.LIMITED
+        Ranked.modeForTournament(standard, TournamentFormat.GRID_DRAFT) shouldBe RankedMode.LIMITED
+        Ranked.modeForTournament(standard, TournamentFormat.PREMADE_DECKS) shouldBe RankedMode.CONSTRUCTED
+        // Commander is one queue however the pool was built: drafted, sealed, or brought.
+        Ranked.modeForTournament(GameRules.COMMANDER, TournamentFormat.COMMANDER_DRAFT) shouldBe RankedMode.COMMANDER
+        Ranked.modeForTournament(GameRules.COMMANDER, TournamentFormat.COMMANDER_SEALED) shouldBe RankedMode.COMMANDER
+        Ranked.modeForTournament(GameRules.COMMANDER, TournamentFormat.PREMADE_DECKS) shouldBe RankedMode.COMMANDER
+        Ranked.modeForTournament(GameRules.COMMANDER, TournamentFormat.DRAFT) shouldBe RankedMode.COMMANDER
     }
 })

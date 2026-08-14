@@ -2,35 +2,35 @@
 
 **Set Size:** 272 booster cards (excluding basic lands and tokens)
 **Release Date:** November 19, 2021
-**Implemented:** 147 / 272
+**Implemented:** 207 / 273
 - [x] Abrade
 - [x] Adamant Will
 - [ ] Aim for the Head
-- [ ] Alchemist's Gambit
-- [ ] Alchemist's Retrieval
+- [x] Alchemist's Gambit
+- [x] Alchemist's Retrieval
 - [ ] Alluring Suitor
 - [x] Ancestral Anger
 - [ ] Ancient Lumberknot
 - [x] Angelic Quartermaster
 - [x] Anje, Maid of Dishonor
 - [x] Apprentice Sharpshooter
-- [ ] Archghoul of Thraben
+- [x] Archghoul of Thraben
 - [x] Arm the Cathars
 - [x] Ascendant Packleader
-- [ ] Avabruck Caretaker
-- [ ] Ballista Watcher
+- [x] Avabruck Caretaker
+- [x] Ballista Watcher
 - [x] Belligerent Guest
 - [ ] Binding Geist
-- [ ] Biolume Egg
+- [x] Biolume Egg
 - [x] Bleed Dry
 - [x] Blood Fountain
 - [x] Blood Hypnotist
 - [x] Blood Petal Celebrant
 - [x] Blood Servitor
 - [x] Bloodcrazed Socialite
-- [ ] Bloodsworn Squire
+- [x] Bloodsworn Squire
 - [x] Bloodtithe Harvester
-- [ ] Bloodvial Purveyor
+- [x] Bloodvial Purveyor
 - [x] Bloody Betrayal
 - [x] Boarded Window
 - [x] Bramble Armor
@@ -46,14 +46,14 @@
 - [ ] Cemetery Protector
 - [ ] Cemetery Prowler
 - [ ] Ceremonial Knife
-- [ ] Chandra, Dressed to Kill
+- [x] Chandra, Dressed to Kill
 - [ ] Change of Fortune
-- [ ] Child of the Pack
+- [x] Child of the Pack
 - [ ] Chill of the Grave
 - [ ] Circle of Confinement
-- [ ] Cloaked Cadet
+- [x] Cloaked Cadet
 - [x] Cobbled Lancer
-- [ ] Concealing Curtains
+- [x] Concealing Curtains
 - [ ] Consuming Tide
 - [x] Courier Bat
 - [x] Cradle of Safety
@@ -68,25 +68,25 @@
 - [x] Daybreak Combatants
 - [x] Deathcap Glade
 - [x] Demonic Bargain
-- [ ] Desperate Farmer
-- [ ] Dig Up
+- [x] Desperate Farmer
+- [x] Dig Up
 - [x] Diregraf Scavenger
 - [ ] Distracting Geist
-- [ ] Diver Skaab
+- [x] Diver Skaab
 - [ ] Dollhouse of Horrors
 - [x] Dominating Vampire
 - [x] Doomed Dissenter
 - [ ] Dormant Grove
 - [ ] Dorothea, Vengeful Victim
-- [ ] Dread Fugue
+- [x] Dread Fugue
 - [x] Dreadfeast Demon
 - [x] Dreadlight Monstrosity
 - [x] Dreamroot Cascade
 - [ ] Dreamshackle Geist
 - [ ] Drogskol Infantry
 - [ ] Dying to Serve
-- [ ] Edgar's Awakening
-- [ ] Edgar, Charmed Groom
+- [x] Edgar's Awakening
+- [x] Edgar, Charmed Groom
 - [x] End the Festivities
 - [ ] Eruth, Tormented Prophet
 - [x] Estwald Shieldbasher
@@ -95,9 +95,9 @@
 - [x] Falkenrath Celebrants
 - [x] Falkenrath Forebear
 - [x] Fear of Death
-- [ ] Fearful Villager
-- [ ] Fell Stinger
-- [ ] Fierce Retribution
+- [x] Fearful Villager
+- [x] Fell Stinger
+- [x] Fierce Retribution
 - [x] Flame-Blessed Bolt
 - [x] Fleeting Spirit
 - [x] Flourishing Hunter
@@ -109,35 +109,35 @@
 - [x] Gift of Fangs
 - [x] Glorious Sunrise
 - [x] Gluttonous Guest
-- [ ] Graf Reaver
+- [x] Graf Reaver
 - [x] Grisly Ritual
 - [ ] Grolnok, the Omnivore
 - [x] Groom's Finery
-- [ ] Gryff Rider
+- [x] Gryff Rider
 - [x] Gryffwing Cavalry
 - [ ] Gutter Skulker
 - [x] Halana and Alena, Partners
-- [ ] Hallowed Haunting
+- [x] Hallowed Haunting
 - [ ] Hamlet Vanguard
 - [x] Headless Rider
-- [ ] Henrika Domnathi
+- [x] Henrika Domnathi
 - [x] Hero's Downfall
 - [ ] Heron of Hope
 - [x] Heron-Blessed Geist
 - [x] Hiveheart Shaman
-- [ ] Honeymoon Hearse
+- [x] Honeymoon Hearse
 - [x] Honored Heirloom
-- [ ] Hookhand Mariner
+- [x] Hookhand Mariner
 - [x] Hopeful Initiate
-- [ ] Howling Moon
-- [ ] Howlpack Piper
+- [x] Howling Moon
+- [x] Howlpack Piper
 - [x] Hullbreaker Horror
 - [x] Hungry Ridgewolf
-- [ ] Ill-Tempered Loner
-- [ ] Infestation Expert
+- [x] Ill-Tempered Loner
+- [x] Infestation Expert
 - [ ] Innocent Traveler
 - [x] Inspired Idea
-- [ ] Into the Night
+- [x] Into the Night
 - [ ] Investigator's Journal
 - [x] Island
 - [ ] Jacob Hauken, Inspector
@@ -148,12 +148,12 @@
 - [ ] Kindly Ancestor
 - [x] Lacerate Flesh
 - [x] Laid to Rest
-- [ ] Lambholt Raconteur
-- [ ] Lantern Bearer
+- [x] Lambholt Raconteur
+- [x] Lantern Bearer
 - [x] Lantern Flare
 - [x] Lantern of the Lost
 - [x] Lightning Wolf
-- [ ] Lunar Rejection
+- [x] Lunar Rejection
 - [ ] Magma Pummeler
 - [ ] Manaform Hellkite
 - [x] Markov Purifier
@@ -161,7 +161,7 @@
 - [x] Markov Waltzer
 - [x] Massive Might
 - [x] Militia Rallier
-- [ ] Mindleech Ghoul
+- [x] Mindleech Ghoul
 - [ ] Mirrorhall Mimic
 - [ ] Mischievous Catgeist
 - [x] Moldgraf Millipede
@@ -171,19 +171,20 @@
 - [x] Nebelgast Beguiler
 - [x] Necroduality
 - [x] Nurturing Presence
-- [ ] Oakshade Stalker
+- [x] Oakshade Stalker
 - [ ] Odric, Blood-Cursed
 - [x] Old Rutstein
 - [ ] Olivia's Attendants
 - [ ] Olivia, Crimson Bride
 - [x] Ollenbock Escort
-- [ ] Overcharged Amalgam
+- [x] Overcharged Amalgam
 - [x] Packsong Pup
-- [ ] Panicked Bystander
-- [ ] Parasitic Grasp
+- [x] Panicked Bystander
+- [x] Panicked Bystander
+- [x] Parasitic Grasp
 - [x] Parish-Blade Trainee
 - [ ] Patchwork Crawler
-- [ ] Path of Peril
+- [x] Path of Peril
 - [x] Persistent Specimen
 - [x] Piercing Light
 - [x] Plains
@@ -194,11 +195,11 @@
 - [x] Reckless Impulse
 - [x] Reclusive Taxidermist
 - [x] Rending Flame
-- [ ] Repository Skaab
+- [x] Repository Skaab
 - [x] Resistance Squad
-- [ ] Restless Bloodseeker
+- [x] Restless Bloodseeker
 - [x] Retrieve
-- [ ] Rot-Tide Gargantua
+- [x] Rot-Tide Gargantua
 - [x] Runebound Wolf
 - [ ] Runo Stromkirk
 - [x] Rural Recruit
@@ -216,18 +217,18 @@
 - [ ] Sigarda's Summons
 - [ ] Sigardian Paladin
 - [x] Skulking Killer
-- [ ] Skull Skaab
+- [x] Skull Skaab
 - [x] Skywarp Skaab
 - [x] Snarling Wolf
 - [ ] Sorin the Mirthless
-- [ ] Soulcipher Board
+- [x] Soulcipher Board
 - [x] Spiked Ripsaw
 - [ ] Splendid Reclamation
 - [x] Spore Crawler
 - [x] Sporeback Wolf
 - [x] Steelclad Spirit
 - [x] Stensia Uprising
-- [ ] Stitched Assistant
+- [x] Stitched Assistant
 - [x] Stormcarved Coast
 - [ ] Stormchaser Drake
 - [x] Sundown Pass
@@ -238,12 +239,12 @@
 - [x] Syphon Essence
 - [x] Thalia, Guardian of Thraben
 - [x] Thirst for Discovery
-- [ ] Torens, Fist of the Angels
+- [x] Torens, Fist of the Angels
 - [x] Toxic Scorpion
 - [ ] Toxrill, the Corrosive
 - [x] Traveling Minister
-- [ ] Twinblade Geist
-- [ ] Ulvenwald Oddity
+- [x] Twinblade Geist
+- [x] Ulvenwald Oddity
 - [x] Undead Butler
 - [x] Undying Malice
 - [x] Unhallowed Phalanx
@@ -254,24 +255,24 @@
 - [x] Vampires' Vengeance
 - [x] Vilespawn Spider
 - [x] Voice of the Blessed
-- [ ] Volatile Arsonist
-- [ ] Voldaren Bloodcaster
+- [x] Volatile Arsonist
+- [x] Voldaren Bloodcaster
 - [x] Voldaren Epicure
 - [x] Voldaren Estate
 - [ ] Voltaic Visionary
 - [x] Wandering Mind
 - [x] Wanderlight Spirit
-- [ ] Wash Away
-- [ ] Weary Prisoner
-- [ ] Weaver of Blossoms
-- [ ] Wedding Announcement
+- [x] Wash Away
+- [x] Weary Prisoner
+- [x] Weaver of Blossoms
+- [x] Wedding Announcement
 - [x] Wedding Invitation
 - [x] Wedding Security
 - [x] Welcoming Vampire
 - [x] Whispering Wizard
-- [ ] Winged Portent
+- [x] Winged Portent
 - [x] Witch's Web
 - [ ] Witness the Future
-- [ ] Wolf Strike
-- [ ] Wolfkin Outcast
+- [x] Wolf Strike
+- [x] Wolfkin Outcast
 - [x] Wretched Throng

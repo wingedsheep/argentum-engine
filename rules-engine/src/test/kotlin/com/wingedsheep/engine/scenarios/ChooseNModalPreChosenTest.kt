@@ -2,6 +2,7 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -166,7 +167,7 @@ class ChooseNModalPreChosenTest : FunSpec({
         // resolution — easier than scheduling another spell). Use replaceState to move it to the
         // graveyard zone directly.
         val beforeResolution = d.state
-        val lionsOwner = beforeResolution.getEntity(lions)?.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()?.playerId ?: p1
+        val lionsOwner = beforeResolution.getEntity(lions)?.get<OwnerComponent>()?.playerId ?: p1
         val battlefieldZoneKey = com.wingedsheep.engine.state.ZoneKey(p1, com.wingedsheep.sdk.core.Zone.BATTLEFIELD)
         val graveyardZoneKey = com.wingedsheep.engine.state.ZoneKey(lionsOwner, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
         val relocated = beforeResolution

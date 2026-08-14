@@ -2,6 +2,7 @@ package com.wingedsheep.ai.draftsim
 
 import com.wingedsheep.ai.llm.CardSummary
 import com.wingedsheep.mtg.sets.MtgSetCatalog
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.doubles.shouldBeGreaterThan
@@ -12,8 +13,8 @@ import io.kotest.matchers.shouldNotBe
 /**
  * Stage 1 of the Draftsim port: name-key normalization, the data loaders (ratings/removal/
  * archetypes), and the card adapter. The load-bearing risk is the **join** — our card names must
- * normalize to the same keys the vendored tables use — so this drives the real LTR card DB through
- * the loaders and asserts a high resolve rate, then pins the split/DFC normalization hazards.
+ * normalize to the same keys the vendored tables use — so this drives our real card DB through the
+ * loaders and asserts a high resolve rate, then pins the split/DFC normalization hazards.
  */
 class DraftsimDataTest : FunSpec({
 
@@ -48,6 +49,24 @@ class DraftsimDataTest : FunSpec({
         tmt.archetypes.isEmpty() shouldBe false
         // Every record's tags carry a role.
         tmt.archetypes.values.first().archetypes.first().role.isNotBlank() shouldBe true
+        // The Splashable column is read, and a row carrying nothing *but* that flag still lands —
+        // both were silently dropped while the importer ignored the column.
+        tmt.archetypes.values.count { it.splashable } shouldBeGreaterThan 0
+        tmt.archetypes[DraftsimData.nameKey("The Last Ronin")] shouldNotBe null
+    }
+
+    test("MSH loads ratings, removal and archetypes") {
+        val msh = DraftsimData.tablesFor(listOf("MSH"))
+
+        msh.ratings.size shouldBeGreaterThan 300
+        msh.ratings[DraftsimData.nameKey("Agent 13, Sharon Carter")] shouldNotBe null
+        msh.removal.contains("beast within") shouldBe true
+        // MSH ships archetype columns, so the scorer takes the jm path rather than color-bias.
+        msh.archetypes.isEmpty() shouldBe false
+        val teamwork = msh.archetypes.values.flatMap { it.archetypes }.map { it.archetype }
+        teamwork.contains("Teamwork") shouldBe true
+        // MSH marks Splashable with "X" where TMT/SOS write "yes" — the importer reads both.
+        msh.archetypes[DraftsimData.nameKey("Thanos, the Mad Titan")]?.splashable shouldBe true
     }
 
     test("a set we have no file for yields empty tables (rarity-fallback path)") {
@@ -66,17 +85,20 @@ class DraftsimDataTest : FunSpec({
 
     // ----- the join against our real card DB -----
 
-    test("most LTR cards in our registry resolve a Draftsim rating (name join works)") {
-        val ltrSet = MtgSetCatalog.all.first { it.code == "LTR" }
-        val ratings = DraftsimData.tablesFor(listOf("LTR")).ratings
+    // The vendored tables cover each whole set, so our implemented subset should land almost
+    // entirely in them. A low rate would mean the normalization is misaligned.
+    listOf("LTR", "MSH", "HOB").forEach { code ->
+        test("most $code cards in our registry resolve a Draftsim rating (name join works)") {
+            val set = MtgSetCatalog.all.first { it.code == code }
+            val ratings = DraftsimData.tablesFor(listOf(code)).ratings
 
-        val spells = ltrSet.cards.filterNot { it.typeLine.isBasicLand }
-        val resolved = spells.count { ratings.containsKey(DraftsimData.nameKey(it.name)) }
+            val spells = set.cards.filterNot { it.typeLine.isBasicLand }
+            val resolved = spells.count { ratings.containsKey(DraftsimData.nameKey(it.name)) }
 
-        // The tables are Scryfall-derived for the whole set; our implemented subset should land
-        // almost entirely in them. A low rate would mean the normalization is misaligned.
-        val rate = resolved.toDouble() / spells.size
-        withClue(spells, resolved) { rate shouldBeGreaterThan 0.9 }
+            withClue("resolved $resolved / ${spells.size} $code spells") {
+                (resolved.toDouble() / spells.size) shouldBeGreaterThan 0.9
+            }
+        }
     }
 
     // ----- the adapter -----
@@ -106,6 +128,3 @@ class DraftsimDataTest : FunSpec({
         DraftsimMana.colorsInCost(card.manaCost) shouldBe listOf("R")
     }
 })
-
-private fun withClue(spells: List<*>, resolved: Int, assertion: () -> Unit) =
-    io.kotest.assertions.withClue("resolved $resolved / ${spells.size} LTR spells") { assertion() }

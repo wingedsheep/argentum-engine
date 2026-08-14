@@ -21,3 +21,31 @@ internal fun paymentSubtypesOf(cardComponent: CardComponent): Set<String> {
         printed
     }
 }
+
+/**
+ * The mana-spending context for casting the spell described by [cardComponent] — the shape every
+ * cast path (enumeration, validation, payment) needs so conditional mana ("spend this mana only
+ * to …") is judged against the same characteristics.
+ *
+ * [SpellPaymentContext.manaValue] is the card's *printed* mana value: cost reductions and
+ * alternative payments like convoke pay part of a cost, they never change the spell's mana value
+ * (CR 202.3), so a {3}{R}{R} spell convoked down to one real mana is still MV 5 for
+ * [com.wingedsheep.sdk.scripting.effects.ManaRestriction.SpellsWithManaValueAtLeast] (Ashling, Rimebound).
+ */
+internal fun spellPaymentContextFor(
+    cardComponent: CardComponent,
+    isKicked: Boolean = false,
+    isFromExile: Boolean = false,
+    isFromHand: Boolean = true
+): SpellPaymentContext = SpellPaymentContext(
+    isInstantOrSorcery = cardComponent.typeLine.isInstant || cardComponent.typeLine.isSorcery,
+    isKicked = isKicked,
+    isCreature = cardComponent.typeLine.isCreature,
+    isLegendary = cardComponent.typeLine.isLegendary,
+    manaValue = cardComponent.manaCost.cmc,
+    hasXInCost = cardComponent.manaCost.hasX,
+    subtypes = paymentSubtypesOf(cardComponent),
+    isFromExile = isFromExile,
+    isFromHand = isFromHand,
+    cardTypes = cardComponent.typeLine.cardTypes,
+)

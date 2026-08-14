@@ -127,6 +127,18 @@ class CommanderZoneChoiceCheckTest : FunSpec({
         result.isPaused shouldBe false
     }
 
+    test("Team vs Team prompts when Commander rules are enabled") {
+        val format = Format.TeamVsTeam(
+            startingLife = 40,
+            commanderDamageThreshold = 21,
+            deckSize = 100,
+        )
+        val result = check.check(stateWithCommanderIn(Zone.GRAVEYARD, format))
+
+        result.isPaused shouldBe true
+        result.pendingDecision.shouldBeInstanceOf<YesNoDecision>()
+    }
+
     test("prompt text names both the commander and the source zone") {
         val state = stateWithCommanderIn(Zone.EXILE)
         val result = check.check(state)

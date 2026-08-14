@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.effects
 
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
@@ -353,7 +354,14 @@ data class MoveToZoneEffect(
      * 0 = top, 1 = second from top, 2 = third from top, etc.
      * Takes precedence over [placement] when destination is LIBRARY.
      */
-    val positionFromTop: Int? = null
+    val positionFromTop: Int? = null,
+    /**
+     * When non-null, one counter of this type is put on the card after it lands in its destination
+     * zone — "exile it with a stash counter on it" (Tinybones, Bauble Burglar), "with a dream
+     * counter on it" (Goliath Daydreamer). The single-target counterpart of
+     * [MoveCollectionEffect.addCounterType]; skipped along with the move when [fromZone] gates it out.
+     */
+    val addCounterType: CounterType? = null
 ) : Effect {
     override val description: String = buildString {
         when {
@@ -589,4 +597,27 @@ data class WarpExileEffect(
     val enteredBattlefieldTimestamp: Long? = null
 ) : Effect {
     override val description: String = "Exile ${target.description} (warp)"
+}
+
+/**
+ * Move one specifically tracked battlefield object to a zone.
+ *
+ * The optional [enteredBattlefieldTimestamp] identifies the object represented by [target], not
+ * merely its entity ID. At resolution, the move is skipped unless the target is still on the
+ * battlefield with that same entry timestamp. This is the reusable delayed-movement primitive for
+ * effects such as dash's return-to-hand clause: a permanent that left and returned is a new object
+ * and must not be moved by the old delayed trigger (CR 603.7c / 400.7).
+ *
+ * When nested in [CreateDelayedTriggerEffect], the delayed-trigger executor resolves [target] and
+ * snapshots its entry timestamp when the trigger is created.
+ */
+@SerialName("MoveTrackedBattlefieldObject")
+@Serializable
+data class MoveTrackedBattlefieldObjectEffect(
+    val target: EffectTarget,
+    val destination: Zone,
+    val enteredBattlefieldTimestamp: Long? = null
+) : Effect {
+    override val description: String =
+        "Move ${target.description} to its owner's ${destination.displayName}"
 }

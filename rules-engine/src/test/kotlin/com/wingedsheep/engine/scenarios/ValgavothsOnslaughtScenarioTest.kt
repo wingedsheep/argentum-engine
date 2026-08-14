@@ -3,7 +3,8 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.ManifestedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -68,7 +69,7 @@ class ValgavothsOnslaughtScenarioTest : FunSpec({
         for (creature in listOf(c1, c2)) {
             val entity = d.state.getEntity(creature)
             entity?.get<FaceDownComponent>() shouldBe FaceDownComponent
-            entity?.get<ManifestedComponent>() shouldBe ManifestedComponent
+            entity?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
             // base 2/2 + two +1/+1 counters = 4/4 (the counters landed on *each* manifested creature).
             d.state.projectedState.getPower(creature) shouldBe 4
             d.state.projectedState.getToughness(creature) shouldBe 4

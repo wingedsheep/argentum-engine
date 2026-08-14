@@ -48,8 +48,8 @@ class ImprisonedInTheMoonScenarioTest : FunSpec({
         val player = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        // Ragavan, Nimble Pilferer: legendary 2/1 red Monkey Pirate with Haste + a mana ability.
-        val ragavan = driver.putCreatureOnBattlefield(player, "Ragavan, Nimble Pilferer")
+        // Test Hasty Prospector: legendary 2/1 red Monkey Pirate with Haste + a mana ability.
+        val ragavan = driver.putCreatureOnBattlefield(player, "Test Hasty Prospector")
         val aura = driver.putCardInHand(player, "Imprisoned in the Moon")
         driver.giveMana(player, Color.BLUE, 3)
         driver.castSpell(player, aura, listOf(ragavan))
@@ -86,7 +86,7 @@ class ImprisonedInTheMoonScenarioTest : FunSpec({
         val player = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        val ragavan = driver.putCreatureOnBattlefield(player, "Ragavan, Nimble Pilferer")
+        val ragavan = driver.putCreatureOnBattlefield(player, "Test Hasty Prospector")
         val aura = driver.putCardInHand(player, "Imprisoned in the Moon")
         driver.giveMana(player, Color.BLUE, 3)
         driver.castSpell(player, aura, listOf(ragavan))
@@ -147,7 +147,7 @@ class ImprisonedInTheMoonScenarioTest : FunSpec({
         val player = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        val ragavan = driver.putCreatureOnBattlefield(player, "Ragavan, Nimble Pilferer")
+        val ragavan = driver.putCreatureOnBattlefield(player, "Test Hasty Prospector")
         val aura = driver.putCardInHand(player, "Imprisoned in the Moon")
         driver.giveMana(player, Color.BLUE, 3)
         driver.castSpell(player, aura, listOf(ragavan))

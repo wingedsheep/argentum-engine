@@ -14,6 +14,14 @@ import kotlin.reflect.KClass
 /**
  * Executor for RemoveKeywordEffect.
  * "All other creatures lose flying until end of turn."
+ *
+ * Mirrors [com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantKeywordExecutor]'s
+ * target requirement: any battlefield permanent, not specifically a creature. Removal is meaningful
+ * on a noncreature permanent — Spectacular Pileup's "All creatures **and Vehicles** lose
+ * indestructible until end of turn" has to strip the keyword from an *uncrewed* Vehicle, which is
+ * an artifact and not a creature at that moment. A creature-only guard here silently exempted
+ * exactly the permanents such a card names. Removing a keyword the permanent doesn't have is a
+ * harmless no-op in projection, so the permissive guard costs nothing.
  */
 class RemoveKeywordExecutor : EffectExecutor<RemoveKeywordEffect> {
 
@@ -24,16 +32,17 @@ class RemoveKeywordExecutor : EffectExecutor<RemoveKeywordEffect> {
         effect: RemoveKeywordEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target)
+        // The two-arg overload is required: the one-arg form can't resolve attachment-relative
+        // targets (EffectTarget.AttachedTo and friends).
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "No valid target for keyword removal")
 
         val targetContainer = state.getEntity(targetId)
-            ?: return EffectResult.error(state, "Target creature no longer exists")
-        val cardComponent = targetContainer.get<CardComponent>()
+            ?: return EffectResult.error(state, "Target permanent no longer exists")
+        targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
-        val projected = state.projectedState
-        if (!projected.isCreature(targetId)) {
-            return EffectResult.error(state, "Target is not a creature")
+        if (targetId !in state.getBattlefield()) {
+            return EffectResult.error(state, "Target is no longer on the battlefield")
         }
 
         val newState = state.addFloatingEffect(

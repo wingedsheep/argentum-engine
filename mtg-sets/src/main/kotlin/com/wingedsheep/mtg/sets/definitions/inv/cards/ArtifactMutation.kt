@@ -45,8 +45,7 @@ val ArtifactMutation = card("Artifact Mutation") {
             power = 1,
             toughness = 1,
             colors = setOf(Color.GREEN),
-            creatureTypes = setOf("Saproling"),
-            imageUri = "/images/tokens/inv-saproling.jpeg"
+            creatureTypes = setOf("Saproling")
         )
     }
 

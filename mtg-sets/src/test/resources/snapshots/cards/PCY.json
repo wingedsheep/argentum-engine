@@ -864,7 +864,7 @@
             "space": {
                 "type": "IterationSpace.Group",
                 "filter": {
-                    "baseFilter": "creature ctrl:you"
+                    "baseFilter": "creature ctrl:opponent"
                 },
                 "noRegenerate": true
             },

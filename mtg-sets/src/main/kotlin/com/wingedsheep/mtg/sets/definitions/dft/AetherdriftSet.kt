@@ -16,10 +16,13 @@ object AetherdriftSet : MtgSet {
     override val code = "DFT"
     override val displayName = "Aetherdrift"
     override val releaseDate = "2025-02-14"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
+    }
+
+    override val basicLands: List<CardDefinition> by lazy {
+        CardDiscovery.findBasicLandsIn(CARDS_PACKAGE, code)
     }
 
     override val printings: List<Printing> by lazy {

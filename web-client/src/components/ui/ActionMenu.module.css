@@ -161,6 +161,47 @@
   font-size: 13px;
 }
 
+/* Label + optional hint line, stacked. */
+.actionButtonLabelStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+/* Why the cost on the right moves — e.g. emerge's sacrifice (CR 702.119a). */
+.actionButtonHint {
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--text-muted);
+}
+
+/* "printed cost → as low as reduced cost" for casts whose own choices reduce the cost. */
+.actionButtonCostReduction {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.actionButtonCostBefore {
+  display: inline-flex;
+  opacity: 0.45;
+}
+
+.actionButtonCostArrow {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.actionButtonCostNote {
+  color: var(--text-muted);
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
 /* Action type gradients */
 .actionCast {
   background: var(--gradient-primary);

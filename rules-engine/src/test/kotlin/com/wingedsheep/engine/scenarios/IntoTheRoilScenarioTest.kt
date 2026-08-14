@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -46,7 +47,7 @@ class IntoTheRoilScenarioTest : FunSpec({
                 playerId = you,
                 cardId = roil,
                 targets = listOf(ChosenTarget.Permanent(creature)),
-                wasKicked = false,
+                declaredCostSlot = null,
                 paymentStrategy = PaymentStrategy.AutoPay
             )
         ).isSuccess shouldBe true
@@ -73,7 +74,7 @@ class IntoTheRoilScenarioTest : FunSpec({
                 playerId = you,
                 cardId = roil,
                 targets = listOf(ChosenTarget.Permanent(creature)),
-                wasKicked = true,
+                declaredCostSlot = ChoiceSlot.KICKED,
                 paymentStrategy = PaymentStrategy.AutoPay
             )
         ).isSuccess shouldBe true

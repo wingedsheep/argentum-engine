@@ -1,12 +1,14 @@
 package com.wingedsheep.engine.state.components.stack
 
 import com.wingedsheep.engine.state.Component
+import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.SerialName
@@ -20,9 +22,41 @@ import com.wingedsheep.sdk.dsl.sneak
 data class SpellOnStackComponent(
     val casterId: EntityId,
     val xValue: Int? = null,  // For X spells
-    val wasKicked: Boolean = false,  // For kicker costs
+    /**
+     * Which optional-additional-cost mechanic this spell was cast with (kicker/multikicker/
+     * offspring → [ChoiceSlot.KICKED], bargain → [ChoiceSlot.BARGAINED]), or null when none was
+     * declared. Carried onto the resolving permanent's cast-choices bag by `StackResolver`.
+     */
+    val declaredCostSlot: ChoiceSlot? = null,
     val wasBlightPaid: Boolean = false,  // For BlightOrPay additional cost — true if blight path was taken
     val wasWaterbendPaid: Boolean = false,  // For optional spell waterbend additional cost (Avatar) — true if "you may waterbend {N}" was paid; readable via WaterbendWasPaid
+    /**
+     * The opponent promised this spell's gift additional cost (CR 702.174a), or null when the gift
+     * wasn't promised. A resolving permanent carries the fact onward in its cast-choices bag
+     * (ChoiceSlot.GIFT_PROMISED + ChoiceSlot.OPPONENT) so its gift trigger and
+     * "if the gift was(n't) promised" riders can read it — see StackResolver.
+     */
+    val giftRecipient: EntityId? = null,
+    /**
+     * Card-definition names of the cards revealed from hand and **spliced** onto this spell
+     * (CR 702.47a), in the order their text was added. Each one's `spellEffect` is executed after the
+     * main spell's own effects when the spell resolves (CR 702.47b), with its own target slice from
+     * [splicedTargetsOrdered].
+     *
+     * Names rather than entity ids: the spliced card never leaves hand, so what the spell gained is
+     * its *text*, not a reference to the object — and the spell must keep resolving that text even if
+     * the card is later discarded or exiled. The spliced text lives here, on the stack object, which
+     * is exactly why "the spell loses any splice changes once it leaves the stack" (CR 702.47e) needs
+     * no cleanup code.
+     */
+    val splicedCardNames: List<String> = emptyList(),
+    /**
+     * Targets chosen for each spliced card's own text (CR 702.47d), aligned 1:1 with
+     * [splicedCardNames]. Sliced out of the flat cast-time target list, whose requirements are the
+     * main spell's followed by each spliced card's — so the main spell's effects still see only their
+     * own targets and a spliced card's `ContextTarget(0)` means its own first target.
+     */
+    val splicedTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
     val chosenModes: List<Int> = emptyList(),  // For modal spells (700.2). Ordered; same index may repeat when allowRepeat.
     val modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),  // Per-mode chosen targets, aligned 1:1 with chosenModes
     val modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap(),  // Per-mode TargetRequirements for 608.2b re-validation at resolution
@@ -36,7 +70,17 @@ data class SpellOnStackComponent(
     val additionalCostBlightAmount: Int = 0,  // For variable blight additional costs (e.g., Soul Immolation)
     val additionalCostPayXLifeAmount: Int? = null,  // For pay-X-life additional costs (e.g., Vicious Rivalry); non-null (incl. 0) marks the spell and is coalesced into xValue at resolution
     val castFromZone: Zone? = null,  // Zone the spell was cast from (e.g., HAND for normal casting)
+    /**
+     * Which alternative casting cost paid for this spell (CR 118.9), or null for a normal cast.
+     * The individual `was*` flags below drive *rules* behaviour (warp exiles, evoke sacrifices,
+     * cleave swaps the effect); this records the player's declared choice as such so the client
+     * view can say how the spell was cast without a flag per mechanic — see
+     * [com.wingedsheep.engine.view.CastProvenance]. Disturb, flashback, harmonize, emerge and
+     * miracle have no `was*` flag at all, which is exactly why the stack could not describe them.
+     */
+    val alternativeCost: com.wingedsheep.engine.core.AlternativeCostType? = null,
     val wasWarped: Boolean = false,  // For warp - permanent is exiled at end step
+    val wasDashed: Boolean = false,  // For dash (CR 702.109) - permanent gains haste, returns to hand at next end step
     val wasEvoked: Boolean = false,  // For evoke - permanent is sacrificed on ETB
     val wasImpending: Boolean = false,  // For impending - permanent enters with time counters and isn't a creature until they're gone
     val wasCleaved: Boolean = false,  // For cleave (CR 702.148) - spell resolves with its brackets-removed effect/target variant
@@ -49,6 +93,17 @@ data class SpellOnStackComponent(
      * resolution, the resolver enters the creature not attacking (CR 506.3c) — no redirect.
      */
     val sneakAttackDefenderId: EntityId? = null,
+    /** For web-slinging (CR 702.188) - the web-slinging cost was paid; readable via WebSlungCostWasPaid. */
+    val wasWebSlung: Boolean = false,
+    /**
+     * For web-slinging (CR 702.188 / 118.9c): the mana value of the tapped creature returned to pay
+     * the web-slinging cost, captured before it left the battlefield. Stamped onto the resolving
+     * permanent under [com.wingedsheep.sdk.scripting.ChoiceSlot.WEB_SLUNG_RETURNED_MV] so a rider
+     * like Scarlet Spider, Ben Reilly can enter with that many +1/+1 counters. 0 when not web-slung.
+     */
+    val webSlungReturnedManaValue: Int = 0,
+    /** For mayhem (CR 702.187) — the mayhem cost was paid; readable via MayhemCostWasPaid. */
+    val wasMayhem: Boolean = false,
     val beheldCards: List<EntityId> = emptyList(),  // Cards chosen via Behold (stored in pipeline as named collection)
     /**
      * Entity ids of cards discarded to pay this spell's additional discard cost
@@ -139,6 +194,13 @@ data class TriggeredAbilityOnStackComponent(
     /** Creatures blocking/blocked by the trigger's source on leave-battlefield (CR 509 LKI, Abu Ja'far). */
     val triggerLastKnownBlockingOrBlockedByIds: List<EntityId>? = null,
     val targetingSourceEntityId: EntityId? = null,  // The spell/ability that targeted this permanent (for ward)
+    /**
+     * The host an attachment came *off*, captured when a "becomes unattached" trigger fired.
+     * Resolves [com.wingedsheep.sdk.scripting.targets.EffectTarget.AttachedToTriggeringPermanent]
+     * there, where the live link is by resolution either gone or already re-pointed at a new host
+     * (Stitcher's Graft's "sacrifice that permanent"). Null for every other trigger.
+     */
+    val triggerUnattachedFromEntityId: EntityId? = null,
     val damageDistribution: Map<EntityId, Int>? = null,  // For DividedDamageEffect - pre-chosen damage allocation
     val copyIndex: Int? = null,    // Which copy number this is (1, 2, 3...) for storm/copy effects
     val copyTotal: Int? = null,    // Total number of copies being created
@@ -160,8 +222,11 @@ data class TriggeredAbilityOnStackComponent(
      * Blunderbuss". Null for the source's own printed abilities.
      */
     val granterId: EntityId? = null,
-    /** Cards looked at by the scry that fired this trigger (CR 701.18). Null for non-scry triggers. */
+    /** Cards looked at by the scry that fired this trigger (CR 701.22). Null for non-scry triggers. */
     val triggerScryCount: Int? = null,
+    /** Cards discarded in the batch that fired this trigger (CR 603.2c). Read via
+     *  `ContextPropertyKey.TRIGGER_DISCARD_COUNT` (Magmakin Artillerist). Null for non-discard triggers. */
+    val triggerDiscardCount: Int? = null,
     /** Discover value N of the discover that fired this trigger (CR 701.57). Null for non-discover triggers. */
     val triggerDiscoverValue: Int? = null,
     /** Damage past lethal dealt to the trigger's creature recipient (CR 120.4a). Null for non-damage triggers. */
@@ -195,7 +260,14 @@ data class TriggeredAbilityOnStackComponent(
     val capturedEntityIds: List<EntityId> = emptyList(),
     /** Set when this triggered ability is a Saga chapter ability; on resolution the engine emits a
      *  SagaChapterResolvedEvent so "final chapter of a Saga resolves" triggers (Tom Bombadil) can fire. */
-    val sagaChapterInfo: com.wingedsheep.engine.event.SagaChapterInfo? = null
+    val sagaChapterInfo: com.wingedsheep.engine.event.SagaChapterInfo? = null,
+    /**
+     * Pipeline state carried from a `ReflexiveTriggerEffect`'s action half (e.g. `Amass`'s army
+     * reference, a discard's resolved count) into this synthetic reflexive ability's resolution —
+     * merged into the built `EffectContext.pipeline` since the reflexive ability builds a fresh
+     * context across the stack round-trip (CR 603.12). Null for ordinary triggered abilities.
+     */
+    val carriedPipeline: com.wingedsheep.engine.handlers.PipelineState? = null
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }
@@ -256,7 +328,14 @@ data class ActivatedAbilityOnStackComponent(
      * granter via [com.wingedsheep.sdk.scripting.targets.EffectTarget.GrantingSource] — e.g. Trusty
      * Boomerang's "Return [this Equipment] to its owner's hand". Null for non-granted abilities.
      */
-    val granterId: EntityId? = null
+    val granterId: EntityId? = null,
+    /**
+     * Division chosen at activation for a `DividedDamageEffect` ability (target -> damage), locked
+     * onto the stack object so responding removal can't make the controller re-divide (CR 601.2d).
+     * Mirrors [SpellOnStackComponent.damageDistribution]. Null for every other ability, and for a
+     * divided-damage ability whose controller left the division to resolution time.
+     */
+    val damageDistribution: Map<EntityId, Int>? = null
 ) : Component {
     val hasTargets: Boolean = false  // Will be updated based on effect
 }
@@ -278,12 +357,74 @@ data class AbilityOnStackComponent(
  * @property targets The chosen targets
  * @property targetRequirements The original target requirements, used for re-validation
  *           on resolution (Rule 608.2b — targets must still be legal when the spell/ability resolves)
+ * @property targetEntryStamps Object-identity stamps for the permanent targets (CR 400.7),
+ *           captured when the targets were chosen — see [capture].
  */
 @Serializable
 data class TargetsComponent(
     val targets: List<ChosenTarget>,
-    val targetRequirements: List<TargetRequirement> = emptyList()
-) : Component
+    val targetRequirements: List<TargetRequirement> = emptyList(),
+    val targetEntryStamps: Map<EntityId, Long> = emptyMap()
+) : Component {
+
+    companion object {
+        /**
+         * Build the component, snapshotting each permanent target's
+         * [com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent]
+         * as it is targeted.
+         *
+         * Entity ids survive zone round-trips in this engine, so "that id is still a creature on
+         * the battlefield" doesn't prove the target is still the object that was targeted: a
+         * permanent blinked in response (Personify, Cloudshift, bounce-and-recast) comes back as a
+         * *new object* (CR 400.7), and a spell or ability that targeted the old one has an illegal
+         * target — if that's its only target, it doesn't resolve (CR 608.2b). Comparing the entry
+         * stamp at resolution is what makes that visible; see [isDifferentObject].
+         *
+         * Every path that chooses or *re-*chooses targets for a stack object goes through here
+         * (putting a spell / triggered / activated ability on the stack, and the retarget
+         * executors) — a target changed by Misdirection or Grip of Chaos is stamped at the moment
+         * it becomes the new target. Copies inherit their source's stamps along with its targets.
+         */
+        fun capture(
+            state: GameState,
+            targets: List<ChosenTarget>,
+            targetRequirements: List<TargetRequirement> = emptyList()
+        ): TargetsComponent = TargetsComponent(
+            targets = targets,
+            targetRequirements = targetRequirements,
+            targetEntryStamps = targets.filterIsInstance<ChosenTarget.Permanent>()
+                .filter { it.entityId in state.getBattlefield() }
+                .associate { it.entityId to entryStamp(state, it.entityId) }
+        )
+
+        /**
+         * True when [entityId] is no longer the object that was targeted — it left the battlefield
+         * and returned between targeting and now (CR 400.7). Ids with no captured stamp (targets
+         * chosen off the battlefield, or a stack object built before the stamps existed) are
+         * treated as unchanged.
+         */
+        fun isDifferentObject(
+            state: GameState,
+            entityId: EntityId,
+            capturedStamps: Map<EntityId, Long>
+        ): Boolean {
+            val captured = capturedStamps[entityId] ?: return false
+            return entryStamp(state, entityId) != captured
+        }
+
+        /**
+         * The permanent's battlefield-entry stamp, or 0 for a permanent that never got one —
+         * boards assembled directly (test fixtures) rather than through a real ETB. Capture and
+         * comparison read it the same way, so an unstamped permanent still registers as a new
+         * object once it re-enters for real.
+         */
+        private fun entryStamp(state: GameState, entityId: EntityId): Long =
+            state.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()
+                ?.timestamp
+                ?: 0L
+    }
+}
 
 /**
  * Represents a chosen target for a spell or ability.

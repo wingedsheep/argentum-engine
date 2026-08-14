@@ -2,10 +2,8 @@ package com.wingedsheep.mtg.sets.definitions.eoe.cards
 
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.DynamicAmounts
-import com.wingedsheep.sdk.scripting.GrantWard
-import com.wingedsheep.sdk.scripting.effects.WardCost
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 
@@ -25,8 +23,10 @@ val HarmoniousGrovestrider = card("Harmonious Grovestrider") {
     )
     oracleText = "Ward {2} (Whenever this creature becomes the target of a spell or ability an opponent controls, counter it unless that player pays {2}.)\nHarmonious Grovestrider's power and toughness are each equal to the number of lands you control."
 
-    // Ward ability
-    staticAbility { ability = GrantWard(WardCost.Mana("{2}")) }
+    // Intrinsic ward {2} — a printed keyword ability on this creature, not a grant to an
+    // attached permanent (GrantWard's default filter is Scope.AttachedTo, which matches
+    // nothing on a creature that isn't an Aura/Equipment).
+    keywordAbility(KeywordAbility.ward("{2}"))
 
     metadata {
         rarity = Rarity.UNCOMMON

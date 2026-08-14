@@ -18,7 +18,9 @@ import kotlinx.serialization.Serializable
  *
  * The resumer (see `LeylineContinuationResumer`) handles two outcomes:
  *  - **yes**: route the card through the standard zone-change pipeline (hand → battlefield
- *    under owner's control) so any ETB replacement effects and trackers fire normally.
+ *    under owner's control) so any ETB replacement effects and trackers fire normally, then
+ *    pause for the card's own "as this enters, choose …" replacement if it has one (a Leyline
+ *    of Transformation started from the opening hand still chooses its creature type).
  *  - **no**: leave the card in hand; just drop it from the pending list.
  * After applying the outcome it either pauses with the next leyline prompt or hands the
  * state back to `SubmitDecisionHandler`, which advances the game from UNTAP into the first
@@ -34,4 +36,21 @@ data class LeylineDecisionContinuation(
     val playerId: EntityId,
     val leylineCardId: EntityId,
     val cardName: String
+) : ContinuationFrame
+
+/**
+ * Resume the opening-hand leyline walk after something *else* paused in the middle of it.
+ *
+ * Only one thing does: a leyline that answers "yes" and then has its own "as this enters,
+ * choose …" replacement (Leyline of Transformation's creature type). That choice pauses with an
+ * [EntersWithChoiceOnBattlefieldContinuation] of its own, so the walk over the remaining leylines
+ * has to be parked underneath it. This frame is that park: it carries no decision of its own and
+ * is auto-resumed (see `LeylineContinuationResumer`) once the choice above it finishes, asking the
+ * next player's yes/no or handing the state back for the advance into turn 1.
+ *
+ * @property decisionId Synthetic — this frame is never matched against a player response.
+ */
+@Serializable
+data class LeylinePhaseContinuation(
+    override val decisionId: String
 ) : ContinuationFrame

@@ -80,12 +80,13 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
             val cardId = hand.first()
             val isCreature = state.getEntity(cardId)?.get<CardComponent>()?.isCreature == true
 
-            val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-            var newState = state.removeFromZone(handZone, cardId)
-            newState = newState.addToZone(graveyardZone, cardId)
-
-            val cardName = state.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
-            val events = listOf(com.wingedsheep.engine.core.CardsDiscardedEvent(playerId, listOf(cardId), listOf(cardName)))
+            // Shared discard path so a card-intrinsic discard replacement (madness, CR 702.35a)
+            // applies. `isCreature` is read above, off the pre-move state, because the card may not
+            // land in the graveyard at all.
+            val discardResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                .discardCards(state, playerId, listOf(cardId), causedByControllerId = context.controllerId)
+            val newState = discardResult.state
+            val events = discardResult.events
             val newDiscardedCreature = discardedCreature + (playerId to isCreature)
 
             val nextIndex = currentPlayerIndex + 1
@@ -197,7 +198,7 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
                             com.wingedsheep.engine.core.LifeChangeReason.LIFE_LOSS
                         )
                     )
-                    currentState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(currentState, playerId)
+                    currentState = com.wingedsheep.engine.handlers.effects.DamageUtils.markLifeLostThisTurn(currentState, playerId, currentLife - newLife)
                 }
             }
 

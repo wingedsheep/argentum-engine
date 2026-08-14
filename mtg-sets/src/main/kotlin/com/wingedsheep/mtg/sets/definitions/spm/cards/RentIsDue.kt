@@ -19,10 +19,10 @@ val RentIsDue = card("Rent Is Due") {
     manaCost = "{W}"
     colorIdentity = "W"
     typeLine = "Enchantment"
-    oracleText = "At the beginning of your upkeep, tap two untapped creatures and/or Treasures you control. If you do, draw a card. Otherwise, sacrifice Rent Is Due."
+    oracleText = "At the beginning of your end step, you may tap two untapped creatures and/or Treasures you control. If you do, draw a card. Otherwise, sacrifice this enchantment."
 
     triggeredAbility {
-        trigger = Triggers.YourUpkeep
+        trigger = Triggers.YourEndStep
         val tapCost = Effects.Composite(listOf(
             GatherCardsEffect(
                 source = CardSource.ControlledPermanents(
@@ -44,7 +44,7 @@ val RentIsDue = card("Rent Is Due") {
             cost = tapCost,
             ifPaid = Effects.DrawCards(1),
             ifNotPaid = SacrificeSelfEffect,
-            descriptionOverride = "Tap two untapped creatures and/or Treasures you control. If you do, draw a card. Otherwise, sacrifice Rent Is Due."
+            descriptionOverride = "You may tap two untapped creatures and/or Treasures you control. If you do, draw a card. Otherwise, sacrifice this enchantment."
         )
     }
 
@@ -52,6 +52,7 @@ val RentIsDue = card("Rent Is Due") {
         rarity = Rarity.RARE
         collectorNumber = "11"
         artist = "Gal Or"
+        flavorText = "\"You're a month late again, Parker! Give me my money or you're out on the street!\""
         imageUri = "https://cards.scryfall.io/normal/front/b/3/b3f8d221-081f-49f5-a501-07e5eb21a840.jpg?1757376808"
     }
 }

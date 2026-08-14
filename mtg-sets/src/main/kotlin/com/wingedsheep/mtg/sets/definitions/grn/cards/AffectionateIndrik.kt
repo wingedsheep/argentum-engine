@@ -30,7 +30,10 @@ val AffectionateIndrik = card("Affectionate Indrik") {
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
         optional = true
-        val t = target("target", TargetCreature(filter = TargetFilter.Creature.youControl()))
+        val t = target(
+            "target creature you don't control",
+            TargetCreature(filter = TargetFilter.CreatureOpponentControls),
+        )
         effect = Effects.Fight(EffectTarget.Self, t)
     }
     metadata {

@@ -70,6 +70,14 @@ data class ClientGameState(
     val voidActive: Boolean = false,
 
     /**
+     * The game's day/night designation (Innistrad, CR 731), or `null` while it's neither — the state
+     * the game starts in and never returns to once a designation is gained. Public information (like
+     * the turn number), so it's never masked. Drives the day/night indicator and any daybound/nightbound
+     * transform cues.
+     */
+    val dayNight: com.wingedsheep.sdk.core.DayNight? = null,
+
+    /**
      * If non-null, the affected player whose turn the viewing player is currently
      * driving (Mindslaver-style hijack). Drives UI cues such as the controller banner
      * and promoting the affected player's hand to face-up.
@@ -248,6 +256,9 @@ data class ClientCard(
     val hasSummoningSickness: Boolean,
     val isTransformed: Boolean,
 
+    /** Exerted (CR 701.43a) — won't untap during its controller's next untap step. */
+    val isExerted: Boolean = false,
+
     /** Phased out (Rule 702.26) — treated as though it doesn't exist; rendered translucent */
     val isPhasedOut: Boolean = false,
 
@@ -259,6 +270,18 @@ data class ClientCard(
 
     /** Controller (who controls it now) */
     val controllerId: EntityId,
+
+    /**
+     * For a battle (CR 310): the player designated as its protector (CR 310.8) — the player who
+     * defends it, may never attack it, and is the only one who may block creatures attacking it.
+     * Deliberately separate from [controllerId], which for a Siege is usually its protector's
+     * opponent. Null on every non-battle permanent, and on a battle whose protector has not been
+     * designated yet (the CR 704.5w state-based action closes that gap).
+     *
+     * The battle's defense needs no field of its own: it *is* the defense-counter count
+     * (CR 310.4c), which the client already receives in [counters].
+     */
+    val protectorId: EntityId? = null,
 
     /** Owner (who started with it in their deck) */
     val ownerId: EntityId,
@@ -281,6 +304,13 @@ data class ClientCard(
      */
     val isRingBearer: Boolean = false,
 
+    /**
+     * The creature this one is soulbond-paired with (CR 702.95b), or `null` when unpaired.
+     * Battlefield only, and always symmetric — if A names B then B names A — which is what lets the
+     * client draw one bond between the two slots rather than two overlapping halves.
+     */
+    val pairedWithId: EntityId? = null,
+
     /** Zone this card is currently in */
     val zone: ZoneKey?,
 
@@ -297,10 +327,12 @@ data class ClientCard(
     val isFaceDown: Boolean,
 
     /**
-     * Whether this face-down permanent is a manifested permanent (CR 701.40) rather than a morph.
-     * Public information; drives which face-down token art the client renders.
+     * Which mechanic made this permanent face down — "MORPH", "MANIFEST", "DISGUISE" or "CLOAK"
+     * (a [com.wingedsheep.sdk.scripting.effects.FaceDownMode] name). Public information per
+     * CR 708.6; drives which face-down helper-card art the client renders. Null when the
+     * permanent isn't face down, or came from a path that didn't record a mode.
      */
-    val isManifested: Boolean = false,
+    val faceDownMode: String? = null,
 
     /** Whether this permanent is suspected (CR 701.60 — has menace and can't block). Battlefield only. */
     val isSuspected: Boolean = false,
@@ -312,6 +344,13 @@ data class ClientCard(
      * stays exiled and casts a free copy of itself at the start of each of its owner's precombat main
      * phases. Surfaced so the client can show it in a dedicated, public pile. Exile only. */
     val isParadigm: Boolean = false,
+
+    /** Whether this card is actively suspended in exile (CR 702.62b — has the suspend marker and at
+     * least one time counter). Face-up and public; surfaced so the client can show it in a dedicated
+     * pile instead of it reading as a generic exiled card. False once the last time counter is
+     * removed (CR 702.62b's "suspended" requires >=1 counter), even if it lingers in exile after the
+     * owner declines the free cast. Exile only. */
+    val isSuspended: Boolean = false,
 
     /** Whether this permanent is prepared (Secrets of Strixhaven — Prepared keyword): a copy of its
      * prepare spell sits castable in its controller's exile until cast. Battlefield only. */
@@ -326,6 +365,12 @@ data class ClientCard(
      * exiled at the beginning of the next end step, after which it can be recast from exile. Drives the
      * cosmic "warped" cue on the battlefield. Battlefield only. */
     val isWarped: Boolean = false,
+
+    /** Whether this permanent was cast for its dash cost (CR 702.109, Khans of Tarkir): it has
+     * haste and will be returned to its owner's hand at the beginning of the next end step. Drives
+     * a "dashed" cue on the battlefield, distinct from Warp's (returns to hand, not exile — no
+     * later recast). Battlefield only. */
+    val isDashed: Boolean = false,
 
     /** Morph cost for face-down creatures (only visible to controller) */
     val morphCost: String? = null,
@@ -349,8 +394,39 @@ data class ClientCard(
     /** Official rulings for this card (for card details view) */
     val rulings: List<ClientRuling> = emptyList(),
 
-    /** Whether this spell was kicked (only present on stack) */
-    val wasKicked: Boolean = false,
+    /**
+     * The optional additional cost this spell declared as it was cast — "Kicked", "Bargained",
+     * "Offspring" — or null when it declared none. Only present on the stack; rendered verbatim as
+     * a badge, so the naming decision stays server-side.
+     */
+    val optionalCostLabel: String? = null,
+
+    /**
+     * How this spell was cast — "Disturb · Graveyard", "Command zone" — or null for an ordinary
+     * cast from hand. Only present on the stack; rendered verbatim as a badge, like
+     * [optionalCostLabel], so the naming decision stays server-side. Without it a graveyard cast is
+     * indistinguishable from a cast out of hand, which is most misleading for the disturb cycle:
+     * the spell wears its back face's unfamiliar name and has no printed mana cost of its own.
+     */
+    val castProvenanceLabel: String? = null,
+
+    /**
+     * What this spell's alternative cost consumed — "Sacrificed Niblis of the Urn" — or null when it
+     * consumed nothing. Only present on the stack, rendered verbatim as its own badge beneath
+     * [castProvenanceLabel]. Emerge (CR 702.119a) is why it exists: the sacrifice is what makes the
+     * spell cheap, so without it a `{7}` Eldrazi resolving off four lands is unexplainable from the
+     * other seat. Read from the sacrificed permanents' last-known names (CR 608.2h), so a token that
+     * has already ceased to exist is still named.
+     */
+    val costSacrificeLabel: String? = null,
+
+    /**
+     * The mana actually spent on this cast as a mana-cost string ("{W}{W}{W}{U}"), or null for a
+     * normal cast or one that spent nothing. Only present on the stack, and deliberately only for
+     * alternative-cost casts: those are exactly the casts whose printed cost tells the opponent
+     * nothing about what was paid. See [com.wingedsheep.engine.view.CastProvenance.paidManaCost].
+     */
+    val manaPaidCost: String? = null,
 
     /** Whether this spell promised a gift (Bloomburrow gift mechanic — only present on stack) */
     val giftPromised: Boolean = false,
@@ -388,6 +464,9 @@ data class ClientCard(
 
     /** Chosen card name for "as enters, choose a card name" permanents (e.g., Petrified Hamlet) */
     val chosenCardName: String? = null,
+
+    /** Chosen card type for "choose a card type" permanents (e.g., Arachne, Psionic Weaver) */
+    val chosenCardType: String? = null,
 
     /** Triggering entity ID for triggered abilities on the stack (for source arrows) */
     val triggeringEntityId: EntityId? = null,
@@ -428,12 +507,47 @@ data class ClientCard(
     val copyOf: String? = null,
 
     /**
-     * True when this permanent's printed card has the Legendary supertype but its current
-     * type line does not — i.e. a copy effect explicitly stripped legendariness
-     * ("except it isn't legendary" / Impostor Syndrome). Lets the UI flag the difference
-     * between an original legendary creature and a non-legendary token copy of it.
+     * True when this permanent's printed card has the Legendary supertype but it is not legendary
+     * now — i.e. a copy effect explicitly stripped legendariness ("except it isn't legendary" /
+     * Impostor Syndrome). Lets the UI flag the difference between an original legendary creature
+     * and a non-legendary token copy of it. Mutually exclusive with [legendaryByEffect]: an effect
+     * that grants the supertype back wins, because the permanent then really is legendary.
      */
     val nonLegendaryCopy: Boolean = false,
+
+    /**
+     * The mirror of [nonLegendaryCopy]: this permanent's printed card is *not* legendary but a
+     * continuous effect has granted it the Legendary supertype — Origin of Spider-Man's "it becomes
+     * a legendary Spider Hero", the Ring emblem's "your Ring-bearer is legendary" (CR 701.54c). The
+     * printed art still shows a non-legendary frame, so the UI needs the flag to tell the player the
+     * legend rule now applies. [typeLine] carries the supertype too; this is the at-a-glance cue.
+     *
+     * Deliberately narrowed to Legendary rather than a general `grantedSupertypes` set: only the
+     * legend rule changes how a permanent must be played around, so only it earns a badge. A granted
+     * Snow or World supertype reaches the client through [typeLine] alone — widen this to a set
+     * rather than adding a second boolean if one of those ever needs its own cue.
+     */
+    val legendaryByEffect: Boolean = false,
+
+    /**
+     * Subtypes this permanent has only because an effect granted them — the projected subtypes minus
+     * the printed ones (e.g. Super-Soldier Serum's "is a legendary Soldier in addition to its other
+     * types").
+     *
+     * The battlefield renders the printed card image, which can never show a granted type, and the
+     * hover preview only prints [typeLine] for tokens. Without this the grant is invisible to the
+     * player even though the rules apply it. Empty when nothing was granted, and deliberately empty
+     * for "is every creature type" effects, which would otherwise list ~150 entries.
+     */
+    val grantedSubtypes: Set<String> = emptySet(),
+
+    /**
+     * Card types this permanent has only because an effect granted them — the projected card types
+     * minus the printed ones (I Am Iron Man's "becomes an artifact creature", a manland's animation).
+     * Uppercase, matching [cardTypes]. Invisible to the player for the same reason as
+     * [grantedSubtypes]: the battlefield draws the printed image.
+     */
+    val grantedCardTypes: Set<String> = emptySet(),
 
     /** Damage distribution for DividedDamageEffect spells on the stack (target entity ID -> damage amount) */
     val damageDistribution: Map<EntityId, Int>? = null,
@@ -495,6 +609,32 @@ data class ClientCard(
      * battlefield. False for normal cards and for non-Room split layouts (Aftermath etc.).
      */
     val isRoom: Boolean = false,
+
+    /**
+     * Whether the face currently being shown is printed **landscape** — its image is a portrait
+     * file containing a card lying on its side. Drives the 90° rotation and the landscape footprint
+     * everywhere the card is drawn: battlefield, stack, and hover previews.
+     *
+     * Which cards those are is decided in exactly one place,
+     * [com.wingedsheep.sdk.model.CardDefinition.isLandscapePrint] (split layouts including Rooms,
+     * and battles) — renderers must read this flag rather than re-deriving orientation from
+     * `isRoom` / `cardFaces` / type lines, which is how battles ended up rendering sideways.
+     *
+     * Keyed to the *displayed* face, not the card: Invasion of Innistrad is landscape, but the
+     * Deluge of the Dead face it becomes is an ordinary portrait enchantment, so the same card
+     * reports true before it's defeated and false after. Read from the printed card definition
+     * rather than projected types — a type-changing effect that turns a permanent into a battle
+     * doesn't reprint its art sideways.
+     */
+    val isLandscapeFace: Boolean = false,
+
+    /**
+     * [isLandscapeFace] for the card's *other* face — what a hover preview shows when the player
+     * flips it. Needed because flipping swaps which image is on screen in both directions: peeking
+     * at a Siege's portrait back face must not rotate, and peeking at the landscape front of a
+     * permanent that has already transformed must.
+     */
+    val backFaceIsLandscape: Boolean = false,
 
     /**
      * For split-layout cards (currently Rooms): one entry per face with that face's name, mana
@@ -642,17 +782,33 @@ data class ClientPlayer(
 
     /**
      * Per-commander cumulative combat damage dealt to this player (CR 903.10a). One entry per
-     * commander that has dealt at least 1 damage. Empty outside `Format.Commander`. The client
+     * commander that has dealt at least 1 damage. Empty when the format has no commanders. The client
      * renders these as progress badges (e.g., `⚔ Atraxa 14/21`) under the life orb.
      */
-    val commanderDamage: List<ClientCommanderDamage> = emptyList()
+    val commanderDamage: List<ClientCommanderDamage> = emptyList(),
+
+    /**
+     * This player's speed, 0–4 (Aetherdrift, CR 702.179). `0` means they have no speed and the client
+     * renders no speed gauge at all; `4` is max speed.
+     *
+     * Public information — speed is a visible player designation like poison counters, so it is not
+     * masked. Defaulted so every non-Aetherdrift game serializes it away and the field costs nothing.
+     */
+    val speed: Int = 0,
+
+    /**
+     * This player's current energy counter total (Kaladesh block onward, CR 107.14). Public
+     * information like poison counters, so it is not masked. Defaulted so every non-energy game
+     * serializes it away and the field costs nothing.
+     */
+    val energyCounters: Int = 0
 )
 
 /**
  * Per-commander commander-damage tally against a single defending player. Carried inside
  * [ClientPlayer.commanderDamage].
  *
- * @property threshold Single-source loss threshold from `Format.Commander.commanderDamageThreshold`
+ * @property threshold Single-source loss threshold from `Format.commanderDamageThreshold`
  *   (21 in classic Commander, 16 in the BRAWL preset). Included per-entry so the client doesn't
  *   need to know format internals to render `amount/threshold`.
  */

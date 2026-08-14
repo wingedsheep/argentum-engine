@@ -82,6 +82,19 @@ enum class Keyword(val displayName: String) {
     AMPLIFY("Amplify"),
 
     /**
+     * Riot (CR 702.136). "This permanent enters the battlefield with your choice of a +1/+1 counter
+     * or haste." A display tag; the mechanic is composed in the DSL via
+     * [com.wingedsheep.sdk.dsl.riot], which pairs an
+     * [com.wingedsheep.sdk.scripting.EntersWithChoice] (ChoiceType.MODE, counter|haste) with a
+     * mode-gated [com.wingedsheep.sdk.scripting.EntersWithCounters] (counter branch) and a mode-gated
+     * haste grant. Unlike most composed keywords, RIOT is **grant-aware**: when a lord effect grants
+     * riot to other permanents ("Other Spiders you control have riot" — Spider-Punk), the engine
+     * synthesizes the same enters-with choice for any permanent that enters carrying the projected
+     * RIOT keyword.
+     */
+    RIOT("Riot"),
+
+    /**
      * Devour (CR 702.82). "Devour N" — "As this creature enters, you may sacrifice
      * any number of creatures. This creature enters with N times that many +1/+1
      * counters on it." Variants substitute the sacrificed permanent type: e.g.
@@ -112,6 +125,34 @@ enum class Keyword(val displayName: String) {
     DELVE("Delve"),
     AFFINITY("Affinity"),
 
+    /**
+     * Improvise (CR 702.126). "For each generic mana in this spell's total cost, you may tap an
+     * untapped artifact you control rather than pay that mana."
+     *
+     * A static ability that functions only while the spell is on the stack (CR 702.126a). It is
+     * neither an additional nor an alternative cost and applies only *after* the total cost is
+     * determined (CR 702.126b), so it can never pay a colored pip and never changes the spell's
+     * mana value; multiple instances are redundant (CR 702.126c).
+     *
+     * Mechanically it is the artifacts-only case of the shared "tap permanents, each paying {1}
+     * generic" rail — the taps travel in
+     * [com.wingedsheep.sdk.scripting.AlternativePaymentChoice.tapForGenericPermanents], exactly
+     * like a waterbend cost's taps. Grantable to other spells via
+     * [com.wingedsheep.sdk.scripting.GrantKeywordToOwnSpells] (Ironheart, Clever Champion).
+     */
+    IMPROVISE("Improvise"),
+
+    /**
+     * Emerge [cost] (CR 702.119, Eldritch Moon). "You may cast this spell by paying [cost] and
+     * sacrificing a creature rather than paying its mana cost. If you chose to pay this spell's
+     * emerge cost, its total cost is reduced by an amount of generic mana equal to the sacrificed
+     * creature's mana value."
+     *
+     * An alternative cost that bundles a sacrifice *and* a cost reduction derived from what was
+     * sacrificed. See [com.wingedsheep.sdk.scripting.KeywordAbility.Emerge].
+     */
+    EMERGE("Emerge"),
+
     // ── Spell mechanics ─────────────────────────────────────
     STORM("Storm"),
     FLASHBACK("Flashback"),
@@ -127,6 +168,49 @@ enum class Keyword(val displayName: String) {
      * pipeline. See [com.wingedsheep.sdk.scripting.KeywordAbility.Harmonize].
      */
     HARMONIZE("Harmonize"),
+
+    /**
+     * Mayhem [cost] (CR 702.187, Marvel's Spider-Man). "As long as you discarded this card
+     * this turn, you may cast it from your graveyard by paying [cost] rather than paying its
+     * mana cost." Unlike [FLASHBACK]/[HARMONIZE] the spell is NOT exiled on resolution — a
+     * permanent simply enters the battlefield and an instant/sorcery goes to the graveyard as
+     * normal. Grants no timing permission (normal timing rules still apply). Gated on the
+     * turn-scoped "you discarded this card this turn" tracker
+     * (`Conditions.YouDiscardedThisCardThisTurn`). See
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.Mayhem].
+     */
+    MAYHEM("Mayhem"),
+
+    /**
+     * Madness [cost] (CR 702.35). "If you discard this card, discard it into exile. When you do,
+     * cast it for its madness cost or put it into your graveyard."
+     *
+     * Two abilities in one keyword (CR 702.35a): a **static** ability that functions in hand and
+     * replaces the discard's destination with exile, and a **triggered** ability that fires on that
+     * exile and offers its owner a one-shot cast for [cost]. Because the cast happens while the
+     * trigger resolves, timing restrictions don't apply — a madness sorcery can be cast during an
+     * opponent's turn. Declining (or being unable to pay) puts the card into the graveyard.
+     *
+     * Unlike [MAYHEM] — the other "you discarded it" recast — madness offers the cast *once*, at
+     * the moment of the discard, and the card never touches the graveyard on the way. The engine
+     * keys the whole mechanic off [com.wingedsheep.sdk.scripting.KeywordAbility.Madness]; the
+     * triggered half is the synthesized [com.wingedsheep.sdk.scripting.Madness.castAbility].
+     */
+    MADNESS("Madness"),
+
+    /**
+     * Disturb [cost] (CR 702.146). "You may cast this card transformed from your graveyard by
+     * paying [cost] rather than its mana cost."
+     *
+     * Printed on the *front* face of a transforming double-faced card; the resulting spell has its
+     * **back** face up and only the back face's characteristics (CR 712.8c) — so its type line,
+     * targets (an Aura back face chooses what to enchant), P/T, and abilities all come from the back
+     * face, while its mana value still comes from the front face's mana cost. Unlike
+     * [FLASHBACK]/[HARMONIZE] the card is not exiled on resolution; the back faces carry their own
+     * "if this would be put into a graveyard from anywhere, exile it instead" replacement.
+     * See [com.wingedsheep.sdk.scripting.KeywordAbility.Disturb].
+     */
+    DISTURB("Disturb"),
     EVOKE("Evoke"),
 
     /**
@@ -158,6 +242,24 @@ enum class Keyword(val displayName: String) {
     NINJUTSU("Ninjutsu"),
 
     /**
+     * Web-slinging [cost] (CR 702.188, Marvel's Spider-Man).
+     * "You may cast this spell by paying [cost] and returning a tapped creature you control to
+     * its owner's hand rather than paying its mana cost." (CR 702.188a)
+     *
+     * Modelled as a hand-timed alternative cost ([KeywordAbility.WebSlinging]) bundling a
+     * return-a-tapped-creature additional cost — casting follows the alternative-cost rules
+     * (CR 601.2b / 601.2f–h). Unlike [SNEAK]/[NINJUTSU] it grants no timing permission: the spell
+     * is web-slung at its normal timing (sorcery speed for creatures, instant speed for
+     * Spider-Sense). The "cast using web-slinging" fact rides the resulting permanent durably
+     * ([com.wingedsheep.sdk.scripting.ChoiceSlot.WEB_SLUNG], read via
+     * [com.wingedsheep.sdk.dsl.Conditions.WebSlungCostWasPaid]) alongside the returned creature's
+     * mana value ([com.wingedsheep.sdk.scripting.ChoiceSlot.WEB_SLUNG_RETURNED_MV], read via
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CastChoice]). Wired by the
+     * `webSlinging(cost)` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    WEB_SLINGING("Web-slinging"),
+
+    /**
      * Impending N—[cost] (CR 702.175, Duskmourn: House of Horror).
      * "If you cast this spell for its impending cost, it enters with N time counters
      * and isn't a creature until the last is removed. At the beginning of your end step,
@@ -170,6 +272,25 @@ enum class Keyword(val displayName: String) {
      * at the beginning of your end step" triggered ability. The engine adds the N TIME
      * counters when a spell cast for its impending cost resolves.
      */
+    /**
+     * Splice onto [quality] [cost] (CR 702.47, Champions of Kamigawa).
+     * "You may reveal this card from your hand as you cast a [quality] spell. If you do, that spell
+     * gains the text of this card's rules text and you pay [cost] as an additional cost to cast that
+     * spell." (CR 702.47a)
+     *
+     * Modelled as [KeywordAbility.Splice] — a static ability that functions while the card is in
+     * hand, so the card itself is never cast and never leaves hand (CR 702.47a): it is only
+     * *revealed*, and the spell it is spliced onto gains its rules text. The spliced text is added
+     * as an ordered tail after the main spell's own effects (CR 702.47b) and the spell keeps every
+     * one of its own characteristics — colour, name, types (CR 702.47c) — so the splice is invisible
+     * to protection and to "target Arcane spell" style checks. Splice changes are lost as soon as
+     * the spell leaves the stack (CR 702.47e), which falls out of the choice riding the stack
+     * object.
+     *
+     * Wired by the `splice(cost)` / `splice(onto, cost)` DSL helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    SPLICE("Splice"),
     IMPENDING("Impending"),
     CONSPIRE("Conspire"),
 
@@ -184,6 +305,23 @@ enum class Keyword(val displayName: String) {
     CASUALTY("Casualty"),
 
     /**
+     * Bargain (CR 702.166, Wilds of Eldraine). A static ability that functions while the spell is
+     * on the stack: "As an additional cost to cast this spell, you may sacrifice an artifact,
+     * enchantment, or token." A spell whose controller declared that intention has been
+     * *bargained* (CR 702.166b), and the card's other abilities — linked to this one
+     * (CR 702.166c) — branch on that fact.
+     *
+     * Modelled as an optional additional cost on the shared cast-time rail:
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost] with
+     * `declaredSlot = `[com.wingedsheep.sdk.scripting.ChoiceSlot.BARGAINED], so "bargained" is a
+     * *different* fact from "kicked" — a bargained spell never triggers a "whenever you cast a
+     * kicked spell" payoff, and vice versa. Wired by the `bargain()` DSL helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder]; payoffs read it back through
+     * [com.wingedsheep.sdk.dsl.Conditions.WasBargained].
+     */
+    BARGAIN("Bargain"),
+
+    /**
      * Miracle {cost} (CR 702.94). "You may cast this card for its miracle cost when you draw it if
      * it's the first card you drew this turn." Modeled as a hand-only alternative cost gated by a
      * one-turn window: when a card with miracle (printed via
@@ -193,6 +331,22 @@ enum class Keyword(val displayName: String) {
      * enumerator then surfaces a "Cast (Miracle)" alternative cost at the miracle mana cost.
      */
     MIRACLE("Miracle"),
+
+    /**
+     * Soulbond (CR 702.95, Avacyn Restored). Two triggered abilities that pair this creature with
+     * another unpaired creature you control — "When this creature enters, … you may pair this
+     * creature with another unpaired creature you control" and "Whenever another creature you
+     * control enters, … you may pair that creature with this creature". Both are authored by the
+     * [com.wingedsheep.sdk.dsl.soulbond] builder, which adds this keyword for display plus the
+     * two abilities; the payoff is a separate static ability scoped to
+     * [com.wingedsheep.sdk.scripting.filters.unified.Scope.SoulbondPair] ("as long as this
+     * creature is paired with another creature, both creatures …").
+     *
+     * The pairing itself is engine state, not a keyword behaviour: `PairWithSourceEffect` stamps
+     * a `PairedComponent` on each half, and the CR 702.95e state check breaks the pair when either
+     * half leaves the battlefield, stops being a creature, or changes controller.
+     */
+    SOULBOND("Soulbond"),
     HIDEAWAY("Hideaway"),
 
     /**
@@ -252,9 +406,38 @@ enum class Keyword(val displayName: String) {
      */
     CLEAVE("Cleave"),
 
+    /**
+     * Daybound (CR 702.145, Innistrad: Midnight Hunt / Crimson Vow). Found on the **front** faces of
+     * some transforming double-faced cards; represents three static abilities: "If it is night and
+     * this permanent is represented by a transforming double-faced card, it enters transformed"; "As
+     * it becomes night, if this permanent is front face up, transform it"; and "This permanent can't
+     * transform except due to its daybound ability." Controlling a daybound permanent while it is
+     * neither day nor night makes it day (CR 702.145d).
+     *
+     * Load-bearing, like [START_YOUR_ENGINES]: the engine reads this from projected state — the
+     * [com.wingedsheep.engine.mechanics.daynight.DayNightService] transform cascade and the
+     * `DayNightCheck` state-based sweep both scan for it — so a *granted* daybound works and no
+     * per-card wiring beyond the keyword tag is needed. Add it with the `daybound()` helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder]. See [com.wingedsheep.sdk.core.DayNight].
+     */
+    DAYBOUND("Daybound"),
+
+    /**
+     * Nightbound (CR 702.145). Found on the **back** faces of the same transforming double-faced
+     * cards; represents two static abilities: "As it becomes day, if this permanent is back face up,
+     * transform it" and "This permanent can't transform except due to its nightbound ability."
+     * Controlling a nightbound permanent while it is neither day nor night, with no daybound permanent
+     * on the battlefield, makes it night (CR 702.145g).
+     *
+     * Load-bearing and read from projected state, exactly like [DAYBOUND]. Add it with the
+     * `nightbound()` helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    NIGHTBOUND("Nightbound"),
+
     // ── Creature mechanics ────────────────────────────────
     OFFSPRING("Offspring"),
     PERSIST("Persist"),
+    UNDYING("Undying"),
 
     /**
      * Enduring (Duskmourn: House of Horror — the Glimmer "Enduring" cycle).
@@ -285,12 +468,71 @@ enum class Keyword(val displayName: String) {
     RENEW("Renew"),
 
     /**
+     * Embalm [cost] (CR 702.128, Amonkhet).
+     * "[Cost], Exile this card from your graveyard: Create a token that's a copy of it, except
+     * it's a white Zombie with no mana cost. Activate only as a sorcery."
+     *
+     * Like [RENEW], a graveyard-activated ability composed of existing primitives — the mana cost
+     * plus [com.wingedsheep.sdk.scripting.AbilityCost.ExileSelf], `activateFromZone = GRAVEYARD`,
+     * `timing = SorcerySpeed` — whose effect is a
+     * [com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect] of the card itself with
+     * the three printed exceptions (white, +Zombie, no mana cost). Wired in one call via the
+     * `embalm(cost)` helper on [com.wingedsheep.sdk.dsl.CardBuilder]; the keyword itself is
+     * display-only.
+     *
+     * The same ability is what [com.wingedsheep.sdk.scripting.effects.GrantEmbalmEffect] hands to a
+     * graveyard card at runtime ("target creature card in your graveyard gains embalm until end of
+     * turn" — Cursecloth Wrappings), so printed and granted embalm are the same object.
+     */
+    EMBALM("Embalm"),
+
+    /**
      * Ascend (Ixalan, CR 702.131). On a permanent spell, means "When this permanent
      * enters, if you control ten or more permanents, you get the city's blessing
      * for the rest of the game." Engine wires the trigger explicitly per card; the
      * keyword itself is only a textual marker for rules-text display.
      */
     ASCEND("Ascend"),
+
+    /**
+     * Storied (The Hobbit, CR 702.195a). A static ability: "Any time you control three or more
+     * permanents that are artifacts, Sagas, and/or legendary and you don't have an enduring story,
+     * you have an enduring story for the rest of the game."
+     *
+     * Load-bearing rather than display-only, and for the same reason as [START_YOUR_ENGINES]: the
+     * engine's `StoriedEnduringStoryCheck` state-based action scans *projected* battlefield
+     * permanents for this keyword, so granting storied at runtime works and stealing a storied
+     * permanent hands the designation to its new controller. Add it with the `storied()` helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder]; read it back with
+     * [com.wingedsheep.sdk.dsl.Conditions.YouHaveEnduringStory].
+     *
+     * Note the count is *not* the ascend count: three permanents each of which is an artifact, a
+     * Saga, or legendary — one permanent satisfying two of those still counts once.
+     */
+    STORIED("Storied"),
+
+    /**
+     * Start your engines! (Aetherdrift, CR 702.179). "If a player controls a permanent with start
+     * your engines! and that player has no speed, their speed becomes 1."
+     *
+     * Unlike most display-only keywords, this one is *load-bearing*: the engine's
+     * `StartYourEnginesCheck` state-based action (CR 704.5z) scans projected battlefield permanents
+     * for this keyword, so granting it to a permanent at runtime works. Nothing else needs wiring on
+     * the card — add it with the `startYourEngines()` helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder]. See [com.wingedsheep.sdk.core.Speed].
+     */
+    START_YOUR_ENGINES("Start your engines!"),
+
+    /**
+     * Max speed (Aetherdrift, CR 702.178). "Max speed — [Ability]" means "As long as your speed is
+     * 4, this object has '[Ability].'"
+     *
+     * Display-only: the keyword prints the "Max speed — " prefix and drives the client badge, while
+     * the gate itself is an ordinary condition applied to whatever ability the card grants. Author
+     * it with the `maxSpeed { }` block on [com.wingedsheep.sdk.dsl.CardBuilder], which attaches this
+     * keyword and gates each ability inside it on [com.wingedsheep.sdk.dsl.Conditions.YouHaveMaxSpeed].
+     */
+    MAX_SPEED("Max speed"),
 
     /**
      * Decayed (CR 702.147, Innistrad: Midnight Hunt). A static ability plus a
@@ -357,12 +599,14 @@ enum class Keyword(val displayName: String) {
      * and when the last is removed its owner plays it without paying its mana cost (with
      * haste, if it's a creature).
      *
-     * The keyword is display-only. The exile-side behavior is component-driven, not
-     * definition-driven: any exiled card carrying the engine's suspended marker (set by
-     * [com.wingedsheep.sdk.dsl.Effects.Suspend]) gets the synthesized countdown-and-cast
+     * The exile-side behavior is component-driven, not definition-driven: any exiled card
+     * carrying the engine's suspended marker (set by [com.wingedsheep.sdk.dsl.Effects.Suspend]
+     * or by the printed-suspend special action) gets the synthesized countdown-and-cast
      * triggered ability ([com.wingedsheep.sdk.scripting.Suspend.countdownAbility]). This
      * lets "exile it with N time counters; it gains suspend" effects (Taigam, Master
-     * Opportunist) suspend an arbitrary card — even a card with no printed suspend.
+     * Opportunist) suspend an arbitrary card — even a card with no printed suspend — while a
+     * printed "Suspend N—[cost]" (`KeywordAbility.Suspend`) drives the from-hand special
+     * action (CR 116.2f) through the engine's `SuspendCardFromHandHandler`.
      */
     SUSPEND("Suspend"),
     RENOWN("Renown"),
@@ -439,11 +683,19 @@ enum class Keyword(val displayName: String) {
 
     /**
      * Prepared (Secrets of Strixhaven).
-     * Display keyword on a preparation card ([com.wingedsheep.sdk.model.CardLayout.PREPARE]):
-     * "This creature enters prepared." Display-only on the keyword — the behavior is driven by
-     * the PREPARE layout. When the creature becomes prepared (e.g. as it enters), its controller
-     * creates a copy of the card's prepare spell (`cardFaces[0]`) in exile that they may cast
-     * (paying that spell's cost); casting the copy unprepares the creature.
+     * The printed "This creature enters prepared." line on a preparation card
+     * ([com.wingedsheep.sdk.model.CardLayout.PREPARE]).
+     *
+     * **Load-bearing, not display-only**: a PREPARE-layout creature enters prepared if and only if
+     * it carries this keyword — the stack resolver gates on layout *and* keyword. A card that only
+     * *becomes* prepared later, via a trigger (Leech Collector) or an ETB conditional (Emeritus of
+     * Truce), must omit it and use `Effects.BecomePrepared` instead. Scryfall tags `Prepared` on
+     * *every* prepare-layout card regardless of the printed line, so its keyword list must never be
+     * copied verbatim onto one of these.
+     *
+     * When the creature becomes prepared (however it got there), its controller creates a copy of
+     * the card's prepare spell (`cardFaces[0]`) in exile that they may cast (paying that spell's
+     * cost); casting the copy unprepares the creature.
      */
     PREPARED("Prepared"),
 
@@ -476,7 +728,28 @@ enum class Keyword(val displayName: String) {
      * `GrantKeywordToSpellEffect` — Ojer Pakpatiq, Deepest Epoch grants it to instants you cast
      * from hand).
      */
-    REBOUND("Rebound");
+    REBOUND("Rebound"),
+
+    /**
+     * Teamwork N (CR 702.194, Marvel Super Heroes). A static ability that functions while the
+     * spell is on the stack: "As an additional cost to cast this spell, you may tap any number of
+     * creatures you control with total power N or more" (CR 702.194a). A spell whose controller
+     * declared that intention was cast *using teamwork* (CR 702.194b), and the card's own riders
+     * branch on that fact.
+     *
+     * Modelled on the shared optional-additional-cost rail:
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost] with
+     * `declaredSlot = `[com.wingedsheep.sdk.scripting.ChoiceSlot.TEAMWORK], so "cast using
+     * teamwork" is a *different* fact from "kicked" or "bargained". The cost itself is a
+     * [com.wingedsheep.sdk.scripting.costs.CostAtom.VariablePermanents] tapping creatures measured
+     * by total power — the same selection crew and saddle use. Wired by the `teamwork(n)` DSL
+     * helper on [com.wingedsheep.sdk.dsl.CardBuilder]; payoffs read it back through
+     * [com.wingedsheep.sdk.dsl.Conditions.TeamworkWasPaid].
+     *
+     * Tapping creatures this way is a *cost*, not the `{T}` symbol, so summoning sickness
+     * (CR 302.6) never applies — only CR 701.26a's "only untapped permanents can be tapped".
+     */
+    TEAMWORK("Teamwork");
 
     companion object {
         fun fromString(value: String): Keyword? =

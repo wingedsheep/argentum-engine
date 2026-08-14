@@ -300,6 +300,18 @@ sealed interface Duration {
     ) : Duration {
         override val description = "for as long as you control $sourceDescription"
     }
+
+    /**
+     * Effect is consumed the first time its replacement effect is applied
+     * or end of turn if not consumed.
+     */
+    @SerialName("NextUse")
+    @Serializable
+    data class NextUse(
+        val sourceDescription: String
+    ) : Duration {
+        override val description = "the next time $sourceDescription this turn"
+    }
 }
 
 /**

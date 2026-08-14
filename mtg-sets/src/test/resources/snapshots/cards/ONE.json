@@ -1,66 +1,80 @@
-// Blackcleave Cliffs
+// Blazing Crescendo
 {
-    "name": "Blackcleave Cliffs",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "This land enters tapped unless you control two or fewer other lands.\n{T}: Add {B} or {R}.",
+    "name": "Blazing Crescendo",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature gets +3/+1 until end of turn.\nExile the top card of your library. Until the end of your next turn, you may play that card.",
     "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "BLACK"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            },
-            {
-                "id": "ability_2",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "RED"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ],
-        "replacementEffects": [
-            {
-                "type": "EntersTapped",
-                "unlessCondition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "AggregateBattlefield",
-                        "player": "You",
-                        "filter": "land"
-                    },
-                    "operator": "LTE",
-                    "right": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
                         "type": "Fixed",
                         "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
                     }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled",
+                            "expiry": {
+                                "type": "UntilControllerStep",
+                                "step": "CLEANUP",
+                                "includeCurrentTurn": false
+                            }
+                        }
+                    ]
                 }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
             }
         ]
     },
     "metadata": {
-        "collectorNumber": "248",
-        "rarity": "RARE",
-        "artist": "Yeong-Hao Han",
-        "flavorText": "Where ambition meets industry, passion is poisoned by greed.",
-        "imageUri": "https://cards.scryfall.io/normal/front/1/4/1441fba4-fe06-4b5f-a103-aa6cf59a3859.jpg?1675957263",
-        "rulings": [
-            {
-                "date": "2023-02-04",
-                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
-            }
-        ]
+        "collectorNumber": "123",
+        "artist": "Tiffany Turrill",
+        "flavorText": "\"They call themselves the Quiet Furnace? Ironic.\"\n—Tyvar",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6bfc16a-2871-40a4-b279-636b80491a06.jpg?1783918035"
     },
     "colorIdentityOverride": [
-        "BLACK",
         "RED"
     ]
 }
@@ -136,140 +150,6 @@
     },
     "colorIdentityOverride": [
         "BLUE"
-    ]
-}
-
-// Copperline Gorge
-{
-    "name": "Copperline Gorge",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "This land enters tapped unless you control two or fewer other lands.\n{T}: Add {R} or {G}.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "RED"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            },
-            {
-                "id": "ability_2",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "GREEN"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ],
-        "replacementEffects": [
-            {
-                "type": "EntersTapped",
-                "unlessCondition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "AggregateBattlefield",
-                        "player": "You",
-                        "filter": "land"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 3
-                    }
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "249",
-        "rarity": "RARE",
-        "artist": "Yeong-Hao Han",
-        "flavorText": "Where fire meets ferocity, a greater evolution begins.",
-        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78b0f36b-7d8c-4e77-adc2-a4dad93a81d5.jpg?1675957264",
-        "rulings": [
-            {
-                "date": "2023-02-04",
-                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "RED",
-        "GREEN"
-    ]
-}
-
-// Darkslick Shores
-{
-    "name": "Darkslick Shores",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "This land enters tapped unless you control two or fewer other lands.\n{T}: Add {U} or {B}.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "BLUE"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            },
-            {
-                "id": "ability_2",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "BLACK"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ],
-        "replacementEffects": [
-            {
-                "type": "EntersTapped",
-                "unlessCondition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "AggregateBattlefield",
-                        "player": "You",
-                        "filter": "land"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 3
-                    }
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "250",
-        "rarity": "RARE",
-        "artist": "Aaron Miller",
-        "flavorText": "Where curiosity meets cruelty, hideous innovations arise.",
-        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcbda15b-e49a-4445-a0e1-f221aa82c1e8.jpg?1675957267",
-        "rulings": [
-            {
-                "date": "2023-02-04",
-                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "BLUE",
-        "BLACK"
     ]
 }
 
@@ -420,140 +300,6 @@
     "colorIdentityOverride": [
         "BLUE",
         "RED"
-    ]
-}
-
-// Razorverge Thicket
-{
-    "name": "Razorverge Thicket",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "This land enters tapped unless you control two or fewer other lands.\n{T}: Add {G} or {W}.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "GREEN"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            },
-            {
-                "id": "ability_2",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "WHITE"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ],
-        "replacementEffects": [
-            {
-                "type": "EntersTapped",
-                "unlessCondition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "AggregateBattlefield",
-                        "player": "You",
-                        "filter": "land"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 3
-                    }
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "257",
-        "rarity": "RARE",
-        "artist": "Randy Gallegos",
-        "flavorText": "Where evolution meets austerity, primal might bucks against the yoke of hierarchy.",
-        "imageUri": "https://cards.scryfall.io/normal/front/6/5/65b26f68-3a25-4c4e-bc76-a199ab479a50.jpg?1675957278",
-        "rulings": [
-            {
-                "date": "2023-02-04",
-                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "WHITE",
-        "GREEN"
-    ]
-}
-
-// Seachrome Coast
-{
-    "name": "Seachrome Coast",
-    "manaCost": "",
-    "typeLine": "Land",
-    "oracleText": "This land enters tapped unless you control two or fewer other lands.\n{T}: Add {W} or {U}.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "WHITE"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            },
-            {
-                "id": "ability_2",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddMana",
-                    "color": "BLUE"
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ],
-        "replacementEffects": [
-            {
-                "type": "EntersTapped",
-                "unlessCondition": {
-                    "type": "Compare",
-                    "left": {
-                        "type": "AggregateBattlefield",
-                        "player": "You",
-                        "filter": "land"
-                    },
-                    "operator": "LTE",
-                    "right": {
-                        "type": "Fixed",
-                        "amount": 3
-                    }
-                }
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "258",
-        "rarity": "RARE",
-        "artist": "Mauricio Calle",
-        "flavorText": "Where indoctrination meets inquiry, currents roil restlessly beneath the surface.",
-        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9ed7441f-f624-49c8-8611-d9bba0e441ac.jpg?1675957278",
-        "rulings": [
-            {
-                "date": "2023-02-04",
-                "text": "If one of these lands enters the battlefield at the same time as one or more other lands, it doesn't take those lands into consideration when determining how many other lands you control."
-            }
-        ]
-    },
-    "colorIdentityOverride": [
-        "WHITE",
-        "BLUE"
     ]
 }
 

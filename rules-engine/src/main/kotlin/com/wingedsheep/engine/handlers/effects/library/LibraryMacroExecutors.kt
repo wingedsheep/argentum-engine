@@ -11,12 +11,12 @@ import com.wingedsheep.sdk.scripting.effects.SurveilEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for the [ScryEffect] macro (CR 701.18). It carries no gather/select/move logic of its
+ * Executor for the [ScryEffect] macro (CR 701.22). It carries no gather/select/move logic of its
  * own: it expands the marker into the shared [LibraryPatterns.scryPipeline] composite and delegates
  * to the registry's recursive [effectExecutor], which dispatches the composite through
  * `CompositeEffectExecutor`. That executor already owns the choose-pause → `EffectContinuation`
  * plumbing, so the `SelectCardsDecision` pause for "put any number on the bottom" still works, and
- * the `ScriedEvent` tail still fires "Whenever you scry" triggers (CR 701.18d).
+ * the `ScriedEvent` tail still fires "Whenever you scry" triggers (CR 701.22d).
  *
  * Collapsing scry to one node is purely a representation change — execution is byte-for-byte the
  * old expanded pipeline.
@@ -32,7 +32,7 @@ class ScryExecutor(
 }
 
 /**
- * Executor for the [SurveilEffect] macro (CR 701.42) — the surveil twin of [ScryExecutor]. Expands
+ * Executor for the [SurveilEffect] macro (CR 701.25) — the surveil twin of [ScryExecutor]. Expands
  * to [LibraryPatterns.surveilPipeline] and delegates to the same composite machinery; the
  * `SurveiledEvent` tail still fires "Whenever you surveil" / "scry or surveil" triggers.
  */

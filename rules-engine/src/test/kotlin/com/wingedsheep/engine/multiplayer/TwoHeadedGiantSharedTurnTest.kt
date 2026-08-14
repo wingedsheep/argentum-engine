@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.DayNight
 import com.wingedsheep.sdk.core.Format
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
@@ -112,6 +113,34 @@ class TwoHeadedGiantSharedTurnTest : FunSpec({
         // Both team-1 members took the turn together (805.4): both counters incremented to 1.
         atTeam1.getEntity(p[2])!!.get<PlayerTurnsTakenComponent>()!!.count shouldBe 1
         atTeam1.getEntity(p[3])!!.get<PlayerTurnsTakenComponent>()!!.count shouldBe 1
+    }
+
+    test("day stays day when the previous active player's teammate cast a spell (CR 502.2a)") {
+        val (initial, p, proc) = boot()
+        val withDayAndTeamSpell = initial.copy(
+            dayNight = DayNight.DAY,
+            playerSpellsCastThisTurn = mapOf(p[1] to 1),
+        )
+
+        val atTeam1Main = drive(withDayAndTeamSpell, proc) {
+            it.activePlayerId == p[2] && it.step == Step.PRECOMBAT_MAIN
+        }
+
+        atTeam1Main.dayNight shouldBe DayNight.DAY
+    }
+
+    test("night becomes day when the previous active player's teammate cast two spells (CR 502.2a)") {
+        val (initial, p, proc) = boot()
+        val withNightAndTeamSpells = initial.copy(
+            dayNight = DayNight.NIGHT,
+            playerSpellsCastThisTurn = mapOf(p[1] to 2),
+        )
+
+        val atTeam1Main = drive(withNightAndTeamSpells, proc) {
+            it.activePlayerId == p[2] && it.step == Step.PRECOMBAT_MAIN
+        }
+
+        atTeam1Main.dayNight shouldBe DayNight.DAY
     }
 
     test("the non-active teammate may play a land on the team's turn (CR 805.4c / 805.5a)") {

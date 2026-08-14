@@ -19,7 +19,7 @@ import io.kotest.matchers.string.shouldContain
  * Renew composes a graveyard-activated ability: "[cost], Exile this card from your
  * graveyard: [effect]. Activate only as a sorcery." The `renew(cost) { … }` DSL helper
  * fixes `activateFromZone = GRAVEYARD` and `timing = SorcerySpeed`; the
- * [enumerators.GraveyardAbilityEnumerator] must surface it only at sorcery speed.
+ * [enumerators.ZoneActivatedAbilityEnumerator] must surface it only at sorcery speed.
  *
  * These tests assert the sorcery-timing gate (the engine change) and the standard
  * cost-affordability `continue`.

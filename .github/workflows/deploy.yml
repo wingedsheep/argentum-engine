@@ -36,6 +36,8 @@ jobs:
           file: ./game-server/Dockerfile
           push: true
           tags: ${{ env.IMAGE_REPO }}/backend:latest
+          build-args: |
+            COMMIT_HASH=${{ github.sha }}
 
       - name: Build and push Frontend
         uses: docker/build-push-action@v7

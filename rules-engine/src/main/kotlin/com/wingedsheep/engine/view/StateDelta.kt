@@ -37,6 +37,13 @@ data class StateDelta(
     val isGameOver: Boolean? = null,
     val winnerId: EntityId? = null,
 
+    /**
+     * Day/night designation (CR 731). `null` means "unchanged" — which is unambiguous here because the
+     * game never returns to the neither state once a designation is gained (CR 731.1), so a real change
+     * is always to a non-null value.
+     */
+    val dayNight: com.wingedsheep.sdk.core.DayNight? = null,
+
     /** Combat state. Present = changed. combatCleared = true means combat ended (set to null). */
     val combat: ClientCombatState? = null,
     val combatCleared: Boolean? = null,

@@ -96,7 +96,7 @@ class ExtendedManaSystemTest : FunSpec({
             driver.initMirrorMatch(
                 deck = Deck.of(
                     "Mountain" to 20,
-                    "Ragavan, Nimble Pilferer" to 10,
+                    "Test Hasty Prospector" to 10,
                     "Lightning Bolt" to 10
                 )
             )
@@ -107,13 +107,13 @@ class ExtendedManaSystemTest : FunSpec({
             driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
             // Cast Ragavan (hasty mana dork)
-            val ragavan = driver.putCardInHand(activePlayer, "Ragavan, Nimble Pilferer")
+            val ragavan = driver.putCardInHand(activePlayer, "Test Hasty Prospector")
             driver.giveMana(activePlayer, Color.RED, 1)
             driver.castSpell(activePlayer, ragavan)
             driver.bothPass() // Resolve
 
             // Ragavan should be on battlefield
-            val ragavanOnBattlefield = driver.findPermanent(activePlayer, "Ragavan, Nimble Pilferer")
+            val ragavanOnBattlefield = driver.findPermanent(activePlayer, "Test Hasty Prospector")
             ragavanOnBattlefield shouldNotBe null
 
             // Now try to cast Lightning Bolt using Ragavan's mana

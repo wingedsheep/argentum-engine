@@ -71,7 +71,7 @@ class MoveCountersExecutor : EffectExecutor<MoveCountersEffect> {
 
         val newState = afterRemoval.updateEntity(destinationId) { container ->
             container.with(destCounters.withAdded(counterType, placedCount))
-        }.let { DamageUtils.markCounterPlacedOnCreature(it, context.controllerId, destinationId) }
+        }.let { DamageUtils.markCounterPlacedOnCreature(it, context.controllerId, destinationId, counterTypeToString(counterType)) }
 
         return EffectResult.success(
             newState,

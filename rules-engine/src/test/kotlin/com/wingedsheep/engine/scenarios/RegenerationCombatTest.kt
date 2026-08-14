@@ -276,7 +276,7 @@ class RegenerationCombatTest : FunSpec({
         // 5/5 trample attacks, 3/3 blocks. 3/3 has regen shield.
         // Active player bolts the 3/3 blocker during combat → regeneration triggers
         // 3/3 removed from combat. 5/5 is still "blocked" but has trample.
-        // Per CR 702.19c, trample creature with no remaining blockers assigns all damage to player.
+        // Per CR 702.19d, trample creature with no remaining blockers assigns all damage to player.
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Mountain" to 20, "Forest" to 20),

@@ -42,6 +42,55 @@ sealed interface ClientEvent {
         }
     ) : ClientEvent
 
+    /**
+     * A player's speed went up (Aetherdrift, CR 702.179) — either "Start your engines!" starting it
+     * at 1 ([oldSpeed] 0) or the inherent speed trigger raising it.
+     *
+     * Surfaced as a real client event rather than left to a silent state diff so the speed gauge can
+     * animate the step and call out reaching max speed. Speed only rises and stops at
+     * [com.wingedsheep.sdk.core.Speed.MAX], so [reachedMaxSpeed] fires at most once per player per game.
+     */
+    @Serializable
+    @SerialName("speedChanged")
+    data class SpeedChanged(
+        val playerId: EntityId,
+        val oldSpeed: Int,
+        val newSpeed: Int,
+        val isYours: Boolean? = null,
+        val reachedMaxSpeed: Boolean = newSpeed >= com.wingedsheep.sdk.core.Speed.MAX,
+        override val description: String = when {
+            isYours == true && reachedMaxSpeed -> "You reached max speed"
+            isYours == false && reachedMaxSpeed -> "Opponent reached max speed"
+            reachedMaxSpeed -> "Player reached max speed"
+            isYours == true && oldSpeed == 0 -> "Your speed started at $newSpeed"
+            isYours == false && oldSpeed == 0 -> "Opponent's speed started at $newSpeed"
+            isYours == true -> "Your speed increased to $newSpeed"
+            isYours == false -> "Opponent's speed increased to $newSpeed"
+            else -> "Player's speed increased to $newSpeed"
+        }
+    ) : ClientEvent
+
+    /**
+     * The game's day/night designation changed (Innistrad, CR 731). [oldDesignation] is `null` when the
+     * game leaves the "neither" state it starts in (CR 731.1); a non-null → non-null change is a
+     * "day becomes night" / "night becomes day" flip (CR 731.1a).
+     *
+     * Surfaced as a real client event rather than left to a silent state diff so the UI can announce the
+     * shift (and any daybound/nightbound permanents transforming with it). [sourceName] attributes the
+     * cause — the untap-step turn-based action, a daybound/nightbound keyword, or an effect.
+     */
+    @Serializable
+    @SerialName("dayNightChanged")
+    data class DayNightChanged(
+        val oldDesignation: com.wingedsheep.sdk.core.DayNight?,
+        val newDesignation: com.wingedsheep.sdk.core.DayNight,
+        val sourceName: String,
+        override val description: String = when (newDesignation) {
+            com.wingedsheep.sdk.core.DayNight.DAY -> "It becomes day"
+            com.wingedsheep.sdk.core.DayNight.NIGHT -> "It becomes night"
+        }
+    ) : ClientEvent
+
     @Serializable
     @SerialName("damageDealt")
     data class DamageDealt(
@@ -185,13 +234,22 @@ sealed interface ClientEvent {
         val isYours: Boolean? = null,
         val targetNames: List<String> = emptyList(),
         val xValue: Int? = null,
+        /**
+         * How the spell was cast — `"disturb, from graveyard"`, `"from command zone"` — or null for
+         * an ordinary cast from hand. Folded into [description] below; kept as its own field so the
+         * client can style it separately later without re-deriving it. See [CastProvenance].
+         */
+        val castProvenance: String? = null,
         override val description: String = run {
             val xText = if (xValue != null) " (X=$xValue)" else ""
             val targetText = if (targetNames.isNotEmpty()) " targeting ${targetNames.joinToString(", ")}" else ""
+            // Provenance sits with the card it qualifies, before the targets, so the line reads
+            // "cast Silent Departure (flashback, from graveyard) targeting Grizzly Bears".
+            val provenanceText = if (castProvenance != null) " ($castProvenance)" else ""
             when (isYours) {
-                true -> "You cast $spellName$xText$targetText"
-                false -> "Opponent cast $spellName$xText$targetText"
-                null -> "Cast $spellName$xText$targetText"
+                true -> "You cast $spellName$xText$provenanceText$targetText"
+                false -> "Opponent cast $spellName$xText$provenanceText$targetText"
+                null -> "Cast $spellName$xText$provenanceText$targetText"
             }
         }
     ) : ClientEvent
@@ -278,11 +336,44 @@ sealed interface ClientEvent {
     ) : ClientEvent
 
     @Serializable
+    @SerialName("permanentExerted")
+    data class PermanentExerted(
+        val permanentId: EntityId,
+        val permanentName: String,
+        override val description: String = "$permanentName was exerted — it won't untap next turn"
+    ) : ClientEvent
+
+    @Serializable
     @SerialName("permanentUntapped")
     data class PermanentUntapped(
         val permanentId: EntityId,
         val permanentName: String,
         override val description: String = "Untapped $permanentName"
+    ) : ClientEvent
+
+    /**
+     * Two creatures became soulbond-paired (CR 702.95b). This is the **game-log** line; the visual is
+     * driven off the resulting `pairedWithId` on each card instead (`SoulbondBonds` derives both the
+     * persistent bond and its forming flourish from when a pair first appears in the card map), so
+     * that a reconnect or a mid-game spectator join renders existing pairs without replaying events.
+     */
+    @Serializable
+    @SerialName("creaturesPaired")
+    data class CreaturesPaired(
+        val firstId: EntityId,
+        val firstName: String,
+        val secondId: EntityId,
+        val secondName: String,
+        override val description: String = "$firstName paired with $secondName"
+    ) : ClientEvent
+
+    /** A soulbond pair was broken (CR 702.95e). */
+    @Serializable
+    @SerialName("creaturesUnpaired")
+    data class CreaturesUnpaired(
+        val permanentId: EntityId,
+        val permanentName: String,
+        override val description: String = "$permanentName is no longer paired"
     ) : ClientEvent
 
     @Serializable
@@ -752,6 +843,22 @@ object ClientEventTransformer {
         viewingPlayerId: EntityId
     ): ClientEvent? {
         return when (event) {
+            // The land-play signal drives triggers only; the client renders the land entering via
+            // the accompanying ZoneChangeEvent, so no separate client event is emitted.
+            is LandPlayedEvent -> null
+            is SpeedChangedEvent -> ClientEvent.SpeedChanged(
+                playerId = event.playerId,
+                oldSpeed = event.oldSpeed,
+                newSpeed = event.newSpeed,
+                isYours = event.playerId == viewingPlayerId
+            )
+
+            is DayNightChangedEvent -> ClientEvent.DayNightChanged(
+                oldDesignation = event.oldDesignation,
+                newDesignation = event.newDesignation,
+                sourceName = event.sourceName
+            )
+
             is LifeChangedEvent -> ClientEvent.LifeChanged(
                 playerId = event.playerId,
                 oldLife = event.oldLife,
@@ -808,7 +915,9 @@ object ClientEventTransformer {
             }
 
             is CardsDiscardedEvent -> {
-                if (event.cardIds.isNotEmpty()) {
+                // A cycling cost's discard is already narrated by its CardCycledEvent — logging
+                // both would read as two separate actions.
+                if (event.cardIds.isNotEmpty() && !event.asCyclingCost) {
                     val isYours = event.playerId == viewingPlayerId
                     if (event.cardNames.size > 1) {
                         val names = event.cardNames.joinToString(", ")
@@ -891,7 +1000,13 @@ object ClientEventTransformer {
                 casterId = event.casterId,
                 isYours = event.casterId == viewingPlayerId,
                 targetNames = event.targetNames,
-                xValue = event.xValue
+                xValue = event.xValue,
+                castProvenance = CastProvenance.logPhrase(
+                    event.alternativeCost,
+                    event.castFromZone,
+                    event.sacrificedAsCostNames,
+                    event.totalManaSpent,
+                )
             )
 
             is ResolvedEvent -> ClientEvent.SpellResolved(
@@ -946,7 +1061,24 @@ object ClientEventTransformer {
                 permanentName = event.entityName
             )
 
+            is ExertedEvent -> ClientEvent.PermanentExerted(
+                permanentId = event.entityId,
+                permanentName = event.entityName
+            )
+
             is UntappedEvent -> ClientEvent.PermanentUntapped(
+                permanentId = event.entityId,
+                permanentName = event.entityName
+            )
+
+            is CreaturesPairedEvent -> ClientEvent.CreaturesPaired(
+                firstId = event.firstId,
+                firstName = event.firstName,
+                secondId = event.secondId,
+                secondName = event.secondName
+            )
+
+            is CreaturesUnpairedEvent -> ClientEvent.CreaturesUnpaired(
                 permanentId = event.entityId,
                 permanentName = event.entityName
             )
@@ -1119,6 +1251,16 @@ is PermanentsSacrificedEvent -> {
                 isYours = event.playerId == viewingPlayerId
             )
 
+            // Internal trigger signal. The tap, activated ability, and resulting continuous effect
+            // already provide the player-visible narration and state change.
+            is CrewOrSaddleContributionEvent -> null
+
+            // Internal signal that drives the CR 702.35a madness trigger. The player-visible
+            // narration is already complete without it: the CardsDiscardedEvent says the card was
+            // discarded, the redirected ZoneChangeEvent shows it landing in exile, and the madness
+            // trigger itself appears on the stack with its own description.
+            is CardExiledWithMadnessEvent -> null
+
             is CardPlottedEvent -> ClientEvent.CardPlotted(
                 playerId = event.playerId,
                 cardName = event.cardName,
@@ -1144,6 +1286,11 @@ is PermanentsSacrificedEvent -> {
                 abilityDescription = event.description,
                 reason = event.reason
             )
+
+            // Internal signal only — TriggerDetector turns this into a real PendingTrigger for the
+            // reflexive ability, which emits its own AbilityTriggeredEvent/AbilityResolvedEvent (and
+            // AbilityFizzledEvent if its target becomes illegal) once it's actually on the stack.
+            is ReflexiveAbilityTriggeredEvent -> null
 
             is CardRevealedFromDrawEvent -> {
                 ClientEvent.CardsRevealed(
@@ -1194,6 +1341,7 @@ is PermanentsSacrificedEvent -> {
             is LibraryReorderedEvent,
             is KeywordGrantedEvent,
             is CitysBlessingGainedEvent,
+            is EnduringStoryGainedEvent,
             is MaximumHandSizeRemovedEvent,
             is MaximumHandSizeReducedEvent,
             is RingTemptedEvent,
@@ -1203,6 +1351,10 @@ is PermanentsSacrificedEvent -> {
             // Sun's Creation); the reveal/exile/cast moves are surfaced by their own events, so no
             // separate client event.
             is DiscoveredEvent,
+            // Internal signal that fires "whenever you collect evidence" watcher triggers
+            // (Surveillance Monitor, Evidence Examiner); the exiles themselves are already
+            // surfaced by their own zone-change events, so no separate client event.
+            is EvidenceCollectedEvent,
             // Internal signal that fires "whenever a creature you control explores" watcher
             // triggers; the reveal/hand/counter moves are already surfaced by their own events, so
             // no separate client event.

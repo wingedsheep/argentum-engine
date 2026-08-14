@@ -70,7 +70,7 @@ val ContestedGameBall = card("Contested Game Ball") {
                 condition = Conditions.SourceCounterCountAtLeast(Counters.POINT, 5),
                 effect = Effects.Composite(
                     Effects.SacrificeTarget(EffectTarget.Self),
-                    Effects.CreateTreasure(1, imageUri = LciTokenArt.TREASURE),
+                    Effects.CreateTreasure(1),
                 ),
             ),
         )

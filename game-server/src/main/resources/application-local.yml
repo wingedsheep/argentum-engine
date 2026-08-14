@@ -16,3 +16,5 @@ game:
     timeout-ms: ${GAME_AI_TIMEOUT_MS:120000}
     # Always build AI sealed decks with the deterministic heuristic builder (skips the LLM).
     heuristic-deckbuilding: ${GAME_AI_HEURISTIC_DECKBUILDING:true}
+    # Browse what the AI considered, and export a position + its ratings, while playing against it.
+    insight-enabled: ${GAME_AI_INSIGHT_ENABLED:true}

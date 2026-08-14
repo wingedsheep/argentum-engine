@@ -6,7 +6,7 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent
+import com.wingedsheep.engine.mechanics.sba.player.playerCantLoseGame
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
@@ -24,8 +24,7 @@ import com.wingedsheep.sdk.scripting.RevealFirstDrawEachTurn
  * [CardRevealedFromDrawEvent] if this is the first draw of the turn and the
  * player controls a permanent with [RevealFirstDrawEachTurn].
  *
- * Handles empty-library loss (Rule 704.5c) respecting
- * [GrantsCantLoseGameComponent] (Platinum Angel).
+ * Handles empty-library loss (Rule 704.5b) respecting [playerCantLoseGame] (Platinum Angel).
  *
  * Does **not** emit [com.wingedsheep.engine.core.CardsDrawnEvent] — the driver
  * aggregates drawn cards across multiple calls and emits a single
@@ -75,13 +74,11 @@ class DrawCardPrimitive(
         val library = state.getZone(libraryZone)
 
         if (library.isEmpty()) {
-            // Rule 704.5c: failed to draw from an empty library → lose the game,
+            // Rule 704.5b: failed to draw from an empty library → lose the game,
             // unless a controlled permanent grants "can't lose the game" (Platinum Angel).
-            val cantLose = state.getBattlefield().any { entityId ->
-                val c = state.getEntity(entityId) ?: return@any false
-                c.has<GrantsCantLoseGameComponent>() &&
-                    c.get<ControllerComponent>()?.playerId == playerId
-            }
+            // Shared with the other loss checks so the gate on a conditional grant and the
+            // CR 810.8a team reach are applied identically wherever a player would lose.
+            val cantLose = playerCantLoseGame(state, playerId)
             val lostState = if (cantLose) {
                 state
             } else {

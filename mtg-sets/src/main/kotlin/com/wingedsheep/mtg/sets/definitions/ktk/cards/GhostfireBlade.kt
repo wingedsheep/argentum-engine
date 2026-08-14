@@ -1,16 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.ktk.cards
 
-import com.wingedsheep.sdk.dsl.Costs
-import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**
  * Ghostfire Blade
@@ -36,23 +32,28 @@ val GhostfireBlade = card("Ghostfire Blade") {
     }
 
     // Equip {1}: Attach to target colorless creature you control.
-    // (Equip costs {2} less for colorless creatures)
-    activatedAbility {
-        cost = Costs.Mana("{1}")
-        timing = TimingRule.SorcerySpeed
-        description = "Equip colorless creature {1}"
-        val colorlessCreatureYouControl = target(
-            "colorless creature you control",
-            TargetCreature(
-                filter = TargetFilter(
-                    GameObjectFilter(
-                        cardPredicates = listOf(CardPredicate.IsCreature, CardPredicate.IsColorless)
-                    ).youControl()
-                )
-            )
-        )
-        effect = Effects.AttachEquipment(colorlessCreatureYouControl)
-    }
+    //
+    // NOT a printed "Equip [quality]" card. Ghostfire Blade prints one equip ability, "Equip {3}",
+    // plus a cost reduction ("costs {2} less to activate if it targets a colorless creature") — no
+    // CR 702.6c quality restriction is involved. This {1} ability is a *model* of that reduction:
+    // a second equip whose target filter matches exactly the creatures the discount applies to.
+    // Behaviour is equivalent (a colorless target can always be equipped for {1}, anything else for
+    // {3}), and the two-ability shape is retained only because it predates the facade's
+    // quality/targetFilter pair.
+    //
+    // If it were re-modelled, the mechanism would be `equipAbility`'s existing
+    // `genericCostReduction` rail (a `DynamicAmount` evaluated against the chosen target — the same
+    // one Dragonfire Blade uses via `DynamicAmounts.targetColorCount()`), expressing it as the
+    // single printed ability it is.
+    equipAbility(
+        "{1}",
+        quality = "colorless",
+        targetFilter = TargetFilter(
+            GameObjectFilter(
+                cardPredicates = listOf(CardPredicate.IsCreature, CardPredicate.IsColorless)
+            ).youControl()
+        ),
+    )
 
     equipAbility("{3}")
 

@@ -16,13 +16,15 @@ import com.wingedsheep.sdk.scripting.references.Player
  *
  * This is a meld result (Bruna, the Fading Light + Gisela, the Broken Blade). Meld itself is a
  * blocked mechanic, so per the task scope Brisela is authored as a normal colorless legendary
- * creature with its printed abilities; the meld linkage is ignored.
+ * creature with its printed abilities; the meld linkage is ignored. `meldResult = true` keeps it
+ * out of booster, draft and deckbuilding pools — it's only ever created by melding the pair.
  *
  * The cast restriction is the reused [PlayersCantCastSpells] primitive scoped to each opponent
  * (Void Winnower / Grand Abolisher family), filtered to spells with mana value 3 or less.
  */
 val BriselaVoiceOfNightmares = card("Brisela, Voice of Nightmares") {
     manaCost = ""
+    meldResult = true
     colorIdentity = ""
     typeLine = "Legendary Creature — Eldrazi Angel"
     power = 9

@@ -33,7 +33,8 @@ A **Card** exposes (all optional unless noted):
 - `ratings` — `Map<nameKey, Double>` from the set `.txt` (see `data/README.md`).
 - `removal` — `Set<lowercased name>` from removal JSON.
 - `arch` — `Map<nameKey, {archetypes:[{archetype,role}], fixing:[colors], splashable:Bool}>`.
-  Empty for all sets except FDN/SOS/SOSSPG/TMT.
+  Empty for every set whose table ships no archetype columns; the tagged ones are whichever files
+  exist under `draftai/archetypes/`, which moves with each data refresh.
 - `archColors` — `Map<archetypeName, [colors]>` (from `Bm`, see §6). May be null.
 - `removalFlag` (`i`) — Boolean. When true, removal scoring uses the simple "need N" branch
   (deckbuild passes this); drafting leaves it false/undefined.
@@ -279,7 +280,7 @@ w = k.length>0 ? k : (h>=3 ? deckColors(nonland).take(2) : [])   # "current colo
 
 Then one of two sub-paths:
 
-**(A) `D` true — archetype-aware** (only the 4 tagged sets):
+**(A) `D` true — archetype-aware** (tagged sets only):
 Let `committed = (j ? U[:1] : U[:2])`, `q = (j ? 3.5 : 2.5)` (off-color weight), `E = arch[card.name]`,
 `$ = E.archetypes' names`, `fixing = E.fixing`, `splashable = E.splashable`, `dt = card colors`,
 `kt = (no current colors or fitsColors(card, w))`.
@@ -360,4 +361,4 @@ elif have > target+2.5: u -= 0.4R   "Overcrowded curve"
   are immutable inputs loaded once per set.
 - **Validation harness**: drive a booster through the web app, capture its `aiScores` Map
   (`xs` output) from devtools, assert Kotlin totals match to 2 dp. Do this for one untagged set (aX path)
-  and one of FDN/SOS/TMT (jm path).
+  and one tagged set (jm path).

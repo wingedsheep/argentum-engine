@@ -64,7 +64,7 @@ class GutlessPlundererScenarioTest : FunSpec({
             when {
                 pending is SelectCardsDecision -> {
                     kept = pending.options.first()
-                    driver.submitCardSelection(pending.playerId, listOf(kept!!))
+                    driver.submitCardSelection(pending.playerId, listOf(kept))
                 }
                 driver.stackSize > 0 -> driver.bothPass()
                 else -> break

@@ -45,11 +45,12 @@ object CardEntityFactory {
         // cards with the same name but different art variants (basic lands across sets)
         // resolve back to the correct CardDefinition via CardRegistry.
         // SetCode is included to avoid collisions between sets that share collector numbers
-        // (e.g., Khans and Dominaria both use 250-269 for basic lands). Honour the chosen
-        // printing's set/CN when one was pinned — this keeps cardDefinitionId stable for
-        // copy/clone effects that round-trip through CardRegistry.
-        val effectiveSetCode = printing?.setCode ?: cardDef.setCode
-        val effectiveCollectorNumber = printing?.collectorNumber ?: cardDef.metadata.collectorNumber
+        // (e.g., Khans and Dominaria both use 250-269 for basic lands). Keep the oracle
+        // definition's registered identity: a PrintingRef changes presentation only. Using the
+        // chosen reprint's coordinates here would make ability lookups miss when its canonical
+        // CardDefinition lives in another set.
+        val effectiveSetCode = cardDef.setCode
+        val effectiveCollectorNumber = cardDef.metadata.collectorNumber
         val definitionId = effectiveCollectorNumber?.let { cn ->
             if (effectiveSetCode != null) "${cardDef.name}#$effectiveSetCode-$cn"
             else "${cardDef.name}#$cn"
@@ -73,6 +74,10 @@ object CardEntityFactory {
                     ?: cardDef.backFace?.metadata?.imageUri
                     // Modal DFC backs aren't a separate CardDefinition; their art rides on the face.
                     ?: cardDef.cardFaces.firstOrNull { it.imageUri != null }?.imageUri,
+                // The set whose art this entity presents. `definitionId` above keeps the *oracle*
+                // definition's set on purpose, so this is the only place the pinned reprint's set
+                // survives onto the entity — and it's what makes a reprint mint its own set's tokens.
+                printingSetCode = printing?.setCode ?: cardDef.setCode,
                 hasNonManaActivatedAbility = cardDef.hasNonManaActivatedAbility,
                 hasActivatedAbility = cardDef.hasActivatedAbility,
                 // Original-printing set (canonical, not the pinned printing) — "originally printed in X".
@@ -115,6 +120,12 @@ object CardEntityFactory {
             result = result.with(HasMorphAbilityComponent)
         }
 
+        // Madness (CR 702.35a). The static half functions while the card is in a player's *hand*,
+        // so the cost has to ride the card entity in every zone rather than be looked up from the
+        // battlefield — see [MadnessComponent].
+        (cardDef.keywordAbilities.firstOrNull { it is KeywordAbility.Madness } as? KeywordAbility.Madness)
+            ?.let { result = result.with(MadnessComponent(it.cost)) }
+
         val protections = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Protection>()
         val protectionColors = protections.flatMap { p ->
             when (val s = p.scope) {
@@ -129,8 +140,24 @@ object CardEntityFactory {
         val protectionSupertypes = protections.mapNotNull {
             (it.scope as? ProtectionScope.Supertype)?.supertype
         }.toSet()
-        if (protectionColors.isNotEmpty() || protectionSubtypes.isNotEmpty() || protectionSupertypes.isNotEmpty()) {
-            result = result.with(ProtectionComponent(protectionColors, protectionSubtypes, protectionSupertypes))
+        // "Protection from instants" (Emrakul, the Promised End). Normalized to the uppercase card
+        // type name here so the projector can emit `PROTECTION_FROM_CARDTYPE_<TYPE>` — the same
+        // keyword the *granted* card-type protections (Sword of Wealth and Power, Pippin) project,
+        // so every consumer downstream already honors it.
+        val protectionCardTypes = protections.mapNotNull {
+            (it.scope as? ProtectionScope.CardType)?.cardType?.uppercase()
+        }.toSet()
+        if (protectionColors.isNotEmpty() || protectionSubtypes.isNotEmpty() ||
+            protectionSupertypes.isNotEmpty() || protectionCardTypes.isNotEmpty()
+        ) {
+            result = result.with(
+                ProtectionComponent(
+                    protectionColors,
+                    protectionSubtypes,
+                    protectionSupertypes,
+                    protectionCardTypes
+                )
+            )
         }
 
         // Card-intrinsic "would be put into [zone] from anywhere → redirect instead" self-replacements

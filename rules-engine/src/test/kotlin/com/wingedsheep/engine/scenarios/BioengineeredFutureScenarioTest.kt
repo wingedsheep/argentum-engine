@@ -5,7 +5,7 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.LandDropsComponent
-import com.wingedsheep.engine.state.components.player.LandsEnteredUnderControlThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
@@ -26,7 +26,7 @@ import io.kotest.matchers.types.shouldBeInstanceOf
  *    that entered the battlefield under your control this turn."
  *
  * Covers both the new per-player land-ETB tracker
- * ([LandsEnteredUnderControlThisTurnComponent], TurnTracker.LANDS_ENTERED_UNDER_CONTROL) and
+ * ([PermanentsEnteredUnderControlThisTurnComponent], TurnTracker.LANDS_ENTERED_UNDER_CONTROL) and
  * the third-party ETB replacement that scales with it. The Lander-token half is shared with
  * Biotech Specialist / Kav Landseeker / etc. and tested in those.
  */
@@ -38,7 +38,8 @@ class BioengineeredFutureScenarioTest : ScenarioTestBase() {
 
     private fun landsEntered(game: TestGame, playerId: EntityId): Int =
         game.state.getEntity(playerId)
-            ?.get<LandsEnteredUnderControlThisTurnComponent>()?.count ?: 0
+            ?.get<PermanentsEnteredUnderControlThisTurnComponent>()
+            ?.countOfType(com.wingedsheep.sdk.core.CardType.LAND) ?: 0
 
     private fun forestInHand(game: TestGame, playerId: EntityId): EntityId =
         game.state.getHand(playerId).first {

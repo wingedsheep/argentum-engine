@@ -5,6 +5,7 @@ import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.ChooserResolution
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -97,39 +98,25 @@ class SelectFromCollectionExecutor(
             }
         }
 
-        // Resolve who makes the decision
-        val decidingPlayerId = when (effect.chooser) {
-            Chooser.Controller -> null // null = default to controller in createDecision
-            Chooser.Opponent -> state.getOpponents(context.controllerId).firstOrNull()
-                ?: return EffectResult.error(state, "No opponent for Opponent chooser")
-            Chooser.TargetPlayer -> context.targets.firstOrNull()?.let {
-                TargetResolutionUtils.run { it.toEntityId() }
-            } ?: return EffectResult.error(state, "No target player for TargetPlayer chooser")
-            Chooser.TriggeringPlayer -> context.triggeringEntityId
-                ?: return EffectResult.error(state, "No triggering player for TriggeringPlayer chooser")
-            Chooser.SourceController -> {
-                val sourceId = context.sourceId
-                    ?: return EffectResult.error(state, "No source entity for SourceController chooser")
-                state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-                    ?: return EffectResult.error(state, "Source entity has no ControllerComponent for SourceController chooser")
-            }
-            Chooser.ControllerOfSelection -> {
-                val deriveFrom = eligibleCards.firstOrNull() ?: cards.firstOrNull()
-                    ?: return EffectResult.error(state, "No card to derive controller for ControllerOfSelection chooser")
-                state.projectedState.getController(deriveFrom)
-                    ?: state.getEntity(deriveFrom)?.get<ControllerComponent>()?.playerId
-                    ?: return EffectResult.error(state, "Could not resolve controller for ControllerOfSelection chooser")
-            }
-            Chooser.ControllerOfTarget -> {
-                val targetId = context.targets.firstOrNull()?.let {
-                    TargetResolutionUtils.run { it.toEntityId() }
-                } ?: return EffectResult.error(state, "No target for ControllerOfTarget chooser")
-                // Controller of the targeted permanent; fall back to its owner once it has
-                // left the battlefield (e.g. destroyed earlier in the same resolution).
-                state.getEntity(targetId)?.get<ControllerComponent>()?.playerId
-                    ?: state.getEntity(targetId)?.get<CardComponent>()?.ownerId
-                    ?: return EffectResult.error(state, "Could not resolve controller for ControllerOfTarget chooser")
-            }
+        // Resolve who makes the decision. `null` = default to the controller in createDecision.
+        val decidingPlayerId = when (
+            val outcome = ChooserResolution.resolve(
+                state,
+                effect.chooser,
+                context,
+                selectionCards = eligibleCards.ifEmpty { cards }
+            )
+        ) {
+            is ChooserResolution.Outcome.Resolved ->
+                if (effect.chooser == Chooser.Controller) null else outcome.playerId
+            // "An opponent chooses…" with several opponents: the controller says which one, then
+            // this same effect runs again and presents the selection to them.
+            is ChooserResolution.Outcome.NeedsOpponentPick -> return ChooserResolution.pauseForOpponentPick(
+                state, outcome.opponents, effect, context,
+                prompt = "Choose which opponent makes this choice"
+            )
+            is ChooserResolution.Outcome.Unresolvable ->
+                return EffectResult.error(state, "SelectFromCollection chooser: ${outcome.reason}")
         }
 
         // OnePerColor(matchControllerPermanentColors = true) narrows eligibility to

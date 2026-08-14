@@ -127,6 +127,10 @@ data class TargetIsSpellOnStack(
 enum class ComparisonOperator {
     LT, LTE, EQ, NEQ, GT, GTE;
 
+    /**
+     * The mathematical symbol. Debug/diagnostic rendering only — anything a player reads should use
+     * [phrase] instead, so "…can't attack unless X >= 2" comes out as "…unless X is at least 2".
+     */
     val symbol: String
         get() = when (this) {
             LT -> "<"
@@ -135,6 +139,24 @@ enum class ComparisonOperator {
             NEQ -> "!="
             GT -> ">"
             GTE -> ">="
+        }
+
+    /**
+     * English rendering of the comparison, phrased to follow an "is": "is **at least** 2",
+     * "is **greater than** the number of creatures defending player controls".
+     *
+     * Mirrors Magic's own comparative wording ("two or more" → at least, "fewer than" → less than)
+     * rather than inventing a house style, so a [Compare] description drops into rules text without
+     * reading like a debug dump.
+     */
+    val phrase: String
+        get() = when (this) {
+            LT -> "less than"
+            LTE -> "at most"
+            EQ -> "exactly"
+            NEQ -> "not"
+            GT -> "greater than"
+            GTE -> "at least"
         }
 }
 
@@ -158,7 +180,7 @@ data class Compare(
     val operator: ComparisonOperator,
     val right: DynamicAmount
 ) : Condition {
-    override val description: String = "${left.description} ${operator.symbol} ${right.description}"
+    override val description: String = "${left.description} is ${operator.phrase} ${right.description}"
     override fun applyTextReplacement(replacer: TextReplacer): Condition {
         val newLeft = left.applyTextReplacement(replacer)
         val newRight = right.applyTextReplacement(replacer)
@@ -182,6 +204,34 @@ data class Compare(
 data class PlayerHasMostLife(val player: Player) : Condition {
     override val description: String =
         "if ${player.description} has the most life or is tied for most life"
+}
+
+/**
+ * True when [player] controls the most permanents matching [filter], or is tied for the most,
+ * among all players (their count ≥ every player's). The board-count sibling of
+ * [PlayerHasMostLife] — the same shape a binary [Compare] can't express, since it needs the max
+ * over every player rather than a fixed threshold.
+ *
+ * Counts are read from the projected battlefield, so type-changing continuous effects (an animated
+ * land, a creature that lost its types) are honored.
+ *
+ * No Witnesses: "Each player who controls the most creatures investigates" — a per-player loop
+ * whose body is gated on `PlayerControlsMostPermanents(Player.You, GameObjectFilter.Creature)`,
+ * which inside the loop asks about the iterated player. Ties are included, exactly as printed.
+ */
+@SerialName("PlayerControlsMostPermanents")
+@Serializable
+data class PlayerControlsMostPermanents(
+    val player: Player,
+    val filter: GameObjectFilter = GameObjectFilter.Creature,
+) : Condition {
+    override val description: String =
+        "if ${player.description} controls the most ${filter.description} or is tied for the most"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Condition {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
 }
 
 /**
@@ -287,6 +337,20 @@ data class NumberMatches(
 @Serializable
 data class APlayerLifeAtMost(val threshold: Int) : Condition {
     override val description: String = "a player has $threshold or less life"
+}
+
+/** Condition: every player in the game has [threshold] or less life. */
+@SerialName("EachPlayerLifeAtMost")
+@Serializable
+data class EachPlayerLifeAtMost(val threshold: Int) : Condition {
+    override val description: String = "each player has $threshold or less life"
+}
+
+/** Condition: at least one opponent of the ability's controller has [threshold] or less life. */
+@SerialName("AnOpponentLifeAtMost")
+@Serializable
+data class AnOpponentLifeAtMost(val threshold: Int) : Condition {
+    override val description: String = "an opponent has $threshold or less life"
 }
 
 @SerialName("Exists")

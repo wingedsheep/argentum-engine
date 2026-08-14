@@ -287,6 +287,184 @@
     ]
 }
 
+// Liliana, Dreadhorde General
+{
+    "name": "Liliana, Dreadhorde General",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Planeswalker — Liliana",
+    "oracleText": "Whenever a creature you control dies, draw a card.\n+1: Create a 2/2 black Zombie creature token.\n−4: Each player sacrifices two creatures of their choice.\n−9: Each opponent chooses a permanent they control of each permanent type and sacrifices the rest.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 2,
+                    "toughness": 2,
+                    "colors": [
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Zombie"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/3/935d1421-0d26-468f-aa86-488b0ba25e77.jpg?1783933352"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -4
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "creature",
+                    "count": 2,
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "ActivePlayerFirst"
+                    }
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "ability_4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -9
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "permanent ctrl:opponent"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "ChooseOnePerCategory",
+                            "from": "gathered0",
+                            "categories": [
+                                {
+                                    "cardPredicates": [
+                                        "IsArtifact"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsEnchantment"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsLand"
+                                    ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsPlaneswalker"
+                                    ]
+                                }
+                            ],
+                            "storeAs": "kept1"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "kept1"
+                            },
+                            "storeMatching": "matching2"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching2",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice"
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "MYTHIC",
+        "artist": "Chris Rallis",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/7/d75ebba8-34ca-47a0-bf13-8318ad73b343.jpg?1783933442",
+        "rulings": [
+            {
+                "date": "2024-01-12",
+                "text": "If Liliana dies at the same time as one or more creatures you control, her first ability triggers for each of those creatures."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "If Liliana somehow becomes a creature and dies, her first ability will trigger."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "As Liliana's second loyalty ability resolves, first the player whose turn it is chooses two creatures they control, then each other player in turn order does the same, knowing the choices made before them. Then all the chosen creatures are sacrificed at the same time. If any player can choose only one creature, that player does so."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "As Liliana's last ability resolves, the next opponent in turn order (or, if it's somehow an opponent's turn, that opponent) makes all of their choices for it, then each other opponent in turn order does the same, knowing the choices made before them. Then all the unchosen permanents are sacrificed at the same time."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "The permanent types are artifact, creature, enchantment, land, and planeswalker. Supertypes, like legendary, aren't permanent types."
+            },
+            {
+                "date": "2024-01-12",
+                "text": "While making choices for Liliana's last ability, if a permanent has more than one permanent type, it can count for any of them. For example, you could choose an artifact creature as the artifact you're sparing, another creature as the creature, and an enchantment creature as the enchantment. Similarly, you could choose an enchantment creature as both the creature and the enchantment that you're sparing, even if you control another creature and/or another enchantment."
+            }
+        ]
+    },
+    "startingLoyalty": 6,
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Spellgorger Weird
 {
     "name": "Spellgorger Weird",

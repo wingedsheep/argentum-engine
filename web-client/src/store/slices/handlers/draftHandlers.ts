@@ -35,6 +35,7 @@ export function createDraftHandlers(set: SetState, _get: GetState): Pick<Message
           opponentReady: false,
           llmHighlightedCards: null,
           commander: null,
+          poolPlay: false,
         },
       })
     },
@@ -70,6 +71,7 @@ export function createDraftHandlers(set: SetState, _get: GetState): Pick<Message
             opponentReady: state.deckBuildingState?.opponentReady ?? false,
             llmHighlightedCards: state.deckBuildingState?.llmHighlightedCards ?? null,
             commander: state.deckBuildingState?.commander ?? null,
+            poolPlay: msg.poolPlay ?? false,
           },
         }
       })
@@ -180,6 +182,7 @@ export function createDraftHandlers(set: SetState, _get: GetState): Pick<Message
           opponentReady: false,
           llmHighlightedCards: null,
           commander: null,
+          poolPlay: false,
         },
       }))
     },

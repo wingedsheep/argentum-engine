@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.mechanics.layers.*
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -915,6 +916,43 @@ class ClassicLayerScenariosTest : FunSpec({
             // L7b: 1/1, L7c: +1/+1 (anthem only, lord suppressed) → 2/2
             projected.getPower(bears) shouldBe 2
             projected.getToughness(bears) shouldBe 2
+        }
+
+        test("Humility does NOT retract a pump that already resolved from a creature's ability") {
+            val driver = createDriver(BlankHumility, BearLord)
+            driver.init()
+            val p = driver.activePlayer!!
+
+            val lord = driver.putCreatureOnBattlefield(p, "Bear Lord")
+            val bears = driver.putCreatureOnBattlefield(p, "Grizzly Bears")
+
+            // An activated ability of Bear Lord already resolved: per CR 611.2a the continuous
+            // effect it created lasts as long as it says it does, independent of Bear Lord's
+            // abilities. Contrast the lord's *static* +1/+1 above, which Humility does stop
+            // (CR 611.3b — a static ability only generates its effect while the object has it).
+            driver.replaceState(
+                driver.state.addFloatingEffect(
+                    layer = Layer.POWER_TOUGHNESS,
+                    modification = SerializableModification.ModifyPowerToughness(1, 1),
+                    affectedEntities = setOf(lord, bears),
+                    duration = Duration.EndOfTurn,
+                    context = EffectContext(sourceId = lord, controllerId = p),
+                    sublayer = Sublayer.MODIFICATIONS
+                )
+            )
+
+            val humility = driver.putPermanentOnBattlefield(p, "Humility")
+            driver.addContinuousEffects(humility, HumilityEffects)
+
+            val projected = projector.project(driver.state)
+
+            // L7b: base 1/1 from Humility. L7c: the resolved +1/+1 still applies, and the lord's
+            // static +1/+1 does not. → 2/2, and the lord itself is 2/2 for the same reason.
+            projected.hasLostAllAbilities(lord) shouldBe true
+            projected.getPower(bears) shouldBe 2
+            projected.getToughness(bears) shouldBe 2
+            projected.getPower(lord) shouldBe 2
+            projected.getToughness(lord) shouldBe 2
         }
     }
 

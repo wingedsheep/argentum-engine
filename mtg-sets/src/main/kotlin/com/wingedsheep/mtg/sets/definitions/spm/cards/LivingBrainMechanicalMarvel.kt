@@ -50,6 +50,7 @@ val LivingBrainMechanicalMarvel = card("Living Brain, Mechanical Marvel") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "167"
         artist = "Nathaniel Himawan"
+        flavorText = "\"This was cutting edge when I was a kid!\"\n—Spider-Man, Peter Parker"
         imageUri = "https://cards.scryfall.io/normal/front/2/6/26833b64-2e6d-4977-9a6e-6fe73c54d671.jpg?1757378042"
     }
 }

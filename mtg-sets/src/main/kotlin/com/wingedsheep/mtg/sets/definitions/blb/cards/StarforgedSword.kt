@@ -1,21 +1,18 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
-import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.dsl.Patterns
+import com.wingedsheep.sdk.dsl.gift
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GiftKind
 import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.RemoveKeywordStatic
-import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
-import com.wingedsheep.sdk.scripting.effects.Mode
-import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Starforged Sword
@@ -29,8 +26,11 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * Equipped creature gets +3/+3 and loses flying.
  * Equip {3}
  *
- * Note: Gift is modeled as a modal ETB trigger. Mode 1 = no gift (do nothing),
- * Mode 2 = gift (opponent gets Fish token, attach to target creature you control).
+ * The gift is promised as you cast (CR 702.174a) — `gift(...)` supplies both the additional cost
+ * and the "they create a tapped Fish" enters ability. The printed attach ability is an
+ * intervening-if trigger (CR 603.4) on the same promise, so an unpromised cast never triggers and
+ * never asks for a creature to attach to — which is what CR 702.174m requires: targets belonging
+ * to a gift-gated part of an ability are chosen only if the gift was promised.
  */
 val StarforgedSword = card("Starforged Sword") {
     manaCost = "{4}"
@@ -38,32 +38,13 @@ val StarforgedSword = card("Starforged Sword") {
     typeLine = "Artifact — Equipment"
     oracleText = "Gift a tapped Fish (You may promise an opponent a gift as you cast this spell. If you do, when it enters, they create a tapped 1/1 blue Fish creature token.)\nWhen this Equipment enters, if the gift was promised, attach this Equipment to target creature you control.\nEquipped creature gets +3/+3 and loses flying.\nEquip {3}"
 
-    // Gift modeled as a modal ETB triggered ability
+    gift(GiftKind.TAPPED_FISH)
+
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Patterns.Mechanic.giftSpell(
-            // Mode 1: No gift — do nothing
-            Mode.noTarget(
-                Effects.Composite(emptyList()),
-                "Don't promise a gift"
-            ),
-            // Mode 2: Gift — opponent gets tapped Fish token, attach to target creature
-            Mode.withTarget(
-                CreateTokenEffect(
-                    count = DynamicAmount.Fixed(1),
-                    power = 1,
-                    toughness = 1,
-                    colors = setOf(Color.BLUE),
-                    creatureTypes = setOf("Fish"),
-                    controller = EffectTarget.PlayerRef(Player.ChosenOpponent),
-                    tapped = true,
-                    imageUri = "https://cards.scryfall.io/normal/front/d/e/de0d6700-49f0-4233-97ba-cef7821c30ed.jpg?1721431109"
-                ).then(Effects.AttachEquipment(EffectTarget.ContextTarget(0)))
-                    .then(Effects.GiftGiven()),
-                Targets.CreatureYouControl,
-                "Promise a gift — opponent creates a tapped 1/1 blue Fish token, attach to target creature you control"
-            )
-        )
+        triggerCondition = Conditions.GiftWasPromised
+        target = Targets.CreatureYouControl
+        effect = Effects.AttachEquipment(EffectTarget.ContextTarget(0))
     }
 
     // Equipped creature gets +3/+3

@@ -140,7 +140,7 @@ class TwoHeadedGiantTeamLossTest : FunSpec({
         val protectedState = withId
             .withEntity(
                 permId,
-                ComponentContainer.of(ControllerComponent(p[1]), GrantsCantLoseGameComponent)
+                ComponentContainer.of(ControllerComponent(p[1]), GrantsCantLoseGameComponent())
             )
             .addToZone(ZoneKey(p[1], Zone.BATTLEFIELD), permId)
         // Now drop team 0 to 0 life.

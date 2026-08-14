@@ -186,6 +186,10 @@ data class TargetFilter(
         /** Target artifact or land */
         val ArtifactOrLand = TargetFilter(GameObjectFilter.Companion.ArtifactOrLand)
 
+        /** Target artifact, enchantment, or land (Creeping Mold) */
+        val ArtifactEnchantmentOrLand =
+            TargetFilter(GameObjectFilter.Companion.ArtifactEnchantmentOrLand)
+
         /** Target land */
         val Land = TargetFilter(GameObjectFilter.Companion.Land)
 
@@ -297,6 +301,27 @@ data class TargetFilter(
             ),
             zone = Zone.STACK
         )
+
+        /**
+         * Target an instant spell, sorcery spell, or triggered ability on the stack — the Spider-Sense
+         * counter template. Narrower than [InstantSorcerySpellOrAbilityOnStack]: activated abilities
+         * are **not** included (only triggered ones), matching "counter target instant spell, sorcery
+         * spell, or triggered ability".
+         */
+        val InstantSorcerySpellOrTriggeredAbilityOnStack = TargetFilter(
+            GameObjectFilter(
+                cardPredicates = listOf(
+                    CardPredicate.Or(
+                        listOf(
+                            CardPredicate.IsInstant,
+                            CardPredicate.IsSorcery,
+                            CardPredicate.IsTriggeredAbility
+                        )
+                    )
+                )
+            ),
+            zone = Zone.STACK
+        )
     }
 
     // =============================================================================
@@ -390,6 +415,9 @@ data class TargetFilter(
     /** Must be attacking */
     fun attacking() = copy(baseFilter = baseFilter.attacking())
 
+    /** Attacking, with no other creature attacking (CR 506.5) — Crowd of True Believers. */
+    fun attackingAlone() = copy(baseFilter = baseFilter.attackingAlone())
+
     /** Spell on the stack cast from [zone] (reads `SpellOnStackComponent.castFromZone`). */
     fun castFromZone(zone: Zone) = copy(baseFilter = baseFilter.castFromZone(zone))
 
@@ -405,6 +433,13 @@ data class TargetFilter(
     /** Must be controlled by you */
     fun youControl() = copy(baseFilter = baseFilter.youControl())
 
+    /**
+     * Narrow a stack-ability target by its *source* (CR 113.7): "…from a creature source",
+     * "…from an artifact source". See [CardPredicate.AbilitySourceMatches].
+     */
+    fun abilitySourceMatches(subfilter: GameObjectFilter) =
+        copy(baseFilter = baseFilter.abilitySourceMatches(subfilter))
+
     /** Must not be legendary */
     fun nonlegendary() = copy(baseFilter = baseFilter.nonlegendary())
 
@@ -416,6 +451,9 @@ data class TargetFilter(
 
     /** Must be controlled by opponent */
     fun opponentControls() = copy(baseFilter = baseFilter.opponentControls())
+
+    /** Must have an Aura attached ("target enchanted creature", Graceful Takedown). */
+    fun enchanted() = copy(baseFilter = baseFilter.enchanted())
 
     /** Must be owned by you (for cards in graveyards/exile) */
     fun ownedByYou() = copy(baseFilter = baseFilter.ownedByYou())

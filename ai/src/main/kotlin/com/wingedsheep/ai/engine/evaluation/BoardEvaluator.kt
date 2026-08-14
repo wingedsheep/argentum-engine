@@ -22,14 +22,7 @@ class CompositeBoardEvaluator(
 ) : BoardEvaluator {
 
     override fun evaluate(state: GameState, projected: ProjectedState, playerId: EntityId): Double {
-        // Terminal states
-        if (state.gameOver) {
-            return when (state.winnerId) {
-                playerId -> Double.MAX_VALUE / 2
-                null -> 0.0 // draw
-                else -> -(Double.MAX_VALUE / 2)
-            }
-        }
+        terminalScore(state, playerId)?.let { return it }
 
         return features.sumOf { (weight, feature) -> weight * feature.score(state, projected, playerId) }
     }

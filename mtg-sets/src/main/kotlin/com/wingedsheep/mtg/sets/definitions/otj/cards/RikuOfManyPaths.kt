@@ -40,8 +40,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * - X plumbing: the engine's [com.wingedsheep.engine.core.SpellCastEvent] now carries
  *   `chosenModesCount`, which becomes [DynamicAmount.ContextProperty] with key
  *   [ContextPropertyKey.MODES_CHOSEN_ON_TRIGGERING_SPELL] inside this trigger's effect.
- * - "Choose up to X": [ModalEffect.chooseUpToDynamic] resolves the cap at trigger
- *   resolution and uses the standard modal continuation. Rulings: modes can't be
+ * - "Choose up to X": [ModalEffect.chooseUpToDynamic] resolves the cap as the trigger is put onto
+ *   the stack (CR 603.3c), then the modes ride there. Rulings: modes can't be
  *   repeated each time Riku triggers, so [ModalEffect.allowRepeat] stays `false`.
  */
 val RikuOfManyPaths = card("Riku of Many Paths") {

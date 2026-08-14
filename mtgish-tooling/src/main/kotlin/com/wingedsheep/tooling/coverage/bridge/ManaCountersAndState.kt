@@ -40,7 +40,7 @@ internal fun BridgeBuilder.manaCountersAndState() {
     // trample" cycle — but every corpus card with this tag also carries SetPT / activated-ability /
     // until-EOT riders the shape doesn't cover, so there is no calibrated card to render and the
     // emitter keeps declining.)
-    effect("SetPT", "SetBasePowerToughness", "set base power/toughness via an enters-with layer effect (Ghost Vacuum)")
+    effect("SetPT", "SetBaseStats", "set base power/toughness via an enters-with layer effect (Ghost Vacuum)")
     effect("AddCreatureType", "AddCreatureType", "add a creature subtype in addition to other types (Ghost Vacuum)")
     // The mtgish IR routes every put-counter action through a `PutCounters` envelope whose nested
     // `_PutCountersAction` variants carry the real shape (the old top-level `PutACounterOfType…` /
@@ -157,6 +157,14 @@ internal fun BridgeBuilder.manaCountersAndState() {
         "Exhaustion: target player's creatures+lands don't untap next untap step")
     effect("SkipAllCombatPhasesTheirNextTurn", "SkipCombatPhases",
         "False Peace: target skips all combat phases of their next turn")
+
+    // "It becomes day/night" (CR 731.1) — both mtgish `_Action` verbs lower to the one SetDayNight
+    // effect (the DayNight arg picks the designation). The effect cascades the daybound/nightbound
+    // transforms the change entails (CR 702.145b/e). The emitter's `BecomeDay`/`BecomeNight` handlers
+    // render the matching `Effects.BecomeDay` / `Effects.BecomeNight` val. Backs Into the Night
+    // (BecomeNight) and Angel of Eternal Dawn (BecomeDay).
+    effects("BecomeDay", "BecomeNight", tag = "SetDayNight",
+        note = "it becomes day/night -> Effects.BecomeDay / Effects.BecomeNight (SetDayNight, CR 731.1)")
 
     // "As ~ enters the battlefield" replacement actions (nested under the AsPermanentEnters envelope).
     // The engine realises each via a dedicated ReplacementEffect — EntersTapped, and a +1/+1 counter via

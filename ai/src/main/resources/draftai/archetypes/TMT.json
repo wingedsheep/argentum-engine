@@ -17,7 +17,7 @@
       }
     ],
     "fixing": [],
-    "splashable": false
+    "splashable": true
   },
   "east wind avatar": {
     "archetypes": [
@@ -62,6 +62,11 @@
     ],
     "fixing": [],
     "splashable": false
+  },
+  "leader's talent": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
   },
   "leonardo, big brother": {
     "archetypes": [
@@ -173,7 +178,7 @@
       }
     ],
     "fixing": [],
-    "splashable": false
+    "splashable": true
   },
   "triceraton commander": {
     "archetypes": [
@@ -338,6 +343,11 @@
     ],
     "fixing": [],
     "splashable": false
+  },
+  "madame null, power broker": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
   },
   "ninja teen": {
     "archetypes": [
@@ -831,7 +841,12 @@
       }
     ],
     "fixing": [],
-    "splashable": false
+    "splashable": true
+  },
+  "the last ronin": {
+    "archetypes": [],
+    "fixing": [],
+    "splashable": true
   },
   "lessons from life": {
     "archetypes": [
@@ -944,7 +959,7 @@
       }
     ],
     "fixing": [],
-    "splashable": false
+    "splashable": true
   },
   "technodrome": {
     "archetypes": [
@@ -964,7 +979,7 @@
       }
     ],
     "fixing": [],
-    "splashable": false
+    "splashable": true
   },
   "weather maker": {
     "archetypes": [
@@ -974,7 +989,7 @@
       }
     ],
     "fixing": [],
-    "splashable": false
+    "splashable": true
   },
   "escape tunnel": {
     "archetypes": [],

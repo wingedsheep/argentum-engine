@@ -18,6 +18,7 @@ class ZonesExecutors(
         MoveToZoneEffectExecutor(cardRegistry, targetFinder),
         ExileAndGrantOwnerPlayPermissionExecutor(),
         WarpExileExecutor(),
+        MoveTrackedBattlefieldObjectExecutor(),
         ForceExileMultiZoneExecutor(),
         ForceSacrificeExecutor(),
         SacrificeExecutor(),

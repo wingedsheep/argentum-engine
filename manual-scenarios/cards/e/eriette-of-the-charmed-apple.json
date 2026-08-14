@@ -1,0 +1,33 @@
+{
+  "player1Name": "Eriette",
+  "player2Name": "Opponent",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Eriette of the Charmed Apple"},
+      {"name": "Grizzly Bears"},
+      {"name": "Pacifism", "attachedTo": "Grizzly Bears"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Hill Giant"},
+      {"name": "Cooped Up", "attachedTo": "Hill Giant"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Grizzly Bears"]
+  },
+  "phase": "POSTCOMBAT_MAIN",
+  "step": "POSTCOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["END"],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

@@ -306,18 +306,18 @@
                     "toughnessModifier": "XValue",
                     "target": {
                         "type": "BoundVariable",
-                        "name": "t1"
+                        "name": "target creature you control"
                     }
                 },
                 {
                     "type": "Fight",
                     "target1": {
                         "type": "BoundVariable",
-                        "name": "t1"
+                        "name": "target creature you control"
                     },
                     "target2": {
                         "type": "BoundVariable",
-                        "name": "t2"
+                        "name": "up to one target creature you don't control"
                     }
                 }
             ]
@@ -328,15 +328,15 @@
                 "filter": {
                     "baseFilter": "creature ctrl:you"
                 },
-                "id": "t1"
+                "id": "target creature you control"
             },
             {
                 "type": "TargetObject",
                 "optional": true,
                 "filter": {
-                    "baseFilter": "creature ctrl:you"
+                    "baseFilter": "creature ctrl:opponent"
                 },
-                "id": "t2"
+                "id": "up to one target creature you don't control"
             }
         ]
     },

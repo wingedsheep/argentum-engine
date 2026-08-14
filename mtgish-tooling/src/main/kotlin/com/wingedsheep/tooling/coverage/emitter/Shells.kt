@@ -71,19 +71,31 @@ internal fun ktStr(s: String): String =
  * Render a subtype as the typed `Subtype.X` companion constant when one exists (typo-safe, matches
  * hand-authored cards); fall back to the stringly-typed `withSubtype("…")` form for subtypes the
  * SDK doesn't name yet.
+ *
+ * **Every** site that emits a subtype must go through this or [subtypeCtorArg] — never a hand-rolled
+ * `"\"$value\""`. `withSubtype` is overloaded on `Subtype` *and* `String`, so a hand-rolled literal
+ * compiles and behaves identically, which is how the two forms silently diverged: whether a card read
+ * `Subtype.GOBLIN` or `"Goblin"` came down to which handler happened to render it. Worse, the answer
+ * flipped whenever someone added a constant to the SDK's `Subtype` — adding `MOUNT` while implementing
+ * three Aetherdrift cards broke an unrelated emitter test that had pinned the string fallback.
  */
 internal fun subtypeArg(value: String): String =
     Registry.subtypeConstant(value)?.let { "Subtype.$it" } ?: "\"${ktStr(value)}\""
 
 /**
- * Render several subtypes as a `listOf(Subtype.X, …)` argument for `withAnyOfSubtypes` — each a typed
- * companion constant when the SDK names it, else the `Subtype("…")` constructor (still a `Subtype`, so the
- * list stays `List<Subtype>`). Used for the any-of tribal group ("Frog, Rabbit, Raccoon, or Squirrel").
+ * As [subtypeArg], but for parameters typed `Subtype` rather than `String` (`notSubtype`,
+ * `CardPredicate.HasSubtype`, the `withAnyOfSubtypes` list): the fallback is the `Subtype("…")`
+ * constructor, so the argument stays a `Subtype` even when the SDK doesn't name it.
+ */
+internal fun subtypeCtorArg(value: String): String =
+    Registry.subtypeConstant(value)?.let { "Subtype.$it" } ?: "Subtype(\"${ktStr(value)}\")"
+
+/**
+ * Render several subtypes as a `listOf(Subtype.X, …)` argument for `withAnyOfSubtypes`.
+ * Used for the any-of tribal group ("Frog, Rabbit, Raccoon, or Squirrel").
  */
 internal fun subtypeListArg(values: List<String>): String =
-    values.joinToString(", ", "listOf(", ")") {
-        Registry.subtypeConstant(it)?.let { c -> "Subtype.$c" } ?: "Subtype(\"${ktStr(it)}\")"
-    }
+    values.joinToString(", ", "listOf(", ")", transform = ::subtypeCtorArg)
 
 internal fun colorIdentityDsl(meta: JsonObject?): String? {
     if (meta == null) return null
@@ -165,6 +177,15 @@ internal fun keywordLines(card: JsonObject, keywords: Set<String>, oracleText: S
         // "Increment"`), which itself surfaces Keyword.INCREMENT. A bare `keywords(Keyword.INCREMENT)`
         // here would both duplicate the keyword and drop the cast-spell trigger, so skip it.
         if (rname == "Increment") continue
+        // Bargain is likewise composed by the `bargain()` builder (Emitter `rname == "Bargain"`), which
+        // carries Keyword.BARGAIN itself; a bare stamp here would duplicate the keyword and drop the
+        // optional additional cost.
+        if (rname == "Bargain") continue
+        // Speed (Aetherdrift): both keywords are surfaced by their own builders — `startYourEngines()`
+        // and `maxSpeed { }` (Emitter `rname == "StartYourEngines"` / `"MaxSpeed"`). A bare
+        // `keywords(Keyword.START_YOUR_ENGINES)` here would duplicate the keyword, and a bare
+        // `keywords(Keyword.MAX_SPEED)` would print the keyword while dropping the gated ability.
+        if (rname == "StartYourEngines" || rname == "MaxSpeed") continue
         val entry = Bridge.entry("_Rule", rname)
         val auto = pascalToUpperSnake(rname)
         if (entry is MappingEntry.Keyword) out.add(entry.tag)

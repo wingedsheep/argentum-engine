@@ -8,7 +8,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ModifyDrawAmount
-import com.wingedsheep.sdk.scripting.references.Player
 
 /**
  * Quantum Riddler
@@ -54,7 +53,7 @@ val QuantumRiddler = card("Quantum Riddler") {
         ModifyDrawAmount(
             modifier = 1,
             restrictions = listOf(Conditions.CardsInHandAtMost(1)),
-            appliesTo = EventPattern.DrawEvent(player = Player.You),
+            appliesTo = EventPattern.DrawCardsEvent(),
         )
     )
 

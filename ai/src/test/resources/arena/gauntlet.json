@@ -1,0 +1,9 @@
+{
+  "_comment": "The standing field every AI version is measured against. Add a version when it ships; never remove one, or the historical matrix stops being comparable. Names must exist in ArenaAgents.",
+  "agents": [
+    "v0",
+    "blb-advisors",
+    "ons-advisors",
+    "production"
+  ]
+}

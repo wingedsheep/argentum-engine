@@ -48,7 +48,8 @@ class GrantActivatedAbilityExecutor : EffectExecutor<GrantActivatedAbilityEffect
         val grant = GrantedActivatedAbility(
             entityId = targetId,
             ability = effect.ability,
-            duration = effect.duration
+            duration = effect.duration,
+            sourceId = context.sourceId
         )
 
         val newState = state.copy(

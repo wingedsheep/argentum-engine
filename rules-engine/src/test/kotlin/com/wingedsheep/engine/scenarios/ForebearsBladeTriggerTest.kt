@@ -174,4 +174,46 @@ class ForebearsBladeTriggerTest : FunSpec({
         driver.getPermanents(activePlayer).contains(equipment) shouldBe true
         driver.state.getEntity(equipment)?.get<AttachedToComponent>() shouldBe null
     }
+
+    /**
+     * Regression: the dies trigger must fire the same way whether the host was destroyed by an
+     * effect or died to lethal damage as a state-based action.
+     *
+     * The two paths unattach the Equipment at different moments. A destroy effect emits the zone
+     * change during resolution, so the attachment link is still live when triggers are detected.
+     * Lethal damage does not — CR 704.5g (lethal damage) and CR 704.5m (unattach) are both
+     * state-based actions applied in the *same* pass, so the link is already gone. The detector
+     * falls back to the host's last-known attachment ids (CR 608.2h) to cover it; before that
+     * fallback existed, every "whenever equipped creature dies" Equipment silently no-opped on
+     * the combat-damage path.
+     */
+    test("the dies trigger also fires when the equipped creature dies to lethal damage") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Plains" to 10, "Mountain" to 10),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val creature1 = driver.putCreatureOnBattlefield(activePlayer, "Test Soldier")
+        val creature2 = driver.putCreatureOnBattlefield(activePlayer, "Test Knight")
+        val equipment = driver.putEquipmentAttached(activePlayer, "Forebear's Blade", creature1)
+
+        // Bolt the 2/2 host — it dies to state-based actions, not to a destroy effect.
+        driver.giveMana(activePlayer, Color.RED, 1)
+        val bolt = driver.putCardInHand(activePlayer, "Lightning Bolt")
+        driver.castSpellWithTargets(activePlayer, bolt, listOf(ChosenTarget.Permanent(creature1)))
+        driver.bothPass()
+
+        driver.getPermanents(activePlayer).contains(creature1) shouldBe false
+
+        // The trigger still fired and is asking for its target.
+        driver.pendingDecision shouldNotBe null
+        driver.submitTargetSelection(activePlayer, listOf(creature2))
+        driver.bothPass()
+
+        driver.state.getEntity(equipment)?.get<AttachedToComponent>()?.targetId shouldBe creature2
+    }
 })

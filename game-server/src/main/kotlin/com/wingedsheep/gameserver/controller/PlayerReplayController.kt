@@ -1,14 +1,9 @@
 package com.wingedsheep.gameserver.controller
 
-import com.wingedsheep.gameserver.handler.MessageSender
-import com.wingedsheep.gameserver.protocol.ServerMessage
-import com.wingedsheep.gameserver.replay.CompactReplay
 import com.wingedsheep.gameserver.replay.ReplayService
-import com.wingedsheep.gameserver.replay.SpectatorReplayDelta
+import com.wingedsheep.gameserver.replay.ReplaySummary
 import com.wingedsheep.gameserver.repository.LobbyRepository
 import com.wingedsheep.gameserver.session.SessionRegistry
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.encodeToString
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -24,7 +19,6 @@ import org.springframework.web.bind.annotation.*
 class PlayerReplayController(
     private val replayService: ReplayService,
     private val sessionRegistry: SessionRegistry,
-    private val messageSender: MessageSender,
     private val lobbyRepository: LobbyRepository
 ) {
 
@@ -36,8 +30,7 @@ class PlayerReplayController(
             ?: return ResponseEntity.status(401)
                 .body(mapOf("error" to "Invalid or missing player token"))
 
-        val playerId = identity.playerId.value
-        val summaries = replayService.recentForPlayer(playerId).map { it.toSummary() }
+        val summaries = replayService.recentForPlayer(identity.playerId.value).map { it.toGameSummary() }
         return ResponseEntity.ok(summaries)
     }
 
@@ -60,7 +53,7 @@ class PlayerReplayController(
         }
 
         val summaries = tournament.getCompletedGameSessionIds().mapNotNull { gameId ->
-            replayService.find(gameId)?.toSummary()
+            replayService.summary(gameId)?.toGameSummary()
         }
         return ResponseEntity.ok(summaries)
     }
@@ -75,12 +68,12 @@ class PlayerReplayController(
             ?: return ResponseEntity.status(401)
                 .body(mapOf("error" to "Invalid or missing player token"))
 
-        val replay = replayService.find(gameId)
+        val stored = replayService.findStored(gameId)
             ?: return ResponseEntity.notFound().build()
 
         // Verify the player was a participant OR is in the same tournament
         val playerId = identity.playerId.value
-        val isParticipant = replay.players.any { it.playerId == playerId }
+        val isParticipant = stored.replay.players.any { it.playerId == playerId }
         val isTournamentMember = lobbyId?.let { lid ->
             val tournament = lobbyRepository.findTournamentById(lid)
             tournament != null &&
@@ -92,29 +85,19 @@ class PlayerReplayController(
             return ResponseEntity.notFound().build()
         }
 
+        val payload = replayService.viewerPayload(stored)
+            ?: return ResponseEntity.notFound().build()
+
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(serializeReplay(replay))
+            .body(payload.body)
     }
 
     private fun resolveIdentity(token: String?) =
         token?.takeIf { it.isNotBlank() }?.let { sessionRegistry.getIdentityByToken(it) }
-
-    private fun serializeReplay(replay: CompactReplay): String {
-        val reconstructed = replayService.reconstruct(replay)
-        val initialJson = messageSender.json.encodeToString(
-            ServerMessage.SpectatorStateUpdate.serializer(),
-            reconstructed.initialSnapshot
-        )
-        val deltasJson = messageSender.json.encodeToString(
-            ListSerializer(SpectatorReplayDelta.serializer()),
-            reconstructed.deltas
-        )
-        return """{"initialSnapshot":$initialJson,"deltas":$deltasJson}"""
-    }
 }
 
-/** Summary projection for a stored compact replay, as listed in the player replay browser. */
+/** Summary projection for a stored replay, as listed in the player replay browser. */
 data class GameSummary(
     val gameId: String,
     val player1Name: String,
@@ -127,11 +110,10 @@ data class GameSummary(
     val tournamentRound: Int? = null
 )
 
-/** Shared summary projection for a stored compact replay. */
-fun CompactReplay.toSummary() = GameSummary(
+fun ReplaySummary.toGameSummary() = GameSummary(
     gameId = gameId,
-    player1Name = players.getOrNull(0)?.name ?: "",
-    player2Name = players.getOrNull(1)?.name ?: "",
+    player1Name = playerNames.getOrNull(0) ?: "",
+    player2Name = playerNames.getOrNull(1) ?: "",
     startedAt = startedAt,
     endedAt = endedAt,
     winnerName = winnerName,

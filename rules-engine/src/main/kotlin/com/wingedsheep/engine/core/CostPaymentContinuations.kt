@@ -45,3 +45,25 @@ data class CostPaymentContinuation(
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
     val storedCollections: Map<String, List<EntityId>> = emptyMap()
 ) : ContinuationFrame
+
+/**
+ * Resume after the payer picks mana sources for a [PayCost.Atom] mana cost they already agreed to
+ * pay through [CostPaymentContinuation]'s yes/no.
+ *
+ * Costs paid via `CostPaymentService` used to go straight from "Pay {2}?" to the auto-tap solver,
+ * which meant the payer had no say in which permanents were tapped and no chance to activate a mana
+ * ability (CR 605.3a). Worse, `canAfford` counts mana the solver won't auto-tap — a Treasure, an
+ * Ashnod's Altar — so "yes" could be accepted and then silently fail. This frame inserts the same
+ * second step ward and "counter unless you pay" have always had.
+ *
+ * [inner] carries the original payment untouched: once the chosen sources are tapped and their mana
+ * is in the pool, the resumer performs [CostPaymentContinuation.cost] and runs its `onPaid` /
+ * `onDeclined` follow-up exactly as the direct path would.
+ */
+@Serializable
+data class CostPaymentManaSelectionContinuation(
+    override val decisionId: String,
+    val inner: CostPaymentContinuation,
+    val manaCost: com.wingedsheep.sdk.core.ManaCost,
+    val availableSources: List<ManaSourceOption>
+) : ContinuationFrame

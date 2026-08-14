@@ -22,7 +22,6 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EntersTapped
-import com.wingedsheep.sdk.scripting.EntersWithChoice
 
 /**
  * Mints a token that is a copy of a bare [CardDefinition] — one not instantiated in any zone —
@@ -131,11 +130,12 @@ object TokenFromDefinition {
         // ZoneChangeEvent — so we deliberately do NOT emit the entry ZoneChangeEvent here when we
         // pause (the resolution path would otherwise detect those triggers now AND again in the
         // resumer, firing them twice). Counters already added ride along as carryEvents.
-        val firstChoice = cardDef.script.replacementEffects
-            .filterIsInstance<EntersWithChoice>()
-            .sortedBy { it.choiceType.ordinal }
-            .firstOrNull()
-        if (firstChoice != null) {
+        // Printed EntersWithChoice + a synthesized granted-riot choice (Spider-Punk: "Other Spiders
+        // you control have riot" — CR 702.136b, each granted instance is a separate choice). Computed
+        // by the shared helper so a minted token and a token copy resolve as-enters choices the same
+        // way.
+        val choicePlan = TokenEntryReplacements.firstEntersWithChoice(newState, tokenId, cardRegistry)
+        if (choicePlan != null) {
             val cardComponent = newState.getEntity(tokenId)?.get<CardComponent>()
             if (cardComponent != null) {
                 val paused = PermanentEntryReplacements.pauseForEntersWithChoice(
@@ -143,9 +143,11 @@ object TokenFromDefinition {
                     entityId = tokenId,
                     controllerId = controllerId,
                     cardComponent = cardComponent,
-                    choice = firstChoice,
+                    choice = choicePlan.choice,
                     fromZone = null,
-                    carryEvents = counterEvents
+                    carryEvents = counterEvents,
+                    syntheticRiot = choicePlan.syntheticRiot,
+                    syntheticRiotRemaining = choicePlan.syntheticRiotRemaining,
                 )
                 if (paused != null) return EffectResult.from(paused)
             }
@@ -157,6 +159,13 @@ object TokenFromDefinition {
         val (sagaState, sagaEvents) = ZoneMovementUtils.applySagaEntryIfNeeded(newState, tokenId)
         newState = sagaState
 
+        // CR 306.5b: same for a minted planeswalker — it enters with its printed loyalty counters,
+        // or state-based actions (CR 704.5i) bin it on arrival. No-op for non-planeswalkers.
+        val (entryCounterState, entryCounterEvents) = ZoneMovementUtils.applyIntrinsicEntryCountersIfNeeded(
+            newState, tokenId, controllerId, cardRegistry
+        )
+        newState = entryCounterState
+
         val event = ZoneChangeEvent(
             entityId = tokenId,
             entityName = cardDef.name,
@@ -165,6 +174,8 @@ object TokenFromDefinition {
             ownerId = controllerId
         )
 
-        return EffectResult.success(newState, listOf(event) + counterEvents + sagaEvents)
+        return EffectResult.success(
+            newState, listOf(event) + counterEvents + sagaEvents + entryCounterEvents
+        )
     }
 }

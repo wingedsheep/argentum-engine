@@ -1,0 +1,53 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Norman Osborn",
+      "Peter Parker",
+      "Gwenom, Remorseless",
+      "Black Cat, Cunning Thief"
+    ],
+    "battlefield": [
+      {"name": "Jalum Tome"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Mountain"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Plains", "Swamp", "Island", "Plains", "Swamp", "Island", "Plains", "Swamp", "Island", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Grizzly Bears", "Plains", "Island", "Swamp", "Plains", "Island", "Swamp", "Plains", "Island", "Swamp", "Plains", "Island"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "AI"
+}

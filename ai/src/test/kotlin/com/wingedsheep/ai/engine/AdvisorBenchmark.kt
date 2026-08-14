@@ -161,7 +161,8 @@ private data class GameResultAdvisor(
 
 private fun playAdvisorGame(
     registry: CardRegistry, deck1: Deck, deck2: Deck, id: Int,
-    advisedIsP1: Boolean, maxTurns: Int = 50
+    // maxTurns counts player turns (`GameState.turnNumber`), so 100 is 50 turns each.
+    advisedIsP1: Boolean, maxTurns: Int = 100
 ): GameResultAdvisor {
     val processor = ActionProcessor(registry)
     val initializer = GameInitializer(registry)

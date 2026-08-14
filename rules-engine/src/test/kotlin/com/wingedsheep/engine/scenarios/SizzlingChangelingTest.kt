@@ -23,9 +23,9 @@ import io.kotest.matchers.shouldBe
  *
  * Regression guard for "until the end of your next turn": the exiled card must stay playable
  * through the controller's *next* turn (a land via PlayLand and a nonland spell via CastSpell),
- * and the permission must expire only after that turn. Note `GameState.turnNumber` is round-based
- * — it increments when the starting player begins a new turn, not per player-turn — so in a duel
- * the controller's next turn is exactly turnNumber + 1.
+ * and the permission must expire only after that turn. The permission's `expiresAfterTurn` is a
+ * floor (`turnNumber + 1` — "not this turn"); which turn it actually closes on is decided by the
+ * controller half of the cleanup check, so a duel and a pod behave the same way.
  */
 class SizzlingChangelingTest : FunSpec({
 

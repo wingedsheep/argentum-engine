@@ -2,7 +2,8 @@ package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
-import com.wingedsheep.engine.state.components.player.PermanentTypesEnteredBattlefieldThisTurnComponent
+import com.wingedsheep.engine.state.components.player.EnteredPermanentRecord
+import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.lci.cards.AkalPakal
@@ -48,7 +49,9 @@ class AkalPakalScenarioTest : FunSpec({
         d.replaceState(
             d.state.updateEntity(you) { container ->
                 container.with(
-                    PermanentTypesEnteredBattlefieldThisTurnComponent(setOf(CardType.ARTIFACT))
+                    PermanentsEnteredUnderControlThisTurnComponent(
+                        listOf(EnteredPermanentRecord(you, setOf(CardType.ARTIFACT)))
+                    )
                 )
             }
         )
@@ -87,7 +90,7 @@ class AkalPakalScenarioTest : FunSpec({
 
         d.putPermanentOnBattlefield(you, "Akal Pakal, First Among Equals")
 
-        // No PermanentTypesEnteredBattlefieldThisTurnComponent set — the intervening-if condition
+        // No permanent-entry log set — the intervening-if condition
         // fails at trigger time, so the ability must not be placed on the stack (Rule 603.4).
         d.passPriorityUntil(Step.END)
 

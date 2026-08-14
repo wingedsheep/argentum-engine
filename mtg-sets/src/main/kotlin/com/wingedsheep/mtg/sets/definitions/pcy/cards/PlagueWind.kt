@@ -26,7 +26,7 @@ val PlagueWind = card("Plague Wind") {
     oracleText = "Destroy all creatures you don't control. They can't be regenerated."
     spell {
         effect = Effects.ForEachInGroup(
-            GroupFilter(GameObjectFilter.Creature.youControl()),
+            GroupFilter(GameObjectFilter.Creature.opponentControls()),
             Effects.Move(EffectTarget.Self, Zone.GRAVEYARD, byDestruction = true),
             noRegenerate = true
         )

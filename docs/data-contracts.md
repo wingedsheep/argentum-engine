@@ -253,21 +253,49 @@ completionist extras are reported separately.
 [
   { "code": "BLB", "name": "Bloomburrow", "releaseDate": "2024-08-02", "setType": "expansion",
     "block": null, "implemented": 261, "total": 261, "extraImplemented": 18, "extraTotal": 18,
-    "percent": 100.0 }
+    "notPlanned": 0, "extraNotPlanned": 0, "percent": 100.0 }
 ]
 ```
 
-**Set detail** — `GET /api/sets/{code}/coverage` → one set's full canonical card list, split into
-`draft` / `extra`, each card marked. 404 if the code isn't a catalogued set with baked totals. Drives
-the click-through detail view.
+**Set detail** — `GET /api/sets/{code}/coverage` → one set's full canonical card list: the `draft`
+pool plus the extras split into `extraGroups`, each card marked. 404 if the code isn't a catalogued
+set with baked totals. Drives the click-through detail view.
 
 ```json
-{ "code": "BLB", "name": "Bloomburrow", "releaseDate": "2024-08-02", "block": null,
-  "implemented": 261, "total": 261, "extraImplemented": 18, "extraTotal": 18, "percent": 100.0,
-  "draft": [{ "name": "Agate Assault", "implemented": true,
-              "imageUri": "https://cards.scryfall.io/normal/front/…jpg" }, ...],
-  "extra": [{ "name": "...", "implemented": false, "imageUri": "…" }, ...] }
+{ "code": "ELD", "name": "Throne of Eldraine", "releaseDate": "2019-10-04", "block": null,
+  "implemented": 254, "total": 254, "extraImplemented": 0, "extraTotal": 31,
+  "notPlanned": 0, "extraNotPlanned": 0, "percent": 100.0,
+  "draft": [{ "name": "Acclaimed Contender", "implemented": true,
+              "imageUri": "https://cards.scryfall.io/normal/front/…jpg", "notPlanned": null }, ...],
+  "extraGroups": [
+    { "label": "Planeswalker Decks", "implemented": 0, "total": 10, "notPlanned": 0,
+      "cards": [{ "name": "...", "implemented": false, "imageUri": "…", "notPlanned": null }, ...] },
+    { "label": "Brawl Decks", "implemented": 0, "total": 20, "notPlanned": 0, "cards": [...] },
+    { "label": "Promos", "implemented": 0, "total": 1, "notPlanned": 0, "cards": [...] }] }
 ```
+
+**Extras are sectioned like a Scryfall set page.** scryfall.com/sets/`<code>` splits a set into
+"Draft Cards" plus named runs of non-booster printings, and `extraGroups` mirrors the ones that
+matter here — "Starter Decks", "Planeswalker Decks", "Brawl Decks", "Starter Collection",
+"Beginner Box", "Set Extension", "Promos", "Special Art", and an "Other Cards" catch-all — so the
+view can say *which product* a completionist card comes from. `scripts/gen-set-totals` derives each
+label from the printings' Scryfall `promo_types` (see `EXTRA_GROUPS` there) and emits `extra`
+pre-sorted into those sections; the server groups by label in encounter order. Scryfall's remaining
+headings are art-variant runs (Borderless, Showcase, Extended Art, Raised Foil) — those are
+alternate *printings* of cards already in the draft pool, so against this card-name denominator they
+contain nothing new and never appear. Sectioning only partitions the extras: it never moves a card
+in or out of `extraTotal` / `extraImplemented`. Sets with no booster at all have no extras and so no
+sections.
+
+**Cards we won't implement.** A card needing a mechanic the engine will never carry (ante, subgames,
+physical dexterity) is listed in the repo-root `coverage/card-exclusions.json` manifest, keyed by name
+so one entry covers every set that prints it. `scripts/gen-set-totals` bakes the flag onto the card as
+`"notPlanned": { "kind": "ante", "why": "…" }` — exclusion is carried *as* its reason, so a not-planned
+card can never render as an unexplained gap. Those cards stay in `draft` / `extraGroups` (the detail
+view lists them with a badge) but drop out of `total` / `extraTotal` while unimplemented and are counted in
+`notPlanned` / `extraNotPlanned` instead, so "complete" means *everything we intend to build is built*.
+Implementing one silently un-excludes it: the flag only ever moves a card out of the still-to-do
+bucket. `scripts/card-status` applies the same manifest in its `Skip` column.
 
 **Implementation progress** — `GET /api/sets/progress` → the distinct-implemented-cards-over-time
 series (one cumulative point per calendar day since the project began), `[{ date, added, total }]`.
@@ -278,7 +306,8 @@ runtime, so `scripts/card-progress-graph` bakes the series (alongside the root
 
 The denominator (canonical booster + extra front-face card names) isn't knowable at runtime — it
 lives only in the local Scryfall cache. `scripts/gen-set-totals` bakes those canonical cards, split
-into `draft` (Scryfall `booster: true`) and `extra`, each `{ name, img }` (direct CDN art URL), into
+into `draft` (some printing of the card in that set is Scryfall `booster: true`) and `extra`, each
+`{ name, img }` (direct CDN art URL) plus `{ products, group }` on the extras, into
 the committed `game-server/.../resources/coverage/set-totals.json` resource (same partitioning as
 `scripts/card-status`, so the numbers match the mtgish coverage TUI). Baking the art URL lets the
 detail view render set-specific images for *missing* cards too, without hammering the rate-limited
@@ -335,7 +364,38 @@ deckbuilder's `setDeck`. `lockedDeck` empty = build fresh; non-empty = keep thos
 the rest (**heuristic** engine). The **draftsim** engine ignores `lockedDeck`/`targetSize` and always
 returns a fresh 40-card limited build (23 nonland + 17 lands), matching the original Auto-Build.
 
-## 3c. Free-for-All Lobby Mode (WebSocket)
+## 3c. Cube Pack Source (WebSocket)
+
+`UpdateLobbySettings` may replace the lobby's normal set source with a cube by sending the full
+`cubeCards` name list plus `cubeName`, `packSize`, and `cubeBasicLandSetCode`. Duplicate names are
+duplicate physical cards. The server resolves the entire list atomically; an unresolved card rejects
+the update, and `cubeCards: []` clears cube mode. While a cube is active, `setCodes` changes,
+`boosterDistribution`, and `chaosBoosters` are inert.
+
+`LobbySettings` broadcasts only the public summary: `cubeName`, `cubeCardCount`, `packSize`, and
+`cubePoolPlay`. The synthetic `CUBE` set is deliberately absent from `availableSets`. The server
+rejects starting when the selected format would need more cards than the cube contains.
+
+Saved cubes are account data, not lobby data: `/api/account/cubes` (see
+[`accounts-and-persistence.md`](accounts-and-persistence.md)) stores them, and the lobby only ever
+sees the expanded `cubeCards` list — which is what lets a guest, or a cube that was never saved
+anywhere, play exactly the same way.
+
+### Pool Play
+
+`UpdateLobbySettings.cubePoolPlay` turns a **cube `SEALED`** lobby into Pool Play: nothing is dealt,
+every player's `cardPool` is the entire cube, and copies are unlimited up to the 4-of cap. It is
+rejected on a lobby with no cube or a non-`SEALED` format (rather than accepted and ignored), and
+cleared automatically when the cube is cleared or the format changes away from `SEALED`.
+
+`SealedPoolGenerated.poolPlay` tells the deckbuilder which pool semantics apply: with `poolPlay: true`
+`cardPool` is the whole cube and adding a card must not consume it, so the client shows copies-in-deck
+rather than copies-remaining. Consequences on the server side: the capacity check does not apply, the
+"copies available in pool" validation is skipped (membership + the 4-of cap still hold), and the
+sideboard is **not** derived from the pool — a Pool Play deck submits an empty sideboard, because
+deriving `pool − maindeck` would seed the entire cube into the SIDEBOARD zone.
+
+## 3d. Free-for-All Lobby Mode (WebSocket)
 
 A lobby carries two orthogonal axes: the **format** (`SEALED` / `DRAFT` / `PREMADE_DECKS` / …,
 how the card pool is built) and a new **mode** (`gameMode`: `TOURNAMENT` or `FREE_FOR_ALL`, what
@@ -346,9 +406,33 @@ sealed, or premade), then one N-player game".
 
 - **`CreateTournamentLobby` / `UpdateLobbySettings`** gain an optional `gameMode` (default
   `TOURNAMENT`). `LobbySettings.gameMode` echoes it. Switching a lobby to `FREE_FOR_ALL` caps
-  `maxPlayers` at 6 and rejects AI seats (the built-in AI is 1v1-only; FFA pods are humans-only).
-  `TWO_HEADED_GIANT` and `TEAM_VS_TEAM` are the two **team** modes (see below); both also reject AI
-  seats and share the single-pod FFA lifecycle (one `GameSession`, play-again, standings).
+  `maxPlayers` at 6. `TWO_HEADED_GIANT` and `TEAM_VS_TEAM` are the two **team** modes (see below);
+  both share the single-pod FFA lifecycle (one `GameSession`, play-again, standings).
+- **AI seats at a pod.** `AddAiToLobby` works in every mode and every format: an AI is an ordinary
+  seat, counted by the mode's own cap, and the engine AI reads a pod as N opposing sides
+  (`ai/engine/Sides.kt`) and a 2HG team's pooled life as one total. `FreeForAllHandler` wires each AI
+  seat to the pod's `GameSession` when the game starts and marks them ready between games, so only
+  the humans are ever waited on. Where the AI's deck comes from follows the format: a generated pool
+  is built by `buildAiPoolDeck`, and `PREMADE_DECKS` — which generates no pool — has one rolled by
+  `RandomDeckResolver` at the moment the AI sits down, the same component and the same rule the quick
+  lobby's `vsAi` seat has always used. Changing the lobby's format or `deckFormat` afterwards
+  re-rolls it, since both decide what may be in it.
+- **`SetLobbyAiDeck { playerId, spec }`** is the per-seat twin of `SetQuickGameAiDeck`: the host picks
+  what *one* AI brings, in the same `AiDeckSpec` vocabulary (`auto` / `sets` / `deck`). Held per seat
+  on `LobbyPlayerState.aiDeckSpec` and echoed back as `LobbyPlayerInfo.aiDeck` — an `AiDeckSpecView`
+  summary (kind, sets, label, card count, designated commander), never the decklist itself, since
+  lobby state re-broadcasts on every change. A `deck` spec carries an optional `commander`; the list
+  is validated against the lobby's `deckFormat` on arrival, and the
+  seat's deck is re-rolled immediately rather than at game start: the premade start gate wants every
+  seat to have submitted, so the deck has to exist while the host is still looking at the lobby.
+  Rejected outside `PREMADE_DECKS`, where the AI builds from the pool it was dealt.
+- **Commander AI.** Every source picks its own commander. `auto` / `sets` build a singleton deck to
+  the lobby's commander-shaped `deckFormat` — or to paper Commander when the Rules axis says Commander
+  and no legality was set — and a limited pool is built from with `CommanderDeckGenerator.generateFromPool`.
+  A `deck` spec is the one source that can be *missing* a commander, since the host chose the list; the
+  server validates the full Commander deck on arrival and the lobby holds at its normal deck-submission
+  gate until the choice exists. A seat whose pool holds no legal commander at all stays un-submitted
+  rather than seating a deck the engine would refuse at init.
 - **Attack rule.** The same two messages also carry an optional `attackMode` (default `MULTIPLE`),
   echoed by `LobbySettings.attackMode`, choosing which opponents creatures may attack in the FFA
   game (CR 802 / 803; CR 806.2b requires exactly one): `MULTIPLE` (any opponent), `LEFT`, or
@@ -397,7 +481,11 @@ sealed, or premade), then one N-player game".
   are ready, a new game (`gameNumber + 1`) starts with the same seats. Replays are saved per game as
   usual and browsable via the lobby's replay endpoint.
 - Quick Game stays strictly 2-player (its `QuickGameLobby.MAX_PLAYERS` is untouched); FFA lives only
-  in the tournament-lobby infrastructure.
+  in the tournament-lobby infrastructure. Its opponent seat is mutable: the host sends
+  **`AddQuickGameAi`** to fill an open 1v1 seat with the built-in AI and **`RemoveQuickGameAi`** to
+  reopen that same seat to a human. `QuickGameLobbyState.vsAi` reports the current occupant rather
+  than a separate lobby kind; the create message's `vsAi` remains a shortcut for initially filling
+  the seat.
 
 ## 4. Scenario Builder Payload (REST / HTTP)
 
@@ -476,24 +564,83 @@ from a state-threaded counter (never a UUID), `ReplayReconstructor` rebuilds the
 deltas}` stream the viewer consumes. This is kilobytes per game instead of a masked snapshot + a
 per-frame delta + a full unmasked `GameState` per frame.
 
-The in-progress recording (setup + action log) is part of the persisted `GameSession` snapshot
-(`PersistentGameSession`), so a game interrupted by a server restart is still saved as a replay when
-it later finishes. Storage: an in-memory cache (`GameHistoryRepository`, last 100 games) for
-just-finished games, and a durable Postgres table (`game_replays`, gzip+base64 `CompactReplay`) when
-accounts are enabled.
-`ReplayService` resolves a game id cache-first, then the store; all replay endpoints reconstruct on
-demand. Decision ids are minted afresh each run (they are not part of the deterministic state), so a
+Decision ids are minted afresh each run (they are not part of the deterministic state), so a
 recorded `SubmitDecision` is re-bound to the freshly created decision's id during reconstruction;
 the choice payload (entity-id targets/cards) is unchanged, so the outcome is identical.
 
+#### One store
+
+Every replay — finished or still being recorded — is a row in `game_replays`, written by
+`ReplayService` and nobody else. `ReplayStore` has two implementations: `JdbcReplayStore` when
+accounts (and therefore a database) are enabled, and a bounded `InMemoryReplayStore` for a server
+running without one. In-progress recordings are flushed to the store every few seconds by
+`ReplayCheckpointFlusher` and picked back up on restart, which is what lets the Redis session blob
+carry no replay data at all.
+
+The flush is on a timer, not per action, so a crash can lose the tail of a recording. Splicing the
+rest of the game onto that short prefix would produce a record of a game nobody played, so each
+flush also writes a `resume_fingerprint` of the live position; on restore, `GameSession` compares it
+against the recovered state and stops recording if they disagree, keeping the shorter honest replay.
+
+#### Surviving deploys
+
+An input log only reproduces a game while the engine folding it behaves as it did on the day — and
+in this engine *cards are data the engine folds through*, so editing a card rewrites the past. Three
+things address that:
+
+| | What | Cost |
+|---|---|---|
+| `pinnedCards` | Compiled `CardDefinition` JSON for every card in the decks, overlaid on the live corpus during reconstruction (`ReplayCardPin` → a child `CardRegistry`). Card edits stop mattering; ability ids also stay stable, so recorded yields keep matching. Stored in its own write-once `pinned_cards` column, not in `data`, so the periodic flush doesn't rewrite it. | 7 KB gzipped on POR (34 definitions) up to ~40 KB on a modern set (113) — scales with deck variety, not game length, and is usually the largest part of a record |
+| `checkpoints` | A cheap position fingerprint (`ReplayFingerprint`: entity counter, clock, turn/phase, zone sizes, life) every 20 actions. Catches *silent* drift — actions that still apply but no longer produce the board that was played — instead of rendering it. | ~30 bytes each |
+| `presentation` | The `{initialSnapshot, deltas}` stream, materialized just after game over (the last moment we're provably on the recording build, on a background thread so it stays off the game-over path) and stored gzipped in its own column. A result rather than a recipe, so it renders regardless of engine changes. | ~62 KB gzipped for a 357-action game, ~160 KB for a 1650-action one — this one *does* scale with game length |
+
+`ReplayService.viewerPayload` picks between them: re-simulate first, and if that comes back faithful
+serve it (current view code, and "share frame as scenario" works because a real `GameState` exists);
+if it diverged, serve the archived frames instead, flagged `degraded`. `ReplayFidelity` (`EXACT` /
+`UNVERIFIED` / `DIVERGED`) and `stateReproducible` ride in the endpoint metadata, and the viewer
+shows a **From archive** badge and hides the scenario buttons when the position can't be rebuilt.
+
+`CompactReplay.version` is 2. All v2 fields default to empty and `persistenceJson` ignores unknown
+keys, so records round-trip in both directions across a rolling deploy. `engineVersion` (the git sha,
+passed to the backend image as `COMMIT_HASH`) is stamped on every record so a replay that stops
+re-simulating can be traced to the build that recorded it.
+
 **How big are they in practice?** `CompactReplaySizeBenchmark` (game-server, disabled by default)
-plays whole games with purely random actions through the real `GameSession` recording path, builds
-the `CompactReplay` each produces, and measures it. A full game's stored form (`ReplayCodec` →
-gzip+base64) lands around **4–10 KB** — roughly **3–4 bytes per recorded action** — which gzip
-shaves ~97% off the raw JSON (the action stream is highly repetitive `"type"` discriminators and
-`eN` entity ids). At that size ~170 games fit in 1 MB. Random play is action-heavy (it passes
-priority constantly and rarely closes out a game), so real AI/human games tend to be *smaller* per
-game. Run it with:
+plays whole games with purely random actions through the real `GameSession` recording path and
+measures both payloads. On POR, ~1650 actions over ~32 turns per game:
+
+| Payload | Raw JSON | Stored (gzip+base64) |
+|---|---|---|
+| Input log + pins + checkpoints (`data`) | ~237 KB | **~11 KB** (~7 B/action; ~7 KB of that is the 34 pinned card definitions) |
+| Archived frame stream (`presentation`) | ~8 MB | **~160 KB** — ~14× the input log |
+
+**POR is the cheap end of the range, though — don't plan capacity from it.** Portal's cards are
+simple, so its definitions are small and there are few distinct ones. The pins scale with *deck
+variety and card complexity*, not with game length, and on a modern set they dominate everything
+else. Measured on a real 357-action ECL game (40-card decks, human vs AI), per stored column:
+
+| Column | Stored (gzip+base64) | Scales with |
+|---|---|---|
+| `data` — input log + checkpoints | **~4.8 KB** | game length |
+| `pinned_cards` — 113 definitions | **~40 KB** | deck variety / card complexity (fixed per game) |
+| `presentation` — archived frames | **~62 KB** | game length |
+
+So ~107 KB per finished game, and **the pins are the single largest cost** — bigger than the input log
+by an order of magnitude, and unrelated to how long the game ran. Two consequences: budget per *game*,
+not per *action*; and a 20-turn concession costs nearly as much as a 40-minute grind.
+
+The input log itself stays genuinely tiny (~4.8 KB here, ~13× smaller than the archive), which is what
+keeps re-simulation the primary path. But note that the size argument is no longer the *reason* it is
+the record — with the pins counted, the recipe and the result are the same order of magnitude. The real
+reason is that only the input log can rebuild a real `GameState`, which is what "share frame as
+scenario" needs.
+
+This split is also why the pins live in their own column rather than inside `data`: the flush rewrites
+`data` every few seconds for the length of a game, and folding 40 KB of never-changing definitions into
+each of those writes cost ~12× more per flush than the action log itself. See `V11__replay_pins_write_once.sql`.
+
+Random play is action-heavy (it passes priority constantly and rarely closes out a game), so real
+AI/human games tend to have shorter action logs — but the same or larger pins. Run it with:
 
 ```bash
 ./gradlew :game-server:test --tests "*.CompactReplaySizeBenchmark" -Dbenchmark=true -DbenchmarkGames=40 -DbenchmarkSet=BLB

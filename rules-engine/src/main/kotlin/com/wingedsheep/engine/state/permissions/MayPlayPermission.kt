@@ -79,6 +79,64 @@ data class MayPlayPermission(
      * makes the cleanup expiry key off that player's turn instead of each owner's.
      */
     val expiryControllerId: EntityId? = null,
+    /**
+     * When true, this permission is revoked as soon as its [sourceId] grants another
+     * `supersededBySameSource` permission — i.e. the source exiles another card. Models
+     * "you may play that card until you exile another card with this [permanent]" (Superior
+     * Foes of Spider-Man): only the source's most-recently-exiled card stays playable, and
+     * the superseded card remains in exile but can no longer be played. Set together with
+     * [permanent] = true (the window otherwise persists across turns) by
+     * [com.wingedsheep.engine.handlers.effects.library.GrantMayPlayFromExileExecutor] when the
+     * grant carries `MayPlayExpiry.UntilSourceExilesAnother`.
+     */
+    val supersededBySameSource: Boolean = false,
+    /**
+     * When true, this permission authorizes casting spells only — a land among [cardIds] can
+     * never be played through it. Mirrors
+     * [com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect.nonLandOnly]: "cast"
+     * wording (Ragavan, Nimble Pilferer) never covers a land's play-as-a-special-action (CR
+     * 305.1), unlike "play" wording (Light Up the Stage). Read by the from-exile enumerator
+     * before it offers a `PlayLand` action for an exiled land.
+     */
+    val nonLandOnly: Boolean = false,
+    /**
+     * When set, this permission authorizes casting the card's **alternative face** at this index
+     * (`CardDefinition.cardFaces[castFaceIndex]`) instead of its primary characteristics. The
+     * enumerator reads the face's cost, type line, timing, cast restrictions, and target
+     * requirements, and threads the index onto the emitted `CastSpell`; the cast handler rejects
+     * any other face for a permission-based cast.
+     *
+     * Mirrors [com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect.castFaceIndex] —
+     * "you may cast it from your graveyard as an Adventure" (Mosswood Dreadknight, CR 715.3), where
+     * only the Adventure face is castable and the creature face stays locked in the graveyard.
+     */
+    val castFaceIndex: Int? = null,
+    /**
+     * When set, this permission authorizes casting only spells of this **color** — the color is
+     * checked against the characteristics of the face actually being cast, not the card sitting in
+     * exile. Mirrors
+     * [com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect.castColorRestriction]:
+     * "you may cast red spells from among them" (Chandra, Dressed to Kill's −7), whose ruling is
+     * explicit that a modal double-faced card's blue back face may **not** be cast this way even
+     * though the exiled card itself is red. Read by the from-exile enumerator and independently
+     * enforced by the cast handler.
+     */
+    val castColorRestriction: com.wingedsheep.sdk.core.Color? = null,
+    /**
+     * When true, a cast authorized by this permission puts the card on the stack **transformed** —
+     * back face up (CR 712.8c), so the back face supplies the spell's characteristics, targets, and
+     * the permanent it becomes. The front face still supplies nothing but the card's identity.
+     *
+     * Mirrors [com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
+     * .castTransformed]: "exile it, then you may cast it transformed without paying its mana cost"
+     * (CR 310.11b, the Siege defeat trigger). Distinct from [castFaceIndex], which selects an
+     * alternative *face* of a multi-face card (an Adventure, a split half) — a transforming
+     * double-faced card's back face is `CardDefinition.backFace`, not a `cardFaces` entry, and it
+     * goes on the stack as the same card turned over rather than as a separate half.
+     *
+     * Ignored for a card with no back face, so it is safe on a permission covering a mixed pile.
+     */
+    val castTransformed: Boolean = false,
     val timestamp: Long
 ) {
     init {

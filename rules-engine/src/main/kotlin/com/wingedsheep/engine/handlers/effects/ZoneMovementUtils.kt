@@ -2,11 +2,13 @@ package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.core.consumeShieldCounter
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.ComponentContainer
@@ -50,8 +52,10 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
+import com.wingedsheep.engine.mechanics.MadnessGrants
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -59,6 +63,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.RedirectZoneChange
 import com.wingedsheep.sdk.scripting.RedirectZoneChangeWithEffect
 import com.wingedsheep.sdk.scripting.ZoneChangeCause
+import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.evaluateWith
@@ -134,6 +139,62 @@ object ZoneMovementUtils {
                 .with(current.withAdded(CounterType.LORE, 1))
         }
         return newState to listOf(CountersAddedEvent(entityId, "LORE", 1, cardComponent.name))
+    }
+
+    /**
+     * Apply the *intrinsic* enters-with-counters ability of an entity entering the battlefield —
+     * a planeswalker's loyalty (CR 306.5b) or a battle's defense (CR 310.4b). Both are worded the
+     * same way ("this permanent enters with a number of X counters on it equal to its printed X
+     * number") and both are replacement effects (CR 614.1c), so they apply to *every* way the
+     * permanent enters, not just a resolving spell. Without this, a planeswalker or battle put onto
+     * the battlefield from any non-stack zone (returned by an O-Ring style "until this leaves"
+     * exile, reanimated, tutored straight into play) would enter with 0 counters and be put into
+     * its owner's graveyard by state-based actions (CR 704.5i / 704.5v) the moment it arrived.
+     *
+     * Called from both battlefield-entry pipelines, exactly like [applySagaEntryIfNeeded]:
+     * [ZoneTransitionService.moveToZone] for every zone-change entry, and the ad-hoc
+     * [BattlefieldEntry.place] token-minting paths for a token copy (printed loyalty and printed
+     * defense are copiable values per CR 707.2, so the token has one to place). The cast pipeline
+     * reaches the same counters through [EntersWithReplacements.placeEntryCounters] while the
+     * permanent is still on the stack (see
+     * [com.wingedsheep.engine.mechanics.stack.StackResolver]), so no entry gets them twice.
+     *
+     * The number is read from the *current* [CardComponent]'s definition, so a double-faced card
+     * returning transformed onto its planeswalker back face gets the back face's printed loyalty
+     * (its `cardDefinitionId` has already been flipped by then).
+     *
+     * Face-down entries are skipped: a face-down permanent is a nameless 2/2 creature with no
+     * printed loyalty or defense (CR 708.2a). The check lives here rather than at the call sites so
+     * every caller inherits it.
+     *
+     * Routed through [EntersWithReplacements.placeEntryCounters] so counter-placement modifiers
+     * (Doubling Season, Vorinclex, Pir) and the "a counter was placed this turn" tracker behave
+     * exactly as they do for a printed "enters with counters".
+     *
+     * @return Pair of (updated state, events to emit) — empty events if the permanent has no
+     *   intrinsic entry counters
+     */
+    fun applyIntrinsicEntryCountersIfNeeded(
+        state: GameState,
+        entityId: EntityId,
+        controllerId: EntityId,
+        cardRegistry: CardRegistry
+    ): Pair<GameState, List<EngineGameEvent>> {
+        val container = state.getEntity(entityId) ?: return state to emptyList()
+        if (container.has<FaceDownComponent>()) return state to emptyList()
+        val cardComponent = container.get<CardComponent>() ?: return state to emptyList()
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        val (filter, amount) = when {
+            cardComponent.isPlaneswalker -> CounterTypeFilter.Loyalty to cardDef?.startingLoyalty
+            cardComponent.isBattle ->
+                com.wingedsheep.engine.mechanics.battle.Battles.DEFENSE_COUNTER to cardDef?.startingDefense
+            else -> return state to emptyList()
+        }
+        if (amount == null) return state to emptyList()
+
+        return EntersWithReplacements.placeEntryCounters(
+            state, entityId, filter, amount, controllerId, cardComponent.name
+        )
     }
 
     /**
@@ -287,6 +348,46 @@ object ZoneMovementUtils {
     }
 
     /**
+     * Break an attachment: clear the attachment's [AttachedToComponent], drop it from the host's
+     * [AttachmentsComponent], and report the [PermanentUnattachedEvent] that drives "becomes
+     * unattached" triggers (CR 701.3d).
+     *
+     * The single chokepoint for *staying-on-the-battlefield* unattaches — the explicit unattach
+     * effect, the CR 704.5m/n state-based unattach, and re-equipping onto a different host all go
+     * through it, so none of them can silently skip the event. (The attachment leaving the
+     * battlefield is the fourth path; it lives in [ZoneTransitionService], which must emit the
+     * event *before* [stripBattlefieldComponents] erases the link.)
+     *
+     * A no-op returning no events when the attachment isn't attached to anything, so callers can
+     * invoke it unconditionally — an already-detached attachment emitted its event when it actually
+     * came off, and must not emit a second one.
+     */
+    fun unattachEmittingEvent(
+        state: GameState,
+        attachmentId: EntityId,
+    ): Pair<GameState, List<EngineGameEvent>> {
+        val container = state.getEntity(attachmentId) ?: return state to emptyList()
+        val formerHostId = container.get<AttachedToComponent>()?.targetId
+            ?: return state to emptyList()
+
+        var newState = cleanupReverseAttachmentLink(state, attachmentId)
+        newState = newState.updateEntity(attachmentId) { c -> c.without<AttachedToComponent>() }
+
+        return newState to listOf(
+            com.wingedsheep.engine.core.PermanentUnattachedEvent(
+                attachmentId = attachmentId,
+                attachmentName = container.get<CardComponent>()?.name ?: "",
+                attachedToId = formerHostId,
+                // Read before the detach so a control-changing effect on the attachment is honored;
+                // falls back to the owner for an attachment already off the battlefield.
+                controllerId = container.get<ControllerComponent>()?.playerId
+                    ?: container.get<CardComponent>()?.ownerId
+                    ?: formerHostId,
+            )
+        )
+    }
+
+    /**
      * Mark every Aura/Equipment attached to a permanent that is leaving the battlefield so the
      * unattached-permanents state-based action ([UnattachedAurasCheck]) detaches/graveyards it
      * afterwards (CR 400.7 new object; 704.5n unattaches Equipment, 704.5m graveyards Auras).
@@ -325,6 +426,7 @@ object ZoneMovementUtils {
             // Identity
             .without<ControllerComponent>()
             .without<FaceDownComponent>()
+            .without<com.wingedsheep.engine.state.components.identity.FaceDownModeComponent>()
             .without<MorphDataComponent>()
             .without<RevealedToComponent>()
             // Copy effects on permanents end when the object leaves the battlefield
@@ -343,7 +445,10 @@ object ZoneMovementUtils {
             .without<com.wingedsheep.engine.state.components.battlefield.CastFromGraveyardComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.CastFromLibraryComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent>()
+            .without<com.wingedsheep.engine.state.components.battlefield.CastFromExileComponent>()
+            .without<com.wingedsheep.engine.state.components.battlefield.EnteredFromExileComponent>()
             .without<WarpedComponent>()
+            .without<com.wingedsheep.engine.state.components.battlefield.DashedComponent>()
             .without<EvokedComponent>()
             // Cast-time choices (DynamicAmount.CastX / CastChoice, chosen color/type/mode, kicked)
             // are forgotten when the object changes zones (CR 400.7). The cast X is captured as
@@ -361,6 +466,10 @@ object ZoneMovementUtils {
             .without<HasDealtDamageComponent>()
             .without<HasDealtCombatDamageToPlayerComponent>()
             .without<CountersComponent>()
+            // A battle's protector is a designation on the battlefield object (CR 310.8); the
+            // object that leaves takes it with it, and one that comes back is a new object
+            // (CR 400.7) whose protector is chosen afresh by the CR 704.5w state-based action.
+            .without<com.wingedsheep.engine.state.components.battlefield.ProtectorComponent>()
             // "Activate only once" memory (CR 702.177 Exhaust, and any `ActivationRestriction.Once`
             // ability) is tracked per object. A permanent that leaves and re-enters the battlefield
             // is a new object with no memory (CR 400.7 / 403.4), so the once-ever record must reset —
@@ -369,6 +478,10 @@ object ZoneMovementUtils {
             .without<AbilityActivatedEverComponent>()
             .without<AttachedToComponent>()
             .without<AttachmentsComponent>()
+            // A creature that leaves the battlefield becomes unpaired (CR 702.95e), and the object
+            // that comes back is a new one (CR 400.7) that must not inherit a stale partner id.
+            // This strips the *leaving* half; SoulbondPairingCheck unpairs the half left behind.
+            .without<com.wingedsheep.engine.state.components.battlefield.PairedComponent>()
             // A blink returns a new object (CR 400.7); it must not carry a stale "host left" marker
             // from a prior attachment, and an Equipment that itself re-enters starts unmarked.
             .without<AttachmentHostLeftComponent>()
@@ -417,6 +530,21 @@ object ZoneMovementUtils {
         // Check for indestructible - indestructible permanents can't be destroyed
         if (state.projectedState.hasKeyword(entityId, Keyword.INDESTRUCTIBLE)) {
             return EffectResult.success(state)
+        }
+
+        // CR 122.1c: "If this permanent would be destroyed as the result of an effect, instead
+        // remove a shield counter from it." This is that destruction-by-effect chokepoint; the
+        // lethal-damage state-based action deliberately does not consult shield counters (see
+        // [consumeShieldCounter]).
+        //
+        // Checked before regeneration because CR 616.1 lets the permanent's controller order the
+        // applicable replacement effects, and the shield counter is strictly the better one to spend
+        // first: it costs no tap, doesn't remove the permanent from combat, doesn't clear marked
+        // damage, survives "can't be regenerated", and leaves any regeneration shield banked for
+        // later. It is *not* regeneration (per the official rulings) — hence its own branch rather
+        // than a synthesized regeneration shield.
+        consumeShieldCounter(state, entityId)?.let { (shieldedState, event) ->
+            return EffectResult.success(shieldedState, listOf(event))
         }
 
         // Check for regeneration shields
@@ -498,6 +626,32 @@ object ZoneMovementUtils {
         }
     }
 
+    /**
+     * The madness cost that applies (CR 702.35a) when *this particular move* is the discard the
+     * madness replacement replaces, or null otherwise. A hand → graveyard move is a discard by
+     * definition (CR 701.8a), so the from/to pair is the whole test.
+     *
+     * The cost may be printed on the card or granted by a battlefield permanent (Falkenrath
+     * Gorger); [MadnessGrants] is the single place that decides which, so both readers here get
+     * granted madness for free.
+     *
+     * Single home for the predicate: [checkZoneChangeRedirect] uses it to divert the move to exile,
+     * and `ZoneTransitionService.moveToZone` uses the same call to recognise the diverted move
+     * afterwards and stamp the exiled card. Two readers, one rule.
+     */
+    fun madnessDiscardExile(
+        state: GameState,
+        entityId: EntityId,
+        container: ComponentContainer,
+        fromZone: Zone?,
+        toZone: Zone
+    ): ManaCost? =
+        if (fromZone == Zone.HAND && toZone == Zone.GRAVEYARD) {
+            MadnessGrants.effectiveMadnessCost(state, entityId, container)
+        } else {
+            null
+        }
+
     fun checkZoneChangeRedirect(
         state: GameState,
         entityId: EntityId,
@@ -507,7 +661,8 @@ object ZoneMovementUtils {
         val container = state.getEntity(entityId) ?: return ZoneChangeRedirectResult(toZone)
 
         // Card-intrinsic "would be put into [zone] from anywhere → redirect instead" self-replacement
-        // (Darksteel Colossus, Progenitus). It functions in every zone (CR 614.12), so it is read off
+        // (Darksteel Colossus, Progenitus). It says "from anywhere", so it functions from every
+        // zone (CR 113.6b), and it is read off
         // the moving card itself rather than by scanning the battlefield. It stops applying only while
         // the source is on the battlefield and has lost all abilities.
         val selfRedirect = container
@@ -529,6 +684,14 @@ object ZoneMovementUtils {
             }
         }
 
+        // Madness (CR 702.35a) — "if a player would discard this card, that player discards it, but
+        // exiles it instead of putting it into their graveyard." Card-intrinsic like the
+        // self-redirect above (it functions from hand), and unqualified by cause: it applies to an
+        // opponent's Mind Rot, a cycling cost, and the cleanup-step hand-size discard alike.
+        if (madnessDiscardExile(state, entityId, container, fromZone, toZone) != null) {
+            return ZoneChangeRedirectResult(Zone.EXILE)
+        }
+
         // Check if the entity itself has ExileOnLeaveBattlefieldComponent
         // (e.g., creature returned by Kheru Lich Lord, Whip of Erebos)
         if (fromZone == Zone.BATTLEFIELD && toZone != Zone.EXILE &&
@@ -538,7 +701,7 @@ object ZoneMovementUtils {
         }
 
         // Commander zone-change shortcut (CR 903.9). When `alwaysDivertToCommand` is enabled
-        // on Format.Commander, a card with CommanderComponent that would move to
+        // on a Commander-enabled format, a card with CommanderComponent that would move to
         // graveyard / exile / hand / library from any other zone is silently diverted to the
         // command zone. Token copies of a commander aren't the commander itself (CR 903.10a)
         // and never carry CommanderComponent, so the TokenComponent guard is implicit.
@@ -551,7 +714,7 @@ object ZoneMovementUtils {
             fromZone != Zone.COMMAND
         ) {
             val format = state.format
-            if (format is com.wingedsheep.sdk.core.Format.Commander && format.alwaysDivertToCommand) {
+            if (format.usesCommanders && format.alwaysDivertToCommand) {
                 return ZoneChangeRedirectResult(Zone.COMMAND)
             }
         }

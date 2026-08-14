@@ -62,7 +62,7 @@ class SetLifeTotalExecutor(
                     newState = DamageUtils.markLifeGainedThisTurn(newState, playerId, newLife - currentLife)
                 }
                 if (newLife < currentLife) {
-                    newState = DamageUtils.markLifeLostThisTurn(newState, playerId)
+                    newState = DamageUtils.markLifeLostThisTurn(newState, playerId, currentLife - newLife)
                 }
             }
         }

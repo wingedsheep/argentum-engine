@@ -3,37 +3,37 @@ package com.wingedsheep.engine.handlers.effects
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.player.EnteredPermanentRecord
-import com.wingedsheep.engine.state.components.player.LandsEnteredUnderControlThisTurnComponent
-import com.wingedsheep.engine.state.components.player.PermanentTypesEnteredBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentsEnteredUnderControlThisTurnComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.model.EntityId
 
 /**
- * Records the entry of a permanent for per-player, per-turn "an X entered the battlefield
- * under your control this turn" tracking (e.g. Mechan Shieldmate).
+ * Records the entry of a permanent into the per-player, per-turn entry log
+ * ([PermanentsEnteredUnderControlThisTurnComponent]) that backs every "an X entered the
+ * battlefield under your control this turn" reader — the Celebration ability word (WOE), the
+ * land-entry count (Bioengineered Future), the card-type-entered condition (Mechan Shieldmate)
+ * and the subtype-entry count (Geralf, the Fleshwright).
  *
  * Cleared at end of turn by [com.wingedsheep.engine.core.CleanupPhaseManager].
  *
- * Two sanctioned recording paths keep this tracker in sync:
+ * Two sanctioned recording paths keep this log in sync:
  *  - The standard zone-change pipeline ([ZoneTransitionService.moveToZone]) calls [record]
  *    itself, right after wiring the entering permanent's controller.
  *  - Every *other* (ad-hoc) battlefield insertion — token creation, land play, permanent-
  *    spell resolution, returns from linked exile, etc. — must go through
  *    [BattlefieldEntry.place] rather than calling `state.addToZone(...)` directly.
  *
- * The type-set tracker ([PermanentTypesEnteredBattlefieldThisTurnComponent]) merges into a
- * [Set], so it is safe (idempotent) if an entry is ever recorded twice. The land-count
- * tracker ([LandsEnteredUnderControlThisTurnComponent]) is **not** idempotent — it bumps
- * unconditionally when the entering permanent's types include `LAND`. Both sanctioned
- * recording paths call [record] exactly once per ETB; the count would skew if a future
+ * [record] appends **one entry per call**, deliberately without deduplicating on entity id: a
+ * permanent that leaves the battlefield and returns is a new object (CR 400.7) and its second
+ * entry is a second event that "a permanent entered the battlefield" abilities see. Both
+ * sanctioned recording paths call [record] exactly once per ETB; the log would skew if a future
  * call site introduced double-recording.
  *
- * Types are read from the **projected** state (post-layer), not the printed type line, so
- * a permanent that is an artifact by continuous effect at the moment of entry is recorded
- * as having entered as an artifact. The record itself is permanent for the rest of the
- * turn — once recorded, it stays true even if the permanent later leaves the battlefield
- * or changes type.
+ * Types and subtypes are read from the **projected** state (post-layer), not the printed type
+ * line, so a permanent that is an artifact by continuous effect at the moment of entry is
+ * recorded as having entered as an artifact. The record is permanent for the rest of the turn —
+ * once logged, it stays even if the permanent later leaves the battlefield, changes type, or
+ * changes controller.
  */
 object PermanentEntryTracker {
 
@@ -59,36 +59,13 @@ object PermanentEntryTracker {
         if (cardTypes.isEmpty()) return stamped
         val subtypes = stamped.projectedState.getSubtypes(entityId)
         return stamped.updateEntity(controllerId) { container ->
-            val typeMerged = run {
-                val existing = container.get<PermanentTypesEnteredBattlefieldThisTurnComponent>()
-                    ?: PermanentTypesEnteredBattlefieldThisTurnComponent()
-                val merged = existing.cardTypes + cardTypes
-                if (merged == existing.cardTypes) container
-                else container.with(PermanentTypesEnteredBattlefieldThisTurnComponent(merged))
-            }
-            // Per-permanent entry list, keyed by entityId so a (theoretical) double-record is
-            // idempotent. Backs subtype-keyed "for each [type] that entered this turn" counts.
-            val perPermanentMerged = run {
-                val existing = typeMerged.get<PermanentsEnteredUnderControlThisTurnComponent>()
-                    ?: PermanentsEnteredUnderControlThisTurnComponent()
-                if (existing.entries.any { it.entityId == entityId }) typeMerged
-                else typeMerged.with(
-                    PermanentsEnteredUnderControlThisTurnComponent(
-                        existing.entries + EnteredPermanentRecord(entityId, subtypes)
-                    )
+            val existing = container.get<PermanentsEnteredUnderControlThisTurnComponent>()
+                ?: PermanentsEnteredUnderControlThisTurnComponent()
+            container.with(
+                PermanentsEnteredUnderControlThisTurnComponent(
+                    existing.entries + EnteredPermanentRecord(entityId, cardTypes, subtypes)
                 )
-            }
-            // Lands need a *count*, not just presence, for "for each land that entered
-            // this turn" dynamic amounts (Bioengineered Future). Two unrelated lands
-            // entering both bump the counter; the set-based type tracker above sees them
-            // as a single LAND entry.
-            if (CardType.LAND in cardTypes) {
-                val landExisting = perPermanentMerged.get<LandsEnteredUnderControlThisTurnComponent>()
-                    ?: LandsEnteredUnderControlThisTurnComponent()
-                perPermanentMerged.with(LandsEnteredUnderControlThisTurnComponent(landExisting.count + 1))
-            } else {
-                perPermanentMerged
-            }
+            )
         }
     }
 

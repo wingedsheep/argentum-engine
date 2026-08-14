@@ -1,12 +1,17 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { useGameStore } from '@/store/gameStore.ts'
-import { SpectatorContext } from '../../contexts/SpectatorContext'
-import { GameBoard } from '../game/GameBoard'
-import { CombatArrows } from '../combat/CombatArrows'
-import type { SpectatingState } from '@/store/slices'
-import { reconstructSnapshots, type ReplayData } from '@/replay/reconstructSnapshots.ts'
-import { buildReplayScenarioUrl } from '../scenario/shareScenario'
-import { useViewportSize } from '@/hooks/useResponsive.ts'
+/**
+ * The in-app replay overlay: a list of finished games, and the player for whichever one you pick.
+ *
+ * It stays separate from the `/replay/:gameId` route because it must not navigate — this is opened
+ * over a live screen (home, tournament standings, an FFA pod) and routing away would drop the
+ * WebSocket. Only the *list* half is specific to it; playback is the shared {@link ReplayPlayer}.
+ */
+import { useState, useEffect, useCallback } from 'react'
+import {
+  reconstructSnapshots,
+  type ReplayData,
+  type SpectatorStateUpdate,
+} from '@/replay/reconstructSnapshots.ts'
+import { ReplayPlayer } from '../replay/ReplayPlayer'
 
 // ============================================================================
 // Types
@@ -24,23 +29,6 @@ export interface GameSummary {
   tournamentRound: number | null
 }
 
-export interface SpectatorStateUpdate {
-  gameSessionId: string
-  gameState: unknown
-  /** N-player seat roster (turn order), carrying team membership for team variants. */
-  players?: ReadonlyArray<{ playerId: string; teamIndex?: number | null; teamSharedLife?: boolean }>
-  player1Id: string | null
-  player2Id: string | null
-  player1Name: string | null
-  player2Name: string | null
-  player1: unknown
-  player2: unknown
-  currentPhase: string
-  activePlayerId: string | null
-  priorityPlayerId: string | null
-  combat: unknown
-  decisionStatus: unknown
-}
 
 // ============================================================================
 // ReplayViewer
@@ -59,26 +47,20 @@ export function ReplayViewer({ fetchGames, fetchReplay, onBack }: ReplayViewerPr
   const [games, setGames] = useState<GameSummary[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  // Replay state
   const [snapshots, setSnapshots] = useState<SpectatorStateUpdate[]>([])
-  const [currentStep, setCurrentStep] = useState(0)
-  const [autoPlay, setAutoPlay] = useState(false)
-  const setSpectatingState = useGameStore((s) => s.setSpectatingState)
+  const [replayGameId, setReplayGameId] = useState<string>('')
 
   const loadGames = useCallback(async () => {
     setLoading(true)
     setError(null)
     try {
-      const data = await fetchGames()
-      setGames(data)
+      setGames(await fetchGames())
     } catch {
       setError('Failed to load games')
     }
     setLoading(false)
   }, [fetchGames])
 
-  // Load games on mount
   useEffect(() => {
     loadGames()
   }, [loadGames])
@@ -88,82 +70,19 @@ export function ReplayViewer({ fetchGames, fetchReplay, onBack }: ReplayViewerPr
     setError(null)
     try {
       const data = await fetchReplay(gameId)
-      const reconstructed = reconstructSnapshots(data.initialSnapshot, data.deltas)
-      setSnapshots(reconstructed)
-      setCurrentStep(0)
-      setAutoPlay(false)
+      setSnapshots(reconstructSnapshots(data.initialSnapshot, data.deltas))
+      setReplayGameId(gameId)
       setView('replay')
-      if (reconstructed.length > 0) {
-        writeSnapshotToStore(reconstructed[0]!)
-      }
     } catch {
       setError('Failed to load replay')
     }
     setLoading(false)
   }
 
-  const writeSnapshotToStore = useCallback(
-    (snapshot: SpectatorStateUpdate) => {
-      const state: SpectatingState = {
-        gameSessionId: snapshot.gameSessionId,
-        gameState: snapshot.gameState as SpectatingState['gameState'],
-        player1Id: snapshot.player1Id,
-        player2Id: snapshot.player2Id,
-        player1Name: snapshot.player1Name ?? 'Player 1',
-        player2Name: snapshot.player2Name ?? 'Player 2',
-        player1: snapshot.player1 as SpectatingState['player1'],
-        player2: snapshot.player2 as SpectatingState['player2'],
-        currentPhase: snapshot.currentPhase,
-        activePlayerId: snapshot.activePlayerId,
-        priorityPlayerId: snapshot.priorityPlayerId,
-        combat: snapshot.combat as SpectatingState['combat'],
-        decisionStatus: snapshot.decisionStatus as SpectatingState['decisionStatus'],
-        isReplay: true,
-      }
-      setSpectatingState(state)
-    },
-    [setSpectatingState],
-  )
-
-  const goToStep = useCallback(
-    (step: number) => {
-      if (step < 0 || step >= snapshots.length) return
-      setCurrentStep(step)
-      writeSnapshotToStore(snapshots[step]!)
-    },
-    [snapshots, writeSnapshotToStore],
-  )
-
-  // Auto-play timer
-  useEffect(() => {
-    if (!autoPlay) return
-    const timer = setInterval(() => {
-      setCurrentStep((prev) => {
-        const next = prev + 1
-        if (next >= snapshots.length) {
-          setAutoPlay(false)
-          return prev
-        }
-        writeSnapshotToStore(snapshots[next]!)
-        return next
-      })
-    }, 1000)
-    return () => clearInterval(timer)
-  }, [autoPlay, snapshots, writeSnapshotToStore])
-
-  const handleBackToList = () => {
+  const handleBackToList = useCallback(() => {
     setView('list')
-    setSpectatingState(null)
     setSnapshots([])
-    setAutoPlay(false)
-  }
-
-  // Clean up spectating state on unmount
-  useEffect(() => {
-    return () => {
-      setSpectatingState(null)
-    }
-  }, [setSpectatingState])
+  }, [])
 
   if (view === 'list') {
     return (
@@ -178,23 +97,9 @@ export function ReplayViewer({ fetchGames, fetchReplay, onBack }: ReplayViewerPr
     )
   }
 
-  // Replay view
-  const currentSnapshot = snapshots[currentStep]
-  if (!currentSnapshot) return null
-
-  return (
-    <ReplayView
-      snapshot={currentSnapshot}
-      currentStep={currentStep}
-      totalSteps={snapshots.length}
-      autoPlay={autoPlay}
-      onPrev={() => goToStep(currentStep - 1)}
-      onNext={() => goToStep(currentStep + 1)}
-      onGoToStep={goToStep}
-      onToggleAutoPlay={() => setAutoPlay(!autoPlay)}
-      onBack={handleBackToList}
-    />
-  )
+  // The admin/tournament replay endpoints return frames only — no metadata block — so the player
+  // falls back to the frame's own seat names and hides the winner line. Everything else is shared.
+  return <ReplayPlayer snapshots={snapshots} gameId={replayGameId} onExit={handleBackToList} />
 }
 
 // ============================================================================
@@ -334,176 +239,6 @@ function GameTable({
 // Replay View
 // ============================================================================
 
-const HEADER_HEIGHT = 55
-
-function ReplayView({
-  snapshot,
-  currentStep,
-  totalSteps,
-  autoPlay,
-  onPrev,
-  onNext,
-  onGoToStep,
-  onToggleAutoPlay,
-  onBack,
-}: {
-  snapshot: SpectatorStateUpdate
-  currentStep: number
-  totalSteps: number
-  autoPlay: boolean
-  onPrev: () => void
-  onNext: () => void
-  onGoToStep: (step: number) => void
-  onToggleAutoPlay: () => void
-  onBack: () => void
-}) {
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowLeft') { e.preventDefault(); onPrev() }
-      else if (e.key === 'ArrowRight') { e.preventDefault(); onNext() }
-      else if (e.key === ' ') { e.preventDefault(); onToggleAutoPlay() }
-      else if (e.key === 'Escape') { onBack() }
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [onPrev, onNext, onToggleAutoPlay, onBack])
-
-  // Measure the header so the board sits below it even when the controls wrap to a 2nd row.
-  const headerRef = useRef<HTMLDivElement>(null)
-  const [headerHeight, setHeaderHeight] = useState(HEADER_HEIGHT)
-  useEffect(() => {
-    const el = headerRef.current
-    if (!el) return
-    const update = () => setHeaderHeight(el.offsetHeight)
-    update()
-    const ro = new ResizeObserver(update)
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [])
-
-  // Same breakpoint as useResponsive's isMobile. The scenario/snapshot/share
-  // buttons don't fit the header on phones — hide them there (they're
-  // desktop-tooling features anyway).
-  const isMobile = useViewportSize().width < 640
-
-  const [scenarioCopied, setScenarioCopied] = useState(false)
-  const handleShareAsScenario = async () => {
-    const url = buildReplayScenarioUrl(window.location.origin, snapshot.gameSessionId, currentStep)
-    try {
-      await navigator.clipboard.writeText(url)
-      setScenarioCopied(true)
-      setTimeout(() => setScenarioCopied(false), 2500)
-    } catch {
-      window.prompt('Copy this scenario link', url)
-    }
-  }
-
-  const [replayCopied, setReplayCopied] = useState(false)
-  const handleShareReplay = async () => {
-    const url = `${window.location.origin}/replay/${snapshot.gameSessionId}`
-    try {
-      await navigator.clipboard.writeText(url)
-      setReplayCopied(true)
-      setTimeout(() => setReplayCopied(false), 2500)
-    } catch {
-      window.prompt('Copy this replay link', url)
-    }
-  }
-
-  const [downloaded, setDownloaded] = useState(false)
-  const handleDownloadSnapshot = async () => {
-    const r = await fetch(`/api/public/replays/${snapshot.gameSessionId}/frames/${currentStep}/full-state`)
-    if (!r.ok) return
-    const blob = new Blob([await r.text()], { type: 'application/json' })
-    const a = document.createElement('a')
-    a.href = URL.createObjectURL(blob)
-    a.download = `scenario-${snapshot.gameSessionId}-frame${currentStep}.json`
-    a.click()
-    URL.revokeObjectURL(a.href)
-    setDownloaded(true)
-    setTimeout(() => setDownloaded(false), 2500)
-  }
-
-  return (
-    <SpectatorContext.Provider
-      value={{
-        isSpectating: true,
-        player1Id: snapshot.player1Id,
-        player2Id: snapshot.player2Id,
-        player1Name: snapshot.player1Name ?? 'Player 1',
-        player2Name: snapshot.player2Name ?? 'Player 2',
-      }}
-    >
-      <div style={styles.replayContainer}>
-        <div ref={headerRef} style={styles.replayHeader}>
-          <button onClick={onBack} style={styles.backButton}>
-            Back
-          </button>
-          <div style={styles.replayControls}>
-            <button onClick={onPrev} disabled={currentStep === 0} style={styles.controlButton} title="Previous (Left Arrow)">
-              Prev
-            </button>
-            <button onClick={onToggleAutoPlay} style={styles.controlButton} title="Play/Pause (Space)">
-              {autoPlay ? 'Pause' : 'Play'}
-            </button>
-            <button onClick={onNext} disabled={currentStep >= totalSteps - 1} style={styles.controlButton} title="Next (Right Arrow)">
-              Next
-            </button>
-          </div>
-          <div style={styles.scrubberContainer}>
-            <input
-              type="range"
-              min={0}
-              max={totalSteps - 1}
-              value={currentStep}
-              onChange={(e) => onGoToStep(Number(e.target.value))}
-              style={styles.scrubber}
-            />
-            <span style={styles.stepCounter}>
-              {currentStep + 1} / {totalSteps}
-            </span>
-          </div>
-          <div style={styles.replayInfo}>
-            <span style={styles.replayLabel}>Replay</span>
-            <span style={styles.matchupText}>
-              {snapshot.player1Name} vs {snapshot.player2Name}
-            </span>
-          </div>
-          {!isMobile && (
-            <>
-              <button
-                onClick={() => void handleShareAsScenario()}
-                style={styles.scenarioButton}
-                title="Copy a short link that drops you into this exact position — full board, hands, libraries, stack, targets and mana — to play it out yourself or against the AI."
-              >
-                {scenarioCopied ? 'Copied!' : 'Share as scenario'}
-              </button>
-              <button
-                onClick={() => void handleDownloadSnapshot()}
-                style={styles.scenarioButton}
-                title="Download this exact position as a snapshot file you can reload later from the Scenario Builder ('Load file')."
-              >
-                {downloaded ? 'Saved!' : 'Save snapshot'}
-              </button>
-              <button
-                onClick={() => void handleShareReplay()}
-                style={styles.shareReplayButton}
-                title="Copy a link to watch this replay."
-              >
-                {replayCopied ? 'Copied!' : 'Share replay'}
-              </button>
-            </>
-          )}
-        </div>
-        <div style={styles.gameBoardContainer}>
-          <GameBoard spectatorMode topOffset={headerHeight} />
-        </div>
-      </div>
-      <CombatArrows />
-    </SpectatorContext.Provider>
-  )
-}
 
 // ============================================================================
 // Helpers
@@ -615,119 +350,5 @@ const styles: Record<string, React.CSSProperties> = {
     border: 'none',
     borderRadius: 4,
     cursor: 'pointer',
-  },
-  replayContainer: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#0a0a12',
-    display: 'flex',
-    flexDirection: 'column',
-    zIndex: 1500,
-  },
-  replayHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    rowGap: 8,
-    padding: '10px 16px',
-    borderBottom: '1px solid #1a1a25',
-    backgroundColor: '#0d0d15',
-    flexShrink: 0,
-    zIndex: 1600,
-    gap: 10,
-  },
-  backButton: {
-    padding: '8px 16px',
-    fontSize: 13,
-    backgroundColor: 'transparent',
-    color: '#888',
-    border: '1px solid #333',
-    borderRadius: 6,
-    cursor: 'pointer',
-    flexShrink: 0,
-  },
-  replayControls: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
-  },
-  controlButton: {
-    padding: '6px 14px',
-    fontSize: 13,
-    backgroundColor: '#1a1a2e',
-    color: '#ccc',
-    border: '1px solid #2a2a3e',
-    borderRadius: 4,
-    cursor: 'pointer',
-  },
-  scenarioButton: {
-    padding: '7px 10px',
-    fontSize: 12,
-    backgroundColor: '#6d28d9',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-    flexShrink: 0,
-    whiteSpace: 'nowrap',
-  },
-  shareReplayButton: {
-    padding: '7px 10px',
-    fontSize: 12,
-    backgroundColor: '#1e40af',
-    color: '#fff',
-    border: 'none',
-    borderRadius: 6,
-    cursor: 'pointer',
-    flexShrink: 0,
-    whiteSpace: 'nowrap',
-  },
-  scrubberContainer: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-    minWidth: 0,
-  },
-  scrubber: {
-    flex: 1,
-    minWidth: 80,
-    height: 4,
-    appearance: 'none' as const,
-    WebkitAppearance: 'none' as const,
-    background: '#2a2a3e',
-    borderRadius: 2,
-    outline: 'none',
-    cursor: 'pointer',
-    accentColor: '#4fc3f7',
-  },
-  stepCounter: {
-    color: '#888',
-    fontSize: 13,
-    minWidth: 70,
-    flexShrink: 0,
-  },
-  replayInfo: {
-    marginLeft: 'auto',
-    textAlign: 'right',
-  },
-  replayLabel: {
-    display: 'block',
-    color: '#666',
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: '0.1em',
-  },
-  matchupText: {
-    color: '#aaa',
-    fontSize: 13,
-  },
-  gameBoardContainer: {
-    flex: 1,
-    position: 'relative',
-    overflow: 'hidden',
   },
 }

@@ -37,11 +37,13 @@ class GrantTriggeredAbilityExecutor : EffectExecutor<GrantTriggeredAbilityEffect
         if (!state.getBattlefield().contains(targetId)) {
             return EffectResult.error(state, "Target is not on the battlefield")
         }
-        // Read projected state so type-changing floating effects earlier in the same
-        // composite (e.g., AnimateLand on a land becoming a creature) are visible here.
-        if (!state.projectedState.isCreature(targetId)) {
-            return EffectResult.error(state, "Target is not a creature")
-        }
+        // Deliberately *not* gated on the target being a creature. Nothing in the rules restricts
+        // "gains '<triggered ability>'" to creatures, and the printed wording routinely names a
+        // noncreature permanent — Down in the Valley's chapter II is "**This Saga** gains 'Landfall
+        // — Whenever a land you control enters, create a 1/1 green Elf creature token.'" A
+        // creature-only guard turned that into a silent no-op (the grant errored, the chapter
+        // resolved, and no trigger ever fired). Whether a given effect may legally pick a
+        // noncreature is the TargetRequirement's job, not this executor's.
 
         val grant = GrantedTriggeredAbility(
             entityId = targetId,

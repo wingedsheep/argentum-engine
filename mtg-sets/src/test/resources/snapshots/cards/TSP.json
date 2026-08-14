@@ -1,3 +1,53 @@
+// Ancestral Vision
+{
+    "name": "Ancestral Vision",
+    "manaCost": "",
+    "typeLine": "Sorcery",
+    "oracleText": "Suspend 4—{U} (Rather than cast this card from your hand, pay {U} and exile it with four time counters on it. At the beginning of your upkeep, remove a time counter. When the last is removed, you may cast it without paying its mana cost.)\nTarget player draws three cards.",
+    "keywords": [
+        "SUSPEND"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Suspend",
+            "cost": "{U}",
+            "timeCounters": 4
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bccedc4d-38c7-4bf3-9ca7-4febd6c49d3d.jpg?1783943248"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "colorIndicator": [
+        "BLUE"
+    ],
+    "hasNoManaCost": true
+}
+
 // Ancient Grudge
 {
     "name": "Ancient Grudge",

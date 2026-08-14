@@ -1095,6 +1095,76 @@
     ]
 }
 
+// Orim's Chant
+{
+    "name": "Orim's Chant",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Kicker {W} (You may pay an additional {W} as you cast this spell.)\nTarget player can't cast spells this turn. If this spell was kicked, creatures can't attack this turn.",
+    "keywordAbilities": [
+        {
+            "type": "Kicker",
+            "manaCost": "{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "CantCastSpells",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target player"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": "WasKicked"
+                    },
+                    "then": {
+                        "type": "CantAttackGroup",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "target player"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/055afa78-b969-498f-a3ad-c792426e5ee6.jpg?1783945629",
+        "rulings": [
+            {
+                "date": "2024-06-07",
+                "text": "Orim's Chant also won't affect creatures that are already attacking. It does not remove them from combat."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "The target opponent can still activate abilities, including abilities of cards in their hands (like cycling). Their triggered abilities work as normal, they can still play lands, and so on."
+            },
+            {
+                "date": "2024-06-07",
+                "text": "Orim's Chant won't affect spells that your opponents cast before you cast Orim's Chant, including any spells that are still on the stack. Orim's Chant also won't stop your opponents from casting spells after you cast Orim's Chant but before Orim's Chant resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pygmy Kavu
 {
     "name": "Pygmy Kavu",

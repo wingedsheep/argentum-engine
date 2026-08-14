@@ -20,7 +20,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
 /**
- * Scenario tests for the Incubate keyword action (CR 701.53).
+ * Scenario tests for the Incubate keyword action (CR 701.51).
  *
  * Incubate N creates a transforming double-faced Incubator token with N +1/+1 counters
  * and "{2}: Transform this token." Transforming flips it into a 0/0 colorless Phyrexian

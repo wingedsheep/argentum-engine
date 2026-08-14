@@ -19,9 +19,12 @@ import com.wingedsheep.engine.state.components.player.InAdditionalUpkeepStepComp
 import com.wingedsheep.engine.state.components.player.AdditionalEndStepsComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalEndStepComponent
 import com.wingedsheep.engine.state.components.player.BendsThisTurnComponent
+import com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.LandsPlayedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsPutIntoExileThisTurnComponent
 import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
+import com.wingedsheep.engine.state.components.player.ExhaustAbilitiesActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaSpentOnSpellsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LoseAtEndStepComponent
 import com.wingedsheep.engine.state.components.player.LossReason
@@ -40,6 +43,11 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.HijackScope
+import com.wingedsheep.engine.mechanics.combat.CombatDefenders
+import com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.replacement.ReplacementEffectProcessor
+import com.wingedsheep.sdk.scripting.Duration
 
 /**
  * Manages turn-based game flow: phases, steps, and turn transitions.
@@ -57,35 +65,30 @@ import com.wingedsheep.sdk.scripting.effects.HijackScope
  * - [CleanupPhaseManager] — cleanup step, end-of-turn expiration
  */
 class TurnManager(
-    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
+    private val cardRegistry: CardRegistry,
     private val combatManager: CombatManager = CombatManager(
         cardRegistry,
-        com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor.noOp(cardRegistry)
+        ManaAbilitySideEffectExecutor.noOp(cardRegistry)
     ),
     private val sbaChecker: StateBasedActionChecker = StateBasedActionChecker(cardRegistry = cardRegistry),
     private val decisionHandler: DecisionHandler = DecisionHandler(),
-    private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null
+    private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null,
+    replacementProcessor: ReplacementEffectProcessor = ReplacementEffectProcessor()
 ) {
 
     val cleanupPhaseManager = CleanupPhaseManager(cardRegistry, decisionHandler)
-    val drawPhaseManager = DrawPhaseManager(cardRegistry, decisionHandler, effectExecutor)
+    val drawPhaseManager = DrawPhaseManager(cardRegistry, decisionHandler, effectExecutor, replacementProcessor)
     val beginningPhaseManager = BeginningPhaseManager(cardRegistry, decisionHandler, cleanupPhaseManager)
 
     // ── Delegate methods for external callers ──
 
     /** Draw cards for a player. Delegates to [DrawPhaseManager]. */
-    fun drawCards(state: GameState, playerId: EntityId, count: Int, skipPrompts: Boolean = false): ExecutionResult =
-        drawPhaseManager.drawCards(state, playerId, count, skipPrompts)
-
-    /** Check for prompt-on-draw abilities. Delegates to [DrawPhaseManager]. */
-    internal fun checkPromptOnDraw(
+    fun drawCards(
         state: GameState,
         playerId: EntityId,
-        drawCount: Int,
-        isDrawStep: Boolean,
-        declinedSourceIds: List<EntityId> = emptyList()
-    ): ExecutionResult? =
-        drawPhaseManager.checkPromptOnDraw(state, playerId, drawCount, isDrawStep, declinedSourceIds)
+        count: Int,
+        announce: Boolean = true
+    ): ExecutionResult = drawPhaseManager.drawCards(state, playerId, count, announce)
 
     // ── Turn lifecycle ──
 
@@ -93,13 +96,16 @@ class TurnManager(
      * Start a new turn for a player.
      */
     fun startTurn(state: GameState, playerId: EntityId): ExecutionResult {
-        // Turn number increments when the first player starts a new turn
-        // It stays the same when the second player starts their turn within the same round
-        val newTurnNumber = if (playerId == state.turnOrder.first()) {
-            state.turnNumber + 1
-        } else {
-            state.turnNumber
-        }
+        // [GameState.turnNumber] counts player turns, so every turn that begins gets the next
+        // number — a four-player pod's opening round is turns 1..4, and an extra turn (CR 500.7)
+        // is a turn of its own. The game's *first* turn doesn't come through here (GameInitializer
+        // seeds turnNumber = 1 directly), so this is only ever a transition into a later turn.
+        //
+        // This used to increment only for `turnOrder.first()`, making it a round counter. That made
+        // `turnNumber + 1` mean "next round" rather than "next turn" for delayed triggers, and it
+        // froze outright once the opening seat was eliminated — turnOrder keeps eliminated players,
+        // so nothing ever matched the boundary again and a pod played on at a fixed turn number.
+        val newTurnNumber = state.turnNumber + 1
 
         var newState = state.copy(
             activePlayerId = playerId,
@@ -108,6 +114,14 @@ class TurnManager(
             step = Step.UNTAP,
             priorityPlayerId = null, // No priority during untap
             priorityPassedBy = emptySet(),
+            // The untap-step day/night check reads the previous turn's active side. Snapshot every
+            // member's count before the per-turn counters are reset; shared-team-turn formats need
+            // each teammate's individual count, while ordinary formats produce a singleton map.
+            previousTurnActivePlayerId = state.activePlayerId,
+            previousTurnActiveTeamSpellCounts = state.activePlayerId
+                ?.let(state::sharedTurnTeam)
+                .orEmpty()
+                .associateWith { state.playerSpellsCastThisTurn[it] ?: 0 },
             spellsCastThisTurn = 0,
             playerSpellsCastThisTurn = emptyMap(),
             spellsCastThisTurnByPlayer = emptyMap(),
@@ -116,6 +130,9 @@ class TurnManager(
             // "Next spell this turn has affinity" riders are turn-scoped — an unused grant (you
             // attacked with Don & Raph but cast no matching spell) must not leak into a later turn.
             pendingNextSpellAffinities = emptyList(),
+            // "Spells you cast this turn cost {N} less" discounts (Will / Rowan, Scion of …) end
+            // with the turn that installed them.
+            turnSpellCostReductions = emptyList(),
             spellWarpedThisTurn = false,
             damageCantBePreventedThisTurn = false,
             nonlandPermanentLeftBattlefieldThisTurn = false,
@@ -128,8 +145,8 @@ class TurnManager(
             // end-of-combat counter-placement modifier still lingering at a turn boundary is
             // dropped. Longer-lived durations (UntilYourNextTurn, Permanent) survive.
             activeCounterPlacementModifiers = state.activeCounterPlacementModifiers.filter { modifier ->
-                modifier.duration !is com.wingedsheep.sdk.scripting.Duration.EndOfTurn &&
-                    modifier.duration !is com.wingedsheep.sdk.scripting.Duration.EndOfCombat
+                modifier.duration !is Duration.EndOfTurn &&
+                    modifier.duration !is Duration.EndOfCombat
             }
         )
 
@@ -141,6 +158,13 @@ class TurnManager(
                     .with(CardsPutIntoExileThisTurnComponent(count = 0))
                     .with(ManaSpentOnSpellsThisTurnComponent(totalSpent = 0))
                     .with(EquipActivationsThisTurnComponent(count = 0))
+                    // Exhaust activations reset each turn (Elvish Refueler's "you haven't
+                    // activated an exhaust ability this turn" gate).
+                    .with(ExhaustAbilitiesActivatedThisTurnComponent(count = 0))
+                    // Cards discarded this turn reset for every player (Mayhem gate + Green Goblin count).
+                    .with(CardsDiscardedThisTurnComponent(cardIds = emptyList()))
+                    // Lands played this turn (with zone-of-origin) reset (Spider-Man 2099).
+                    .with(LandsPlayedThisTurnComponent(fromZones = emptyList()))
                     // Distinct bends reset each turn for every player ("this turn" is per game-turn).
                     .with(BendsThisTurnComponent(types = emptySet()))
             }
@@ -560,7 +584,7 @@ class TurnManager(
                 // each declares and passes, the priority round walks to the next defender
                 // (a defending player who hasn't declared can't pass — see PassPriorityHandler),
                 // and the step only advances to combat damage once every defender has declared.
-                val firstDefender = com.wingedsheep.engine.mechanics.combat.CombatDefenders
+                val firstDefender = CombatDefenders
                     .defendingPlayersInApnapOrder(newState).firstOrNull()
                     ?: newState.turnOrder.firstOrNull { it != activePlayer }
                     ?: activePlayer
@@ -589,6 +613,10 @@ class TurnManager(
                 if (!hasAttackingCreatures(newState)) {
                     return advanceStep(newState.copy(step = Step.COMBAT_DAMAGE))
                 }
+                // CR 510.1 / 510.4: this step's damage is assigned from scratch. Anything a
+                // first-strike assignment locked in belongs to the step that just ended — a
+                // double striker re-divides among the blockers still blocking it.
+                newState = combatManager.clearDamageAssignmentsForNewDamageStep(newState)
                 val damageResult = combatManager.applyCombatDamage(newState, firstStrike = false)
                 if (!damageResult.isSuccess) return damageResult
                 newState = damageResult.newState
@@ -844,7 +872,7 @@ class TurnManager(
             )
         }
         if (cleanupResult.error != null) {
-            return ExecutionResult.error(cleanupResult.newState, cleanupResult.error!!)
+            return ExecutionResult.error(cleanupResult.newState, cleanupResult.error)
         }
         newState = cleanupResult.newState
         events.addAll(cleanupResult.events)

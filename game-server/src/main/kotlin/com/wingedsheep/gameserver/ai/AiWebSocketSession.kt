@@ -50,7 +50,13 @@ class AiWebSocketSession(
     private val onActionReady: (EntityId, GameAction) -> Unit,
     private val onMulliganKeep: (EntityId) -> Unit,
     private val onMulliganTake: (EntityId) -> Unit,
-    private val onBottomCards: (EntityId, List<EntityId>) -> Unit
+    private val onBottomCards: (EntityId, List<EntityId>) -> Unit,
+    /**
+     * Local testing mode: the last word on what this seat submits. Given the move the AI chose, it
+     * may hold the decision until a human approves it and may hand back a different move entirely
+     * (see [AiInsightService]). Null in normal play, where the AI's own pick goes straight through.
+     */
+    private val actionGate: AiActionGate? = null,
 ) : WebSocketSession {
 
     // =========================================================================
@@ -294,7 +300,14 @@ class AiWebSocketSession(
             delay(thinkingDelayMs * 4)
         }
 
-        submitResponse(response)
+        // The gate runs *after* the AI has chosen and therefore after the decision was recorded, so
+        // a human holding the game is looking at the finished ranking rather than a blank panel.
+        val gated = if (response is ActionResponse.SubmitAction && actionGate != null) {
+            ActionResponse.SubmitAction(actionGate.approve(aiPlayerId, response.action))
+        } else {
+            response
+        }
+        submitResponse(gated)
     }
 
     /**
@@ -523,6 +536,7 @@ class AiWebSocketSession(
             turnNumber = delta.turnNumber ?: previous.turnNumber,
             isGameOver = delta.isGameOver ?: previous.isGameOver,
             winnerId = if (delta.winnerId != null) delta.winnerId else previous.winnerId,
+            dayNight = delta.dayNight ?: previous.dayNight,
             combat = combat,
             gameLog = gameLog,
         )

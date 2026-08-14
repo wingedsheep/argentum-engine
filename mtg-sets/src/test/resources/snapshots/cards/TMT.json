@@ -1248,48 +1248,60 @@
                 "binding": "ANY",
                 "effect": {
                     "type": "Gated",
-                    "gate": "Gate.MayDecide",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "feasibility": {
+                            "type": "HasCardsInZone",
+                            "zone": "Hand"
+                        }
+                    },
                     "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "FromZone",
-                                    "zone": "Hand"
-                                },
-                                "storeAs": "hand"
-                            },
-                            {
-                                "type": "SelectFromCollection",
-                                "from": "hand",
-                                "selection": {
-                                    "type": "ChooseExactly",
-                                    "count": {
-                                        "type": "Fixed",
-                                        "amount": 1
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand"
+                                        },
+                                        "storeAs": "hand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "hand",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "discarded",
+                                        "prompt": "Choose 1 card to discard"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discarded",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard"
+                                        },
+                                        "moveType": "Discard"
                                     }
-                                },
-                                "storeSelected": "discarded",
-                                "prompt": "Choose 1 card to discard"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "discarded",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Graveyard"
-                                },
-                                "moveType": "Discard"
-                            },
-                            {
-                                "type": "DrawCards",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
+                                ]
                             }
-                        ]
+                        },
+                        "then": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
                     }
                 }
             }
@@ -5129,10 +5141,10 @@
                 "effect": {
                     "type": "ReflexiveTrigger",
                     "action": {
-                        "type": "RemoveCounters",
-                        "counterType": "hexproof",
-                        "count": 1,
-                        "target": "Self"
+                        "type": "RemoveAnyNumberOfCounters",
+                        "target": "Self",
+                        "maxTotal": 1,
+                        "minTotal": 1
                     },
                     "reflexiveEffect": {
                         "type": "MoveToZone",
@@ -5147,10 +5159,11 @@
                         {
                             "type": "TargetObject",
                             "filter": {
-                                "baseFilter": "artifact|enchantment ctrl:opponent"
+                                "baseFilter": "artifact|enchantment ctrl:triggering-player"
                             }
                         }
-                    ]
+                    ],
+                    "descriptionOverride": "You may remove a counter from Leatherhead. When you do, destroy target artifact or enchantment that player controls."
                 },
                 "descriptionOverride": "Whenever Leatherhead deals combat damage to a player, you may remove a counter from her. When you do, destroy target artifact or enchantment that player controls."
             }
@@ -5745,43 +5758,6 @@
     },
     "colorIdentityOverride": [
         "BLACK"
-    ]
-}
-
-// Make Your Move
-{
-    "name": "Make Your Move",
-    "manaCost": "{2}{W}",
-    "typeLine": "Instant",
-    "oracleText": "Destroy target artifact, enchantment, or creature with power 4 or greater.",
-    "script": {
-        "spellEffect": {
-            "type": "MoveToZone",
-            "target": {
-                "type": "BoundVariable",
-                "name": "artifact, enchantment, or creature with power 4 or greater"
-            },
-            "destination": "Graveyard",
-            "byDestruction": true
-        },
-        "targetRequirements": [
-            {
-                "type": "TargetObject",
-                "filter": {
-                    "baseFilter": "artifact|enchantment|pow>=4"
-                },
-                "id": "artifact, enchantment, or creature with power 4 or greater"
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "20",
-        "artist": "Nathaniel Himawan",
-        "flavorText": "For a moment, there is only relentless snow and frozen breath.",
-        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed8bdd98-6377-40cf-b381-cee38b1bda2a.jpg?1771502526"
-    },
-    "colorIdentityOverride": [
-        "WHITE"
     ]
 }
 
@@ -6975,7 +6951,10 @@
                 "filter": {
                     "baseFilter": "artifact token ctrl:you"
                 },
-                "amount": 1
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
             }
         ]
     },
@@ -8184,7 +8163,9 @@
                         }
                     ]
                 },
-                "activeZone": "Graveyard",
+                "activeZones": [
+                    "Graveyard"
+                ],
                 "descriptionOverride": "When this creature dies, you may exile it. When you do, put target creature card from your graveyard on top of your library."
             }
         ]

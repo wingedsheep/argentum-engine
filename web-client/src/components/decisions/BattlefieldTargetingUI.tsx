@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import type { DecisionSelectionState } from '@/store/slices'
 import type { EntityId, ChooseTargetsDecision } from '@/types'
@@ -9,39 +9,63 @@ import { DraggableBanner } from './DraggableBanner'
 import styles from './DecisionUI.module.css'
 
 /**
- * Battlefield targeting UI for ChooseTargetsDecision (non-player, non-graveyard targets).
- * Shows a side banner with Confirm/Decline buttons, uses decisionSelectionState for toggle-to-select.
+ * Board targeting UI for **one** requirement of a ChooseTargetsDecision (battlefield permanents,
+ * players, stack objects — anything clickable on the board). Shows a side banner with
+ * Confirm/Decline buttons and uses decisionSelectionState for toggle-to-select.
+ *
+ * Requirement walking (which slot we're on, accumulating picks, submitting) lives in the parent
+ * [ChooseTargetsUI]: a decision can mix a board slot with a graveyard slot (The Spot, Living
+ * Portal), and only the parent can hand each slot to the UI that can collect it.
  */
 export function BattlefieldTargetingUI({
   decision,
+  requirementIndex,
+  totalRequirements,
+  legalTargets,
+  initialSelection,
+  onComplete,
+  onBack,
+  pileButton,
 }: {
   decision: ChooseTargetsDecision
+  requirementIndex: number
+  totalRequirements: number
+  /** Legal targets for this requirement, already stripped of picks made for earlier requirements. */
+  legalTargets: readonly EntityId[]
+  /**
+   * Picks to pre-select — non-empty when the player stepped Back into this requirement, or came
+   * here from the pile picker on a mixed requirement carrying the cards they picked there.
+   */
+  initialSelection: readonly EntityId[]
+  onComplete: (targets: readonly EntityId[]) => void
+  /** Present when an earlier requirement can be revised. */
+  onBack?: () => void
+  /**
+   * Present when this requirement's legal targets *also* include graveyard/exile cards, which are
+   * not clickable on the board (Taskmaster, Mercenary Mimic: "target creature on the battlefield or
+   * creature card in a graveyard"). Opening hands the picks made here to the pile picker so both
+   * halves accumulate into the same slot; the banner otherwise stays exactly as it is, because the
+   * board half still has to be clickable.
+   */
+  pileButton?: {
+    /** "Graveyard" / "Exile" / "Graveyard / Exile" — the piles holding the other half. */
+    zoneLabel: string
+    /** How many valid targets are in those piles. */
+    count: number
+    onOpen: (carried: readonly EntityId[]) => void
+  }
 }) {
   const startDecisionSelection = useGameStore((s) => s.startDecisionSelection)
   const decisionSelectionState = useGameStore((s) => s.decisionSelectionState)
   const cancelDecisionSelection = useGameStore((s) => s.cancelDecisionSelection)
-  const submitTargetsDecision = useGameStore((s) => s.submitTargetsDecision)
   const submitCancelDecision = useGameStore((s) => s.submitCancelDecision)
   const gameState = useGameStore((s) => s.gameState)
   const [isHoveringSource, setIsHoveringSource] = useState(false)
   const responsive = useResponsive()
 
-  // Multi-requirement state: track which requirement we're on and accumulated targets
-  const [currentReqIndex, setCurrentReqIndex] = useState(0)
-  const [collectedTargets, setCollectedTargets] = useState<Record<number, readonly EntityId[]>>({})
-  // Picks to pre-select when the requirement changes because the player stepped Back;
-  // consumed (and cleared) by the selection-state effect below.
-  const restoredSelectionRef = useRef<readonly EntityId[] | null>(null)
-
-  const totalRequirements = decision.targetRequirements.length
-  const targetReq = decision.targetRequirements[currentReqIndex]
+  const targetReq = decision.targetRequirements[requirementIndex]
   const minTargets = targetReq?.minTargets ?? 1
   const maxTargets = targetReq?.maxTargets ?? 1
-  const legalTargets = decision.legalTargets[currentReqIndex] ?? []
-
-  // For multi-requirement, exclude already-selected targets from valid options
-  const alreadySelected = Object.values(collectedTargets).flat()
-  const filteredLegalTargets = legalTargets.filter((id) => !alreadySelected.includes(id))
 
   // Look up source card image from game state
   const sourceId = decision.context.sourceId
@@ -52,19 +76,18 @@ export function BattlefieldTargetingUI({
   useEffect(() => {
     const selectionState: DecisionSelectionState = {
       decisionId: decision.id,
-      validOptions: [...filteredLegalTargets],
-      selectedOptions: restoredSelectionRef.current ? [...restoredSelectionRef.current] : [],
+      validOptions: [...legalTargets],
+      selectedOptions: [...initialSelection],
       minSelections: minTargets,
       maxSelections: maxTargets,
       prompt: targetReq?.description ?? decision.prompt,
     }
-    restoredSelectionRef.current = null
     startDecisionSelection(selectionState)
 
     return () => {
       cancelDecisionSelection()
     }
-  }, [decision.id, currentReqIndex])
+  }, [decision.id, requirementIndex])
 
   const selectedCount = decisionSelectionState?.selectedOptions.length ?? 0
   const canConfirm = selectedCount >= minTargets && selectedCount <= maxTargets
@@ -72,31 +95,15 @@ export function BattlefieldTargetingUI({
 
   const handleConfirm = () => {
     if (canConfirm && decisionSelectionState) {
-      const updatedTargets = { ...collectedTargets, [currentReqIndex]: decisionSelectionState.selectedOptions }
-
-      if (currentReqIndex + 1 < totalRequirements) {
-        // More requirements — advance to the next one
-        setCollectedTargets(updatedTargets)
-        cancelDecisionSelection()
-        setCurrentReqIndex(currentReqIndex + 1)
-      } else {
-        // All requirements satisfied — submit
-        submitTargetsDecision(updatedTargets)
-        cancelDecisionSelection()
-      }
+      const selected = decisionSelectionState.selectedOptions
+      cancelDecisionSelection()
+      onComplete(selected)
     }
   }
 
   const handleDecline = () => {
-    const updatedTargets = { ...collectedTargets, [currentReqIndex]: [] as EntityId[] }
-    if (currentReqIndex + 1 < totalRequirements) {
-      setCollectedTargets(updatedTargets)
-      cancelDecisionSelection()
-      setCurrentReqIndex(currentReqIndex + 1)
-    } else {
-      submitTargetsDecision(updatedTargets)
-      cancelDecisionSelection()
-    }
+    cancelDecisionSelection()
+    onComplete([])
   }
 
   const handleCancel = () => {
@@ -105,21 +112,20 @@ export function BattlefieldTargetingUI({
   }
 
   const handleBack = () => {
-    // Step back to the previous requirement, restoring its confirmed picks so the
-    // player can revise them. The current requirement's in-progress picks are
-    // discarded; its pool is recomputed on re-confirm against the revised selection.
-    if (currentReqIndex === 0) return
-    const prevIndex = currentReqIndex - 1
-    restoredSelectionRef.current = collectedTargets[prevIndex] ?? []
-    const remaining = { ...collectedTargets }
-    delete remaining[prevIndex]
-    setCollectedTargets(remaining)
     cancelDecisionSelection()
-    setCurrentReqIndex(prevIndex)
+    onBack?.()
+  }
+
+  const handleOpenPile = () => {
+    // Carry the board picks over so the pile picker counts them toward this requirement's
+    // minimum/maximum and submits them together with whatever is chosen there.
+    const carried = [...(decisionSelectionState?.selectedOptions ?? [])]
+    cancelDecisionSelection()
+    pileButton?.onOpen(carried)
   }
 
   const requirementLabel = totalRequirements > 1
-    ? `Choose Target (${currentReqIndex + 1}/${totalRequirements})`
+    ? `Choose Target (${requirementIndex + 1}/${totalRequirements})`
     : 'Choose Target'
 
   const promptText = targetReq?.description ?? decision.prompt
@@ -152,9 +158,19 @@ export function BattlefieldTargetingUI({
       <div className={styles.hint}>
         {`${selectedCount} / ${maxTargets} selected`}
       </div>
+      {pileButton && (
+        <div className={styles.hint}>
+          {`Click a highlighted permanent, or open the ${pileButton.zoneLabel.toLowerCase()}`}
+        </div>
+      )}
 
       <div className={styles.buttonContainerSmall}>
-        {currentReqIndex > 0 && (
+        {pileButton && (
+          <button onClick={handleOpenPile} className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}>
+            {`${pileButton.zoneLabel} (${pileButton.count})`}
+          </button>
+        )}
+        {onBack && (
           <button onClick={handleBack} className={`${styles.confirmButton} ${styles.confirmButtonSmall}`}>
             ← Back
           </button>

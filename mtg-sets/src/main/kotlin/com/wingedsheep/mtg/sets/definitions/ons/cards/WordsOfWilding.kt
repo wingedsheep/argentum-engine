@@ -24,7 +24,6 @@ val WordsOfWilding = card("Words of Wilding") {
         effect = Effects.ReplaceNextDraw(
             Effects.CreateToken(power = 2, toughness = 2, colors = setOf(Color.GREEN), creatureTypes = setOf("Bear"))
         )
-        promptOnDraw = true
     }
 
     metadata {

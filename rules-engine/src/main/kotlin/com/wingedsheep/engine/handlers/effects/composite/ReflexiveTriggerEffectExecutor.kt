@@ -4,19 +4,27 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
+import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
-import com.wingedsheep.sdk.scripting.targets.TargetPlayer
-import com.wingedsheep.sdk.scripting.targets.TargetOpponent
+import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -25,22 +33,27 @@ import kotlin.reflect.KClass
  * Executor for ReflexiveTriggerEffect.
  * Handles "You may [action]. When you do, [reflexiveEffect]." abilities.
  *
+ * CR 603.12: "When you do" is a genuinely separate reflexive triggered ability — a real second
+ * stack object, with its own target chosen as it's placed on the stack and its own priority round
+ * before it resolves. This executor only ever runs the *action* half; once the action succeeds, it
+ * emits a [ReflexiveAbilityTriggeredEvent] instead of resolving [ReflexiveTriggerEffect.reflexiveEffect]
+ * inline. [com.wingedsheep.engine.event.TriggerDetector]'s `detectReflexiveTriggers` turns that
+ * event into a real [com.wingedsheep.engine.event.PendingTrigger], which flows through the ordinary
+ * [com.wingedsheep.engine.event.TriggerProcessor] target-selection/stack-placement pipeline used by
+ * every other triggered ability — giving opponents a genuine response window and CR 608.2b
+ * illegal-target fizzle for free, neither of which an inline resolution could offer.
+ *
  * When optional=true:
- *   Present yes/no. If yes, execute CompositeEffect(action, reflexiveEffect).
- *   Uses MayAbilityContinuation to delegate to the existing composite flow.
- *
+ *   Present yes/no. If yes, re-enter as optional=false.
  * When optional=false:
- *   Execute action, then reflexiveEffect sequentially using the same
- *   pre-push EffectContinuation pattern as CompositeEffectExecutor.
- *
- * When reflexiveTargetRequirements is non-empty:
- *   Targets for the reflexive effect are selected AFTER the action completes,
- *   not when the trigger goes on the stack. This is used for cards like
- *   Wick's Patrol where the target depends on what the action did (mill).
+ *   Run the action (pre-pushing a continuation so a mid-action decision doesn't lose the reflexive
+ *   payoff), then emit the triggered event once it completes.
  *
  * @param effectExecutor Function to execute sub-effects (provided by registry)
- * @param targetFinder Finder for legal targets (needed for deferred targeting)
- * @param decisionHandler Handler for creating target decisions
+ * @param targetFinder Finder for legal targets (needed for the action's own "may sacrifice a..."
+ * style feasibility check — the reflexive effect's own targets are found later, generically, by
+ * `TriggerProcessor`)
+ * @param decisionHandler Handler for creating the "may [action]?" yes/no decision
  */
 class ReflexiveTriggerEffectExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
@@ -51,19 +64,26 @@ class ReflexiveTriggerEffectExecutor(
 
     override val effectType: KClass<ReflexiveTriggerEffect> = ReflexiveTriggerEffect::class
 
+    private val predicateEvaluator = PredicateEvaluator()
+
     override fun execute(
         state: GameState,
         effect: ReflexiveTriggerEffect,
         context: EffectContext
     ): EffectResult {
+        // An action that can't be performed never happens, so CR 603.12's "when you do" never
+        // triggers. Gating here rather than inside the optional branch covers both templates:
+        // the "you may [action]" prompt is meaningless (saying yes would no-op the action while
+        // still firing the payoff), and a mandatory [action] would otherwise resolve vacuously —
+        // a discard pipeline on an empty hand auto-selects nothing and reports success, which
+        // `executeActionThenEmit`'s `result.isSuccess` check can't distinguish from a real discard.
+        if (!isActionFeasible(state, effect.action, context)) {
+            return EffectResult.success(state)
+        }
         if (effect.optional) {
             return presentOptionalChoice(state, effect, context)
         }
-        if (effect.reflexiveTargetRequirements.isNotEmpty()) {
-            return executeActionThenTarget(state, effect, context)
-        }
-        // No deferred targets: delegate to composite effect executor pattern
-        return executeAsComposite(state, effect, context)
+        return executeActionThenEmit(state, effect, context)
     }
 
     private fun presentOptionalChoice(
@@ -71,13 +91,6 @@ class ReflexiveTriggerEffectExecutor(
         effect: ReflexiveTriggerEffect,
         context: EffectContext
     ): EffectResult {
-        // If the action can't be performed, skip the may decision entirely. Saying "yes"
-        // to "you may [action]. If you do, [reflexive]" is meaningless when [action] is
-        // impossible — the reflexive payoff must not fire.
-        if (!isActionFeasible(state, effect.action, context)) {
-            return EffectResult.success(state)
-        }
-
         val playerId = context.controllerId
         val sourceName = context.sourceId?.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
@@ -98,20 +111,11 @@ class ReflexiveTriggerEffectExecutor(
             hint = effect.hint
         )
 
-        // If yes and there are reflexive targets: execute just the action, then target the reflexive effect.
-        // If yes and no reflexive targets: execute action + reflexive effect as a composite.
-        val effectIfYes = if (effect.reflexiveTargetRequirements.isNotEmpty()) {
-            // Make non-optional so it goes through executeActionThenTarget when resumed
-            effect.copy(optional = false)
-        } else {
-            CompositeEffect(listOf(effect.action, effect.reflexiveEffect))
-        }
-
         val continuation = MayAbilityContinuation(
             decisionId = decisionId,
             playerId = playerId,
             sourceName = sourceName,
-            effectIfYes = effectIfYes,
+            effectIfYes = effect.copy(optional = false),
             effectIfNo = null,
             effectContext = context
         )
@@ -134,23 +138,36 @@ class ReflexiveTriggerEffectExecutor(
     }
 
     /**
-     * Check whether the action half of a "you may [action]. If you do, [reflexive]"
-     * trigger can actually be performed. When false, presenting a yes/no decision is
-     * meaningless — saying yes would silently no-op the action while still firing the
-     * reflexive payoff.
+     * Check whether the action half of a "[action]. When you do, [reflexive]" trigger can actually
+     * be performed. When false the whole effect is skipped: for the optional template presenting a
+     * yes/no is meaningless (saying yes would silently no-op the action while still firing the
+     * reflexive payoff), and for the mandatory one the action would resolve vacuously to the same
+     * end.
      *
      * Walks the action effect tree looking for gating sub-effects:
      *  - [SelectTargetEffect] with no legal targets → infeasible
      *  - [SacrificeEffect] with fewer controlled matches than its count → infeasible
      *    (e.g. Shire Shirriff's "you may sacrifice a token" when you control no token)
      *  - [ChooseActionEffect] with no feasible choice → infeasible
-     *  - [CompositeEffect] → feasible iff every step is feasible (top-level sequencing)
+     *  - [SelectFromCollectionEffect] carrying a minimum, drawing from a collection a preceding
+     *    [GatherCardsEffect] will leave empty → infeasible. This is the Gather → Select → Move
+     *    discard pipeline ([com.wingedsheep.sdk.dsl.Effects.Discard]): "you may discard a card"
+     *    with an empty hand is impossible, so Inti, Seneschal of the Sun must not hand out its
+     *    +1/+1 counter for a discard that never happens.
+     *  - [CompositeEffect] → feasible iff every step is feasible, walked in order so the gathered
+     *    collection sizes are known by the time a select step is scored (top-level sequencing)
      *  - any other effect → assumed feasible (don't gate on shapes we don't recognize)
+     *
+     * @param gathered Sizes of the pipeline collections produced by preceding [GatherCardsEffect]
+     * steps of the enclosing composite. A collection that isn't in the map is unknown, and any
+     * selection from it fails open; `null` means the bookkeeping has stopped altogether, so every
+     * selection fails open (see [isCompositeFeasible]).
      */
     private fun isActionFeasible(
         state: GameState,
         action: Effect,
-        context: EffectContext
+        context: EffectContext,
+        gathered: Map<String, Int>? = emptyMap()
     ): Boolean = when (action) {
         is SelectTargetEffect -> targetFinder.findLegalTargets(
             state = state,
@@ -177,28 +194,185 @@ class ReflexiveTriggerEffectExecutor(
         is ChooseActionEffect -> action.choices.any { choice ->
             checkFeasibility(state, context.controllerId, choice.feasibilityCheck)
         }
-        is CompositeEffect -> action.effects.all { isActionFeasible(state, it, context) }
+        is SelectFromCollectionEffect -> {
+            val available = gathered?.get(action.from)
+            val minimum = minimumSelection(state, action.selection, context)
+            // "Non-empty", not "at least `minimum`": SelectFromCollectionExecutor clamps a
+            // ChooseExactly/Random count down to the collection size, so "discard two cards" with
+            // one card in hand discards that one and succeeds. Only an empty collection makes a
+            // minimum-carrying selection impossible.
+            available == null || minimum == null || minimum == 0 || available > 0
+        }
+        is CompositeEffect -> isCompositeFeasible(state, action, context, gathered)
+        // "You may pay {E}{E}{E}" (Guide of Souls) — an all-or-nothing player-counter payment
+        // is only feasible if the payer already has at least that many. Mirrors the SacrificeEffect
+        // case: without this, the "may pay" prompt would be offered even at 0 energy, and
+        // PayFixedCountersExecutor would then fail every time instead of the option never appearing.
+        is com.wingedsheep.sdk.scripting.effects.PayFixedCountersEffect -> {
+            val playerId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+                .resolvePlayerRef(action.player, context, state)
+            val current = playerId
+                ?.let { state.getEntity(it)?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>() }
+                ?.getCount(com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType(action.counterType))
+                ?: 0
+            current >= action.amount
+        }
+        // "You may remove a counter from ~" (Leatherhead, Swamp Stalker) — with no counters left
+        // there is nothing to remove, so the may-clause must be absent. Both removal executors
+        // no-op on an empty permanent and report *success*, which would otherwise arm the "when you
+        // do" payoff for free: Leatherhead would keep destroying an artifact each combat long after
+        // her last counter was spent. A `minTotal` floor raises the bar to the whole floor — an
+        // action that can't pay it in full can't be performed at all.
+        is com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect ->
+            countersOn(state, context, action.target)
+                ?.let { it >= action.minTotal.coerceAtLeast(1) } ?: true
+        is com.wingedsheep.sdk.scripting.effects.RemoveCountersEffect ->
+            countersOn(state, context, action.target, kind = action.counterType)
+                ?.let { it >= action.count } ?: true
+        // "You may collect evidence 3" (Sample Collector) — CR 701.59b is explicit that a player
+        // unable to exile cards totalling N *can't choose to collect evidence*, so the option must
+        // be absent rather than offered and refused. Without this branch the `else -> true` below
+        // would fail open and prompt a player whose graveyard can't pay.
+        is com.wingedsheep.sdk.scripting.effects.CollectEvidenceEffect -> {
+            val playerId = com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
+                .resolvePlayerRef(action.player, context, state)
+            playerId != null && com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
+                .canCollect(state, playerId, action.amount)
+        }
         else -> true
     }
 
     /**
-     * Execute action, then pause for reflexive target selection.
+     * How many counters the permanent [target] resolves to currently carries — of every kind, or
+     * of [kind] alone when one is named. Zero for an entity that is gone or tracks no counters,
+     * which is the fail-*closed* answer the callers want: nothing to remove means no may-clause.
      *
-     * Uses the pre-push pattern: push ReflexiveTriggerTargetContinuation before
-     * executing the action. If the action pauses, the continuation sits underneath
-     * and is auto-resumed after the action's decision resolves.
+     * `null` means the target shape couldn't be resolved at all, which is a different question and
+     * gets the opposite answer. Feasibility runs before the action does, so a `PipelineTarget`
+     * filled in by an earlier step of the same composite isn't stored yet, and `state` is consulted
+     * for the relational shapes ([EffectTarget.EnchantedCreature], `EquippedCreature`,
+     * `ChosenCreature`, …) that the stateless overload can't reach. Treating "don't know" as zero
+     * would silently delete the whole ability, so callers fail open on it — the same policy as this
+     * method's `else -> true`.
      */
-    private fun executeActionThenTarget(
+    private fun countersOn(
+        state: GameState,
+        context: EffectContext,
+        target: com.wingedsheep.sdk.scripting.targets.EffectTarget,
+        kind: String? = null
+    ): Int? {
+        val targetId = context.resolveTarget(target, state) ?: return null
+        val counters = state.getEntity(targetId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+            ?: return 0
+        return if (kind == null) {
+            counters.counters.values.sum()
+        } else {
+            counters.getCount(
+                com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType(kind)
+            )
+        }
+    }
+
+    /**
+     * Walk a composite action's steps in order, threading the sizes of the collections its
+     * [GatherCardsEffect] steps produce so a later [SelectFromCollectionEffect] is scored against
+     * real numbers — the Gather → Select → Move shape the counted discards compile to. (The
+     * uncounted `Patterns.Hand.discardHand` is a bare Gather → Move with no selection step, so it
+     * has nothing to score and is never gated.)
+     *
+     * Gather sizes are read off the *pre-action* state, so they're only recorded while every step
+     * so far has been a gather or a select. The first step of any other kind stops the bookkeeping
+     * by collapsing the map to `null`: from there on every selection fails open rather than being
+     * judged against a stale count, so "you may draw a card, then discard a card" is still offered
+     * on an empty hand. The stopped state is threaded *into* nested composites too — `Effect.then`
+     * only flattens when its receiver is already a composite, so that draw-then-discard shape is
+     * `Composite[Draw, Composite[Gather, Select, Move]]`, and a per-call flag would let the inner
+     * walk start scoring again against the pre-draw hand.
+     */
+    private fun isCompositeFeasible(
+        state: GameState,
+        action: CompositeEffect,
+        context: EffectContext,
+        gathered: Map<String, Int>?
+    ): Boolean {
+        var known = gathered
+        for (step in action.effects) {
+            if (!isActionFeasible(state, step, context, known)) return false
+            known = when (step) {
+                is GatherCardsEffect -> known?.let { sizes ->
+                    gatherableCount(state, step, context)?.let { sizes + (step.storeAs to it) }
+                }
+                is SelectFromCollectionEffect -> known
+                else -> null
+            }
+        }
+        return true
+    }
+
+    /**
+     * How many cards a selection mode *requires*, or null when it has no minimum
+     * ([SelectionMode.ChooseUpTo], [SelectionMode.All], [SelectionMode.ChooseAnyNumber] — each is
+     * satisfied by selecting nothing, so an empty collection doesn't make them impossible; cf.
+     * Miasma Demon, whose "you may discard any number of cards" (`Patterns.Hand.discardAnyNumber`,
+     * a [SelectionMode.ChooseAnyNumber]) is still a legal action on an empty hand — discarding zero
+     * performs it, and the reflexive payoff then targets up to zero creatures).
+     *
+     * Only the [SelectionMode] is scored; [SelectFromCollectionEffect.restrictions] are ignored.
+     * That's safe in the fail-open direction as long as no restriction *raises* a minimum —
+     * [com.wingedsheep.sdk.scripting.effects.SelectionRestriction.ReducedMinimumIfMatches] only
+     * lowers it, and the rest narrow the maximum.
+     */
+    private fun minimumSelection(
+        state: GameState,
+        selection: SelectionMode,
+        context: EffectContext
+    ): Int? = when (selection) {
+        is SelectionMode.ChooseExactly -> amountEvaluator.evaluate(state, selection.count, context)
+        is SelectionMode.Random -> amountEvaluator.evaluate(state, selection.count, context)
+        else -> null
+    }
+
+    /**
+     * How many cards a [GatherCardsEffect] would collect right now, or null when the source isn't a
+     * plain single-player zone read (target-driven and multi-player sources are left unscored, so
+     * the enclosing feasibility check fails open).
+     */
+    private fun gatherableCount(
+        state: GameState,
+        gather: GatherCardsEffect,
+        context: EffectContext
+    ): Int? {
+        val source = gather.source as? CardSource.FromZone ?: return null
+        val playerId = TargetResolutionUtils.resolvePlayerRef(source.player, context, state) ?: return null
+        val cards = state.getZone(ZoneKey(playerId, source.zone))
+        if (source.filter == GameObjectFilter.Any) return cards.size
+        val predicateContext = PredicateContext.fromEffectContext(context)
+        return cards.count { cardId ->
+            predicateEvaluator.matches(state, state.projectedState, cardId, source.filter, predicateContext)
+        }
+    }
+
+    /**
+     * Execute the action half; once it completes (possibly after its own nested decisions), emit
+     * the [ReflexiveAbilityTriggeredEvent] that turns "When you do, ..." into a real CR 603.12
+     * reflexive triggered ability, instead of resolving it inline.
+     *
+     * Uses the pre-push pattern: push [ReflexiveTriggerTargetContinuation] before executing the
+     * action. If the action pauses, the continuation sits underneath and is auto-resumed after the
+     * action's own decision(s) resolve ([com.wingedsheep.engine.handlers.continuations.CoreAutoResumerModule]).
+     */
+    private fun executeActionThenEmit(
         state: GameState,
         effect: ReflexiveTriggerEffect,
         context: EffectContext
     ): EffectResult {
-        // Pre-push continuation for reflexive targeting
         val continuation = ReflexiveTriggerTargetContinuation(
             decisionId = "pending",
             reflexiveEffect = effect.reflexiveEffect,
             reflexiveTargetRequirements = effect.reflexiveTargetRequirements,
-            effectContext = context
+            effectContext = context,
+            descriptionOverride = effect.descriptionOverride
         )
         val stateWithCont = state.pushContinuation(continuation)
 
@@ -210,214 +384,98 @@ class ReflexiveTriggerEffectExecutor(
             return result
         }
 
+        // Pop our continuation now that the action has finished (success or failure)
+        val (_, stateWithoutCont) = result.state.popContinuation()
+
         if (!result.isSuccess) {
-            // Action failed — pop our continuation, skip reflexive effect
-            val (_, stateWithoutCont) = result.state.popContinuation()
+            // Action failed — skip the reflexive trigger entirely
             return EffectResult.success(stateWithoutCont, result.events.toList())
         }
 
-        // Action succeeded — pop our continuation, present reflexive targets. Merge any
-        // pipeline state the action stashed (e.g. `EntityReference.AmassedArmy` from
-        // `Effects.Amass(...)`, Foray of Orcs) into the context so the reflexive
-        // effect's evaluators can read it. Mirrors `CompositeEffectExecutor`'s
-        // sibling-to-sibling propagation.
-        val (_, stateAfterPop) = result.state.popContinuation()
-        val contextWithUpdates = if (result.updatedCollections.isNotEmpty() || result.updatedSubtypeGroups.isNotEmpty()) {
+        // Action succeeded synchronously — merge whatever it stashed in the pipeline (e.g.
+        // `EntityReference.AmassedArmy`, Foray of Orcs) into the context before emitting, mirroring
+        // CompositeEffectExecutor's sibling-to-sibling propagation.
+        val mergedContext = if (
+            result.updatedCollections.isNotEmpty() || result.updatedSubtypeGroups.isNotEmpty() ||
+            result.updatedStoredNumbers.isNotEmpty() || result.updatedChosenValues.isNotEmpty()
+        ) {
             context.copy(
                 pipeline = context.pipeline.copy(
                     storedCollections = context.pipeline.storedCollections + result.updatedCollections,
-                    storedSubtypeGroups = context.pipeline.storedSubtypeGroups + result.updatedSubtypeGroups
+                    storedSubtypeGroups = context.pipeline.storedSubtypeGroups + result.updatedSubtypeGroups,
+                    storedNumbers = context.pipeline.storedNumbers + result.updatedStoredNumbers,
+                    chosenValues = context.pipeline.chosenValues + result.updatedChosenValues
                 )
             )
         } else {
             context
         }
-        return presentReflexiveTargets(stateAfterPop, effect.reflexiveEffect, effect.reflexiveTargetRequirements, contextWithUpdates, result.events.toList())
+
+        val event = buildReflexiveTriggeredEvent(
+            stateWithoutCont, effect.reflexiveEffect, effect.reflexiveTargetRequirements,
+            effect.descriptionOverride, mergedContext
+        )
+        return EffectResult.success(stateWithoutCont, result.events.toList() + event)
     }
 
-    /**
-     * Find legal targets for the reflexive effect and present target selection to the player.
-     * This is called both inline (when action succeeds synchronously) and from the auto-resumer.
-     */
-    internal fun presentReflexiveTargets(
-        state: GameState,
-        reflexiveEffect: Effect,
-        targetRequirements: List<TargetRequirement>,
-        context: EffectContext,
-        priorEvents: List<GameEvent>
-    ): EffectResult {
-        val controllerId = context.controllerId
-        val sourceId = context.sourceId
-        val sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "ability"
-
-        // Find legal targets for each requirement. Thread the resolving effect's pipeline into the
-        // target search so a filter can compare candidates against a resolution-time pipeline value
-        // — Grishnákh's reflexive "creature with power <= the amassed Army's power" reads
-        // EntityReference.AmassedArmy out of context.pipeline.storedCollections during enumeration.
-        val pipelineContext = com.wingedsheep.engine.handlers.PredicateContext.fromEffectContext(context)
-        val allLegalTargets = mutableMapOf<Int, List<com.wingedsheep.sdk.model.EntityId>>()
-        for ((index, req) in targetRequirements.withIndex()) {
-            val legalTargets = targetFinder.findLegalTargets(
-                state = state,
-                requirement = req,
-                controllerId = controllerId,
+    companion object {
+        /**
+         * Build the [ReflexiveAbilityTriggeredEvent] for a completed action, carrying the reflexive
+         * effect, its target requirements, and whatever pipeline state the action produced. Shared
+         * by the synchronous path above and
+         * [com.wingedsheep.engine.handlers.continuations.CoreAutoResumerModule]'s
+         * [ReflexiveTriggerTargetContinuation] auto-resumer (the action paused for its own decision
+         * and has now completed — `continuation.effectContext` already carries whatever the
+         * propagation seam ([com.wingedsheep.engine.handlers.continuations.exposeCollectionsToNextFrame])
+         * merged in while it sat on the continuation stack).
+         */
+        fun buildReflexiveTriggeredEvent(
+            state: GameState,
+            reflexiveEffect: Effect,
+            reflexiveTargetRequirements: List<TargetRequirement>,
+            descriptionOverride: String?,
+            effectContext: EffectContext
+        ): ReflexiveAbilityTriggeredEvent {
+            val sourceId = effectContext.sourceId ?: EntityId("unknown")
+            val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "ability"
+            return ReflexiveAbilityTriggeredEvent(
                 sourceId = sourceId,
-                pipelineContext = pipelineContext
-            )
-            allLegalTargets[index] = legalTargets
-        }
-
-        // If no legal targets exist for any required requirement, skip the reflexive effect
-        for ((index, req) in targetRequirements.withIndex()) {
-            val legalTargets = allLegalTargets[index] ?: emptyList()
-            if (legalTargets.isEmpty() && req.effectiveMinCount > 0) {
-                return EffectResult.success(
-                    state,
-                    priorEvents + AbilityFizzledEvent(
-                        sourceId ?: com.wingedsheep.sdk.model.EntityId("unknown"),
-                        reflexiveEffect.description,
-                        "No legal targets available for reflexive trigger"
-                    )
+                sourceName = sourceName,
+                controllerId = effectContext.controllerId,
+                granterId = effectContext.granterId,
+                reflexiveEffect = reflexiveEffect,
+                reflexiveTargetRequirements = reflexiveTargetRequirements,
+                descriptionOverride = descriptionOverride,
+                carriedPipeline = effectContext.pipeline,
+                carriedTriggerContext = com.wingedsheep.engine.event.TriggerContext(
+                    triggeringEntityId = effectContext.triggeringEntityId,
+                    triggeringPlayerId = effectContext.triggeringPlayerId,
+                    damageAmount = effectContext.triggerDamageAmount,
+                    xValue = effectContext.xValue,
+                    counterCount = effectContext.triggerCounterCount,
+                    totalCounterCount = effectContext.triggerTotalCounterCount,
+                    minusOneMinusOneCounterCount = effectContext.triggerMinusOneMinusOneCounterCount,
+                    targetingSourceEntityId = effectContext.targetingSourceEntityId,
+                    lastKnownPower = effectContext.triggerLastKnownPower,
+                    lastKnownToughness = effectContext.triggerLastKnownToughness,
+                    diedBatchTotalPower = effectContext.triggerDiedBatchTotalPower,
+                    lastKnownSubtypes = effectContext.triggerLastKnownSubtypes,
+                    lastKnownCounters = effectContext.triggerLastKnownCounters,
+                    lastKnownDamageDealtByPlayers = effectContext.triggerLastKnownDamageDealtByPlayers,
+                    lastKnownBlockingOrBlockedByIds = effectContext.triggerLastKnownBlockingOrBlockedByIds,
+                    modesChosenCount = effectContext.triggerModesChosenCount,
+                    manaSpentOnTriggeringSpell = effectContext.triggerManaSpentOnTriggeringSpell,
+                    colorsSpentOnTriggeringSpell = effectContext.triggerColorsSpentOnTriggeringSpell,
+                    manaValueOfTriggeringSpell = effectContext.triggerManaValueOfTriggeringSpell,
+                    xValueOfTriggeringSpell = effectContext.triggerXValueOfTriggeringSpell,
+                    enchantedCreatureLastKnownPower = effectContext.enchantedCreatureLastKnownPower,
+                    scryCount = effectContext.triggerScryCount,
+                    discardedCardCount = effectContext.triggerDiscardCount,
+                    discoverValue = effectContext.triggerDiscoverValue,
+                    excessDamageAmount = effectContext.triggerExcessDamageAmount,
+                    recipientToughnessAtDamage = effectContext.triggerRecipientToughness
                 )
-            }
-        }
-
-        // Auto-select player targets when there's exactly one legal target
-        if (targetRequirements.size == 1) {
-            val req = targetRequirements[0]
-            val isPlayerTarget = req is TargetPlayer || req is TargetOpponent
-            val legalTargets = allLegalTargets[0] ?: emptyList()
-            if (isPlayerTarget && legalTargets.size == 1 && req.effectiveMinCount == 1 && req.count == 1) {
-                val autoSelectedTarget = legalTargets.first()
-                val chosenTarget = com.wingedsheep.engine.handlers.continuations.entityIdToChosenTarget(state, autoSelectedTarget)
-                val contextWithTargets = context.copy(
-                    targets = listOf(chosenTarget),
-                    pipeline = context.pipeline.copy(
-                        namedTargets = EffectContext.buildNamedTargets(targetRequirements, listOf(chosenTarget))
-                    )
-                )
-                val reflexiveResult = effectExecutor(state, reflexiveEffect, contextWithTargets)
-                return if (reflexiveResult.isPaused) {
-                    EffectResult.paused(reflexiveResult.state, reflexiveResult.pendingDecision!!, priorEvents + reflexiveResult.events)
-                } else {
-                    EffectResult.success(reflexiveResult.state, priorEvents + reflexiveResult.events)
-                }
-            }
-        }
-
-        // Create target requirement infos for the decision. A reflexive requirement's
-        // dynamicMaxCount ("up to that many target …") is resolved here against the resolving
-        // ability's pipeline context — so "that many" reads the count a preceding action stored
-        // (e.g. Miasma Demon's discard count via VariableReference("discarded_count")). Unlike the
-        // cast-time path (TargetValidator.effectiveMaxCount), the pipeline is live in `context`
-        // because the action already ran, so the variable resolves to the real selection size.
-        val requirementInfos = targetRequirements.mapIndexed { index, req ->
-            TargetRequirementInfo(
-                index = index,
-                description = req.description,
-                minTargets = req.effectiveMinCount,
-                maxTargets = resolveReflexiveMaxCount(state, req, context),
-                // "with total mana value X or less" — resolve against the live pipeline context,
-                // which now carries the X the preceding pay-{X} action set, so the aggregate cap
-                // reflects the amount actually paid (Fire Lord Sozin).
-                totalManaValueAtMost = resolveReflexiveTotalManaCap(state, req, context)
             )
         }
-
-        // Resolve dynamic amounts so the player sees concrete values (e.g., "-6/-6 until end of turn")
-        val effectHint = try {
-            val resolver: (com.wingedsheep.sdk.scripting.values.DynamicAmount) -> Int = { amount ->
-                amountEvaluator.evaluate(state, amount, context)
-            }
-            val resolved = reflexiveEffect.runtimeDescription(resolver)
-            if (resolved != reflexiveEffect.description) resolved else null
-        } catch (_: Exception) { null }
-
-        // Create the target selection decision
-        val decisionResult = decisionHandler.createTargetDecision(
-            state = state,
-            playerId = controllerId,
-            sourceId = sourceId ?: com.wingedsheep.sdk.model.EntityId("unknown"),
-            sourceName = sourceName,
-            requirements = requirementInfos,
-            legalTargets = allLegalTargets,
-            effectHint = effectHint
-        )
-
-        if (!decisionResult.isPaused || decisionResult.pendingDecision == null) {
-            return EffectResult.error(state, "Failed to create target decision for reflexive trigger")
-        }
-
-        // Push continuation to execute reflexive effect after targets are chosen
-        val resolveContinuation = ReflexiveTriggerResolveContinuation(
-            decisionId = decisionResult.pendingDecision.id,
-            reflexiveEffect = reflexiveEffect,
-            reflexiveTargetRequirements = targetRequirements,
-            effectContext = context
-        )
-        val stateWithContinuation = decisionResult.state.pushContinuation(resolveContinuation)
-
-        return EffectResult.paused(
-            stateWithContinuation,
-            decisionResult.pendingDecision,
-            priorEvents + decisionResult.events.toList()
-        )
-    }
-
-    /**
-     * Resolve the maximum number of targets a reflexive requirement allows. When the requirement
-     * carries a [com.wingedsheep.sdk.scripting.targets.TargetObject.dynamicMaxCount] ("up to that
-     * many target …"), evaluate it against the resolving ability's [context] — which holds the
-     * pipeline state the preceding action stored — so a pipeline count variable
-     * (`DynamicAmount.VariableReference("<name>_count")`) caps the count to what actually happened.
-     * Falls back to the static `count` when there's no dynamic cap or it can't be evaluated.
-     */
-    private fun resolveReflexiveMaxCount(
-        state: GameState,
-        req: TargetRequirement,
-        context: EffectContext
-    ): Int {
-        if (req.unlimited) return Int.MAX_VALUE
-        val dyn = (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.dynamicMaxCount
-            ?: return req.count
-        return try {
-            amountEvaluator.evaluate(state, dyn, context).coerceAtLeast(0)
-        } catch (_: Exception) {
-            req.count
-        }
-    }
-
-    /**
-     * Resolve the aggregate "total mana value N or less" cap for a reflexive requirement to a
-     * concrete integer, evaluated against the resolving ability's [context] so a
-     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue] cap reads the X the preceding
-     * pay-{X} action set. Baked onto the decision so the interactive validator sees a fixed cap.
-     * `null` when the requirement carries no aggregate cap.
-     */
-    private fun resolveReflexiveTotalManaCap(
-        state: GameState,
-        req: TargetRequirement,
-        context: EffectContext
-    ): Int? {
-        val dyn = (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.totalManaValueAtMost
-            ?: return null
-        return try {
-            amountEvaluator.evaluate(state, dyn, context).coerceAtLeast(0)
-        } catch (_: Exception) {
-            null
-        }
-    }
-
-    /**
-     * Execute action + reflexiveEffect as a composite.
-     * Uses pre-push EffectContinuation for the reflexive effect (same pattern as CompositeEffectExecutor).
-     */
-    private fun executeAsComposite(
-        state: GameState,
-        effect: ReflexiveTriggerEffect,
-        context: EffectContext
-    ): EffectResult {
-        val compositeEffect = CompositeEffect(listOf(effect.action, effect.reflexiveEffect))
-        return effectExecutor(state, compositeEffect, context)
     }
 }

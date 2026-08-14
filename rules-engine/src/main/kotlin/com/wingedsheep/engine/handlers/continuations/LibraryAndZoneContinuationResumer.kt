@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.handlers.effects.library.CascadeExecutor
+import com.wingedsheep.engine.handlers.effects.library.ChooseOnePerCategoryExecutor
 import com.wingedsheep.engine.handlers.effects.library.CastFromCollectionWithoutPayingCostExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -39,6 +40,7 @@ class LibraryAndZoneContinuationResumer(
         resumer(PutOnBottomOfLibraryContinuation::class, ::resumePutOnBottomOfLibrary),
         resumer(PutFromHandContinuation::class, ::resumePutFromHand),
         resumer(SelectFromCollectionContinuation::class, ::resumeSelectFromCollection),
+        resumer(ChooseOnePerCategoryContinuation::class, ::resumeChooseOnePerCategory),
         resumer(ChoosePileContinuation::class, ::resumeChoosePile),
         resumer(SelectTargetPipelineContinuation::class, ::resumeSelectTargetPipeline),
         resumer(MoveCollectionAuraTargetContinuation::class, ::resumeMoveCollectionAuraTarget),
@@ -275,7 +277,7 @@ class LibraryAndZoneContinuationResumer(
             // When underOwnersControl, use the next aura's owner as its controller
             val nextControllerId = if (continuation.underOwnersControl) {
                 val e = newState.getEntity(nextAuraId)
-                e?.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()?.playerId
+                e?.get<OwnerComponent>()?.playerId
                     ?: e?.get<CardComponent>()?.ownerId
                     ?: continuation.controllerId
             } else continuation.controllerId
@@ -564,6 +566,43 @@ class LibraryAndZoneContinuationResumer(
         val newState = exposeCollectionsToNextFrame(state, updatedCollections)
 
         return checkForMore(newState, emptyList())
+    }
+
+    /**
+     * Resume after one chooser answered one category of a
+     * [com.wingedsheep.sdk.scripting.effects.ChooseOnePerCategoryEffect] ("chooses a permanent they
+     * control of each permanent type"): record the pick and re-enter the collect loop, which either
+     * asks the next question or — once every chooser is done — publishes the picks so the
+     * downstream "…the rest" steps can act on them.
+     */
+    fun resumeChooseOnePerCategory(
+        state: GameState,
+        continuation: ChooseOnePerCategoryContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for ChooseOnePerCategory")
+        }
+
+        val result = ChooseOnePerCategoryExecutor().collectPicks(
+            state = state,
+            effect = continuation.effect,
+            storedCollections = continuation.storedCollections,
+            pendingPlayers = continuation.pendingPlayers,
+            startCategory = continuation.categoryIndex + 1,
+            picks = continuation.picks + response.selectedCards,
+            sourceId = continuation.sourceId
+        )
+
+        if (result.isPaused) {
+            return ExecutionResult.paused(result.state, result.pendingDecision!!, result.events)
+        }
+
+        // Republish the pipeline's collections alongside the picks so the consumer frame sees both
+        // the original pool and the kept set.
+        val merged = continuation.storedCollections + result.updatedCollections
+        return checkForMore(exposeCollectionsToNextFrame(result.state, merged), result.events)
     }
 
     /**

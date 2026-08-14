@@ -22,7 +22,6 @@ val WordsOfWar = card("Words of War") {
         cost = Costs.Mana("{1}")
         val t = target("any target", Targets.Any)
         effect = Effects.ReplaceNextDraw(Effects.DealDamage(2, t))
-        promptOnDraw = true
     }
 
     metadata {

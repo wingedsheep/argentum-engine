@@ -5,7 +5,8 @@ import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.TurnFaceUp
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.ManifestedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -79,7 +80,7 @@ class ManifestDreadScenarioTest : FunSpec({
         d.getPermanents(you) shouldContain creature
         val entity = d.state.getEntity(creature)
         entity?.get<FaceDownComponent>() shouldBe FaceDownComponent
-        entity?.get<ManifestedComponent>() shouldBe ManifestedComponent
+        entity?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
         d.state.projectedState.getPower(creature) shouldBe 2
         d.state.projectedState.getToughness(creature) shouldBe 2
         d.state.projectedState.isCreature(creature) shouldBe true
@@ -108,7 +109,7 @@ class ManifestDreadScenarioTest : FunSpec({
 
         val entity = d.state.getEntity(creature)
         entity?.get<FaceDownComponent>() shouldBe null
-        entity?.get<ManifestedComponent>() shouldBe null
+        entity?.get<FaceDownModeComponent>() shouldBe null
         d.getCardName(creature) shouldBe "Centaur Courser"
         d.state.projectedState.getPower(creature) shouldBe 3
     }
@@ -129,7 +130,7 @@ class ManifestDreadScenarioTest : FunSpec({
 
         val entity = d.state.getEntity(land)
         entity?.get<FaceDownComponent>() shouldBe FaceDownComponent
-        entity?.get<ManifestedComponent>() shouldBe ManifestedComponent
+        entity?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
         // No morph/turn-up data — a manifested non-creature can never be turned face up (CR 701.40b).
         entity?.get<MorphDataComponent>() shouldBe null
 
@@ -179,7 +180,7 @@ class ManifestDreadScenarioTest : FunSpec({
         d.getPermanents(you) shouldContain creature
         val entity = d.state.getEntity(creature)
         entity?.get<FaceDownComponent>() shouldBe FaceDownComponent
-        entity?.get<ManifestedComponent>() shouldBe ManifestedComponent
+        entity?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
         d.state.projectedState.getPower(creature) shouldBe 2
     }
 
@@ -201,7 +202,7 @@ class ManifestDreadScenarioTest : FunSpec({
         val pick = d.pendingDecision.shouldBeInstanceOf<SelectCardsDecision>()
         d.submitDecision(you, CardsSelectedResponse(decisionId = pick.id, selectedCards = listOf(creature)))
 
-        d.state.getEntity(creature)?.get<ManifestedComponent>() shouldBe ManifestedComponent
+        d.state.getEntity(creature)?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
         d.state.projectedState.getPower(creature) shouldBe 2
     }
 })

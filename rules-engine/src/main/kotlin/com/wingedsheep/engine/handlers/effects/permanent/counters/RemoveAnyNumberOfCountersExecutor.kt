@@ -1,31 +1,25 @@
 package com.wingedsheep.engine.handlers.effects.permanent.counters
 
-import com.wingedsheep.engine.core.ChooseNumberDecision
-import com.wingedsheep.engine.core.DecisionContext
-import com.wingedsheep.engine.core.DecisionPhase
-import com.wingedsheep.engine.core.DecisionRequestedEvent
 import com.wingedsheep.engine.core.EffectResult
-import com.wingedsheep.engine.core.RemoveAnyNumberOfCountersContinuation
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.scripting.effects.RemoveAnyNumberOfCountersEffect
-import java.util.UUID
 import kotlin.reflect.KClass
 
 /**
  * Executor for [RemoveAnyNumberOfCountersEffect].
  *
- * "Remove any number of counters from target creature you control." — and, with the effect's
- * `maxTotal` set, its budget-capped form "Remove up to N counters from target creature"
- * (Heartless Act).
+ * "Remove any number of counters from target creature you control." — with the effect's `maxTotal`
+ * set, its budget-capped form "Remove up to N counters from target creature" (Heartless Act), and
+ * with `minTotal` set too, its mandatory form "Remove a counter from it" (Leatherhead, Swamp
+ * Stalker), where the player picks the kind but not whether.
  *
- * Enumerates each counter kind currently on the target and prompts the controller with a
- * [ChooseNumberDecision] per kind, sequentially. Each prompt's cap is that kind's count, further
- * clamped to the remaining `maxTotal` budget when one is set. The continuation applies each chosen
- * amount, decrements the budget, and queues the next prompt while counters (and budget) remain.
+ * The prompt-per-kind walk itself — the budget cap, the floor, and the forced steps that are
+ * applied rather than asked — lives in [RemoveAnyNumberOfCountersFlow], shared with the
+ * continuation resumer that carries it on after each answer.
  */
 class RemoveAnyNumberOfCountersExecutor : EffectExecutor<RemoveAnyNumberOfCountersEffect> {
 
@@ -48,58 +42,38 @@ class RemoveAnyNumberOfCountersExecutor : EffectExecutor<RemoveAnyNumberOfCounte
         val counters = targetEntity.get<CountersComponent>() ?: return EffectResult.success(state, emptyList())
         val present = counters.counters.entries
             .filter { it.value > 0 }
-            .map { counterTypeToString(it.key) to it.value }
+            .map { counterTypeToString(it.key) }
 
         if (present.isEmpty()) return EffectResult.success(state, emptyList())
 
         val targetName = targetEntity.get<CardComponent>()?.name ?: ""
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
-        val (firstType, firstCount) = present.first()
-        val remaining = present.drop(1)
-        // Clamp the first prompt to the total budget when one is in force.
-        val firstMax = maxTotal?.let { minOf(firstCount, it) } ?: firstCount
+        // The floor can't exceed the budget or what's actually there — a permanent carrying one
+        // counter satisfies "remove a counter" by losing it, and can't be asked for more.
+        val available = counters.counters.values.sum()
+        val floor = effect.minTotal
+            .coerceAtMost(maxTotal ?: Int.MAX_VALUE)
+            .coerceAtMost(available)
+            .coerceAtLeast(0)
 
-        val decisionId = UUID.randomUUID().toString()
-        val decision = ChooseNumberDecision(
-            id = decisionId,
-            playerId = context.controllerId,
-            prompt = "Remove how many $firstType counters from $targetName? (0-$firstMax)",
-            context = DecisionContext(
+        return when (
+            val outcome = RemoveAnyNumberOfCountersFlow.advance(
+                state = state,
+                targetId = targetId,
+                controllerId = context.controllerId,
+                targetName = targetName,
                 sourceId = context.sourceId,
                 sourceName = sourceName,
-                phase = DecisionPhase.RESOLUTION
-            ),
-            minValue = 0,
-            maxValue = firstMax
-        )
-
-        val continuation = RemoveAnyNumberOfCountersContinuation(
-            decisionId = decisionId,
-            targetId = targetId,
-            controllerId = context.controllerId,
-            currentCounterType = firstType,
-            currentMaxAmount = firstMax,
-            remainingCounterTypes = remaining,
-            targetName = targetName,
-            sourceId = context.sourceId,
-            sourceName = sourceName,
-            remainingBudget = maxTotal
-        )
-
-        val newState = state
-            .withPendingDecision(decision)
-            .pushContinuation(continuation)
-
-        val events = listOf(
-            DecisionRequestedEvent(
-                decisionId = decisionId,
-                playerId = context.controllerId,
-                decisionType = "CHOOSE_NUMBER",
-                prompt = decision.prompt
+                order = present,
+                budget = maxTotal,
+                floor = floor
             )
-        )
-
-        return EffectResult.paused(newState, decision, events)
+        ) {
+            is RemoveAnyNumberOfCountersFlow.Outcome.Done ->
+                EffectResult.success(outcome.state, outcome.events)
+            is RemoveAnyNumberOfCountersFlow.Outcome.Prompt ->
+                EffectResult.paused(outcome.state, outcome.decision, outcome.events)
+        }
     }
 }

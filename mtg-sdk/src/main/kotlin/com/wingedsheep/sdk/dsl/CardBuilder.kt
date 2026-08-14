@@ -249,6 +249,12 @@ class CardBuilder(private val name: String) {
     var startingLoyalty: Int? = null
 
     /**
+     * Printed defense (for battles) — the number in the card's lower right corner (CR 310.4a).
+     * The battle enters with that many defense counters (CR 310.4b).
+     */
+    var startingDefense: Int? = null
+
+    /**
      * Oracle text (rules text).
      */
     var oracleText: String = ""
@@ -279,12 +285,42 @@ class CardBuilder(private val name: String) {
     var morphFaceUpEffect: Effect? = null
 
     /**
+     * Disguise cost as a mana cost string (e.g., "{1}{W}") — CR 702.168.
+     * When set, the card gains the Disguise keyword ability with a mana cost: it may be cast face
+     * down for {3} as a 2/2 with ward {2}, and turned face up for this cost.
+     * For non-mana disguise costs, use [disguiseCost] instead.
+     */
+    var disguise: String? = null
+
+    /**
+     * Disguise cost as a [PayCost] for non-mana disguise costs.
+     * When set, the card gains the Disguise keyword ability.
+     * For mana-based disguise, the simpler [disguise] string property is preferred.
+     */
+    var disguiseCost: PayCost? = null
+
+    /**
+     * Effect applied as part of the turn-face-up action for a disguise creature — the "As this
+     * creature is turned face up, …" replacement clause (Bubble Smuggler). Sibling of
+     * [morphFaceUpEffect]; unlike a `Triggers.TurnedFaceUp` ability it doesn't use the stack.
+     */
+    var disguiseFaceUpEffect: Effect? = null
+
+    /**
      * Warp cost as a mana cost string (e.g., "{1}{R}").
      * When set, the card gains the Warp keyword ability.
      * Warp allows casting for an alternative cost; the permanent is exiled at end of turn
      * and can be re-cast from exile using the warp cost on future turns.
      */
     var warp: String? = null
+
+    /**
+     * Dash cost as a mana cost string (e.g., "{1}{R}").
+     * When set, the card gains the Dash keyword ability.
+     * Dash allows casting for an alternative cost; the permanent gains haste and is returned
+     * to its owner's hand at the beginning of the next end step.
+     */
+    var dash: String? = null
 
     /**
      * If set, the caster must choose a creature type during casting.
@@ -336,6 +372,14 @@ class CardBuilder(private val name: String) {
      * [leyline] DSL helper rather than by hand.
      */
     var mayStartOnBattlefield: Boolean = false
+
+    /**
+     * Meld-result marker (CR 701.42). Set on the permanent two meld cards combine into —
+     * Chittering Host, Brisela, Voice of Nightmares, Hanweir, the Writhing Township — never on the
+     * meld parts, which are ordinary cards. A flagged card is defined for the corpus but kept out
+     * of every pool a player can draw a deck from; see [CardDefinition.meldResult].
+     */
+    var meldResult: Boolean = false
 
     // The `mayBeginGameOnBattlefield()` helper lives in `dsl/mechanics/BeginGameOnBattlefieldDsl.kt`; it sets this flag.
 
@@ -542,26 +586,79 @@ class CardBuilder(private val name: String) {
     /**
      * Add an equip ability with the specified cost.
      * This sets the equipCost metadata and generates the activated ability
-     * (Equip: attach to target creature you control, sorcery speed).
+     * (Equip: attach to target creature you control, sorcery speed) — CR 702.6a.
      *
      * [genericCostReduction] optionally reduces the generic portion of the equip cost by a
      * dynamic amount evaluated when the ability is activated. Reductions that read the chosen
      * equip target (e.g. `DynamicAmounts.targetColorCount()` for "costs {1} less to activate
      * for each color of the creature it targets" — Dragonfire Blade) resolve against the
      * selected target creature; the engine locks the reduction in before the cost is paid.
+     *
+     * ## "Equip [quality]" variants (CR 702.6c)
+     *
+     * An equip ability may further restrict which creatures are legal targets — printed as
+     * "Equip [quality]" or "Equip [quality] creature" (Dúnedain Blade's *Equip Human {1}*,
+     * Blackblade Reforged's *Equip legendary creature {3}*, Mjölnir, Hammer of Thor's
+     * *Equip worthy {1}*). Pass [quality] plus the matching [targetFilter]:
+     *
+     * ```kotlin
+     * equipAbility(
+     *     "{1}",
+     *     quality = "Human",
+     *     targetFilter = TargetFilter.CreatureYouControl.withSubtype(Subtype.HUMAN),
+     * )
+     * ```
+     *
+     * [quality] only supplies the wording. It lands in two places: as
+     * [ActivatedAbility.equipQuality], which makes the ability render as its printed line
+     * ("Equip Human {1}" — see [ActivatedAbility.describeWithCost]); and as the target
+     * requirement's id, the label the targeting prompt shows. The prompt label is normalised to
+     * "[quality] creature you control" even where the printed reminder omits the noun (Bilbo's Ring
+     * prints "Attach to target Halfling you control"); the two denote the same set, and one template
+     * beats per-card wording now that the *ability* line carries the printed text.
+     *
+     * [targetFilter] is the rules half and must stay controlled-by-you: CR 702.6c allows an equip
+     * ability to target "only a creature that's controlled by the player activating the ability and
+     * that has the chosen quality". Build it off [TargetFilter.CreatureYouControl] (or a
+     * `GameObjectFilter` ending in `.youControl()`) so that holds.
+     *
+     * **The two halves are unchecked against each other.** Nothing links the [quality] wording to
+     * what [targetFilter] actually admits, so `quality = "Human"` next to a filter matching Pirates
+     * compiles and ships a prompt that lies; likewise the controlled-by-you rule above is enforced
+     * only by `EquipQualityVariantTest` (mtg-sets), which asserts it catalog-wide at build time.
+     * That test is the guard — keep the pair honest by hand.
+     *
+     * The restriction is a *targeting* restriction only. Per CR 702.6c the additional quality
+     * "[doesn't] restrict what the Equipment may be attached to", so an Equipment that stops
+     * matching stays attached; it comes off only under CR 704.5n (attached to an illegal
+     * permanent).
+     *
+     * Prefer this over hand-rolling `activatedAbility { isEquipAbility = true }` — a hand-rolled
+     * variant is easy to leave unflagged, and an unflagged equip ability is invisible to every
+     * engine rule that keys off `ActivatedAbility.isEquipAbility` (Forge Anew's free first equip,
+     * Eowyn's equip discount, instant-speed-equip permissions like Leonin Shikari).
      */
-    fun equipAbility(cost: String, genericCostReduction: DynamicAmount? = null) {
+    fun equipAbility(
+        cost: String,
+        genericCostReduction: DynamicAmount? = null,
+        quality: String? = null,
+        targetFilter: TargetFilter = TargetFilter.CreatureYouControl,
+    ) {
         equipCost = ManaCost.parse(cost)
+        // The label doubles as the target requirement's id and as the bound-variable name the
+        // attach effect reads, so both halves must use the same string.
+        val targetLabel = if (quality == null) "creature you control" else "$quality creature you control"
         activatedAbilities.add(
             ActivatedAbility(
                 id = AbilityId.generate(),
                 cost = AbilityCost.Atom(CostAtom.Mana(ManaCost.parse(cost))),
-                effect = AttachEquipmentEffect(EffectTarget.BoundVariable("creature you control")),
+                effect = AttachEquipmentEffect(EffectTarget.BoundVariable(targetLabel)),
                 targetRequirements = listOf(
-                    TargetCreature(filter = TargetFilter.CreatureYouControl, id = "creature you control")
+                    TargetCreature(filter = targetFilter, id = targetLabel)
                 ),
                 isManaAbility = false,
                 isEquipAbility = true,
+                equipQuality = quality,
                 timing = TimingRule.SorcerySpeed,
                 genericCostReduction = genericCostReduction,
             )
@@ -866,7 +963,17 @@ class CardBuilder(private val name: String) {
                 morph != null -> add(KeywordAbility.Morph(PayCost.Atom(CostAtom.Mana(ManaCost.parse(morph!!))), morphFaceUpEffect))
                 morphCost != null -> add(KeywordAbility.Morph(morphCost!!, morphFaceUpEffect))
             }
+            when {
+                disguise != null -> add(
+                    KeywordAbility.Disguise(
+                        PayCost.Atom(CostAtom.Mana(ManaCost.parse(disguise!!))),
+                        disguiseFaceUpEffect
+                    )
+                )
+                disguiseCost != null -> add(KeywordAbility.Disguise(disguiseCost!!, disguiseFaceUpEffect))
+            }
             if (warp != null) add(KeywordAbility.Warp(ManaCost.parse(warp!!)))
+            if (dash != null) add(KeywordAbility.Dash(ManaCost.parse(dash!!)))
             if (evoke != null) add(KeywordAbility.Evoke(ManaCost.parse(evoke!!)))
         }
 
@@ -895,11 +1002,17 @@ class CardBuilder(private val name: String) {
             script = script,
             equipCost = equipCost,
             startingLoyalty = startingLoyalty,
+            startingDefense = startingDefense,
             metadata = metadata,
             colorIdentityOverride = parsedColorIdentity,
             colorIndicator = parsedColorIndicator,
             layout = layout,
-            cardFaces = cardFaceList.toList()
+            cardFaces = cardFaceList.toList(),
+            // Lands are never *cast* at all (CR 305 — they're played), so a blank mana cost
+            // there carries none of CR 202.1b/118.6's "can't be cast normally" implication;
+            // scoping the flag to non-lands keeps every land's golden snapshot untouched.
+            hasNoManaCost = manaCost.isBlank() && !parsedTypeLine.isLand,
+            meldResult = meldResult
         )
     }
 }
@@ -988,13 +1101,15 @@ class SpellBuilder {
         get() = returnTransformedFromGraveyard
 
     /**
-     * Alternate effect used when kicker is paid. When set along with [kickerTarget],
-     * the kicked version uses completely different targeting and effect resolution.
+     * Alternate effect used when an optional additional cost was declared. When set along with
+     * [kickerTarget], that branch uses completely different targeting and effect resolution.
+     * Shared by every mechanic on the optional-additional-cost rail — kicker and bargain
+     * (CR 702.166d) both land here; the kicker naming is historical and serialized.
      */
     var kickerEffect: Effect? = null
 
     /**
-     * Alternate target used when kicker is paid. When set, the kicked version
+     * Alternate target used when an optional additional cost was declared. When set, that branch
      * uses this target requirement instead of the normal [target].
      */
     var kickerTarget: TargetRequirement? = null
@@ -1003,8 +1118,9 @@ class SpellBuilder {
     private val namedKickerTargets: MutableList<Pair<String, TargetRequirement>> = mutableListOf()
 
     /**
-     * Declare a named kicker target and get an EffectTarget reference to use in kickerEffect.
-     * Use this when the kicked version needs multiple targets (e.g., Goblin Barrage).
+     * Declare a named target for the optional-additional-cost branch and get an EffectTarget
+     * reference to use in [kickerEffect]. Use this when that branch needs multiple targets
+     * (e.g., Goblin Barrage), or is the only branch with a target at all (CR 702.166d).
      *
      * @param name A descriptive name for the target
      * @param requirement The target requirement specification
@@ -1169,11 +1285,23 @@ class SpellBuilder {
         chooseCount: Int = 1,
         minChooseCount: Int = chooseCount,
         allowRepeat: Boolean = false,
+        additionalManaCostPerExtraMode: String? = null,
+        additionalCostPerExtraMode: com.wingedsheep.sdk.scripting.costs.CostAtom? = null,
         chooseAllIfBlightPaid: Boolean = false,
         dynamicChooseCount: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null,
+        dynamicMinChooseCount: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null,
         init: ModalBuilder.() -> Unit
     ) {
-        val builder = ModalBuilder(chooseCount, minChooseCount, allowRepeat, chooseAllIfBlightPaid, dynamicChooseCount)
+        val builder = ModalBuilder(
+            chooseCount,
+            minChooseCount,
+            allowRepeat,
+            additionalManaCostPerExtraMode,
+            additionalCostPerExtraMode,
+            chooseAllIfBlightPaid,
+            dynamicChooseCount,
+            dynamicMinChooseCount
+        )
         builder.init()
         effect = builder.build()
     }
@@ -1228,8 +1356,11 @@ class ModalBuilder(
     private val chooseCount: Int,
     private val minChooseCount: Int = chooseCount,
     private val allowRepeat: Boolean = false,
+    private val additionalManaCostPerExtraMode: String? = null,
+    private val additionalCostPerExtraMode: com.wingedsheep.sdk.scripting.costs.CostAtom? = null,
     private val chooseAllIfBlightPaid: Boolean = false,
-    private val dynamicChooseCount: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null
+    private val dynamicChooseCount: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null,
+    private val dynamicMinChooseCount: com.wingedsheep.sdk.scripting.values.DynamicAmount? = null
 ) {
     private val modes: MutableList<Mode> = mutableListOf()
 
@@ -1255,8 +1386,11 @@ class ModalBuilder(
             chooseCount = chooseCount,
             minChooseCount = minChooseCount,
             allowRepeat = allowRepeat,
+            additionalManaCostPerExtraMode = additionalManaCostPerExtraMode,
+            additionalCostPerExtraMode = additionalCostPerExtraMode,
             chooseAllIfBlightPaid = chooseAllIfBlightPaid,
-            dynamicChooseCount = dynamicChooseCount
+            dynamicChooseCount = dynamicChooseCount,
+            dynamicMinChooseCount = dynamicMinChooseCount
         )
 }
 
@@ -1342,13 +1476,38 @@ class TriggeredAbilityBuilder {
     var target: TargetRequirement? = null
     var optional: Boolean = false
     var elseEffect: Effect? = null
-    var triggerZone: Zone = Zone.BATTLEFIELD
-    /** Intervening-if condition (Rule 603.4): checked when trigger would fire AND at resolution. */
+    /**
+     * The zones this ability's trigger condition functions in (CR 113.6b). Defaults to the
+     * battlefield. Use the set form when an ability functions in more than one zone at once — an
+     * *eminence* ability is `setOf(Zone.BATTLEFIELD, Zone.COMMAND)`.
+     */
+    var triggerZones: Set<Zone> = setOf(Zone.BATTLEFIELD)
+
+    /**
+     * Single-zone shorthand for [triggerZones] — `triggerZone = Zone.GRAVEYARD`. Reading it back
+     * yields the first zone, so prefer [triggerZones] for an ability that functions in several.
+     */
+    var triggerZone: Zone
+        get() = triggerZones.first()
+        set(value) { triggerZones = setOf(value) }
+
+    /**
+     * Intervening-if condition (Rule 603.4): checked when the trigger would fire. Note the engine
+     * does not yet re-check it at resolution — an ability that needs the second half of CR 603.4
+     * has to gate its own effect on the same condition (`ConditionalEffect`).
+     */
     var triggerCondition: Condition? = null
     /** When true, the triggered ability is controlled by the triggering entity's controller. */
     var controlledByTriggeringEntityController: Boolean = false
-    /** When true, this triggered ability triggers at most once each turn. */
+    /** When true, this triggered ability triggers at most once each turn ("This ability triggers
+     * only once each turn"). A *trigger* cap — later matching events don't trigger at all. For the
+     * "Do this only once each turn" rider use [effectOncePerTurn] instead. */
     var oncePerTurn: Boolean = false
+    /** When true, this ability carries the "Do this only once each turn" rider: per CR 603.2h it
+     * triggers on every matching event while its controller has not yet taken the indicated action
+     * that turn, and stops triggering once they have. Declining an optional instance does not spend
+     * it. See [com.wingedsheep.sdk.scripting.TriggeredAbility.effectOncePerTurn]. */
+    var effectOncePerTurn: Boolean = false
     /** When true, this triggered ability triggers at most once over the source's lifetime on the
      * battlefield ("This ability triggers only once"). Unlike [oncePerTurn] it is never reset. */
     var triggersOnce: Boolean = false
@@ -1387,10 +1546,11 @@ class TriggeredAbilityBuilder {
             targetRequirement = primaryTarget,
             additionalTargetRequirements = additionalTargets,
             elseEffect = elseEffect,
-            activeZone = triggerZone,
+            activeZones = triggerZones,
             triggerCondition = triggerCondition,
             controlledByTriggeringEntityController = controlledByTriggeringEntityController,
             oncePerTurn = oncePerTurn,
+            effectOncePerTurn = effectOncePerTurn,
             triggersOnce = triggersOnce,
             descriptionOverride = description
         )
@@ -1443,7 +1603,6 @@ class ActivatedAbilityBuilder {
     var timing: TimingRule = TimingRule.InstantSpeed
     var restrictions: List<ActivationRestriction> = emptyList()
     var activateFromZone: Zone = Zone.BATTLEFIELD
-    var promptOnDraw: Boolean = false
     var description: String? = null
     var hasConvoke: Boolean = false
     /**
@@ -1459,6 +1618,14 @@ class ActivatedAbilityBuilder {
      * enforcement), so an author only writes `isExhaust = true`. See [ActivatedAbility.isExhaust].
      */
     var isExhaust: Boolean = false
+    /**
+     * When true, this is a *power-up* ability (CR 702.193): "Power-up — [cost]: [effect]" =
+     * "[cost]: [effect]. If this permanent entered this turn, this ability's cost is reduced by this
+     * permanent's mana cost. Activate this ability only once." Setting this renders the
+     * "Power-up — " prefix, automatically adds [ActivationRestriction.Once], and switches on the
+     * engine's pip-wise self cost reduction. See [ActivatedAbility.isPowerUp].
+     */
+    var isPowerUp: Boolean = false
     var holdPriority: Boolean = false
     var genericCostReduction: DynamicAmount? = null
     /** Colors that may be spent on the `{X}` portion of this ability's cost (empty = any). */
@@ -1493,10 +1660,11 @@ class ActivatedAbilityBuilder {
 
     fun build(): ActivatedAbility {
         requireNotNull(effect) { "Activated ability must have an effect" }
-        // An exhaust ability is "Activate only once" (CR 702.177a): ensure the once-per-object
-        // restriction is present so the keyword marker and its enforcement can't drift apart.
+        // Exhaust (CR 702.177a) and power-up (CR 702.193a) both mean "Activate only once": ensure
+        // the once-per-object restriction is present so the keyword marker and its enforcement
+        // can't drift apart.
         val effectiveRestrictions =
-            if (isExhaust && restrictions.none { it == ActivationRestriction.Once })
+            if ((isExhaust || isPowerUp) && restrictions.none { it == ActivationRestriction.Once })
                 restrictions + ActivationRestriction.Once
             else restrictions
         return ActivatedAbility(
@@ -1509,11 +1677,11 @@ class ActivatedAbilityBuilder {
             timing = timing,
             restrictions = effectiveRestrictions,
             activateFromZone = activateFromZone,
-            promptOnDraw = promptOnDraw,
             descriptionOverride = description,
             hasConvoke = hasConvoke,
             hasWaterbend = hasWaterbend,
             isExhaust = isExhaust,
+            isPowerUp = isPowerUp,
             holdPriority = holdPriority,
             genericCostReduction = genericCostReduction,
             xManaRestriction = xManaRestriction,
@@ -1705,6 +1873,7 @@ class MetadataBuilder {
     var artist: String? = null
     var flavorText: String? = null
     var imageUri: String? = null
+    var imageUriByCreatureSubtype: Map<String, String> = emptyMap()
     var inBooster: Boolean = true
 
     /**
@@ -1730,6 +1899,7 @@ class MetadataBuilder {
         artist = artist,
         flavorText = flavorText,
         imageUri = imageUri,
+        imageUriByCreatureSubtype = imageUriByCreatureSubtype,
         rulings = _rulings.toList(),
         inBooster = inBooster,
         imageRotation = imageRotation

@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.ons.cards
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.core.Zone
@@ -17,6 +18,10 @@ import com.wingedsheep.sdk.dsl.Effects
  * Whenever Dawning Purist deals combat damage to a player, you may destroy target
  * enchantment that player controls.
  * Morph {1}{W}
+ *
+ * "That player" is the player just dealt combat damage, which is
+ * `controlledByTriggeringPlayer()` — not "any opponent". The two coincide in a two-player game
+ * and diverge the moment there's a third player at the table.
  */
 val DawningPurist = card("Dawning Purist") {
     manaCost = "{2}{W}"
@@ -28,7 +33,12 @@ val DawningPurist = card("Dawning Purist") {
 
     triggeredAbility {
         trigger = Triggers.DealsCombatDamageToPlayer
-        val t = target("target", TargetPermanent(filter = TargetFilter.Enchantment.opponentControls()))
+        val t = target(
+            "target",
+            TargetPermanent(
+                filter = TargetFilter(GameObjectFilter.Enchantment.controlledByTriggeringPlayer())
+            )
+        )
         effect = MayEffect(Effects.Move(t, Zone.GRAVEYARD, byDestruction = true))
     }
 

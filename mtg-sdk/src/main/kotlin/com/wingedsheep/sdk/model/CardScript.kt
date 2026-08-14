@@ -157,7 +157,7 @@ data class CardScript(
      * A spell-level **waterbend** additional cost (Avatar: The Last Airbender) —
      * *"As an additional cost to cast this spell, [you may] waterbend {N}."* Kept separate from
      * [additionalCosts] because waterbend is paid through the alternative-payment channel
-     * ([com.wingedsheep.sdk.scripting.AlternativePaymentChoice.waterbendPermanents], tapping
+     * ([com.wingedsheep.sdk.scripting.AlternativePaymentChoice.tapForGenericPermanents], tapping
      * artifacts/creatures), not the additional-cost payment continuation. See
      * [com.wingedsheep.sdk.scripting.SpellWaterbendCost].
      */
@@ -207,18 +207,23 @@ data class CardScript(
     val conditionalFlash: @Serializable Condition? = null,
 
     /**
-     * Alternate target requirements used when this spell is kicked.
-     * When non-empty and the spell is kicked, these replace [targetRequirements].
-     * Used for kicker spells where kicked mode has completely different targeting
-     * (e.g., Fight with Fire: unkicked targets one creature, kicked divides among any targets).
+     * Alternate target requirements used when this spell declared an optional additional cost.
+     * When non-empty and the cast declared *any* slot on that rail, these replace
+     * [targetRequirements] (e.g., Fight with Fire: unkicked targets one creature, kicked divides
+     * among any targets; Brave the Wilds: only the bargained cast chooses a target, CR 702.166d).
+     *
+     * Named for kicker because that's the mechanic that came first and because the field name is
+     * serialized into pinned replay card definitions — renaming it would silently change how old
+     * recordings resolve. It is not kicker-specific: bargain uses the same slot.
      */
     val kickerTargetRequirements: List<TargetRequirement> = emptyList(),
 
     /**
-     * Alternate spell effect used when this spell is kicked.
-     * When non-null and the spell is kicked, this replaces [spellEffect].
-     * Used for kicker spells where kicked mode has a completely different effect type
-     * (e.g., Fight with Fire: unkicked deals 5 to one creature, kicked divides 10 among any targets).
+     * Alternate spell effect used when this spell declared an optional additional cost.
+     * When non-null and the cast declared *any* slot on that rail, this replaces [spellEffect]
+     * (e.g., Fight with Fire: unkicked deals 5 to one creature, kicked divides 10 among any
+     * targets). Paired with [kickerTargetRequirements]; see there for why the kicker naming stays
+     * even though bargain shares the slot.
      */
     val kickerSpellEffect: Effect? = null,
 

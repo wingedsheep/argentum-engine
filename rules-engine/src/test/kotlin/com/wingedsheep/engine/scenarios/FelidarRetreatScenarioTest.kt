@@ -39,16 +39,23 @@ class FelidarRetreatScenarioTest : FunSpec({
         return driver
     }
 
-    /** Play a land from hand and pick [modeIndex] on the landfall trigger. */
+    /**
+     * Play a land from hand and pick [modeIndex] on the landfall trigger.
+     *
+     * The mode is announced as the trigger is *put onto the stack* (CR 603.3c), so the decision is
+     * already pending when `playLand` returns — before either player gets priority. Only once it is
+     * answered does passing priority resolve the ability.
+     */
     fun triggerLandfall(driver: GameTestDriver, player: EntityId, modeIndex: Int) {
         val land = driver.putCardInHand(player, "Forest")
         val play = driver.playLand(player, land)
         withClue("playing the land should succeed: ${play.error}") { play.error shouldBe null }
-        driver.bothPass()
 
         val decision = driver.pendingDecision as? ChooseOptionDecision
             ?: error("expected a mode choice for the landfall trigger; got ${driver.pendingDecision}")
         driver.submitDecision(player, OptionChosenResponse(decision.id, optionIndex = modeIndex))
+
+        driver.bothPass()
     }
 
     fun plusOneCounters(driver: GameTestDriver, id: EntityId): Int =

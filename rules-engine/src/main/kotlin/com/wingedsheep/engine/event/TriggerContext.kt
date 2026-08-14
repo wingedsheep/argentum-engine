@@ -131,6 +131,13 @@ data class TriggerContext(
      */
     val scryCount: Int? = null,
     /**
+     * Number of cards discarded in the batch that caused this trigger to fire (CR 603.2c). Read
+     * by `ContextPropertyKey.TRIGGER_DISCARD_COUNT` so "Whenever you discard one or more cards,
+     * ... that much" payoffs (Magmakin Artillerist) scale with the batch. `null` when the trigger
+     * was not driven by a discard.
+     */
+    val discardedCardCount: Int? = null,
+    /**
      * The discover value N (mana-value threshold) of the discover that fired this trigger (CR
      * 701.57). Read by `ContextPropertyKey.TRIGGER_DISCOVER_VALUE` so "discover again for the same
      * value" payoffs (Curator of Sun's Creation) reuse it. `null` when the trigger was not driven
@@ -163,13 +170,24 @@ data class TriggerContext(
      */
     val capturedEntityIds: List<EntityId>? = null,
     /**
-     * For [com.wingedsheep.engine.core.PermanentAttachedEvent] triggers — the permanent the
-     * triggering attachment (Aura/Equipment) became attached to. Resolved by
+     * For [com.wingedsheep.engine.core.PermanentAttachedEvent] /
+     * [com.wingedsheep.engine.core.PermanentUnattachedEvent] triggers — the permanent the triggering
+     * attachment (Aura/Equipment) became attached to, or came off of. Resolved by
      * [com.wingedsheep.sdk.scripting.targets.EffectTarget.AttachedToTriggeringPermanent] so a
-     * "becomes attached" payoff can act on the host (Eriette gains control of it; Assimilation
-     * Aegis makes it a copy). `null` for non-attachment triggers.
+     * "becomes (un)attached" payoff can act on the host (Eriette gains control of it; Assimilation
+     * Aegis makes it a copy; Stitcher's Graft sacrifices it). `null` for non-attachment triggers.
      */
-    val attachedToEntityId: EntityId? = null
+    val attachedToEntityId: EntityId? = null,
+    /**
+     * For [com.wingedsheep.engine.core.PermanentUnattachedEvent] triggers only — the host the
+     * attachment came *off*. Deliberately separate from [attachedToEntityId]: an unattach payoff
+     * must not read the live `AttachedToComponent`, because by resolution it is either gone or
+     * already re-pointed at a different host (equipping the Graft away from a creature attaches it
+     * elsewhere in the same action). Resolves
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.AttachedToTriggeringPermanent] in that
+     * case, and leaves the attach case on its live read (CR 611.2b). `null` otherwise.
+     */
+    val unattachedFromEntityId: EntityId? = null
 ) {
     companion object {
         fun fromEvent(event: com.wingedsheep.engine.core.GameEvent): TriggerContext {
@@ -219,6 +237,13 @@ data class TriggerContext(
                     triggeringEntityId = event.entityId,
                     counterCount = event.amount
                 )
+                // The permanent the counters left, and how many left it — the mirror of the
+                // placement context, so a "counters removed" payoff can read "that permanent" and
+                // "that many".
+                is com.wingedsheep.engine.core.CountersRemovedEvent -> TriggerContext(
+                    triggeringEntityId = event.entityId,
+                    counterCount = event.amount
+                )
                 is SpellCastEvent -> TriggerContext(
                     triggeringEntityId = event.spellEntityId,
                     triggeringPlayerId = event.casterId,
@@ -253,6 +278,12 @@ data class TriggerContext(
                     triggeringPlayerId = event.playerId,
                     discoverValue = event.value
                 )
+                // Collect evidence (CR 701.59): the collecting player is the triggering player, so
+                // "whenever you collect evidence" resolves "you" correctly for an opponent's
+                // collection against a ward cost.
+                is com.wingedsheep.engine.core.EvidenceCollectedEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId
+                )
                 // Manifest dread (CR 701.60): the cards put into the graveyard this way are
                 // carried as capturedEntityIds, seeded into the resolving trigger's pipeline under
                 // TRIGGER_CAPTURED_COLLECTION so "a card you put into your graveyard this way"
@@ -262,12 +293,27 @@ data class TriggerContext(
                     triggeringPlayerId = event.playerId,
                     capturedEntityIds = event.graveyardCardIds.takeIf { it.isNotEmpty() }
                 )
-                is CardsDiscardedEvent -> TriggerContext(triggeringPlayerId = event.playerId)
+                // The batch size feeds TRIGGER_DISCARD_COUNT ("that much") — one event per
+                // discard, however many cards it contained (CR 603.2c).
+                is CardsDiscardedEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId,
+                    discardedCardCount = event.cardIds.size
+                )
                 is CardRevealedFromDrawEvent -> TriggerContext(
                     triggeringEntityId = event.cardEntityId,
                     triggeringPlayerId = event.playerId
                 )
-                is CardCycledEvent -> TriggerContext(triggeringPlayerId = event.playerId)
+                // xValue carries the X announced for an `{X}` cycling cost (CR 107.3a) so a
+                // "when you cycle this card" trigger can read it as DynamicAmount.XValue —
+                // Webstrike Elite's "with mana value X", Valor's Flagship's "create X tokens".
+                is CardCycledEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId,
+                    xValue = event.xValue
+                )
+                is com.wingedsheep.engine.core.CrewOrSaddleContributionEvent -> TriggerContext(
+                    triggeringEntityId = event.permanentId,
+                    triggeringPlayerId = event.controllerId
+                )
                 is AttackersDeclaredEvent -> TriggerContext()
                 is BlockersDeclaredEvent -> TriggerContext()
                 is TappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
@@ -303,6 +349,13 @@ data class TriggerContext(
                     triggeringEntityId = event.attachmentId,
                     triggeringPlayerId = event.controllerId,
                     attachedToEntityId = event.attachedToId
+                )
+                is com.wingedsheep.engine.core.PermanentUnattachedEvent -> TriggerContext(
+                    // Mirror of the attach case: the attachment triggers, and the host it came off
+                    // rides along as "that permanent" (Stitcher's Graft sacrifices it).
+                    triggeringEntityId = event.attachmentId,
+                    triggeringPlayerId = event.controllerId,
+                    unattachedFromEntityId = event.attachedToId
                 )
                 is BecomesTargetEvent -> TriggerContext(
                     triggeringEntityId = event.targetEntityId,

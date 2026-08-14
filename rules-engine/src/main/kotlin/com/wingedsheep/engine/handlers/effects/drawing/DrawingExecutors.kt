@@ -21,12 +21,14 @@ class DrawingExecutors(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
     private val decisionHandler: DecisionHandler = DecisionHandler(),
     private val targetFinder: TargetFinder = TargetFinder(),
-    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
+    private val replacementProcessor: com.wingedsheep.engine.replacement.ReplacementEffectProcessor =
+        com.wingedsheep.engine.replacement.ReplacementEffectProcessor()
 ) : ExecutorModule {
     private var effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)? = null
 
     private val drawCardsExecutor by lazy {
-        DrawCardsExecutor(amountEvaluator, cardRegistry, effectExecutor)
+        DrawCardsExecutor(amountEvaluator, cardRegistry, effectExecutor, replacementProcessor)
     }
 
     private val eachPlayerReturnsPermanentToHandExecutor by lazy {

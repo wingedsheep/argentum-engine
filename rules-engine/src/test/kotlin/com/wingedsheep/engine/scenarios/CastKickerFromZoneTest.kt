@@ -1,4 +1,5 @@
 package com.wingedsheep.engine.scenarios
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.state.components.battlefield.wasKickedChoice
 
 import com.wingedsheep.engine.core.CastSpell
@@ -82,7 +83,7 @@ class CastKickerFromZoneTest : FunSpec({
             CastSpell(
                 playerId = p1,
                 cardId = cardId,
-                wasKicked = true,
+                declaredCostSlot = ChoiceSlot.KICKED,
                 paymentStrategy = PaymentStrategy.AutoPay
             )
         )
@@ -120,7 +121,7 @@ class CastKickerFromZoneTest : FunSpec({
             CastSpell(
                 playerId = p1,
                 cardId = cardId,
-                wasKicked = false,
+                declaredCostSlot = null,
                 paymentStrategy = PaymentStrategy.AutoPay
             )
         )
@@ -163,7 +164,7 @@ class CastKickerFromZoneTest : FunSpec({
             CastSpell(
                 playerId = p1,
                 cardId = cardId,
-                wasKicked = true,
+                declaredCostSlot = ChoiceSlot.KICKED,
                 graveyardLifeCost = 1,
                 paymentStrategy = PaymentStrategy.AutoPay
             )

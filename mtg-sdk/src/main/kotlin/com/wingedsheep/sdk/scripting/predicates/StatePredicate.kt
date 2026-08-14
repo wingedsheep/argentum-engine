@@ -47,13 +47,65 @@ sealed interface StatePredicate {
     }
 
     // =============================================================================
+    // Zone (Entity)
+    // =============================================================================
+
+    /**
+     * The object is on the battlefield *right now*.
+     *
+     * Exists to cancel the last-known-information fallbacks that several Entity predicates carry.
+     * [IsAttacking], for one, deliberately falls back to `EntitySnapshot.wasAttacking` once its
+     * object has left the battlefield, because that is what a dies trigger asking "was it
+     * attacking?" needs (Garna, Bloodfist of Keld). An ability asking whether its *own source* is
+     * attacking **now** wants the opposite — an already-dead source must read as not attacking —
+     * and gets it by composing `onBattlefield().attacking()`.
+     */
+    @SerialName("IsOnBattlefield")
+    @Serializable
+    data object IsOnBattlefield : Entity {
+        override val description: String = "on the battlefield"
+    }
+
+    // =============================================================================
     // Combat (Entity)
     // =============================================================================
+
+    /**
+     * Attacking, and no other creature is attacking (CR 506.5 — "a creature is attacking alone if
+     * it's attacking but no other creatures are").
+     *
+     * Belongs on the *target filter* rather than in an activation restriction: "target creature you
+     * control that's attacking alone" is a targeting restriction, so CR 608.2b has to re-check it on
+     * resolution and counter the ability when a second attacker showed up in response. An
+     * `ActivationRestriction` is only consulted when the ability is activated.
+     */
+    @SerialName("IsAttackingAlone")
+    @Serializable
+    data object IsAttackingAlone : Entity {
+        override val description: String = "attacking alone"
+    }
 
     @SerialName("IsAttacking")
     @Serializable
     data object IsAttacking : Entity {
         override val description: String = "attacking"
+    }
+
+    /**
+     * Attacking one of *your* opponents — the player, not their planeswalkers or battles
+     * (Oviya, Automech Artisan: "Each creature that's attacking one of your opponents has
+     * trample"). "You" is the controller of the ability doing the asking, so this matches
+     * regardless of who controls the attacker: a creature an ally controls that's attacking your
+     * opponent qualifies, and a creature attacking *you* does not.
+     *
+     * Strictly narrower than [IsAttacking], which is also true of a creature attacking a
+     * planeswalker or battle. Fails closed when there's no controller context to scope "your"
+     * against.
+     */
+    @SerialName("IsAttackingAnOpponent")
+    @Serializable
+    data object IsAttackingAnOpponent : Entity {
+        override val description: String = "attacking one of your opponents"
     }
 
     @SerialName("IsBlocking")
@@ -246,20 +298,43 @@ sealed interface StatePredicate {
     }
 
     /**
+     * This card is currently in a graveyard *and* was put there during the current turn,
+     * from any zone — the battlefield, but equally the library (mill), the hand (discard),
+     * or the stack (a countered or resolved spell). Used as a target predicate on
+     * graveyard-zone filters:
+     *
+     *  - Abyssal Harvester (FDN): "target creature card from a graveyard that was put
+     *    there this turn".
+     *
+     * The zone-restricted sibling is [PutIntoGraveyardFromBattlefieldThisTurn]; both read
+     * the same `PutIntoGraveyardThisTurnComponent` (see that predicate's doc for the
+     * component's lifecycle), this one ignoring its `fromBattlefield` flag.
+     *
+     * Pair with `CardPredicate.IsCreature` (or any other card-predicate constraint) to
+     * express the full Abyssal Harvester filter.
+     */
+    @SerialName("PutIntoGraveyardThisTurn")
+    @Serializable
+    data object PutIntoGraveyardThisTurn : History {
+        override val description: String = "put into a graveyard this turn"
+    }
+
+    /**
      * This card is currently in a graveyard *and* was put there from the battlefield
-     * during the current turn. Used as a target predicate on graveyard-zone filters:
+     * during the current turn. The zone-restricted sibling of [PutIntoGraveyardThisTurn].
+     * Used as a target predicate on graveyard-zone filters:
      *
      *  - Samwise the Stouthearted (LTR): "target permanent card in your graveyard
      *    that was put there from the battlefield this turn"
      *  - Lobelia Sackville-Baggins (LTR): same predicate on an opponent's graveyard.
      *
-     * Backed by the `PutIntoGraveyardFromBattlefieldThisTurnMarker` data-object
-     * component on the card entity. The marker is set by `ZoneTransitionService`
-     * whenever a card moves battlefield → graveyard, and stripped when it leaves the
-     * graveyard so a later arrival from a different zone (mill, exile → graveyard)
-     * does not falsely match. The marker carries no turn number — `BeginningPhaseManager`
-     * wipes it from every entity during the untap step of each turn, giving the predicate
-     * MTG-correct per-turn semantics independent of the engine's per-round `state.turnNumber`.
+     * Backed by the `PutIntoGraveyardThisTurnComponent` on the card entity, whose
+     * `fromBattlefield` flag this predicate additionally requires. The component is set by
+     * `ZoneTransitionService` on every arrival in a graveyard, and stripped when the card
+     * leaves the graveyard so a later arrival by a different route does not carry the
+     * earlier "from battlefield" claim. It carries no turn number — `BeginningPhaseManager`
+     * wipes it from every entity during the untap step of each turn, which is what gives both
+     * predicates their per-turn semantics.
      *
      * Pair with `CardPredicate.IsPermanent` (or any other card-predicate constraint)
      * to express the full Samwise / Lobelia filter.
@@ -370,8 +445,24 @@ sealed interface StatePredicate {
         override val description: String = "that's a Ring-bearer"
     }
 
+    /**
+     * Is soulbond-**paired** with another creature (CR 702.95b). Negate with [Not] for the
+     * "unpaired" adjective the soulbond abilities themselves use ("another unpaired creature you
+     * control") — see `GameObjectFilter.paired()` / `.unpaired()`.
+     *
+     * Deliberately not source-relative: this asks whether the candidate is paired *at all*, so it
+     * evaluates the same way in a gather filter, a target filter, and a `Conditions.SourceMatches`
+     * gate. "Paired **with the source** specifically" is a different question, answered by
+     * [com.wingedsheep.sdk.scripting.filters.unified.Scope.SoulbondPair].
+     */
+    @SerialName("IsPaired")
+    @Serializable
+    data object IsPaired : Entity {
+        override val description: String = "paired"
+    }
+
     // =============================================================================
-    // Equipment (Entity)
+    // Equipment / Auras (Entity)
     // =============================================================================
 
     /** Has at least one Equipment attached */
@@ -379,6 +470,46 @@ sealed interface StatePredicate {
     @Serializable
     data object IsEquipped : Entity {
         override val description: String = "equipped"
+    }
+
+    /**
+     * Has at least one Aura attached — the MTG adjective "enchanted" (CR 303.4: an Aura *enchants*
+     * the permanent it's attached to). The Aura mirror of [IsEquipped], and deliberately narrower
+     * than [IsModified]: an Equipment attached or a counter on the permanent does not make it
+     * enchanted. Control of the Aura is irrelevant — an opponent's Aura still enchants your
+     * creature, which is why "enchanted creatures you control" (A Tale for the Ages) scopes control
+     * on the *creature* via a separate controller predicate rather than on the attachment.
+     *
+     * Role tokens are Auras (CR 113.2c), so this is also the Wilds of Eldraine Roles payoff
+     * ("if you control an enchanted creature" — Lord Skitter's Blessing).
+     */
+    @SerialName("IsEnchanted")
+    @Serializable
+    data object IsEnchanted : Entity {
+        override val description: String = "enchanted"
+    }
+
+    /**
+     * Has at least one attached Aura whose *controller* satisfies [auraController] — the narrower
+     * "enchanted by Auras you control" (Archon of the Wild Rose) as opposed to plain [IsEnchanted],
+     * which is agnostic about who controls the Aura (CR 303.4).
+     *
+     * The two are genuinely different adjectives and both appear in print: A Tale for the Ages
+     * buffs your creatures whoever's Aura is on them, while Archon of the Wild Rose only cares
+     * about Auras *you* control. Control is read off the Aura at evaluation time, so an Aura
+     * changing hands turns the predicate on or off continuously.
+     *
+     * "You" is the controller of the ability doing the filtering — the source's controller during
+     * layer projection, the evaluation context's controller for targets and conditions.
+     */
+    @SerialName("IsEnchantedByAura")
+    @Serializable
+    data class IsEnchantedByAura(val auraController: ControllerPredicate) : Entity {
+        override val description: String = when (auraController) {
+            ControllerPredicate.ControlledByYou -> "enchanted by Auras you control"
+            ControllerPredicate.ControlledByOpponent -> "enchanted by Auras an opponent controls"
+            else -> "enchanted"
+        }
     }
 
     /** Has an Equipment attached, an Aura attached, or any counter (MTG "modified" definition) */
@@ -440,6 +571,30 @@ sealed interface StatePredicate {
     @Serializable
     data object HasLockedDoor : Entity {
         override val description: String = "with a locked door"
+    }
+
+    // =============================================================================
+    // Suspect (Entity)
+    // =============================================================================
+
+    /**
+     * Permanent that is currently suspected (CR 701.60a, Murders at Karlov Manor). A named
+     * designation applied by `Effects.Suspect`; unlike saddled it has **no duration** — a
+     * suspected permanent stays suspected until it loses the designation or changes zones.
+     *
+     * Projected, not component-backed: the designation rides a Layer-ability floating effect
+     * (`SerializableModification.SetSuspected`) and surfaces as `ProjectedState.isSuspected`,
+     * so evaluators must read the projection rather than probing for a component.
+     *
+     * Menace and "can't block" are separate sub-effects of the same composite, so this predicate
+     * asks specifically "is it suspected", not "does it have menace" — which is what cards that
+     * read the designation back need ("if it's not suspected", "target suspected creature you
+     * control", "if the sacrificed creature was suspected").
+     */
+    @SerialName("IsSuspected")
+    @Serializable
+    data object IsSuspected : Entity {
+        override val description: String = "suspected"
     }
 
     // =============================================================================

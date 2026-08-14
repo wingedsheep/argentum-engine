@@ -10,8 +10,10 @@ import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
@@ -56,6 +58,8 @@ class PlayLandHandler(
 ) : ActionHandler<PlayLand> {
     override val actionType: KClass<PlayLand> = PlayLand::class
 
+    private val predicateEvaluator = com.wingedsheep.engine.handlers.PredicateEvaluator()
+
     override fun validate(state: GameState, action: PlayLand): String? {
         if (!state.isActiveTurnFor(action.playerId)) {
             // CR 805.4c — each player on the active team may play a land on the team's turn.
@@ -71,7 +75,8 @@ class PlayLandHandler(
         // Check land drop availability (accounts for static ability bonuses)
         val landDrops = state.getEntity(action.playerId)?.get<LandDropsComponent>()
             ?: LandDropsComponent()
-        val staticBonus = LandDropUtils.getAdditionalLandDrops(state, action.playerId, cardRegistry)
+        val staticBonus =
+            LandDropUtils.getAdditionalLandDrops(state, action.playerId, cardRegistry, conditionEvaluator)
         if (landDrops.remaining + staticBonus <= 0) {
             return "You have already played a land this turn"
         }
@@ -143,9 +148,40 @@ class PlayLandHandler(
         }
         newState = newState.removeFromZone(sourceZoneKey, action.cardId)
 
+        // A land played from a face-down exile enters face up as the real land, never as a face-down
+        // 2/2. Black Cat, Cunning Thief exiles cards face down (HIDDEN) and lets you play them; lands
+        // bypass ZoneTransitionService/StackResolver — where every other play path reveals a
+        // hidden-in-exile card (StackResolver strips FaceDownComponent as a spell hits the stack) —
+        // so strip the marker here (CR 305.1: a land is always played face up). No-op when absent.
+        newState = newState.updateEntity(action.cardId) { c -> c.without<FaceDownComponent>() }
+
         // Record Muldrotha graveyard land permission usage
         if (fromZone == Zone.GRAVEYARD) {
             newState = recordGraveyardPlayPermissionUsage(newState, action.playerId, CardType.LAND.name)
+            // Mark "entered from a graveyard" for ETB conditions (Oscorp Industries: "when this land
+            // enters from a graveyard, you lose 2 life"). Lands bypass ZoneTransitionService, which
+            // normally stamps this component, so set it here.
+            newState = newState.updateEntity(action.cardId) { c ->
+                c.with(com.wingedsheep.engine.state.components.battlefield.EnteredFromGraveyardComponent)
+            }
+        }
+
+        // The land-play signal (CR 305.1). [landPlayedEvent] rides alongside every entry
+        // ZoneChangeEvent below (like [riderPlayEvent]) so "whenever you play a land …" triggers
+        // (Shadow of the Goblin) fire — distinct from an effect *putting* a land onto the
+        // battlefield, which emits only the ZoneChangeEvent. Playing from a non-hand zone also sets
+        // the turn flag read by Spider-Man 2099's end-step condition.
+        val landPlayedEvent = com.wingedsheep.engine.core.LandPlayedEvent(
+            action.cardId, action.playerId, fromZone
+        )
+        // Record this land play's zone-of-origin for "played a land this turn from [anywhere other
+        // than] zone X" conditions (Spider-Man 2099). Appended for every play — HAND included — so a
+        // future card can gate on any specific origin, mirroring the spell path's castFromZone.
+        newState = newState.updateEntity(action.playerId) { c ->
+            val prior = c.get<com.wingedsheep.engine.state.components.player
+                .LandsPlayedThisTurnComponent>()
+                ?: com.wingedsheep.engine.state.components.player.LandsPlayedThisTurnComponent()
+            c.with(prior.copy(fromZones = prior.fromZones + fromZone))
         }
 
         // Add controller component first so projection sees the right controller when
@@ -155,6 +191,14 @@ class PlayLandHandler(
         }
         newState = com.wingedsheep.engine.handlers.effects.BattlefieldEntry
             .place(newState, action.playerId, action.cardId)
+
+        // Lands bypass ZoneTransitionService, which is where every other zone-change path
+        // stamps EnteredThisTurnComponent (cleared again at the controller's next untap step,
+        // see BeginningPhaseManager). Without this, "activate only if this land entered the
+        // battlefield this turn" (Hidden Lair) and any other Conditions.SourceEnteredThisTurn /
+        // GameObjectFilter.enteredThisTurn() check keyed on a land would never see it as true,
+        // even on the very turn it was played.
+        newState = newState.updateEntity(action.cardId) { c -> c.with(EnteredThisTurnComponent) }
 
         // Lands bypass ZoneTransitionService (which bakes ETB components for everything else),
         // so install the land's own static + replacement effect components here — mirroring
@@ -254,6 +298,7 @@ class PlayLandHandler(
                 )
                 val onEnterEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>(zoneChangeEvent)
                 riderPlayEvent?.let { onEnterEvents.add(it) }
+                onEnterEvents.add(landPlayedEvent)
                 newState = newState.tick()
 
                 val effectContext = EffectContext(
@@ -320,7 +365,7 @@ class PlayLandHandler(
                         cardComponent = cardComponent,
                         effect = entersAsCopy,
                         fromZone = fromZone,
-                        carryEvents = listOfNotNull(riderPlayEvent),
+                        carryEvents = listOfNotNull(riderPlayEvent, landPlayedEvent),
                     )
                 if (result != null) return result
             }
@@ -361,7 +406,7 @@ class PlayLandHandler(
                         Zone.BATTLEFIELD,
                         action.playerId
                     )
-                    val events = listOf(zoneChangeEvent) + listOfNotNull(riderPlayEvent)
+                    val events = listOf(zoneChangeEvent) + listOfNotNull(riderPlayEvent, landPlayedEvent)
                     newState = newState.tick()
 
                     val decisionId = "pay-life-or-enter-tapped-${action.cardId.value}"
@@ -422,8 +467,15 @@ class PlayLandHandler(
         // Process first choice in priority order: COLOR → CREATURE_TYPE
         // Continuations handle chaining to subsequent choices.
         if (cardDef != null) {
-            val firstChoice = cardDef.script.replacementEffects
-                .filterIsInstance<EntersWithChoice>()
+            val printedChoices = cardDef.script.replacementEffects.filterIsInstance<EntersWithChoice>()
+            // Granted Riot (a land that is a Spider with riot granted — vanishingly rare, but wired
+            // for consistency with the token/spell entry seams; one choice per grant, CR 702.136b).
+            val grantedRiotCount = com.wingedsheep.engine.mechanics.RiotSynthesis
+                .grantedRiotInstanceCount(newState, action.cardId, cardRegistry, predicateEvaluator)
+            val syntheticRiotChoice = if (grantedRiotCount > 0) {
+                com.wingedsheep.engine.mechanics.RiotSynthesis.RIOT_CHOICE
+            } else null
+            val firstChoice = (printedChoices + listOfNotNull(syntheticRiotChoice))
                 .sortedBy { it.choiceType.ordinal }
                 .firstOrNull()
             if (firstChoice != null) {
@@ -440,7 +492,7 @@ class PlayLandHandler(
                     Zone.BATTLEFIELD,
                     action.playerId
                 )
-                val events = listOf(zoneChangeEvent) + listOfNotNull(riderPlayEvent)
+                val events = listOf(zoneChangeEvent) + listOfNotNull(riderPlayEvent, landPlayedEvent)
                 newState = newState.tick()
 
                 // Build the choice prompt + entity-keyed continuation via the shared on-battlefield
@@ -456,10 +508,10 @@ class PlayLandHandler(
                         fromZone = fromZone,
                         carryEvents = events,
                         cardNameOptions = if (firstChoice.choiceType == ChoiceType.CARD_NAME) {
-                            if (firstChoice.cardNamePool == com.wingedsheep.sdk.scripting.CardNamePool.ANY) {
-                                cardRegistry.allCardNames().toList()
-                            } else cardRegistry.landCardNames().toList()
+                            cardRegistry.cardNamesIn(firstChoice.cardNamePool).toList()
                         } else emptyList(),
+                        syntheticRiot = firstChoice === syntheticRiotChoice,
+                        syntheticRiotRemaining = if (firstChoice === syntheticRiotChoice) grantedRiotCount - 1 else 0,
                     )
                 if (result != null) return result
             }
@@ -479,7 +531,7 @@ class PlayLandHandler(
             action.playerId
         )
 
-        val events = listOf(zoneChangeEvent) + listOfNotNull(riderPlayEvent)
+        val events = listOf(zoneChangeEvent) + listOfNotNull(riderPlayEvent, landPlayedEvent)
         newState = newState.tick()
 
         // Detect and process any triggers from the land entering (e.g., landfall)
@@ -523,7 +575,10 @@ class PlayLandHandler(
             cardId in state.getZone(ZoneKey(pid, Zone.EXILE))
         }
         if (!inAnyExile) return false
-        return state.hasMayPlayFor(cardId, playerId, conditionEvaluator)
+        // A nonLandOnly permission ("you may cast that card" wording, e.g. Ragavan, Nimble
+        // Pilferer) never authorizes playing a land — mirrors CastFromZoneEnumerator's gate.
+        return state.activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)
+            .any { !it.nonLandOnly }
     }
 
     /**
@@ -531,13 +586,18 @@ class PlayLandHandler(
      * also forces the played land tapped (Lightstall Inquisitor's "each land played this
      * way enters tapped" clause). Read from [state] *before* the card left exile, since
      * `removeMayPlayPermissionsForCard` runs as the card moves to the battlefield.
+     *
+     * A `nonLandOnly` permission never authorizes a land play in the first place (mirrors
+     * [isInExileWithPlayPermission]'s filter) — its `landEntersTapped` rider is therefore only
+     * relevant when it's actually the permission the land played through, never as a rider
+     * leaking onto a land authorized by a *different*, plain permission.
      */
     private fun permissionForcesLandTapped(
         state: GameState,
         playerId: EntityId,
         cardId: EntityId
-    ): Boolean = state.activeMayPlayFor(cardId, playerId, conditionEvaluator)
-        .any { it.landEntersTapped }
+    ): Boolean = state.activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)
+        .any { !it.nonLandOnly && it.landEntersTapped }
 
     private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
         for (entityId in state.getBattlefield(playerId)) {
@@ -575,9 +635,24 @@ class PlayLandHandler(
         // exile path in [isInExileWithPlayPermission] and CastFromZoneEnumerator, which already
         // offers the PlayLand action for such a card; without this the handler would reject the
         // very action the enumerator advertised.
-        if (state.hasMayPlayFor(cardId, playerId, conditionEvaluator)) return true
+        // A nonLandOnly permission ("you may cast that card" wording) never authorizes playing
+        // a land — mirrors isInExileWithPlayPermission.
+        if (state.activeMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)
+                .any { !it.nonLandOnly }) return true
         if (hasLandGraveyardPlayPermission(state, playerId)) return true
-        return findGraveyardPlayPermissionSource(state, playerId, CardType.LAND.name) != null
+        if (findGraveyardPlayPermissionSource(state, playerId, CardType.LAND.name) != null) return true
+        // Mayhem (CR 702.187c): a Mayhem land discarded this turn may be played from the graveyard.
+        val discardedThisTurn = state.getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent>()
+            ?.cardIds ?: emptyList()
+        if (cardId in discardedThisTurn) {
+            val cardDef = state.getEntity(cardId)?.get<CardComponent>()
+                ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+            if (cardDef != null &&
+                com.wingedsheep.engine.mechanics.MayhemGrants.effectiveMayhem(state, cardId, cardDef) != null
+            ) return true
+        }
+        return false
     }
 
     /**

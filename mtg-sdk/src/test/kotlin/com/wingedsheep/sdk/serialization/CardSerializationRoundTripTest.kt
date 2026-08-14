@@ -26,6 +26,7 @@ import com.wingedsheep.sdk.scripting.effects.LoseLifeEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.MoveTrackedBattlefieldObjectEffect
 import com.wingedsheep.sdk.scripting.effects.SetBaseStatsEffect
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
@@ -97,6 +98,30 @@ class CardSerializationRoundTripTest : DescribeSpec({
             effect.power shouldBe null
             effect.toughness shouldBe DynamicAmount.Fixed(7)
             effect.duration shouldBe Duration.EndOfTurn
+        }
+
+        it("should round-trip a tracked battlefield-object move") {
+            val card = card("Tracked Move Test") {
+                manaCost = "{U}"
+                typeLine = "Instant"
+                spell {
+                    target = Targets.Permanent
+                    effect = MoveTrackedBattlefieldObjectEffect(
+                        target = EffectTarget.ContextTarget(0),
+                        destination = Zone.HAND,
+                        enteredBattlefieldTimestamp = 42L
+                    )
+                }
+            }
+
+            val serialized = CardLoader.toJson(card)
+            serialized shouldContain "MoveTrackedBattlefieldObject"
+
+            val deserialized = CardLoader.fromJson(serialized)
+            val effect = deserialized.script.spellEffect
+            effect.shouldBeInstanceOf<MoveTrackedBattlefieldObjectEffect>()
+            effect.destination shouldBe Zone.HAND
+            effect.enteredBattlefieldTimestamp shouldBe 42L
         }
 
         it("should round-trip a creature with triggered ability") {
@@ -376,10 +401,12 @@ class CardSerializationRoundTripTest : DescribeSpec({
                     Mode.noTarget(DrawCardsEffect(DynamicAmount.Fixed(1), EffectTarget.Controller), "Draw a card"),
                     Mode.noTarget(GainLifeEffect(DynamicAmount.Fixed(2), EffectTarget.Controller), "Gain 2 life")
                 ),
-                chooseCount = 2
+                chooseCount = 2,
+                additionalManaCostPerExtraMode = "{3}"
             )
             directModal.minChooseCount shouldBe 2
             directModal.allowRepeat shouldBe false
+            directModal.additionalManaCostPerExtraMode shouldBe "{3}"
 
             // Produce a payload written by an older schema by round-tripping through
             // the current serializer and stripping the new fields.
@@ -390,6 +417,7 @@ class CardSerializationRoundTripTest : DescribeSpec({
             val legacyJson = fullJson
                 .replace(Regex(",\\s*\"minChooseCount\"\\s*:\\s*\\d+"), "")
                 .replace(Regex(",\\s*\"allowRepeat\"\\s*:\\s*(true|false)"), "")
+                .replace(Regex(",\\s*\"additionalManaCostPerExtraMode\"\\s*:\\s*\"[^\"]+\""), "")
             legacyJson shouldContain "\"chooseCount\""
             (legacyJson.contains("minChooseCount") || legacyJson.contains("allowRepeat")) shouldBe false
 
@@ -400,6 +428,7 @@ class CardSerializationRoundTripTest : DescribeSpec({
             parsed.chooseCount shouldBe 2
             parsed.minChooseCount shouldBe 2
             parsed.allowRepeat shouldBe false
+            parsed.additionalManaCostPerExtraMode shouldBe null
         }
 
         it("should round-trip a card built with the vividEtb DSL helper") {

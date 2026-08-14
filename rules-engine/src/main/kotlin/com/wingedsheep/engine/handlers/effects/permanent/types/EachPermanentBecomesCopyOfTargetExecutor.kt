@@ -1,14 +1,18 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
 import com.wingedsheep.engine.core.EffectResult
+import com.wingedsheep.engine.event.GrantedActivatedAbility
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtEndOfTurnComponent
 import com.wingedsheep.engine.state.components.identity.RevertCopyAtNextEndStepComponent
+import com.wingedsheep.engine.state.components.identity.RevertCopyAtYourNextTurnComponent
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.EachPermanentBecomesCopyOfTargetEffect
 import kotlin.reflect.KClass
@@ -28,8 +32,21 @@ import kotlin.reflect.KClass
  *
  * Used by Mirrorform: "Each nonland permanent you control becomes a copy of target
  * non-Aura permanent."
+ *
+ * Copy *exceptions* (CR 707.9 — "except it has …") ride two riders on the effect.
+ * [EachPermanentBecomesCopyOfTargetEffect.exceptions] carries every characteristic modification
+ * (name, added/removed types, keywords, base P/T, colors) and is applied by the shared
+ * [CopyExceptionApplier], the same helper the token-copy path uses.
+ * [EachPermanentBecomesCopyOfTargetEffect.retainActivatingAbility]
+ * re-grants the activated ability that created the copy: replacing the card component drops every
+ * printed ability of the original card, so the ability has to come back through the durable
+ * granted-activated-ability record, which is keyed by entity and so rides along through further
+ * copies. Likeness Looter's "{X}: … becomes a copy of target creature card in your graveyard with
+ * mana value X, except it has flying and this ability" is both riders at once.
  */
-class EachPermanentBecomesCopyOfTargetExecutor : EffectExecutor<EachPermanentBecomesCopyOfTargetEffect> {
+class EachPermanentBecomesCopyOfTargetExecutor(
+    private val cardRegistry: CardRegistry
+) : EffectExecutor<EachPermanentBecomesCopyOfTargetEffect> {
 
     override val effectType: KClass<EachPermanentBecomesCopyOfTargetEffect> =
         EachPermanentBecomesCopyOfTargetEffect::class
@@ -80,16 +97,21 @@ class EachPermanentBecomesCopyOfTargetExecutor : EffectExecutor<EachPermanentBec
         }
 
         // Supported durations: `Permanent` (Mirrorform/Clone, baked forever), `EndOfTurn`
-        // (reverted at cleanup), and `UntilNextEndStep` (reverted on entry to the next end step,
+        // (reverted at cleanup), `UntilNextEndStep` (reverted on entry to the next end step,
         // coincident with a paired "return it at the beginning of the next end step" trigger —
-        // Niko, Light of Hope). Anything else degrades gracefully to permanent.
+        // Niko, Light of Hope), and `UntilYourNextTurn` (reverted after the controller's next
+        // untap step — Absorbing Man, Taskmaster). Anything else degrades to permanent.
         var newState = state
         for (entityId in affected) {
             val container = newState.getEntity(entityId) ?: continue
             val currentCard = container.get<CardComponent>() ?: continue
 
             // Preserve the original ownership; only copiable card characteristics change.
-            val copiedCard = targetCard.copy(ownerId = currentCard.ownerId)
+            // The "except …" clause (CR 707.9) is applied by the shared [CopyExceptionApplier],
+            // the same helper the token-copy path uses, so it rides on the copy's own
+            // CardComponent and lasts exactly as long as the copy does.
+            val copiedCard = CopyExceptionApplier.apply(targetCard, effect.exceptions)
+                .copy(ownerId = currentCard.ownerId)
 
             // If this permanent is already a copy, keep the existing pre-copy snapshot
             // so a chain of copy effects still reverts to the printed identity on exit.
@@ -112,9 +134,40 @@ class EachPermanentBecomesCopyOfTargetExecutor : EffectExecutor<EachPermanentBec
                 when (effect.duration) {
                     Duration.EndOfTurn -> updated = updated.with(RevertCopyAtEndOfTurnComponent)
                     Duration.UntilNextEndStep -> updated = updated.with(RevertCopyAtNextEndStepComponent)
+                    Duration.UntilYourNextTurn -> updated = updated.with(
+                        RevertCopyAtYourNextTurnComponent(context.controllerId)
+                    )
                     else -> {}
                 }
                 updated
+            }
+
+            // "…and this ability": re-grant the activated ability that produced this copy. The
+            // resolving ability's identity carries the *permanent's* card definition id, which has
+            // already drifted to whatever it last copied — so read the granted record first (that's
+            // where the ability lives after the first copy) and fall back to the printed definition
+            // for the very first activation.
+            if (effect.retainActivatingAbility) {
+                val identity = context.abilityIdentity
+                if (identity != null && newState.grantedActivatedAbilities
+                        .none { it.entityId == entityId && it.ability.id == identity.abilityId }
+                ) {
+                    val ability = state.grantedActivatedAbilities
+                        .firstOrNull { it.entityId == entityId && it.ability.id == identity.abilityId }
+                        ?.ability
+                        ?: cardRegistry.getCard(identity.cardDefinitionId)
+                            ?.activatedAbilities?.firstOrNull { it.id == identity.abilityId }
+                    if (ability != null) {
+                        newState = newState.copy(
+                            grantedActivatedAbilities = newState.grantedActivatedAbilities +
+                                GrantedActivatedAbility(
+                                    entityId = entityId,
+                                    ability = ability,
+                                    duration = Duration.Permanent
+                                )
+                        )
+                    }
+                }
             }
         }
 

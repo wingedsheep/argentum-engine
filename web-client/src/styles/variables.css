@@ -117,6 +117,14 @@
   --color-target-glow-bright: rgba(51, 204, 255, 0.95);
   --color-target-glow-outer: rgba(0, 187, 255, 0.7);
 
+  /* Decision subject - the permanent a per-object prompt is currently about (Killing Wave's
+   * "sacrifice it unless you pay X life", asked once per creature). Same orange the inline
+   * trigger/distribute highlights use, so "this is the card in question" reads as one language
+   * on the battlefield and in the decision modal. */
+  --color-decision-subject: #ff6b35;
+  --color-decision-subject-glow: rgba(255, 107, 53, 0.7);
+  --color-decision-subject-shadow: rgba(255, 107, 53, 0.4);
+
   /* Targeting / Selection - selected (green) */
   --color-selected: #44dd44;
   --color-selected-bg: #0a2a1a;
@@ -177,6 +185,15 @@
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
+
+  /* =========================================================================
+   * Layout
+   * ========================================================================= */
+  /* The centred glass card every pre-game screen sits in — the landing screen and the lobby.
+   * Shared rather than per-screen because those two are consecutive: the lobby capped itself at
+   * 560px against the landing's 756, so creating a lobby visibly narrowed the card you were
+   * already looking at, for no reason a player could name. */
+  --screen-card-w: 756px;
 
   /* =========================================================================
    * Border Radius

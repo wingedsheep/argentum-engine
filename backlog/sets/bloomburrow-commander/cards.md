@@ -2,7 +2,7 @@
 
 **Set Size:** 312 cards
 **Release Date:** August 2, 2024
-**Implemented:** 110 / 312
+**Implemented:** 114 / 312
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 37    | 0    |
@@ -118,7 +118,7 @@
 - [ ] Gilded Goose
 - [x] Gilded Lotus
 - [ ] Glacial Fortress
-- [ ] Golgari Rot Farm
+- [x] Golgari Rot Farm
 - [ ] Golgari Signet
 - [x] Goreclaw, Terror of Qal Sisma
 - [ ] Gourmand's Talent
@@ -232,7 +232,7 @@
 - [x] Rootbound Crag
 - [ ] Rootcast Apprenticeship
 - [ ] Rose Room Treasurer
-- [ ] Rowdy Research
+- [x] Rowdy Research
 - [ ] Rugged Prairie
 - [x] Sakura-Tribe Elder
 - [ ] Saw in Half
@@ -281,7 +281,7 @@
 - [ ] Tainted Wood
 - [x] Talisman of Impulse
 - [ ] Talisman of Resilience
-- [ ] Tamiyo, Field Researcher
+- [x] Tamiyo, Field Researcher
 - [ ] Tear Asunder
 - [ ] Teferi, Time Raveler
 - [x] Temple of Abandon
@@ -297,7 +297,7 @@
 - [ ] Tenuous Truce
 - [x] Terramorphic Expanse
 - [x] Tetsuko Umezawa, Fugitive
-- [ ] The Gitrog Monster
+- [x] The Gitrog Monster
 - [ ] The Odd Acorn Gang
 - [x] Thickest in the Thicket
 - [ ] Thopter Engineer

@@ -8,6 +8,17 @@ internal fun BridgeBuilder.keywords() {
     keyword("Vigilance", "VIGILANCE")
     keyword("Reach", "REACH")
     keyword("Defender", "DEFENDER")
+    // Daybound / Nightbound (CR 702.145, Innistrad: Crimson Vow). Bare card keywords the SDK models as
+    // rules-inert `Keyword` enum members — all behaviour (enters-transformed, the designation-change
+    // cascade, the can't-transform-except-via-keyword rule) is derived off projected state by the
+    // rules engine, so a plain `daybound()`/`nightbound()` stamp is the whole card surface. Both would
+    // auto-resolve via PascalCase→enum (Daybound→DAYBOUND), but pin them so the capability reads
+    // explicitly and a future enum rename surfaces as a MISSING gap rather than silently dropping.
+    // NOTE: these ride on the DFC's front/back faces (daybound front, nightbound back); the emitter
+    // stamps them via `keywordLines`, but assembling the two-faced werewolf shape is a per-card read,
+    // so pinning the capability doesn't imply an AUTO render of the whole card.
+    keyword("Daybound", "DAYBOUND")
+    keyword("Nightbound", "NIGHTBOUND")
     // Intimidate (CR 702.13) — `Keyword.INTIMIDATE` exists in the SDK enum, so the PascalCase→enum
     // auto-resolve would accept it, but the rules engine has NO block-evasion handling for it
     // (BlockEvasionRules covers flying/fear/shadow/horsemanship/landwalk only). A bare or granted
@@ -22,6 +33,28 @@ internal fun BridgeBuilder.keywords() {
     // only marks the capability covered — the emitter declines (SCAFFOLD) because picking the right
     // ProtectionScope from the IR's quality node is a per-card read.
     supported("HexproofFrom", "keyword ability: hexproof from [quality] -> KeywordAbility.Hexproof(ProtectionScope.…) (CR 702.11b)")
+    // Gift a [something] (CR 702.174, Bloomburrow) — a PARAMETERIZED keyword ability (the gifted thing
+    // rides in the rule), so `supported` rather than `keyword`: there is no Keyword.GIFT enum member.
+    // On a permanent the engine has the whole mechanic: `gift(GiftKind.…)` adds the cast-time additional
+    // cost (a `CastWithGift` legal action per opponent) plus the derived "when this enters, if its gift
+    // cost was paid, …" trigger; on an instant/sorcery it's `Patterns.Mechanic.giftSpell(…)`. The emitter
+    // declines (SCAFFOLD): which GiftKind is listed, and how the card's *other* text branches on
+    // `Conditions.GiftWasPromised`, is a per-card read.
+    supported("Gift", "keyword ability: Gift a [something] -> gift(GiftKind.…) on permanents / Patterns.Mechanic.giftSpell on instants & sorceries (CR 702.174)")
+    // Bargain (CR 702.166, Wilds of Eldraine) — "You may sacrifice an artifact, enchantment, or token
+    // as you cast this spell." `composed`, not a bare `keyword`: `Keyword.BARGAIN` exists, but stamping
+    // it alone would print the word and drop the whole mechanic — the optional additional cost and the
+    // ChoiceSlot.BARGAINED declaration its payoffs read. The `bargain()` CardBuilder helper composes
+    // both (an OptionalAdditionalCost over ArtifactEnchantmentOrToken declaring that slot), and the
+    // emitter's `rname == "Bargain"` branch renders that no-arg builder call (the rule carries no args).
+    // The payoff side — `SpellPassesFilter(ThisSpell, WasBargained)` — renders as
+    // `Conditions.WasBargained` in actionConditionDsl, so a plain "if this spell was bargained, X else
+    // Y" rider emits whole.
+    composed(
+        "Bargain",
+        "keyword: bargain() -> optional 'sacrifice an artifact, enchantment, or token' additional cost + ChoiceSlot.BARGAINED (CR 702.166)",
+        composes = listOf("Sacrifice"),
+    )
     // Saddle N (CR 702.171) — a PARAMETERIZED keyword ability (the N count rides in the rule's args),
     // NOT a bare card keyword. It must be `supported`, not `keyword`: a `keyword` entry would make
     // `keywordLines` stamp a bare `keywords(Keyword.SADDLE)` on the card and drop the N, exactly the
@@ -80,6 +113,57 @@ internal fun BridgeBuilder.keywords() {
     // can express ("Ward—Pay life equal to ~'s power", Raubahn, renders the dynamic form); richer/compound
     // costs decline -> SCAFFOLD. This entry only marks the capability covered (never blocking).
     supported("Ward", "keyword ability: Ward—<cost> (CR 702.21) -> keywordAbility(KeywordAbility.ward(...)/wardDiscard()/wardLife(N)/wardSacrifice(filter))")
+    // Madness [cost] (CR 702.35) — a PARAMETERIZED keyword whose whole mechanic (the discard →
+    // exile replacement plus the "may cast it for [cost]" trigger the engine synthesizes on that
+    // exile) hangs off the cost. `supported`, not `keyword`: `Keyword.MADNESS` exists, so the
+    // PascalCase→enum auto-resolve would stamp a bare `keywords(Keyword.MADNESS)` and drop the
+    // cost — the same trap as Ward/Saddle. The emitter's `rname == "Madness"` branch renders the
+    // `madness("{cost}")` builder call for the pure-mana shape (all of them, in practice); anything
+    // else declines -> SCAFFOLD. This entry only marks the capability covered (never blocking).
+    supported("Madness", "keyword ability: Madness [cost] -> madness(\"{cost}\") builder (CR 702.35)")
+    // Disturb [cost] (CR 702.146) — a PARAMETERIZED keyword ability, so `supported` rather than
+    // `keyword`: `Keyword.DISTURB` exists, so PascalCase→enum auto-resolve would stamp a bare
+    // `keywords(Keyword.DISTURB)` and drop both the cost and the transform — the Ward/Saddle/Madness
+    // trap. Modelled as `disturb("{cost}")` on the FRONT face; the engine owns the whole mechanic
+    // (graveyard cast enumeration, the back-face flip before the spell is put on the stack, back-face
+    // timing/targets per CR 712.8c, front-face mana value).
+    // NOTE: this pins the *capability* only. Every disturb card is a transforming DFC, and the emitter
+    // declines every multi-faced card (the bridge sees only the front face's IR), so these stay
+    // SCAFFOLD and get hand-authored — exactly like Daybound/Nightbound above.
+    supported("Disturb", "keyword ability: Disturb [cost] -> disturb(\"{cost}\") builder on the DFC front face (CR 702.146)")
+    // Emerge [cost] (CR 702.119) — a PARAMETERIZED keyword ability, so `supported` rather than
+    // `keyword`: `Keyword.EMERGE` exists, so PascalCase→enum auto-resolve would stamp a bare
+    // `keywords(Keyword.EMERGE)` and drop the cost — the Ward/Saddle/Madness trap. Modelled as
+    // `emerge("{cost}")`; the engine owns the whole mechanic (the hand alternative cost, the
+    // creature sacrifice, and the generic-only reduction by the sacrificed creature's mana value).
+    // The emitter's `rname == "Emerge"` branch renders the builder call for the pure-mana shape
+    // (every printed emerge); anything else declines -> SCAFFOLD.
+    supported("Emerge", "keyword ability: Emerge [cost] -> emerge(\"{cost}\") builder (CR 702.119)")
+    // Splice onto [quality] [cost] (CR 702.47) — a PARAMETERIZED keyword ability, so `supported` rather
+    // than `keyword`: `Keyword.SPLICE` exists, so PascalCase→enum auto-resolve would stamp a bare
+    // `keywords(Keyword.SPLICE)` and drop the cost — the Ward/Saddle/Madness/Emerge trap. Modelled as
+    // `splice("{cost}")`; the engine owns the whole mechanic (the `CastWithSplice` cast variant, the
+    // additional cost, the reveal that leaves the card in hand, and appending the card's own spell
+    // effect + targets to the spell on the stack after its own effects).
+    // The card needs no other authoring: whatever `spell { }` script it would use when cast normally
+    // *is* the text that gets spliced, so a splice card renders exactly like the plain spell plus this
+    // one line. The emitter's `rname == "Splice"` branch renders the builder call for the pure-mana
+    // shape (every printed splice cost); anything else declines -> SCAFFOLD.
+    supported("Splice", "keyword ability: Splice onto Arcane [cost] -> splice(\"{cost}\") builder (CR 702.47)")
+
+    // Disguise (CR 702.168) — morph plus ward {2}. Like Morph it's a keyword ability with no
+    // `Keyword.DISGUISE` enum member (the {3} face-down cast and the turn-face-up special action are
+    // synthesised from the ability, and the ward {2} is a face-down characteristic carried by
+    // `FaceDownMode.DISGUISE`), so it's `supported` rather than `keyword` — a bare-keyword row would
+    // stamp a non-existent enum. The emitter renders the pure-mana shape as the card-level
+    // `disguise = "{cost}"` assignment (Emitter.kt `rname == "Disguise"`).
+    supported("Disguise", "keyword ability: Disguise [cost] (CR 702.168) -> disguise = \"{cost}\"; face-down 2/2 with ward {2}")
+    // "Disguise {X}{W}{W}" (Aurelia's Vindicator) — CR 702.168e makes the X chosen as the turn-face-up
+    // special action was taken readable by the permanent's other abilities. `KeywordAbility.Disguise`
+    // takes a full PayCost so the cost itself is expressible, but inheriting that X into a later
+    // ability is the cast-time-chosen-value area the module README flags as still sloppy, so the
+    // emitter declines -> SCAFFOLD.
+    supported("DisguiseX", "keyword ability: Disguise {X}... (CR 702.168e) -> disguiseCost with X; emitter scaffolds (X inherited by other abilities)")
 
     composed("Landwalk", "specific *WALK keywords (SWAMPWALK, FORESTWALK, ...)")
     // Equip is a keyword ability, but the engine has no `Keyword.EQUIP` enum member: `equipAbility(cost)`

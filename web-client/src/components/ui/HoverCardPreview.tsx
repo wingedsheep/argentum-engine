@@ -1,4 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 
 const PREVIEW_WIDTH = 280
@@ -30,6 +31,14 @@ export interface HoverCardPreviewProps {
 /**
  * Shared card hover preview — positions a large card image near the cursor.
  * Used by the game board, deck builder, and all draft overlays.
+ *
+ * Always portalled to `<body>` on the tooltip layer (`--z-tooltip`). A cursor-following
+ * preview is a viewport-level layer, so it must not be trapped in whatever stacking context
+ * happens to wrap its caller: the spectator/replay shells wrap the whole board in a
+ * `position: fixed; z-index: 1500` container, which clamped an in-tree preview *below* the
+ * zone browsers (graveyard/exile/deck) that portal to `<body>` at z-index 2000. Cards can
+ * also live inside `overflow: hidden` / transformed ancestors (a tapped permanent rotates),
+ * which would clip a preview rendered in place.
  */
 export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rulings, children, overlay, extraHeight = 0, imageRotateDeg = 0 }: HoverCardPreviewProps) {
   const [showRulings, setShowRulings] = useState(false)
@@ -90,14 +99,14 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
     }
   }
 
-  return (
+  return createPortal(
     <div
       style={{
         position: 'fixed',
         top,
         left,
         pointerEvents: 'none',
-        zIndex: 2500,
+        zIndex: 'var(--z-tooltip)' as unknown as number,
         display: 'flex',
         flexDirection: 'column',
         gap: GAP,
@@ -153,7 +162,8 @@ export function HoverCardPreview({ name, imageUri, imageSize = 'large', pos, rul
           Hold to see rulings...
         </div>
       )}
-    </div>
+    </div>,
+    document.body,
   )
 }
 

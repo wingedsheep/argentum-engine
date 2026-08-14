@@ -1,0 +1,73 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Spider-Ham, Peter Porker",
+      "Spider-Verse",
+      "Behold the Sinister Six!",
+      "Carnage, Crimson Chaos",
+      "Mister Negative"
+    ],
+    "battlefield": [
+      {"name": "Spider-Ham, Peter Porker"},
+      {"name": "Jalum Tome"},
+      {"name": "Forest"},
+      {"name": "Forest"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [
+      "Grizzly Bears",
+      "Gorilla Warrior",
+      "Gorilla Warrior",
+      "Canyon Wildcat",
+      "Coral Eel",
+      "Bog Imp",
+      "Raging Goblin"
+    ],
+    "library": ["Island", "Island", "Island", "Island", "Island", "Island", "Island", "Island", "Mountain", "Swamp", "Plains", "Forest"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": ["Swamp", "Swamp", "Swamp", "Swamp", "Swamp", "Swamp", "Swamp", "Swamp", "Swamp", "Mountain", "Island", "Plains", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "AI"
+}

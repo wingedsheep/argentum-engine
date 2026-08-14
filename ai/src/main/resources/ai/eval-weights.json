@@ -1,0 +1,32 @@
+{
+  "default": {
+    "life": 1.0,
+    "boardPresence": 1.5,
+    "cardAdvantage": 1.0,
+    "threatAssessment": 1.2,
+    "tempo": 0.6
+  },
+  "blind": {
+    "life": 0.0,
+    "boardPresence": 0.0,
+    "cardAdvantage": 0.0,
+    "threatAssessment": 0.0,
+    "tempo": 0.0
+  },
+  "concave-hand": {
+    "life": 1.0,
+    "boardPresence": 1.5,
+    "cardAdvantage": 1.0,
+    "threatAssessment": 1.2,
+    "tempo": 0.6,
+    "topdeckPenalty": -1.0
+  },
+  "concave-hand-2": {
+    "life": 1.0,
+    "boardPresence": 1.5,
+    "cardAdvantage": 1.0,
+    "threatAssessment": 1.2,
+    "tempo": 0.6,
+    "topdeckPenalty": -2.0
+  }
+}

@@ -1,10 +1,15 @@
 package com.wingedsheep.gameserver.config
 
 import com.wingedsheep.ai.engine.SealedDeckGenerator
+import com.wingedsheep.ai.engine.deck.CommanderDeckGenerator
+import com.wingedsheep.ai.engine.deck.ConstructedDeckGenerator
 import com.wingedsheep.ai.engine.deck.RandomDeckGenerator
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.registry.PrintingRegistry
+import com.wingedsheep.engine.registry.TokenArtRegistry
+import com.wingedsheep.gameserver.coverage.SetCoverageService
+import com.wingedsheep.mtg.sets.tokens.TokenArtData
 import com.wingedsheep.mtg.sets.MtgSetCatalog
 import com.wingedsheep.mtg.sets.definitions.custom.JustOneGlassToken
 import com.wingedsheep.mtg.sets.definitions.custom.SekshaasEarlySleeper
@@ -80,8 +85,23 @@ class GameBeansConfig(
         }
     }
 
+    /**
+     * Per-set token art. A token has no `CardDefinition` and no `Printing` row, so this is the
+     * only place its art can be keyed to a set; the token executors consult it so a token shows
+     * the art of the set the card that created it was printed in.
+     */
     @Bean
-    fun boosterGenerator(cardRegistry: CardRegistry): BoosterGenerator = BoosterGenerator(
+    fun tokenArtRegistry(): TokenArtRegistry = TokenArtRegistry().apply {
+        for (set in MtgSetCatalog.all) {
+            register(set.code, TokenArtData.forSet(set), set.cards.map { it.name })
+        }
+    }
+
+    @Bean
+    fun boosterGenerator(
+        cardRegistry: CardRegistry,
+        setCoverageService: SetCoverageService,
+    ): BoosterGenerator = BoosterGenerator(
         // Every set with a non-empty card pool is selectable, not just the sealed-curated few.
         // Sets that aren't `sealedSupported` (or are flagged incomplete) ride along as "partial":
         // clients hide them behind a default-off toggle, but a host can still pick them. An empty
@@ -90,8 +110,18 @@ class GameBeansConfig(
         // isn't wrongly treated as empty.
         activeSets()
             .mapNotNull { set ->
-                val pool = set.boosterCardPool(cardRegistry)
-                if (pool.isEmpty()) null else set.code to set.toBoosterSetConfig(pool)
+                val limitedNames = setCoverageService.limitedCardNames(set.code)
+                val pool = set.boosterCardPool(cardRegistry, limitedNames)
+                val allExtras = if (limitedNames == null) emptyList() else {
+                    set.boosterCardPool(cardRegistry, limitedCardNames = null)
+                        .filterNot { it.name in limitedNames }
+                        .map { it.copy(metadata = it.metadata.copy(inBooster = true)) }
+                }
+                val extrasByName = allExtras.associateBy { it.name }
+                val extrasByProduct = setCoverageService.limitedProducts(set.code)
+                    .mapValues { (_, names) -> names.mapNotNull(extrasByName::get) }
+                    .filterValues { it.isNotEmpty() }
+                if (pool.isEmpty()) null else set.code to set.toBoosterSetConfig(pool, extrasByProduct)
             }
             .toMap()
     )
@@ -99,6 +129,27 @@ class GameBeansConfig(
     @Bean
     fun sealedDeckGenerator(boosterGenerator: BoosterGenerator): SealedDeckGenerator =
         SealedDeckGenerator(boosterGenerator)
+
+    /**
+     * Builds format-legal 60-card decks for the AI seat. Needs the registry as well as the booster
+     * generator: a set's reprints are name-only [com.wingedsheep.sdk.model.Printing] rows whose
+     * canonical definition lives in an earlier set.
+     */
+    @Bean
+    fun constructedDeckGenerator(
+        boosterGenerator: BoosterGenerator,
+        cardRegistry: CardRegistry,
+    ): ConstructedDeckGenerator = ConstructedDeckGenerator(boosterGenerator, cardRegistry)
+
+    /**
+     * Builds legal Commander / Brawl decks for the AI seat — the singleton shape
+     * [constructedDeckGenerator] refuses, with a designated commander picked first.
+     */
+    @Bean
+    fun commanderDeckGenerator(
+        boosterGenerator: BoosterGenerator,
+        cardRegistry: CardRegistry,
+    ): CommanderDeckGenerator = CommanderDeckGenerator(boosterGenerator, cardRegistry)
 
     @Bean
     fun randomDeckGenerator(): RandomDeckGenerator {
@@ -140,31 +191,63 @@ private fun List<CardDefinition>.withLegalities(): List<CardDefinition> =
 /**
  * The card pool a set contributes to booster / sealed / draft generation.
  *
- * Sets that author their own [MtgSet.cards] use those as-is. An all-reprint set (e.g. Eighth
- * Edition) declares no own definitions — every card is a [Printing] whose canonical
- * [CardDefinition] lives in an earlier set — so each reprint is resolved to its canonical via
- * [registry] and overlaid with the reprint's presentation (set code, art) and its per-set
- * [com.wingedsheep.sdk.model.Printing.rarity] (a card's rarity differs between sets, and booster
- * generation slots by rarity). Reprints whose canonical isn't implemented anywhere are skipped.
+ * A set contributes both its own [MtgSet.cards] and every distinct reprinted card in
+ * [MtgSet.printings]. Each reprint is resolved to the canonical [CardDefinition] via [registry],
+ * then overlaid with its set-specific presentation and rarity. Reprints whose canonical isn't
+ * implemented anywhere are skipped.
  *
- * Without this, an all-reprint set has an empty `cards` list, is filtered out of
- * [boosterGenerator], and never appears in the selectable-set list (the Eighth Edition bug).
+ * A card with both an own definition and one or more additional printings in the same set remains
+ * one booster-pool entry. Likewise, multiple treatments of the same reprint do not weight that
+ * oracle card more heavily; alternate frames are handled separately by the variant slot.
+ *
+ * This union is needed for both all-reprint sets (such as Eighth Edition) and mixed sets (such as
+ * Foundations). Returning early when [MtgSet.cards] was non-empty silently omitted every reprint
+ * from mixed-set boosters.
  */
-private fun MtgSet.boosterCardPool(registry: CardRegistry): List<CardDefinition> {
-    if (cards.isNotEmpty()) return cards
-    return printings.mapNotNull { printing ->
-        registry.getCardsByName(printing.name).firstOrNull()?.let { canonical ->
-            val withArt = canonical.withPrinting(printing)
-            withArt.copy(metadata = withArt.metadata.copy(rarity = printing.rarity))
+private fun MtgSet.boosterCardPool(
+    registry: CardRegistry,
+    limitedCardNames: Set<String>?,
+): List<CardDefinition> {
+    val eligibleOwnCards = cards.stamp(this)
+        .asSequence()
+        .filter { limitedCardNames == null || it.name in limitedCardNames }
+        .map { card ->
+            if (limitedCardNames == null) card
+            else card.copy(metadata = card.metadata.copy(inBooster = true))
         }
-    }
+        .toList()
+    val ownNames = eligibleOwnCards.asSequence().map { it.name }.toHashSet()
+    val resolvedReprints = printings
+        .asSequence()
+        .filter { limitedCardNames == null || it.name in limitedCardNames }
+        .filter { it.name !in ownNames }
+        .groupBy { it.name }
+        .mapNotNull { (_, treatments) ->
+            val printing = treatments.firstOrNull { !it.isAlternateFrame && !it.isPromo }
+                ?: treatments.first()
+            registry.getCardsByName(printing.name).firstOrNull()?.let { canonical ->
+                val withArt = canonical.withPrinting(printing)
+                withArt.copy(
+                    metadata = withArt.metadata.copy(
+                        rarity = printing.rarity,
+                        inBooster = limitedCardNames != null || withArt.metadata.inBooster,
+                    ),
+                )
+            }
+        }
+    return (eligibleOwnCards + resolvedReprints).sortedBy { it.name }
 }
 
-private fun MtgSet.toBoosterSetConfig(cards: List<CardDefinition>): BoosterGenerator.SetConfig =
-    BoosterGenerator.SetConfig(
+private fun MtgSet.toBoosterSetConfig(
+    cards: List<CardDefinition>,
+    extraCardsByProduct: Map<String, List<CardDefinition>>,
+): BoosterGenerator.SetConfig {
+    val defaultPoolNames = cards.mapTo(hashSetOf()) { it.name }
+    return BoosterGenerator.SetConfig(
         setCode = code,
         setName = displayName,
         cards = cards,
+        extraCardsByProduct = extraCardsByProduct,
         basicLands = (basicLandsFallback ?: this).basicLands,
         incomplete = incomplete,
         sealedSupported = sealedSupported,
@@ -172,6 +255,9 @@ private fun MtgSet.toBoosterSetConfig(cards: List<CardDefinition>): BoosterGener
         block = block,
         releaseDate = releaseDate,
         boosterStrategy = boosterStrategy,
-        printings = printings,
+        // Printing rows also drive the set-picker count. Keep only treatments for cards in the
+        // default booster pool; optional product printings are counted in their product rows.
+        printings = printings.filter { it.name in defaultPoolNames },
         variantChance = boosterVariantChance,
     )
+}

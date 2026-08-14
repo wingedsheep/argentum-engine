@@ -3,13 +3,15 @@ package com.wingedsheep.engine.mechanics.layers
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.CantBeBlockedWhilePropertyAtMostComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
-import com.wingedsheep.engine.state.components.battlefield.GrantCantBeBlockedToSmallCreaturesComponent
+import com.wingedsheep.engine.state.components.battlefield.DashedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.engine.state.components.identity.HexproofFromComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.identity.RingBearerComponent
@@ -57,7 +59,9 @@ private val KEYWORD_COUNTER_MAP = mapOf(
     CounterType.DEATHTOUCH to Keyword.DEATHTOUCH.name,
     CounterType.TRAMPLE to Keyword.TRAMPLE.name,
     CounterType.HEXPROOF to Keyword.HEXPROOF.name,
-    CounterType.REACH to Keyword.REACH.name
+    CounterType.REACH to Keyword.REACH.name,
+    CounterType.HASTE to Keyword.HASTE.name,
+    CounterType.MENACE to Keyword.MENACE.name
 )
 
 class StateProjector(
@@ -87,10 +91,20 @@ class StateProjector(
             val cardComponent = container.get<CardComponent>() ?: continue
 
             if (container.has<FaceDownComponent>()) {
+                // CR 708.2 / 708.2a: a face-down permanent has no characteristics beyond those the
+                // rules that made it face down list — 2/2 creature, no name, subtypes or mana cost.
+                // Disguise (CR 702.168a) and cloak (CR 701.58a) list one more: ward {2}. It is part
+                // of this characteristic-defining effect, not an ability of the card underneath,
+                // so it lives on the mode and ends the moment the permanent is turned face up.
+                val faceDownWard = container.get<FaceDownModeComponent>()?.mode?.faceDownWard
                 projectedValues[entityId] = MutableProjectedValues(
                     power = 2,
                     toughness = 2,
-                    keywords = mutableSetOf(),
+                    keywords = if (faceDownWard != null) {
+                        mutableSetOf(Keyword.WARD.name)
+                    } else {
+                        mutableSetOf()
+                    },
                     colors = mutableSetOf(),
                     types = mutableSetOf("CREATURE"),
                     subtypes = mutableSetOf(),
@@ -107,9 +121,14 @@ class StateProjector(
                         (container.get<ProtectionComponent>()?.colors?.map { "PROTECTION_FROM_${it.name}" } ?: emptyList()) +
                         (container.get<ProtectionComponent>()?.subtypes?.map { "PROTECTION_FROM_SUBTYPE_${it.uppercase()}" } ?: emptyList()) +
             (container.get<ProtectionComponent>()?.supertypes?.map { "PROTECTION_FROM_SUPERTYPE_${it.uppercase()}" } ?: emptyList()) +
+                        (container.get<ProtectionComponent>()?.cardTypes?.map { "PROTECTION_FROM_CARDTYPE_$it" } ?: emptyList()) +
                         (container.get<HexproofFromComponent>()?.colors?.map { "HEXPROOF_FROM_${it.name}" } ?: emptyList()) +
                         (container.get<HexproofFromComponent>()?.cardTypes?.map { "HEXPROOF_FROM_CARDTYPE_$it" } ?: emptyList()) +
-                        (container.get<ToxicComponent>()?.let { listOf("TOXIC_${it.amount}") } ?: emptyList())).toMutableSet(),
+                        (container.get<ToxicComponent>()?.let { listOf("TOXIC_${it.amount}") } ?: emptyList()) +
+                        // CR 702.109a: "as long as this permanent's dash cost was paid, it has
+                        // haste" — derived live from the marker every projection, not stored as a
+                        // floating effect (see DashedComponent's doc for why).
+                        (if (container.has<DashedComponent>()) listOf(Keyword.HASTE.name) else emptyList())).toMutableSet(),
                     colors = cardComponent.colors.map { it.name }.toMutableSet(),
                     types = extractTypes(cardComponent),
                     subtypes = cardComponent.typeLine.subtypes.map { it.value }.toMutableSet(),
@@ -204,9 +223,32 @@ class StateProjector(
         // === Layers 3-4 (Text + Type) ===
         // Apply type-changing effects first so creature-dependent filters in layers 5-6
         // see permanents that became creatures (e.g., Opalescence making enchantments creatures).
+        //
+        // Layer 4 is not one flat pass, because CR 613.8a dependencies exist *inside* it: an effect
+        // whose affected set reads creature status ("Vehicle creatures you control" — Lifecraft
+        // Engine) depends on the Layer-4 effects that grant or remove the CREATURE type (crew's
+        // animation, Opalescence), since applying those changes which permanents it applies to. Such
+        // an effect therefore applies after them whatever its timestamp, with its filter re-resolved
+        // once they have landed — the same two-phase trick this method already uses between layer
+        // bands. Effects whose filters don't read creature status keep plain timestamp order among
+        // themselves, and a locked CR 613.6 group keeps its frozen set through the re-resolve.
         val typeLayerEffects = nonControlNonPTEffects.filter { it.layer == Layer.TEXT || it.layer == Layer.TYPE }
-        for (effect in typeLayerEffects) {
+        val (creatureDependentTypeEffects, plainTypeEffects) = typeLayerEffects.partition { effect ->
+            val filter = effect.affectsFilter
+            filter != null && filterResolver.isCreatureDependentFilter(filter)
+        }
+        for (effect in plainTypeEffects) {
             effectApplicator.applyEffect(effect, state, projectedValues)
+        }
+        for (effect in creatureDependentTypeEffects) {
+            val resolved = effect.affectsFilter
+                ?.let { filterResolver.resolveAffectedEntities(state, effect.sourceId, it, projectedValues) }
+                ?: effect.affectedEntities
+            effectApplicator.applyEffect(
+                effect.copy(affectedEntities = lockAffected(effect, resolved)),
+                state,
+                projectedValues
+            )
         }
 
         // CR 701.54c: a player's Ring-bearer is legendary (the Ring emblem's first ability).
@@ -296,8 +338,15 @@ class StateProjector(
             // Suppress effects from sources that lost all abilities (e.g., a lord under Humility),
             // but NOT from sources that are themselves the source of a RemoveAllAbilities effect,
             // nor from a multi-layer group that already started applying before Layer 6.
+            //
+            // Only *static* abilities are suppressed (CR 611.3b — a static ability generates its
+            // effect only for as long as the object has that ability). A continuous effect created
+            // by a resolved spell or ability lasts as long as it says it does (CR 611.2a) and is
+            // independent of the source's abilities: a Timid Shieldbearer that pumped your team
+            // and then lost all its abilities to Curious Colossus keeps the +1/+1 it already gave,
+            // exactly as Humility never undoes a Giant Growth that already resolved.
             val sourceProjected = projectedValues[effect.sourceId]
-            if (sourceProjected != null && sourceProjected.lostAllAbilities &&
+            if (effect.fromStaticAbility && sourceProjected != null && sourceProjected.lostAllAbilities &&
                 effect.sourceId !in removeAllAbilitiesSources && !startedBeforeAbility) {
                 return@mapNotNull null
             }
@@ -324,9 +373,9 @@ class StateProjector(
         effectApplicator.applyCounters(state, projectedValues)
 
         // Post-layer pass: grant CANT_BE_BLOCKED to creatures qualifying via
-        // GrantCantBeBlockedToSmallCreatures (e.g., Tetsuko Umezawa, Fugitive).
+        // CantBeBlockedWhilePropertyAtMost (Tetsuko Umezawa, Fugitive; Stature, Size Shifter).
         // Must happen after all P/T layers so projected power/toughness is final.
-        applyGrantCantBeBlockedToSmallCreatures(state, projectedValues)
+        applyCantBeBlockedWhilePropertyAtMost(state, projectedValues)
 
         // Post-layer pass: enforce the affected-power half of
         // [Duration.WhileSourceTappedAndAffectedPowerAtMostSource] (Old Man of the Sea).
@@ -537,6 +586,45 @@ class StateProjector(
             }
         }
 
+        // 1b. Hone counters (CR 122.1j): "A hone counter on an Equipment gives +1/+0 to any
+        // creature that Equipment is attached to." Synthesized here rather than lowered from a
+        // static ability because the bonus belongs to the *counter*, not to the permanent holding
+        // it — Dwalin, Weaponmaster puts a hone counter on *each* Equipment you control, and those
+        // Equipment pump their equipped creature without ever mentioning hone.
+        //
+        // Layer 7c (CR 613.4c — "effects and counters that modify power and/or toughness"), so it
+        // stacks additively with lords and lands after any Layer 7b base-setting effect.
+        //
+        // The Equipment check reads the in-progress projection, which at collection time holds base
+        // types plus Layer 3 text changes; a Layer 4 effect that turned something into an Equipment
+        // this same projection pass would not be seen. That matches how every other filter resolved
+        // here behaves and no printed card reaches the case.
+        for (entityId in state.getBattlefield()) {
+            val container = state.getEntity(entityId) ?: continue
+            val honeCount = container.get<CountersComponent>()?.getCount(CounterType.HONE) ?: 0
+            if (honeCount <= 0) continue
+            if (projectedValues[entityId]?.subtypes?.contains(Subtype.EQUIPMENT.value) != true) continue
+            // AttachedPermanent resolves to the empty set while the Equipment is unattached, so an
+            // unequipped honed Equipment contributes nothing without a separate guard.
+            val affected = filterResolver.resolveAffectedEntities(
+                state,
+                entityId,
+                AffectsFilter.AttachedPermanent,
+                projectedValues
+            )
+            if (affected.isEmpty()) continue
+            effects.add(
+                ContinuousEffect(
+                    sourceId = entityId,
+                    timestamp = container.get<com.wingedsheep.engine.state.components.battlefield.TimestampComponent>()?.timestamp
+                        ?: state.timestamp,
+                    modification = Modification.ModifyPowerToughness(honeCount, 0),
+                    affectedEntities = affected,
+                    affectsFilter = AffectsFilter.AttachedPermanent
+                )
+            )
+        }
+
         // 2. Collect floating effects (from resolved spells like Giant Growth)
         for (floating in state.floatingEffects) {
             if (floating.duration is Duration.WhileSourceTapped) {
@@ -643,6 +731,13 @@ class StateProjector(
                         timestamp = floating.timestamp,
                         modification = floating.effect.modification.toModification(),
                         affectedEntities = validAffectedEntities,
+                        // A conditional clause inside a durational grant ("becomes a creature with
+                        // 'During your turn, this creature has first strike'"). Re-asked on every
+                        // projection by EffectApplicator against the *source's* projected controller,
+                        // so it goes dark on an opponent's turn or if the source is stolen — and
+                        // comes back if that reverses. Distinct from the latching Duration.While…
+                        // gates above.
+                        sourceCondition = floating.effect.sourceCondition,
                         // "for as long as you control it" (e.g. suspend haste — CR 702.62g):
                         // the gate is applied after Layer 2, against the projected controller,
                         // so the effect drops the instant another player gains control.
@@ -664,7 +759,11 @@ class StateProjector(
                         // Captured controller — lets a dynamic P/T (or other controller-dependent)
                         // effect still resolve a controller after its source has left the
                         // battlefield (Titania's Song's until-EOT linger).
-                        controllerId = floating.controllerId
+                        controllerId = floating.controllerId,
+                        // CR 611.2a: this effect was created by a resolved spell or ability, so it
+                        // is independent of its source's abilities — stripping those abilities in
+                        // Layer 6 must not retract it.
+                        fromStaticAbility = false
                     )
                 )
             }
@@ -759,37 +858,37 @@ class StateProjector(
     }
 
     /**
-     * Scan for permanents with GrantCantBeBlockedToSmallCreaturesComponent and
-     * add CANT_BE_BLOCKED to creatures they control whose projected power or
-     * toughness is at most the threshold.
+     * Grant CANT_BE_BLOCKED to every creature a [CantBeBlockedWhilePropertyAtMostComponent] affects
+     * whose projected power (or toughness, per the component's flags) is at most its threshold —
+     * Tetsuko Umezawa, Fugitive across its controller's creatures, Stature, Size Shifter on itself.
+     *
+     * Runs after every P/T layer, which is the whole point: this is a Layer 6-shaped ability whose
+     * gate reads Layer 7 stats, so evaluating it during layer application would read the printed
+     * P/T and the evasion would never switch off when the creature grows. Re-asked on every
+     * projection, so it also comes back if the creature shrinks again.
+     *
+     * The affected set goes through [filterResolver] against the in-progress projection, so "you
+     * control" follows the *projected* controller — a creature stolen this turn evades under its new
+     * controller's Tetsuko, not its old one's.
      */
-    private fun applyGrantCantBeBlockedToSmallCreatures(
+    private fun applyCantBeBlockedWhilePropertyAtMost(
         state: GameState,
         projectedValues: MutableMap<EntityId, MutableProjectedValues>
     ) {
-        // Collect all grant sources: (controllerId, maxValue)
-        val sources = mutableListOf<Pair<EntityId, Int>>()
-        for (entityId in state.getBattlefield()) {
-            val container = state.getEntity(entityId) ?: continue
-            val grant = container.get<GrantCantBeBlockedToSmallCreaturesComponent>() ?: continue
-            val controllerId = projectedValues[entityId]?.controllerId ?: continue
-            sources.add(controllerId to grant.maxValue)
-        }
-        if (sources.isEmpty()) return
-
-        // For each creature on the battlefield, check if any source applies
-        for (entityId in state.getBattlefield()) {
-            val values = projectedValues[entityId] ?: continue
-            if (!values.types.contains("CREATURE")) continue
-            val power = values.power ?: continue
-            val toughness = values.toughness ?: continue
-            val controllerId = values.controllerId ?: continue
-
-            for ((sourceController, maxValue) in sources) {
-                if (sourceController == controllerId && (power <= maxValue || toughness <= maxValue)) {
-                    values.keywords.add(AbilityFlag.CANT_BE_BLOCKED.name)
-                    break
-                }
+        for (sourceId in state.getBattlefield()) {
+            val grant = state.getEntity(sourceId)
+                ?.get<CantBeBlockedWhilePropertyAtMostComponent>() ?: continue
+            val affected = filterResolver.resolveAffectedEntities(
+                state, sourceId, grant.affects, projectedValues
+            )
+            for (entityId in affected) {
+                val values = projectedValues[entityId] ?: continue
+                if (!values.types.contains("CREATURE")) continue
+                val power = values.power
+                val toughness = values.toughness
+                val qualifies = (grant.checkPower && power != null && power <= grant.maxValue) ||
+                    (grant.checkToughness && toughness != null && toughness <= grant.maxValue)
+                if (qualifies) values.keywords.add(AbilityFlag.CANT_BE_BLOCKED.name)
             }
         }
     }

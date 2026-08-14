@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -74,7 +75,7 @@ class RiteOfReplicationScenarioTest : FunSpec({
                 playerId = p1,
                 cardId = rite,
                 targets = listOf(ChosenTarget.Permanent(courser)),
-                wasKicked = true,
+                declaredCostSlot = ChoiceSlot.KICKED,
                 paymentStrategy = PaymentStrategy.FromPool
             )
         )

@@ -48,6 +48,29 @@ class PlayLandEnumerator : ActionEnumerator {
             }
         }
 
+        // Lands played from the graveyard via Mayhem (CR 702.187c): a Mayhem land you discarded
+        // this turn is *played* (not cast) at no cost. Oscorp Industries. `context.canPlayLand`
+        // (checked above) already enforces land timing — main phase, empty stack, a land drop left.
+        val discardedThisTurn = state.getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent>()
+            ?.cardIds ?: emptyList()
+        if (discardedThisTurn.isNotEmpty()) {
+            val graveyardCards = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))
+            for (cardId in graveyardCards) {
+                if (cardId !in discardedThisTurn) continue
+                val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: continue
+                if (!cardComponent.typeLine.isLand) continue
+                val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+                if (com.wingedsheep.engine.mechanics.MayhemGrants.effectiveMayhem(state, cardId, cardDef) == null) continue
+                result.add(LegalAction(
+                    actionType = "PlayLand",
+                    description = "Play ${cardComponent.name} (Mayhem)",
+                    action = PlayLand(playerId, cardId),
+                    sourceZone = "GRAVEYARD"
+                ))
+            }
+        }
+
         // Lands exiled with a permanent granting "you may play cards exiled with this" (Valgavoth).
         val seenLinkedLands = mutableSetOf<com.wingedsheep.sdk.model.EntityId>()
         for (granter in com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExilePlayUtils

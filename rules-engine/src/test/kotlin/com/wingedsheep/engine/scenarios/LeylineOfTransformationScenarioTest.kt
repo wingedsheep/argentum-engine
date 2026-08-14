@@ -1,11 +1,23 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ActionProcessor
 import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.GameConfig
+import com.wingedsheep.engine.core.GameInitializer
+import com.wingedsheep.engine.core.KeepHand
 import com.wingedsheep.engine.core.OptionChosenResponse
+import com.wingedsheep.engine.core.PlayerConfig
+import com.wingedsheep.engine.core.SubmitDecision
+import com.wingedsheep.engine.core.YesNoDecision
+import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.dsk.cards.LeylineOfTransformation
@@ -13,12 +25,18 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.dsl.mayBeginGameOnBattlefield
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 private val projector = StateProjector()
@@ -239,6 +257,140 @@ class LeylineOfTransformationScenarioTest : FunSpec({
         predicateEvaluator.matchesCardPredicate(
             state, projected, gyLand, CardPredicate.HasSubtype(Subtype("Goblin"))
         ) shouldBe false
+    }
+
+    // ---- Opening-hand start (CR 103.6a): "you may begin the game with it on the battlefield"
+    //      still has to make the as-enters creature-type choice. ----
+
+    // A second "begin the game on the battlefield" card, with no as-enters choice of its own, so we
+    // can prove the opening-hand walk keeps prompting for the *next* leyline after the creature-type
+    // choice pauses in the middle of it.
+    val plainLeyline = card("Test Plain Leyline") {
+        manaCost = "{2}"
+        typeLine = "Enchantment"
+        mayBeginGameOnBattlefield()
+    }
+
+    /**
+     * Start a real game through [GameInitializer] with all of [p1Deck] in P1's opening hand and both
+     * players keeping, so the CR 103.6 leyline phase is the next thing that happens. Returns the
+     * processor, the state paused on the first leyline yes/no, and the player ids in turn order.
+     */
+    fun startLeylinePhase(p1Deck: Deck): Triple<ActionProcessor, GameState, List<EntityId>> {
+        val registry = CardRegistry().apply {
+            register(TestCards.all)
+            register(listOf(LeylineOfTransformation, bear, goblin, plainLeyline))
+        }
+        val init = GameInitializer(registry).initializeGame(
+            GameConfig(
+                players = listOf(
+                    PlayerConfig("P1", p1Deck),
+                    PlayerConfig("P2", Deck.of("Island" to 60))
+                ),
+                startingPlayerIndex = 0,
+                // Draw the whole deck — the leyline scan only inspects the opening hand.
+                startingHandSize = 60
+            )
+        )
+        val processor = ActionProcessor(registry)
+        var state = init.state
+        for (playerId in init.playerIds) {
+            val result = processor.process(state, KeepHand(playerId)).result
+            withClue("KeepHand should succeed: ${result.error}") { result.error shouldBe null }
+            state = result.state
+        }
+        return Triple(processor, state, init.playerIds)
+    }
+
+    fun battlefieldNames(state: GameState, playerId: EntityId): List<String> =
+        state.getZone(ZoneKey(playerId, Zone.BATTLEFIELD)).mapNotNull {
+            state.getEntity(it)?.get<CardComponent>()?.name
+        }
+
+    test("opening-hand start: saying yes prompts for the creature type") {
+        val (processor, started, players) = startLeylinePhase(
+            Deck.of("Leyline of Transformation" to 1, "Island" to 59)
+        )
+        var state = started
+        val p1 = players[0]
+
+        val leylinePrompt = state.pendingDecision
+        leylinePrompt.shouldBeInstanceOf<YesNoDecision>()
+        leylinePrompt.playerId shouldBe p1
+
+        val afterYes = processor.process(
+            state, SubmitDecision(p1, YesNoResponse(leylinePrompt.id, true))
+        ).result
+        withClue("Answering the leyline prompt should succeed: ${afterYes.error}") {
+            afterYes.error shouldBe null
+        }
+        state = afterYes.state
+
+        // The bug: the card went straight to the battlefield with no chosen creature type, so the
+        // GrantChosenSubtype static ability had nothing to grant for the rest of the game.
+        val choice = state.pendingDecision
+        withClue("Leyline of Transformation must still make its as-enters creature-type choice") {
+            choice shouldNotBe null
+        }
+        choice.shouldBeInstanceOf<ChooseOptionDecision>()
+        choice.playerId shouldBe p1
+        val goblinIndex = choice.options.indexOf("Goblin")
+        withClue("The creature-type options should include Goblin") { goblinIndex shouldNotBe -1 }
+
+        val afterChoice = processor.process(
+            state, SubmitDecision(p1, OptionChosenResponse(choice.id, goblinIndex))
+        ).result
+        withClue("Submitting the creature type should succeed: ${afterChoice.error}") {
+            afterChoice.error shouldBe null
+        }
+        state = afterChoice.state
+
+        val leylineId = state.getZone(ZoneKey(p1, Zone.BATTLEFIELD)).firstOrNull {
+            state.getEntity(it)?.get<CardComponent>()?.name == "Leyline of Transformation"
+        }
+        withClue("Leyline of Transformation should be on the battlefield") { leylineId shouldNotBe null }
+        state.getEntity(leylineId!!)?.get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.CREATURE_TYPE) shouldBe
+            ChoiceValue.TextChoice("Goblin")
+
+        withClue("The leyline phase should be over once the choice is made") {
+            state.pendingDecision shouldBe null
+        }
+    }
+
+    test("opening-hand start: the leyline walk continues after the creature-type choice") {
+        val (processor, started, players) = startLeylinePhase(
+            Deck.of("Leyline of Transformation" to 1, "Test Plain Leyline" to 1, "Island" to 58)
+        )
+        var state = started
+        val p1 = players[0]
+
+        var sawCreatureTypeChoice = false
+        var steps = 0
+        while (state.pendingDecision != null && steps++ < 10) {
+            val decision = state.pendingDecision
+            val response = when (decision) {
+                is YesNoDecision -> YesNoResponse(decision.id, true)
+                is ChooseOptionDecision -> {
+                    sawCreatureTypeChoice = true
+                    OptionChosenResponse(decision.id, decision.options.indexOf("Goblin"))
+                }
+                else -> error("Unexpected decision during the leyline phase: $decision")
+            }
+            val result = processor.process(state, SubmitDecision(decision.playerId, response)).result
+            withClue("Submitting ${decision.id} should succeed: ${result.error}") {
+                result.error shouldBe null
+            }
+            state = result.state
+        }
+
+        withClue("The creature-type choice should have been asked") { sawCreatureTypeChoice shouldBe true }
+        withClue("The leyline phase should finish, not stall on the paused choice") {
+            state.pendingDecision shouldBe null
+        }
+        withClue("Both opening-hand leylines should have made it to the battlefield") {
+            // Sorted: the order the two leylines are asked about follows the shuffled opening hand.
+            battlefieldNames(state, p1).sorted() shouldBe listOf("Leyline of Transformation", "Test Plain Leyline")
+        }
     }
 
     test("no Leyline on the battlefield means no cross-zone grant (overlay is empty)") {

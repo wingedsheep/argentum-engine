@@ -39,7 +39,7 @@
 
 ## Planeswalkers (1)
 
-- [ ] 1 Tamiyo, Field Researcher
+- [x] 1 Tamiyo, Field Researcher
 
 ## Instants (11)
 

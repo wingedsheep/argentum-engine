@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.targeting
 
+import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.GrantsControllerProtectionComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -40,9 +41,16 @@ object PlayerProtectionRules {
 
         return state.getBattlefield().any { entityId ->
             val container = state.getEntity(entityId) ?: return@any false
-            if (container.get<ControllerComponent>()?.playerId != playerId) return@any false
-            container.get<GrantsControllerProtectionComponent>()?.scopes
-                ?.any { scopeMatchesSource(state, playerId, it, sourceId, casterId) } == true
+            // Projected controller: a stolen Absolute Virtue protects its thief, not the player it
+            // was taken from — see [ControllerGrants.granterController].
+            if (ControllerGrants.granterController(state, entityId) != playerId) return@any false
+            container.get<GrantsControllerProtectionComponent>()?.grants
+                // Each scope carries its own "as long as …" gate, re-evaluated here on every read
+                // because the marker was stamped once, on entry — see [ControllerGrantMarker].
+                ?.any {
+                    ControllerGrants.isActive(state, entityId, it.condition) &&
+                        scopeMatchesSource(state, playerId, it.scope, sourceId, casterId)
+                } == true
         }
     }
 

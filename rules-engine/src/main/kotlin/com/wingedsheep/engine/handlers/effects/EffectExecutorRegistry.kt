@@ -40,11 +40,19 @@ import kotlin.reflect.KClass
 class EffectExecutorRegistry(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
     private val decisionHandler: DecisionHandler = DecisionHandler(),
-    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry,
+    private val tokenArtRegistry: com.wingedsheep.engine.registry.TokenArtRegistry? = null,
+    replacementProcessor: com.wingedsheep.engine.replacement.ReplacementEffectProcessor =
+        com.wingedsheep.engine.replacement.ReplacementEffectProcessor()
 ) {
     private val executors = mutableMapOf<KClass<out Effect>, EffectExecutor<*>>()
     private val compositeExecutors = CompositeExecutors(cardRegistry, TargetFinder(), decisionHandler)
-    private val drawingExecutors = DrawingExecutors(amountEvaluator, decisionHandler, cardRegistry = cardRegistry)
+    private val drawingExecutors = DrawingExecutors(
+        amountEvaluator,
+        decisionHandler,
+        cardRegistry = cardRegistry,
+        replacementProcessor = replacementProcessor
+    )
     private val playerExecutors = PlayerExecutors(decisionHandler, cardRegistry)
     private val chainExecutors = ChainExecutors()
     // Held as a field so its recursion (for ModifyExplore's Composite delegation) can be wired
@@ -59,14 +67,14 @@ class EffectExecutorRegistry(
 
     init {
         // Register all effect executors by module
-        registerModule(LifeExecutors(amountEvaluator))
+        registerModule(LifeExecutors(amountEvaluator, cardRegistry))
         registerModule(DamageExecutors(amountEvaluator, decisionHandler))
         // Wire the recursion (for ModifyExplore's Composite delegation) before registering, so the
         // ref is read lazily at explore time (order is not load-bearing — see libraryExecutors).
         permanentExecutors.initializeRecursion(::recurse)
         registerModule(permanentExecutors)
         registerModule(ManaExecutors(amountEvaluator, cardRegistry))
-        registerModule(TokenExecutors(amountEvaluator, StaticAbilityHandler(cardRegistry), cardRegistry))
+        registerModule(TokenExecutors(amountEvaluator, StaticAbilityHandler(cardRegistry), cardRegistry, tokenArtRegistry))
         // The scry/surveil macro executors expand to a composite pipeline and delegate back through
         // [recurse]; wire it in before registering (the ref is read lazily, so order is not load-bearing).
         libraryExecutors.initializeRecursion(::recurse)

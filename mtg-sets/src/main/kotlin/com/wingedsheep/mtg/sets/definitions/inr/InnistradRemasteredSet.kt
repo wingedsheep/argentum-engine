@@ -16,7 +16,8 @@ object InnistradRemasteredSet : MtgSet {
     override val code = "INR"
     override val displayName = "Innistrad Remastered"
     override val releaseDate = "2025-01-24"
-    override val incomplete = true
+    // Complete as of Invasion of Innistrad (290/290) — the flag is what gates `fullyImplemented`,
+    // so leaving it set would keep a finished set out of the lobby's set picker.
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

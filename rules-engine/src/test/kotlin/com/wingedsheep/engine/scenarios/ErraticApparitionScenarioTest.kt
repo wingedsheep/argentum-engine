@@ -61,6 +61,28 @@ class ErraticApparitionScenarioTest : ScenarioTestBase() {
                     projected.getToughness(apparition) shouldBe 4
                 }
             }
+
+            test("an opponent's enchantment entering does NOT pump") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Erratic Apparition")
+                    .withCardInHand(2, "Test Enchantment")
+                    .withLandsOnBattlefield(2, "Plains", 2)
+                    .withActivePlayer(2)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val apparition = game.findPermanent("Erratic Apparition")!!
+                val cast = game.castSpell(2, "Test Enchantment")
+                withClue("Opponent casting should succeed: ${cast.error}") { cast.error shouldBe null }
+                game.resolveStack()
+
+                withClue("no pump — the enchantment isn't controlled by the Apparition's controller") {
+                    val projected = projector.project(game.state)
+                    projected.getPower(apparition) shouldBe 1
+                    projected.getToughness(apparition) shouldBe 3
+                }
+            }
         }
     }
 }

@@ -1,8 +1,15 @@
 /**
  * Lobby slice - handles tournament lobbies, spectating, and lobby management.
  */
-import type { SliceCreator, LobbyState, TournamentState, FfaState, SpectatingState } from './types'
-import type { DeckFormat, TournamentFormat, LobbyGameMode, AttackMode } from '@/types'
+import type {
+  SliceCreator,
+  LobbyState,
+  LobbySettingsUpdate,
+  TournamentState,
+  FfaState,
+  SpectatingState,
+} from './types'
+import type { AiDeckSpec, GameRules, TournamentFormat, LobbyGameMode } from '@/types'
 import {
   createCreateTournamentLobbyMessage,
   createJoinLobbyMessage,
@@ -10,6 +17,7 @@ import {
   createLeaveLobbyMessage,
   createAddAiToLobbyMessage,
   createRemoveAiFromLobbyMessage,
+  createSetLobbyAiDeckMessage,
   createStopLobbyMessage,
   createUpdateLobbySettingsMessage,
   createReadyForNextRoundMessage,
@@ -33,14 +41,28 @@ export interface LobbySliceState {
 }
 
 export interface LobbySliceActions {
-  createTournamentLobby: (setCodes: string[], format?: TournamentFormat, boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean, gameMode?: LobbyGameMode) => void
+  createTournamentLobby: (setCodes: string[], format?: TournamentFormat, boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean, gameMode?: LobbyGameMode, rules?: GameRules) => void
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
   leaveLobby: () => void
   stopLobby: () => void
-  updateLobbySettings: (settings: { setCodes?: string[]; format?: TournamentFormat; boosterCount?: number; boosterDistribution?: Record<string, number>; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number; isPublic?: boolean; deckFormat?: DeckFormat | '' | null; chaosBoosters?: boolean; bannedCardNames?: string[]; aiAssistEnabled?: boolean; gameMode?: LobbyGameMode; attackMode?: AttackMode; randomTeams?: boolean; teamAssignments?: Record<string, number>; ranked?: boolean }) => void
+  /**
+   * The omnibus settings message, as one partial bag.
+   *
+   * Derived from the wire type rather than restated: the hand-written copy this replaces had drifted
+   * — it was missing `deckSizeMin`, `allowDuplicates` and `commanderPreset`, all three of which the
+   * lobby's Commander rows have been sending for some time.
+   *
+   * **Send one message, not a field at a time.** `LobbyHandler.handleUpdateLobbySettings` is ordered
+   * for a whole bag (its own comments read "apply after format change"), and a `format` change resets
+   * `boosterCount`, `picksPerRound` and `chaosBoosters` and recalculates the booster distribution on
+   * the way through. Splitting a bag across messages would therefore lose fields, not just be slower.
+   */
+  updateLobbySettings: (settings: LobbySettingsUpdate) => void
   addAiToLobby: () => void
   removeAiFromLobby: (playerId: string) => void
+  /** Host picks what one AI seat plays (premade-decks lobbies — elsewhere it builds from its pool). */
+  setLobbyAiDeck: (playerId: string, spec: AiDeckSpec) => void
   readyForNextRound: () => void
   addExtraRound: () => void
   spectateGame: (gameSessionId: string) => void
@@ -73,11 +95,11 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
   disconnectedPlayers: {},
 
   // Actions
-  createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45, isPublic = false, gameMode = 'TOURNAMENT') => {
+  createTournamentLobby: (setCodes, format = 'SEALED', boosterCount = 6, maxPlayers = 8, pickTimeSeconds = 45, isPublic = false, gameMode = 'TOURNAMENT', rules = 'STANDARD') => {
     clearDeckState()
     set({ deckBuildingState: null })
-    trackEvent('tournament_lobby_created', { set_codes: setCodes, format, booster_count: boosterCount, max_players: maxPlayers, is_public: isPublic, game_mode: gameMode })
-    getWebSocket()?.send(createCreateTournamentLobbyMessage(setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic, gameMode))
+    trackEvent('tournament_lobby_created', { set_codes: setCodes, format, booster_count: boosterCount, max_players: maxPlayers, is_public: isPublic, game_mode: gameMode, rules })
+    getWebSocket()?.send(createCreateTournamentLobbyMessage(setCodes, format, boosterCount, maxPlayers, pickTimeSeconds, isPublic, gameMode, rules))
   },
 
   joinLobby: (lobbyId) => {
@@ -109,6 +131,10 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
 
   removeAiFromLobby: (playerId) => {
     getWebSocket()?.send(createRemoveAiFromLobbyMessage(playerId))
+  },
+
+  setLobbyAiDeck: (playerId, spec) => {
+    getWebSocket()?.send(createSetLobbyAiDeckMessage(playerId, spec))
   },
 
   stopLobby: () => {
@@ -179,7 +205,7 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
       combatState: null,
       xSelectionState: null,
       convokeSelectionState: null,
-      waterbendSelectionState: null,
+      tapForGenericSelectionState: null,
       decisionSelectionState: null,
       damageDistributionState: null,
       hoveredCardId: null,
@@ -189,8 +215,7 @@ export const createLobbySlice: SliceCreator<LobbySlice> = (set, get) => ({
       revealedCardsInfo: null,
       fullControl: false,
       nextStopPoint: null,
-      pendingEvents: [],
-      eventLog: [],
+          eventLog: [],
       gameOverState: null,
       lastError: null,
       deckBuildingState: null,

@@ -1,0 +1,122 @@
+{
+    "player1Name": "Alice",
+    "player2Name": "Bob",
+    "player1": {
+        "lifeTotal": 20,
+        "hand": [
+            "Brave Brawler",
+            "Captain Marvel, Earth's Protector",
+            "Aerial Doombot",
+            "Bold Biochemist",
+            "Stature, Size Shifter"
+        ],
+        "battlefield": [
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Plains"
+            },
+            {
+                "name": "Island"
+            },
+            {
+                "name": "Island"
+            },
+            {
+                "name": "Island"
+            },
+            {
+                "name": "Island"
+            },
+            {
+                "name": "Island"
+            },
+            {
+                "name": "Island"
+            },
+            {
+                "name": "Island"
+            },
+            {
+                "name": "Island"
+            },
+            {
+                "name": "Island"
+            },
+            {
+                "name": "Island"
+            },
+            {
+                "name": "Island"
+            },
+            {
+                "name": "Island"
+            }
+        ],
+        "graveyard": [],
+        "library": [
+            "Grizzly Bears",
+            "Hill Giant",
+            "Serra Angel",
+            "Grizzly Bears",
+            "Hill Giant"
+        ]
+    },
+    "player2": {
+        "lifeTotal": 20,
+        "hand": [],
+        "battlefield": [
+            {
+                "name": "Grizzly Bears"
+            },
+            {
+                "name": "Hill Giant"
+            }
+        ],
+        "graveyard": [],
+        "library": [
+            "Grizzly Bears",
+            "Hill Giant",
+            "Serra Angel"
+        ]
+    },
+    "phase": "PRECOMBAT_MAIN",
+    "activePlayer": 1,
+    "priorityPlayer": 1,
+    "player1StopAtSteps": [],
+    "player2StopAtSteps": [],
+    "player1OpponentStopAtSteps": [],
+    "player2OpponentStopAtSteps": [],
+    "mode": "AI"
+}

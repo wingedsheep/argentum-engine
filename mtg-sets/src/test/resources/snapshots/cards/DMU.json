@@ -93,11 +93,11 @@
             },
             "target": {
                 "type": "BoundVariable",
-                "name": "t2"
+                "name": "target creature or planeswalker you don't control"
             },
             "damageSource": {
                 "type": "BoundVariable",
-                "name": "t1"
+                "name": "target creature you control"
             }
         },
         "targetRequirements": [
@@ -106,14 +106,14 @@
                 "filter": {
                     "baseFilter": "creature ctrl:you"
                 },
-                "id": "t1"
+                "id": "target creature you control"
             },
             {
                 "type": "TargetObject",
                 "filter": {
-                    "baseFilter": "creature|planeswalker ctrl:you"
+                    "baseFilter": "creature|planeswalker ctrl:opponent"
                 },
-                "id": "t2"
+                "id": "target creature or planeswalker you don't control"
             }
         ]
     },
@@ -191,6 +191,69 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Crystal Grotto
+{
+    "name": "Crystal Grotto",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "When this land enters, scry 1.\n{T}: Add {C}.\n{1}, {T}: Add one mana of any color.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "artist": "Piotr Dura",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd250c9d-c65f-4293-a6b0-007fac634d3d.jpg?1783921264"
+    },
+    "colorIdentityOverride": []
 }
 
 // Garna, Bloodfist of Keld

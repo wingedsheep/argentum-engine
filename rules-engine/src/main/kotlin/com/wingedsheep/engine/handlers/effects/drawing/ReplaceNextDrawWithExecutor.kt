@@ -46,7 +46,7 @@ class ReplaceNextDrawWithExecutor : EffectExecutor<ReplaceNextDrawWithEffect> {
             layer = Layer.ABILITY,
             modification = modification,
             affectedEntities = setOf(context.controllerId),
-            duration = Duration.EndOfTurn,
+            duration = Duration.NextUse("you would draw a card"),
             context = context
         )
 

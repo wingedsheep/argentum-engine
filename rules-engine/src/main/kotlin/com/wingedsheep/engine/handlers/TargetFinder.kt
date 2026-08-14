@@ -4,14 +4,14 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CantBeTargetedByOpponentAbilitiesComponent
-import com.wingedsheep.engine.state.components.battlefield.GrantsControllerHexproofComponent
-import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
-import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
-import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.targeting.ControllerHexproof
+import com.wingedsheep.engine.mechanics.targeting.ControllerShroud
 import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
+import com.wingedsheep.engine.mechanics.targeting.StackObjectTargeting
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -173,13 +173,10 @@ class TargetFinder(
         if (entityController == controllerId) return false  // own permanents are never restricted
         if (targetingSourceType == TargetingSourceType.SPELL) return false  // spells bypass this restriction
 
-        val container = state.getEntity(entityId) ?: return false
-        if (container.has<CantBeTargetedByOpponentAbilitiesComponent>()) {
-            // For ABILITY source type, always blocked
-            // For ANY (unknown), conservatively block since we don't know the source type
-            return true
-        }
-        return false
+        // For ABILITY source type, always blocked. For ANY (unknown), conservatively block since
+        // we don't know the source type. Read through ControllerGrants so a gated form of the
+        // ability switches off with its condition instead of sticking on.
+        return ControllerGrants.isActiveOn<CantBeTargetedByOpponentAbilitiesComponent>(state, entityId)
     }
 
     private fun findOpponentOrPlaneswalkerTargets(
@@ -326,17 +323,20 @@ class TargetFinder(
         targets.addAll(state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) &&
             !playerHasHexproofAgainst(state, it, controllerId) })
 
-        // Add all creatures and planeswalkers
+        // Add all creatures, planeswalkers and battles
         val battlefield = state.getBattlefield()
         for (entityId in battlefield) {
             val container = state.getEntity(entityId) ?: continue
             if (!container.has<CardComponent>()) continue
             val entityController = container.get<ControllerComponent>()?.playerId
 
-            // Only creatures and planeswalkers for "any target". Read the PROJECTED
-            // type line, not the printed one, so animated lands (Earthbend) and
-            // face-down 2/2 creatures are valid targets (CR 115.4 / projection rule).
-            if (!projected.isCreature(entityId) && !projected.isPlaneswalker(entityId)) {
+            // CR 115.4 — "any target" means a creature, player, planeswalker, or battle, and
+            // nothing else. Read the PROJECTED type line, not the printed one, so animated lands
+            // (Earthbend) and face-down 2/2 creatures are valid targets (projection rule).
+            if (!projected.isCreature(entityId) &&
+                !projected.isPlaneswalker(entityId) &&
+                !projected.isBattle(entityId)
+            ) {
                 continue
             }
 
@@ -462,32 +462,12 @@ class TargetFinder(
         // names an ability predicate (Stifle's "counter target ability", Willbender's "spell or
         // ability", Return the Favor's "spell or ability"). For spells the predicate decides as
         // before. This is the single seam where both spells and abilities become legal targets.
-        val abilitiesAllowed = filterPermitsAbilitiesOnStack(filter.baseFilter)
+        val abilitiesAllowed = StackObjectTargeting.permitsAbilities(filter.baseFilter)
         return state.stack.filter { stackId ->
             val isAbility = !state.isSpellOnStack(stackId)
             if (isAbility && !abilitiesAllowed) return@filter false
             predicateEvaluator.matches(state, state.projectedState, stackId, filter.baseFilter, predicateContext)
         }
-    }
-
-    /**
-     * Does this filter explicitly permit *abilities* on the stack (as opposed to only spells)?
-     * True iff any [CardPredicate] in the filter — including inside [CardPredicate.Or] / `And`
-     * branches and [GameObjectFilter.anyOf] sub-filters — names an ability predicate. Keeps the
-     * default "target spell" filters (base `Any`, with no ability predicate) spell-only.
-     */
-    private fun filterPermitsAbilitiesOnStack(filter: GameObjectFilter): Boolean {
-        fun predicateNamesAbility(p: CardPredicate): Boolean = when (p) {
-            CardPredicate.IsActivatedOrTriggeredAbility,
-            CardPredicate.IsTriggeredAbility,
-            CardPredicate.IsActivatedAbility -> true
-            is CardPredicate.Or -> p.predicates.any(::predicateNamesAbility)
-            is CardPredicate.And -> p.predicates.any(::predicateNamesAbility)
-            is CardPredicate.Not -> predicateNamesAbility(p.predicate)
-            else -> false
-        }
-        return filter.cardPredicates.any(::predicateNamesAbility) ||
-            filter.anyOf.any { filterPermitsAbilitiesOnStack(it) }
     }
 
     /**
@@ -566,38 +546,17 @@ class TargetFinder(
     /**
      * Check if a player has shroud (e.g., from True Believer's "You have shroud"
      * or Gilded Light's "You gain shroud until end of turn").
-     * A player has shroud if:
-     * - Any permanent on the battlefield controlled by that player has GrantsControllerShroudComponent, OR
-     * - The player entity has PlayerShroudComponent (from a spell effect)
      */
-    private fun playerHasShroud(state: GameState, playerId: EntityId): Boolean {
-        // Check for temporary player shroud (e.g., Gilded Light)
-        val playerEntity = state.getEntity(playerId)
-        if (playerEntity?.has<PlayerShroudComponent>() == true) return true
-
-        // Check for permanent-based shroud (e.g., True Believer)
-        return state.getBattlefield().any { entityId ->
-            val container = state.getEntity(entityId) ?: return@any false
-            container.get<GrantsControllerShroudComponent>() != null &&
-                container.get<ControllerComponent>()?.playerId == playerId
-        }
-    }
+    private fun playerHasShroud(state: GameState, playerId: EntityId): Boolean =
+        ControllerShroud.appliesTo(state, playerId)
 
     /**
      * Check if a player has hexproof (from a permanent like Shalai, Voice of Plenty).
      * Unlike shroud, hexproof only prevents opponents from targeting — the player can still
      * target themselves.
      */
-    private fun playerHasHexproof(state: GameState, playerId: EntityId): Boolean {
-        val playerEntity = state.getEntity(playerId)
-        if (playerEntity?.has<PlayerHexproofComponent>() == true) return true
-
-        return state.getBattlefield().any { entityId ->
-            val container = state.getEntity(entityId) ?: return@any false
-            container.get<GrantsControllerHexproofComponent>() != null &&
-                container.get<ControllerComponent>()?.playerId == playerId
-        }
-    }
+    private fun playerHasHexproof(state: GameState, playerId: EntityId): Boolean =
+        ControllerHexproof.appliesTo(state, playerId)
 
     /**
      * Check if a player has hexproof against a specific controller.

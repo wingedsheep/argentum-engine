@@ -4,6 +4,7 @@
 import type { MessageHandlers } from '@/network/messageHandlers.ts'
 import type { LobbyState } from '../types'
 import { saveLobbyId, clearLobbyId, clearDeckState } from '../shared'
+import { clearPendingLobby, takePendingLobbyApply } from '../pendingLobbyIntent'
 import type { SetState, GetState } from './types'
 
 type LobbyHandlerKeys =
@@ -22,13 +23,14 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
           lobbyId: msg.lobbyId,
           state: 'WAITING_FOR_PLAYERS',
           players: [],
-          settings: { setCodes: [], setNames: [], availableSets: [], format: 'SEALED', boosterCount: 6, boosterDistribution: {}, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1, isPublic: false, deckSizeMin: 60, allowDuplicates: true, commanderPreset: 'BRAWL', chaosBoosters: false, bannedCardNames: [], aiAssistEnabled: false, gameMode: 'TOURNAMENT', attackMode: 'MULTIPLE', randomTeams: true, teamAssignments: {} },
+          settings: { setCodes: [], setNames: [], availableSets: [], format: 'SEALED', boosterCount: 6, boosterDistribution: {}, maxPlayers: 8, pickTimeSeconds: 45, picksPerRound: 1, gamesPerMatch: 1, isPublic: false, deckSizeMin: 60, allowDuplicates: true, commanderPreset: 'BRAWL', chaosBoosters: false, includedSetProducts: {}, bannedCardNames: [], aiAssistEnabled: false, gameMode: 'TOURNAMENT', attackMode: 'MULTIPLE', randomTeams: true, teamAssignments: {} },
           isHost: true,
           draftState: null,
           winstonDraftState: null,
           gridDraftState: null,
         },
       })
+      flushPendingApply(get)
     },
 
     onLobbyUpdate: (msg) => {
@@ -61,6 +63,7 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
     onLobbyStopped: () => {
       clearDeckState()
       clearLobbyId()
+      clearPendingLobby()
       set({ lobbyState: null, deckBuildingState: null, ffaState: null })
     },
 
@@ -296,4 +299,32 @@ export function createLobbyHandlers(set: SetState, get: GetState): Pick<MessageH
       }))
     },
   }
+}
+
+/**
+ * Send the settings a recipe queued for a lobby that didn't exist yet.
+ *
+ * Fired from `onLobbyCreated` — the create's own acknowledgement, so the server has already set
+ * `identity.currentLobbyId` and an `updateLobbySettings` will land on the right lobby. Doing it here
+ * rather than firing straight after the create removes a real race: the update handler looks the
+ * lobby up by that id, and before the create is processed there isn't one.
+ *
+ * The order is the server's, not a preference — see `pendingLobbyIntent.ts`:
+ *
+ * 1. **Cube alone, first.** `handleUpdateLobbySettings` resolves `cubeCards` immediately and
+ *    `return`s if a name doesn't resolve, which would discard everything else in the same message.
+ * 2. **Everything else as one bag**, because a `format` change resets several of the fields that
+ *    follow it and the handler is already ordered to cope with that.
+ * 3. **AI seats last.** Switching `gameMode` to a multiplayer table with AI already seated is
+ *    rejected outright ("doesn't support AI players yet — remove them first").
+ */
+function flushPendingApply(get: GetState): void {
+  const pending = takePendingLobbyApply()
+  if (!pending) return
+  const s = get()
+  if (pending.cube) s.updateLobbySettings(pending.cube)
+  if (pending.settings && Object.keys(pending.settings).length > 0) {
+    s.updateLobbySettings(pending.settings)
+  }
+  for (let i = 0; i < pending.aiSeats; i += 1) s.addAiToLobby()
 }

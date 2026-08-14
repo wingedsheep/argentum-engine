@@ -35,7 +35,8 @@ class TapUntapCollectionExecutor : EffectExecutor<TapUntapCollectionEffect> {
         // and event emission; untapOrConsumeStun also applies stun-counter replacement (CR 122.1d).
         for (entityId in entityIds) {
             if (effect.tap) {
-                val (next, event) = tap(currentState, entityId)
+                // Attribute the tap to this effect's controller (see TapUntapExecutor).
+                val (next, event) = tap(currentState, entityId, tappedById = context.controllerId)
                 currentState = next
                 event?.let(events::add)
             } else {

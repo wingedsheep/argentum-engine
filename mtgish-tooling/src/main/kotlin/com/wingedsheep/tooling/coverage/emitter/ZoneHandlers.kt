@@ -597,11 +597,12 @@ internal val zoneHandlers: Map<String, ActionHandler> = actionHandlers {
                 "IsCreatureType" in blob && "_Color" !in blob &&
                 "PowerIs" !in blob && "\"Other\"" !in blob && "ControlledByAPlayer" !in blob
             if (!onlyCreatureSubtypeFilter) return@on null
-            val subtypeArgs = subtypes.joinToString(", ") { "\"$it\"" }
+            // `withAnySubtype` is `vararg String`, so the multi arm stays quoted; the single arm goes
+            // through the shared renderer and picks up the typed `Subtype.X` constant.
             val filterExpr = if (subtypes.size == 1)
-                "GameObjectFilter.Creature.withSubtype($subtypeArgs)"
+                "GameObjectFilter.Creature.withSubtype(${subtypeArg(subtypes[0])})"
             else
-                "GameObjectFilter.Creature.withAnySubtype($subtypeArgs)"
+                "GameObjectFilter.Creature.withAnySubtype(${subtypes.joinToString(", ") { "\"${ktStr(it)}\"" }})"
             return@on Call("Patterns.Hand.putFromHand", listOf(
                 arg("filter", filterExpr),
                 arg("entersAttacking", "true"),
@@ -803,8 +804,8 @@ internal fun EmitCtx.renderSearch(args: JsonElement?): Dsl? {
     val unionTypes = orCardTypes(blob)
     var filt = when {
         named != null -> "GameObjectFilter.Any.named(\"$named\")"
-        searchSubtype != null -> "GameObjectFilter.Any.withSubtype(\"$searchSubtype\")"  // "an Elf card"
-        enchSubtype != null -> "GameObjectFilter.Enchantment.withSubtype(\"$enchSubtype\")"  // "an Aura card"
+        searchSubtype != null -> "GameObjectFilter.Any.withSubtype(${subtypeArg(searchSubtype)})"  // "an Elf card"
+        enchSubtype != null -> "GameObjectFilter.Enchantment.withSubtype(${subtypeArg(enchSubtype)})"  // "an Aura card"
         unionTypes != null -> cardTypeUnionFilter(unionTypes) ?: return null
         // "search your library for a card" (Cynical Loner) — `FindAGenericCard` is the IR marker for an
         // unrestricted search with NO type/subtype filter. Render `GameObjectFilter.Any` directly rather
@@ -1025,6 +1026,31 @@ internal fun EmitCtx.renderLook(node: JsonObject, args: JsonElement?, tvar: Stri
             arg("restOrder", "CardOrder.Random"),
         )
     }
+    // "Look at the top five cards of your library, cloak two of them, and put the rest on the bottom of
+    // your library in a random order." (Hide in Plain Sight). Cloak (CR 701.58a) is just a face-down
+    // destination for the kept cards, so `lookAtTopAndKeep` renders it exactly once `keepFaceDown` is
+    // pointed at FaceDownMode.CLOAK: each kept card becomes a face-down 2/2 with ward {2}, turnable face
+    // up for its own mana cost if it happens to be a creature card. The kept count lives inside the
+    // cloak sub-action's own `_GameNumber`, not the outer look count, so both are read positionally.
+    // Require the sub-actions to be EXACTLY [cloak-N, rest-to-bottom-random] — any third clause is a
+    // shape this flat pattern can't express and must scaffold rather than silently drop.
+    run {
+        val subActions = node.field("args").asArr?.getOrNull(1).asArr
+        val subKinds = subActions?.mapNotNull { (it as? JsonObject)?.strField("_LookAtTopOfLibraryAction") }
+        if (subKinds == listOf("CloakNumberGenericCards", "PutTheRemainingCardsOnTheBottomOfLibraryInARandomOrder")) {
+            val lookCount = findInteger(node.field("args").asArr?.getOrNull(0)) ?: return null
+            val cloakCount = findInteger(subActions.getOrNull(0)) ?: return null
+            return call(
+                "Patterns.Library.lookAtTopAndKeep",
+                arg("count", "$lookCount"),
+                arg("keepCount", "$cloakCount"),
+                arg("keepDestination", "CardDestination.ToZone(Zone.BATTLEFIELD)"),
+                arg("restDestination", "CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom)"),
+                arg("restOrder", "CardOrder.Random"),
+                arg("keepFaceDown", "FaceDownMode.CLOAK"),
+            )
+        }
+    }
     // "Look at the top X cards ... Put one of them into your hand and the rest on the bottom of your
     // library in any order." (Stress Dream — look at the top two, keep one, bottom the other). One
     // generic card kept to hand, the remainder bottomed in the controller's chosen order. The flat
@@ -1154,11 +1180,7 @@ private fun cardsPredicateDsl(node: JsonElement?): String? {
         // Subtype filters all route through HasSubtype(Subtype("X")); use the named SDK constant when
         // one exists ("Plains" -> Subtype.PLAINS) so the output matches hand-authored convention.
         "IsCreatureType", "IsLandType", "IsArtifactType", "IsEnchantmentType" ->
-            obj.field("args").asStr()?.let { "CardPredicate.HasSubtype(${subtypeRef(it)})" }
+            obj.field("args").asStr()?.let { "CardPredicate.HasSubtype(${subtypeCtorArg(it)})" }
         else -> null
     }
 }
-
-/** `Subtype.PLAINS` when a named companion constant exists for the value, else `Subtype("Mount")`. */
-private fun subtypeRef(value: String): String =
-    Registry.subtypeConstant(value)?.let { "Subtype.$it" } ?: "Subtype(\"$value\")"

@@ -141,11 +141,11 @@ class TheLegendOfYangchenScenarioTest : FunSpec({
         // Accrue lore to 2 → chapter II. Stop on the may (yes/no) decision.
         val may = driver.advanceUntilYesNo()
         may.shouldNotBeNull()
-        withClue("the caster makes the 'you may' decision") { may!!.playerId shouldBe me }
+        withClue("the caster makes the 'you may' decision") { may.playerId shouldBe me }
 
         val myHandBefore = driver.getHandSize(me)
         val oppHandBefore = driver.getHandSize(opp)
-        driver.submitYesNo(may!!.playerId, true)
+        driver.submitYesNo(may.playerId, true)
         driver.drainYangchen()
 
         withClue("target opponent drew three") { driver.getHandSize(opp) shouldBe oppHandBefore + 3 }
@@ -165,7 +165,7 @@ class TheLegendOfYangchenScenarioTest : FunSpec({
         may.shouldNotBeNull()
         val myHandBefore = driver.getHandSize(me)
         val oppHandBefore = driver.getHandSize(opp)
-        driver.submitYesNo(may!!.playerId, false)
+        driver.submitYesNo(may.playerId, false)
         driver.drainYangchen()
 
         withClue("declining draws nothing for either player") {
@@ -227,7 +227,7 @@ class TheLegendOfYangchenScenarioTest : FunSpec({
         withClue("its owner may recast it from exile for a fixed {2}") {
             val grant = driver.state.getEntity(victim)?.get<PlayWithFixedAlternativeManaCostComponent>()
             grant.shouldNotBeNull()
-            grant!!.controllerId shouldBe opp
+            grant.controllerId shouldBe opp
             grant.fixedCost shouldBe ManaCost.parse("{2}")
         }
     }

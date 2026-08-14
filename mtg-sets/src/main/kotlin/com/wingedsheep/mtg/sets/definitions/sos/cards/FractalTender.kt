@@ -42,7 +42,7 @@ val FractalTender = card("Fractal Tender") {
 
     triggeredAbility {
         trigger = Triggers.EachEndStep
-        triggerCondition = Conditions.SourceReceivedCounterThisTurn
+        triggerCondition = Conditions.SourceReceivedCounterThisTurn()
         // Create the 0/0 Fractal (publishing it to the CREATED_TOKENS pipeline collection), then put
         // three +1/+1 counters on that just-created token via PipelineTarget(CREATED_TOKENS, 0).
         effect = Effects.Composite(

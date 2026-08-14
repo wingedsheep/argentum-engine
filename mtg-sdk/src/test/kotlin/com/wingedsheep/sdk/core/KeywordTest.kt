@@ -36,7 +36,7 @@ class KeywordTest : DescribeSpec({
 
         it("does not invent a keyword when the em-dash prefix is not a known ability word") {
             val parsed = Keyword.parseFromOracleText(
-                "Bargain — You may sacrifice an artifact, creature, or land as you cast this spell.",
+                "Grumbling — You may grumble twice as you cast this spell.",
             )
             parsed shouldNotContain Keyword.FATEFUL_BITE
             parsed shouldNotContain Keyword.EERIE

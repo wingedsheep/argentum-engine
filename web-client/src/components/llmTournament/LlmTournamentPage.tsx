@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { AvailableSet } from '@/types/messages'
-import { SetPickerModal } from '@/components/ui/SetPickerModal'
+import { SetSelector } from '@/components/ui/SetSelector'
 
 // ============================================================================
 // Types mirroring LlmTournamentController DTOs
@@ -231,7 +231,6 @@ function SetupForm({
 }) {
   const [sets, setSets] = useState<AvailableSet[]>([])
   const [setCode, setSetCode] = useState('')
-  const [pickerOpen, setPickerOpen] = useState(false)
   const [modelsText, setModelsText] = useState(PRESET_MODELS.slice(0, 4).join('\n'))
   const [mode, setMode] = useState<'heuristic' | 'llm'>('heuristic')
   const [bestOf, setBestOf] = useState(3)
@@ -249,8 +248,6 @@ function SetupForm({
       .catch(() => onError('Failed to load sets — is the server running with dev endpoints enabled?'))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  const selectedSet = sets.find((s) => s.code === setCode)
 
   const models = modelsText
     .split(/[\n,]/)
@@ -312,9 +309,15 @@ function SetupForm({
       <div style={styles.formRow}>
         <div style={{ flex: 1 }}>
           <label style={styles.label}>Set</label>
-          <button type="button" style={styles.setButton} onClick={() => setPickerOpen(true)}>
-            {selectedSet ? `${selectedSet.name} (${selectedSet.code})` : 'Choose a set…'}
-          </button>
+          <SetSelector
+            sets={sets}
+            selectedCodes={setCode ? [setCode] : []}
+            onToggleSet={(code) => setSetCode(code)}
+            mode="single"
+            align="start"
+            title="Choose a set"
+            emptyLabel="No set chosen yet"
+          />
         </div>
         <div>
           <label style={styles.label}>Deck building</label>
@@ -349,16 +352,6 @@ function SetupForm({
         running with <code>game.dev-endpoints.enabled=true</code> and an OpenRouter API key.
       </p>
 
-      {pickerOpen && (
-        <SetPickerModal
-          sets={sets}
-          selectedCodes={setCode ? [setCode] : []}
-          mode="single"
-          title="Choose a set"
-          onToggleSet={(code) => setSetCode(code)}
-          onClose={() => setPickerOpen(false)}
-        />
-      )}
     </div>
   )
 }

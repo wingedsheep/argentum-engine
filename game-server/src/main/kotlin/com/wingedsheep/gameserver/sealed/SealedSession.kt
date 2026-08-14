@@ -62,14 +62,12 @@ class SealedSession(
     var state: SealedSessionState = SealedSessionState.WAITING_FOR_PLAYERS
         private set
 
-    /** Basic lands available for deck building (one variant per type, for client display) */
+    /**
+     * Basic lands available for deck building: the set's standard art, one printing per type. Shown
+     * to the player while building and stamped onto the submitted deck, so both agree.
+     */
     val basicLands: Map<String, CardDefinition> by lazy {
         boosterGenerator.getBasicLands(setCodes)
-    }
-
-    /** All basic land art variants grouped by land name (for distributing across variants in decks) */
-    val allBasicLandVariants: Map<String, List<CardDefinition>> by lazy {
-        boosterGenerator.getAllBasicLandVariants(setCodes)
     }
 
     val isFull: Boolean get() = players.size >= 2

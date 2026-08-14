@@ -1,0 +1,32 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Electro, Assaulting Battery", "Hydro-Man, Fluid Felon", "Lightning Bolt", "Opt"],
+    "battlefield": [
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Mountain"},
+      {"name": "Island"},
+      {"name": "Island"}
+    ],
+    "graveyard": [],
+    "library": ["Island", "Mountain", "Island", "Mountain", "Island", "Mountain", "Island", "Mountain", "Island", "Mountain", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": ["Smother", "Swamp", "Mountain", "Island", "Mountain", "Island", "Mountain", "Lightning Bolt", "Island", "Mountain", "Island", "Mountain", "Mountain", "Island", "Mountain", "Island", "Mountain", "Island", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "AI"
+}

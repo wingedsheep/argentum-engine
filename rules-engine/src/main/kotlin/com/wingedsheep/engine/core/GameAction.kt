@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -66,17 +67,53 @@ data class CastSpell(
     val alternativePayment: AlternativePaymentChoice? = null,
     val additionalCostPayment: AdditionalCostPayment? = null,
     val castFaceDown: Boolean = false,
-    val wasKicked: Boolean = false,
+    /**
+     * The optional-additional-cost mechanic this cast declares (CR 601.2b), or `null` when the
+     * spell is cast without it — the single rail shared by every
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost] keyword: kicker,
+     * multikicker, offspring, the pay-more-for-flash unlock, and bargain (CR 702.166b).
+     *
+     * The slot, rather than a bare "was kicked" boolean, *is* the mechanic's identity: it must equal
+     * the [com.wingedsheep.sdk.scripting.KeywordAbility.OptionalAdditionalCost.declaredSlot] of a
+     * keyword the card actually has (the handler rejects the cast otherwise), it is stamped on the
+     * spell and durably on the permanent it becomes, and payoffs key off it — so a bargained spell
+     * is never mistaken for a kicked one.
+     */
+    val declaredCostSlot: ChoiceSlot? = null,
     /**
      * Whether the spell's *optional* waterbend additional cost was elected (Avatar: The Last
      * Airbender — [com.wingedsheep.sdk.scripting.SpellWaterbendCost] with `optional = true`).
      * Always `false` for spells with no optional waterbend cost, and irrelevant for a *mandatory*
      * waterbend cost (always paid). When true, the handler adds the waterbend amount to the cost,
-     * applies [alternativePayment]'s `waterbendPermanents` toward it, and stamps the
+     * applies [alternativePayment]'s `tapForGenericPermanents` toward it, and stamps the
      * [com.wingedsheep.sdk.scripting.ChoiceSlot.WATERBEND_PAID] flag so the effect can branch via
      * `Conditions.WaterbendWasPaid`.
      */
     val wasWaterbendPaid: Boolean = false,
+    /**
+     * The opponent promised this spell's **gift** (CR 702.174a, Bloomburrow — "as an additional
+     * cost to cast this spell, you may choose an opponent"), or `null` when the gift wasn't
+     * promised. Only meaningful for a card carrying [com.wingedsheep.sdk.scripting.KeywordAbility.Gift].
+     *
+     * The promise is elected here, while casting — never later: the enumerator emits a
+     * `CastWithGift` variant per opponent, and on resolution the handler stamps
+     * [com.wingedsheep.sdk.scripting.ChoiceSlot.GIFT_PROMISED] plus the recipient in
+     * `ChoiceSlot.OPPONENT` onto the permanent, where the gift trigger and the
+     * "if the gift was(n't) promised" riders read it via `Conditions.GiftWasPromised`.
+     */
+    val giftRecipient: EntityId? = null,
+    /**
+     * Cards in the caster's hand revealed and **spliced** onto this spell (CR 702.47a), in the order
+     * their text will be added — the order the effects happen in, after the main spell's own effects
+     * (CR 702.47b). Empty for the overwhelming majority of casts.
+     *
+     * Each id must name a card in the caster's hand that carries
+     * [com.wingedsheep.sdk.scripting.KeywordAbility.Splice] whose `onto` quality the spell being cast
+     * has, and no id may repeat — "you can't splice any one card onto the same spell more than once"
+     * (CR 702.47b). The handler charges each card's splice cost as an additional cost and appends its
+     * `spellEffect` / `targetRequirements` to the spell; the cards themselves stay in hand.
+     */
+    val splicedCardIds: List<EntityId> = emptyList(),
     val damageDistribution: Map<EntityId, Int>? = null,
     val useAlternativeCost: Boolean = false,
     val chosenModes: List<Int> = emptyList(),
@@ -175,10 +212,41 @@ enum class AlternativeCostType {
     FLASHBACK,
     /** Harmonize ([com.wingedsheep.sdk.scripting.KeywordAbility.Harmonize], printed or granted) — graveyard. */
     HARMONIZE,
+    /**
+     * Mayhem ([com.wingedsheep.sdk.scripting.KeywordAbility.Mayhem], printed or granted, CR 702.187)
+     * — graveyard, at the spell's normal timing, only if you discarded the card this turn. Pays the
+     * mayhem mana instead of the mana cost. Unlike [FLASHBACK]/[HARMONIZE] the spell is NOT exiled
+     * on resolution.
+     */
+    MAYHEM,
+    /**
+     * Disturb ([com.wingedsheep.sdk.scripting.KeywordAbility.Disturb], CR 702.146) — graveyard, at
+     * the *back* face's normal timing. Pays the disturb mana instead of the mana cost and puts the
+     * card on the stack transformed (back face up, CR 712.8c), so the spell's type line, targets and
+     * abilities are the back face's. Like [MAYHEM] and unlike [FLASHBACK]/[HARMONIZE], the card is
+     * not exiled on resolution.
+     */
+    DISTURB,
     /** Warp ([com.wingedsheep.sdk.scripting.KeywordAbility.Warp], printed or granted) — hand (graveyard if opted in). */
     WARP,
+    /**
+     * Dash ([com.wingedsheep.sdk.scripting.KeywordAbility.Dash], CR 702.109) — hand only. The
+     * resulting permanent gains haste and returns to its owner's hand at the beginning of the
+     * next end step, tracked by `DashedComponent` + a delayed trigger (mirrors Warp's shape,
+     * but returns to hand instead of exiling, and grants haste while the marker persists).
+     */
+    DASH,
     /** Evoke ([com.wingedsheep.sdk.scripting.KeywordAbility.Evoke]) — hand. */
     EVOKE,
+    /**
+     * Emerge ([com.wingedsheep.sdk.scripting.KeywordAbility.Emerge], CR 702.119) — hand, at the
+     * spell's normal timing. Pays the emerge mana *reduced by the sacrificed creature's mana value*
+     * (generic portion only) instead of the mana cost, plus sacrifices that creature
+     * ([CastSpell.additionalCostPayment] `sacrificedPermanents`). Unlike every other alternative
+     * cost here the mana actually charged depends on the non-mana choice, so the enumerator only
+     * offers creatures that leave the reduced cost payable.
+     */
+    EMERGE,
     /**
      * Sneak ([com.wingedsheep.sdk.scripting.KeywordAbility.Sneak], CR 702.190) — hand,
      * legal only during the active player's declare blockers step. Pays the sneak mana
@@ -186,6 +254,12 @@ enum class AlternativeCostType {
      * ([CastSpell.additionalCostPayment] `bouncedPermanents`).
      */
     SNEAK,
+    /**
+     * Web-slinging ([com.wingedsheep.sdk.scripting.KeywordAbility.WebSlinging], CR 702.188) — hand,
+     * at the spell's normal timing. Pays the web-slinging mana plus returns a tapped creature you
+     * control to its owner's hand ([CastSpell.additionalCostPayment] `bouncedPermanents`).
+     */
+    WEB_SLINGING,
     /** Impending ([com.wingedsheep.sdk.scripting.KeywordAbility.Impending]) — hand. */
     IMPENDING,
     /**
@@ -205,7 +279,23 @@ enum class AlternativeCostType {
     /** A card's own `selfAlternativeCost` (e.g. Zahid's "tap an untapped artifact") — hand. */
     SELF_ALTERNATIVE,
     /** A battlefield-granted alternative cost (e.g. Jodah's {W}{U}{B}{R}{G}) — `GrantAlternativeCastingCost`. */
-    GRANTED
+    GRANTED,
+
+    /**
+     * The **back face** of a modal double-faced card whose back is a permanent
+     * ([com.wingedsheep.engine.mechanics.ModalDfcCasts], CR 712.11b) — hand, at the *back* face's
+     * normal timing. Jennifer Walters // The Sensational She-Hulk and the rest of the Marvel Super
+     * Heroes hero cycle.
+     *
+     * Not really an alternative cost — CR 712.11b calls it choosing which face you are casting, and
+     * the cost charged is that face's own printed mana cost. It rides this enum because it needs
+     * exactly the [DISTURB] plumbing: the card goes on the stack transformed (back face up), so the
+     * spell's type line, timing, targets, P/T and abilities are the back face's, and it resolves
+     * onto the battlefield still back face up (CR 712.13). It differs from [DISTURB] in the zone
+     * (hand, not graveyard), in where the cost comes from, and in mana value — CR 712.8f gives a
+     * modal back face its *own* mana value, where CR 712.8e would keep the front's.
+     */
+    MODAL_BACK_FACE
 }
 
 /**
@@ -257,6 +347,14 @@ sealed interface PaymentStrategy {
  * @property targets Chosen targets for the ability's effect
  * @property costPayment Payment choices for costs (sacrifice, etc.)
  * @property manaColorChoice Color chosen for "add one mana of any color" abilities
+ * @property damageDistribution Pre-chosen damage distribution for a
+ *           [com.wingedsheep.sdk.scripting.effects.DividedDamageEffect] ability (target ID ->
+ *           damage amount). The activated-ability twin of [CastSpell.damageDistribution]: CR 601.2d
+ *           has the division chosen **as the ability is activated**, not when it resolves, so
+ *           opponents responding by removing a target lose that damage entirely rather than letting
+ *           the controller re-divide (Chandra, Flameshaper's −4). Omitted for every other ability;
+ *           when omitted for a divided-damage ability the executor falls back to a resolution-time
+ *           `DistributeDecision`, which is how non-interactive controllers (the built-in AI) divide.
  */
 @Serializable
 @SerialName("ActivateAbility")
@@ -271,6 +369,7 @@ data class ActivateAbility(
     val repeatCount: Int = 1,
     val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay,
     val alternativePayment: AlternativePaymentChoice? = null,
+    val damageDistribution: Map<EntityId, Int>? = null,
     /**
      * Internal resume marker for "… of an opponent's choice" targets (Cuombajj Witches). On the
      * first pass the handler pauses to let an opponent pick the opponent-chosen target(s); the
@@ -295,13 +394,18 @@ data class ActivateAbility(
  *
  * @property playerId The player cycling the card
  * @property cardId The card being cycled
+ * @property xValue The announced value of X for a cycling cost containing `{X}` (Webstrike Elite's
+ *   "Cycling {X}{G}{G}"), chosen as the ability is activated (CR 107.3a). Null on the legal-actions
+ *   submission path — the handler then raises a ChooseNumberDecision and re-enters with it bound.
+ *   Ignored for cycling costs without `{X}`.
  */
 @Serializable
 @SerialName("CycleCard")
 data class CycleCard(
     override val playerId: EntityId,
     val cardId: EntityId,
-    val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay
+    val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay,
+    val xValue: Int? = null
 ) : GameAction
 
 /**
@@ -341,6 +445,28 @@ data class PlotCard(
 @Serializable
 @SerialName("ForetellCard")
 data class ForetellCard(
+    override val playerId: EntityId,
+    val cardId: EntityId,
+    val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay
+) : GameAction
+
+/**
+ * Player suspends a card from their hand (CR 702.62, Time Spiral).
+ *
+ * Suspend is a special action (CR 116.2f) — unlike [ForetellCard]/[PlotCard], it isn't just
+ * "does not use the stack once announced"; the card is never cast at all. The player pays
+ * the card's printed suspend cost and exiles it from hand with a number of time counters
+ * equal to its suspend value. The exiled card counts down at its owner's upkeep — driven by
+ * the engine's synthesized [com.wingedsheep.sdk.scripting.Suspend.countdownAbility], granted
+ * to any exiled card carrying the suspended marker — and when the last counter is removed,
+ * its owner may play it for free (with haste, if it becomes a creature).
+ *
+ * @property playerId The player suspending the card
+ * @property cardId The card being suspended
+ */
+@Serializable
+@SerialName("SuspendCardFromHand")
+data class SuspendCardFromHand(
     override val playerId: EntityId,
     val cardId: EntityId,
     val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay
@@ -561,6 +687,10 @@ data class SaddleMount(
  * @property sourceId The face-down creature to turn face up (named sourceId for frontend consistency with ActivateAbility)
  * @property paymentStrategy How the player intends to pay the morph cost
  * @property costTargetIds Permanents chosen for non-mana morph costs (e.g., return a Bird to hand)
+ * @property procedureIndex Which of the permanent's
+ *   [com.wingedsheep.engine.state.components.identity.MorphDataComponent.procedures] to use.
+ *   Always 0 except for a manifested/cloaked card that also prints morph or disguise, which per
+ *   CR 701.40c/d and 701.58c/d offers both procedures at once.
  */
 @Serializable
 @SerialName("TurnFaceUp")
@@ -569,7 +699,8 @@ data class TurnFaceUp(
     val sourceId: EntityId,
     val paymentStrategy: PaymentStrategy = PaymentStrategy.AutoPay,
     val costTargetIds: List<EntityId> = emptyList(),
-    val xValue: Int? = null
+    val xValue: Int? = null,
+    val procedureIndex: Int = 0
 ) : GameAction
 
 // =============================================================================

@@ -29,7 +29,9 @@ data class DraftsimArchetypeRecord(
  *    falls back to the rarity ladder (`SPEC_scoring.md` §3 `ratingFallback`/`ratingOrDefault`).
  *  - [removal]: lowercased card names curated as removal (plus split front-face aliases). Membership
  *    is tested with `card.name.lowercase()` — a plain lowercase, **not** [nameKey] (bundle quirk).
- *  - [archetypes]: `nameKey → record`. Non-empty only for FDN/SOS/SOSSPG/TMT; drives the `jm` path.
+ *  - [archetypes]: `nameKey → record`. Non-empty only for the sets whose upstream table ships
+ *    archetype columns — whichever files exist under `draftai/archetypes/`, since the set of tagged
+ *    sets moves with every data refresh; drives the `jm` path.
  */
 data class DraftsimSetTables(
     val ratings: Map<String, Double>,
@@ -61,6 +63,21 @@ object DraftsimData {
         val nfd = Normalizer.normalize(front, Normalizer.Form.NFD)
         val noDiacritics = nfd.replace(DIACRITICS, "")
         return noDiacritics.replace('_', ' ').trim().lowercase()
+    }
+
+    /**
+     * Every set code we ship a ratings table for, from `/draftai/ratings/_manifest.json`.
+     *
+     * Cube tables (the `_cube.json` files) are deliberately absent from the manifest: they rate cards for a
+     * powered cube, not for a set's limited environment, so merging them into a general card-quality
+     * prior would price a Moxen-adjacent card as if every deck could cast it. They stay loadable by
+     * explicit [tablesFor] call, they are just not part of "all sets".
+     */
+    fun ratedSetCodes(): List<String> = manifest
+
+    private val manifest: List<String> by lazy {
+        val text = readResource("/draftai/ratings/_manifest.json") ?: return@lazy emptyList()
+        json.decodeFromString<List<String>>(text)
     }
 
     /** Joined tables for a pool spanning [setCodes]. Order-independent; cached by the set of codes. */

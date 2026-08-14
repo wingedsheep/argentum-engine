@@ -21,7 +21,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * sorcery.
  *
  * Gap 11 (graveyard-functional activated ability) is engine-landed (`activateFromZone =
- * Zone.GRAVEYARD` + `GraveyardAbilityEnumerator`, template Undead Gladiator). The leave-battlefield
+ * Zone.GRAVEYARD` + `ZoneActivatedAbilityEnumerator`, template Undead Gladiator). The leave-battlefield
  * Ring tempt and the sorcery-speed return-from-graveyard both compose from existing primitives.
  */
 val GollumPatientPlotter = card("Gollum, Patient Plotter") {

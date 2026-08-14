@@ -34,7 +34,6 @@ val HitTheMotherLode = card("Hit the Mother Lode") {
                     )
                 ),
                 tapped = true,
-                imageUri = LciTokenArt.TREASURE,
             )
         )
     }

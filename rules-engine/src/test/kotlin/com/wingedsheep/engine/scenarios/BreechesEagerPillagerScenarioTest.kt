@@ -78,12 +78,10 @@ class BreechesEagerPillagerScenarioTest : ScenarioTestBase() {
             first.options.size shouldBe 3
             first.options shouldContain treasureMode
             game.chooseMode(first, treasureMode)
-            withClue("Treasure mode created a Treasure token") {
-                game.treasureCount() shouldBe 1
-            }
 
-            // Second trigger (the other Pirate): the Treasure mode was already chosen THIS TURN,
-            // so only the remaining two modes are offered.
+            // Second trigger (the other Pirate): both triggers go on the stack before either
+            // resolves, and each announces its mode as it is put there (CR 603.3c), so the Treasure
+            // mode is already spent for this turn and only the remaining two are offered.
             val second = game.resolveToModeChoice()
             second.options.size shouldBe 2
             second.options shouldNotContain treasureMode
@@ -94,7 +92,7 @@ class BreechesEagerPillagerScenarioTest : ScenarioTestBase() {
             game.selectTargets(listOf(bears)).error shouldBe null
             game.resolveStack()
 
-            withClue("still only one Treasure — the second trigger did not re-create one") {
+            withClue("the Treasure mode resolved exactly once — the second trigger took another mode") {
                 game.treasureCount() shouldBe 1
             }
         }

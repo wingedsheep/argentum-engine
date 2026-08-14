@@ -29,7 +29,7 @@ val AncestorsAid = card("Ancestors' Aid") {
         effect = Effects.Composite(
             Effects.ModifyStats(2, 0, t),
             Effects.GrantKeyword(Keyword.FIRST_STRIKE, t),
-            Effects.CreateTreasure(imageUri = LciTokenArt.TREASURE)
+            Effects.CreateTreasure()
         )
     }
     metadata {

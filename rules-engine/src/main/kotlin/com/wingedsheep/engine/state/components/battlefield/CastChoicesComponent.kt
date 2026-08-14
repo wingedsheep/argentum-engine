@@ -106,6 +106,10 @@ fun ComponentContainer.chosenModeId(): String? =
 fun ComponentContainer.chosenCardName(): String? =
     (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.CARD_NAME) as? ChoiceValue.TextChoice)?.text
 
+/** The card type chosen as this object entered (e.g. Arachne, Psionic Weaver), or null. */
+fun ComponentContainer.chosenCardType(): String? =
+    (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.CARD_TYPE) as? ChoiceValue.TextChoice)?.text
+
 /** The creature chosen as this object entered, or null. */
 fun ComponentContainer.chosenCreatureRef(): EntityId? =
     (get<CastChoicesComponent>()?.chosen?.get(ChoiceSlot.CREATURE) as? ChoiceValue.EntityChoice)?.entityId

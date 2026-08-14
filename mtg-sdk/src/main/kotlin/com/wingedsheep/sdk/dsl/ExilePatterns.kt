@@ -106,9 +106,19 @@ object ExilePatterns {
         count: Int = 1,
         expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn,
         storeAs: String = "impulseExiled"
+    ): Effect = impulse(DynamicAmount.Fixed(count), expiry, storeAs)
+
+    /**
+     * Impulse draw whose card count is computed at resolution — "exile *that many* cards from the
+     * top of your library" (Virtue of Courage, where the count is the noncombat damage just dealt).
+     */
+    fun impulse(
+        count: DynamicAmount,
+        expiry: MayPlayExpiry = MayPlayExpiry.EndOfTurn,
+        storeAs: String = "impulseExiled"
     ): Effect = CompositeEffect(listOf(
         GatherCardsEffect(
-            source = CardSource.TopOfLibrary(DynamicAmount.Fixed(count)),
+            source = CardSource.TopOfLibrary(count),
             storeAs = storeAs
         ),
         MoveCollectionEffect(

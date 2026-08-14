@@ -1,396 +1,24 @@
 package com.wingedsheep.engine.handlers.continuations
 
-import com.wingedsheep.engine.core.*
-import com.wingedsheep.engine.handlers.CostHandler
+import com.wingedsheep.engine.core.DecisionResponse
+import com.wingedsheep.engine.core.EngineServices
+import com.wingedsheep.engine.core.ExecutionResult
+import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.core.StaticDrawReplacementContinuation
+import com.wingedsheep.engine.core.TurnManager
+import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.handlers.EffectContext
-import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
-import com.wingedsheep.engine.mechanics.mana.ManaPool
-import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.player.ManaPoolComponent
-import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.replacement.ReplacementEffectIdentity
 
 class DrawReplacementContinuationResumer(
-    private val services: com.wingedsheep.engine.core.EngineServices
+    private val services: EngineServices
 ) : ContinuationResumerModule {
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
-        resumer(DrawReplacementActivationContinuation::class, ::resumeDrawReplacementActivation),
-        resumer(DrawReplacementTargetContinuation::class, ::resumeDrawReplacementTarget),
         resumer(StaticDrawReplacementContinuation::class, ::resumeStaticDrawReplacement)
     )
-
-    /**
-     * Resume after the player selects mana sources (or declines) for a "prompt on draw"
-     * ability (e.g., Words of Wind). If they pay, creates a replacement shield,
-     * then draws cards.
-     */
-    fun resumeDrawReplacementActivation(
-        state: GameState,
-        continuation: DrawReplacementActivationContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is ManaSourcesSelectedResponse) {
-            return ExecutionResult.error(state, "Expected mana sources response for draw replacement activation")
-        }
-
-        val playerId = continuation.drawingPlayerId
-        var newState = state
-        val events = mutableListOf<GameEvent>()
-
-        // Check if the player chose to activate (non-empty sources or autoPay)
-        val activated = response.autoPay || response.selectedSources.isNotEmpty()
-
-        if (activated) {
-            val manaCost = com.wingedsheep.sdk.core.ManaCost.parse(continuation.manaCost)
-            val costHandler = CostHandler()
-
-            // Get current mana pool
-            val poolComponent = newState.getEntity(playerId)?.get<ManaPoolComponent>()
-            var currentPool = if (poolComponent != null) {
-                ManaPool(
-                    white = poolComponent.white,
-                    blue = poolComponent.blue,
-                    black = poolComponent.black,
-                    red = poolComponent.red,
-                    green = poolComponent.green,
-                    colorless = poolComponent.colorless
-                )
-            } else {
-                ManaPool()
-            }
-
-            // Try to pay from floating pool first
-            val partialResult = currentPool.payPartial(manaCost)
-            val remainingCost = partialResult.remainingCost
-
-            if (!remainingCost.isEmpty()) {
-                if (response.autoPay) {
-                    // Auto-tap: use ManaSolver
-                    val manaSolver = ManaSolver(services.cardRegistry)
-                    val solution = manaSolver.solve(newState, playerId, remainingCost)
-                        ?: return ExecutionResult.error(newState, "Cannot pay mana cost for draw replacement activation")
-
-                    val (stateAfterTaps, tapEvents) = services.manaAbilitySideEffectExecutor
-                        .tapSourcesWithSideEffects(newState, solution, playerId)
-                    newState = stateAfterTaps
-                    events.addAll(tapEvents)
-
-                    for ((_, production) in solution.manaProduced) {
-                        currentPool = if (production.color != null) {
-                            currentPool.add(production.color)
-                        } else {
-                            currentPool.addColorless(production.colorless)
-                        }
-                    }
-                } else {
-                    // Manual selection: tap (or sacrifice) the chosen sources.
-                    // Tap+sacrifice mana abilities (Treasure tokens) are detected via the
-                    // ManaSolver's source list — selecting them sacrifices the permanent
-                    // instead of just tapping it.
-                    val manaSolver = ManaSolver(services.cardRegistry)
-                    val sacrificeSourceIds = manaSolver.findAvailableManaSources(newState, playerId)
-                        .filter { it.requiresSacrifice }
-                        .map { it.entityId }
-                        .toSet()
-
-                    for (sourceId in response.selectedSources) {
-                        val sourceEntity = newState.getEntity(sourceId) ?: continue
-                        val sourceName = sourceEntity.get<CardComponent>()?.name ?: "Unknown"
-
-                        if (sourceId in sacrificeSourceIds) {
-                            val sourceController = sourceEntity
-                                .get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()
-                                ?.playerId ?: playerId
-                            events.add(TappedEvent(sourceId, sourceName))
-                            val preState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                                .trackPermanentSacrifice(newState, listOf(sourceId), sourceController)
-                            val transition = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
-                                .moveToZone(preState, sourceId, com.wingedsheep.sdk.core.Zone.GRAVEYARD)
-                            newState = transition.state
-                            events.add(PermanentsSacrificedEvent(sourceController, listOf(sourceId)))
-                            events.addAll(transition.events)
-                        } else {
-                            val (tappedState, tapEvent) = tap(newState, sourceId)
-                            newState = tappedState
-                            tapEvent?.let(events::add)
-                        }
-
-                        // Add mana from the tapped/sacrificed source
-                        // For simplicity, add 1 colorless mana per source
-                        // (ManaSolver would be more accurate but manual selection implies the player knows what they're doing)
-                        currentPool = currentPool.addColorless(1)
-                    }
-                }
-            }
-
-            // Pay the mana cost
-            val newPool = costHandler.payManaCost(currentPool, manaCost)
-                ?: return ExecutionResult.error(newState, "Cannot pay mana cost for draw replacement activation")
-
-            // Update mana pool on state
-            newState = newState.updateEntity(playerId) { c ->
-                c.with(ManaPoolComponent(
-                    white = newPool.white,
-                    blue = newPool.blue,
-                    black = newPool.black,
-                    red = newPool.red,
-                    green = newPool.green,
-                    colorless = newPool.colorless
-                ))
-            }
-
-            // If the ability has target requirements, pause for target selection
-            if (continuation.targetRequirements.isNotEmpty()) {
-                val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
-                val requirementInfos = continuation.targetRequirements.mapIndexed { index, req ->
-                    val legalTargets = services.targetFinder.findLegalTargets(
-                        state = newState,
-                        requirement = req,
-                        controllerId = playerId,
-                        sourceId = continuation.sourceId
-                    )
-                    legalTargetsMap[index] = legalTargets
-                    TargetRequirementInfo(
-                        index = index,
-                        description = req.description,
-                        minTargets = req.effectiveMinCount,
-                        maxTargets = req.count
-                    )
-                }
-
-                val targetDecisionId = java.util.UUID.randomUUID().toString()
-                val targetDecision = ChooseTargetsDecision(
-                    id = targetDecisionId,
-                    playerId = playerId,
-                    prompt = "Choose targets for ${continuation.sourceName}",
-                    context = DecisionContext(
-                        sourceId = continuation.sourceId,
-                        sourceName = continuation.sourceName,
-                        phase = DecisionPhase.RESOLUTION
-                    ),
-                    targetRequirements = requirementInfos,
-                    legalTargets = legalTargetsMap
-                )
-
-                val targetContinuation = DrawReplacementTargetContinuation(
-                    decisionId = targetDecisionId,
-                    drawingPlayerId = playerId,
-                    sourceId = continuation.sourceId,
-                    sourceName = continuation.sourceName,
-                    abilityEffect = continuation.abilityEffect,
-                    drawCount = continuation.drawCount,
-                    isDrawStep = continuation.isDrawStep,
-                    drawnCardsSoFar = continuation.drawnCardsSoFar,
-                    targetRequirements = continuation.targetRequirements
-                )
-
-                val stateWithDecision = newState.withPendingDecision(targetDecision)
-                val stateWithContinuation = stateWithDecision.pushContinuation(targetContinuation)
-
-                return ExecutionResult.paused(
-                    stateWithContinuation,
-                    targetDecision,
-                    events + listOf(
-                        DecisionRequestedEvent(
-                            decisionId = targetDecisionId,
-                            playerId = playerId,
-                            decisionType = "CHOOSE_TARGETS",
-                            prompt = targetDecision.prompt
-                        )
-                    )
-                )
-            }
-
-            // Execute the effect to create a replacement shield (no targeting needed)
-            val opponents = newState.turnOrder.filter { it != playerId }
-            val effectContext = EffectContext(
-                controllerId = playerId,
-                sourceId = continuation.sourceId,
-                targets = emptyList()
-            )
-            val effectResult = services.effectExecutorRegistry.execute(
-                newState, continuation.abilityEffect, effectContext
-            ).toExecutionResult()
-            if (effectResult.isSuccess) {
-                newState = effectResult.newState
-                events.addAll(effectResult.events)
-            }
-        }
-
-        // If player declined, check if there are other promptOnDraw abilities before drawing
-        if (!activated) {
-            val newDeclinedSourceIds = continuation.declinedSourceIds + continuation.sourceId
-
-            if (continuation.isDrawStep) {
-                val turnManager = TurnManager(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-                val otherPrompt = turnManager.checkPromptOnDraw(
-                    newState, playerId, continuation.drawCount, isDrawStep = true,
-                    declinedSourceIds = newDeclinedSourceIds
-                )
-                if (otherPrompt != null) {
-                    return ExecutionResult.paused(
-                        otherPrompt.state,
-                        otherPrompt.pendingDecision!!,
-                        events + otherPrompt.events
-                    )
-                }
-            } else {
-                val drawExecutor = DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-                val otherPrompt = drawExecutor.checkPromptOnDraw(
-                    newState, playerId, continuation.drawCount, continuation.drawnCardsSoFar,
-                    declinedSourceIds = newDeclinedSourceIds
-                )
-                if (otherPrompt != null) {
-                    return ExecutionResult.paused(
-                        otherPrompt.state,
-                        otherPrompt.pendingDecision!!,
-                        events + otherPrompt.events
-                    )
-                }
-            }
-        }
-
-        // Now perform the draws
-        if (continuation.isDrawStep) {
-            val turnManager = TurnManager(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-            val drawResult = turnManager.drawCards(newState, playerId, continuation.drawCount, skipPrompts = true)
-            if (drawResult.isPaused) {
-                return ExecutionResult.paused(
-                    drawResult.state,
-                    drawResult.pendingDecision!!,
-                    events + drawResult.events
-                )
-            }
-            newState = drawResult.newState
-            events.addAll(drawResult.events)
-            // Set priority for draw step
-            newState = newState.withPriority(playerId)
-        } else if (activated) {
-            // Player activated - use DrawCardsExecutor with cardRegistry so it can prompt
-            // again for subsequent draws (e.g., Arcanis draws 3, player can activate 3 times)
-            val drawExecutor = DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-            val drawResult = drawExecutor.executeDraws(newState, playerId, continuation.drawCount).toExecutionResult()
-            if (drawResult.isPaused) {
-                return ExecutionResult.paused(
-                    drawResult.state,
-                    drawResult.pendingDecision!!,
-                    events + drawResult.events
-                )
-            }
-            newState = drawResult.newState
-            events.addAll(drawResult.events)
-        } else {
-            // Player declined all abilities - draw 1 card normally,
-            // then continue remaining draws with prompting enabled
-            val singleDrawExecutor = DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-            val singleDrawResult = singleDrawExecutor.executeDraws(newState, playerId, 1, skipPrompts = true).toExecutionResult()
-            if (singleDrawResult.isPaused) {
-                return ExecutionResult.paused(
-                    singleDrawResult.state,
-                    singleDrawResult.pendingDecision!!,
-                    events + singleDrawResult.events
-                )
-            }
-            newState = singleDrawResult.newState
-            events.addAll(singleDrawResult.events)
-
-            // Continue remaining draws with prompting (reset declined list for next draw)
-            val remainingDraws = continuation.drawCount - 1
-            if (remainingDraws > 0) {
-                val drawExecutor = DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-                val drawResult = drawExecutor.executeDraws(newState, playerId, remainingDraws).toExecutionResult()
-                if (drawResult.isPaused) {
-                    return ExecutionResult.paused(
-                        drawResult.state,
-                        drawResult.pendingDecision!!,
-                        events + drawResult.events
-                    )
-                }
-                newState = drawResult.newState
-                events.addAll(drawResult.events)
-            }
-        }
-
-        return checkForMore(newState, events)
-    }
-
-    /**
-     * Resume after target selection for a "prompt on draw" ability that requires targeting
-     * (e.g., Words of War). Creates the replacement shield with the chosen targets,
-     * then proceeds with draws.
-     */
-    fun resumeDrawReplacementTarget(
-        state: GameState,
-        continuation: DrawReplacementTargetContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is TargetsResponse) {
-            return ExecutionResult.error(state, "Expected targets response for draw replacement target")
-        }
-
-        val playerId = continuation.drawingPlayerId
-        var newState = state
-        val events = mutableListOf<GameEvent>()
-
-        // Convert selected targets to ChosenTargets
-        val chosenTargets = response.selectedTargets.flatMap { (_, targetIds) ->
-            targetIds.map { targetId ->
-                entityIdToChosenTarget(newState, targetId)
-            }
-        }
-
-        // Execute the effect to create a replacement shield with targets
-        val opponents = newState.turnOrder.filter { it != playerId }
-        val effectContext = EffectContext(
-            controllerId = playerId,
-            sourceId = continuation.sourceId,
-            targets = chosenTargets,
-            pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(continuation.targetRequirements, chosenTargets))
-        )
-        val effectResult = services.effectExecutorRegistry.execute(
-            newState, continuation.abilityEffect, effectContext
-        ).toExecutionResult()
-        if (effectResult.isSuccess) {
-            newState = effectResult.newState
-            events.addAll(effectResult.events)
-        }
-
-        // Now perform the draws (same logic as resumeDrawReplacementActivation)
-        if (continuation.isDrawStep) {
-            val turnManager = TurnManager(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-            val drawResult = turnManager.drawCards(newState, playerId, continuation.drawCount, skipPrompts = true)
-            if (drawResult.isPaused) {
-                return ExecutionResult.paused(
-                    drawResult.state,
-                    drawResult.pendingDecision!!,
-                    events + drawResult.events
-                )
-            }
-            newState = drawResult.newState
-            events.addAll(drawResult.events)
-            newState = newState.withPriority(playerId)
-        } else {
-            // Spell/ability draws - use DrawCardsExecutor with cardRegistry for subsequent prompts
-            val drawExecutor = DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-            val drawResult = drawExecutor.executeDraws(newState, playerId, continuation.drawCount).toExecutionResult()
-            if (drawResult.isPaused) {
-                return ExecutionResult.paused(
-                    drawResult.state,
-                    drawResult.pendingDecision!!,
-                    events + drawResult.events
-                )
-            }
-            newState = drawResult.newState
-            events.addAll(drawResult.events)
-        }
-
-        return checkForMore(newState, events)
-    }
 
     /**
      * Resume after the player answers yes/no for an optional static draw replacement effect
@@ -401,11 +29,11 @@ class DrawReplacementContinuationResumer(
      */
     fun resumeStaticDrawReplacement(
         state: GameState,
-        continuation: com.wingedsheep.engine.core.StaticDrawReplacementContinuation,
+        continuation: StaticDrawReplacementContinuation,
         response: DecisionResponse,
         checkForMore: CheckForMore
     ): ExecutionResult {
-        if (response !is com.wingedsheep.engine.core.YesNoResponse) {
+        if (response !is YesNoResponse) {
             return ExecutionResult.error(state, "Expected yes/no response for static draw replacement")
         }
 
@@ -415,8 +43,7 @@ class DrawReplacementContinuationResumer(
 
         if (response.choice) {
             // Player chose to replace the draw - execute the replacement effect
-            val opponents = newState.turnOrder.filter { it != playerId }
-            val effectContext = com.wingedsheep.engine.handlers.EffectContext(
+            val effectContext = EffectContext(
                 controllerId = playerId,
                 sourceId = continuation.sourceId,
                 targets = emptyList()
@@ -424,14 +51,37 @@ class DrawReplacementContinuationResumer(
             val effectResult = services.effectExecutorRegistry.execute(
                 newState, continuation.replacementEffect, effectContext
             ).toExecutionResult()
+            if (effectResult.isPaused) {
+                return ExecutionResult.paused(
+                    effectResult.state,
+                    effectResult.pendingDecision!!,
+                    events + effectResult.events
+                )
+            }
             if (effectResult.isSuccess) {
                 newState = effectResult.newState
                 events.addAll(effectResult.events)
             }
         } else {
-            // Player declined - draw 1 card normally (skip prompts since we already handled them)
-            val singleDrawExecutor = DrawCardsExecutor(cardRegistry = services.cardRegistry, effectExecutor = services.effectExecutorRegistry::execute)
-            val singleDrawResult = singleDrawExecutor.executeDraws(newState, playerId, 1, skipPrompts = true).toExecutionResult()
+            // Player declined — stamp the declined identity so this specific
+            // replacement won't re-prompt (CR 614.5), but other optional
+            // replacements (if any) can still prompt for the current draw.
+            val declinedId = continuation.declinedIdentity
+            val stateWithDeclined = if (declinedId != null) {
+                newState.copy(activeReplacementChain = (newState.activeReplacementChain ?: emptySet()) + declinedId)
+            } else {
+                newState
+            }
+            val singleDrawExecutor = DrawCardsExecutor(
+                cardRegistry = services.cardRegistry,
+                effectExecutor = services.effectExecutorRegistry::execute,
+                replacementProcessor = services.replacementEffectProcessor
+            )
+            // announce = false: this is one card of a draw instruction that already went
+            // through the CR 121.2a announcement before it paused on the prompt.
+            val singleDrawResult = singleDrawExecutor.executeDraws(
+                stateWithDeclined, playerId, 1, announce = false
+            ).toExecutionResult()
             if (singleDrawResult.isPaused) {
                 return ExecutionResult.paused(
                     singleDrawResult.state,
@@ -439,7 +89,8 @@ class DrawReplacementContinuationResumer(
                     events + singleDrawResult.events
                 )
             }
-            newState = singleDrawResult.newState
+            // Clear the chain so remaining draws start clean
+            newState = singleDrawResult.newState.copy(activeReplacementChain = null)
             events.addAll(singleDrawResult.events)
         }
 
@@ -448,16 +99,18 @@ class DrawReplacementContinuationResumer(
         if (remainingDraws > 0) {
             val drawExecutor = DrawCardsExecutor(
                 cardRegistry = services.cardRegistry,
-                effectExecutor = services.effectExecutorRegistry::execute
+                effectExecutor = services.effectExecutorRegistry::execute,
+                replacementProcessor = services.replacementEffectProcessor
             )
             val drawResult = if (continuation.isDrawStep) {
-                val turnManager = com.wingedsheep.engine.core.TurnManager(
+                val turnManager = TurnManager(
                     cardRegistry = services.cardRegistry,
-                    effectExecutor = services.effectExecutorRegistry::execute
+                    effectExecutor = services.effectExecutorRegistry::execute,
+                    replacementProcessor = services.replacementEffectProcessor
                 )
-                turnManager.drawCards(newState, playerId, remainingDraws)
+                turnManager.drawCards(newState, playerId, remainingDraws, announce = false)
             } else {
-                drawExecutor.executeDraws(newState, playerId, remainingDraws).toExecutionResult()
+                drawExecutor.executeDraws(newState, playerId, remainingDraws, announce = false).toExecutionResult()
             }
             if (drawResult.isPaused) {
                 return ExecutionResult.paused(

@@ -19,7 +19,7 @@ const COLOR_PIP = new Set(['W', 'U', 'B', 'R', 'G'])
  * (single-letter WUBRG)? This drives the "at most" deckbuilder filter, which
  * asks whether a card is castable in a deck limited to a colour set.
  *
- * A hybrid pip like `{R/W}` is payable with EITHER half (CR 107.4d), so a
+ * A hybrid pip like `{R/W}` is payable with EITHER half (CR 107.4e), so a
  * `{R/W}` card is castable in a mono-white *or* mono-red deck and must survive
  * "at most W". Phyrexian (`{W/P}`) and monocolor-hybrid / "twobrid" (`{2/W}`)
  * pips always have a non-colored payment (life / generic), so they never force
@@ -161,6 +161,126 @@ export function getRemainingCostAfterConvoke(
   }
 
   return remaining
+}
+
+/**
+ * A unit of floating mana available for a payment: a pip letter ("W".."G", "C" for colorless).
+ * Mirrors the numeric pool fields plus the server's per-action eligible restricted entries.
+ */
+interface AvailableMana {
+  readonly white: number
+  readonly blue: number
+  readonly black: number
+  readonly red: number
+  readonly green: number
+  readonly colorless: number
+}
+
+/** A single unit of restricted mana the server flagged eligible for this payment. */
+interface EligibleRestrictedMana {
+  /** Pip letter ("W".."G") or null/undefined for colorless. */
+  readonly color?: string | null
+}
+
+/**
+ * Subtract the player's floating mana from [symbols] and return the symbols still owed.
+ *
+ * Pays exact-color pips first, then hybrid pips (CR 107.4e — a hybrid symbol is a colored symbol
+ * of both halves), then generic — the same order the server's `ManaPool.payPartial` uses, so the
+ * client's affordability check matches the actual payment.
+ *
+ * [eligibleRestricted] is the conditional mana ("spend this mana only to …") the *server* has
+ * already judged eligible for this specific action (`LegalActionInfo.eligibleRestrictedMana`).
+ * It spends exactly like unrestricted mana here; ignoring it greys out casts the server would
+ * accept — e.g. convoking a big creature while Ashling, Rimebound's MV4+ mana is floating.
+ */
+export function applyManaPoolToCost(
+  symbols: string[],
+  pool: AvailableMana | undefined,
+  eligibleRestricted: readonly EligibleRestrictedMana[] | undefined = undefined,
+): string[] {
+  const remaining = [...symbols]
+  const available: Record<string, number> = {
+    W: pool?.white ?? 0,
+    U: pool?.blue ?? 0,
+    B: pool?.black ?? 0,
+    R: pool?.red ?? 0,
+    G: pool?.green ?? 0,
+    C: pool?.colorless ?? 0,
+  }
+  for (const entry of eligibleRestricted ?? []) {
+    const pip = entry.color ?? 'C'
+    if (pip in available) available[pip]!++
+  }
+
+  const pips = ['W', 'U', 'B', 'R', 'G', 'C']
+  for (const pip of pips) {
+    while (available[pip]! > 0) {
+      const idx = remaining.indexOf(pip)
+      if (idx < 0) break
+      remaining.splice(idx, 1)
+      available[pip]!--
+    }
+  }
+
+  for (const pip of pips) {
+    if (pip === 'C') continue
+    while (available[pip]! > 0) {
+      const idx = remaining.findIndex((s) => s.includes('/') && s.split('/').includes(pip))
+      if (idx < 0) break
+      remaining.splice(idx, 1)
+      available[pip]!--
+    }
+  }
+
+  let generic = pips.reduce((sum, pip) => sum + available[pip]!, 0)
+  while (generic > 0) {
+    const idx = remaining.findIndex((s) => /^\d+$/.test(s))
+    if (idx < 0) break
+    const value = parseInt(remaining[idx]!, 10)
+    if (value > 1) {
+      remaining[idx] = String(value - 1)
+    } else {
+      remaining.splice(idx, 1)
+    }
+    generic--
+  }
+
+  return remaining
+}
+
+/**
+ * Total mana still needed for [symbols]: generic symbols count as their value, every other
+ * symbol as one.
+ */
+export function totalManaNeeded(symbols: string[]): number {
+  let total = 0
+  for (const s of symbols) {
+    const num = parseInt(s, 10)
+    total += isNaN(num) ? 1 : num
+  }
+  return total
+}
+
+/**
+ * The cheapest of several alternative renderings of the same cost — the one whose total mana is
+ * lowest — or undefined when there are none.
+ *
+ * Emerge (CR 702.119a) sends one resulting cost per creature the player could sacrifice, since the
+ * sacrifice's mana value comes off the emerge cost. The cast button shows the best case so the
+ * number it displays and the fact that it is enabled can't contradict each other.
+ */
+export function cheapestCost(costs: readonly string[]): string | undefined {
+  let cheapest: string | undefined
+  let cheapestTotal = Number.POSITIVE_INFINITY
+  for (const cost of costs) {
+    const total = totalManaNeeded(parseManaCost(cost))
+    if (total < cheapestTotal) {
+      cheapest = cost
+      cheapestTotal = total
+    }
+  }
+  return cheapest
 }
 
 /**

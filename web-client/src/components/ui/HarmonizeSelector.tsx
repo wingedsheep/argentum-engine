@@ -1,50 +1,13 @@
 import { useMemo } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useViewingPlayer } from '@/store/selectors'
-import type { ClientManaPool } from '@/types/gameState'
-import { parseManaCost, getRemainingCostSymbols } from '@/utils/manaCost'
+import {
+  applyManaPoolToCost,
+  getRemainingCostSymbols,
+  parseManaCost,
+  totalManaNeeded,
+} from '@/utils/manaCost'
 import { ManaSymbol } from './ManaSymbols'
-
-/**
- * Subtract the player's floating mana from [symbols] — colored pips first, then generic —
- * returning what's still owed. Mirrors the server autoPay order so the affordability check
- * matches the actual payment.
- */
-function applyManaPool(symbols: string[], pool: ClientManaPool | undefined): string[] {
-  if (!pool) return symbols
-  const remaining = [...symbols]
-  const available: Record<string, number> = {
-    W: pool.white, U: pool.blue, B: pool.black, R: pool.red, G: pool.green, C: pool.colorless,
-  }
-  for (const pip of ['W', 'U', 'B', 'R', 'G', 'C']) {
-    while (available[pip]! > 0) {
-      const idx = remaining.indexOf(pip)
-      if (idx < 0) break
-      remaining.splice(idx, 1)
-      available[pip]!--
-    }
-  }
-  let generic = available.W! + available.U! + available.B! + available.R! + available.G! + available.C!
-  while (generic > 0) {
-    const idx = remaining.findIndex((s) => /^\d+$/.test(s))
-    if (idx < 0) break
-    const value = parseInt(remaining[idx]!, 10)
-    if (value > 1) remaining[idx] = String(value - 1)
-    else remaining.splice(idx, 1)
-    generic--
-  }
-  return remaining
-}
-
-/** Total mana value of the remaining cost (generic = its value, colored pips = 1 each). */
-function totalManaNeeded(symbols: string[]): number {
-  let total = 0
-  for (const s of symbols) {
-    const num = parseInt(s, 10)
-    total += isNaN(num) ? 1 : num
-  }
-  return total
-}
 
 /**
  * Floating HUD bar for the Harmonize creature-tap step. The player may tap one creature
@@ -78,9 +41,12 @@ export function HarmonizeSelector() {
     [originalSymbols, reduction],
   )
 
+  // Conditional mana counts only where the server judged it eligible for this payment.
+  const eligibleRestricted = harmonizeSelectionState?.actionInfo.eligibleRestrictedMana
+
   const symbolsAfterPool = useMemo(
-    () => applyManaPool(remainingSymbols, manaPool),
-    [remainingSymbols, manaPool],
+    () => applyManaPoolToCost(remainingSymbols, manaPool, eligibleRestricted),
+    [remainingSymbols, manaPool, eligibleRestricted],
   )
 
   if (!harmonizeSelectionState) return null

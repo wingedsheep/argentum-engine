@@ -36,7 +36,9 @@
                         "destination": "Battlefield"
                     }
                 },
-                "activeZone": "Graveyard",
+                "activeZones": [
+                    "Graveyard"
+                ],
                 "triggerCondition": {
                     "type": "Exists",
                     "player": "You",

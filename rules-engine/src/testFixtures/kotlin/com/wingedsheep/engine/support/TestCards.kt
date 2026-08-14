@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CounterEffect
+import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
 import com.wingedsheep.sdk.scripting.effects.DealDamageEffect
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GainLifeEffect
@@ -269,6 +270,21 @@ object TestCards {
     )
 
     /**
+     * {1}{U} - Create a token that's a copy of target creature. Test-only instant (no "you
+     * control" restriction, unlike the printed copy spells) used to drive instant-speed
+     * copy-of-an-opponent's-creature interactions, e.g. copying a dashed creature mid-turn.
+     */
+    val TokenCopyInstant = CardDefinition.instant(
+        name = "Test Token Copy",
+        manaCost = ManaCost.parse("{1}{U}"),
+        oracleText = "Create a token that's a copy of target creature.",
+        script = CardScript.spell(
+            effect = CreateTokenCopyOfTargetEffect(target = EffectTarget.BoundVariable("target")),
+            TargetCreature(id = "target")
+        )
+    )
+
+    /**
      * {U} - Counter target spell with mana value 2 or less.
      */
     val SpellPierce = CardDefinition.instant(
@@ -396,9 +412,13 @@ object TestCards {
     /**
      * 1/1 Haste for {R} with "{T}: Add {R}"
      * A hasty mana dork that can tap immediately.
+     *
+     * Named to avoid the real "Ragavan, Nimble Pilferer" (MH2) — this fixture predates that
+     * card's implementation and is unrelated to it; keep test-fixture names off real card names
+     * so a later real implementation never gets silently shadowed in the test registry.
      */
-    val RagavanNimblePilferer = CardDefinition(
-        name = "Ragavan, Nimble Pilferer",
+    val TestHastyProspector = CardDefinition(
+        name = "Test Hasty Prospector",
         manaCost = ManaCost.parse("{R}"),
         typeLine = TypeLine(
             supertypes = setOf(Supertype.LEGENDARY),
@@ -688,7 +708,7 @@ object TestCards {
         LlanowarElves,
         PalladiumMyr,
         BirdsOfParadise,
-        RagavanNimblePilferer,
+        TestHastyProspector,
         // Morph Creatures
         MorphTestCreature,
         MorphWithTriggerTestCreature,
@@ -711,6 +731,7 @@ object TestCards {
         GiantGrowth,
         Counterspell,
         SpellPierce,
+        TokenCopyInstant,
         // Sorceries
         DoomBlade,
         CarefulStudy,

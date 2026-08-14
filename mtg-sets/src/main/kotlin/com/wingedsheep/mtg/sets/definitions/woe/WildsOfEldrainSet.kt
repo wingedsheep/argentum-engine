@@ -16,7 +16,6 @@ object WildsOfEldrainSet : MtgSet {
     override val code = "WOE"
     override val displayName = "Wilds of Eldraine"
     override val releaseDate = "2023-09-08"
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
@@ -24,6 +23,10 @@ object WildsOfEldrainSet : MtgSet {
 
     override val printings: List<Printing> by lazy {
         CardDiscovery.findPrintingsIn(CARDS_PACKAGE)
+    }
+
+    override val basicLands: List<CardDefinition> by lazy {
+        CardDiscovery.findBasicLandsIn(CARDS_PACKAGE, code)
     }
 
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.woe.cards"

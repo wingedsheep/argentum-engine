@@ -23,7 +23,7 @@ import io.kotest.matchers.shouldNotBe
  * Waterbend {N} adds {N} generic mana to the spell's cost; while paying it the caster may tap
  * untapped artifacts/creatures they control, each paying {1} (generic-only). Modeled by
  * [com.wingedsheep.sdk.scripting.SpellWaterbendCost] on the card script + the existing
- * [AlternativePaymentChoice.waterbendPermanents] carrier.
+ * [AlternativePaymentChoice.tapForGenericPermanents] carrier.
  *
  * Cards (defined inline — no fixed-amount spell-waterbend TLA card is in the test pool):
  *  - "Mandatory Tide" — {1}{U} Sorcery, "waterbend {3}. You gain 5 life."
@@ -35,7 +35,7 @@ import io.kotest.matchers.shouldNotBe
  *  3. Waterbend taps pay ONLY the waterbend {N}, never the spell's own generic (cap at N).
  *  4. An optional "you may waterbend" is offered as two cast actions (paid / not paid); the paid
  *     path sets the WaterbendWasPaid flag so the effect branches.
- *  5. The cast legal action surfaces hasWaterbend + the eligible permanents.
+ *  5. The cast legal action surfaces hasTapForGeneric + the eligible permanents.
  */
 class SpellWaterbendScenarioTest : ScenarioTestBase() {
 
@@ -103,7 +103,7 @@ class SpellWaterbendScenarioTest : ScenarioTestBase() {
                 val action = castAction(game) { it.isAffordable }
                 withClue("the mandatory-waterbend spell should be castable for {4}{U}") {
                     action shouldNotBe null
-                    action!!.hasWaterbend shouldBe true
+                    action!!.hasTapForGeneric shouldBe true
                 }
 
                 val result = game.execute(action!!.action)
@@ -133,7 +133,7 @@ class SpellWaterbendScenarioTest : ScenarioTestBase() {
                 action shouldNotBe null
 
                 val cast = (action!!.action as CastSpell).copy(
-                    alternativePayment = AlternativePaymentChoice(waterbendPermanents = creatures.toSet())
+                    alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = creatures.toSet())
                 )
                 val result = game.execute(cast)
                 withClue("paying the waterbend {3} by tapping 3 creatures should succeed: ${result.error}") {
@@ -181,7 +181,7 @@ class SpellWaterbendScenarioTest : ScenarioTestBase() {
                     .build()
 
                 val before = game.getLifeTotal(1)
-                val unpaid = castAction(game) { it.isAffordable && !it.hasWaterbend }
+                val unpaid = castAction(game) { it.isAffordable && !it.hasTapForGeneric }
                 withClue("an unpaid cast action should be offered") { unpaid shouldNotBe null }
 
                 val result = game.execute(unpaid!!.action)
@@ -208,14 +208,14 @@ class SpellWaterbendScenarioTest : ScenarioTestBase() {
                 val before = game.getLifeTotal(1)
                 val creatures = game.findAllPermanents("Glory Seeker")
                 creatures.size shouldBe 4
-                val paid = castAction(game) { it.isAffordable && it.hasWaterbend }
+                val paid = castAction(game) { it.isAffordable && it.hasTapForGeneric }
                 withClue("a paid (waterbend) cast action should be offered") {
                     paid shouldNotBe null
                     (paid!!.action as CastSpell).wasWaterbendPaid shouldBe true
                 }
 
                 val cast = (paid!!.action as CastSpell).copy(
-                    alternativePayment = AlternativePaymentChoice(waterbendPermanents = creatures.toSet())
+                    alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = creatures.toSet())
                 )
                 val result = game.execute(cast)
                 withClue("paying the optional waterbend by tapping 4 creatures should succeed: ${result.error}") {
@@ -238,8 +238,8 @@ class SpellWaterbendScenarioTest : ScenarioTestBase() {
                     it.actionType == "CastSpell" && it.action is CastSpell && it.isAffordable
                 }
                 withClue("both an unpaid and a paid cast variant should be offered") {
-                    casts.any { !it.hasWaterbend } shouldBe true
-                    casts.any { it.hasWaterbend } shouldBe true
+                    casts.any { !it.hasTapForGeneric } shouldBe true
+                    casts.any { it.hasTapForGeneric } shouldBe true
                 }
             }
         }
@@ -258,7 +258,7 @@ class SpellWaterbendScenarioTest : ScenarioTestBase() {
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
                     .build()
 
-                val action = castAction(game) { it.isAffordable && it.hasWaterbend }
+                val action = castAction(game) { it.isAffordable && it.hasTapForGeneric }
                 withClue("the waterbend {X} spell should be offered as an X-carrying waterbend cast") {
                     action shouldNotBe null
                     action!!.hasXCost shouldBe true
@@ -282,13 +282,13 @@ class SpellWaterbendScenarioTest : ScenarioTestBase() {
                 val before = game.getLifeTotal(1)
                 val creatures = game.findAllPermanents("Glory Seeker")
                 creatures.size shouldBe 3
-                val action = castAction(game) { it.isAffordable && it.hasWaterbend }
+                val action = castAction(game) { it.isAffordable && it.hasTapForGeneric }
                 action shouldNotBe null
 
                 // Player chooses X = 3 and taps the 3 creatures to pay the waterbend {3}; {U} from the Island.
                 val cast = (action!!.action as CastSpell).copy(
                     xValue = 3,
-                    alternativePayment = AlternativePaymentChoice(waterbendPermanents = creatures.toSet())
+                    alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = creatures.toSet())
                 )
                 val result = game.execute(cast)
                 withClue("casting waterbend {X=3} by tapping 3 creatures should succeed: ${result.error}") {

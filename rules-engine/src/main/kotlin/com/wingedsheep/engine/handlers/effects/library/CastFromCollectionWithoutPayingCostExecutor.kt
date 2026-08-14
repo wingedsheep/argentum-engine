@@ -71,9 +71,20 @@ class CastFromCollectionWithoutPayingCostExecutor(
         val cardId = cards.first()
         val controllerId = context.controllerId
 
+        // "Cast it transformed" needs a face to turn over to. A card with no back face — a token,
+        // or a single-faced card that became a copy of a transforming one — simply isn't cast, and
+        // per the CR 310.11b ruling it stays where it is (in exile, for the Siege defeat trigger)
+        // rather than being cast front face up.
+        if (effect.castTransformed && !hasBackFace(state, cardId)) {
+            return EffectResult.success(state)
+        }
+
         // Check targeting *before* granting: a grant made ahead of a cast that never happens
         // would follow the card out of exile and stay live until end-of-turn cleanup.
-        val prep = prepareTargetSelection(state, cardId, controllerId, cardRegistry, targetFinder, effect.storeCastTo)
+        val prep = prepareTargetSelection(
+            state, cardId, controllerId, cardRegistry, targetFinder, effect.storeCastTo,
+            castTransformed = effect.castTransformed,
+        )
         if (prep is TargetPrep.NoLegalTargets) {
             // CR 601.2c — if no legal targets exist for a required slot, the cast can't
             // initiate; the chosen card simply stays where it is.
@@ -89,6 +100,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             controllerId = controllerId,
             sourceId = context.sourceId,
             withoutPayingCost = !effect.payManaCost,
+            castTransformed = effect.castTransformed,
         )
 
         if (prep is TargetPrep.NeedsTargets) {
@@ -101,6 +113,12 @@ class CastFromCollectionWithoutPayingCostExecutor(
 
         // No targets needed (or modal — CastSpellHandler will handle per-mode targets).
         return invokeCast(newState, controllerId, cardId, permId, emptyList(), effect.storeCastTo)
+    }
+
+    /** True when [cardId]'s definition has a back face to be cast transformed as. */
+    private fun hasBackFace(state: GameState, cardId: EntityId): Boolean {
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
+        return cardRegistry.getCard(cardComponent.cardDefinitionId)?.backFace != null
     }
 
     private fun invokeCast(
@@ -181,6 +199,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             controllerId: EntityId,
             sourceId: EntityId?,
             withoutPayingCost: Boolean = true,
+            castTransformed: Boolean = false,
         ): Pair<EntityId, GameState> {
             val stamped = if (!withoutPayingCost) state else state.updateEntity(cardId) { container ->
                 container.with(PlayWithoutPayingCostComponent(controllerId = controllerId))
@@ -192,6 +211,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
                     cardIds = setOf(cardId),
                     controllerId = controllerId,
                     sourceId = sourceId,
+                    castTransformed = castTransformed,
                     timestamp = stateWithPerm.timestamp,
                 )
             )
@@ -221,6 +241,10 @@ class CastFromCollectionWithoutPayingCostExecutor(
          * `targetRequirements`, so a free-cast Aura (Pacifism) would otherwise reach
          * CastSpellHandler with no target. Mirrors CastSpellHandler's own
          * `targetRequirements + auraTarget` union.
+         *
+         * [castTransformed] reads all of that off the **back** face instead, because that is the
+         * face the spell will have on the stack (CR 712.8c) — the same rule that makes a disturb
+         * cast's targets come from the back face.
          */
         fun prepareTargetSelection(
             state: GameState,
@@ -229,9 +253,11 @@ class CastFromCollectionWithoutPayingCostExecutor(
             cardRegistry: CardRegistry,
             targetFinder: TargetFinder,
             storeCastTo: String? = null,
+            castTransformed: Boolean = false,
         ): TargetPrep {
             val cardComponent = state.getEntity(cardId)?.get<CardComponent>()
-            val cardDef = cardComponent?.let { cardRegistry.getCard(it.cardDefinitionId) }
+            val printedDef = cardComponent?.let { cardRegistry.getCard(it.cardDefinitionId) }
+            val cardDef = if (castTransformed) printedDef?.backFace ?: printedDef else printedDef
             val isModalSpell = cardDef?.script?.spellEffect is ModalEffect
             val targetRequirements = buildList {
                 addAll(cardDef?.script?.targetRequirements.orEmpty())
@@ -264,7 +290,9 @@ class CastFromCollectionWithoutPayingCostExecutor(
                 return TargetPrep.NoLegalTargets
             }
 
-            val cardName = cardComponent?.name ?: "spell"
+            // Name the face being cast — a transformed cast prompts for "Deluge of the Dead",
+            // not for the front face the player exiled.
+            val cardName = (if (castTransformed) cardDef?.name else null) ?: cardComponent?.name ?: "spell"
             val decisionId = UUID.randomUUID().toString()
             val decision = ChooseTargetsDecision(
                 id = decisionId,

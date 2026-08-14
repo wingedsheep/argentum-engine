@@ -28,7 +28,7 @@ val DocOcksTentacles = card("Doc Ock's Tentacles") {
             binding = TriggerBinding.ANY
         )
         optional = true
-        effect = Effects.AttachEquipment(EffectTarget.Self)
+        effect = Effects.AttachEquipment(EffectTarget.TriggeringEntity)
     }
     staticAbility {
         ability = ModifyStats(4, 4)

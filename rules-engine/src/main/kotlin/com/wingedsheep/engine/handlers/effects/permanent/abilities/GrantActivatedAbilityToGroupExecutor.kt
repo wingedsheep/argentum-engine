@@ -36,7 +36,8 @@ class GrantActivatedAbilityToGroupExecutor : EffectExecutor<GrantActivatedAbilit
             GrantedActivatedAbility(
                 entityId = entityId,
                 ability = effect.ability,
-                duration = effect.duration
+                duration = effect.duration,
+                sourceId = context.sourceId
             )
         }
 

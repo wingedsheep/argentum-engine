@@ -226,7 +226,7 @@ class DeckListClientViewTest : ScenarioTestBase() {
             )
             val delta = StateDiffCalculator.computeDelta(before, transformer.transform(drawn, p1))
             delta.deck.shouldNotBeNull()
-            delta.deck!!.single().remaining shouldBe 1
+            delta.deck.single().remaining shouldBe 1
         }
     }
 }

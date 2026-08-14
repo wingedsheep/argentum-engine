@@ -1,4 +1,5 @@
 import { test, expect, Page, BrowserContext } from '@playwright/test'
+import { createLobby, enterName, joinLobby, GROUP_SEALED } from '../../helpers/homeScreen'
 
 /**
  * E2E test: conceding a tournament match must not affect other active matches.
@@ -17,27 +18,13 @@ interface PlayerPage {
 
 async function createLobbyWithPlayers(players: PlayerPage[]): Promise<string> {
   const host = players[0]!
-  await host.page.goto('/')
-  await host.page.getByPlaceholder('Your name').fill(host.name)
-  await host.page.getByRole('button', { name: 'Continue' }).click()
-  await expect(host.page.getByRole('button', { name: 'Tournament' })).toBeVisible({ timeout: 10000 })
-  await host.page.getByRole('button', { name: 'Tournament' }).click()
-  await host.page.getByRole('button', { name: 'Create Lobby' }).click()
-  await expect(host.page.getByText('Invite Code')).toBeVisible({ timeout: 10000 })
-
-  const lobbyId = await host.page.getByTestId('invite-code').textContent() ?? ''
-  expect(lobbyId).toBeTruthy()
+  await enterName(host.page, host.name)
+  const lobbyId = await createLobby(host.page, GROUP_SEALED)
 
   for (let i = 1; i < players.length; i++) {
     const player = players[i]!
-    await player.page.goto('/')
-    await player.page.getByPlaceholder('Your name').fill(player.name)
-    await player.page.getByRole('button', { name: 'Continue' }).click()
-    await expect(player.page.getByRole('button', { name: 'Tournament' })).toBeVisible({ timeout: 10000 })
-    await player.page.getByRole('button', { name: 'Tournament' }).click()
-    await player.page.getByPlaceholder('Enter Lobby ID').fill(lobbyId)
-    await player.page.getByRole('button', { name: 'Join' }).click()
-    await expect(player.page.getByText('Invite Code')).toBeVisible({ timeout: 10000 })
+    await enterName(player.page, player.name)
+    await joinLobby(player.page, lobbyId)
   }
 
   return lobbyId

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.SpellCastEvent
 import com.wingedsheep.engine.core.SpellCopiedEvent
@@ -102,7 +103,7 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
         val source = SpellOnStackComponent(
             casterId = p1,
             xValue = 5,
-            wasKicked = true,
+            declaredCostSlot = ChoiceSlot.KICKED,
             wasWarped = true,
             wasEvoked = true,
             sacrificedPermanents = listOf(
@@ -127,7 +128,7 @@ class StormCopyInheritsAllDecisionsTest : FunSpec({
         val copy = copyComponent(result.state)
         copy.casterId shouldBe p1
         copy.xValue shouldBe 5
-        copy.wasKicked shouldBe true
+        copy.declaredCostSlot shouldBe ChoiceSlot.KICKED
         copy.wasWarped shouldBe true
         copy.wasEvoked shouldBe true
         copy.sacrificedPermanents shouldBe listOf(

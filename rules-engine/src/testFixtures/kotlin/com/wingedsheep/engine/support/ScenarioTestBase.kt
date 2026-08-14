@@ -3,13 +3,17 @@ package com.wingedsheep.engine.support
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.core.DistributionResponse
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.registry.TokenArtRegistry
+import com.wingedsheep.mtg.sets.MtgSetCatalog
 import com.wingedsheep.mtg.sets.tokens.PredefinedTokens
+import com.wingedsheep.mtg.sets.tokens.TokenArtData
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
+import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
@@ -61,7 +65,18 @@ abstract class ScenarioTestBase : FunSpec() {
         register(TestCards.all)
         register(PredefinedTokens.allTokens)
     }
-    protected val actionProcessor = ActionProcessor(cardRegistry)
+
+    /**
+     * Per-set token art, so a scenario test sees the same token images a real game would. Scenario
+     * entities are keyed by bare card name (not `Name#SET-CN`), which the registry resolves through
+     * its card-name index — see [TokenArtRegistry].
+     */
+    protected val tokenArtRegistry = TokenArtRegistry().apply {
+        for (set in MtgSetCatalog.all) {
+            register(set.code, TokenArtData.forSet(set), set.cards.map { it.name })
+        }
+    }
+    protected val actionProcessor = ActionProcessor(EngineServices(cardRegistry, tokenArtRegistry = tokenArtRegistry))
     protected val stateTransformer = ClientStateTransformer(cardRegistry)
 
     /**
@@ -152,6 +167,12 @@ abstract class ScenarioTestBase : FunSpec() {
          * `IsToken` / `IsNontoken` filters and token-only sacrifice costs evaluate correctly.
          * The permanent's stats/types still come from the named (token) card definition, e.g.
          * a predefined token like "Treasure" or a creature-token script.
+         *
+         * Set [enteredThisTurn] to mark the permanent as having entered the battlefield this turn
+         * (adds [EnteredThisTurnComponent]) — what `Conditions.SourceEnteredThisTurn` and power-up's
+         * cost reduction (CR 702.193a) read. Off by default, matching the "it's been there" default
+         * of [summoningSickness]; set it to test the turn-it-entered branch without having to cast
+         * the permanent and juggle the mana that would consume.
          */
         fun withCardOnBattlefield(
             playerNumber: Int,
@@ -159,7 +180,8 @@ abstract class ScenarioTestBase : FunSpec() {
             tapped: Boolean = false,
             summoningSickness: Boolean = false,
             classLevel: Int? = null,
-            isToken: Boolean = false
+            isToken: Boolean = false,
+            enteredThisTurn: Boolean = false
         ): ScenarioBuilder {
             val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
             val cardId = createCard(cardName, playerId)
@@ -183,6 +205,10 @@ abstract class ScenarioTestBase : FunSpec() {
                 container = container.with(TokenComponent)
             }
 
+            if (enteredThisTurn) {
+                container = container.with(EnteredThisTurnComponent)
+            }
+
             // Add continuous effects from static abilities (e.g., "Other creatures you control have...")
             // and replacement effects (e.g., PreventDamage from Daunting Defender)
             val cardDef = cardRegistry.getCard(cardName)
@@ -196,6 +222,33 @@ abstract class ScenarioTestBase : FunSpec() {
                 val staticHandler = StaticAbilityHandler(cardRegistry)
                 container = staticHandler.addContinuousEffectComponent(container, cardDef)
                 container = staticHandler.addReplacementEffectComponent(container, cardDef)
+
+                // A planeswalker enters with its starting loyalty as loyalty counters (CR 306.5b).
+                // Placing one directly on the battlefield skips the ETB path that normally does
+                // this, which leaves it at 0 loyalty — harmless for `+N` abilities but makes every
+                // minus ability unactivatable ("Not enough loyalty").
+                cardDef.startingLoyalty?.let { loyalty ->
+                    val counters = container.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                        ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+                    container = container.with(
+                        counters.withAdded(com.wingedsheep.sdk.core.CounterType.LOYALTY, loyalty)
+                    )
+                }
+
+                // A battle enters with its printed defense as defense counters (CR 310.4b), and its
+                // defense *is* that count (CR 310.4c). Same reasoning as loyalty above, but with a
+                // sharper failure: a battle seeded at 0 defense is put into its owner's graveyard by
+                // the very next state-based action check (CR 704.5v).
+                //
+                // No protector is seeded — that is the CR 704.5w state-based action's job, and
+                // letting it run is what a scenario should be exercising.
+                cardDef.startingDefense?.let { defense ->
+                    val counters = container.get<com.wingedsheep.engine.state.components.battlefield.CountersComponent>()
+                        ?: com.wingedsheep.engine.state.components.battlefield.CountersComponent()
+                    container = container.with(
+                        counters.withAdded(com.wingedsheep.sdk.core.CounterType.DEFENSE, defense)
+                    )
+                }
 
                 // Rule 712.8a: if placing a DFC back face directly on the battlefield, add
                 // DoubleFacedComponent with the saved front-face card so ZoneTransitionService
@@ -228,6 +281,19 @@ abstract class ScenarioTestBase : FunSpec() {
                             )
                         )
                     }
+                } else if (cardDef.isDoubleFaced) {
+                    // Rule 712.13 / StackResolver: a DFC entering the battlefield on its front face
+                    // gets a DoubleFacedComponent(currentFace = FRONT). Seeding the front face
+                    // directly must match, or TransformEffect has no component to flip and silently
+                    // no-ops (TransformEffectExecutor returns success without transforming).
+                    container = container.with(
+                        DoubleFacedComponent(
+                            frontCardDefinitionId = cardName,
+                            backCardDefinitionId = cardDef.backFace!!.name,
+                            currentFace = DoubleFacedComponent.Face.FRONT,
+                            frontFaceCard = null
+                        )
+                    )
                 }
             }
 
@@ -482,6 +548,24 @@ abstract class ScenarioTestBase : FunSpec() {
         private val stateTransformer: ClientStateTransformer
     ) {
         /**
+         * Run one full state-based action pass (CR 704) against the current state.
+         *
+         * A scenario built with [ScenarioBuilder] seeds permanents directly onto the battlefield
+         * without ever giving a player priority, so SBAs have not run yet. Call this when the
+         * scenario depends on an SBA having fired — e.g. a battle's protector, which is designated
+         * by the CR 704.5w state-based action rather than at entry. Pauses (an SBA that needs a
+         * player decision) surface as `pendingDecision`, exactly as in a real game.
+         */
+        fun checkStateBasedActions(): ExecutionResult {
+            val result = com.wingedsheep.engine.mechanics.StateBasedActionChecker(cardRegistry = cardRegistry)
+                .checkAndApply(state)
+            if (result.error == null) {
+                state = result.state
+            }
+            return result
+        }
+
+        /**
          * Execute an action and update the state.
          */
         fun execute(action: GameAction): ExecutionResult {
@@ -616,6 +700,48 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Cast a spell for its emerge cost (CR 702.119), sacrificing [sacrificeCreatureName].
+         *
+         * Emerge is an alternative cost whose non-mana portion — sacrificing a creature you
+         * control — also determines the mana actually charged: the emerge cost is reduced by an
+         * amount of generic mana equal to the sacrificed creature's mana value. Both halves ride
+         * one action, so this stamps [AlternativeCostType.EMERGE] and puts the chosen creature in
+         * `additionalCostPayment.sacrificedPermanents`, exactly as the enumerator's
+         * `SacrificePermanent` selection does.
+         */
+        fun castSpellWithEmerge(
+            playerNumber: Int,
+            spellName: String,
+            sacrificeCreatureName: String,
+            targets: List<ChosenTarget> = emptyList()
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val sacrificeId = state.getBattlefield().find { entityId ->
+                val container = state.getEntity(entityId) ?: return@find false
+                container.get<CardComponent>()?.name == sacrificeCreatureName &&
+                    container.get<ControllerComponent>()?.playerId == playerId
+            } ?: error("Creature '$sacrificeCreatureName' not found on player $playerNumber's battlefield")
+
+            return execute(
+                CastSpell(
+                    playerId = playerId,
+                    cardId = cardId,
+                    targets = targets,
+                    useAlternativeCost = true,
+                    alternativeCostType = com.wingedsheep.engine.core.AlternativeCostType.EMERGE,
+                    additionalCostPayment = com.wingedsheep.sdk.scripting.AdditionalCostPayment(
+                        sacrificedPermanents = listOf(sacrificeId)
+                    )
+                )
+            )
+        }
+
+        /**
          * Cast a spell for its Cleave cost (CR 702.148), optionally targeting a permanent. Cleave
          * is an alternative cost, so this drives [CastSpell.useAlternativeCost] gated on
          * [AlternativeCostType.CLEAVE]; the handler swaps in the brackets-removed
@@ -675,6 +801,31 @@ abstract class ScenarioTestBase : FunSpec() {
             return execute(CastSpell(
                 playerId, cardId,
                 targets = listOf(ChosenTarget.Spell(targetSpellId)),
+                useAlternativeCost = true,
+                alternativeCostType = AlternativeCostType.CLEAVE
+            ))
+        }
+
+        /**
+         * Cast a spell for its Cleave cost (CR 702.148), targeting a player (e.g. the cleaved Dread
+         * Fugue, which still targets a player but lifts the effect's mana-value cap). Mirrors
+         * [castSpellTargetingPlayer] but pays the cleave alternative cost.
+         */
+        fun castSpellWithCleaveTargetingPlayer(
+            playerNumber: Int,
+            spellName: String,
+            targetPlayerNumber: Int
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val targetPlayerId = if (targetPlayerNumber == 1) player1Id else player2Id
+            val hand = state.getHand(playerId)
+            val cardId = hand.find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            return execute(CastSpell(
+                playerId, cardId,
+                targets = listOf(ChosenTarget.Player(targetPlayerId)),
                 useAlternativeCost = true,
                 alternativeCostType = AlternativeCostType.CLEAVE
             ))
@@ -808,15 +959,19 @@ abstract class ScenarioTestBase : FunSpec() {
         /**
          * Cycle a card by name from a player's hand.
          * The player pays the cycling cost, discards the card, and draws a card.
+         *
+         * [xValue] announces X for an `{X}` cycling cost (Webstrike Elite's "Cycling {X}{G}{G}").
+         * Leaving it null on such a card exercises the client's path instead: the engine raises a
+         * ChooseNumberDecision for X and resumes once it's answered.
          */
-        fun cycleCard(playerNumber: Int, cardName: String): ExecutionResult {
+        fun cycleCard(playerNumber: Int, cardName: String, xValue: Int? = null): ExecutionResult {
             val playerId = if (playerNumber == 1) player1Id else player2Id
             val hand = state.getHand(playerId)
             val cardId = hand.find { entityId ->
                 state.getEntity(entityId)?.get<CardComponent>()?.name == cardName
             } ?: error("Card '$cardName' not found in player $playerNumber's hand")
 
-            return execute(CycleCard(playerId, cardId))
+            return execute(CycleCard(playerId, cardId, xValue = xValue))
         }
 
         /**
@@ -942,7 +1097,7 @@ abstract class ScenarioTestBase : FunSpec() {
          * Check if a card with the given name is in a player's sideboard ("outside the game").
          */
         fun isInSideboard(playerNumber: Int, cardName: String): Boolean {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = if (playerNumber == 1) player1Id else player2Id
             return state.getZone(playerId, Zone.SIDEBOARD).any { entityId ->
                 state.getEntity(entityId)?.get<CardComponent>()?.name == cardName
             }
@@ -950,7 +1105,7 @@ abstract class ScenarioTestBase : FunSpec() {
 
         /** Number of cards in a player's sideboard. */
         fun sideboardSize(playerNumber: Int): Int {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = if (playerNumber == 1) player1Id else player2Id
             return state.getZone(playerId, Zone.SIDEBOARD).size
         }
 
@@ -958,7 +1113,7 @@ abstract class ScenarioTestBase : FunSpec() {
          * Check if a card with the given name is in a player's exile zone.
          */
         fun isInExile(playerNumber: Int, cardName: String): Boolean {
-            val playerId = if (playerNumber == 1) player1Id!! else player2Id!!
+            val playerId = if (playerNumber == 1) player1Id else player2Id
             return state.getExile(playerId).any { entityId ->
                 state.getEntity(entityId)?.get<CardComponent>()?.name == cardName
             }
@@ -1184,13 +1339,13 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
-         * Declare attackers with some attacking a planeswalker by name.
+         * Declare attackers with some attacking a permanent — a planeswalker or a battle — by name.
          * @param playerAttackers Map of creature names to player number being attacked
-         * @param planeswalkerAttackers Map of creature names to planeswalker names being attacked
+         * @param permanentAttackers Map of creature names to the attacked permanent's name
          */
-        fun declareAttackersWithPlaneswalkerTargets(
+        fun declareAttackersWithPermanentTargets(
             playerAttackers: Map<String, Int> = emptyMap(),
-            planeswalkerAttackers: Map<String, String> = emptyMap()
+            permanentAttackers: Map<String, String> = emptyMap()
         ): ExecutionResult {
             val attackingPlayer = state.activePlayerId!!
             val attackerMap = mutableMapOf<EntityId, EntityId>()
@@ -1200,7 +1355,7 @@ abstract class ScenarioTestBase : FunSpec() {
                 val targetPlayerId = if (targetPlayerNum == 1) player1Id else player2Id
                 attackerMap[attackerId] = targetPlayerId
             }
-            for ((name, planeswalkerName) in planeswalkerAttackers) {
+            for ((name, planeswalkerName) in permanentAttackers) {
                 val attackerId = findPermanent(name) ?: continue
                 val targetId = findPermanent(planeswalkerName) ?: continue
                 attackerMap[attackerId] = targetId
@@ -1415,6 +1570,179 @@ abstract class ScenarioTestBase : FunSpec() {
 
             val targets = listOf(ChosenTarget.Spell(targetSpellId))
             return execute(CastSpell(playerId, cardId, targets))
+        }
+
+        /**
+         * Cast a spell **bargained** (CR 702.166b) — declaring its optional "sacrifice an artifact,
+         * enchantment, or token" additional cost and paying it with [sacrificeName].
+         *
+         * @param playerNumber The player casting the spell (1 or 2)
+         * @param spellName The name of the spell to cast, from that player's hand
+         * @param sacrificeName The permanent that player controls to sacrifice for bargain
+         * @param targetId Optional single target for the spell
+         * @param xValue The value chosen for `{X}` on a bargained X spell (Stonesplitter Bolt);
+         *   leave `null` for spells with no `{X}` in their cost
+         */
+        fun castSpellBargained(
+            playerNumber: Int,
+            spellName: String,
+            sacrificeName: String,
+            targetId: EntityId? = null,
+            xValue: Int? = null,
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val cardId = state.getHand(playerId).find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val sacrificeId = state.getBattlefield().find { entityId ->
+                val container = state.getEntity(entityId) ?: return@find false
+                container.get<CardComponent>()?.name == sacrificeName &&
+                    container.get<ControllerComponent>()?.playerId == playerId
+            } ?: error("Permanent '$sacrificeName' not found on player $playerNumber's battlefield")
+
+            return execute(
+                CastSpell(
+                    playerId = playerId,
+                    cardId = cardId,
+                    targets = targetId?.let { listOf(ChosenTarget.Permanent(it)) } ?: emptyList(),
+                    xValue = xValue,
+                    declaredCostSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.BARGAINED,
+                    additionalCostPayment = com.wingedsheep.sdk.scripting.AdditionalCostPayment(
+                        sacrificedPermanents = listOf(sacrificeId)
+                    ),
+                )
+            )
+        }
+
+        /**
+         * Cast [spellName] declaring its **teamwork** cost (CR 702.194a), tapping the named
+         * creatures to pay it. Names are resolved on the caster's battlefield in order; repeat a
+         * name to tap two copies of it.
+         *
+         * @param chosenModes Cast-time mode picks for a modal teamwork spell ("Choose one. If this
+         *   spell was cast using teamwork, choose both instead"), empty for a non-modal spell.
+         */
+        fun castSpellWithTeamwork(
+            playerNumber: Int,
+            spellName: String,
+            vararg tapNames: String,
+            targetId: EntityId? = null,
+            xValue: Int? = null,
+            chosenModes: List<Int> = emptyList(),
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val cardId = state.getHand(playerId).find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val used = mutableSetOf<EntityId>()
+            val projected = state.projectedState
+            val tapped = tapNames.map { name ->
+                projected.getBattlefieldControlledBy(playerId).find { entityId ->
+                    if (entityId in used) return@find false
+                    state.getEntity(entityId)?.get<CardComponent>()?.name == name
+                }?.also(used::add)
+                    ?: error("Permanent '$name' not found on player $playerNumber's battlefield")
+            }
+
+            return execute(
+                CastSpell(
+                    playerId = playerId,
+                    cardId = cardId,
+                    targets = targetId?.let { listOf(ChosenTarget.Permanent(it)) } ?: emptyList(),
+                    chosenModes = chosenModes,
+                    xValue = xValue,
+                    declaredCostSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.TEAMWORK,
+                    additionalCostPayment = com.wingedsheep.sdk.scripting.AdditionalCostPayment(
+                        variableCostPermanents = tapped
+                    ),
+                )
+            )
+        }
+
+        /**
+         * Cast a spell **collecting evidence** (CR 701.59) — declaring its optional "you may
+         * collect evidence N" additional cost and paying it by exiling [evidenceNames] from the
+         * caster's graveyard.
+         *
+         * The named cards must total mana value N or greater (CR 701.59a); passing an insufficient
+         * set is how a test pins the engine's rejection of an under-total payment.
+         *
+         * @param playerNumber The player casting the spell (1 or 2)
+         * @param spellName The name of the spell to cast, from that player's hand
+         * @param evidenceNames Graveyard card names to exile as the collection, in order
+         * @param targetId Optional single target for the spell
+         */
+        fun castSpellCollectingEvidence(
+            playerNumber: Int,
+            spellName: String,
+            vararg evidenceNames: String,
+            targetId: EntityId? = null,
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val cardId = state.getHand(playerId).find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val graveyard = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD)).toMutableList()
+            val evidenceIds = evidenceNames.map { name ->
+                val found = graveyard.find { entityId ->
+                    state.getEntity(entityId)?.get<CardComponent>()?.name == name
+                } ?: error("Card '$name' not found in player $playerNumber's graveyard")
+                // Remove so repeating a name picks distinct copies rather than the same card twice.
+                graveyard.remove(found)
+                found
+            }
+
+            return execute(
+                CastSpell(
+                    playerId = playerId,
+                    cardId = cardId,
+                    targets = targetId?.let { listOf(ChosenTarget.Permanent(it)) } ?: emptyList(),
+                    declaredCostSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.EVIDENCE_COLLECTED,
+                    additionalCostPayment = com.wingedsheep.sdk.scripting.AdditionalCostPayment(
+                        exiledCards = evidenceIds
+                    ),
+                )
+            )
+        }
+
+        /**
+         * [castSpellCollectingEvidence] for a spell with more than one target (Bite Down on
+         * Crime's "target creature you control" plus "target creature you don't control").
+         */
+        fun castSpellCollectingEvidenceWithTargets(
+            playerNumber: Int,
+            spellName: String,
+            evidenceNames: List<String>,
+            targetIds: List<EntityId>,
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val cardId = state.getHand(playerId).find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val graveyard = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD)).toMutableList()
+            val evidenceIds = evidenceNames.map { name ->
+                val found = graveyard.find { entityId ->
+                    state.getEntity(entityId)?.get<CardComponent>()?.name == name
+                } ?: error("Card '$name' not found in player $playerNumber's graveyard")
+                graveyard.remove(found)
+                found
+            }
+
+            return execute(
+                CastSpell(
+                    playerId = playerId,
+                    cardId = cardId,
+                    targets = targetIds.map { ChosenTarget.Permanent(it) },
+                    declaredCostSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.EVIDENCE_COLLECTED,
+                    additionalCostPayment = com.wingedsheep.sdk.scripting.AdditionalCostPayment(
+                        exiledCards = evidenceIds
+                    ),
+                )
+            )
         }
 
         /**

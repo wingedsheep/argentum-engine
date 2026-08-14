@@ -49,7 +49,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       set({ user: null, status: 'anonymous', accountsEnabled: false })
       return
     }
-    const user = await fetchMe()
+    // A network failure must still settle the status: the entry screens hold their name entry back
+    // until auth resolves, and a stuck 'loading' would leave a guest with no way in.
+    const user = await fetchMe().catch(() => null)
     set(
       user
         ? { user, status: 'authenticated', accountsEnabled: true }

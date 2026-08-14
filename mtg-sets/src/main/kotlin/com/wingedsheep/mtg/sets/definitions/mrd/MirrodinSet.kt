@@ -2,9 +2,11 @@ package com.wingedsheep.mtg.sets.definitions.mrd
 
 import com.wingedsheep.mtg.sets.definitions.por.PortalSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
 import com.wingedsheep.sdk.model.Printing
+import com.wingedsheep.sdk.model.TokenPrinting
 
 /**
  * Mirrodin Set (2003)
@@ -32,6 +34,28 @@ object MirrodinSet : MtgSet {
     override val printings: List<Printing> by lazy {
         CardDiscovery.findPrintingsIn(CARDS_PACKAGE)
     }
+
+    /**
+     * Mirrodin predates token *cards* — Scryfall has no `tmrd` set to sync from — so its
+     * token art is self-hosted under `web-client/public/images/tokens/` and declared here, the
+     * same route Invasion, Apocalypse and Odyssey take.
+     */
+    override val tokenArt: List<TokenPrinting> = listOf(
+        TokenPrinting(
+            name = "Soldier",
+            imageUri = "/images/tokens/mrd-soldier.jpeg",
+            power = 1,
+            toughness = 1,
+            colors = setOf(Color.WHITE),
+        ),
+        TokenPrinting(
+            name = "Spirit",
+            imageUri = "/images/tokens/mrd-spirit.jpeg",
+            power = 1,
+            toughness = 1,
+            colors = setOf(Color.WHITE),
+        ),
+    )
 
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.mrd.cards"
 }

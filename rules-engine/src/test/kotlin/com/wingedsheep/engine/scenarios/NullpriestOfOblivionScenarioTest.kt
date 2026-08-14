@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -44,7 +45,7 @@ class NullpriestOfOblivionScenarioTest : FunSpec({
             CastSpell(
                 playerId = you,
                 cardId = nullpriest,
-                wasKicked = true,
+                declaredCostSlot = ChoiceSlot.KICKED,
                 paymentStrategy = PaymentStrategy.AutoPay,
             ),
         ).isSuccess shouldBe true
@@ -74,7 +75,7 @@ class NullpriestOfOblivionScenarioTest : FunSpec({
             CastSpell(
                 playerId = you,
                 cardId = nullpriest,
-                wasKicked = false,
+                declaredCostSlot = null,
                 paymentStrategy = PaymentStrategy.AutoPay,
             ),
         ).isSuccess shouldBe true

@@ -71,8 +71,11 @@ data class TriggeredAbilityContinuation(
     val triggerModesChosenCount: Int? = null,
     /** Power of the aura/equipment's attached creature, captured at trigger time (CR 608.2h LKI). */
     val enchantedCreatureLastKnownPower: Int? = null,
-    /** Cards looked at by the scry that fired this trigger (CR 701.18). Null for non-scry triggers. */
+    /** Cards looked at by the scry that fired this trigger (CR 701.22). Null for non-scry triggers. */
     val triggerScryCount: Int? = null,
+    /** Cards discarded in the batch that fired this trigger (CR 603.2c). Read via
+     *  `ContextPropertyKey.TRIGGER_DISCARD_COUNT` (Magmakin Artillerist). Null for non-discard triggers. */
+    val triggerDiscardCount: Int? = null,
     /** Discover value N of the discover that fired this trigger (CR 701.57). Null for non-discover triggers. */
     val triggerDiscoverValue: Int? = null,
     /** Damage past lethal dealt to the trigger's creature recipient (CR 120.4a). Null for non-damage triggers. */
@@ -91,7 +94,16 @@ data class TriggeredAbilityContinuation(
     val triggerManaValueOfTriggeringSpell: Int? = null,
     /** Value chosen for {X} on the spell that fired this trigger (Geometer's Arthropod). Read via
      *  `ContextPropertyKey.X_VALUE_OF_TRIGGERING_SPELL`. Null for non-cast / no-{X} triggers. */
-    val triggerXValueOfTriggeringSpell: Int? = null
+    val triggerXValueOfTriggeringSpell: Int? = null,
+    /** The trigger's own X — the value announced for an `{X}` cost on the *action that fired it*
+     *  (an `{X}` cycling cost, a megamorph turn-up), as opposed to
+     *  [triggerXValueOfTriggeringSpell], which is a *cast spell's* X. Read as
+     *  `DynamicAmount.XValue` and by X-relative target filters (`manaValueEqualsX()`), so it must
+     *  survive target selection or the ability fizzles its own legal target on resolution. */
+    val xValue: Int? = null,
+    /** Pipeline state carried from a `ReflexiveTriggerEffect`'s action half, preserved across target
+     *  selection so the stack object built on resume carries it (CR 603.12). Null otherwise. */
+    val carriedPipeline: com.wingedsheep.engine.handlers.PipelineState? = null
 ) : ContinuationFrame
 
 /**
@@ -432,35 +444,27 @@ enum class RepeatWhilePhase {
 }
 
 /**
- * Pre-pushed before executing a reflexive trigger's action. Auto-resumed after
- * the action completes to present target selection for the reflexive effect.
+ * Pre-pushed before executing a `ReflexiveTriggerEffect`'s action half. Auto-resumed after the
+ * action completes to emit a [com.wingedsheep.engine.core.ReflexiveAbilityTriggeredEvent] — CR
+ * 603.12's "when you do" reflexive triggered ability is a genuinely separate stack object, not
+ * something resolved inline, so this continuation's only job is to notice the action finished and
+ * fire the event that [com.wingedsheep.engine.event.TriggerDetector] turns into a real
+ * [com.wingedsheep.engine.event.PendingTrigger].
  *
- * Flow: executor pre-pushes this → executes action → on success, pops and targets inline;
- * on pause, auto-resumer handles targeting after the action's decision resolves.
+ * Flow: executor pre-pushes this → executes action → on success, pops and emits inline; on pause,
+ * the auto-resumer emits after the action's own decision resolves.
  *
- * @property reflexiveEffect The effect to execute after targets are chosen
- * @property reflexiveTargetRequirements Target requirements for the reflexive effect
- * @property effectContext The execution context from the parent ability
+ * @property reflexiveEffect The effect the reflexive triggered ability will run once it resolves
+ * @property reflexiveTargetRequirements Target requirements for the reflexive triggered ability
+ * @property effectContext The execution context from the parent ability (source/controller/pipeline)
  */
 @Serializable
 data class ReflexiveTriggerTargetContinuation(
     override val decisionId: String,
     val reflexiveEffect: Effect,
     val reflexiveTargetRequirements: List<TargetRequirement>,
-    val effectContext: EffectContext
-) : ContinuationFrame
-
-/**
- * Resumed after the player selects targets for a reflexive trigger's effect.
- *
- * @property reflexiveEffect The effect to execute with the chosen targets
- * @property reflexiveTargetRequirements The original target requirements (for validation)
- * @property effectContext The execution context (targets will be merged in from the response)
- */
-@Serializable
-data class ReflexiveTriggerResolveContinuation(
-    override val decisionId: String,
-    val reflexiveEffect: Effect,
-    val reflexiveTargetRequirements: List<TargetRequirement>,
-    val effectContext: EffectContext
+    val effectContext: EffectContext,
+    /** Optional human-readable description override, carried through to the emitted
+     *  [com.wingedsheep.engine.core.ReflexiveAbilityTriggeredEvent]. */
+    val descriptionOverride: String? = null
 ) : ContinuationFrame

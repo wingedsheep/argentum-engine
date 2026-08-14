@@ -1,9 +1,9 @@
 package com.wingedsheep.engine.core
 
+import com.wingedsheep.engine.replacement.ReplacementEffectIdentity
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.Effect
-import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
 
 /**
@@ -75,66 +75,28 @@ data class DrawUpToContinuation(
  * "each player returns a permanent" part. This continuation tracks remaining draws
  * so execution can resume drawing after the pipeline finishes.
  *
+ * This is CR 614.11a in continuation form: "if an effect replaces a draw within a
+ * sequence of card draws, all actions required by the replacement are completed, if
+ * possible, before resuming the sequence" — the frame sits below the replacement's own
+ * work on the stack, so the sequence resumes only once that work is done.
+ *
  * @property drawingPlayerId The player who was drawing (whose draw was replaced)
  * @property remainingDraws Number of draws left to process after the bounce pipeline
  * @property isDrawStep Whether this is from the draw step (vs spell/ability draws)
+ * @property announcementApplied Whether the draw instruction's announcement-level
+ *     replacements (CR 121.2a — `ModifyDrawAmount`) have already been applied to this
+ *     instruction. True whenever these draws are the tail of an instruction that was
+ *     announced before it paused; re-announcing on resume would apply the same
+ *     `ModifyDrawAmount` a second time.
  */
 @Serializable
 data class DrawReplacementRemainingDrawsContinuation(
     override val decisionId: String = "remaining-draws",
     val drawingPlayerId: EntityId,
     val remainingDraws: Int,
-    val isDrawStep: Boolean
-) : ContinuationFrame
-
-/**
- * Continuation for prompting the player to activate a "prompt on draw" ability
- * (e.g., Words of Wind) before a draw happens.
- *
- * After the player answers yes/no, the handler pays mana, creates a replacement
- * shield, and then proceeds with the draw.
- *
- * @property drawingPlayerId The player who is about to draw
- * @property sourceId The permanent with the promptOnDraw ability
- * @property sourceName Name of the source for display
- * @property abilityEffect The effect to execute on activation (creates a shield)
- * @property manaCost The mana cost string for the activation (e.g., "{1}")
- * @property drawCount Number of cards to draw after activation
- * @property isDrawStep Whether this is from the draw step (vs spell/ability draws)
- */
-@Serializable
-data class DrawReplacementActivationContinuation(
-    override val decisionId: String,
-    val drawingPlayerId: EntityId,
-    val sourceId: EntityId,
-    val sourceName: String,
-    val abilityEffect: Effect,
-    val manaCost: String,
-    val drawCount: Int,
     val isDrawStep: Boolean,
-    val drawnCardsSoFar: List<EntityId> = emptyList(),
-    val targetRequirements: List<TargetRequirement> = emptyList(),
-    val declinedSourceIds: List<EntityId> = emptyList()
+    val announcementApplied: Boolean = false
 ) : ContinuationFrame
-
-/**
- * Resume after target selection for a "prompt on draw" ability that requires targeting
- * (e.g., Words of War). After the player paid mana and selected targets, we create
- * the replacement shield with the chosen targets, then proceed with draws.
- */
-@Serializable
-data class DrawReplacementTargetContinuation(
-    override val decisionId: String,
-    val drawingPlayerId: EntityId,
-    val sourceId: EntityId,
-    val sourceName: String,
-    val abilityEffect: Effect,
-    val drawCount: Int,
-    val isDrawStep: Boolean,
-    val drawnCardsSoFar: List<EntityId> = emptyList(),
-    val targetRequirements: List<TargetRequirement> = emptyList()
-) : ContinuationFrame
-
 
 /**
  * Resume after the player answers yes/no for an optional static draw replacement effect
@@ -147,6 +109,9 @@ data class DrawReplacementTargetContinuation(
  * @property drawCount Number of draws remaining (including this one)
  * @property isDrawStep Whether this is from the draw step (vs spell/ability draws)
  * @property drawnCardsSoFar Cards already drawn before this replacement was offered
+ * @property declinedIdentity The replacement effect identity to stamp on the chain
+ *     when the player says NO, so this specific replacement won't re-prompt for
+ *     the current draw but other optional replacements still can.
  */
 @Serializable
 data class StaticDrawReplacementContinuation(
@@ -157,7 +122,8 @@ data class StaticDrawReplacementContinuation(
     val replacementEffect: Effect,
     val drawCount: Int,
     val isDrawStep: Boolean,
-    val drawnCardsSoFar: List<EntityId> = emptyList()
+    val drawnCardsSoFar: List<EntityId> = emptyList(),
+    val declinedIdentity: ReplacementEffectIdentity? = null
 ) : ContinuationFrame
 
 /**
@@ -173,6 +139,24 @@ data class StaticDrawReplacementContinuation(
 data class CycleDrawContinuation(
     override val decisionId: String = "cycle-draw",
     val playerId: EntityId
+) : ContinuationFrame
+
+/**
+ * Resume a cycling action after the player announces X for an `{X}` cycling cost (CR 107.3a) —
+ * Webstrike Elite's "Cycling {X}{G}{G}".
+ *
+ * The legal-actions submission path sends a bare [CycleCard] with `xValue == null`; the handler
+ * raises a ChooseNumberDecision and stores this frame. On resume the handler is re-entered with
+ * `xValue` bound, and the cost is paid for that amount. Mirrors
+ * [ActivateAbilityChooseManaXContinuation] — paying the mana is automatic, so there is no follow-up
+ * decision.
+ *
+ * @property action The original [CycleCard] (its `xValue` is still null on the stored copy).
+ */
+@Serializable
+data class CycleCardChooseXContinuation(
+    override val decisionId: String,
+    val action: CycleCard
 ) : ContinuationFrame
 
 /**

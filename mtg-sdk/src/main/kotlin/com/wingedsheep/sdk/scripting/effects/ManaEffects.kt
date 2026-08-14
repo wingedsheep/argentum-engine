@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.effects
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
@@ -92,7 +93,16 @@ data class AddManaEffect(
      * mana; [ManaExpiry.END_OF_COMBAT] is firebending-style mana that the pool keeps through
      * combat and discards when combat ends.
      */
-    val expiry: ManaExpiry = ManaExpiry.END_OF_TURN
+    val expiry: ManaExpiry = ManaExpiry.END_OF_TURN,
+    /**
+     * Side-effects attached to the produced mana — what happens to the *spell* this mana is
+     * eventually spent on (Pyromancer's Goggles: "When that mana is spent to cast a red instant or
+     * sorcery spell, copy that spell"). When non-empty, the mana is stored as restricted-mana
+     * entries so the rider set survives in the pool; with [restriction] null,
+     * [ManaRestriction.AnySpend] is used as a no-op marker so the mana still spends on anything.
+     * Mirrors [AddManaOfChoiceEffect.riders].
+     */
+    val riders: Set<ManaSpellRider> = emptySet()
 ) : Effect {
     constructor(color: Color, amount: Int, restriction: ManaRestriction? = null, expiry: ManaExpiry = ManaExpiry.END_OF_TURN) :
         this(color, DynamicAmount.Fixed(amount), restriction, expiry)
@@ -106,6 +116,7 @@ data class AddManaEffect(
         if (expiry == ManaExpiry.END_OF_COMBAT) {
             append(". Until end of combat, you don't lose this mana as steps and phases end")
         }
+        for (rider in riders) append(". ${rider.description}")
     }
 }
 
@@ -148,7 +159,7 @@ data class AddColorlessManaEffect(
  *      mana abilities when the player picked at activation time) or
  *      `EffectContext.chosenColor` (set by a wrapping `ChooseColorThenEffect`). If
  *      neither is present, the engine pauses for a `ChooseManaColorContinuation`.
- *   4. The chosen color is added to the controller's mana pool [amount] times.
+ *   4. The chosen color is added to [recipient]'s mana pool [amount] times.
  *
  * Example bindings:
  *   - "Add one mana of any color" → `AddManaOfChoiceEffect(ManaColorSet.AnyColor)`
@@ -156,6 +167,7 @@ data class AddColorlessManaEffect(
  *   - Mox Amber → `AddManaOfChoiceEffect(ManaColorSet.AmongPermanents(filter))`
  *   - Fellwar Stone → `AddManaOfChoiceEffect(ManaColorSet.LandsCouldProduce(OPPONENTS))`
  *   - Uncharted Haven → `AddManaOfChoiceEffect(ManaColorSet.SourceChosenColor)`
+ *   - Radiant Lotus → `AddManaOfChoiceEffect(..., recipient = EffectTarget.ContextTarget(0))`
  */
 @SerialName("AddManaOfChoice")
 @Serializable
@@ -170,6 +182,17 @@ data class AddManaOfChoiceEffect(
      * (the mana remains spendable on anything).
      */
     val riders: Set<ManaSpellRider> = emptySet(),
+    /**
+     * Whose pool the mana lands in. Defaults to the ability's controller — the only shape a *mana
+     * ability* can have (CR 605.1a), and what every land/rock produces. Point it at a player
+     * reference or a chosen target for "**target player** adds …" (Radiant Lotus), which is by
+     * definition not a mana ability because it targets.
+     *
+     * The *color* is still chosen by the ability's controller, not by the recipient: "Choose a
+     * color. Target player adds three mana of the chosen color …" names no other chooser, so the
+     * choice falls to the controller (CR 608.2). Only the pool the mana is added to moves.
+     */
+    val recipient: EffectTarget = EffectTarget.Controller,
 ) : Effect {
     constructor(colorSet: ManaColorSet, amount: Int, restriction: ManaRestriction? = null) :
         this(colorSet, DynamicAmount.Fixed(amount), restriction)
@@ -179,7 +202,8 @@ data class AddManaOfChoiceEffect(
             is DynamicAmount.Fixed -> if (a.amount == 1) "one mana of" else "${a.amount} mana of"
             else -> "${a.description} mana of"
         }
-        append("Add $amountText ${colorSet.description}")
+        if (recipient == EffectTarget.Controller) append("Add $amountText ${colorSet.description}")
+        else append("${recipient.description} adds $amountText ${colorSet.description}")
         if (restriction != null && restriction.description.isNotEmpty()) append(". ${restriction.description}")
         for (rider in riders) append(". ${rider.description}")
     }

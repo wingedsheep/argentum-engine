@@ -1,0 +1,63 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Spider-Man, Web-Slinger",
+      "Spider-UK",
+      "Silk, Web Weaver",
+      "Spider-Man India",
+      "Spider-Sense"
+    ],
+    "battlefield": [
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Island" },
+      { "name": "Island" },
+      { "name": "Island" },
+      { "name": "Grizzly Bears", "tapped": true },
+      { "name": "Grizzly Bears", "tapped": true },
+      { "name": "Grizzly Bears", "tapped": true },
+      { "name": "Grizzly Bears", "tapped": true },
+      { "name": "Grizzly Bears", "tapped": true }
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Forest", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Shock"],
+    "battlefield": [
+      { "name": "Mountain" },
+      { "name": "Mountain" },
+      { "name": "Island" },
+      { "name": "Island" },
+      { "name": "Grizzly Bears" }
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Island", "Forest"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "AI"
+}

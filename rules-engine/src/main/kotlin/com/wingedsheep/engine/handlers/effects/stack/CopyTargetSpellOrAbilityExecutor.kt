@@ -32,7 +32,7 @@ import kotlin.reflect.KClass
  * pick new targets):
  *
  *  - **Spell** (instant/sorcery, has no ability component) → delegate to [CopyTargetSpellExecutor]
- *    (always a single copy; the spell branch does not honor [CopyTargetSpellOrAbilityEffect.copies]).
+ *    ([CopyTargetSpellOrAbilityEffect.copies] carries over — that executor loops copies itself).
  *  - **Activated or triggered ability** → [driveAbilityCopies] makes `copies` independent copies,
  *    pausing per copy that has targets so the copier can retarget it. A no-target ability is copied
  *    just the same (CR — Gogo can copy any ability on the stack, not only targeted ones).
@@ -90,9 +90,11 @@ class CopyTargetSpellOrAbilityExecutor(
             }
 
             // Otherwise it's a spell on the stack (instant/sorcery). The spell executor handles
-            // modal / targeted / no-target paths and the choose-new-targets prompt. The spell branch
-            // always makes a single copy (Return the Favor); `copies` applies only to abilities.
-            else -> spellExecutor.execute(state, CopyTargetSpellEffect(effect.target), context)
+            // modal / targeted / no-target paths, the choose-new-targets prompt, and the
+            // per-copy loop, so `copies` carries over unchanged.
+            else -> spellExecutor.execute(
+                state, CopyTargetSpellEffect(effect.target, copies = effect.copies), context
+            )
         }
     }
 

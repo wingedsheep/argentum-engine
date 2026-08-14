@@ -30,6 +30,28 @@ export function hasPendingInputSelection(state: GameStore): boolean {
   )
 }
 
+/**
+ * True when the local player's own seat is out of a multiplayer game the others are still
+ * playing (CR 800.4a). That's the spectator layout: a survivor takes over the bottom half of
+ * the table and all action UI hides.
+ *
+ * Derived from the authoritative roster (`hasLost`) rather than from the elimination message
+ * or the "Keep watching" click, so it holds however the seat died — conceding, damage, decking
+ * out, poison — and survives a refresh or reconnect.
+ *
+ * False while watching a spectator/replay stream (no seat of our own to lose), in a hotseat pod
+ * (this client still drives the living seats), and once the game itself is over — fewer than two
+ * seats left standing is the game-over overlay's business, not the spectator layout's.
+ */
+export function isViewerEliminated(state: GameStore): boolean {
+  const gameState = state.gameState
+  const playerId = state.playerId
+  if (state.spectatingState || !gameState || !playerId) return false
+  if (gameState.players.length <= 2 || gameState.hotseat) return false
+  if (!gameState.players.find((p) => p.playerId === playerId)?.hasLost) return false
+  return gameState.players.filter((p) => !p.hasLost).length >= 2
+}
+
 function loadFollowAction(): boolean {
   try {
     return localStorage.getItem(FOLLOW_ACTION_KEY) !== 'false'
@@ -66,9 +88,11 @@ export interface BoardViewSliceState {
    */
   collapsedSeats: readonly EntityId[]
   /**
-   * The local player was eliminated from a multiplayer game and chose "Keep watching"
-   * on the defeat overlay: their dead bottom half collapses, the freed space goes to the
-   * opponent boards, and all action UI hides. Cleared on reset (new game / leave).
+   * The local player dismissed the defeat overlay with "Keep watching" and stayed at the
+   * table. Only records that choice — the spectator *layout* is derived from the roster by
+   * [isViewerEliminated], so it is already correct while the overlay is still up and for a
+   * seat that died without an elimination message reaching it. Cleared on reset (new game /
+   * leave).
    */
   eliminatedSpectating: boolean
   /**
@@ -159,7 +183,7 @@ export const createBoardViewSlice: SliceCreator<BoardViewSlice> = (set, get) => 
     if (gameState && !gameState.players.some((p) => p.playerId === playerId)) return
     // The eliminated spectator's chosen bottom board is already fully visible at the
     // bottom — it never also occupies the viewed strip slot.
-    if (get().eliminatedSpectating && playerId === get().eliminatedBottomSeatId) return
+    if (isViewerEliminated(get()) && playerId === get().eliminatedBottomSeatId) return
     const pin = opts?.pin ?? true
     // Pinning a board and follow-the-action are mutually exclusive: pinning turns follow off
     // (the camera is locked), so the Follow toggle reflects that rather than lying "on".

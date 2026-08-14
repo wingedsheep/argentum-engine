@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.continuations
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.sba.SbaZoneMovementHelper
+import com.wingedsheep.engine.mechanics.sba.permanent.ProtectorAssignment
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderZoneChoiceAskedComponent
@@ -15,7 +16,31 @@ class StateBasedContinuationResumer(
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(LegendRuleContinuation::class, ::resumeLegendRule),
         resumer(CommanderZoneChoiceContinuation::class, ::resumeCommanderZoneChoice),
+        resumer(BattleProtectorChoiceContinuation::class, ::resumeBattleProtectorChoice),
     )
+
+    /**
+     * Apply the protector a battle's controller picked for the CR 704.5w/x state-based action.
+     * The battle may have left the battlefield while the prompt was open (the SBA loop pauses
+     * mid-pass), in which case there is nothing to assign and the loop simply carries on.
+     */
+    private fun resumeBattleProtectorChoice(
+        state: GameState,
+        continuation: BattleProtectorChoiceContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option response for battle protector choice")
+        }
+        val protectorId = continuation.candidateIds.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid protector option index ${response.optionIndex}")
+        if (continuation.battleId !in state.getBattlefield()) {
+            return checkForMore(state, emptyList())
+        }
+        val newState = ProtectorAssignment.assign(state, continuation.battleId, protectorId)
+        return checkForMore(newState, emptyList())
+    }
 
     private fun resumeLegendRule(
         state: GameState,

@@ -5,7 +5,10 @@ import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageSourceLki
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
+import com.wingedsheep.sdk.core.CardType
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.model.EntityId
 import kotlinx.serialization.Serializable
@@ -93,12 +96,46 @@ data class EntitySnapshot(
     // --- battlefield-exit-only fields (no meaning for a live permanent) ---
     /** Projected type line at capture, so leaves-battlefield triggers see continuous-effect-granted types. */
     val typeLine: TypeLine? = null,
-    /** Card definition id, so dies/leaves triggers resolve for tokens after 704.5s cleanup. */
+    /** Card definition id, so dies/leaves triggers resolve for tokens after 704.5d cleanup. */
     val cardDefinitionId: String? = null,
+    /**
+     * The permanent's name at capture time. Frozen because a *cost* has to be describable after the
+     * permanent it consumed is gone: the emerge sacrifice (CR 702.119a) is named on the stack card
+     * and in the game log, and a sacrificed token leaves no entity to look the name up on once
+     * 704.5d cleanup has run.
+     */
+    val name: String? = null,
     /** The original card name when this permanent entered as a copy (Clever Impersonator). */
     val copyOfOriginalName: String? = null,
     /** For auras/equipment: the entity this was attached to when it left (enchanted-creature dies triggers). */
     val attachedTo: EntityId? = null,
+    /**
+     * True if this permanent had at least one Equipment attached when it left the battlefield. The
+     * live attachment links are torn down by the exit cleanup, so leaves/dies triggers asking "was
+     * it modified/equipped?" must read last-known information (CR 608.2h). Backs the last-known leg
+     * of [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEquipped] and (together with
+     * counters / [wasEnchanted]) [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified].
+     */
+    val wasEquipped: Boolean = false,
+    /**
+     * The Auras/Equipment that were attached to this permanent when it left the battlefield, in
+     * attachment order. [wasEquipped]/[wasEnchanted] answer "was it attached to *anything* of this
+     * kind"; this field answers "by *what*", which is what an ATTACHED-bound leaves/dies trigger
+     * borne by a still-on-the-battlefield Equipment needs to find itself again.
+     *
+     * The live links are torn down by the exit cleanup (CR 704.5m/n), and when the permanent dies
+     * to a state-based action the unattach runs in the *same* SBA pass as the death — so by the
+     * time triggers are detected, the attachment index no longer connects the Equipment to its
+     * dead host. Freezing the ids here is the last-known information (CR 608.2h) that lets
+     * `AttachmentTriggerDetector` still fire "whenever equipped creature dies".
+     */
+    val attachmentIds: List<EntityId> = emptyList(),
+    /**
+     * True if this permanent had at least one Aura attached when it left the battlefield (CR 303.4).
+     * Last-known counterpart to [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEnchanted];
+     * a leg of the last-known [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified].
+     */
+    val wasEnchanted: Boolean = false,
     /** Creatures blocking, or blocked by, this one when it left (CR 509; Abu Ja'far). */
     val blockingOrBlockedByIds: List<EntityId> = emptyList(),
     /**
@@ -112,6 +149,15 @@ data class EntitySnapshot(
     val wasAttacking: Boolean = false,
     /** True if the leaving entity was a token (CR 704.5d — suppress persist-style return triggers). */
     val wasToken: Boolean = false,
+    /**
+     * True if this permanent carried the suspected designation (CR 701.60a) at capture time.
+     *
+     * Frozen because the designation is a floating effect keyed on the entity, and a sacrificed
+     * permanent's floating effects are torn down with it — so "if the sacrificed creature was
+     * suspected" (Agency Coroner) has to read last-known information (CR 608.2h), exactly as
+     * [supertypes] does for "was legendary".
+     */
+    val wasSuspected: Boolean = false,
     /** Per-player damage dealt to this entity this turn, keyed by source-controller (Grothama). */
     val damageDealtByPlayers: Map<EntityId, Int> = emptyMap(),
     /** Snapshots of the sources that dealt damage to this entity this turn (Shelob, Child of Ungoliant). */
@@ -138,6 +184,8 @@ data class EntitySnapshot(
                 counters = countersOf(state, entityId),
                 keywords = projected.getKeywords(entityId),
                 lostAllAbilities = projected.hasLostAllAbilities(entityId),
+                wasSuspected = projected.isSuspected(entityId),
+                name = state.getEntity(entityId)?.get<CardComponent>()?.name,
             )
         }
     }
@@ -166,21 +214,58 @@ fun captureEntitySnapshots(
         subtypes = projected.getSubtypes(id),
         supertypes = projected.getSupertypes(id),
         controllerId = projected.getController(id),
+        wasSuspected = projected.isSuspected(id),
     )
 }
 
 /**
- * [captureEntitySnapshots] overload that also records each permanent's **token-ness** ([EntitySnapshot.wasToken])
- * as last-known information — a fact only [GameState] carries (via [TokenComponent]), not [ProjectedState]. Use at
- * a sacrifice site when a following sibling needs to know whether the sacrificed permanent was a token (Exploit's
- * `ExploitedEvent.sacrificedWasToken`, read by Skull Skaab's "exploits a nontoken creature" clause). Caller must
- * invoke this BEFORE the zone change so both projected values and the token component still resolve.
+ * [captureEntitySnapshots] overload that also records the facts only [GameState] carries, not
+ * [ProjectedState]: each permanent's **token-ness** ([EntitySnapshot.wasToken], via [TokenComponent])
+ * and its **name** ([EntitySnapshot.name], via [CardComponent]). Use at a sacrifice site when a
+ * following sibling needs either — Exploit's `ExploitedEvent.sacrificedWasToken` (read by Skull
+ * Skaab's "exploits a nontoken creature" clause) for the first, naming what an alternative cost ate
+ * for the second. Caller must invoke this BEFORE the zone change so projected values, the token
+ * component and the card component all still resolve.
  */
 fun captureEntitySnapshots(
     ids: List<EntityId>,
     state: GameState,
 ): List<EntitySnapshot> = captureEntitySnapshots(ids, state.projectedState).map { snapshot ->
-    snapshot.copy(wasToken = state.getEntity(snapshot.entityId)?.has<TokenComponent>() ?: false)
+    val container = state.getEntity(snapshot.entityId)
+    snapshot.copy(
+        wasToken = container?.has<TokenComponent>() ?: false,
+        name = container?.get<CardComponent>()?.name,
+    )
+}
+
+/**
+ * The permanent's **projected** type line: its printed types overlaid with whatever continuous
+ * effects have granted or replaced (an animated artifact reads "Artifact Creature", a Vehicle
+ * crewed this turn reads "Artifact Creature — Vehicle"). Falls back to the printed type line when
+ * the entity has no projection entry, and returns null when it has no [CardComponent] at all.
+ *
+ * Caller must invoke this BEFORE any zone change, while the projection entry still exists. It is
+ * the single value frozen into [EntitySnapshot.typeLine], so the zone-exit path
+ * (`ZoneTransitionService`) and the cost-time path (`ActivateAbilityHandler`'s
+ * [com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent.lastKnownSourceSnapshot])
+ * capture the same thing rather than two hand-rolled copies.
+ */
+fun projectedTypeLine(state: GameState, entityId: EntityId): TypeLine? {
+    val base = state.getEntity(entityId)?.get<CardComponent>()?.typeLine ?: return null
+    return projectedTypeLine(state, entityId, base)
+}
+
+/** [projectedTypeLine] for a caller that already holds the printed [baseTypeLine]. */
+fun projectedTypeLine(state: GameState, entityId: EntityId, baseTypeLine: TypeLine): TypeLine {
+    val projected = state.projectedState.getProjectedValues(entityId) ?: return baseTypeLine
+    val cardTypes = projected.types
+        .mapNotNull { runCatching { CardType.valueOf(it) }.getOrNull() }
+        .toSet()
+        .ifEmpty { baseTypeLine.cardTypes }
+    return baseTypeLine.copy(
+        cardTypes = cardTypes,
+        subtypes = projected.subtypes.map { Subtype(it) }.toSet(),
+    )
 }
 
 fun List<EntitySnapshot>.snapshotFor(id: EntityId): EntitySnapshot? =

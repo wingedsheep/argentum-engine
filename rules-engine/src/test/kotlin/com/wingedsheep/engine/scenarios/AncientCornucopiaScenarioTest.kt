@@ -145,5 +145,40 @@ class AncientCornucopiaScenarioTest : ScenarioTestBase() {
             game.resolveStack()
             game.getLifeTotal(1) shouldBe start + 1
         }
+
+        test("declining does not spend the turn — a later spell still offers the life") {
+            // "Once you *choose* to gain life using Ancient Cornucopia's triggered ability, that
+            // ability won't trigger again that turn" (Scryfall ruling; CR 603.2h). Declining is
+            // not choosing, so the bigger two-color spell later in the turn is still worth
+            // holding for. The old `oncePerTurn` modelling burned the turn on the decline.
+            val game = scenario()
+                .withPlayers()
+                .withCardOnBattlefield(1, "Ancient Cornucopia")
+                .withCardInHand(1, "Test Green Spell")
+                .withCardInHand(1, "Test Gold Spell")
+                .withLandsOnBattlefield(1, "Forest", 6)
+                .withCardInLibrary(1, "Forest")
+                .build()
+
+            val start = game.getLifeTotal(1)
+            game.castSpell(1, "Test Green Spell").error shouldBe null
+            game.resolveStack()
+            game.answerYesNo(false)
+            game.resolveStack()
+            withClue("declined the 1-color spell → no life") {
+                game.getLifeTotal(1) shouldBe start
+            }
+
+            game.castSpell(1, "Test Gold Spell").error shouldBe null
+            game.resolveStack()
+            withClue("the ability triggers again after a decline") {
+                (game.getPendingDecision() is YesNoDecision) shouldBe true
+            }
+            game.answerYesNo(true)
+            game.resolveStack()
+            withClue("took the 2-color spell instead") {
+                game.getLifeTotal(1) shouldBe start + 2
+            }
+        }
     }
 }

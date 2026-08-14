@@ -57,13 +57,17 @@ class GrantKeywordExecutor : EffectExecutor<GrantKeywordEffect> {
             return EffectResult.error(state, "Target is no longer on the battlefield or stack")
         }
 
-        // Create a floating effect for the keyword grant
+        // Create a floating effect for the keyword grant. An optional [GrantKeywordEffect.condition]
+        // rides along as the floating effect's source condition, so the keyword is live only while
+        // the condition holds — the durational form of a printed "as long as …" clause, and how a
+        // quoted conditional ability handed out by an animate effect is modelled (Restless Spire).
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
             modification = SerializableModification.GrantKeyword(effect.keyword),
             affectedEntities = setOf(targetId),
             duration = effect.duration,
-            context = context
+            context = context,
+            sourceCondition = effect.condition
         )
 
         // Emit event for visualization

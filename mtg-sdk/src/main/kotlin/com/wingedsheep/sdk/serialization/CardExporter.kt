@@ -40,6 +40,23 @@ object CardExporter {
     }
 
     /**
+     * Serialize a CardDefinition to single-line JSON — same tree as [exportToJson], no indentation.
+     *
+     * Used where the JSON is stored rather than read by a human: replay card pinning
+     * (`ReplayCardPin`) archives the compiled definition of every card a recorded game used, so the
+     * game can be re-simulated later against the card code-as-data it actually ran on. Pair with
+     * [CardLoader.fromJsonPreservingIds], which keeps the exported `AbilityId`s instead of minting
+     * fresh ones.
+     */
+    fun exportToCompactJson(card: CardDefinition): String {
+        val element = CardSerialization.json.encodeToJsonElement(
+            CardDefinition.serializer(), card
+        )
+        val compacted = CompactJsonTransformer.compact(element)
+        return CardSerialization.compactJson.encodeToString(JsonElement.serializer(), compacted)
+    }
+
+    /**
      * Export a list of cards to individual JSON files in a directory.
      *
      * File naming convention: kebab-case.json matching the card name.

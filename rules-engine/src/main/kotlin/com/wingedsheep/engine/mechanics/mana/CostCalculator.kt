@@ -4,10 +4,13 @@ import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
 
+import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
+import com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
@@ -16,6 +19,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CharacteristicValue
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Subtype
@@ -71,6 +75,7 @@ class CostCalculator(
         casterId: EntityId,
         chosenTargets: List<EntityId> = emptyList(),
         fromZone: Zone? = null,
+        declaredCostSlot: ChoiceSlot? = null,
     ): ManaCost {
         var totalReduction = 0
         var totalIncrease = 0
@@ -82,7 +87,7 @@ class CostCalculator(
         for (ability in cardDef.script.staticAbilities) {
             if (ability !is ModifySpellCost) continue
             if (ability.target != SpellCostTarget.SelfCast) continue
-            if (!gatingApplies(state, casterId, cardDef, ability)) continue
+            if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)) continue
             applyToSpellCast(
                 state, cardDef, casterId, ability.modification, chosenTargets,
                 addGenericReduction = { totalReduction += it },
@@ -112,10 +117,20 @@ class CostCalculator(
             totalReduction += countPermanentsOfType(state, casterId, rider.forType)
         }
 
+        // Turn-scoped "spells you cast this turn that match … cost {N} less" discounts (Will /
+        // Rowan, Scion of …). The amount was fixed when the granting ability resolved, so unlike
+        // the affinity riders above nothing is recomputed here — and unlike them, a matching cast
+        // does not consume the entry.
+        for (reduction in state.turnSpellCostReductions) {
+            if (reduction.controllerId != casterId) continue
+            if (!matchesCardDefinition(cardDef, reduction.spellFilter, null, state, state.projectedState)) continue
+            totalReduction += reduction.amount
+        }
+
         // Battlefield-sourced ModifySpellCost abilities.
         for ((sourceId, ability) in scanBattlefieldModifySpellCost(state)) {
             if (!targetMatchesSpell(ability.target, cardDef, casterId, sourceId, state, chosenTargets, fromZone)) continue
-            if (!gatingApplies(state, casterId, cardDef, ability)) continue
+            if (!gatingApplies(state, casterId, cardDef, ability, declaredCostSlot)) continue
             applyToSpellCast(
                 state, cardDef, casterId, ability.modification, chosenTargets,
                 addGenericReduction = { totalReduction += it },
@@ -123,6 +138,7 @@ class CostCalculator(
                 addColoredReduction = { coloredReductionSymbols += it },
                 addColoredReductionWithOverflow = { coloredReductionWithOverflow += it },
                 addColoredIncrease = { coloredIncreaseSymbols += it },
+                abilitySourceId = sourceId,
             )
         }
 
@@ -274,6 +290,8 @@ class CostCalculator(
                         ?.targetId
                     attached != null && targetId == attached
                 }
+                is Scope.SoulbondPair ->
+                    com.wingedsheep.engine.mechanics.SoulbondPairing.isInPairOf(state, sourceId, targetId)
                 is Scope.Battlefield ->
                     predicateEvaluator.matches(state, projected, targetId, targetFilter.baseFilter, context)
             }
@@ -288,6 +306,7 @@ class CostCalculator(
         casterId: EntityId,
         cardDef: CardDefinition,
         ability: ModifySpellCost,
+        declaredCostSlot: ChoiceSlot? = null,
     ): Boolean {
         return when (val gating = ability.gating) {
             CostGating.None -> true
@@ -301,7 +320,15 @@ class CostCalculator(
                 // Player-scoped conditions ("during your turn", "you've cast another spell", ...)
                 // evaluate against the caster. The cost modifier's source is a non-spell permanent
                 // (or the spell card itself for SelfCast), neither of which the condition needs.
-                val ctx = EffectContext(sourceId = null, controllerId = casterId)
+                // The optional additional cost this cast declares is part of the branch being
+                // priced, not of the game state — a "costs {2} less to cast if it's bargained"
+                // reduction (CR 702.166, Hamlet Glutton) applies only to the bargained variant, and
+                // the spell has no durable choice bag yet, so the declaration rides the context.
+                val ctx = EffectContext(
+                    sourceId = null,
+                    controllerId = casterId,
+                    declaredCostSlot = declaredCostSlot,
+                )
                 conditionEvaluator.evaluate(state, gating.condition, ctx)
             }
         }
@@ -327,18 +354,22 @@ class CostCalculator(
         addColoredReduction: (ManaSymbol) -> Unit,
         addColoredReductionWithOverflow: (ManaSymbol) -> Unit,
         addColoredIncrease: (ManaSymbol) -> Unit,
+        abilitySourceId: EntityId? = null,
     ) {
         when (modification) {
             is CostModification.ReduceGeneric -> addGenericReduction(modification.amount)
             is CostModification.ReduceGenericBy ->
-                addGenericReduction(evaluateReduction(state, modification.source, casterId, chosenTargets))
+                addGenericReduction(
+                    evaluateReduction(state, modification.source, casterId, chosenTargets, abilitySourceId)
+                )
             is CostModification.ReduceColored -> {
                 ManaCost.parse(modification.symbols).symbols
                     .filterIsInstance<ManaSymbol.Colored>()
                     .forEach(addColoredReduction)
             }
             is CostModification.ReduceColoredPerUnit -> {
-                val units = evaluateReduction(state, modification.countSource, casterId, chosenTargets)
+                val units =
+                    evaluateReduction(state, modification.countSource, casterId, chosenTargets, abilitySourceId)
                 val coloredSymbols = ManaCost.parse(modification.symbols).symbols
                     .filterIsInstance<ManaSymbol.Colored>()
                 repeat(units) { coloredSymbols.forEach(addColoredReductionWithOverflow) }
@@ -378,15 +409,24 @@ class CostCalculator(
 
     /**
      * Evaluate the reduction amount from a CostReductionSource.
+     *
+     * [abilitySourceId] is the battlefield permanent the reducing [ModifySpellCost] is printed on,
+     * or null when the reduction comes from the spell's own script (a `SelfCast` reduction, where
+     * there is no permanent to read). Only the attachment-reading sources need it; everything else
+     * aggregates over what [playerId] controls.
      */
     private fun evaluateReduction(
         state: GameState,
         source: CostReductionSource,
         playerId: EntityId,
-        chosenTargets: List<EntityId> = emptyList()
+        chosenTargets: List<EntityId> = emptyList(),
+        abilitySourceId: EntityId? = null
     ): Int {
         return when (source) {
             is CostReductionSource.Fixed -> source.amount
+            // CR 702.179f — "no speed" is 0, which GameState.speed already returns, so no has-speed
+            // branch is needed. playerId is the casting player, and speed is never team-pooled.
+            is CostReductionSource.YourSpeed -> state.speed(playerId)
             is CostReductionSource.CreaturesYouControl -> countCreatures(state, playerId)
             is CostReductionSource.TotalPowerYouControl -> sumPower(state, playerId)
             is CostReductionSource.ArtifactsYouControl -> countArtifacts(state, playerId)
@@ -417,6 +457,15 @@ class CostCalculator(
             is CostReductionSource.GreatestPropertyAmongPermanentsYouControl -> {
                 greatestPropertyAmongMatching(state, playerId, source.filter, source.property)
             }
+            is CostReductionSource.TotalPropertyAmongPermanentsYouControl -> {
+                totalPropertyAmongMatching(state, playerId, source.filter, source.property)
+            }
+            is CostReductionSource.AttachedPermanentProperty -> {
+                attachedPermanentProperty(state, abilitySourceId, source.property)
+            }
+            is CostReductionSource.FixedIfCreatureDiedThisTurn -> {
+                if (anyCreatureDiedThisTurn(state)) source.amount else 0
+            }
             is CostReductionSource.FixedIfVoid -> {
                 if (state.nonlandPermanentLeftBattlefieldThisTurn || state.spellWarpedThisTurn)
                     source.amount
@@ -430,8 +479,60 @@ class CostCalculator(
                 countBattlefieldPermanentsMatching(state, playerId, source.filter)
             is CostReductionSource.PermanentsSacrificedThisTurn ->
                 state.permanentsSacrificedThisTurn * source.amountPerPermanent
+            is CostReductionSource.CreaturesThatAttackedThisTurn ->
+                countCreaturesThatAttackedThisTurn(state) * source.amountPerCreature
+            is CostReductionSource.CardTypesInYourGraveyard ->
+                countGraveyardCardTypes(state, playerId) * source.amountPerType
         }
     }
+
+    /**
+     * The number of distinct card types (CR 205.2a) among the cards in [playerId]'s graveyard —
+     * Emrakul, the Promised End. Supertypes and subtypes never count, and a type shared by several
+     * cards counts once, so this is bounded by the number of card types rather than the graveyard's
+     * size.
+     *
+     * The graveyard is not the battlefield, so the printed type line is authoritative and no
+     * projection is needed (continuous effects don't change the types of cards in a graveyard).
+     * Mirrors `Aggregation.DISTINCT_TYPES` in `DynamicAmountEvaluator`, which backs
+     * `Conditions.Delirium` over the same zone.
+     */
+    private fun countGraveyardCardTypes(state: GameState, playerId: EntityId): Int =
+        state.getGraveyard(playerId)
+            .mapNotNull { state.getEntity(it)?.get<CardComponent>()?.typeLine?.cardTypes }
+            .flatMapTo(mutableSetOf()) { it }
+            .size
+
+    /**
+     * The number of creatures declared as attackers this turn by any player, across every combat
+     * phase. Reads the per-player `PlayerAttackersThisTurnComponent` sets that
+     * `AttackPhaseManager` unions at each declare-attackers step, so an attacker that has since
+     * died, been exiled, or been bounced still counts — the count is turn history, not a
+     * battlefield scan. Cleared with the components at end-of-turn cleanup.
+     *
+     * A creature can only be declared as an attacker once per combat and the sets are per
+     * controller, so no de-duplication across players is needed.
+     */
+    private fun countCreaturesThatAttackedThisTurn(state: GameState): Int =
+        state.turnOrder.sumOf { playerId ->
+            state.getEntity(playerId)
+                ?.get<PlayerAttackersThisTurnComponent>()
+                ?.attackerIds
+                ?.size
+                ?: 0
+        }
+
+    /**
+     * Whether a creature died this turn under any player's control. Reads the same per-player
+     * `CreaturesDiedThisTurnComponent` tallies that back
+     * [com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnCondition] — turn history that
+     * `ZoneTransitionService` increments on death and `CleanupPhaseManager` clears at end of turn,
+     * so a creature that died and then left the graveyard still counts.
+     */
+    private fun anyCreatureDiedThisTurn(state: GameState): Boolean =
+        state.turnOrder.any { playerId ->
+            (state.getEntity(playerId)?.get<CreaturesDiedThisTurnComponent>()?.count ?: 0) > 0
+        }
 
     /**
      * Count permanents the player controls matching the filter. Iterates the projected-control
@@ -490,19 +591,93 @@ class CostCalculator(
                 matchesBattlefieldPredicate(entityId, cardDef, predicate, projectedState)
             }
             if (!matches) continue
-            val value = when (property) {
-                EntityNumericProperty.Power ->
-                    projectedState.getPower(entityId) ?: baseCharacteristic(card.baseStats?.power)
-                EntityNumericProperty.Toughness ->
-                    projectedState.getToughness(entityId) ?: baseCharacteristic(card.baseStats?.toughness)
-                EntityNumericProperty.BasePower -> baseCharacteristic(card.baseStats?.power)
-                EntityNumericProperty.BaseToughness -> baseCharacteristic(card.baseStats?.toughness)
-                EntityNumericProperty.ManaValue -> cardDef.manaCost.cmc
-                else -> 0
-            }
+            val value = numericProperty(projectedState, entityId, card, cardDef, property)
             if (value > maxValue) maxValue = value
         }
         return maxValue
+    }
+
+    /**
+     * Sum [property] over the permanents the player controls matching a filter — the sum twin of
+     * [greatestPropertyAmongMatching] (The Lord of the Eagles: "the total power of creatures you
+     * control with flying"). Returns 0 if none match.
+     *
+     * Iterates the projected-control view and evaluates the filter through [PredicateEvaluator]
+     * against projected state, exactly like [countControlledPermanentsMatching], so stolen
+     * permanents, granted keywords, and type-changing effects are all honored. Negative power
+     * subtracts from the total (Ghalta's 2018-01-19 ruling on the same "total power" wording), and
+     * only the finished sum is floored at 0 — a net-negative board reduces nothing rather than
+     * taxing the spell.
+     */
+    private fun totalPropertyAmongMatching(
+        state: GameState,
+        playerId: EntityId,
+        filter: GameObjectFilter,
+        property: EntityNumericProperty
+    ): Int {
+        val projected = state.projectedState
+        val context = PredicateContext(controllerId = playerId)
+        var total = 0
+        for (entityId in state.controlledBattlefield(playerId)) {
+            if (!predicateEvaluator.matches(state, projected, entityId, filter, context)) continue
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            total += numericProperty(projected, entityId, card, cardDef, property)
+        }
+        return total.coerceAtLeast(0)
+    }
+
+    /**
+     * The [property] of the permanent [abilitySourceId] is attached to — "equipped creature's
+     * power" (Glamdring, Foe-hammer).
+     *
+     * Returns 0 whenever there is nothing to read: no source permanent (a `SelfCast` reduction
+     * printed on the spell itself), a source that isn't attached to anything, or an attachment
+     * target that has since left the battlefield. An unequipped Equipment reducing costs by 0 is
+     * the correct reading of the oracle text, so failing to 0 here is faithful rather than merely
+     * defensive.
+     *
+     * The attachment is read from the source's `AttachedToComponent` — the same seam
+     * `Scope.AttachedTo` uses — and the value from projected state, so the equipped creature's
+     * counters, anthems, and the Equipment's own P/T bonus are all included.
+     */
+    private fun attachedPermanentProperty(
+        state: GameState,
+        abilitySourceId: EntityId?,
+        property: EntityNumericProperty
+    ): Int {
+        val sourceId = abilitySourceId ?: return 0
+        val attachedTo = state.getEntity(sourceId)
+            ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+            ?.targetId
+            ?: return 0
+        val card = state.getEntity(attachedTo)?.get<CardComponent>() ?: return 0
+        val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return 0
+        return numericProperty(state.projectedState, attachedTo, card, cardDef, property)
+            .coerceAtLeast(0)
+    }
+
+    /**
+     * One battlefield permanent's value for [property]. Power/toughness read projected state
+     * (CR 613) and fall back to the printed base when a permanent has no projected P/T; base
+     * power/toughness read the printed base directly; mana value comes from
+     * `CardDefinition.manaCost.cmc` (X-costs contribute X = 0 per CR 202.3b on the battlefield).
+     */
+    private fun numericProperty(
+        projectedState: ProjectedState,
+        entityId: EntityId,
+        card: CardComponent,
+        cardDef: CardDefinition,
+        property: EntityNumericProperty
+    ): Int = when (property) {
+        EntityNumericProperty.Power ->
+            projectedState.getPower(entityId) ?: baseCharacteristic(card.baseStats?.power)
+        EntityNumericProperty.Toughness ->
+            projectedState.getToughness(entityId) ?: baseCharacteristic(card.baseStats?.toughness)
+        EntityNumericProperty.BasePower -> baseCharacteristic(card.baseStats?.power)
+        EntityNumericProperty.BaseToughness -> baseCharacteristic(card.baseStats?.toughness)
+        EntityNumericProperty.ManaValue -> cardDef.manaCost.cmc
+        else -> 0
     }
 
     /** Printed base P/T from a [CharacteristicValue] — the fixed value, a CDA's offset, or 0. */
@@ -918,6 +1093,7 @@ class CostCalculator(
             CardPredicate.IsInstant -> typeLine.isInstant
             CardPredicate.IsSorcery -> typeLine.isSorcery
             CardPredicate.HasAdventure -> cardDef.isAdventure
+            CardPredicate.HasNoAbilities -> cardDef.oracleText.isBlank()
             CardPredicate.IsBasicLand -> typeLine.isBasicLand
             CardPredicate.IsPermanent -> typeLine.isPermanent
             CardPredicate.IsNonland -> !typeLine.isLand
@@ -947,6 +1123,10 @@ class CostCalculator(
             is CardPredicate.NameEquals -> cardDef.name == predicate.name
             // Room-name distinctness is a resolution-time search filter, not a cost concern.
             CardPredicate.NameNotSharedWithControlledRoom -> false
+            CardPredicate.NameNotSharedWithControlledToken -> false
+            // Same for "no other permanent you control shares this name" — a targeting
+            // restriction, never a cost-reduction condition.
+            CardPredicate.NameNotSharedWithAnotherControlledPermanent -> false
 
             is CardPredicate.OriginallyPrintedInSet ->
                 cardDef.setCode?.equals(predicate.setCode, ignoreCase = true) == true
@@ -965,6 +1145,9 @@ class CostCalculator(
             is CardPredicate.ManaValueAtMostEntityManaSpent -> false
             is CardPredicate.ManaValueAtMostColorsSpent -> false
             is CardPredicate.ManaValueAtMostDynamic -> false
+        is CardPredicate.ManaValueEqualsDynamic -> false
+        is CardPredicate.PowerEqualsDynamic -> false
+        is CardPredicate.ToughnessEqualsDynamic -> false
             is CardPredicate.PowerGreaterThanEntity -> false
             is CardPredicate.PowerAtMostEntity -> false
             is CardPredicate.PowerLessThanEntity -> false
@@ -979,6 +1162,8 @@ class CostCalculator(
             CardPredicate.PowerEqualsX -> false
             is CardPredicate.PowerAtMost -> (cardDef.creatureStats?.basePower ?: 0) <= predicate.max
             is CardPredicate.PowerAtLeast -> (cardDef.creatureStats?.basePower ?: 0) >= predicate.min
+            // CostCalculator has no X context; predicate has no static answer here.
+            CardPredicate.PowerAtLeastX -> false
             is CardPredicate.ToughnessEquals -> cardDef.creatureStats?.baseToughness == predicate.value
             is CardPredicate.ToughnessAtMost -> (cardDef.creatureStats?.baseToughness ?: 0) <= predicate.max
             // CostCalculator has no X context; predicate has no static answer here.
@@ -1036,6 +1221,7 @@ class CostCalculator(
             is CardPredicate.SharesCreatureTypeWith -> true
             is CardPredicate.SharesColorWith -> true
             is CardPredicate.SharesColorWithPermanentYouControl -> true
+            is CardPredicate.SharesNameWithPermanentYouControl -> true
             is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl -> true
             is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl -> true
             CardPredicate.SharesColorWithRecipient -> false
@@ -1058,6 +1244,13 @@ class CostCalculator(
                     as? ChoiceValue.TextChoice)?.text ?: return false
                 cardDef.name.equals(chosenName, ignoreCase = true)
             }
+            is CardPredicate.CardTypeEqualsChosenComponent -> {
+                if (sourceEntityId == null || state == null) return false
+                val chosenType = (state.getEntity(sourceEntityId)
+                    ?.get<CastChoicesComponent>()?.chosen?.get(predicate.slot)
+                    as? ChoiceValue.TextChoice)?.text ?: return false
+                cardDef.typeLine.cardTypes.any { it.displayName.equals(chosenType, ignoreCase = true) }
+            }
 
             is CardPredicate.And -> predicate.predicates.all { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
             is CardPredicate.Or -> predicate.predicates.any { matchesCardPredicate(cardDef, it, sourceEntityId, state, projectedState) }
@@ -1067,6 +1260,7 @@ class CostCalculator(
             CardPredicate.IsTriggeredAbility -> false
             CardPredicate.IsActivatedAbility -> false
             is CardPredicate.TargetsMatching -> false
+            is CardPredicate.AbilitySourceMatches -> false
         }
     }
 
@@ -1093,7 +1287,9 @@ class CostCalculator(
             when (val mod = ability.modification) {
                 is CostModification.ReduceGeneric -> totalReduction += mod.amount
                 is CostModification.ReduceGenericBy ->
-                    totalReduction += evaluateReduction(state, mod.source, casterId)
+                    totalReduction += evaluateReduction(
+                        state, mod.source, casterId, abilitySourceId = sourceId
+                    )
                 else -> { /* face-down only supports generic reduction */ }
             }
         }
@@ -1217,6 +1413,44 @@ class CostCalculator(
                 return true
             }
         }
+        return hasEmblemFreeCastPermission(state, casterId, spellCardDef, castFromZone)
+    }
+
+    /**
+     * The emblem half of [hasFreeCastPermission] (Tamiyo, Field Researcher's −7). Emblems are
+     * synthetic entities that live outside every zone, so the battlefield scan can't see them;
+     * their statics are read from
+     * [com.wingedsheep.engine.state.components.identity.EmblemStaticAbilityComponent] instead.
+     *
+     * The `firstSpellOfTurnOnly` / `oncePerTurn` gates are deliberately not honored here: those key
+     * off a *battlefield source* being marked used, and no emblem prints them. An emblem carrying
+     * one would silently grant an unlimited permission, so it is rejected outright rather than
+     * approximated.
+     */
+    private fun hasEmblemFreeCastPermission(
+        state: GameState,
+        casterId: EntityId,
+        spellCardDef: CardDefinition?,
+        castFromZone: com.wingedsheep.sdk.core.Zone?
+    ): Boolean {
+        for ((entityId, container) in state.entities) {
+            val statics = container
+                .get<com.wingedsheep.engine.state.components.identity.EmblemStaticAbilityComponent>()
+                ?: continue
+            val emblemController = container
+                .get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()
+                ?.playerId
+            for (ability in statics.abilities) {
+                if (ability !is MayCastWithoutPayingManaCost) continue
+                if (ability.firstSpellOfTurnOnly || ability.oncePerTurn) continue
+                if (ability.fromExileOnly && castFromZone != com.wingedsheep.sdk.core.Zone.EXILE) continue
+                if (ability.controllerOnly && emblemController != casterId) continue
+                if (spellCardDef != null && ability.spellFilter != GameObjectFilter.Any &&
+                    !matchesCardDefinition(spellCardDef, ability.spellFilter, entityId, state, state.projectedState)
+                ) continue
+                return true
+            }
+        }
         return false
     }
 
@@ -1233,6 +1467,9 @@ class CostCalculator(
         spellCardDef: CardDefinition?,
         castFromZone: com.wingedsheep.sdk.core.Zone? = null
     ): EntityId? {
+        // An emblem's permission is always unlimited, so it covers this cast on its own and no
+        // battlefield once-per-turn use should be consumed.
+        if (hasEmblemFreeCastPermission(state, casterId, spellCardDef, castFromZone)) return null
         var oncePerTurnCandidate: EntityId? = null
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue

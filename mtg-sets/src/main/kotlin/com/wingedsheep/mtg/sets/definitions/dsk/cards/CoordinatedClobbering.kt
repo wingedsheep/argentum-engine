@@ -25,11 +25,10 @@ import com.wingedsheep.sdk.scripting.values.EntityReference
  * Tap one or two target untapped creatures you control. They each deal damage equal to their
  * power to target creature an opponent controls.
  *
- * Two target slots: the single opponent's creature (declared first, so it stays addressable as
- * `ContextTarget(0)` across the per-attacker loop) and one or two untapped creatures you control.
- * At resolution we gather the chosen targets, filter to the creatures you control (excludes the
- * victim), then tap them all and have each deal damage equal to its own power — read per-iteration
- * via [EntityReference.IterationEntity] — to the opponent's creature.
+ * At resolution we gather the chosen targets into two collections by controller. This avoids
+ * relying on a positional target index when the one-or-two-creature group is flattened into the
+ * cast action. We then tap the clobberers and have each deal damage equal to its own power — read
+ * per-iteration via [EntityReference.IterationEntity] — to the opponent's creature.
  */
 val CoordinatedClobbering = card("Coordinated Clobbering") {
     manaCost = "{G}"
@@ -39,7 +38,8 @@ val CoordinatedClobbering = card("Coordinated Clobbering") {
         "equal to their power to target creature an opponent controls."
 
     spell {
-        // Declared first so the victim is a stable target across the per-creature loop.
+        // Keep the fixed-count victim first so the flattened target list remains unambiguous when
+        // the controller chooses only one creature from the following one-or-two target group.
         target("creature an opponent controls", Targets.CreatureOpponentControls)
         target(
             "untapped creatures you control",
@@ -51,8 +51,7 @@ val CoordinatedClobbering = card("Coordinated Clobbering") {
         )
 
         effect = Effects.Composite(
-            // Gather every chosen target, then keep only the creatures you control (the victim is
-            // an opponent's creature, so it drops out).
+            // Gather every chosen target, then separate the clobberers from the victim.
             GatherCardsEffect(
                 source = CardSource.ChosenTargets,
                 storeAs = "allTargets",
@@ -61,6 +60,11 @@ val CoordinatedClobbering = card("Coordinated Clobbering") {
                 from = "allTargets",
                 filter = CollectionFilter.MatchesFilter(GameObjectFilter.Creature.youControl()),
                 storeMatching = "clobberers",
+            ),
+            FilterCollectionEffect(
+                from = "allTargets",
+                filter = CollectionFilter.MatchesFilter(GameObjectFilter.Creature.opponentControls()),
+                storeMatching = "victim",
             ),
             // Tap all chosen creatures first ("Tap one or two target untapped creatures you control").
             ForEachInCollectionEffect(
@@ -75,7 +79,7 @@ val CoordinatedClobbering = card("Coordinated Clobbering") {
                         EntityReference.IterationEntity,
                         EntityNumericProperty.Power,
                     ),
-                    target = EffectTarget.ContextTarget(0),
+                    target = EffectTarget.PipelineTarget("victim"),
                     damageSource = EffectTarget.Self,
                 ),
             ),

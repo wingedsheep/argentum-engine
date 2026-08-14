@@ -2,19 +2,12 @@ package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.Step
-import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.scripting.events.AmountFilter
-import com.wingedsheep.sdk.scripting.events.ControllerFilter
-import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
-import com.wingedsheep.sdk.scripting.events.DamageType
-import com.wingedsheep.sdk.scripting.events.AttackPredicate
-import com.wingedsheep.sdk.scripting.events.RecipientFilter
-import com.wingedsheep.sdk.scripting.events.SourceFilter
-import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
+import com.wingedsheep.sdk.scripting.events.*
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.util.numberToWord
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -67,6 +60,22 @@ enum class ExploreReveal { ANY, LAND, NONLAND }
 @Serializable
 sealed interface EventPattern : TextReplaceable<EventPattern> {
     val description: String
+
+    /** Matches when any constituent event pattern matches. */
+    @SerialName("AnyOfEvents")
+    @Serializable
+    data class AnyOf(val events: List<EventPattern>) : EventPattern {
+        init {
+            require(events.size >= 2) { "AnyOf requires at least two event patterns" }
+        }
+
+        override val description: String = events.joinToString(" or ") { it.description }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val replaced = events.map { it.applyTextReplacement(replacer) }
+            return if (replaced == events) this else copy(events = replaced)
+        }
+    }
 
     // =========================================================================
     // Damage Events (Replacement Effect)
@@ -267,12 +276,33 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @Serializable
     data class DrawEvent(
         val player: Player = Player.You,
-        val exceptFirstInDrawStep: Boolean = false
+        val exceptFirstInDrawStep: Boolean = false,
     ) : EventPattern {
         override val description: String = buildString {
             append(player.description)
             append(" would draw a card")
             if (exceptFirstInDrawStep) append(" (except the first each draw step)")
+        }
+    }
+
+    /**
+     * When a player would draw one or more cards. Fires at the beginning of the
+     * draw card cycle announcing the total cards drawn.
+     *
+     * The [amount] parameter is the threshold that triggers the event — "if an opponent
+     * would draw N or more cards".
+     */
+    @SerialName("DrawCardsEvent")
+    @Serializable
+    data class DrawCardsEvent(
+        val player: Player = Player.You,
+        val amount: Int = 1
+    ) : EventPattern {
+        override val description: String = buildString {
+            append(player.description)
+            append(" would draw ")
+            append(numberToWord(amount))
+            append(" or more cards")
         }
     }
 
@@ -357,6 +387,24 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * When a player would **pay** life — life spent to satisfy a cost (CR 118.8), as opposed to
+     * life lost to damage or to a "loses N life" effect. Distinct from [LifeLossEvent]: every life
+     * payment reduces a life total, but only a payment is a cost the player chose to pay, and only
+     * payments are replaceable by effects worded "if you would pay life" (Ashiok, Wicked
+     * Manipulator). Damage and unpayable costs are never this event.
+     *
+     * Replacement-effect only — a payment surfaces to triggered abilities as the `LifeChangedEvent`
+     * it produces, so this pattern never matches as a trigger.
+     */
+    @SerialName("LifePaymentEvent")
+    @Serializable
+    data class LifePaymentEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} would pay life"
+    }
+
+    /**
      * When a player would gain or lose life.
      * Used for cards like Moonstone Harbinger: "Whenever you gain or lose life during your turn".
      */
@@ -409,7 +457,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * Whenever a player scries (CR 701.18). Fires once per scry, after every card chosen
+     * Whenever a player scries (CR 701.22). Fires once per scry, after every card chosen
      * for the bottom/top has been moved. Carries the number of cards actually looked at,
      * which equals the scry N parameter unless the library had fewer cards available.
      * Read this count via [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TRIGGER_SCRY_COUNT]
@@ -424,11 +472,11 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * Whenever a player surveils (CR 701.42). Fires once per surveil, after the kept/graveyard
+     * Whenever a player surveils (CR 701.25). Fires once per surveil, after the kept/graveyard
      * moves have all resolved. Carries the number of cards actually looked at (equals the surveil
      * N parameter unless the library had fewer cards). Read this count via
      * [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TRIGGER_SCRY_COUNT] ("the number of
-     * cards looked at"). A literal "surveil 0" produces no event (CR 701.42c).
+     * cards looked at"). A literal "surveil 0" produces no event (CR 701.25c).
      */
     @SerialName("SurveiledEvent")
     @Serializable
@@ -439,7 +487,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
-     * Whenever a player scries **or** surveils (CR 701.18 / 701.42) — the combined look-at-top
+     * Whenever a player scries **or** surveils (CR 701.22 / 701.25) — the combined look-at-top
      * trigger used by "Whenever you scry or surveil, …" (Matoya, Archon Elder). Matches either a
      * scry or a surveil event from [player]; the cards-looked-at count is exposed the same way as
      * the individual triggers (TRIGGER_SCRY_COUNT).
@@ -467,6 +515,30 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val player: Player = Player.You
     ) : EventPattern {
         override val description: String = "${player.description} discovers"
+    }
+
+    /**
+     * Whenever [player] collects evidence (CR 701.59). Fires once per collection, after the chosen
+     * cards have been exiled — and only then: a declined collection, and one that was impossible
+     * under CR 701.59b, never fire it, so "whenever you collect evidence" payoffs (Surveillance
+     * Monitor's Thopter, Evidence Examiner's Clue) can trust that evidence genuinely changed hands.
+     *
+     * Fires for **every** context the mechanic appears in — an activated-ability cost (Cryptex), a
+     * cast-time additional cost (Extract a Confession), a ward cost (Axebane Ferox), and the
+     * resolution-time [com.wingedsheep.sdk.scripting.effects.CollectEvidenceEffect] (Sample
+     * Collector) — because all four share one payment implementation. That matters for the printed
+     * cards: Surveillance Monitor's own ETB collection triggers its own payoff.
+     *
+     * Note that this is a *different* fact from the CR 701.59c linkage: this pattern observes any
+     * collection by [player], while `Conditions.WasEvidenceCollected` asks only whether *this
+     * object's own* optional cast cost was declared.
+     */
+    @SerialName("EvidenceCollectedEvent")
+    @Serializable
+    data class EvidenceCollectedEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} collects evidence"
     }
 
     /**
@@ -712,6 +784,28 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * Whenever you play a land (CR 305.1 — the special land-play action). [fromZoneOtherThan], when
+     * set, restricts to lands *played* from a zone other than that one: "whenever you play a land …
+     * from anywhere other than your hand" (Shadow of the Goblin) is `fromZoneOtherThan = Zone.HAND`.
+     *
+     * Matches the engine's `LandPlayedEvent`, which is emitted only for the land-play action, never
+     * for a land an effect *puts* onto the battlefield — so this does not over-trigger on fetches,
+     * reanimation, or ramp (the gap that a plain `ZoneChangeEvent(→ BATTLEFIELD)` pattern can't close).
+     */
+    @SerialName("LandPlayedEvent")
+    @Serializable
+    data class LandPlayedEvent(
+        val fromZoneOtherThan: Zone? = null
+    ) : EventPattern {
+        override val description: String = buildString {
+            append("you play a land")
+            if (fromZoneOtherThan != null) {
+                append(" from anywhere other than your ${fromZoneOtherThan.name.lowercase()}")
+            }
+        }
+    }
+
+    /**
      * When one or more creatures attack a player who is an opponent of the trigger's controller.
      * The "your opponents are attacked" counterpart of [CreaturesAttackYouEvent]: fires once per
      * [com.wingedsheep.engine.core.AttackersDeclaredEvent] when at least [minAttackers] declared
@@ -859,6 +953,8 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val damageType: DamageType = DamageType.Any,
         val recipient: RecipientFilter = RecipientFilter.Any,
         val sourceFilter: GameObjectFilter? = null,
+        /** Extensible, conjunctive facts about the damage event and its source. */
+        val requires: Set<com.wingedsheep.sdk.scripting.events.DamagePredicate> = emptySet(),
         /**
          * When true, the trigger fires only on damage that exceeded what was needed to be
          * lethal (CR 120.4a). Combined with the existing damageType / recipient / sourceFilter
@@ -913,6 +1009,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                     append(recipient.description)
                 }
             }
+            requires.forEach { append(" ").append(it.description) }
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
@@ -1075,24 +1172,41 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *
      * Used by cards like Hearthborn Battler: "Whenever a player casts their second spell each turn"
      *
+     * [spellFilter] narrows *which* spells the count runs over, so the ordinal is per-kind rather
+     * than over every spell: The Queen of Dale's "casts their first **noncreature** spell each turn"
+     * is `nthSpell = 1, spellFilter = GameObjectFilter.Noncreature`. The count reads the caster's
+     * cast history, so it tracks casts and not resolutions — a matching spell already cast this turn
+     * closes the window even if it was countered, exactly as `nthOfTypePerTurn` does for cost and
+     * flash gates. `null` (the default) counts every spell, the Hearthborn Battler shape.
+     *
      * @param nthSpell The spell number that triggers this (e.g., 2 for "second spell")
      * @param player Which player's spell count to track
+     * @param spellFilter Restricts the count to matching spells; null counts all of them
      */
     @SerialName("NthSpellCastEvent")
     @Serializable
     data class NthSpellCastEvent(
         val nthSpell: Int,
-        val player: Player = Player.Each
+        val player: Player = Player.Each,
+        val spellFilter: GameObjectFilter? = null
     ) : EventPattern {
         override val description: String = buildString {
             append(player.description)
             append(" casts their ")
             append(when (nthSpell) {
+                1 -> "first"
                 2 -> "second"
                 3 -> "third"
                 else -> "${nthSpell}th"
             })
-            append(" spell each turn")
+            append(" ")
+            spellFilter?.let { append(it.description).append(" ") }
+            append("spell each turn")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = spellFilter?.applyTextReplacement(replacer)
+            return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
         }
     }
 
@@ -1241,6 +1355,65 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     /**
+     * When an Aura, Equipment, or Fortification becomes **unattached** from a permanent — the
+     * mirror of [BecomesAttachedEvent].
+     *
+     * Fires on every way an attachment stops being attached to its host while that attachment
+     * existed attached a moment earlier (CR 701.3d): an explicit "unattach it" effect, equipping it
+     * to a *different* permanent, the attachment leaving the battlefield, the host leaving the
+     * battlefield, and the CR 704.5n state-based unattach when the pairing becomes illegal (the
+     * host stops being a creature, the Equipment itself becomes a creature, protection). It does
+     * **not** fire for an attachment that was never attached.
+     *
+     * The triggering entity is the *attachment*; the permanent it came off is carried as the
+     * attached-to entity in the trigger context
+     * ([com.wingedsheep.sdk.scripting.targets.EffectTarget.AttachedToTriggeringPermanent]) —
+     * "that permanent" in the payoff.
+     *
+     * Because the unattach can be *caused* by the attachment leaving the battlefield, the ability
+     * fires from the attachment's last-known existence (CR 603.6e/603.10), exactly like a
+     * leaves-the-battlefield trigger. The former host may likewise be gone by resolution, in which
+     * case a payoff that acts on it simply does nothing — Stitcher's Graft's ruling spells this out:
+     * "It also becomes unattached if the equipped creature leaves the battlefield, but the triggered
+     * ability won't do anything in that case."
+     *
+     * Binding SELF = "whenever this Equipment becomes unattached from a permanent" (Stitcher's
+     * Graft). Binding ANY with [attachmentFilter] / [attachmentController] = "whenever an Aura you
+     * control becomes unattached …".
+     *
+     * @property attachmentFilter restricts which attachment qualifies (e.g. Aura, Equipment).
+     * @property attachmentController restricts who must control the attachment (e.g. [Player.You]).
+     * @property unattachedFromFilter restricts what it must have come off. Matched against the
+     *   former host with the triggering attachment exposed as the comparison reference, mirroring
+     *   [BecomesAttachedEvent.attachedToFilter]. Evaluated against the host's *current* state, so a
+     *   host that left the battlefield matches only [GameObjectFilter.Any].
+     */
+    @SerialName("BecomesUnattachedEvent")
+    @Serializable
+    data class BecomesUnattachedEvent(
+        val attachmentFilter: GameObjectFilter = GameObjectFilter.Any,
+        val attachmentController: Player = Player.Any,
+        val unattachedFromFilter: GameObjectFilter = GameObjectFilter.Any,
+    ) : EventPattern {
+        override val description: String = buildString {
+            append(describeObjectForEvent(attachmentFilter))
+            if (attachmentController == Player.You) append(" you control")
+            append(" becomes unattached")
+            if (unattachedFromFilter != GameObjectFilter.Any) {
+                append(" from ${describeObjectForEvent(unattachedFromFilter)}")
+            }
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newAttachment = attachmentFilter.applyTextReplacement(replacer)
+            val newUnattachedFrom = unattachedFromFilter.applyTextReplacement(replacer)
+            return if (newAttachment !== attachmentFilter || newUnattachedFrom !== unattachedFromFilter) {
+                copy(attachmentFilter = newAttachment, unattachedFromFilter = newUnattachedFrom)
+            } else this
+        }
+    }
+
+    /**
      * When a player chooses one or more targets.
      *
      * Fires when [player] casts a spell, activates an ability, or puts a triggered ability
@@ -1383,12 +1556,56 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
          * were tapped together (Deeproot Pilgrimage), instead of once per tapped permanent. Handled
          * by the dedicated batch pass; the per-event path skips it. ANY-binding only.
          */
-        val batch: Boolean = false
+        val batch: Boolean = false,
+        /**
+         * Who must have done the tapping, relative to the trigger's controller — the difference
+         * between the passive "**a** creature becomes tapped" (null, any tap from any cause) and
+         * the active "whenever **you tap** a creature an opponent controls"
+         * ([com.wingedsheep.sdk.scripting.references.Player.You], Wilds of Eldraine's Hylda of the
+         * Icy Crown / Icewrought Sentry / Solitary Sanctuary / Sharae of Numbing Depths).
+         *
+         * The tapper is the controller of the spell, ability, or cost payment that caused the
+         * permanent to become tapped; a permanent tapped as a turn-based action or to pay its own
+         * controller's cost is tapped by its controller. Per the Hylda ruling, a spell *you* control
+         * that instructs an **opponent** to tap a creature they control makes *them* the tapper, so
+         * a `You` pattern does not fire (Tangle Wire).
+         *
+         * "An **untapped** creature" needs no separate axis: tapping is a transition (CR 701.26a —
+         * "only untapped permanents can be tapped"), so an already-tapped permanent emits no tap
+         * event at all.
+         */
+        val tapper: Player? = null,
+        /**
+         * *Why* the permanent had to become tapped — the difference between the cause-agnostic
+         * "whenever this becomes tapped" (null, the default, any cause) and "whenever this becomes
+         * tapped **to pay a teamwork cost**" ([TapReason.TEAMWORK], Agent Maria Hill).
+         *
+         * Orthogonal to [tapper], which says *who* caused the tap: a teamwork tap and an attack tap
+         * are both performed by the permanent's own controller, so only the reason separates them.
+         * Only the causes the engine classifies can be asked for — everything else reports
+         * [TapReason.UNSPECIFIED] and is matched only by a null here. See [TapReason].
+         *
+         * **Use `null`, never [TapReason.UNSPECIFIED], for "any cause".** Asking for `UNSPECIFIED`
+         * is a legal but meaningless predicate: it matches only the taps the engine has *not*
+         * classified, so its meaning would quietly shrink the day a new cause is named, and it
+         * renders as no clause at all in [description]. No printed card wants it.
+         */
+        val reason: TapReason? = null
     ) : EventPattern {
         override val description: String = buildString {
-            append(if (batch) "one or more " else "a ")
-            append(filter?.description ?: "permanent")
-            append(if (batch) " become tapped" else " becomes tapped")
+            if (tapper != null) {
+                append(tapper.description.replaceFirstChar { it.uppercase() })
+                append(if (batch) " tap one or more " else " tap a ")
+                append(filter?.description ?: "permanent")
+            } else {
+                append(if (batch) "one or more " else "a ")
+                append(filter?.description ?: "permanent")
+                append(if (batch) " become tapped" else " becomes tapped")
+            }
+            if (reason != null && reason != TapReason.UNSPECIFIED) {
+                append(" ")
+                append(reason.description)
+            }
         }
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
             val newFilter = filter?.applyTextReplacement(replacer)
@@ -1494,14 +1711,19 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     /**
      * When a creature is turned face up.
      * [player] filters whose creature: [Player.You] (default), [Player.Any], etc.
+     * [filter] narrows *which* creature, evaluated against the permanent's post-flip
+     * (face-up) characteristics — "whenever a Detective you control is turned face up"
+     * (Perimeter Enforcer) is `filter = Creature.withSubtype(Subtype.DETECTIVE)`.
+     * Defaults to [GameObjectFilter.Any], i.e. any creature turned face up.
      */
     @SerialName("CreatureTurnedFaceUpEvent")
     @Serializable
     data class CreatureTurnedFaceUpEvent(
-        val player: Player = Player.You
+        val player: Player = Player.You,
+        val filter: GameObjectFilter = GameObjectFilter.Any
     ) : EventPattern {
         override val description: String = buildString {
-            append("a creature ")
+            append(if (filter == GameObjectFilter.Any) "a creature " else "a ${filter.description} ")
             when (player) {
                 is Player.You -> append("you control ")
                 is Player.Any -> {}
@@ -1618,6 +1840,50 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         }
     }
 
+    /**
+     * When one or more counters of a specific type are **removed** from a permanent — the mirror of
+     * [CountersPlacedEvent].
+     *
+     * Set [lastRemoved] for the "when the **last** counter is removed" templating that the
+     * counter-countdown mechanics share (CR 310.11b's Siege defeat trigger, and the vanishing /
+     * suspend family's "when the last time counter is removed from this permanent"). It's a
+     * property of the removal, not a separate event: the trigger fires only when the removal left
+     * the permanent with none of that counter type on it, so removing 2 of 5 defense counters is
+     * silent while the removal that takes the count to 0 fires exactly once. A removal of 0
+     * counters never fires it.
+     *
+     * Examples:
+     * - "When the last defense counter is removed from this permanent"
+     *   → CountersRemovedEvent(counterType = Counters.DEFENSE, lastRemoved = true) with
+     *     [TriggerBinding.SELF]
+     * - "Whenever one or more +1/+1 counters are removed from a creature you control"
+     *   → CountersRemovedEvent(counterType = Counters.PLUS_ONE_PLUS_ONE, filter =
+     *     GameObjectFilter.Creature.youControl())
+     *
+     * @property counterType The counter type to match, or [com.wingedsheep.sdk.core.Counters.ANY]
+     *   for counters of any kind.
+     * @property filter Filter for the permanent the counters were removed from.
+     * @property lastRemoved When true, fires only for the removal that takes the permanent's count
+     *   of [counterType] to zero.
+     */
+    @SerialName("CountersRemovedEvent")
+    @Serializable
+    data class CountersRemovedEvent(
+        val counterType: String,
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val lastRemoved: Boolean = false,
+    ) : EventPattern {
+        override val description: String = buildString {
+            val typeLabel = if (counterType == com.wingedsheep.sdk.core.Counters.ANY) "" else "$counterType "
+            if (lastRemoved) {
+                append("the last ${typeLabel}counter is removed from ")
+            } else {
+                append("one or more ${typeLabel}counters are removed from ")
+            }
+            append(describeObjectForEvent(filter))
+        }
+    }
+
     // ---- Draw/Reveal Triggers ----
 
     /**
@@ -1660,6 +1926,12 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * include the {T} symbol — and mana abilities without {T} *do* count, unlike the default
      * semantic. The engine emits an `AbilityActivatedEvent` for every activated ability whose cost
      * lacks {T} (mana or not); this flag is what tells the matcher to accept the mana-ability ones.
+     *
+     * [requireExhaust] narrows to exhaust abilities (CR 702.177). On its own it is the plain
+     * Aetherdrift wording — "Whenever you activate an exhaust ability" (Adrenaline Jockey, Rangers'
+     * Refueler) — which counts an exhaust *mana* ability too. [excludeManaAbilities] adds back the
+     * "isn't a mana ability" clause for Pit Automaton, whose Oracle text was updated to
+     * "an exhaust ability that isn't a mana ability" so its copy payoff can't grab a mana ability.
      */
     @SerialName("AbilityActivatedEvent")
     @Serializable
@@ -1667,7 +1939,9 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val player: Player = Player.You,
         val targetMatch: com.wingedsheep.sdk.scripting.events.AbilityTargetMatch? = null,
         val sourceFilter: GameObjectFilter? = null,
-        val requireNoTapInCost: Boolean = false
+        val requireNoTapInCost: Boolean = false,
+        val requireExhaust: Boolean = false,
+        val excludeManaAbilities: Boolean = false,
     ) : EventPattern {
         override val description: String = buildString {
             append(player.description)
@@ -1684,6 +1958,9 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                     append("targets a ")
                     append(targetMatch.description)
                 }
+                requireExhaust && excludeManaAbilities ->
+                    append("is an exhaust ability that isn't a mana ability")
+                requireExhaust -> append("is an exhaust ability")
                 requireNoTapInCost -> append("doesn't have {T} in its activation cost")
                 else -> append("isn't a mana ability")
             }
@@ -1774,6 +2051,20 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             val newFilter = f.applyTextReplacement(replacer)
             return if (newFilter !== f) copy(cardFilter = newFilter) else this
         }
+    }
+
+    /** Whenever this creature crews a Vehicle. */
+    @SerialName("CrewsEvent")
+    @Serializable
+    data object CrewsEvent : EventPattern {
+        override val description: String = "this creature crews a Vehicle"
+    }
+
+    /** Whenever this creature saddles a Mount. */
+    @SerialName("SaddlesEvent")
+    @Serializable
+    data object SaddlesEvent : EventPattern {
+        override val description: String = "this creature saddles a Mount"
     }
 
     // =========================================================================
@@ -1891,6 +2182,63 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     }
 
     // =========================================================================
+    // Exile Batching Triggers
+    // =========================================================================
+
+    /**
+     * Whenever one or more cards matching [filter] are put into exile from any of [fromZones].
+     *
+     * This is a **batching trigger** (CR 603.2c) — it fires at most once per event batch,
+     * regardless of how many cards were exiled or which of the watched zones each came from.
+     * Unlike [CardsPutIntoYourGraveyardEvent] / [CardsLeftYourGraveyardEvent] it is **not** scoped
+     * to a single player's zone: "from graveyards and/or the battlefield" means *any* graveyard and
+     * *any* player's permanents, so every controller with this trigger sees the same batch.
+     *
+     * Only cards fire it — tokens are not cards (CR 111.6), so a token exiled from the battlefield
+     * never satisfies it even though it briefly occupies the exile zone before CR 111.7 sweeps it.
+     *
+     * The common "during your turn" timing restriction is expressed on the card via
+     * `triggerCondition = Conditions.IsYourTurn` rather than baked into the event.
+     *
+     * Examples:
+     * - "Whenever one or more cards are put into exile from graveyards and/or the battlefield
+     *   during your turn, …" → `CardsPutIntoExileEvent()` + `triggerCondition = Conditions.IsYourTurn`
+     *   (Ketramose, the New Dawn)
+     */
+    @SerialName("CardsPutIntoExileEvent")
+    @Serializable
+    data class CardsPutIntoExileEvent(
+        val fromZones: Set<Zone> = setOf(Zone.GRAVEYARD, Zone.BATTLEFIELD),
+        val filter: GameObjectFilter = GameObjectFilter.Any
+    ) : EventPattern {
+        override val description: String = buildString {
+            append("one or more ")
+            if (filter != GameObjectFilter.Any) {
+                append(filter.cardPredicates.joinToString(" ") { it.description })
+                append(" ")
+            }
+            append("cards are put into exile from ")
+            append(
+                fromZones.sortedBy { it.ordinal }.joinToString(" and/or ") { zone ->
+                    when (zone) {
+                        Zone.GRAVEYARD -> "graveyards"
+                        Zone.BATTLEFIELD -> "the battlefield"
+                        Zone.HAND -> "hands"
+                        Zone.LIBRARY -> "libraries"
+                        Zone.STACK -> "the stack"
+                        else -> zone.displayName
+                    }
+                }
+            )
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    // =========================================================================
     // Sacrifice Triggers
     // =========================================================================
 
@@ -1907,30 +2255,46 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *    sacrificed simultaneously (Mazirek, Savra, Zhao). Combine with [TriggerBinding.OTHER] for
      *    "another" (excludes the source) or [TriggerBinding.ANY] for "a" (includes the source).
      *
-     * By default the trigger watches only the controller's own sacrifices ("Whenever *you*
-     * sacrifice…"). Set [byAnyPlayer] = true for the "Whenever *a player* sacrifices…" scope
-     * (Zodiark, Umbral God) — then the detector fires the trigger once per player (batch) or once
-     * per that player's matching permanent (per-permanent), regardless of who controls the source.
+     * [sacrificedBy] scopes *whose* sacrifices are watched, independently of who controls the
+     * source. Only three values are meaningful, and the detector reads exactly these:
+     *  - [Player.You] (default): the controller's own sacrifices ("Whenever *you* sacrifice…").
+     *  - [Player.Each]: every player's ("Whenever *a player* sacrifices…", Zodiark, Umbral God).
+     *  - [Player.EachOpponent]: only the controller's opponents' ("Whenever *an opponent*
+     *    sacrifices…", Vengeful Tracker).
+     *
+     * For the two multi-player scopes the trigger fires once per watched player (batch) or once per
+     * that player's matching permanent (per-permanent). The sacrificing player is bound as the
+     * trigger's [Player.TriggeringPlayer], so payoffs can hit "them" specifically.
      *
      * Examples:
      *   → PermanentsSacrificedEvent(filter = GameObjectFilter.Food)
      *     "Whenever you sacrifice one or more Foods"
      *   → PermanentsSacrificedEvent(perPermanent = true)  // with OTHER binding
      *     "Whenever you sacrifice another permanent"
-     *   → PermanentsSacrificedEvent(filter = GameObjectFilter.Creature, byAnyPlayer = true)
+     *   → PermanentsSacrificedEvent(filter = GameObjectFilter.Creature, sacrificedBy = Player.Each)
      *     "Whenever a player sacrifices one or more creatures"
+     *   → PermanentsSacrificedEvent(filter = GameObjectFilter.Artifact, perPermanent = true,
+     *                               sacrificedBy = Player.EachOpponent)
+     *     "Whenever an opponent sacrifices an artifact"
      */
     @SerialName("PermanentsSacrificedEvent")
     @Serializable
     data class PermanentsSacrificedEvent(
         val filter: GameObjectFilter = GameObjectFilter.Any,
-        val byAnyPlayer: Boolean = false,
+        val sacrificedBy: Player = Player.You,
         val perPermanent: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
-            val who = if (byAnyPlayer) "a player sacrifices " else "you sacrifice "
+            val who = when (sacrificedBy) {
+                Player.Each -> "a player sacrifices "
+                Player.EachOpponent -> "an opponent sacrifices "
+                else -> "you sacrifice "
+            }
             append(who)
-            append(if (perPermanent) "another " else "one or more ")
+            // "another" is relative to the source permanent, so it only reads right when the
+            // sacrificing player is the source's own controller; other scopes take a plain article.
+            val article = if (sacrificedBy == Player.You) "another " else "a "
+            append(if (perPermanent) article else "one or more ")
             if (filter != GameObjectFilter.Any) {
                 append(filter.cardPredicates.joinToString(" ") { it.description })
                 if (!perPermanent) append("s")

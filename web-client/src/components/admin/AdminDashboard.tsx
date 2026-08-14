@@ -24,11 +24,13 @@ import {
   type CardStat,
   type CardWinRate,
   type DailyCount,
+  type DatabaseStats,
   type GeoBucket,
   type GlobalOverview,
   type TournamentSummary,
   fetchCardWinRates,
   fetchColorDistribution,
+  fetchDatabaseStats,
   fetchGamesPerDay,
   fetchGeo,
   fetchModeDistribution,
@@ -41,7 +43,7 @@ import type { AdminAuth } from '@/api/adminAuth'
 import type { StatBucket } from '@/api/account'
 import { TournamentDetailModal } from '@/components/profile/TournamentDetailModal'
 import { TournamentStatusBadge } from '@/components/tournament/TournamentStatusBadge'
-import { colorLabel, gameModeLabel, mergeModeBuckets } from './statFormat'
+import { colorLabel, formatBytes, formatCount, gameModeLabel, mergeModeBuckets } from './statFormat'
 import { GeoMap } from './GeoMap'
 import { AdminScreen, Panel, StatCard, Table, adminTheme, cellStyle, chartTooltipStyle } from './adminUi'
 
@@ -58,6 +60,7 @@ export function AdminDashboard({ auth, onBack }: { auth: AdminAuth; onBack: () =
   const [tournaments, setTournaments] = useState<TournamentSummary[]>([])
   const [tournamentSets, setTournamentSets] = useState<StatBucket[]>([])
   const [geo, setGeo] = useState<GeoBucket[]>([])
+  const [database, setDatabase] = useState<DatabaseStats | null>(null)
   const [showAllCards, setShowAllCards] = useState(false)
   const [showAllWinRates, setShowAllWinRates] = useState(false)
   const [openTournament, setOpenTournament] = useState<number | null>(null)
@@ -88,6 +91,8 @@ export function AdminDashboard({ auth, onBack }: { auth: AdminAuth; onBack: () =
         setTournamentSets(ts)
         // Geo can be slow (external lookups) — load it separately so the rest renders first.
         fetchGeo(auth).then((g) => !cancelled && setGeo(g)).catch(() => {})
+        // Same for the database panel: exact row counts mean a scan per table.
+        fetchDatabaseStats(auth).then((d) => !cancelled && setDatabase(d)).catch(() => {})
       } catch (e) {
         if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load dashboard')
       }
@@ -196,10 +201,51 @@ export function AdminDashboard({ auth, onBack }: { auth: AdminAuth; onBack: () =
         )}
       </Panel>
 
+      <Panel
+        title="Database"
+        subtitle={
+          database
+            ? `${database.databaseName} — ${formatBytes(database.databaseSizeBytes)} total (including catalogs)`
+            : 'Row counts and on-disk size per table'
+        }
+      >
+        <DatabaseTables stats={database} />
+      </Panel>
+
       {openTournament != null && (
         <TournamentDetailModal tournamentId={openTournament} onClose={() => setOpenTournament(null)} />
       )}
     </AdminScreen>
+  )
+}
+
+/**
+ * Per-table row counts and storage, largest first, with a totals row. Sizes are what the tables
+ * themselves occupy; the whole-database figure in the panel subtitle is larger (it counts catalogs).
+ */
+function DatabaseTables({ stats }: { stats: DatabaseStats | null }) {
+  if (!stats) return <p style={cellStyle.muted}>Measuring tables…</p>
+  if (stats.tables.length === 0) return <p style={cellStyle.muted}>No tables found.</p>
+  const sum = (pick: (t: DatabaseStats['tables'][number]) => number) => stats.tables.reduce((a, t) => a + pick(t), 0)
+  return (
+    <Table head={['Table', 'Rows', 'Data', 'Indexes', 'Total']}>
+      {stats.tables.map((t) => (
+        <tr key={t.tableName}>
+          <td style={cellStyle.td}>{t.tableName}</td>
+          <td style={cellStyle.tdNum}>{formatCount(t.rows)}</td>
+          <td style={cellStyle.tdNum}>{formatBytes(t.tableBytes)}</td>
+          <td style={cellStyle.tdNum}>{formatBytes(t.indexBytes)}</td>
+          <td style={cellStyle.tdNum}>{formatBytes(t.totalBytes)}</td>
+        </tr>
+      ))}
+      <tr>
+        <td style={styles.totalCell}>{stats.tables.length} tables</td>
+        <td style={styles.totalCellNum}>{formatCount(sum((t) => t.rows))}</td>
+        <td style={styles.totalCellNum}>{formatBytes(sum((t) => t.tableBytes))}</td>
+        <td style={styles.totalCellNum}>{formatBytes(sum((t) => t.indexBytes))}</td>
+        <td style={styles.totalCellNum}>{formatBytes(sum((t) => t.totalBytes))}</td>
+      </tr>
+    </Table>
   )
 }
 
@@ -239,4 +285,6 @@ const styles: Record<string, React.CSSProperties> = {
   twoCol: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 18 },
   toggle: { background: 'none', border: 'none', color: adminTheme.accent, cursor: 'pointer', fontSize: 12, padding: 0 },
   clickableRow: { cursor: 'pointer' },
+  totalCell: { textAlign: 'left', color: adminTheme.text, fontWeight: 600, padding: '8px 10px', borderTop: `1px solid ${adminTheme.border}` },
+  totalCellNum: { textAlign: 'right', color: adminTheme.text, fontWeight: 600, padding: '8px 10px', borderTop: `1px solid ${adminTheme.border}` },
 }

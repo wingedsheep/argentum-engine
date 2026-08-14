@@ -34,16 +34,15 @@ class SetSuspectedExecutor : EffectExecutor<SetSuspectedEffect> {
         effect: SetSuspectedEffect,
         context: EffectContext
     ): EffectResult {
-        val entityId = TargetResolutionUtils.resolveTarget(effect.target, context)
+        // State-aware overload: the attachment-relative targets (EnchantedCreature — Convenient
+        // Target's "suspect enchanted creature") resolve only against the battlefield, and the
+        // state-less overload returns null for them, which would silently drop the whole suspect.
+        val entityId = TargetResolutionUtils.resolveTarget(effect.target, context, state)
             ?: return EffectResult.success(state)
         state.getEntity(entityId)?.get<CardComponent>()
             ?: return EffectResult.success(state)
 
-        val alreadySuspected = state.floatingEffects.any { fx ->
-            fx.effect.modification is SerializableModification.SetSuspected
-                && entityId in fx.effect.affectedEntities
-        }
-        if (alreadySuspected) {
+        if (com.wingedsheep.engine.handlers.predicates.isSuspected(state, entityId)) {
             return EffectResult.success(state)
         }
 

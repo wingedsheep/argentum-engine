@@ -35,10 +35,6 @@ fun GameSession.toPersistent(
             )
         },
         lobbyId = lobbyId,
-        replaySetup = getReplaySetup(),
-        recordedActions = getRecordedActions(),
-        recordedYields = getReplayYields(),
-        replayStartedAt = replayStartedAt?.toString(),
     )
 }
 
@@ -58,11 +54,13 @@ fun restoreGameSession(
     persistent: PersistentGameSession,
     cardRegistry: CardRegistry,
     printingRegistry: com.wingedsheep.engine.registry.PrintingRegistry? = null,
+    tokenArtRegistry: com.wingedsheep.engine.registry.TokenArtRegistry? = null,
 ): Pair<GameSession, List<PlayerIdentity>> {
     val session = GameSession(
         sessionId = persistent.sessionId,
         cardRegistry = cardRegistry,
         printingRegistry = printingRegistry,
+        tokenArtRegistry = tokenArtRegistry,
     )
 
     logger.info("Restoring game ${persistent.sessionId}: gameState=${if (persistent.gameState != null) "present" else "NULL"}, players=${persistent.playerInfos.size}")
@@ -83,13 +81,8 @@ fun restoreGameSession(
         sideboardLists = sideboards
     )
 
-    // Restore the compact-replay recording so a game interrupted by a restart can still be saved.
-    session.restoreReplayRecording(
-        setup = persistent.replaySetup,
-        actions = persistent.recordedActions,
-        startedAtIso = persistent.replayStartedAt,
-        yields = persistent.recordedYields,
-    )
+    // The compact-replay recording is NOT restored here — it lives in the ReplayStore, not in this
+    // blob, and the caller resumes it from there (see RedisGameRepository).
 
     // Restore player persistence info
     val playerInfo = persistent.playerInfos.associate { info ->

@@ -53,10 +53,11 @@ class AnyPlayerMayPayExecutor(
         val sourceCard = sourceContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Source has no card component")
 
-        // Get players in APNAP order
-        val activePlayer = state.activePlayerId
-            ?: return EffectResult.error(state, "No active player")
-        val apnapOrder = listOf(activePlayer) + state.turnOrder.filter { it != activePlayer }
+        // Get players in APNAP order (CR 101.4), skipping anyone who has left the game
+        if (state.activePlayerId == null) {
+            return EffectResult.error(state, "No active player")
+        }
+        val apnapOrder = state.apnapOrder
 
         // Scope to the players the effect offers the choice to ("any opponent may…" vs
         // "any player may…"), preserving APNAP order. Opponents are relative to the controller.

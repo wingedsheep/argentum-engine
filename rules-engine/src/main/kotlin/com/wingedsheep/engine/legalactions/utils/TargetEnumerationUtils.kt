@@ -5,17 +5,16 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.legalactions.TargetInfo
+import com.wingedsheep.engine.mechanics.targeting.ControllerHexproof
+import com.wingedsheep.engine.mechanics.targeting.ControllerShroud
 import com.wingedsheep.engine.mechanics.targeting.HexproofSuppression
 import com.wingedsheep.engine.mechanics.targeting.PlayerTargetRestriction
+import com.wingedsheep.engine.mechanics.targeting.StackObjectTargeting
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
-import com.wingedsheep.engine.state.components.battlefield.GrantsControllerHexproofComponent
-import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
-import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -146,9 +145,23 @@ class TargetEnumerationUtils(
             if (projected.hasKeyword(entityId, Keyword.HEXPROOF) && entityController != playerId &&
                 !HexproofSuppression.isSuppressedForCaster(state, projected, entityId, playerId)
             ) return@filter false
+            if (entityController != playerId && sourceId != null &&
+                hasHexproofFromSource(state, entityId, sourceId)
+            ) return@filter false
             if (projected.hasKeyword(entityId, Keyword.SHROUD)) return@filter false
             predicateEvaluator.matches(state, projected, entityId, filter.baseFilter, context)
         }
+    }
+
+    private fun hasHexproofFromSource(state: GameState, targetId: EntityId, sourceId: EntityId): Boolean {
+        val projected = state.projectedState
+        val sourceColors = projected.getColors(sourceId).ifEmpty {
+            state.getEntity(sourceId)?.get<CardComponent>()?.colors?.map { it.name }?.toSet().orEmpty()
+        }
+        if (sourceColors.any { projected.hasKeyword(targetId, "HEXPROOF_FROM_$it") }) return true
+        if (sourceColors.size == 1 && projected.hasKeyword(targetId, "HEXPROOF_FROM_MONOCOLORED")) return true
+        val sourceTypes = state.getEntity(sourceId)?.get<CardComponent>()?.typeLine?.cardTypes.orEmpty()
+        return sourceTypes.any { projected.hasKeyword(targetId, "HEXPROOF_FROM_CARDTYPE_${it.name}") }
     }
 
     fun findValidGraveyardTargets(
@@ -224,14 +237,22 @@ class TargetEnumerationUtils(
         filter: TargetFilter
     ): List<EntityId> {
         val context = PredicateContext(controllerId = playerId)
-        return state.stack.filter { spellId ->
-            // "Target spell" only matches actual spells — never triggered/activated abilities on
-            // the stack. A spell is a card on the stack (CR 112.1); an ability on the stack is an
-            // ability, not a spell (CR 113.3b/c, 113.7a). The base filter is `Any` (zone = STACK)
-            // and would otherwise pass ability entities, surfacing a castable counterspell whenever
-            // anything is on the stack — which previously left the AI in an infinite re-pick loop.
-            state.isSpellOnStack(spellId) &&
-                predicateEvaluator.matches(state, state.projectedState, spellId, filter.baseFilter, context)
+        // "Target spell" only matches actual spells — never triggered/activated abilities on the
+        // stack. A spell is a card on the stack (CR 112.1); an ability on the stack is an ability,
+        // not a spell (CR 113.3b/c, 113.7a). The base filter is `Any` (zone = STACK) and would
+        // otherwise pass ability entities, surfacing a castable counterspell whenever anything is on
+        // the stack — which previously left the AI in an infinite re-pick loop.
+        //
+        // A filter that *does* name an ability ("counter target ability", "copy target activated or
+        // triggered ability you control") must enumerate ability entities, or the card is executable
+        // but never offered: the enumeration below is what the server sends to the client and the AI
+        // as legal targets, so a blanket spells-only filter here makes every ability-targeting card
+        // unplayable through the UI even though the engine would accept the action. Same seam, same
+        // answer as the authoritative target set in `TargetFinder` — see [StackObjectTargeting].
+        val abilitiesAllowed = StackObjectTargeting.permitsAbilities(filter.baseFilter)
+        return state.stack.filter { stackId ->
+            if (!abilitiesAllowed && !state.isSpellOnStack(stackId)) return@filter false
+            predicateEvaluator.matches(state, state.projectedState, stackId, filter.baseFilter, context)
         }
     }
 
@@ -272,14 +293,26 @@ class TargetEnumerationUtils(
                 // number of legal targets on the board, so the client offers all of them.
                 // A board-state `dynamicMaxCount` (anything but XValue, which is unbound
                 // until the X is chosen and so is surfaced via [xConstrainsCount]) is
-                // resolved here so the UI caps at the right number immediately.
+                // resolved here so the UI caps at the right number immediately — including
+                // *alongside* `unlimited`, where the wording is "any number of target …" but
+                // the effect still bounds how many targets are usable (Chandra, Flameshaper's
+                // "8 damage divided as you choose among any number of target creatures and/or
+                // planeswalkers" — each target needs at least 1 damage, so at most 8). Without
+                // the cap the player could pick a ninth target and then be unable to produce a
+                // legal division.
                 maxTargets = when {
-                    req.unlimited -> validTargets.size
+                    req.unlimited ->
+                        minOf(
+                            validTargets.size,
+                            resolveStaticDynamicMax(state, req, playerId, sourceId) ?: validTargets.size
+                        )
                     else -> resolveStaticDynamicMax(state, req, playerId, sourceId) ?: req.count
                 },
                 validTargets = validTargets,
                 targetZone = getTargetZone(req),
+                mustDifferFromEarlier = req is TargetOther,
                 xConstrainsManaValue = requirementUsesManaValueAtMostX(req),
+                xConstrainsManaValueExactly = requirementUsesManaValueEqualsX(req),
                 xConstrainsPower = requirementUsesPowerEqualsX(req),
                 xConstrainsCount = requirementXConstrainsCount(req)
             )
@@ -345,6 +378,27 @@ class TargetEnumerationUtils(
 
     /**
      * True when [requirement] is a [TargetObject] whose filter contains
+     * [CardPredicate.ManaValueEqualsX] (anywhere in the predicate tree). The *equality* sibling of
+     * [requirementUsesManaValueAtMostX] — "target creature card in your graveyard with mana value
+     * X" (Likeness Looter, Rydia, Summoner of Mist) rather than "mana value X or less". Surfaced to
+     * the client so it narrows the permissive enumeration to cards whose mana value equals the
+     * chosen X once X is picked.
+     */
+    fun requirementUsesManaValueEqualsX(requirement: TargetRequirement): Boolean {
+        val filter = (requirement as? TargetObject)?.filter ?: return false
+        return filter.baseFilter.cardPredicates.any { containsManaValueEqualsX(it) }
+    }
+
+    private fun containsManaValueEqualsX(predicate: CardPredicate): Boolean = when (predicate) {
+        CardPredicate.ManaValueEqualsX -> true
+        is CardPredicate.And -> predicate.predicates.any { containsManaValueEqualsX(it) }
+        is CardPredicate.Or -> predicate.predicates.any { containsManaValueEqualsX(it) }
+        is CardPredicate.Not -> containsManaValueEqualsX(predicate.predicate)
+        else -> false
+    }
+
+    /**
+     * True when [requirement] is a [TargetObject] whose filter contains
      * [CardPredicate.PowerEqualsX] (anywhere in the predicate tree). Surfaced to the client
      * so it re-filters the permissive enumeration down to creatures whose power equals the
      * chosen X after X selection (Ent-Draught Basin).
@@ -368,26 +422,11 @@ class TargetEnumerationUtils(
 
     // Player protection checks
 
-    fun playerHasShroud(state: GameState, playerId: EntityId): Boolean {
-        val playerEntity = state.getEntity(playerId)
-        if (playerEntity?.has<PlayerShroudComponent>() == true) return true
-        return state.getBattlefield().any { entityId ->
-            val container = state.getEntity(entityId) ?: return@any false
-            container.get<GrantsControllerShroudComponent>() != null &&
-                container.get<ControllerComponent>()?.playerId == playerId
-        }
-    }
+    fun playerHasShroud(state: GameState, playerId: EntityId): Boolean =
+        ControllerShroud.appliesTo(state, playerId)
 
-    fun playerHasHexproof(state: GameState, playerId: EntityId): Boolean {
-        val playerEntity = state.getEntity(playerId)
-        if (playerEntity?.has<PlayerHexproofComponent>() == true) return true
-
-        return state.getBattlefield().any { entityId ->
-            val container = state.getEntity(entityId) ?: return@any false
-            container.get<GrantsControllerHexproofComponent>() != null &&
-                container.get<ControllerComponent>()?.playerId == playerId
-        }
-    }
+    fun playerHasHexproof(state: GameState, playerId: EntityId): Boolean =
+        ControllerHexproof.appliesTo(state, playerId)
 
     fun playerHasHexproofAgainst(state: GameState, playerId: EntityId, controllerId: EntityId): Boolean {
         return playerId != controllerId && playerHasHexproof(state, playerId)

@@ -1,9 +1,33 @@
 {
+  "Abomination, Terrifying Titan": [
+    "removal",
+    "creature-removal"
+  ],
+  "Atlantis Attacks": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Avengers Disassembled": [
+    "removal",
+    "creature-removal"
+  ],
+  "Avengers: Under Siege": [
+    "removal",
+    "creature-removal"
+  ],
   "Beast Within": [
     "removal",
     "creature-removal",
     "artifact-removal",
     "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Bullseye, Death Dealer": [
+    "removal",
+    "creature-removal",
     "planeswalker-removal"
   ],
   "Captain America, First Avenger": [
@@ -18,11 +42,28 @@
     "enchantment-removal",
     "planeswalker-removal"
   ],
+  "Cloak and Dagger, Entwined": [
+    "removal",
+    "creature-removal"
+  ],
+  "Cruel Alliance": [
+    "removal",
+    "creature-removal"
+  ],
   "Dark Deed": [
     "removal",
     "creature-removal"
   ],
+  "Death to Our Enemies": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
   "Elektra, Daughter of the Hand": [
+    "removal",
+    "creature-removal"
+  ],
+  "Epic Fight": [
     "removal",
     "creature-removal"
   ],
@@ -52,14 +93,39 @@
     "removal",
     "creature-removal"
   ],
+  "Guerrilla Gorilla": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
+  ],
   "HULK SMASH!": [
     "removal",
     "creature-removal",
     "artifact-removal"
   ],
+  "Helicarrier Strike": [
+    "removal",
+    "creature-removal"
+  ],
+  "Hour of Defeat": [
+    "removal",
+    "creature-removal"
+  ],
   "Iron Fist, Living Weapon": [
     "removal",
     "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Jennifer Walters // The Sensational She-Hulk": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Justice, Vance Astrovik": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
     "planeswalker-removal"
   ],
   "Killmonger, Scourge of Wakanda": [
@@ -67,6 +133,11 @@
     "creature-removal",
     "artifact-removal",
     "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Lightning Strike": [
+    "removal",
+    "creature-removal",
     "planeswalker-removal"
   ],
   "M.O.D.O.K.": [
@@ -90,7 +161,15 @@
     "removal",
     "creature-removal"
   ],
+  "Path to Exile": [
+    "removal",
+    "creature-removal"
+  ],
   "Photon Blast Barrage": [
+    "removal",
+    "creature-removal"
+  ],
+  "Punishing Punch": [
     "removal",
     "creature-removal"
   ],
@@ -98,9 +177,35 @@
     "removal",
     "creature-removal"
   ],
+  "Red Guardian, Super-Soldier": [
+    "removal",
+    "creature-removal"
+  ],
+  "Red Hulk": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Repulsor Blast": [
+    "removal",
+    "creature-removal"
+  ],
+  "Righteous Fury": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ronin, Shadow Stalker": [
+    "removal",
+    "creature-removal"
+  ],
   "Secret Invasion": [
     "removal",
     "creature-removal"
+  ],
+  "She-Hulk, Jade Defender": [
+    "removal",
+    "artifact-removal",
+    "enchantment-removal"
   ],
   "Spider-Woman, Secret Agent": [
     "removal",
@@ -110,6 +215,10 @@
     "removal",
     "artifact-removal",
     "enchantment-removal"
+  ],
+  "Super Villain Lockup": [
+    "removal",
+    "creature-removal"
   ],
   "Super-Skrull": [
     "removal",
@@ -129,10 +238,38 @@
   "The Ruinous Wrecking Crew": [
     "removal"
   ],
+  "The Serpent Society": [
+    "removal",
+    "creature-removal"
+  ],
+  "The Super Hero Civil War": [
+    "removal",
+    "creature-removal"
+  ],
   "Thor, God of Thunder": [
     "removal",
     "creature-removal",
     "planeswalker-removal"
+  ],
+  "Trickster's Stratagem": [
+    "removal",
+    "creature-removal"
+  ],
+  "Truck Toss": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Web Up": [
+    "removal",
+    "creature-removal",
+    "artifact-removal",
+    "enchantment-removal",
+    "planeswalker-removal"
+  ],
+  "Widow's Bite": [
+    "removal",
+    "creature-removal"
   ],
   "Wolverine, Fierce Fighter": [
     "removal",

@@ -1,0 +1,1531 @@
+{
+  "belladonna took": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bilbo's gambit": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "eagle of the great shelf": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "iron hills blacksmith": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the mountain-king's return": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the queen of dale": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "roads go ever, ever on": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "elrond, moon-reader": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "elven raft-steerer": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "azog, moria's ruin": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "gathering of darkness": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "nighthowl pursuer": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the sackville-bagginses": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bothersome noisemaker": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "burn, burn, tree and fern": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "desolation of smaug": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "the misty mountains cold": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "misty mountains raider": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "smaug the magnificent": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "beorn the fierce": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "beorn's hospitality": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "down in the valley": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "wood elves": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bard, king of dale": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bard the bowman": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bard's company": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bifur, melodic rider": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bolg of the north": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Amass Goblins",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the chief warg": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "chief warg's company": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the great goblin": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "silvan reveler": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "thorin oakenshield": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Storied",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tom, bert, and william": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "my precious": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "allure of power": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "orcrist, goblin-cleaver": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "sting, bilbo's sword": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "the lonely mountain": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "plains": {
+    "archetypes": [],
+    "fixing": [
+      "W"
+    ],
+    "splashable": false
+  },
+  "island": {
+    "archetypes": [],
+    "fixing": [
+      "U"
+    ],
+    "splashable": false
+  },
+  "swamp": {
+    "archetypes": [],
+    "fixing": [
+      "B"
+    ],
+    "splashable": false
+  },
+  "mountain": {
+    "archetypes": [],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "forest": {
+    "archetypes": [],
+    "fixing": [
+      "G"
+    ],
+    "splashable": false
+  },
+  "wizard's staff": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "head of the hunt": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "mirkwood pathmaker": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "lake-town mariners": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "gone fishing": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "desolation prowler": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "great ugly-looking goblin": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "clap! snap!": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "woodland weavemaster": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "ori, keeper of songs": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Storied",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bilbo baggins, burglar": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "take a glance": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "gollum, silent slinker": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "meager meal": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dain ironfoot": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Storied",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dori, bearer of friends": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "gloin the mighty": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "easy pickings": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "R"
+    ],
+    "splashable": false
+  },
+  "beorn, reluctant host": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "till and tend": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dancing from dark to dawn": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "gigantic big bear": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "nasty little rabbit": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "old fat spider": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ordinary bear": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "wilderland scrounger": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dain's company": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "duskwatch hunter": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "eagle's rescue": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "fearsome goblin pair": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "goblin plate mail": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Amass Goblins",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "large bear": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "mirkwood nurturer": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "nori, teller of tales": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "patient instructor": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dwarven mattock": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Storied",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "thror's map": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "elven passage": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "elvenking's halls": {
+    "archetypes": [],
+    "fixing": [
+      "U",
+      "G"
+    ],
+    "splashable": false
+  },
+  "goblin-town": {
+    "archetypes": [],
+    "fixing": [
+      "B",
+      "R"
+    ],
+    "splashable": false
+  },
+  "hobbit hole": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "iron hills": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "R"
+    ],
+    "splashable": false
+  },
+  "lake-town": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U"
+    ],
+    "splashable": false
+  },
+  "mirkwood": {
+    "archetypes": [],
+    "fixing": [
+      "B",
+      "G"
+    ],
+    "splashable": false
+  },
+  "fili the pathfinder": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "confusticate and bebother": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "plunder the trollshaws": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "uncover the moon-letters": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "rage into the valley": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "balin, loremaster": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bejeweled warg": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "troll negotiations": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dwalin, weaponmaster": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Storied",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "thranduil, sindarin liege": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "silvan rally": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "thranduil's company": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Landfall",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "key to the side-door": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "well-worn spatula": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "rhovanion rampager": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "kili the resourceful": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "along the crooked way": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Amass Goblins",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "stone-giant of high pass": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bombur, gentle dreamer": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Storied",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "oin the brave": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "long-bodied grey dog": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "old thrush": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "troop of ponies": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  },
+  "bofur, reliable guardian": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "concerted care": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "celebrate the mountain-king": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dain, lord of the iron hills": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Storied",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dwarven provisioner": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dwarven shortsword": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "esgaroth garrison": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      },
+      {
+        "archetype": "Humans",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "lake-town lookout": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "lake-town toymaker": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "moment of glory": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "thorin's last stand": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "vow to erebor": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "lakeshore apothecary": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "long lake nuisance": {
+    "archetypes": [
+      {
+        "archetype": "Humans",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "mirkwood meditator": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "dreaded bat-cloud": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "great fierce bee": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ravening warg": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "reverent howl": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "stir up trouble": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "goblin-town flunkies": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "iron hills stalwart": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "ragged short spear": {
+    "archetypes": [
+      {
+        "archetype": "Storied",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "snowslope hunter": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "tidings of war": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "attercop": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "boughside wanderers": {
+    "archetypes": [
+      {
+        "archetype": "Landfall",
+        "role": "payoff"
+      },
+      {
+        "archetype": "Landfall",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "guardian of the halls": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "enabler"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "wargling": {
+    "archetypes": [
+      {
+        "archetype": "Ferocious",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [],
+    "splashable": false
+  },
+  "bolg's company": {
+    "archetypes": [
+      {
+        "archetype": "Amass Goblins",
+        "role": "payoff"
+      }
+    ],
+    "fixing": [
+      "B",
+      "R"
+    ],
+    "splashable": false
+  },
+  "giant's boulder": {
+    "archetypes": [],
+    "fixing": [
+      "W",
+      "U",
+      "B",
+      "R",
+      "G"
+    ],
+    "splashable": false
+  }
+}

@@ -54,7 +54,7 @@ class CombatTaxContinuationResumer(
         if (response !is ManaSourcesSelectedResponse) {
             return ExecutionResult.error(state, "Expected mana sources selected response for attack tax")
         }
-        if (!response.autoPay && response.selectedSources.isEmpty()) {
+        if (response.isDecline(floatingCovers(state, continuation.attackingPlayer, continuation.manaCost))) {
             // Decline: no mana tapped, no AttackingComponent applied. Drop back into
             // DECLARE_ATTACKERS as a clean no-op (no error banner).
             return ExecutionResult.success(state)
@@ -81,7 +81,7 @@ class CombatTaxContinuationResumer(
         if (response !is ManaSourcesSelectedResponse) {
             return ExecutionResult.error(state, "Expected mana sources selected response for block tax")
         }
-        if (!response.autoPay && response.selectedSources.isEmpty()) {
+        if (response.isDecline(floatingCovers(state, continuation.blockingPlayer, continuation.manaCost))) {
             return ExecutionResult.success(state)
         }
 
@@ -165,4 +165,12 @@ class CombatTaxContinuationResumer(
         }
         return TaxPayment(currentState, events)
     }
+
+    /**
+     * Whether [playerId]'s floating mana already covers [cost] — see
+     * [ManaSourcesSelectedResponse.isDecline]. A player who taps their own sources during the
+     * payment window (CR 605.3a) confirms with an empty selection, which must not read as a refusal.
+     */
+    private fun floatingCovers(state: GameState, playerId: EntityId, cost: ManaCost): Boolean =
+        com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.floatingManaCovers(state, playerId, cost)
 }

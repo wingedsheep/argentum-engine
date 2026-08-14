@@ -39,8 +39,7 @@ class EffectAndTriggerContinuationResumer(
         resumer(MayRevealCardFromHandContinuation::class, ::resumeMayRevealCardFromHand),
         resumer(BeholdContinuation::class, ::resumeBehold),
         resumer(MayTriggerContinuation::class, ::resumeMayTrigger),
-        resumer(BatchMayTriggerContinuation::class, ::resumeBatchMayTrigger),
-        resumer(ReflexiveTriggerResolveContinuation::class, ::resumeReflexiveTriggerResolve)
+        resumer(BatchMayTriggerContinuation::class, ::resumeBatchMayTrigger)
     )
 
     private fun resumeEffect(
@@ -51,13 +50,17 @@ class EffectAndTriggerContinuationResumer(
     ): ExecutionResult {
         val effectResult = effectRunner.executeRemainingEffects(state, continuation.remainingEffects, continuation.effectContext)
         if (effectResult.isPaused) return effectResult.toExecutionResult()
-        // A drained composite hands its pipeline collections to the frame beneath —
-        // e.g. a DoAction gate scoring SuccessCriterion.CollectionNonEmpty. The full
-        // frame map (not just this drain's accumulation) is what propagates: keys
-        // injected into this frame by an earlier select-resume are part of it.
+        // A drained composite hands its pipeline storage to the frame beneath — e.g. a DoAction
+        // gate scoring SuccessCriterion.CollectionNonEmpty, or a reflexive "when you do" reading a
+        // number the action stored. The full frame maps (not just this drain's accumulation) are
+        // what propagate: keys injected into this frame by an earlier select-resume are part of
+        // them. Numbers and chosen values ride along with collections so that pausing mid-composite
+        // preserves exactly what completing it synchronously would have.
         val stateWithCollections = exposeCollectionsToNextFrame(
             effectResult.state,
-            continuation.effectContext.pipeline.storedCollections + effectResult.updatedCollections
+            continuation.effectContext.pipeline.storedCollections + effectResult.updatedCollections,
+            continuation.effectContext.pipeline.storedNumbers + effectResult.updatedStoredNumbers,
+            continuation.effectContext.pipeline.chosenValues + effectResult.updatedChosenValues,
         )
         return checkForMore(stateWithCollections, effectResult.events.toList())
     }
@@ -121,13 +124,16 @@ class EffectAndTriggerContinuationResumer(
                 lastKnownToughness = continuation.lastKnownToughness,
                 diedBatchTotalPower = continuation.diedBatchTotalPower,
                 triggerScryCount = continuation.triggerScryCount,
+                triggerDiscardCount = continuation.triggerDiscardCount,
                 triggerDiscoverValue = continuation.triggerDiscoverValue,
                 triggerExcessDamageAmount = continuation.triggerExcessDamageAmount,
                 triggerRecipientToughness = continuation.triggerRecipientToughness,
                 triggerManaSpentOnTriggeringSpell = continuation.triggerManaSpentOnTriggeringSpell,
                 triggerColorsSpentOnTriggeringSpell = continuation.triggerColorsSpentOnTriggeringSpell,
                 triggerManaValueOfTriggeringSpell = continuation.triggerManaValueOfTriggeringSpell,
-                triggerXValueOfTriggeringSpell = continuation.triggerXValueOfTriggeringSpell
+                triggerXValueOfTriggeringSpell = continuation.triggerXValueOfTriggeringSpell,
+                xValue = continuation.xValue,
+                carriedPipeline = continuation.carriedPipeline
             )
             val stackResult = services.stackResolver.putTriggeredAbility(state, elseComponent, emptyList())
             if (!stackResult.isSuccess) return stackResult
@@ -175,13 +181,16 @@ class EffectAndTriggerContinuationResumer(
             triggerModesChosenCount = continuation.triggerModesChosenCount,
             enchantedCreatureLastKnownPower = continuation.enchantedCreatureLastKnownPower,
             triggerScryCount = continuation.triggerScryCount,
+            triggerDiscardCount = continuation.triggerDiscardCount,
             triggerDiscoverValue = continuation.triggerDiscoverValue,
             triggerExcessDamageAmount = continuation.triggerExcessDamageAmount,
             triggerRecipientToughness = continuation.triggerRecipientToughness,
             triggerManaSpentOnTriggeringSpell = continuation.triggerManaSpentOnTriggeringSpell,
             triggerColorsSpentOnTriggeringSpell = continuation.triggerColorsSpentOnTriggeringSpell,
             triggerManaValueOfTriggeringSpell = continuation.triggerManaValueOfTriggeringSpell,
-            triggerXValueOfTriggeringSpell = continuation.triggerXValueOfTriggeringSpell
+            triggerXValueOfTriggeringSpell = continuation.triggerXValueOfTriggeringSpell,
+            xValue = continuation.xValue,
+            carriedPipeline = continuation.carriedPipeline
         )
 
         val stackResult = services.stackResolver.putTriggeredAbility(
@@ -476,13 +485,15 @@ class EffectAndTriggerContinuationResumer(
                 is Gate.MayDecide -> continuation.then
                 is Gate.MayPay ->
                     CompositeEffect(listOf(gate.cost, continuation.then), stopOnError = true)
-                // WhenCondition, DoAction, and MayPayX never push this (yes/no) continuation — the
-                // first resolves synchronously in the executor, the second via the action-drain
-                // GatedActionContinuation, the third via the number-chooser MayPayXContinuation — so
-                // these branches are unreachable, present only for exhaustiveness.
+                // WhenCondition, DoAction, MayPayX and OnceEachTurn never push this (yes/no)
+                // continuation — the first and fourth resolve synchronously in the executor, the
+                // second via the action-drain GatedActionContinuation, the third via the
+                // number-chooser MayPayXContinuation — so these branches are unreachable, present
+                // only for exhaustiveness.
                 is Gate.WhenCondition -> continuation.then
                 is Gate.DoAction -> continuation.then
                 is Gate.MayPayX -> continuation.then
+                is Gate.OnceEachTurn -> continuation.then
             }
         } else {
             continuation.otherwise
@@ -492,18 +503,32 @@ class EffectAndTriggerContinuationResumer(
             return checkForMore(state, emptyList())
         }
 
-        val result = services.effectExecutorRegistry
+        val branchResult = services.effectExecutorRegistry
             .execute(state, effectToExecute, continuation.effectContext)
-            .toExecutionResult()
+        val result = branchResult.toExecutionResult()
 
         if (result.isPaused) {
             return result
         }
 
+        // The branch's pipeline storage belongs to the frame beneath, exactly as a drained composite's
+        // does in [resumeEffect]. A gate sits *inside* a composite ("you may discard your hand. Draw X
+        // cards, where X is the number of cards discarded this way" — Balin, Loremaster), so the
+        // later siblings are the readers of whatever the `then` branch gathered. Dropping it here made
+        // the same card work or not depending on whether the may-question happened to be asked: an
+        // auto-answered or skipped gate runs `then` synchronously and keeps its storage, while a
+        // prompted one lost it and the sibling read an unset variable as 0.
+        val stateWithCollections = exposeCollectionsToNextFrame(
+            result.state,
+            continuation.effectContext.pipeline.storedCollections + branchResult.updatedCollections,
+            continuation.effectContext.pipeline.storedNumbers + branchResult.updatedStoredNumbers,
+            continuation.effectContext.pipeline.chosenValues + branchResult.updatedChosenValues,
+        )
+
         // Preserve `triggersAlreadyProcessed` across the continuation drain: if the gated effect ran
         // a nested cast that already stacked its cast-triggers (Vaan casting an opponent's card via
         // MayEffect), SubmitDecisionHandler must not re-detect the same SpellCastEvent.
-        return checkForMore(result.state, result.events.toList())
+        return checkForMore(stateWithCollections, result.events.toList())
             .copy(triggersAlreadyProcessed = result.triggersAlreadyProcessed)
     }
 
@@ -578,41 +603,4 @@ class EffectAndTriggerContinuationResumer(
         return checkForMore(result.state, events + result.events.toList())
     }
 
-    private fun resumeReflexiveTriggerResolve(
-        state: GameState,
-        continuation: ReflexiveTriggerResolveContinuation,
-        response: DecisionResponse,
-        checkForMore: CheckForMore
-    ): ExecutionResult {
-        if (response !is TargetsResponse) {
-            return ExecutionResult.error(state, "Expected target selection response for reflexive trigger")
-        }
-
-        val selectedTargets = response.selectedTargets.flatMap { (_, targetIds) ->
-            targetIds.map { entityId -> entityIdToChosenTarget(state, entityId) }
-        }
-
-        if (selectedTargets.isEmpty()) {
-            // Player declined targets (optional) or no valid targets selected
-            return checkForMore(state, emptyList())
-        }
-
-        // Execute the reflexive effect with the chosen targets
-        val context = continuation.effectContext.copy(
-            targets = selectedTargets,
-            pipeline = continuation.effectContext.pipeline.copy(
-                namedTargets = com.wingedsheep.engine.handlers.EffectContext.buildNamedTargets(
-                    continuation.reflexiveTargetRequirements, selectedTargets
-                )
-            )
-        )
-
-        val result = services.effectExecutorRegistry.execute(state, continuation.reflexiveEffect, context).toExecutionResult()
-
-        if (result.isPaused) {
-            return result
-        }
-
-        return checkForMore(result.state, result.events.toList())
-    }
 }

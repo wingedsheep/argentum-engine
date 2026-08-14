@@ -1,3 +1,213 @@
+// Abundant Maw
+{
+    "name": "Abundant Maw",
+    "manaCost": "{8}",
+    "typeLine": "Creature — Eldrazi Leech",
+    "oracleText": "Emerge {6}{B} (You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature's mana value.)\nWhen you cast this spell, target opponent loses 3 life and you gain 3 life.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "keywords": [
+        "EMERGE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Emerge",
+            "cost": "{6}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target opponent"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "target opponent"
+                },
+                "descriptionOverride": "When you cast this spell, target opponent loses 3 life and you gain 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/a/8a4e7ef7-7958-4d7c-b319-4d3db7955002.jpg?1783937529"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Alchemist's Greeting
+{
+    "name": "Alchemist's Greeting",
+    "manaCost": "{4}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Alchemist's Greeting deals 4 damage to target creature.\nMadness {1}{R} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "ContextTarget",
+                "index": 0
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "artist": "Jakub Kasper",
+        "flavorText": "\"Impressive.\"\n—Chandra Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f33aaa1-cbaa-40a9-889e-3eca26b3a549.jpg?1783937468"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Bedlam Reveler
+{
+    "name": "Bedlam Reveler",
+    "manaCost": "{6}{R}{R}",
+    "typeLine": "Creature — Devil Horror",
+    "oracleText": "This spell costs {1} less to cast for each instant and sorcery card in your graveyard.\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhen this creature enters, discard your hand, then draw three cards.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "discardedHand"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discardedHand",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature enters, discard your hand, then draw three cards."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": {
+                        "type": "CardsInGraveyardMatchingFilter",
+                        "filter": "instant|sorcery"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "RARE",
+        "artist": "Jama Jurabaev",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/0232f188-44f2-4aee-963c-6f6edc4a21ac.jpg?1783937466",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases, then apply any cost reductions (such as that of Bedlam Reveler's first ability). The mana value of the spell is determined by only its mana cost, no matter what the total cost to cast that spell was."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "Bedlam Reveler's first ability can't reduce the {R}{R} in its cost."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If you have no cards in hand when Bedlam Reveler's enters ability resolves, you just draw three cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Blood Mist
 {
     "name": "Blood Mist",
@@ -43,6 +253,207 @@
     ]
 }
 
+// Bloodhall Priest
+{
+    "name": "Bloodhall Priest",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Creature — Vampire Cleric",
+    "oracleText": "Whenever this creature enters or attacks, if you have no cards in hand, this creature deals 2 damage to any target.\nMadness {1}{B}{R} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{1}{B}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Hand",
+                            "negate": true
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "any target"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "any target"
+                },
+                "triggerCondition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Hand",
+                    "negate": true
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Hand",
+                            "negate": true
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "any target"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "any target"
+                },
+                "triggerCondition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Hand",
+                    "negate": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Mark Winters",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4824cca-0039-4486-be8f-650dac2c8e9f.jpg?1783937434",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "If you have a card in hand at the moment the trigger condition occurs, Bloodhall Priest's ability won't trigger. If you have a card in hand as the ability resolves, no damage will be dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Borrowed Hostility
+{
+    "name": "Borrowed Hostility",
+    "manaCost": "{R}",
+    "typeLine": "Instant",
+    "oracleText": "Escalate {3} (Pay this cost for each mode chosen beyond the first.)\nChoose one or both —\n• Target creature gets +3/+0 until end of turn.\n• Target creature gains first strike until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "power target"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "power target"
+                        }
+                    ],
+                    "description": "Target creature gets +3/+0 until end of turn."
+                },
+                {
+                    "effect": {
+                        "type": "GrantKeyword",
+                        "keyword": "FIRST_STRIKE",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "first strike target"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "first strike target"
+                        }
+                    ],
+                    "description": "Target creature gains first strike until end of turn."
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1,
+            "additionalManaCostPerExtraMode": "{3}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd91a194-6043-4c2d-afc8-427c38996ef4.jpg?1783937466",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If two chosen modes target a creature, you may choose the same creature for both targets or different creatures."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If one target becomes illegal, the other target is still affected. If all targets become illegal, the spell doesn't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Brisela, Voice of Nightmares
 {
     "name": "Brisela, Voice of Nightmares",
@@ -80,7 +491,60 @@
         "artist": "Clint Cearley",
         "imageUri": "https://cards.scryfall.io/normal/front/5/a/5a7a212e-e0b6-4f12-a95c-173cae023f93.jpg?1782711940"
     },
-    "colorIdentityOverride": []
+    "colorIdentityOverride": [],
+    "hasNoManaCost": true,
+    "meldResult": true
+}
+
+// Bruna, the Fading Light
+{
+    "name": "Bruna, the Fading Light",
+    "manaCost": "{5}{W}{W}",
+    "typeLine": "Legendary Creature — Angel Horror",
+    "oracleText": "When you cast this spell, you may return target Angel or Human creature card from your graveyard to the battlefield.\nFlying, vigilance\n(Melds with Gisela, the Broken Blade.)",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 7
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target Angel or Human creature card in your graveyard"
+                    },
+                    "destination": "Battlefield"
+                },
+                "optional": true,
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature Angel|Human own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "target Angel or Human creature card in your graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "15",
+        "rarity": "RARE",
+        "artist": "Clint Cearley",
+        "flavorText": "She now sees only Emrakul's visions.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/27907985-b5f6-4098-ab43-15a0c2bf94d5.jpg?1783937523"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Cemetery Recruitment
@@ -217,7 +681,9 @@
     },
     "colorIdentityOverride": [
         "BLACK"
-    ]
+    ],
+    "hasNoManaCost": true,
+    "meldResult": true
 }
 
 // Clear Shot
@@ -292,6 +758,906 @@
     ]
 }
 
+// Collective Brutality
+{
+    "name": "Collective Brutality",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Escalate—Discard a card. (Pay this cost for each mode chosen beyond the first.)\nChoose one or more —\n• Target opponent reveals their hand. You choose an instant or sorcery card from it. That player discards that card.\n• Target creature gets -2/-2 until end of turn.\n• Target opponent loses 2 life and you gain 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RevealHand",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "reveal opponent"
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "ContextPlayer",
+                                        "index": 0
+                                    }
+                                },
+                                "storeAs": "opponentHand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "opponentHand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "filter": "instant|sorcery",
+                                "storeSelected": "toDiscard",
+                                "prompt": "Choose an instant or sorcery card to discard",
+                                "showAllCards": true,
+                                "alwaysPrompt": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "toDiscard",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard",
+                                    "player": {
+                                        "type": "ContextPlayer",
+                                        "index": 0
+                                    }
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "reveal opponent"
+                        }
+                    ],
+                    "description": "Target opponent reveals their hand. You choose an instant or sorcery card from it. That player discards that card."
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "weakened creature"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "weakened creature"
+                        }
+                    ],
+                    "description": "Target creature gets -2/-2 until end of turn."
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "drained opponent"
+                                }
+                            },
+                            {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "drained opponent"
+                        }
+                    ],
+                    "description": "Target opponent loses 2 life and you gain 2 life."
+                }
+            ],
+            "chooseCount": 3,
+            "minChooseCount": 1,
+            "additionalCostPerExtraMode": "AtomDiscard"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "rarity": "RARE",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb94a02f-4660-45b6-8a39-941b710cf8f3.jpg?1783937489",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You choose all of your modes at once. You can't wait to perform one mode's actions and then decide to choose more modes."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "You can't choose any one mode multiple times."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If one target of an escalate spell becomes illegal, the other targets will still be affected. If all of the targets become illegal, the spell won't resolve."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Effects that reduce the cost of spells reduce the total cost, including any escalate costs added."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If an effect allows you to cast a spell that has escalate without paying its mana cost, you pay escalate costs for that spell if you choose more than one mode."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Collective Defiance
+{
+    "name": "Collective Defiance",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Escalate {1} (Pay this cost for each mode chosen beyond the first.)\nChoose one or more —\n• Target player discards all the cards in their hand, then draws that many cards.\n• Collective Defiance deals 4 damage to target creature.\n• Collective Defiance deals 3 damage to target opponent or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand",
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            }
+                                        },
+                                        "storeAs": "discardedHand"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "discardedHand",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Graveyard",
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            }
+                                        },
+                                        "moveType": "Discard"
+                                    }
+                                ]
+                            },
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "VariableReference",
+                                    "variableName": "discardedHand_count"
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "wheel player"
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "wheel player"
+                        }
+                    ],
+                    "description": "Target player discards their hand, then draws that many cards."
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "damage creature"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "damage creature"
+                        }
+                    ],
+                    "description": "Collective Defiance deals 4 damage to target creature."
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "damage opponent or planeswalker"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponentOrPlaneswalker",
+                            "id": "damage opponent or planeswalker"
+                        }
+                    ],
+                    "description": "Collective Defiance deals 3 damage to target opponent or planeswalker."
+                }
+            ],
+            "chooseCount": 3,
+            "minChooseCount": 1,
+            "additionalManaCostPerExtraMode": "{1}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/8960883f-3813-412b-9a5b-f8cf8d566fac.jpg?1783937466",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "You choose all of your modes at once. You can't wait to perform one mode's actions and then decide to choose more modes."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If one target of an escalate spell becomes illegal, the other targets will still be affected. If all of the targets become illegal, the spell won't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Conduit of Storms
+{
+    "name": "Conduit of Storms",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Werewolf Horror",
+    "oracleText": "Whenever this creature attacks, add {R} at the beginning of your next main phase this turn.\n{3}{R}{R}: Transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "POSTCOMBAT_MAIN",
+                    "effect": {
+                        "type": "AddMana",
+                        "color": "RED"
+                    },
+                    "fireOnPlayer": {
+                        "type": "PlayerRef",
+                        "player": "You"
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{R}{R}"
+                    }
+                },
+                "effect": "Transform",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Conduit of Emrakul",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Werewolf",
+        "oracleText": "Whenever this creature attacks, add {C}{C} at the beginning of your next main phase this turn.",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_3",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "CreateDelayedTrigger",
+                        "step": "POSTCOMBAT_MAIN",
+                        "effect": {
+                            "type": "AddColorlessMana",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        "fireOnPlayer": {
+                            "type": "PlayerRef",
+                            "player": "You"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "124",
+            "rarity": "UNCOMMON",
+            "artist": "Raymond Swanland",
+            "flavorText": "As without, so within.",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/f/7f95145a-41a1-478e-bf8a-ea8838d6f9b1.jpg?1783937474"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "UNCOMMON",
+        "artist": "Raymond Swanland",
+        "flavorText": "It strikes with the fury of a tempest.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7f95145a-41a1-478e-bf8a-ea8838d6f9b1.jpg?1783937474",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "You'll add mana at the beginning of the next main phase whether or not Conduit of Storms (or Conduit of Emrakul) is still on the battlefield."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If Conduit of Storms attacks and you transform it into Conduit of Emrakul in response, you'll add {R}, not {C}{C} and not {C}{C}{R}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Cryptolith Fragment
+{
+    "name": "Cryptolith Fragment",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters tapped.\n{T}: Add one mana of any color. Each player loses 1 life.\nAt the beginning of your upkeep, if each player has 10 or less life, transform this artifact.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "triggerCondition": {
+                    "type": "EachPlayerLifeAtMost",
+                    "threshold": 10
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "AddManaOfChoice",
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "Each"
+                            }
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "backFace": {
+        "name": "Aurora of Emrakul",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Reflection",
+        "oracleText": "Flying, deathtouch\nWhenever this creature attacks, each opponent loses 3 life.",
+        "creatureStats": {
+            "power": 1,
+            "toughness": 4
+        },
+        "keywords": [
+            "FLYING",
+            "DEATHTOUCH"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_3",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "193",
+            "rarity": "UNCOMMON",
+            "artist": "John Avon",
+            "flavorText": "\"I felt compelled to take the twisted stone, and I abandoned my horse's burden to accommodate its weight. Now, its continued glow illuminates my home and warms my mind.\"\n—Garner Kroft, Moorland farmer",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/7/078b2103-15ce-456d-b092-352fa7222935.jpg?1783937432"
+        },
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/078b2103-15ce-456d-b092-352fa7222935.jpg?1783937432",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "Cryptolith Fragment's second ability is a mana ability. Players can't respond to it or to the loss of life it causes."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If any player has 11 or more life as your upkeep begins, Cryptolith Fragment's last ability doesn't trigger. If any player has 11 or more life as the ability resolves, the ability has no effect."
+            }
+        ]
+    }
+}
+
+// Decimator of the Provinces
+{
+    "name": "Decimator of the Provinces",
+    "manaCost": "{10}",
+    "typeLine": "Creature — Eldrazi Boar",
+    "oracleText": "Emerge {6}{G}{G}{G} (You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature's mana value.)\nWhen you cast this spell, creatures you control get +2/+2 and gain trample until end of turn.\nTrample, haste",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE",
+        "EMERGE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Emerge",
+            "cost": "{6}{G}{G}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "target": "Self"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "Self"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, creatures you control get +2/+2 and gain trample until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "MYTHIC",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/587cb384-db24-4e3d-a338-230e50305d31.jpg?1783937529"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Distended Mindbender
+{
+    "name": "Distended Mindbender",
+    "manaCost": "{8}",
+    "typeLine": "Creature — Eldrazi Insect",
+    "oracleText": "Emerge {5}{B}{B} (You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature's mana value.)\nWhen you cast this spell, target opponent reveals their hand. You choose from it a nonland card with mana value 3 or less and a card with mana value 4 or greater. That player discards those cards.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "EMERGE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Emerge",
+            "cost": "{5}{B}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RevealHand",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target opponent"
+                            }
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "nonland mv<=3",
+                            "storeSelected": "cheap",
+                            "prompt": "Choose a nonland card with mana value 3 or less",
+                            "showAllCards": true,
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "mv>=4",
+                            "storeSelected": "expensive",
+                            "prompt": "Choose a card with mana value 4 or greater",
+                            "showAllCards": true,
+                            "alwaysPrompt": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "cheap",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "expensive",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "ContextPlayer",
+                                    "index": 0
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "target opponent"
+                },
+                "descriptionOverride": "When you cast this spell, target opponent reveals their hand. You choose from it a nonland card with mana value 3 or less and a card with mana value 4 or greater. That player discards those cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "RARE",
+        "artist": "Yohann Schepacz",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b5d1e41-fb0b-4866-912a-2a7d49542428.jpg?1783937528"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Docent of Perfection
+{
+    "name": "Docent of Perfection",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Insect Horror",
+    "oracleText": "Flying\nWhenever you cast an instant or sorcery spell, create a 1/1 blue Human Wizard creature token. Then if you control three or more Wizards, transform this creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Human",
+                                "Wizard"
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature Wizard"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    }
+                                }
+                            },
+                            "then": "Transform"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Create a 1/1 blue Human Wizard creature token. Then if you control three or more Wizards, transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Final Iteration",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Insect",
+        "oracleText": "Flying\nWizards you control get +2/+1 and have flying.\nWhenever you cast an instant or sorcery spell, create a 1/1 blue Human Wizard creature token.",
+        "creatureStats": {
+            "power": 6,
+            "toughness": 5
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_2",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "Or",
+                                    "predicates": [
+                                        "IsInstant",
+                                        "IsSorcery"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 1,
+                        "toughness": 1,
+                        "colors": [
+                            "BLUE"
+                        ],
+                        "creatureTypes": [
+                            "Human",
+                            "Wizard"
+                        ]
+                    },
+                    "descriptionOverride": "Create a 1/1 blue Human Wizard creature token."
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "creature Wizard ctrl:you"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "creature Wizard ctrl:you"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "56",
+            "rarity": "RARE",
+            "artist": "Nils Hamm",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/0/30c3d4c1-dc3d-4529-9d6e-8c16149cf6da.jpg?1783937509"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "RARE",
+        "artist": "Nils Hamm",
+        "flavorText": "The time had come for him to share his findings.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/30c3d4c1-dc3d-4529-9d6e-8c16149cf6da.jpg?1783937509",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack without resolving."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If you control three or more Wizards while you control Docent of Perfection, it won't transform yet. It only transforms while its triggered ability is resolving after you cast an instant or sorcery spell."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "When Docent of Perfection transforms into Final Iteration, the instant or sorcery spell that's on the stack doesn't cause Final Iteration's triggered ability to trigger."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "All Wizards you control get +2/+1 and have flying, not just those created by Docent of Perfection or Final Iteration."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Drogskol Shieldmate
 {
     "name": "Drogskol Shieldmate",
@@ -347,6 +1713,66 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Elder Deep-Fiend
+{
+    "name": "Elder Deep-Fiend",
+    "manaCost": "{8}",
+    "typeLine": "Creature — Eldrazi Octopus",
+    "oracleText": "Flash\nEmerge {5}{U}{U} (You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature's mana value.)\nWhen you cast this spell, tap up to four target permanents.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLASH",
+        "EMERGE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Emerge",
+            "cost": "{5}{U}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 4,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "permanent"
+                    },
+                    "id": "up to four target permanents"
+                },
+                "descriptionOverride": "When you cast this spell, tap up to four target permanents."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "RARE",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c2789fb-a263-4207-8a56-4eeb015a024c.jpg?1783937526"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -432,6 +1858,123 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Emrakul, the Promised End
+{
+    "name": "Emrakul, the Promised End",
+    "manaCost": "{13}",
+    "typeLine": "Legendary Creature — Eldrazi",
+    "oracleText": "This spell costs {1} less to cast for each card type among cards in your graveyard.\nWhen you cast this spell, you gain control of target opponent during that player's next turn. After that turn, that player takes an extra turn.\nFlying, trample, protection from instants",
+    "creatureStats": {
+        "power": 13,
+        "toughness": 13
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.CardType",
+                "cardType": "Instant"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "HijackNextTurn",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target opponent"
+                            }
+                        },
+                        {
+                            "type": "TakeExtraTurn",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target opponent"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "target opponent"
+                },
+                "descriptionOverride": "When you cast this spell, you gain control of target opponent during that player's next turn. After that turn, that player takes an extra turn."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "ReduceGenericBy",
+                    "source": "CardTypesInYourGraveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "MYTHIC",
+        "artist": "Jaime Jones",
+        "flavorText": "An enigma as vexing as life itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d74a469-c71d-4773-99d3-5456b31df424.jpg?1783937526",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "The card types that could appear in your graveyard are artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, and sorcery. Supertypes (such as legendary and basic) and subtypes (such as Human and Equipment) are not counted. The maximum discount that Emrakul's own ability can provide is {9}."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "Protection from instants means that Emrakul can't be the target of instant spells or activated or triggered abilities from instant cards, and damage that would be dealt to it by instant spells or cards is prevented. Instant spells may still affect it in other ways; for example, it would still receive the bonus from Rally the Peasants."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "Protection abilities only apply while the object with the ability is on the battlefield. Notably, Emrakul may be the target of a spell that targets it while on the stack, such as Syncopate."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack without resolving."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "The player you're controlling is still the active player during that turn."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "You only control the player. You don't control any of that player's permanents, spells, or abilities."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "While controlling another player, you make all choices and decisions that player is allowed to make or is told to make during that turn. This includes choices about what spells to cast or what abilities to activate, as well as any decisions called for by triggered abilities or for any other reason."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "You can use only the affected player's resources (cards, mana, and so on) to pay costs for that player; you can't use your own. Similarly, you can use the affected player's resources only to pay that player's costs; you can't spend them on your costs."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "While controlling another player, you can see all cards in the game that player can see. This includes cards in that player's hand, face-down cards that player controls, and any cards in that player's library the player may look at."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If the targeted player skips their next turn, you'll control the next turn the affected player actually takes, and the extra turn the player takes will be after that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Faith Unbroken
@@ -609,6 +2152,143 @@
     ]
 }
 
+// Gisa and Geralf
+{
+    "name": "Gisa and Geralf",
+    "manaCost": "{2}{U}{B}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "When Gisa and Geralf enters, mill four cards.\nOnce during each of your turns, you may cast a Zombie creature spell from your graveyard.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                },
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When Gisa and Geralf enters, mill four cards."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "MayCastFromGraveyard",
+                "filter": "creature Zombie",
+                "duringYourTurnOnly": true,
+                "oncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "MYTHIC",
+        "artist": "Karla Ortiz",
+        "flavorText": "\"These fiends are slightly less tolerable than you.\"\n\"A sentiment that warms my heart, sister.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e2c85d8-0bef-40d0-abaf-4555462c29c5.jpg?1783937433",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "You must follow the normal timing permissions and restrictions of the Zombie spell you cast from your graveyard."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "You must pay the costs to cast that Zombie spell. If it has an alternative cost, you may cast it for that cost instead."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "Once you begin to cast the Zombie spell, losing control of Gisa and Geralf won't affect the spell."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If you cast one Zombie creature spell from your graveyard and then have a new Gisa and Geralf come under your control in the same turn, you may cast another Zombie creature spell from your graveyard that turn."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If multiple effects allow you to cast a Zombie creature spell from your graveyard, such as those of Gisa and Geralf and Karador, Ghost Chieftain, you must announce which permission you're using as you begin to cast the spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Gisela, the Broken Blade
+{
+    "name": "Gisela, the Broken Blade",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — Angel Horror",
+    "oracleText": "Flying, first strike, lifelink\nAt the beginning of your end step, if you both own and control Gisela and a creature named Bruna, the Fading Light, exile them, then meld them into Brisela, Voice of Nightmares.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE",
+        "LIFELINK"
+    ],
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "MYTHIC",
+        "artist": "Clint Cearley",
+        "flavorText": "She now hears only Emrakul's murmurs.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c75c035a-7da9-4b36-982d-fca8220b1797.jpg?1783937515"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Graf Rats
+{
+    "name": "Graf Rats",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Rat",
+    "oracleText": "At the beginning of combat on your turn, if you both own and control this creature and a creature named Midnight Scavengers, exile them, then meld them into Chittering Host.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dedaff6-bd69-4fe3-a301-f7ea7c2f2861.jpg?1783937482"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Grapple with the Past
 {
     "name": "Grapple with the Past",
@@ -691,6 +2371,153 @@
     ]
 }
 
+// Grizzled Angler
+{
+    "name": "Grizzled Angler",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human",
+    "oracleText": "{T}: Mill two cards. Then if there is a colorless creature card in your graveyard, transform this creature. (To mill two cards, put the top two cards of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Graveyard",
+                                        "filter": {
+                                            "cardPredicates": [
+                                                "IsCreature",
+                                                "IsColorless"
+                                            ]
+                                        }
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            },
+                            "then": "Transform"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Mill two cards. Then if there is a colorless creature card in your graveyard, transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Grisly Anglerfish",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Fish",
+        "oracleText": "{6}: Creatures your opponents control attack this turn if able.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 5
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{6}"
+                        }
+                    },
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:opponent"
+                            }
+                        },
+                        "body": "MarkMustAttackThisTurn"
+                    },
+                    "descriptionOverride": "Creatures your opponents control attack this turn if able."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "63",
+            "rarity": "UNCOMMON",
+            "artist": "Kev Walker",
+            "flavorText": "\". . . it's that the lure of the sea is impossible to ignore.\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/e/1eb4ddf4-f695-412d-be80-b93392432498.jpg?1783937503"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "Kev Walker",
+        "flavorText": "\"There's no question that these waters are treacherous, but if there's one thing I've learned in all my years of sailing . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/e/1eb4ddf4-f695-412d-be80-b93392432498.jpg?1783937503",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "If you have a colorless creature card in your graveyard while you control Grizzled Angler, it won't transform yet. It only transforms while its activated ability is resolving."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If a creature affected by Grisly Anglerfish's effect hasn't been under its controller's control since the turn began, is tapped, or is affected by a spell or ability that says it can't attack, then it doesn't attack. If there's a cost associated with having that creature attack, its controller isn't forced to pay that cost, so it doesn't have to attack in that case either."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "Each creature's controller still chooses the player, planeswalker, or battle it attacks. The creatures that have to attack don't necessarily have to attack you if there are other options."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Guardian of Pilgrims
 {
     "name": "Guardian of Pilgrims",
@@ -742,6 +2569,74 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Hanweir Battlements
+{
+    "name": "Hanweir Battlements",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{R}, {T}: Target creature gains haste until end of turn.\n{3}{R}{R}, {T}: If you both own and control this land and a creature named Hanweir Garrison, exile them, then meld them into Hanweir, the Writhing Township.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "HASTE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target creature"
+                    }
+                ],
+                "descriptionOverride": "{R}, {T}: Target creature gains haste until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "204",
+        "rarity": "RARE",
+        "artist": "Vincent Proce",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1d743ad6-6ca2-409a-9773-581cc195dbf2.jpg?1783937421"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -835,7 +2730,9 @@
         "artist": "Vincent Proce",
         "imageUri": "https://cards.scryfall.io/normal/front/6/7/671fe14d-0070-4bc7-8983-707b570f4492.jpg?1782711861"
     },
-    "colorIdentityOverride": []
+    "colorIdentityOverride": [],
+    "hasNoManaCost": true,
+    "meldResult": true
 }
 
 // Harmless Offering
@@ -1078,6 +2975,59 @@
     ]
 }
 
+// It of the Horrid Swarm
+{
+    "name": "It of the Horrid Swarm",
+    "manaCost": "{8}",
+    "typeLine": "Creature — Eldrazi Insect",
+    "oracleText": "Emerge {6}{G} (You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature's mana value.)\nWhen you cast this spell, create two 1/1 green Insect creature tokens.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "EMERGE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Emerge",
+            "cost": "{6}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Insect"
+                    ]
+                },
+                "descriptionOverride": "When you cast this spell, create two 1/1 green Insect creature tokens."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e9160cb-d3de-49ca-a97d-2cd259cd5447.jpg?1783937526"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Lunarch Mantle
 {
     "name": "Lunarch Mantle",
@@ -1203,6 +3153,83 @@
     "colorIdentityOverride": []
 }
 
+// Mausoleum Wanderer
+{
+    "name": "Mausoleum Wanderer",
+    "manaCost": "{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nWhenever another Spirit you control enters, this creature gets +1/+1 until end of turn.\nSacrifice this creature: Counter target instant or sorcery spell unless its controller pays {X}, where X is this creature's power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Spirit ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever another Spirit you control enters, this creature gets +1/+1 until end of turn."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysDynamic",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Source",
+                            "numericProperty": "Power"
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery",
+                            "zone": "Stack"
+                        }
+                    }
+                ],
+                "descriptionOverride": "Counter target instant or sorcery spell unless its controller pays {X}, where X is this creature's power."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Kieran Yanner",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/2/42391fa7-6172-487c-b8aa-d41ab7c64973.jpg?1783937494"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Midnight Scavengers
 {
     "name": "Midnight Scavengers",
@@ -1248,6 +3275,100 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mirrorwing Dragon
+{
+    "name": "Mirrorwing Dragon",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying\nWhenever a player casts an instant or sorcery spell that targets only this creature, that player copies that spell for each other creature they control that the spell could target. Each copy targets a different one of those creatures.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    },
+                    "player": "Each",
+                    "requires": [
+                        "SpellTargetsOnlySource"
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CopySpellForEachOtherPossibleTarget",
+                    "candidates": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    }
+                },
+                "descriptionOverride": "That player copies that spell for each other creature they control that the spell could target. Each copy targets a different one of those creatures."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "MYTHIC",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4b7e33a8-765b-4909-a5c6-5fe8f8774a51.jpg?1783937458",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "The ability triggers whenever a player casts an instant or sorcery spell that targets only Mirrorwing Dragon and no other object or player."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If the spell that's copied is modal (that is, it says \"Choose one —\" or the like), the copies will have the same mode. A different mode cannot be chosen."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "The copies that the ability creates are created on the stack, so they're not cast. Abilities that trigger when a player casts a spell (like Mirrorwing Dragon's ability itself) won't trigger."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If a player casts an instant or sorcery spell that has multiple targets and Mirrorwing Dragon is chosen as the target in each instance, Mirrorwing Dragon's ability will trigger. Each of the copies will similarly be targeting only one of the player's other creatures."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "The copies are only created targeting creatures that the spell's controller controls. Copies are not created for all creatures on the battlefield, and the affected creatures may be controlled by a different player than the controller of Mirrorwing Dragon. Notably, if you cast Murder targeting your opponent's Mirrorwing Dragon, your creatures will each get a Murder, not your opponent's."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If the spell that's copied has an X whose value was determined as it was cast (like Burn from Within does), the copies have the same value of X."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Any creature the player controls that couldn't be targeted by the original spell (due to shroud, protection abilities, targeting restrictions, or any other reason) is just ignored by Mirrorwing Dragon's ability. If the spell has multiple targets, a given creature must be a legal target for all of them or else a copy won't be created for that creature."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "The player who cast the original spell controls all the copies. That player chooses the order the copies are put onto the stack. The original spell will be on the stack beneath those copies and will resolve last."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1388,6 +3509,361 @@
     ]
 }
 
+// Savage Alliance
+{
+    "name": "Savage Alliance",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Escalate {1} (Pay this cost for each mode chosen beyond the first.)\nChoose one or more —\n• Creatures target player controls gain trample until end of turn.\n• Savage Alliance deals 2 damage to target creature.\n• Savage Alliance deals 1 damage to each creature target opponent controls.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "controllerPredicate": {
+                                        "type": "ControlledByReferencedPlayer",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "trample player"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "body": {
+                            "type": "GrantKeyword",
+                            "keyword": "TRAMPLE",
+                            "target": "Self"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "trample player"
+                        }
+                    ],
+                    "description": "Creatures target player controls gain trample until end of turn."
+                },
+                {
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "damage creature"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "damage creature"
+                        }
+                    ],
+                    "description": "Savage Alliance deals 2 damage to target creature."
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "controllerPredicate": {
+                                        "type": "ControlledByReferencedPlayer",
+                                        "target": {
+                                            "type": "BoundVariable",
+                                            "name": "damage opponent"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetOpponent",
+                            "id": "damage opponent"
+                        }
+                    ],
+                    "description": "Savage Alliance deals 1 damage to each creature target opponent controls."
+                }
+            ],
+            "chooseCount": 3,
+            "minChooseCount": 1,
+            "additionalManaCostPerExtraMode": "{1}"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "140",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5255da8-8511-48a7-98e5-ba43ca6e8681.jpg?1783937456",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If the second and third modes affect the same creature, it is dealt 2 damage and 1 damage as separate events."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If one target becomes illegal, the other targets are still affected. If all targets become illegal, the spell doesn't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Shrill Howler
+{
+    "name": "Shrill Howler",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Werewolf Horror",
+    "oracleText": "Creatures with power less than this creature's power can't block it.\n{5}{G}: Transform this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{G}"
+                    }
+                },
+                "effect": "Transform",
+                "descriptionOverride": "Transform this creature."
+            }
+        ],
+        "staticAbilities": [
+            "CantBeBlockedByCreaturesWithLessPower"
+        ]
+    },
+    "backFace": {
+        "name": "Howling Chorus",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Werewolf",
+        "oracleText": "Creatures with power less than this creature's power can't block it.\nWhenever this creature deals combat damage to a player, create a 3/2 colorless Eldrazi Horror creature token.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 5
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_2",
+                    "trigger": {
+                        "type": "DealsDamageEvent",
+                        "damageType": "DamageCombat",
+                        "recipient": "AnyPlayer"
+                    },
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 3,
+                        "toughness": 2,
+                        "colors": [],
+                        "creatureTypes": [
+                            "Eldrazi",
+                            "Horror"
+                        ]
+                    },
+                    "descriptionOverride": "Whenever this creature deals combat damage to a player, create a 3/2 colorless Eldrazi Horror creature token."
+                }
+            ],
+            "staticAbilities": [
+                "CantBeBlockedByCreaturesWithLessPower"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "168",
+            "rarity": "UNCOMMON",
+            "artist": "Matt Stewart",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/6/a63c30c0-369a-4a75-b352-edab4d263d1b.jpg?1783937445"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Stewart",
+        "flavorText": "\"A werewolf's howl is terrifying, to be sure. But this . . . this was a chilling sound I somehow felt. I fear what will reply to it.\"\n—Alena, trapper of Kessig",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a63c30c0-369a-4a75-b352-edab4d263d1b.jpg?1783937445",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "The power of the blocking creature and that of Shrill Howler are compared only at the moment that blockers are chosen. Changing either creature's power later won't cause Shrill Howler to become unblocked."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "The power of the blocking creature and that of Howling Chorus are compared only at the moment that blockers are chosen. Changing either creature's power later won't cause Howling Chorus to become unblocked."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Smoldering Werewolf
+{
+    "name": "Smoldering Werewolf",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Werewolf Horror",
+    "oracleText": "When this creature enters, it deals 1 damage to each of up to two target creatures.\n{4}{R}{R}: Transform this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "up to two target creatures"
+                },
+                "descriptionOverride": "When this creature enters, it deals 1 damage to each of up to two target creatures."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{R}{R}"
+                    }
+                },
+                "effect": "Transform",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Erupting Dreadwolf",
+        "manaCost": "",
+        "typeLine": "Creature — Eldrazi Werewolf",
+        "oracleText": "Whenever this creature attacks, it deals 2 damage to any target.",
+        "creatureStats": {
+            "power": 6,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_3",
+                    "trigger": "AttackEvent",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "any target"
+                        }
+                    },
+                    "targetRequirement": {
+                        "type": "AnyTarget",
+                        "id": "any target"
+                    },
+                    "descriptionOverride": "Whenever this creature attacks, it deals 2 damage to any target."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "142",
+            "rarity": "UNCOMMON",
+            "artist": "Zack Stella",
+            "flavorText": "\". . . heck, I'd settle for anything that even resembled a werewolf.\"\n—Raf Gyel of the Quiver of Kessig",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/b/0b0eab47-af62-4ee8-99cf-a864fadade2d.jpg?1783937460"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "UNCOMMON",
+        "artist": "Zack Stella",
+        "flavorText": "\"Never thought I'd see the day I'd be wishing to see just a plain old werewolf.\"\n—Raf Gyel of the Quiver of Kessig",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b0eab47-af62-4ee8-99cf-a864fadade2d.jpg?1783937460",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Erupting Dreadwolf's triggered ability resolves before blockers are chosen. A creature dealt lethal damage this way won't be around to block."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If you transform Smoldering Werewolf into Erupting Dreadwolf after it has attacked, Erupting Dreadwolf's triggered ability won't trigger that combat."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Soul Separator
 {
     "name": "Soul Separator",
@@ -1483,6 +3959,120 @@
     "colorIdentityOverride": []
 }
 
+// Spell Queller
+{
+    "name": "Spell Queller",
+    "manaCost": "{1}{W}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flash\nFlying\nWhen this creature enters, exile target spell with mana value 4 or less.\nWhen this creature leaves the battlefield, the exiled card's owner may cast that card without paying its mana cost.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ExileTargetSpell",
+                    "linkToSource": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "mv<=4",
+                        "zone": "Stack"
+                    },
+                    "id": "target spell with mana value 4 or less"
+                },
+                "descriptionOverride": "When this creature enters, exile target spell with mana value 4 or less."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "OwnersOfLinkedExile"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "FromLinkedExile",
+                                "storeAs": "quelledCard"
+                            },
+                            {
+                                "type": "Gated",
+                                "gate": "Gate.MayDecide",
+                                "then": {
+                                    "type": "CastFromCollectionWithoutPayingCost",
+                                    "from": "quelledCard"
+                                },
+                                "descriptionOverride": "Cast the exiled card without paying its mana cost"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "When this creature leaves the battlefield, the exiled card's owner may cast that card without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "189",
+        "rarity": "RARE",
+        "artist": "Adam Paquette",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b76bcd4-580a-4435-afe9-290940b1837f.jpg?1783937428",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "For spells with {X} in their mana costs, use the value chosen for X to determine if the spell's mana value is 4 or less."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "Spells that can't be countered can be exiled by Spell Queller's ability. They won't resolve."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If the exiled card's owner casts it, the spell has no relation to the spell that player originally cast. Any choices made for the original spell or effects affecting the original spell aren't carried over to the new one."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If the player casts the exiled card, they do so as part of the resolution of Spell Queller's last ability. The player can't wait to cast it later in the turn. Timing permissions based on the card's type are ignored, but other restrictions (such as \"Cast [this card] only during combat\") are not."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If a player casts a card \"without paying its mana cost,\" they can't choose to cast it for any alternative costs, such as emerge costs. The player can, however, pay additional costs, such as escalate costs. If the card has any mandatory additional costs, those must be paid to cast the card."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If the card has {X} in its mana cost, the player must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If Spell Queller leaves the battlefield before its \"enters\" ability resolves, its leaves-the-battlefield triggered ability triggers, resolves, and does nothing. Then its first triggered ability resolves and exiles the spell forever."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Spontaneous Mutation
 {
     "name": "Spontaneous Mutation",
@@ -1532,6 +4122,179 @@
     ]
 }
 
+// Stitcher's Graft
+{
+    "name": "Stitcher's Graft",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +3/+3.\nWhenever equipped creature attacks, it doesn't untap during its controller's next untap step.\nWhenever this Equipment becomes unattached from a permanent, sacrifice that permanent.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "DOESNT_UNTAP",
+                    "target": "EquippedCreature",
+                    "duration": "UntilAfterAffectedControllersNextUntap"
+                },
+                "descriptionOverride": "Whenever equipped creature attacks, it doesn't untap during its controller's next untap step."
+            },
+            {
+                "id": "ability_2",
+                "trigger": "BecomesUnattachedEvent",
+                "effect": {
+                    "type": "SacrificeTarget",
+                    "target": "AttachedToTriggeringPermanent"
+                },
+                "descriptionOverride": "Whenever this Equipment becomes unattached from a permanent, sacrifice that permanent."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 3
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "Josh Hass",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb6d700e-0514-41d7-9255-cedd859316fc.jpg?1783937422",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If multiple effects say that a creature doesn't untap during your next untap step, those effects all apply during one untap step. For example, a creature that attacks while equipped with two Stitcher's Grafts will only spend one untap step without untapping."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Stitcher's Graft becomes unattached from the creature it's equipping if you equip it to a new creature, if Stitcher's Graft leaves the battlefield, if the equipped creature ceases to be a creature, or if Stitcher's Graft ceases to be an Equipment. (It also becomes unattached if the equipped creature leaves the battlefield, but the triggered ability won't do anything in that case.)"
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If Stitcher's Graft's last triggered ability triggers, but you don't control the permanent it became unattached from at the time that ability resolves (perhaps because another player has somehow gained control of it), you won't be able to sacrifice it."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Stromkirk Occultist
+{
+    "name": "Stromkirk Occultist",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Vampire Horror",
+    "oracleText": "Trample\nWhenever this creature deals combat damage to a player, exile the top card of your library. Until end of turn, you may play that card.\nMadness {1}{R} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE",
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/f/1fa6a443-b23b-48ae-97bb-8fd4deec52c4.jpg?1783937451",
+        "rulings": [
+            {
+                "date": "2022-12-08",
+                "text": "A card with madness that's discarded counts as having been discarded even though it's put into exile rather than a graveyard. If it was discarded to pay a cost, that cost is still paid. Abilities that trigger when a card is discarded will still trigger."
+            },
+            {
+                "date": "2022-12-08",
+                "text": "Casting a spell with madness ignores the timing rules based on the card's card type. For example, you can cast a sorcery with madness if you discard it during an opponent's turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Subjugator Angel
 {
     "name": "Subjugator Angel",
@@ -1575,6 +4338,280 @@
         "artist": "Lius Lasahido",
         "flavorText": "The remnants of Innistrad's corrupted angelic hosts collapsed to form the Flight of Nightmares.",
         "imageUri": "https://cards.scryfall.io/normal/front/a/f/af01371c-cd09-4882-9caf-04426dd4c965.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Summary Dismissal
+{
+    "name": "Summary Dismissal",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Exile all other spells and counter all abilities.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                "ExileSpellsOnStack",
+                {
+                    "type": "CounterAllOnStack",
+                    "spells": false,
+                    "opponentsOnly": false
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Igor Kieryluk",
+        "flavorText": "\"Let's start fresh, shall we?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b75794d-3334-4b4d-9446-0a251dd3bd15.jpg?1783937493",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "Spells that can't be countered are exiled by Summary Dismissal. They won't resolve."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Only activated and triggered abilities on the stack are countered. Static abilities of objects remain unaffected, and activated and triggered abilities of objects may be activated or may trigger again later in the turn. Spells and abilities that have already resolved aren't affected."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Tamiyo, Field Researcher
+{
+    "name": "Tamiyo, Field Researcher",
+    "manaCost": "{1}{G}{W}{U}",
+    "typeLine": "Legendary Planeswalker — Tamiyo",
+    "oracleText": "+1: Choose up to two target creatures. Until your next turn, whenever either of those creatures deals combat damage, you draw a card.\n−2: Tap up to two target nonland permanents. They don't untap during their controller's next untap step.\n−7: Draw three cards. You get an emblem with \"You may cast spells from your hand without paying their mana costs.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "CreateDelayedTrigger",
+                        "effect": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "trigger": {
+                            "event": {
+                                "type": "DealsDamageEvent",
+                                "damageType": "DamageCombat"
+                            }
+                        },
+                        "watchedTarget": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "expiry": "DelayedTriggerExpiry.UntilControllersNextTurn"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "up to two target creatures"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Choose up to two target creatures. Until your next turn, whenever either of those creatures deals combat damage, you draw a card."
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "TapUntap",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DOESNT_UNTAP",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "duration": "UntilAfterAffectedControllersNextUntap"
+                            }
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 2,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "nonland permanent"
+                        },
+                        "id": "up to two target nonland permanents"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Tap up to two target nonland permanents. They don't untap during their controller's next untap step."
+            },
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -7
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        },
+                        {
+                            "type": "CreatePermanentEmblem",
+                            "ownedStaticAbilities": [
+                                {
+                                    "type": "MayCastWithoutPayingManaCost",
+                                    "controllerOnly": true
+                                }
+                            ],
+                            "emblemDescription": "You may cast spells from your hand without paying their mana costs."
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "MYTHIC",
+        "artist": "Tianhua X",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/f/9f9aced7-9ae9-432f-b8c0-caac9cad098b.jpg?1783937424",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "Tamiyo's first ability can target creatures you don't control. You'll draw a card, not their controller, if they deal combat damage."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "Tamiyo's first ability sets up a delayed triggered ability that triggers even if Tamiyo has left the battlefield before those creatures deal combat damage."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If Tamiyo's first ability targets two creatures, and both deal combat damage at the same time, the delayed triggered ability triggers twice."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If you cast a spell \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the spell has any mandatory additional costs, those must be paid to cast the spell."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "startingLoyalty": 4,
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE",
+        "BLUE"
+    ]
+}
+
+// Thalia, Heretic Cathar
+{
+    "name": "Thalia, Heretic Cathar",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "First strike\nCreatures and nonbasic lands your opponents control enter tapped.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature ctrl:opponent",
+                    "to": "Battlefield"
+                }
+            },
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsLand",
+                            {
+                                "type": "Not",
+                                "predicate": "IsBasicLand"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByOpponent"
+                    },
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Magali Villeneuve",
+        "flavorText": "\"Salvation will not be granted by the Lunarch Council. It must be earned—at the edge of a sword, if necessary.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab0cee38-5e24-49d0-870c-22843ed4e101.jpg?1783937507",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "If an effect states that a creature or land enters the battlefield tapped unless a condition is met, Thalia's last ability has it enter tapped even if that condition is true."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If Thalia enters the battlefield at the same time as an opponent's creatures or nonbasic lands, those creatures and lands aren't affected by Thalia's last ability."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -1646,5 +4683,110 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Tree of Perdition
+{
+    "name": "Tree of Perdition",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Plant",
+    "oracleText": "Defender\n{T}: Exchange target opponent's life total with this creature's toughness.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 13
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ExchangeLifeAndStat",
+                    "stat": "TOUGHNESS",
+                    "player": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirements": [
+                    "TargetOpponent"
+                ],
+                "descriptionOverride": "Exchange target opponent's life total with this creature's toughness"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "rarity": "MYTHIC",
+        "artist": "Jung Park",
+        "flavorText": "There will be no absolution.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/305bd19a-ae5e-46ca-8ff7-27810c968315.jpg?1783937474",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "When the ability resolves, Tree of Perdition's toughness becomes the targeted opponent's former life total and that player gains or loses an amount of life necessary so that their life total equals Tree of Perdition's former toughness."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "Any toughness-modifying effects, counters, Auras, or Equipment will apply after its toughness is set to the player's former life total."
+            },
+            {
+                "date": "2016-07-13",
+                "text": "If Tree of Perdition isn't on the battlefield when the ability resolves, the exchange can't happen and the ability will have no effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wretched Gryff
+{
+    "name": "Wretched Gryff",
+    "manaCost": "{7}",
+    "typeLine": "Creature — Eldrazi Hippogriff",
+    "oracleText": "Emerge {5}{U} (You may cast this spell by sacrificing a creature and paying the emerge cost reduced by that creature's mana value.)\nWhen you cast this spell, draw a card.\nFlying",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "EMERGE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Emerge",
+            "cost": "{5}{U}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CastThisSpellEvent",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "When you cast this spell, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "Darek Zabrocki",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d65efec-018f-485c-906c-460379b4af87.jpg?1783937525"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }

@@ -33,6 +33,70 @@
     ]
 }
 
+// Metallic Mimic
+{
+    "name": "Metallic Mimic",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Shapeshifter",
+    "oracleText": "As this creature enters, choose a creature type.\nThis creature is the chosen type in addition to its other types.\nEach other creature you control of the chosen type enters with an additional +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            "GrantChosenSubtype"
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "CREATURE_TYPE"
+            },
+            {
+                "type": "EntersWithCounters",
+                "count": 1,
+                "otherOnly": true,
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "HasChosenSubtype"
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "rarity": "RARE",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1aa4eba9-9e91-4beb-9296-a18baa73a318.jpg?1783936724",
+        "rulings": [
+            {
+                "date": "2017-02-09",
+                "text": "The choice of creature type is made as Metallic Mimic enters the battlefield. Players can't respond to this choice. Metallic Mimic's second ability starts applying immediately."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Even though Metallic Mimic is a Shapeshifter, other Shapeshifter creatures you control won't get a +1/+1 counter unless you chose Shapeshifter as Metallic Mimic entered the battlefield."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "You must choose an existing creature type. \"Artifact\" and \"Vehicle\" aren't creature types."
+            },
+            {
+                "date": "2017-02-09",
+                "text": "Creatures of the chosen type that enter the battlefield at the same time as Metallic Mimic won't enter with an additional +1/+1 counter."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Universal Solvent
 {
     "name": "Universal Solvent",

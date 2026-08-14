@@ -36,7 +36,12 @@ class TapUntapExecutor : EffectExecutor<TapUntapEffect> {
         }
 
         // The tap atom owns the already-tapped no-op guard (CR 603.2f) and the TappedEvent.
-        val (newState, event) = tap(state, targetId)
+        // The tapper is this effect's controller — the player the game instructs to tap, which
+        // "whenever you tap a creature an opponent controls" reads. Inside a per-player loop
+        // (Tangle Wire's "that player taps …") `controllerId` is already rebound to the player
+        // doing the tapping, so their tap is correctly attributed to them and not to the card's
+        // controller.
+        val (newState, event) = tap(state, targetId, tappedById = context.controllerId)
         return EffectResult.success(newState, listOfNotNull(event))
     }
 }

@@ -26,6 +26,7 @@ class TournamentMatchHandler(
     private val spectatingHandler: SpectatingHandler,
     private val cardRegistry: CardRegistry,
     private val printingRegistry: com.wingedsheep.engine.registry.PrintingRegistry,
+    private val tokenArtRegistry: com.wingedsheep.engine.registry.TokenArtRegistry,
     private val gamePlayHandler: GamePlayHandler,
     private val gameProperties: GameProperties,
     private val gameRepository: GameRepository,
@@ -425,60 +426,65 @@ class TournamentMatchHandler(
         val player1State = lobby.players[match.player1Id] ?: return false
         val player2State = lobby.players[match.player2Id ?: return false] ?: return false
 
-        val baseDeck1 = BoosterGenerator.distributeBasicLandVariants(
+        val baseDeck1 = BoosterGenerator.withBasicLandArt(
             lobby.getSubmittedDeck(match.player1Id) ?: return false,
-            lobby.allBasicLandVariants
+            lobby.basicLands
         )
-        val baseDeck2 = BoosterGenerator.distributeBasicLandVariants(
+        val baseDeck2 = BoosterGenerator.withBasicLandArt(
             lobby.getSubmittedDeck(match.player2Id) ?: return false,
-            lobby.allBasicLandVariants
+            lobby.basicLands
         )
+        val deckPrintings1 = player1State.cardPool + lobby.basicLands.values
+        val deckPrintings2 = player2State.cardPool + lobby.basicLands.values
         val deck1WithEgg = EasterEggDeckInjector.maybeInjectEasterEggs(
-            player1State.identity.playerName, baseDeck1
+            player1State.identity.playerName, baseDeck1, gameProperties.easterEggs.enabled
         )
         val deck2WithEgg = EasterEggDeckInjector.maybeInjectEasterEggs(
-            player2State.identity.playerName, baseDeck2
+            player2State.identity.playerName, baseDeck2, gameProperties.easterEggs.enabled
         )
 
-        // Commander-shape lobbies route through the engine's 1v1 Commander rules. Two sources:
-        //   - PREMADE_DECKS with a commander-shape deckFormat (paper Commander / Brawl).
-        //   - COMMANDER_DRAFT / COMMANDER_SEALED — the limited drafted/sealed Commander formats.
-        // The deck list on the wire / in the lobby includes one copy of the commander; the
-        // engine expects `Deck.cards` (= library) without it, so strip one copy here. Mirrors
-        // QuickGameLobbyHandler.startGame.
-        val isCommanderShape = (lobby.format == com.wingedsheep.gameserver.lobby.TournamentFormat.PREMADE_DECKS &&
-            lobby.deckFormat?.isCommanderShape == true) || lobby.format.isCommanderFormat
-        val commander1 = if (isCommanderShape) player1State.commander else null
-        val commander2 = if (isCommanderShape) player2State.commander else null
-        // The deck-submit path rejects commander-shape submissions that don't designate a
-        // commander, but defend in depth: if we somehow reach match start without one, refuse
-        // to launch the match instead of crashing in GameInitializer.
-        if (isCommanderShape && (commander1 == null || commander2 == null)) {
+        // Commander rules come off the lobby's Rules axis — one field, whether the decks were
+        // brought, sealed or drafted. The deck list on the wire / in the lobby includes one copy of
+        // the commander; the engine expects `Deck.cards` (= library) without it, so strip one copy
+        // here. Mirrors QuickGameLobbyHandler.startGame.
+        val usesCommanders = lobby.usesCommanderRules
+        val commander1 = if (usesCommanders) player1State.commander else null
+        val commander2 = if (usesCommanders) player2State.commander else null
+        // The deck-submit path rejects commander submissions that don't designate a commander, but
+        // defend in depth: if we somehow reach match start without one, refuse to launch the match
+        // instead of crashing in GameInitializer.
+        if (usesCommanders && (commander1 == null || commander2 == null)) {
             val missing = listOfNotNull(
                 player1State.identity.playerName.takeIf { commander1 == null },
                 player2State.identity.playerName.takeIf { commander2 == null },
             ).joinToString(", ")
-            logger.warn("Tournament ${lobby.lobbyId}: cannot start commander-shape match — missing commander for $missing")
+            logger.warn("Tournament ${lobby.lobbyId}: cannot start Commander match — missing commander for $missing")
             return false
         }
-        val deck1 = if (commander1 != null) stripCommanderFromCards(deck1WithEgg, commander1) else deck1WithEgg
-        val deck2 = if (commander2 != null) stripCommanderFromCards(deck2WithEgg, commander2) else deck2WithEgg
+        val unpinnedDeck1 = if (commander1 != null) stripCommanderFromCards(deck1WithEgg, commander1) else deck1WithEgg
+        val unpinnedDeck2 = if (commander2 != null) stripCommanderFromCards(deck2WithEgg, commander2) else deck2WithEgg
+        val deck1 = BoosterGenerator.withCardArt(unpinnedDeck1, deckPrintings1)
+        val deck2 = BoosterGenerator.withCardArt(unpinnedDeck2, deckPrintings2)
 
         val gameSession = GameSession(
             cardRegistry = cardRegistry,
             useHandSmoother = gameProperties.handSmoother.enabled,
             debugMode = gameProperties.debugMode,
             printingRegistry = printingRegistry,
+            tokenArtRegistry = tokenArtRegistry,
         )
-        if (isCommanderShape) {
-            // Limited commander formats read life total / commander damage / deck size from the
-            // lobby's host-configured preset (BRAWL = 60/25/16, COMMANDER = 60/30/21). Paper
-            // PREMADE_DECKS commander lobbies keep the engine's classic defaults (100/40/21).
-            gameSession.engineFormat = if (lobby.format.isCommanderFormat) {
-                lobby.commanderPreset.toFormat().copy(deckSize = lobby.deckSizeMin)
-            } else {
-                com.wingedsheep.sdk.core.Format.Commander()
-            }
+        if (usesCommanders) {
+            // Where the deck came from decides the shape: a pool-built deck reads life total /
+            // commander damage / deck size from the lobby's preset (BRAWL = 60/25/16, COMMANDER =
+            // 60/30/21). Every match here is 1v1, so TournamentLobby.effectiveCommanderPreset
+            // resolves to the host's choice — it is read rather than commanderPreset so the preset
+            // rule lives in exactly one place. A brought deck is paper Commander (100/40/21).
+            gameSession.engineFormat =
+                if (lobby.format == com.wingedsheep.gameserver.lobby.TournamentFormat.PREMADE_DECKS) {
+                    com.wingedsheep.sdk.core.Format.Commander()
+                } else {
+                    lobby.effectiveCommanderPreset.toFormat().copy(deckSize = lobby.deckSizeMin)
+                }
         }
         // Ranked tournaments adjust both players' ELO per 1v1 match. Only TOURNAMENT-mode lobbies are
         // ranked-eligible and the start gate rejects AI/guest seats, so a ranked match here is always
@@ -486,18 +492,22 @@ class TournamentMatchHandler(
         if (lobby.ranked) {
             gameSession.ranked = true
             gameSession.rankedMode = com.wingedsheep.gameserver.ranking.Ranked
-                .modeForTournament(lobby.format, lobby.deckFormat)
+                .modeForTournament(lobby.rules, lobby.format)
         }
         val ps1 = player1State.identity.toPlayerSession()
         val ps2 = player2State.identity.toPlayerSession()
 
         gameSession.addPlayer(
             ps1, deck1, commanderCardName = commander1,
-            sideboard = lobby.getSubmittedSideboard(match.player1Id),
+            sideboard = BoosterGenerator.withCardArt(
+                lobby.getSubmittedSideboard(match.player1Id), deckPrintings1,
+            ),
         )
         gameSession.addPlayer(
             ps2, deck2, commanderCardName = commander2,
-            sideboard = lobby.getSubmittedSideboard(match.player2Id),
+            sideboard = BoosterGenerator.withCardArt(
+                lobby.getSubmittedSideboard(match.player2Id), deckPrintings2,
+            ),
         )
 
         // Carry isAi / aiModelOverride from each identity so a server restart can rehydrate and

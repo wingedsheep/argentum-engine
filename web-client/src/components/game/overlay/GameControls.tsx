@@ -175,7 +175,10 @@ export function SpectatorCountBadge() {
         // The button is roughly 90–110px wide depending on label, so 110/130
         // gives a safe visual gap without measuring.
         left: responsive.isMobile ? 110 : 130,
-        zIndex: 100,
+        // Above the multiplayer opponent rail (z 120): the name popover drops down
+        // into the rail column, and the seat chips would otherwise paint over it.
+        // The badge itself sits above the rail's first chip, so nothing is hidden.
+        zIndex: 140,
       }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -212,7 +215,9 @@ export function SpectatorCountBadge() {
             minWidth: 140,
             maxWidth: 220,
             fontSize: responsive.fontSize.small,
-            backgroundColor: 'rgba(0, 0, 0, 0.85)',
+            // Near-opaque: it now floats over the rail chips, and a see-through
+            // panel makes the names underneath it hard to read.
+            backgroundColor: 'rgba(0, 0, 0, 0.95)',
             color: '#d4dae1',
             border: '1px solid #2c333d',
             borderRadius: 6,

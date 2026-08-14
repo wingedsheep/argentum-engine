@@ -109,7 +109,7 @@ class StateTriggerPoller(
             trigger = EventPattern.StateConditionMetEvent,
             binding = TriggerBinding.SELF,
             effect = effect,
-            activeZone = activeZone,
+            activeZones = setOf(activeZone),
             descriptionOverride = descriptionOverride ?: description
         )
 }

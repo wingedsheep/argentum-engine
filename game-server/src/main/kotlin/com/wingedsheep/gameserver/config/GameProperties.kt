@@ -8,7 +8,17 @@ data class GameProperties(
     val sets: SetsProperties = SetsProperties(),
     val admin: AdminProperties = AdminProperties(),
     val ai: AiProperties = AiProperties(),
+    val easterEggs: EasterEggProperties = EasterEggProperties(),
     val debugMode: Boolean = false
+)
+
+/**
+ * Joke cards that [com.wingedsheep.gameserver.deck.EasterEggDeckInjector] sneaks into a deck based on
+ * the player's name. **Off by default** so production stays clean unless someone opts in — the deploy
+ * passes no `GAME_EASTER_EGGS_ENABLED`, so a redeploy can't silently switch them back on.
+ */
+data class EasterEggProperties(
+    val enabled: Boolean = false
 )
 
 data class HandSmootherProperties(
@@ -67,7 +77,17 @@ data class AiProperties(
      * When true, AI sealed decks are always built with the deterministic heuristic builder,
      * skipping the LLM regardless of per-request flags. Useful for fully local play vs AI.
      */
-    val heuristicDeckbuilding: Boolean = false
+    val heuristicDeckbuilding: Boolean = false,
+    /**
+     * Local testing mode: record what the engine AI considered on every decision and expose it over
+     * `/api/dev/ai-insight`, so a human can browse the AI's options with the scores it gave them and
+     * export a position plus its ratings as AI-training input.
+     *
+     * Off by default and deliberately separate from `game.dev-endpoints.enabled`: recording pins a
+     * `GameState` per decision, and that is opt-in even on a box where the other dev endpoints are
+     * already open. `application-local.yml` turns it on.
+     */
+    val insightEnabled: Boolean = false
 ) {
     /** Returns the model to use for deckbuilding — falls back to the gameplay model if not set. */
     val effectiveDeckbuildingModel: String get() = deckbuildingModel.ifBlank { model }

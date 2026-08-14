@@ -1,0 +1,2101 @@
+/* Standalone deckbuilder — three-column layout. */
+
+.page {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-canvas, #15171c);
+  color: var(--text-primary);
+  display: grid;
+  grid-template-columns: 260px 1fr 340px;
+  grid-template-rows: 56px 1fr;
+  grid-template-areas:
+    'topbar topbar topbar'
+    'left center right';
+  overflow: hidden;
+}
+
+.topbar {
+  grid-area: topbar;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.topbarSpacer {
+  flex: 1;
+}
+
+.iconButton {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.iconButton:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+/* ------------- View toggle (topbar) -------------
+   Sits next to the title and flips the layout between the original "cards to add" view and the
+   Moxfield-style "deck centric" view. Same visual language as the segmented mana-mode control
+   below, but a touch larger because it's a primary topbar control. */
+.viewToggle {
+  display: inline-flex;
+  margin-left: var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.viewToggleButton {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.viewToggleButton:last-child {
+  border-right: none;
+}
+
+.viewToggleButton:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+.viewToggleButtonActive {
+  composes: viewToggleButton;
+  background: rgba(106, 163, 255, 0.22);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.left {
+  grid-area: left;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: var(--space-3);
+  gap: var(--space-3);
+}
+
+/* Deck-mode left-rail card preview — replaces the filter menu since there's nothing to filter
+   when the catalog grid isn't visible. */
+.deckHoverPreview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.deckHoverPreviewImageWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 5 / 7;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.deckHoverPreviewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.deckHoverPreviewEmpty {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  text-align: center;
+  padding: var(--space-4) var(--space-2);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.sectionLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.modeSegmented {
+  display: inline-flex;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.modeButton {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  font-size: 0.65rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.modeButton:last-child {
+  border-right: none;
+}
+
+.modeButton:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.modeButtonActive {
+  composes: modeButton;
+  background: rgba(106, 163, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.textInput {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: var(--accent-primary, #6aa3ff);
+}
+
+.helpIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-family: var(--font-mono, monospace);
+}
+
+.helpIcon:hover {
+  background: rgba(106, 163, 255, 0.18);
+  border-color: var(--accent-primary, #6aa3ff);
+  color: var(--text-primary);
+}
+
+.helpIconActive {
+  composes: helpIcon;
+  background: rgba(106, 163, 255, 0.3);
+  border-color: var(--accent-primary, #6aa3ff);
+  color: var(--text-primary);
+}
+
+/* ------------- Saved-decks rail summary ------------- */
+.savedSummary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.savedSummaryActive {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 8px;
+  background: rgba(106, 163, 255, 0.08);
+  border: 1px solid rgba(106, 163, 255, 0.2);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+
+.savedSummaryLabel {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.savedSummaryName {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.savedSummaryNameMuted {
+  composes: savedSummaryName;
+  color: var(--text-muted);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.savedBrowseButton {
+  width: 100%;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.savedBrowseButton:hover:not(:disabled) {
+  background: rgba(106, 163, 255, 0.14);
+  border-color: var(--accent-primary, #6aa3ff);
+}
+
+.savedBrowseButton:disabled {
+  cursor: default;
+  opacity: 0.55;
+  color: var(--text-muted);
+}
+
+.savedEmpty {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+  padding: var(--space-4);
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+.savedItemColorDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
+  display: inline-block;
+}
+
+/* ------------- Saved-decks browser overlay ------------- */
+.browserBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+  z-index: 200;
+}
+
+.browserDialog {
+  position: fixed;
+  top: 5vh;
+  left: 5vw;
+  right: 5vw;
+  bottom: 5vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-surface-3, #1c1f25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  z-index: 201;
+  overflow: hidden;
+}
+
+.browserHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.browserTitle {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin-right: var(--space-2);
+}
+
+.browserSubtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.browserToolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.browserSearch {
+  flex: 1 1 240px;
+  min-width: 200px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.browserSearch:focus {
+  outline: none;
+  border-color: var(--accent-primary, #6aa3ff);
+}
+
+.browserColorChips {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+/* Reserves a stable slot for the "clear" link so the chip row's width stays
+ * constant whether or not a colour is selected. Without this, toggling a colour
+ * inserts the link, widens the chip group, and pushes the icons leftwards. */
+.colorChipsClear {
+  flex: 0 0 auto;
+}
+
+/* The scroll box, not the grid itself: a grid that *is* the scroll container has a definite
+ * block size, and its `auto` rows then get squashed to fit — the tiles' `aspect-ratio` height
+ * overflows its row and every tile's caption lands on the row below (visible once the deck
+ * count overflows the dialog). Keeping the grid content-sized avoids that. */
+.browserScroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4);
+}
+
+.browserGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--space-3);
+  align-content: start;
+}
+
+.linkButton {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.7rem;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+}
+
+.linkButton:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dangerLink {
+  composes: linkButton;
+  color: #ff8888;
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.chipActive {
+  background: rgba(106, 163, 255, 0.28);
+  border-color: var(--accent-primary, #6aa3ff);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary, #6aa3ff), 0 0 8px rgba(106, 163, 255, 0.35);
+}
+
+/* Mana-icon chip variant. Tighter padding + centered SVG so the symbol reads as the chip's
+   primary content rather than as text-with-an-icon. Inactive icons are dimmed and slightly
+   desaturated so the active ring + full-colour symbol reads as a clear "on" state. */
+.chipMana {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 6px;
+  line-height: 0;
+  transition: transform 0.1s ease, filter 0.1s ease, opacity 0.1s ease;
+}
+
+.chipMana img {
+  opacity: 0.55;
+  filter: grayscale(0.45);
+  transition: opacity 0.1s ease, filter 0.1s ease;
+}
+
+.chipMana:hover img {
+  opacity: 0.85;
+  filter: grayscale(0.15);
+}
+
+.chipMana.chipActive {
+  background: rgba(106, 163, 255, 0.32);
+  box-shadow: 0 0 0 2px var(--accent-primary, #6aa3ff), 0 0 10px rgba(106, 163, 255, 0.45);
+  transform: translateY(-1px);
+}
+
+.chipMana.chipActive img {
+  opacity: 1;
+  filter: none;
+  /* Slight white glow behind the symbol so it pops on the blue active ring. */
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.55));
+}
+
+.numericRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.numericInput {
+  width: 56px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 2px 4px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+
+/* ------------- Center pane ------------- */
+.center {
+  grid-area: center;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.2);
+  position: relative;
+  /* The bar also lives in the scenario builder's (narrow, resizable) browser pane, where the
+     sort select and hints would otherwise squeeze the input down to a few pixels. */
+  flex-wrap: wrap;
+}
+
+.helpBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+
+.helpPopover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: var(--space-3);
+  right: var(--space-3);
+  max-width: 600px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--bg-surface-3, #1c1f25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  padding: var(--space-3);
+  z-index: 91;
+}
+
+.helpHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.helpHint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0 0 var(--space-2) 0;
+}
+
+.helpList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px var(--space-3);
+  font-size: 0.8rem;
+}
+
+.helpList li {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.helpExample {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.helpExample:hover {
+  background: rgba(106, 163, 255, 0.15);
+  border-color: var(--accent-primary, #6aa3ff);
+}
+
+.helpExample code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+}
+
+.helpDesc {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.searchInput {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: var(--font-mono, monospace);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--accent-primary, #6aa3ff);
+}
+
+.searchInputError {
+  composes: searchInput;
+  border-color: #d96c5e;
+}
+
+.searchInputWrap {
+  flex: 1 1 220px;
+  min-width: 200px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.searchErrors {
+  list-style: none;
+  margin: 0;
+  padding: 4px 8px;
+  border: 1px solid rgba(217, 108, 94, 0.4);
+  border-radius: var(--radius-sm);
+  background: rgba(217, 108, 94, 0.08);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  z-index: 80;
+}
+
+.searchErrors li {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.searchErrors code {
+  font-family: var(--font-mono, monospace);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 0 4px;
+  border-radius: 2px;
+  color: #ffd0c8;
+  flex-shrink: 0;
+}
+
+.advancedBanner {
+  margin: var(--space-2) var(--space-3);
+  padding: 6px 8px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border: 1px dashed rgba(106, 163, 255, 0.4);
+  border-radius: var(--radius-sm);
+  background: rgba(106, 163, 255, 0.06);
+}
+
+.filterFieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+  display: contents;
+}
+
+.filterFieldset[disabled] .chip,
+.filterFieldset[disabled] select,
+.filterFieldset[disabled] input {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.resultCount {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.cardActionHint {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cardActionHint kbd {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.65rem;
+  color: var(--text-primary);
+}
+
+.sortSelect {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+
+/* Top-of-rail set picker. Visually heavier than the other filter sections so the
+   active set reads as the "primary lens" on the catalogue. */
+.setPickerSection {
+  padding: var(--space-3);
+  border: 1px solid rgba(106, 163, 255, 0.25);
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    180deg,
+    rgba(106, 163, 255, 0.08) 0%,
+    rgba(106, 163, 255, 0.02) 100%
+  );
+  gap: var(--space-2);
+}
+
+/* Searchable set combobox. The input is the only always-visible control; the
+   sort toggle, count, and option list live in a popover that opens on focus. */
+.setCombobox {
+  position: relative;
+  width: 100%;
+}
+
+.setComboInput {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px 6px 10px;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.setComboInput:hover {
+  border-color: rgba(106, 163, 255, 0.45);
+}
+
+.setComboInput:focus-within,
+.setComboInputOpen {
+  border-color: rgba(106, 163, 255, 0.8);
+  box-shadow: 0 0 0 2px rgba(106, 163, 255, 0.2);
+}
+
+.setComboIcon {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.setComboInput input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 2px 0;
+}
+
+.setComboInput input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.setComboClear {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.setComboClear:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.setComboPanel {
+  /* Portaled to <body> and anchored to the input via inline top/left/min-width, so the dropdown
+     can overflow the scrolling sidebar (`.left`) and grow to fit the widest set name. */
+  position: fixed;
+  width: max-content;
+  max-width: min(440px, 92vw);
+  z-index: 300;
+  background: rgba(14, 18, 26, 0.98);
+  border: 1px solid rgba(106, 163, 255, 0.35);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+}
+
+.setComboPanelHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.setComboCount {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.setComboList {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.setComboOption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  border-left: 2px solid transparent;
+}
+
+.setComboOptionActive {
+  background: rgba(106, 163, 255, 0.12);
+}
+
+.setComboOptionSelected {
+  border-left-color: rgba(106, 163, 255, 0.85);
+  color: #fff;
+}
+
+.setComboOptionAll {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 2px;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.setComboOptionAll.setComboOptionSelected {
+  color: var(--text-primary);
+  font-style: normal;
+}
+
+.setComboOptionIcon {
+  font-size: 1.2rem;
+  width: 1.4em;
+  text-align: center;
+  color: var(--text-secondary, var(--text-primary));
+  align-self: center;
+}
+
+.setComboOptionName {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.setComboOptionMeta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.setComboOptionYear {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.setComboOptionCode {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+
+.setComboEmpty {
+  padding: 12px 10px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.gridScroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-2);
+  align-content: start;
+}
+
+/* Denser tiles for side-pane browsers (the scenario builder), where the pane is a few hundred
+   pixels wide and fitting four cards per row beats three larger ones. */
+.gridCompact {
+  composes: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+}
+
+.showMoreRow {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-2) 0 var(--space-4);
+}
+
+.cardTile {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  aspect-ratio: 5 / 7;
+  user-select: none;
+  /* Let the browser skip layout/paint for offscreen tiles. The fixed size
+     keeps scrollbar / scroll position stable while tiles are skipped. */
+  content-visibility: auto;
+  contain-intrinsic-size: 210px 294px;
+}
+
+.cardTile:hover {
+  border-color: var(--accent-primary, #6aa3ff);
+  transform: translateY(-1px);
+  transition: transform 0.1s ease, border-color 0.1s ease;
+}
+
+.cardImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cardTextFallback {
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.75rem;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.3));
+}
+
+.cardFallbackName {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+
+.cardFallbackType {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.cardCountBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: var(--accent-primary, #6aa3ff);
+  color: #fff;
+  border-radius: 999px;
+  padding: 2px 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  pointer-events: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-6);
+  font-size: 0.85rem;
+}
+
+/* ------------- Right pane ------------- */
+.right {
+  grid-area: right;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.deckHeader {
+  padding: var(--space-3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.nameInput {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.deckList {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-2) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+
+/* Active drop state while a card is dragged over the deck list (or the deck-centric columns). */
+.deckListDrop {
+  background: rgba(106, 163, 255, 0.1);
+  box-shadow: inset 0 0 0 2px var(--accent-primary, #6aa3ff);
+}
+
+.deckGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.deckGroupLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 0 0 2px 0;
+}
+
+.deckGroupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.deckRow {
+  display: grid;
+  /* Columns: minus, plus, count, name (flex), printing-chip, mana cost. The chip column is
+     auto-sized so it collapses to 0 when the chip is omitted (count=0 placeholder rows). */
+  grid-template-columns: 18px 18px 22px 1fr auto auto;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  cursor: default;
+}
+
+/* Commander-format rows render an additional crown affordance between the name and the
+   printing chip, so we insert a seventh auto column. Without this, the 7th child (mana
+   cost) wraps to a new grid row and the row doubles in height. */
+.deckRowWithCrown {
+  grid-template-columns: 18px 18px 22px 1fr auto auto auto;
+}
+
+.deckRow:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.deckRowIllegal .deckRowName,
+.deckRowIllegal .deckRowCount {
+  color: #ff8888;
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 136, 136, 0.6);
+}
+
+.deckRowIllegal {
+  background: rgba(255, 80, 80, 0.06);
+}
+
+/* Construction-rule violation: card is outside the commander's color identity, or the player
+   is over the per-format copy cap (singleton in Commander/Brawl, 4-of in Standard etc.). The
+   visual treatment sits between commander-gold and illegal-red — a deeper orange that reads
+   as "warning, fix this" without being mistaken for the gold accent the active commander row
+   uses. Lighter than .deckRowIllegal because the row is still legal in the format-banlist
+   sense, it just breaks a deckbuilding rule the user can fix without removing the card type. */
+.deckRowViolation {
+  background: rgba(220, 110, 35, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(230, 120, 40, 0.5);
+}
+
+.deckRowViolation .deckRowName {
+  color: #ff9a55;
+}
+
+.deckRowViolation .deckRowCount {
+  color: #ff9a55;
+  font-weight: 600;
+}
+
+.deckRowUnknown {
+  background: rgba(180, 140, 60, 0.06);
+}
+
+.deckRowUnknown .deckRowName {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.deckRowUnknownTag {
+  margin-left: 6px;
+  padding: 1px 6px;
+  font-size: 0.6rem;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #d6b96a;
+  background: rgba(214, 185, 106, 0.1);
+  border: 1px solid rgba(214, 185, 106, 0.3);
+  border-radius: 999px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.formatPickerRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.formatPickerLabel {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.65rem;
+}
+
+.formatPickerSelect {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  padding: 4px 6px;
+  font-size: 0.8rem;
+}
+
+.formatBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 2px;
+}
+
+.formatBadge {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(108, 192, 74, 0.14);
+  color: #8ed171;
+  border: 1px solid rgba(108, 192, 74, 0.3);
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-weight: 600;
+}
+
+/* Saved-format badge: a single accent-blue pill that shows the format the deck
+ * was authored against. Sits next to the green legality badges to make the two
+ * dimensions (intent vs. legality) visually distinct. */
+.formatBadgeSaved {
+  composes: formatBadge;
+  background: rgba(106, 163, 255, 0.16);
+  color: #b9d4ff;
+  border-color: rgba(106, 163, 255, 0.45);
+}
+
+.deckRowCount {
+  text-align: right;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.deckRowName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.deckRowCost {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.deckRowStep {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+  line-height: 1;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deckRowStep:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-primary);
+}
+
+.deckRowStep:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Commander designation. The crown button sits between the card name and mana cost so the
+   eye lands on it after reading the row left-to-right. The active commander row also gets a
+   subtle gold border + tinted background so it's identifiable in a glance even when the
+   user has scrolled past the crown column. Inactive crowns are intentionally faint — they're
+   affordances, not decoration; we don't want a 100-row Commander deck to look festive. */
+.deckRowCrown {
+  background: transparent;
+  border: 1px solid transparent;
+  color: rgba(214, 185, 106, 0.4);
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+.deckRowCrown:hover:not(:disabled) {
+  color: #d6b96a;
+  background: rgba(214, 185, 106, 0.1);
+}
+
+.deckRowCrown:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.deckRowCrownActive {
+  color: #f0c95a;
+  text-shadow: 0 0 6px rgba(240, 201, 90, 0.55);
+}
+
+.deckRowCrownActive:hover {
+  color: #ffd870;
+}
+
+.deckRowCommander {
+  background: rgba(214, 185, 106, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(214, 185, 106, 0.45);
+}
+
+.deckRowPrintingChip {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted, #8b94a4);
+  cursor: pointer;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  padding: 0 4px;
+  height: 18px;
+  min-width: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+.deckRowPrintingChip:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.deckRowPrintingChipActive {
+  color: #6cd2ff;
+  background: rgba(108, 210, 255, 0.1);
+  border-color: rgba(108, 210, 255, 0.3);
+}
+
+.deckRowPrintingChipActive:hover {
+  color: #8edcff;
+  background: rgba(108, 210, 255, 0.18);
+}
+
+/* Sticky 0-count placeholder row — used for the basic-land rows synthesized into the Lands
+   group when the user hasn't added any of that basic yet. Stays clickable (the + button
+   ramps the count) but reads as muted so it's clearly "available to add" rather than "in
+   the deck." */
+.deckRowPlaceholder .deckRowCount,
+.deckRowPlaceholder .deckRowName,
+.deckRowPlaceholder .deckRowCost {
+  opacity: 0.45;
+}
+
+.deckRowPlaceholder:hover .deckRowCount,
+.deckRowPlaceholder:hover .deckRowName,
+.deckRowPlaceholder:hover .deckRowCost {
+  opacity: 0.85;
+}
+
+.deckRowCommander .deckRowName {
+  color: #f0d68a;
+  font-weight: 600;
+}
+
+.basicLandsSuggest {
+  background: rgba(106, 163, 255, 0.15);
+  color: #a8c5ff;
+  border: 1px solid rgba(106, 163, 255, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+}
+
+.basicLandsSuggest:hover:not(:disabled) {
+  background: rgba(106, 163, 255, 0.25);
+}
+
+.basicLandsSuggest:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.summary {
+  padding: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: 0.75rem;
+}
+
+.summaryRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.statusOk { color: #6cc04a; font-weight: 600; }
+.statusBad { color: #ff8888; font-weight: 600; }
+.statusEmpty { color: var(--text-muted); }
+
+.issues {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  font-size: 0.7rem;
+  color: #ff8888;
+  max-height: 80px;
+  overflow-y: auto;
+}
+
+.colorPips {
+  display: flex;
+  gap: 4px;
+}
+
+.colorPip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.colorDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.4);
+}
+
+.curveContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.curveBars {
+  display: flex;
+  gap: 4px;
+  align-items: flex-end;
+}
+
+.curveBarColumn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.curveBarCount {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  height: 12px;
+  line-height: 12px;
+}
+
+.curveBarTrack {
+  width: 100%;
+  height: 36px;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 2px;
+}
+
+.curveBarStack {
+  width: 100%;
+  display: flex;
+  flex-direction: column-reverse;
+  border-radius: 2px;
+  overflow: hidden;
+  min-height: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.curveBarSegment {
+  flex: 1;
+  min-height: 1px;
+}
+
+.curveLabel {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.deckSummaryWrap {
+  padding: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Sideboard panel — cards kept alongside the deck. Sits below the deck list and is a drop
+   target: drag cards from the catalog grid or the deck list onto it. */
+.sideboardPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(106, 163, 255, 0.04);
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+
+/* Active drop state while a card is dragged over the panel. */
+.sideboardPanelDrop {
+  background: rgba(106, 163, 255, 0.14);
+  box-shadow: inset 0 0 0 2px var(--accent-primary, #6aa3ff);
+}
+
+.sideboardHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sideboardTitle {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary, #c7d2e0);
+}
+
+.sideboardHint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.sideboardEmpty {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: var(--space-2) 0;
+}
+
+.actionRow {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.primaryButton {
+  flex: 1;
+  background: var(--accent-primary, #6aa3ff);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.primaryButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.secondaryButton {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.secondaryButton:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dangerButton {
+  composes: secondaryButton;
+  color: #ff8888;
+  border-color: rgba(255, 100, 100, 0.3);
+}
+
+/* ------------- Import-deck modal ------------- */
+.importBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 100;
+}
+
+.importDialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(620px, 92vw);
+  max-height: 86vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--bg-surface-3, #1c1f25);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  z-index: 101;
+}
+
+.importHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.importHint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.importHint code {
+  font-family: var(--font-mono, monospace);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+}
+
+.importTextarea {
+  width: 100%;
+  min-height: 220px;
+  resize: vertical;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-family: var(--font-mono, monospace);
+  line-height: 1.4;
+}
+
+.importTextarea:focus {
+  outline: none;
+  border-color: var(--accent-primary, #6aa3ff);
+}
+
+.importPreview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: 0.8rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: var(--space-2);
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+}
+
+.importSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+}
+
+.importMutedBadge {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.importBadBadge {
+  font-size: 0.7rem;
+  color: #ff8888;
+  background: rgba(255, 100, 100, 0.12);
+  border-radius: 999px;
+  padding: 1px 8px;
+}
+
+.importDetails {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.importDetails summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  padding: 2px 0;
+}
+
+.importDetails ul {
+  margin: 4px 0 4px var(--space-3);
+  padding: 0;
+  list-style: disc;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.importDetails code {
+  font-family: var(--font-mono, monospace);
+  color: var(--text-primary);
+}
+
+.importActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.formatSwitcher {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.formatSwitcherLabel {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-right: var(--space-1);
+}
+
+.formatSwitcherChip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background 80ms, color 80ms, border-color 80ms;
+}
+
+.formatSwitcherChip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-primary);
+}
+
+.formatSwitcherChipActive,
+.formatSwitcherChipActive:hover {
+  background: rgba(106, 163, 255, 0.18);
+  border-color: rgba(106, 163, 255, 0.55);
+  color: #cfdfff;
+}
+
+/* ===========================================================================
+   Deck-centric view (Moxfield-style).
+   Center pane owns the deck as a multi-column grouped list. The right rail
+   is removed in this mode — the deck takes the full remaining width, and
+   adding cards happens through a search-and-add bar at the top of the pane. The page grid template
+   stays the same — only the contents of `center` and the right rail change.
+   =========================================================================== */
+
+/* Deck mode: drop the right rail entirely so the deck columns get the full width. The toggle
+   in the topbar is the only way to bring it back; everything that lived in the rail moved into
+   the centerDeck pane (header, search-and-add bar, footer with stats + save buttons). */
+.pageDeckMode {
+  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-areas:
+    'topbar topbar'
+    'left center';
+}
+
+.centerDeck {
+  grid-area: center;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/* Search-and-add strip below the deck-name header. Single text input that pops a dropdown
+   of card-name matches; replaces the right-rail catalog grid in deck mode. The dropdown is
+   absolutely positioned so it doesn't push the deck columns down as the user types. */
+.addCardSearch {
+  position: relative;
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.addCardInput {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.addCardInput:focus {
+  outline: none;
+  border-color: var(--accent-primary, #6aa3ff);
+  box-shadow: 0 0 0 2px rgba(106, 163, 255, 0.18);
+}
+
+.addCardInput::placeholder {
+  color: var(--text-muted);
+}
+
+.addCardBasicsButton {
+  background: rgba(106, 163, 255, 0.15);
+  color: #a8c5ff;
+  border: 1px solid rgba(106, 163, 255, 0.35);
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.addCardBasicsButton:hover:not(:disabled) {
+  background: rgba(106, 163, 255, 0.25);
+  color: #cfdfff;
+}
+
+.addCardBasicsButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.addCardDropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: var(--space-4);
+  right: var(--space-4);
+  max-height: 380px;
+  overflow-y: auto;
+  background: var(--bg-surface-3, #1c1f25);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--radius-md);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+
+.addCardResult {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.addCardResult:hover:not(:disabled) {
+  background: rgba(106, 163, 255, 0.14);
+}
+
+.addCardResult:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.addCardResultCount {
+  text-align: right;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+}
+
+.addCardResultName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.addCardResultCost {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+/* Deck name + format picker + count badge — the "header strip" at the top of the
+   deck-centric center pane. Mirrors the right-rail .deckHeader visually but lays
+   out horizontally because the center pane is wide. */
+.deckHeaderInline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.deckHeaderInline .nameInput {
+  flex: 0 1 360px;
+  min-width: 200px;
+}
+
+/* Scrollable deck body. Uses CSS multi-column so groups flow into 1–4 columns
+   based on available width, with each group treated as an indivisible block
+   (`break-inside: avoid`) so a "Creatures" group never gets split mid-list. */
+.deckCentric {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-4);
+}
+
+.deckCentricEmpty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  padding: var(--space-6);
+}
+
+.deckCentricColumns {
+  column-count: auto;
+  column-width: 280px;
+  column-gap: var(--space-4);
+}
+
+.deckCentricGroup {
+  break-inside: avoid;
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.deckCentricGroupLabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  margin: 0 0 4px 0;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Footer strip below the deck columns: deck size + status + colour pips, the colored mana
+   curve, and the save/save-as/delete actions, all in a single horizontal row. The right-rail
+   layout uses a stacked DeckSummary + DeckActionRow because that pane is too narrow for
+   a horizontal arrangement; deck-mode has the full center pane width to play with. */
+.deckCentricFooter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.42));
+  flex-wrap: wrap;
+}
+
+.footerMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 0 0 auto;
+}
+
+.footerCount {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footerCountNum {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.footerCountLabel {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.footerStatus {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footerColorPips {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.footerColorPip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.footerCurve {
+  flex: 1 1 240px;
+  min-width: 200px;
+  max-width: 360px;
+}
+
+.footerActions {
+  display: flex;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+/* Tighter, fixed-width buttons in the wide footer (vs. the stretching primary button in the
+   narrow right-rail layout). */
+.footerActions .primaryButton {
+  flex: 0 0 auto;
+  padding: 8px 22px;
+}
+
+.footerActions .secondaryButton,
+.footerActions .dangerButton {
+  padding: 8px 14px;
+}
+
+@media (max-width: 900px) {
+  .deckCentricFooter {
+    gap: var(--space-3);
+  }
+  .footerCurve {
+    flex-basis: 100%;
+    max-width: none;
+    order: 3;
+  }
+  .footerActions {
+    margin-left: 0;
+  }
+}
+

@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.permanent.counters
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
@@ -25,7 +26,9 @@ import kotlin.reflect.KClass
  * Per MTG rules, each target must receive at least minPerTarget counters.
  * If one target becomes illegal, the counters that would have gone on it are lost.
  */
-class DistributeCountersAmongTargetsExecutor : EffectExecutor<DistributeCountersAmongTargetsEffect> {
+class DistributeCountersAmongTargetsExecutor(
+    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+) : EffectExecutor<DistributeCountersAmongTargetsEffect> {
 
     override val effectType: KClass<DistributeCountersAmongTargetsEffect> = DistributeCountersAmongTargetsEffect::class
 
@@ -42,10 +45,17 @@ class DistributeCountersAmongTargetsExecutor : EffectExecutor<DistributeCounters
             return EffectResult.success(state)
         }
 
+        // The pool is evaluated once, at resolution — an X-scaled pool (Grove's Bounty) reads the
+        // X that was paid when the spell went on the stack.
+        val totalCounters = amountEvaluator.evaluate(state, effect.totalCounters, context)
+        if (totalCounters <= 0) {
+            return EffectResult.success(state)
+        }
+
         val counterType = resolveCounterType(effect.counterType)
 
         // Calculate distribution: each target gets at least minPerTarget, remainder to first
-        val distribution = calculateDistribution(effect.totalCounters, targetIds.size)
+        val distribution = calculateDistribution(totalCounters, targetIds.size)
 
         var currentState = state
         val events = mutableListOf<GameEvent>()
@@ -63,7 +73,7 @@ class DistributeCountersAmongTargetsExecutor : EffectExecutor<DistributeCounters
             currentState = currentState.updateEntity(targetId) { container ->
                 container.with(current.withAdded(counterType, modifiedCount))
             }
-            currentState = DamageUtils.markCounterPlacedOnCreature(currentState, context.controllerId, targetId)
+            currentState = DamageUtils.markCounterPlacedOnCreature(currentState, context.controllerId, targetId, counterTypeToString(counterType))
 
             val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: ""
             events.add(CountersAddedEvent(targetId, effect.counterType, modifiedCount, entityName, firstThisTurn, placedBy = context.controllerId))

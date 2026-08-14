@@ -1,0 +1,47 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "The Clone Saga",
+      "Costume Closet"
+    ],
+    "battlefield": [
+      {"name": "The Soul Stone", "counters": {"HARNESS": 1}},
+      {"name": "Arachne, Psionic Weaver", "chosenCardType": "Instant"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Plains"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Island"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": ["Grizzly Bears", "Serra Angel"],
+    "library": ["Island", "Plains", "Island", "Plains", "Island", "Plains", "Island", "Plains", "Island", "Plains", "Swamp"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Smother"],
+    "battlefield": [
+      {"name": "Swamp"},
+      {"name": "Swamp"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Island", "Plains", "Island", "Plains", "Island", "Plains", "Island", "Plains", "Island", "Swamp"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "AI"
+}

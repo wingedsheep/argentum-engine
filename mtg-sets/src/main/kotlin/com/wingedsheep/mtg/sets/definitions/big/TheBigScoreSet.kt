@@ -1,9 +1,12 @@
 package com.wingedsheep.mtg.sets.definitions.big
 
+import com.wingedsheep.mtg.sets.definitions.otj.OutlawsOfThunderJunctionSet
 import com.wingedsheep.mtg.sets.discovery.CardDiscovery
+import com.wingedsheep.mtg.sets.tokens.TokenArtData
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
 import com.wingedsheep.sdk.model.Printing
+import com.wingedsheep.sdk.model.TokenPrinting
 
 /**
  * The Big Score (2024) — bonus sheet shipped alongside Outlaws of Thunder Junction.
@@ -23,6 +26,12 @@ object TheBigScoreSet : MtgSet {
     // A 30-card bonus sheet can't sustain a sealed/draft pool by itself — it is only playable
     // together with at least one regular set.
     override val extensionSet = true
+
+    // The bonus sheet was opened inside OTJ boosters and shares its token sheet, so `tbig` lists
+    // only the tokens unique to BIG — the Clue and Treasure its cards mint are OTJ tokens.
+    override val tokenArt: List<TokenPrinting> by lazy {
+        TokenArtData.borrowedFrom(OutlawsOfThunderJunctionSet.code, code)
+    }
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

@@ -35,12 +35,13 @@ class ContinuationHandler(
         registerModule(chainResumer)
         registerAutoResumerModule(chainResumer)
         registerModule(CreatureTypeChoiceContinuationResumer(services))
-        registerModule(com.wingedsheep.engine.handlers.continuations.TextReplacementContinuationResumer(services))
+        registerModule(TextReplacementContinuationResumer(services))
         registerModule(DrawReplacementContinuationResumer(services))
         registerModule(CardSpecificContinuationResumer(services))
         registerModule(DiscardAndDrawContinuationResumer(services))
         registerModule(StateBasedContinuationResumer(services))
         registerModule(SacrificeAndPayContinuationResumer(services))
+        registerModule(CollectEvidenceContinuationResumer())
         registerModule(CostPaymentContinuationResumer(services))
         registerModule(ManaPaymentContinuationResumer(services))
         registerModule(LibraryAndZoneContinuationResumer(services))
@@ -52,9 +53,19 @@ class ContinuationHandler(
         registerModule(TokenContinuationResumer(services))
         registerModule(RingTemptContinuationResumer(services))
         registerModule(AmassContinuationResumer(services))
-        registerModule(LeylineContinuationResumer(services))
+        val leylineResumer = LeylineContinuationResumer(services)
+        registerModule(leylineResumer)
+        registerAutoResumerModule(leylineResumer)
         registerModule(ActivateAbilityXCostContinuationResumer(services))
-        registerModule(com.wingedsheep.engine.handlers.continuations.ActivateAbilityOpponentTargetResumer(services))
+        registerModule(ActivateAbilityOpponentTargetResumer(services))
+
+        // Replacement effect system
+        val replacementResumer = ReplacementContinuationResumer(
+            services.replacementEffectProcessor,
+            services
+        )
+        registerModule(replacementResumer)
+        registerAutoResumerModule(replacementResumer)
     }
 
     /**

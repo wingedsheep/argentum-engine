@@ -50,6 +50,12 @@ internal fun BridgeBuilder.structuralEnvelopes() {
     // wrapper only sets the ability's `activateFromZone` (Zone.HAND / Zone.GRAVEYARD).
     envelope("FromHand", "envelope: activated ability used from hand (activateFromZone = Zone.HAND)")
     envelope("FromGraveyard", "envelope: activated ability used from graveyard (activateFromZone = Zone.GRAVEYARD)")
+    // FromCommandZoneOrBattlefield — the *eminence* ability word (C17's commander cycle). Wraps a
+    // TriggerI whose condition is ThisCardIsInTheCommandZoneOrOnTheBattlefield; the wrapper only
+    // decides where the ability functions (`triggerZones = setOf(Zone.BATTLEFIELD, Zone.COMMAND)`,
+    // CR 113.6b) plus the CR 603.4 resolution-time re-check (a `SourceInZone` gate over the body).
+    // The real capability is the nested trigger + actions.
+    envelope("FromCommandZoneOrBattlefield", "envelope: eminence — triggered ability functioning from the command zone")
     envelope("And", "envelope: cost/action conjunction")
     // A `_Trigger: "Or"` combinator — "whenever [trigger A] or [trigger B]" (Bogwater Lumaret:
     // "whenever this creature or another creature you control enters"). Structural: the capability is

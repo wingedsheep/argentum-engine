@@ -4,7 +4,8 @@ import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.ManifestedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -84,7 +85,7 @@ class UnidentifiedHovershipScenarioTest : FunSpec({
         d.getPermanents(opp) shouldContain oppCreature
         val manifested = d.state.getEntity(oppCreature)
         manifested?.get<FaceDownComponent>() shouldBe FaceDownComponent
-        manifested?.get<ManifestedComponent>() shouldBe ManifestedComponent
+        manifested?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
         d.state.projectedState.getPower(oppCreature) shouldBe 2
         d.getGraveyard(opp) shouldContain oppLand
 
@@ -127,7 +128,7 @@ class UnidentifiedHovershipScenarioTest : FunSpec({
         // Nobody manifests dread: no decision is pending, and no manifested permanent exists.
         (d.pendingDecision is SelectCardsDecision) shouldBe false
         (d.getPermanents(me) + d.getPermanents(opp)).none {
-            d.state.getEntity(it)?.get<ManifestedComponent>() != null
+            d.state.getEntity(it)?.get<FaceDownModeComponent>() != null
         } shouldBe true
     }
 })

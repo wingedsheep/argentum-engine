@@ -17,7 +17,8 @@ val RomanticRendezvous = card("Romantic Rendezvous") {
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "86"
-        artist = "Dmitry Burmak"
+        artist = "Nereida"
+        flavorText = "\"Face it, tiger. You just hit the jackpot!\"\n—Mary Jane Watson"
         imageUri = "https://cards.scryfall.io/normal/front/3/8/38120361-153f-414e-8a45-f86bb2e35a17.jpg?1757377322"
     }
 }

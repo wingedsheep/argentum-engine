@@ -417,6 +417,17 @@ data class CantBeAttackedWithout(
 }
 
 /**
+ * The source permanent can't be chosen as an attack defender while it is attached to another
+ * permanent. This is checked only when attackers are declared; becoming attached after attackers
+ * have already been declared does not remove the source from combat.
+ */
+@SerialName("CantBeAttackedWhileAttached")
+@Serializable
+data object CantBeAttackedWhileAttached : StaticAbility {
+    override val description: String = "This permanent can't be attacked while it's attached"
+}
+
+/**
  * Global cap on how many creatures may attack in a single combat (Dueling Grounds —
  * "No more than one creature can attack each combat").
  *

@@ -9,6 +9,7 @@ import { CardRow } from './HandZone'
 import { CommandZone } from './CommandZone'
 import { ZonePile } from './ZonePiles'
 import { styles } from './styles'
+import { isLoneTargetRequirement } from '@/utils/targeting.ts'
 
 /**
  * One opponent's half of the board: hand fan (top), command zone | battlefield |
@@ -31,7 +32,7 @@ export function OpponentBoardArea({
   stripBasis = '100%',
   hideHand = false,
   plateCarriesAnchors = false,
-  viewedRingColor,
+  activeTurnRingColor,
   onToggleCollapse,
   spectatorMode,
   isHijacking,
@@ -67,10 +68,12 @@ export function OpponentBoardArea({
    */
   plateCarriesAnchors?: boolean
   /**
-   * Shared-strip view only: seat color for a persistent inset ring marking this cell as
-   * the *viewed* board (the one the center-HUD orb and keys 1-9 track). Undefined = no ring.
+   * Shared-strip view only: seat color for a persistent inset ring marking this cell as the
+   * board of the player whose **turn** it is. With every board on screen at once, "whose turn
+   * is it" is the thing worth a highlight — which cell the camera nominally tracks isn't.
+   * Undefined = no ring.
    */
-  viewedRingColor?: string
+  activeTurnRingColor?: string
   /**
    * Table overview only: fold this cell down to a narrow tab (MTGO-style per-board
    * collapse) so the other boards split the freed width. Rendered as a small "−"
@@ -266,8 +269,8 @@ export function OpponentBoardArea({
           −
         </button>
       )}
-      {/* Persistent inset ring marking the viewed cell in a shared-strip view. */}
-      {viewedRingColor && (
+      {/* Persistent inset ring marking the active player's cell in a shared-strip view. */}
+      {activeTurnRingColor && (
         <div
           aria-hidden
           style={{
@@ -275,7 +278,7 @@ export function OpponentBoardArea({
             inset: 2,
             pointerEvents: 'none',
             borderRadius: 10,
-            boxShadow: `inset 0 0 0 2px ${viewedRingColor}55, inset 0 0 18px ${viewedRingColor}22`,
+            boxShadow: `inset 0 0 0 2px ${activeTurnRingColor}55, inset 0 0 18px ${activeTurnRingColor}22`,
           }}
         />
       )}
@@ -434,9 +437,12 @@ function BoardNamePlate({
   const isTargetingSelected = targetingState?.selectedTargets.includes(playerId) ?? false
   const isValidTargetingTarget = targetingState?.validTargets.includes(playerId) ?? false
   const isChooseTargetsDecision = pendingDecision?.type === 'ChooseTargetsDecision'
+  // Only a lone single-target requirement uses the immediate click-to-submit path; a multi-target
+  // player slot (e.g. Parker Luck's "two target players") is picked via the decisionSelectionState
+  // toggle path (isValidDecisionSelection) instead, so it must NOT match here.
   const isValidDecisionTarget =
     isChooseTargetsDecision &&
-    pendingDecision.targetRequirements.length === 1 &&
+    isLoneTargetRequirement(pendingDecision) &&
     (pendingDecision.legalTargets[0] ?? []).includes(playerId)
   const isValidDecisionSelection = decisionSelectionState?.validOptions.includes(playerId) ?? false
   const isSelectedDecisionOption = decisionSelectionState?.selectedOptions.includes(playerId) ?? false

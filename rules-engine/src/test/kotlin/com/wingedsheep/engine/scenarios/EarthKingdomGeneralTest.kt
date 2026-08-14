@@ -165,6 +165,34 @@ class EarthKingdomGeneralTest : FunSpec({
         driver.getLifeTotal(player) shouldBe 22   // still just the first gain
     }
 
+    test("declining does not spend the turn — a later placement still offers the life") {
+        // CR 603.2h: the rider is keyed to the gain, not to the trigger. "Once you choose to gain
+        // life using Earth Kingdom General's second ability, that ability won't trigger again that
+        // turn" — declining isn't choosing. Under `oncePerTurn` the second placement never fired.
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
+        val player = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        driver.putCreatureOnBattlefield(player, "Earth Kingdom General")
+        val creature = driver.putCreatureOnBattlefield(player, "Savannah Lions")
+        val spell1 = driver.putCardInHand(player, "Counter Infusion")
+        val spell2 = driver.putCardInHand(player, "Counter Infusion")
+        driver.giveMana(player, Color.GREEN, 2)
+
+        driver.castSpell(player, spell1, targets = listOf(creature))
+        driver.bothPass()
+        driver.bothPass()
+        driver.submitYesNo(player, false)  // decline the first placement
+
+        driver.castSpell(player, spell2, targets = listOf(creature))
+        driver.bothPass()
+        driver.bothPass()
+        driver.submitYesNo(player, true)   // the ability triggered again — take this one
+
+        driver.getLifeTotal(player) shouldBe 22   // 20 + the 2 counters of the second placement
+    }
+
     test("proliferating a +1/+1 counter onto a creature triggers it (resumed-placement placer)") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)

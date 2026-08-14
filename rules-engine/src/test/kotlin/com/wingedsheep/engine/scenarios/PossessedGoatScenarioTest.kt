@@ -3,6 +3,7 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.mtg.sets.definitions.dsk.cards.PossessedGoat
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Counters
@@ -49,9 +50,19 @@ class PossessedGoatScenarioTest : FunSpec({
         }
     }
 
+    val exorcise = card("Exorcise Goat") {
+        manaCost = "{W}"
+        typeLine = "Instant"
+        oracleText = "Target creature becomes a Goat."
+        spell {
+            val target = target("target creature", Targets.Creature)
+            effect = Effects.SetCreatureSubtypes(setOf("Goat"), target, Duration.Permanent)
+        }
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(possess, PossessedGoat))
+        driver.registerCards(TestCards.all + listOf(possess, exorcise, PossessedGoat))
         return driver
     }
 
@@ -87,5 +98,40 @@ class PossessedGoatScenarioTest : FunSpec({
         ability.restrictions shouldBe listOf(ActivationRestriction.Once)
         // The cost is the {3} + discard-a-card composite (no tap).
         ability.isManaAbility shouldBe false
+    }
+
+    test("uses possessed art only while Demon is among its projected creature types") {
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Plains" to 20), startingLife = 20)
+
+        val player = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val goat = driver.putCreatureOnBattlefield(player, "Possessed Goat")
+        val normalArt = PossessedGoat.metadata.imageUri
+        val possessedArt = "/images/custom/possessed-goat.jpeg"
+
+        fun displayedArt() =
+            ClientStateTransformer(driver.cardRegistry)
+                .transform(driver.state, viewingPlayerId = player)
+                .cards[goat]
+                ?.imageUri
+
+        displayedArt() shouldBe normalArt
+
+        val possession = driver.putCardInHand(player, "Possess")
+        driver.giveMana(player, Color.WHITE, 1)
+        driver.castSpell(player, possession, listOf(goat))
+        driver.bothPass()
+
+        driver.state.projectedState.hasSubtype(goat, "Demon") shouldBe true
+        displayedArt() shouldBe possessedArt
+
+        val exorcism = driver.putCardInHand(player, "Exorcise Goat")
+        driver.giveMana(player, Color.WHITE, 1)
+        driver.castSpell(player, exorcism, listOf(goat))
+        driver.bothPass()
+
+        driver.state.projectedState.hasSubtype(goat, "Demon") shouldBe false
+        displayedArt() shouldBe normalArt
     }
 })

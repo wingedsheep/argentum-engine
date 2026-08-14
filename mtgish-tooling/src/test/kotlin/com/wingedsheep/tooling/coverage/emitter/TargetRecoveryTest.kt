@@ -31,7 +31,8 @@ class TargetRecoveryTest : StringSpec({
                 """{"_Permanents":"IsCreatureType","args":"Soldier"}]}""",
         )
         ctx.creatureFilterDsl(orSubs) shouldBe
-            "TargetFilter(GameObjectFilter.Creature.withSubtype(\"Goblin\") or GameObjectFilter.Creature.withSubtype(\"Soldier\"))"
+            "TargetFilter(GameObjectFilter.Creature.withSubtype(${subtypeArg("Goblin")}) or " +
+            "GameObjectFilter.Creature.withSubtype(${subtypeArg("Soldier")}))"
     }
 
     "creatureFilterDsl renders power-or-toughness and suppresses the standalone power bound" {
@@ -229,7 +230,8 @@ class TargetRecoveryTest : StringSpec({
                 """{"_Permanents":"IsNonCreatureType","args":"Mount"},""" +
                 """{"_Permanents":"IsCardtype","args":"Creature"}]}""",
         )
-        ctx.creatureFilterDsl(nonMount) shouldBe "TargetFilter(GameObjectFilter.Creature.notSubtype(Subtype(\"Mount\")))"
+        ctx.creatureFilterDsl(nonMount) shouldBe
+            "TargetFilter(GameObjectFilter.Creature.notSubtype(${subtypeCtorArg("Mount")}))"
     }
 
     "creatureFilterDsl renders a 'with a stun counter on it' restriction (Floodpits Drowner)" {
@@ -345,5 +347,56 @@ class TargetRecoveryTest : StringSpec({
                 """{"_Permanents":"IsCardtype","args":"Planeswalker"}]}""",
         )
         ctx.gameObjectFilterDsl(creatureOrPlaneswalker) shouldBe "GameObjectFilter.CreatureOrPlaneswalker"
+    }
+
+    "creatureFilterDsl renders 'target creature you don't control' as opponentControls" {
+        // The TARGET path's counterpart to the group-filter case above. It used to scan the serialized
+        // blob for a bare `"You"`, which read `Other(You)` ("a player other than you") as youControl and
+        // inverted the restriction — Affectionate Indrik's enters trigger could then only fight the
+        // controller's OWN creatures. Same defect hit Primal Might and Bite Down.
+        val youDontControl = obj(
+            """{"_Permanents":"And","args":[{"_Permanents":"IsCardtype","args":"Creature"},""" +
+                """{"_Permanents":"ControlledByAPlayer","args":{"_Players":"Other","args":{"_Player":"You"}}}]}""",
+        )
+        ctx.creatureFilterDsl(youDontControl) shouldBe "TargetFilter.Creature.opponentControls()"
+    }
+
+    "creatureFilterDsl still renders the plain 'you control' and 'an opponent controls' scopes" {
+        val youControl = obj(
+            """{"_Permanents":"And","args":[{"_Permanents":"IsCardtype","args":"Creature"},""" +
+                """{"_Permanents":"ControlledByAPlayer","args":{"_Players":"SinglePlayer","args":{"_Player":"You"}}}]}""",
+        )
+        ctx.creatureFilterDsl(youControl) shouldBe "TargetFilter.Creature.youControl()"
+
+        val opponentControls = obj(
+            """{"_Permanents":"And","args":[{"_Permanents":"IsCardtype","args":"Creature"},""" +
+                """{"_Permanents":"ControlledByAPlayer","args":{"_Players":"Opponent"}}]}""",
+        )
+        ctx.creatureFilterDsl(opponentControls) shouldBe "TargetFilter.Creature.opponentControls()"
+    }
+
+    "creatureFilterDsl declines a controller scope it cannot render exactly" {
+        // YourTeam has no rendering here. Widening to every creature would be confidently wrong, so the
+        // card must decline to SCAFFOLD. (The old substring scan also declined — via `"\"You\""` not
+        // matching `"YourTeam"` — but only by accident; this pins it structurally.)
+        val yourTeam = obj(
+            """{"_Permanents":"And","args":[{"_Permanents":"IsCardtype","args":"Creature"},""" +
+                """{"_Permanents":"ControlledByAPlayer","args":{"_Players":"YourTeam"}}]}""",
+        )
+        ctx.creatureFilterDsl(yourTeam).shouldBeNull()
+    }
+
+    "a non-creature target still declines a trigger's implied-opponent player ref (Dawning Purist)" {
+        // "destroy target enchantment THAT PLAYER controls" — the IR names one specific player, so
+        // collapsing it to opponentControls is exact only in a two-player game. The plain-creature
+        // surface takes that trade (Skirk Commando); the single-cardtype surface never has, and must
+        // keep declining to SCAFFOLD rather than quietly widen to any opponent's enchantment.
+        val thatPlayersEnchantment = obj(
+            """{"_Target":"TargetPermanent","args":{"_Permanents":"And","args":[""" +
+                """{"_Permanents":"IsCardtype","args":"Enchantment"},""" +
+                """{"_Permanents":"ControlledByAPlayer","args":""" +
+                """{"_Players":"SinglePlayer","args":{"_Player":"Trigger_ThatPlayer"}}}]}}""",
+        )
+        ctx.targetDsl(thatPlayersEnchantment).shouldBeNull()
     }
 })

@@ -19,7 +19,7 @@
  *   GET  /api/decks/examples   — the starter decks shown in the Examples tab
  *   POST /api/decks/validate   — authoritative validation pass when a list is non-empty
  */
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { PrintingRef } from '@/types'
 import type { AvailableSet } from '@/types/messages'
 import {
@@ -45,12 +45,11 @@ import {
 } from '@/components/deck/DeckTile'
 import { parseArenaDeckList } from '../deckbuilder/parseArenaDeck'
 import type { CardSummary } from '../deckbuilder/cardFilter'
-import { SetIcon } from './SetIcon'
-import { SetPickerModal } from './SetPickerModal'
+import { SetSelector, rollRandomSet } from './SetSelector'
 import styles from './DeckPicker.module.css'
-import lobbyStyles from './GameUI.module.css'
 
-type Tab = 'saved' | 'examples' | 'paste' | 'random'
+export type DeckPickerTab = 'saved' | 'examples' | 'paste' | 'random'
+type Tab = DeckPickerTab
 
 export interface DeckPickerProps {
   /**
@@ -66,14 +65,11 @@ export interface DeckPickerProps {
     sideboard?: Record<string, number>,
   ) => void
   onValidityChange?: (isValid: boolean) => void
-  /**
-   * Optional set selection callback for the "Random" tab. When the picker is on Random and
-   * the user changes the set, this is fired with the chosen set code (or null = "any set").
-   * Only meaningful for the Quick Game lobby; standalone uses can ignore it.
-   */
-  onSetCodeChange?: (setCode: string | null) => void
+  /** Set selection for quick-game Random decks. Empty means the server chooses a set. */
+  onSetCodesChange?: (setCodes: readonly string[]) => void
   /** Initial set code for the Random tab — used to re-hydrate after a reconnect. */
   initialSetCode?: string | null
+  initialSetCodes?: readonly string[]
   /** Available sets for the Random tab set picker. Empty list hides the picker. */
   availableSets?: ReadonlyArray<AvailableSet>
   disabled?: boolean
@@ -89,6 +85,33 @@ export interface DeckPickerProps {
    * Null/undefined = no restriction.
    */
   format?: string | null
+  /**
+   * Optional controlled tab. Pass it together with {@link onTabChange} to hoist the picker's tab
+   * out of the picker — the unified lobby does this so that "Random pool" on its **Cards** axis
+   * and the picker's Random tab are the same control rather than two things that can disagree.
+   * Leave both undefined and the picker owns its tab as before.
+   */
+  tab?: DeckPickerTab | undefined
+  /** Fired for every tab change, whether the user clicked it or the picker moved itself. */
+  onTabChange?: (tab: DeckPickerTab) => void
+  /**
+   * A saved deck to preselect, by name, once the library has hydrated.
+   *
+   * By *name* rather than id because that is what a saved setup can portably store — the unified
+   * library already merges cloud and local decks on `name.toLowerCase()`, so a name survives signing
+   * in where `cloud:7` would not. See `lobbyRecipe.ts`.
+   *
+   * Deliberately inert unless the picker is sitting on Saved with nothing chosen: it must never
+   * fight a Random tab the caller asked for, nor overwrite a deck the player has already picked.
+   */
+  initialSavedDeckName?: string | undefined
+  /**
+   * Fired with the name of the selected saved deck, or null when the selection isn't one.
+   *
+   * This is how a lobby records *which* deck was played without holding the card list — the half of
+   * `onDeckChange` a recipe needs and that one can't give, since a decklist has no identity.
+   */
+  onSavedDeckNameChange?: (name: string | null) => void
 }
 
 interface ExampleDeck {
@@ -137,15 +160,23 @@ function formatDeckText(cards: Record<string, number>): string {
 
 const ALL_TABS: ReadonlyArray<Tab> = ['saved', 'examples', 'paste', 'random']
 
+/** Formats the server can't autobuild for; a Random seat there still gets a sealed pool. */
+const COMMANDER_SHAPES = ['COMMANDER', 'BRAWL', 'STANDARD_BRAWL']
+
 export function DeckPicker({
   onDeckChange,
   onValidityChange,
-  onSetCodeChange,
+  onSetCodesChange,
   initialSetCode = null,
+  initialSetCodes,
   availableSets = [],
   disabled = false,
   tabs = ALL_TABS,
   format = null,
+  tab: controlledTab,
+  onTabChange,
+  initialSavedDeckName,
+  onSavedDeckNameChange,
 }: DeckPickerProps) {
   // Unified library: cloud decks (when signed in) + browser-only decks, each tagged with where it
   // lives. Selecting a cloud deck works the same as a local one because both carry their card list.
@@ -157,6 +188,13 @@ export function DeckPicker({
   const showPaste = tabs.includes('paste')
   const showRandom = tabs.includes('random')
 
+  // Under a constructed format the server builds a 60-card format-legal deck rather than opening
+  // boosters; commander shapes build a singleton deck and pick a commander. Which builder runs is
+  // what this decides — *not* whether the set choice matters, which it does either way (see
+  // `randomDescription`).
+  const randomIsConstructed = format !== null && !COMMANDER_SHAPES.includes(format.toUpperCase())
+  const formatLabel = format?.replace('_', ' ').toLowerCase() ?? ''
+
   // Default tab: saved if available, else paste, else the first allowed tab.
   const initialTab: Tab = decks.length > 0 && showSaved
     ? 'saved'
@@ -165,7 +203,27 @@ export function DeckPicker({
       : showPaste
         ? 'paste'
         : (tabs[0] ?? 'paste')
-  const [tab, setTab] = useState<Tab>(() => initialTab)
+  const [uncontrolledTab, setUncontrolledTab] = useState<Tab>(() => initialTab)
+  const tab = controlledTab ?? uncontrolledTab
+  /**
+   * Whether landing on Random was a *placeholder* rather than a decision.
+   *
+   * The deck library hydrates asynchronously, so on the first render `decks` is always empty and
+   * {@link initialTab} falls through to `random` — the picker's way of showing something rather than
+   * an empty "My Decks". That placeholder is replaced by `saved` as soon as the list arrives.
+   *
+   * Random asked for *from outside* is the opposite: the landing wizard's "Random pool" and the
+   * cross-kind recreate both hand the tab in through {@link DeckPickerProps.tab}, having already
+   * promised the player a rolled pool. Before this the two were indistinguishable, so
+   * "A friend → Random pool → Create lobby" opened a lobby sitting on My Decks — the picker
+   * overwrote the answer the wizard had just collected.
+   */
+  const randomIsPlaceholder = useRef(controlledTab === undefined)
+  const setTab = useCallback((next: Tab) => {
+    randomIsPlaceholder.current = false
+    setUncontrolledTab(next)
+    onTabChange?.(next)
+  }, [onTabChange])
   const [pasteText, setPasteText] = useState('')
   // Commander designation that rides along with the Paste tab. The paste textarea has no
   // commander UI of its own — loading a commander-shape example is the only way this gets
@@ -177,22 +235,101 @@ export function DeckPicker({
   const [cards, setCards] = useState<Record<string, CardSummary>>({})
   const [examples, setExamples] = useState<ExampleDeck[]>([])
   const [validation, setValidation] = useState<ValidationResult | null>(null)
-  const [randomSetCode, setRandomSetCode] = useState<string | null>(initialSetCode)
-  const [showSetPicker, setShowSetPicker] = useState(false)
+  const [randomSetCodes, setRandomSetCodes] = useState<readonly string[]>(
+    initialSetCodes ?? (initialSetCode ? [initialSetCode] : []),
+  )
   const validateAbortRef = useRef<AbortController | null>(null)
+
+  // The Random tab's set choice is both local (it drives the chips) and lifted (the lobby submits it),
+  // so every change goes through one place rather than being duplicated per handler.
+  const commitSetCodes = useCallback(
+    (next: readonly string[]) => {
+      setRandomSetCodes(next)
+      onSetCodesChange?.(next)
+    },
+    [onSetCodesChange],
+  )
+
+  /**
+   * What the server will actually do, given the lobby's format *and* the sets you picked.
+   *
+   * The set choice used to be hidden here whenever a constructed format was set, on the reasoning
+   * that "the format defines the pool, not the boosters". That was only half true: the server passes
+   * a human Random seat's `setCodes` straight into `ConstructedDeckGenerator.generate(setCodes,
+   * format)` / `CommanderDeckGenerator.generate(setCodes, …)`, both of which narrow their pool to
+   * those sets. So the capability was there and only the control was missing — which is why the AI
+   * seat could be told "build a Pauper deck out of Innistrad" and you could not. Now both seats can,
+   * and this sentence is what makes the difference visible rather than something you infer.
+   */
+  const pinnedSets = randomSetCodes.length > 0
+  const setsPhrase = randomSetCodes
+    .map((code) => availableSets.find((s) => s.code === code)?.name ?? code)
+    .join(', ')
+  const randomDescription = randomIsConstructed
+    ? pinnedSets
+      ? `A 60-card ${formatLabel}-legal deck, auto-built the moment the game starts from the
+         ${formatLabel}-legal cards in ${setsPhrase}. Nothing to submit — just ready up.`
+      : `A 60-card ${formatLabel}-legal deck, auto-built from the whole legal card pool the moment
+         the game starts. Pick sets below to build it out of those instead.`
+    : format !== null
+      ? pinnedSets
+        ? `A commander and a singleton deck in its colours, drawn from ${setsPhrase} the moment the
+           game starts. Nothing to submit — just ready up.`
+        : `A commander and a singleton deck in its colours, drawn from the whole legal card pool.
+           Pick sets below to draw from those instead.`
+      : pinnedSets
+        ? `Eight boosters across ${setsPhrase}, auto-built into a 40-card deck the moment the game
+           starts. Nothing else to submit — just ready up.`
+        : `Eight boosters from one set chosen for you, auto-built into a 40-card deck the moment the
+           game starts. Pick sets below to choose which.`
 
   // Re-hydrate on initial-set-code change (e.g. server-driven on reconnect).
   useEffect(() => {
-    setRandomSetCode(initialSetCode)
-  }, [initialSetCode])
+    setRandomSetCodes(initialSetCodes ?? (initialSetCode ? [initialSetCode] : []))
+  }, [initialSetCode, initialSetCodes])
 
-  // Move off `random` to `saved` once decks are hydrated, so users land on their own list.
+  // Tell a controlling parent which tab we resolved to, so it starts in sync rather than having
+  // to guess the default. Fires once; every later change goes through `setTab`.
   useEffect(() => {
-    if (decks.length > 0 && tab === 'random' && showSaved) {
+    onTabChange?.(tab)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Replace the placeholder Random tab with `saved` once decks are hydrated, so users land on their
+  // own list. Keyed on `decks.length`, so this only fires as the deck list arrives — a user who
+  // picks Random later stays on it, and so does a Random the caller asked for
+  // (see `randomIsPlaceholder`).
+  useEffect(() => {
+    if (randomIsPlaceholder.current && decks.length > 0 && tab === 'random' && showSaved) {
       setTab('saved')
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decks.length])
+
+  /**
+   * Preselect the deck a saved setup asked for, once the library has arrived.
+   *
+   * Guarded on three things, each of which is a way this could otherwise do harm: only on the Saved
+   * tab (so a promised Random pool is never overwritten), only with nothing already chosen (so a
+   * player's own pick wins), and only while the name still matches something. A name that no longer
+   * resolves simply leaves the picker where it was — the setup says so in its notes rather than
+   * silently substituting a different deck.
+   */
+  const wantedSavedName = initialSavedDeckName?.trim().toLowerCase()
+  useEffect(() => {
+    if (!wantedSavedName || selectedSavedId !== null || tab !== 'saved') return
+    const match = decks.find((d) => d.name.trim().toLowerCase() === wantedSavedName)
+    if (match) setSelectedSavedId(match.id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wantedSavedName, decks, tab])
+
+  // Report the *identity* of the chosen deck, which `onDeckChange`'s card list cannot carry.
+  useEffect(() => {
+    onSavedDeckNameChange?.(
+      tab === 'saved' ? (decks.find((d) => d.id === selectedSavedId)?.name ?? null) : null,
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab, selectedSavedId, decks])
 
   // If the active tab gets removed (e.g. the Random tab is hidden), fall back.
   useEffect(() => {
@@ -377,12 +514,12 @@ export function DeckPicker({
   }, [decks])
   const legalityMap = useDeckLegalFormats(legalityInput)
 
-  // Examples filtered by the lobby's format (when set). Examples with no format hint stay
-  // visible everywhere — same permissive rule as the existing saved-deck legality fallback.
+  // Examples are curated for a concrete format. Once the lobby chooses one, do not show untagged
+  // or differently-shaped decks that the server will reject on submission.
   const visibleExamples = useMemo(() => {
     if (!format) return examples
     const target = format.toUpperCase()
-    return examples.filter((ex) => !ex.format || ex.format.toUpperCase() === target)
+    return examples.filter((ex) => ex.format?.toUpperCase() === target)
   }, [examples, format])
 
   // Saved decks filtered by the lobby's format (when set). While the legality response is in
@@ -478,56 +615,42 @@ export function DeckPicker({
 
         {tab === 'random' && (
           <>
-            {availableSets.length > 0 && (() => {
-              const selectedSet = randomSetCode
-                ? availableSets.find((s) => s.code === randomSetCode) ?? null
-                : null
-              return (
-                <div className={styles.actionsRow}>
-                  <label className={styles.helperText} style={{ flexShrink: 0 }}>Set</label>
-                  <span
-                    className={`${lobbyStyles.setChip} ${selectedSet?.partial ? lobbyStyles.setChipPartial : ''}`}
-                    title={selectedSet?.name ?? 'A random set is rolled when the game starts'}
-                  >
-                    {selectedSet ? (
-                      <SetIcon code={selectedSet.code} className={lobbyStyles.setChipIcon} />
-                    ) : (
-                      <span className={lobbyStyles.setChipIcon} aria-hidden>🎲</span>
-                    )}
-                    <span className={lobbyStyles.setChipName}>{selectedSet?.name ?? 'Random Set'}</span>
-                  </span>
-                  <button
-                    type="button"
-                    className={lobbyStyles.addSetsButton}
-                    onClick={() => setShowSetPicker(true)}
+            {/* The one tab whose answer is "nothing to do", which is exactly why it has to say so.
+                It used to be a single grey line in a 220px box — indistinguishable from a panel
+                that had failed to load, and the least convincing possible landing place for
+                someone who has just answered "Random pool" in the wizard. */}
+            <div className={styles.randomCard} data-testid="random-pool-panel">
+              <span className={styles.randomDie} aria-hidden>🎲</span>
+              <h3 className={styles.randomTitle}>The server builds your deck</h3>
+              <p className={styles.randomBody}>{randomDescription}</p>
+              <p className={styles.randomBody}>
+                This covers your seat only. Your opponent can still bring a deck of their own.
+              </p>
+              {availableSets.length > 0 && (
+                <div className={styles.randomSetRow}>
+                  <label className={styles.helperText} style={{ flexShrink: 0 }}>Sets</label>
+                  <SetSelector
+                    sets={availableSets}
+                    selectedCodes={randomSetCodes}
+                    onToggleSet={(code) => {
+                      commitSetCodes(
+                        randomSetCodes.includes(code)
+                          ? randomSetCodes.filter((selected) => selected !== code)
+                          : [...randomSetCodes, code],
+                      )
+                    }}
+                    onSelectRandom={() => {
+                      const chosen = rollRandomSet(availableSets, randomSetCodes)
+                      if (chosen) commitSetCodes([...randomSetCodes, chosen.code])
+                    }}
                     disabled={disabled}
-                    style={{ marginLeft: 'auto' }}
-                  >
-                    Choose set
-                  </button>
+                    align="start"
+                    emptyMeansRandom={!randomIsConstructed}
+                    emptyLabel="Every set — the whole legal card pool"
+                  />
                 </div>
-              )
-            })()}
-            <p className={styles.helperText}>
-              The server will generate a random sealed pool deck when the game starts.
-            </p>
-            {showSetPicker && (
-              <SetPickerModal
-                sets={availableSets}
-                mode="single"
-                selectedCodes={randomSetCode ? [randomSetCode] : []}
-                onToggleSet={(code) => {
-                  setRandomSetCode(code)
-                  onSetCodeChange?.(code)
-                }}
-                onSelectRandom={() => {
-                  setRandomSetCode(null)
-                  onSetCodeChange?.(null)
-                }}
-                onClose={() => setShowSetPicker(false)}
-                title="Choose a set"
-              />
-            )}
+              )}
+            </div>
           </>
         )}
       </div>

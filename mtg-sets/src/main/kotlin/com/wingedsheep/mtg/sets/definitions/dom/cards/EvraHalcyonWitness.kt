@@ -26,7 +26,7 @@ val EvraHalcyonWitness = card("Evra, Halcyon Witness") {
 
     activatedAbility {
         cost = Costs.Mana("{4}")
-        effect = Effects.ExchangeLifeAndPower()
+        effect = Effects.ExchangeLifeAndStat()
     }
 
     metadata {

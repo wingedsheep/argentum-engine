@@ -9,6 +9,14 @@ import { trackEvent, setInGame } from '@/utils/analytics.ts'
 import { applyStateDelta } from '@/network/deltaApplicator.ts'
 import { getWebSocket, clearLobbyId, requestReauth } from '../shared'
 import type { SetState, GetState } from './types'
+import type {
+  LogEntry,
+  DrawAnimation,
+  DamageAnimation,
+  RevealAnimation,
+  CoinFlipAnimation,
+  TargetReselectedAnimation,
+} from '../types'
 
 /**
  * Extract the relevant player ID from an event for log coloring.
@@ -52,6 +60,33 @@ function isRevealCoveredBySelectDecision(
   if (revealedIds.length === 0) return false
   const covered = new Set<EntityId>([...options, ...nonSelectableOptions])
   return revealedIds.every((id) => covered.has(id))
+}
+
+/**
+ * Map a game log the server has resent into log entries, reusing the entries already built for
+ * the prefix. The log is append-only, so everything but the new tail is unchanged — rebuilding
+ * it wholesale meant every click late in a game re-mapped hundreds of entries it had already
+ * mapped. Falls back to a full rebuild if the log ever shrinks (a new game, or an undo).
+ */
+function appendGameLogTail(
+  existing: readonly LogEntry[],
+  gameLog: readonly ClientEvent[] | undefined
+): readonly LogEntry[] {
+  const log = gameLog ?? []
+  if (log.length === existing.length) return existing
+  const reusable = log.length > existing.length ? existing.length : 0
+  const entries: LogEntry[] = reusable > 0 ? existing.slice(0, reusable) : []
+  const now = Date.now()
+  for (let i = reusable; i < log.length; i++) {
+    const e = log[i] as { type: string; description: string; playerId?: string; casterId?: string; controllerId?: string; attackingPlayerId?: string; viewingPlayerId?: string; revealingPlayerId?: string; activePlayerId?: string; newControllerId?: string }
+    entries.push({
+      description: e.description,
+      playerId: getEventPlayerId(e),
+      timestamp: now,
+      type: getEventLogType(e.type),
+    })
+  }
+  return entries
 }
 
 function getEventLogType(eventType: string): 'action' | 'turn' | 'combat' | 'system' {
@@ -155,7 +190,17 @@ function processStateUpdate(
   set: SetState,
   get: GetState
 ): void {
-  const { playerId, addDrawAnimation, addDamageAnimation, addRevealAnimation, addCoinFlipAnimation, addTargetReselectedAnimation, addBeholdPulse, reconcileBeholdPulses } = get()
+  const { playerId, addBeholdPulse, reconcileBeholdPulses } = get()
+
+  // Animations spawned by this update are collected here and committed with the state itself,
+  // in one store write. Each separate write re-runs every subscriber's selector across the
+  // whole board — a combat update that draws a card and changes two life totals used to cost
+  // four of those passes before anything could paint.
+  const newDrawAnimations: DrawAnimation[] = []
+  const newDamageAnimations: DamageAnimation[] = []
+  const newRevealAnimations: RevealAnimation[] = []
+  const newCoinFlipAnimations: CoinFlipAnimation[] = []
+  const newTargetReselectedAnimations: TargetReselectedAnimation[] = []
 
   // Check for hand reveal events
   const handLookedAtEvent = msg.events.find(
@@ -263,7 +308,7 @@ function processStateUpdate(
   cardDrawnEvents.forEach((event, index) => {
     const isOpponent = event.playerId !== playerId
     const card = resolvedState.cards[event.cardId]
-    addDrawAnimation({
+    newDrawAnimations.push({
       id: `draw-${event.cardId}-${Date.now()}-${index}`,
       cardId: event.cardId,
       cardName: event.cardName,
@@ -296,7 +341,7 @@ function processStateUpdate(
   let animIndex = 0
   playerLifeChanges.forEach((changes, targetPlayerId) => {
     if (changes.damage > 0) {
-      addDamageAnimation({
+      newDamageAnimations.push({
         id: `life-${targetPlayerId}-${Date.now()}-damage`,
         targetId: targetPlayerId,
         targetIsPlayer: true,
@@ -307,7 +352,7 @@ function processStateUpdate(
       animIndex++
     }
     if (changes.lifeGain > 0) {
-      addDamageAnimation({
+      newDamageAnimations.push({
         id: `life-${targetPlayerId}-${Date.now()}-gain`,
         targetId: targetPlayerId,
         targetIsPlayer: true,
@@ -330,7 +375,7 @@ function processStateUpdate(
   turnedFaceUpEvents.forEach((event, index) => {
     const isOpponent = event.controllerId !== playerId
     const card = resolvedState.cards[event.cardId]
-    addRevealAnimation({
+    newRevealAnimations.push({
       id: `reveal-${event.cardId}-${Date.now()}-${index}`,
       cardName: event.cardName,
       imageUri: card?.imageUri ?? null,
@@ -350,7 +395,7 @@ function processStateUpdate(
 
   coinFlipEvents.forEach((event, index) => {
     const isOpponent = event.playerId !== playerId
-    addCoinFlipAnimation({
+    newCoinFlipAnimations.push({
       id: `coin-${event.sourceId}-${Date.now()}-${index}`,
       sourceName: event.sourceName,
       won: isOpponent ? !event.won : event.won,
@@ -369,7 +414,7 @@ function processStateUpdate(
   }[]
 
   targetReselectedEvents.forEach((event, index) => {
-    addTargetReselectedAnimation({
+    newTargetReselectedAnimations.push({
       id: `reselect-${Date.now()}-${index}`,
       spellOrAbilityName: event.spellOrAbilityName,
       oldTargetName: event.oldTargetName,
@@ -399,13 +444,18 @@ function processStateUpdate(
     undoAvailable: msg.undoAvailable ?? false,
     ...(serverPriorityMode ? { priorityMode: serverPriorityMode, fullControl: serverPriorityMode === 'fullControl' } : {}),
     ...(serverOverrides ? { stopOverrides: serverOverrides } : {}),
-    pendingEvents: [...state.pendingEvents, ...msg.events],
-    eventLog: (resolvedState.gameLog ?? []).map((e) => ({
-      description: e.description,
-      playerId: getEventPlayerId(e as { type: string; playerId?: string; casterId?: string; controllerId?: string; attackingPlayerId?: string; viewingPlayerId?: string; revealingPlayerId?: string; activePlayerId?: string; newControllerId?: string }),
-      timestamp: Date.now(),
-      type: getEventLogType((e as { type: string }).type),
-    })),
+    // The server resends the whole game log every update, but it only ever grows at the tail:
+    // re-mapping all of it each time did work proportional to the game's length so far, so a
+    // long game paid steadily more per click. Map only the new tail and keep the prefix's
+    // existing entries, which also keeps their identity stable for the log list.
+    eventLog: appendGameLogTail(state.eventLog, resolvedState.gameLog),
+    ...(newDrawAnimations.length > 0 ? { drawAnimations: [...state.drawAnimations, ...newDrawAnimations] } : {}),
+    ...(newDamageAnimations.length > 0 ? { damageAnimations: [...state.damageAnimations, ...newDamageAnimations] } : {}),
+    ...(newRevealAnimations.length > 0 ? { revealAnimations: [...state.revealAnimations, ...newRevealAnimations] } : {}),
+    ...(newCoinFlipAnimations.length > 0 ? { coinFlipAnimations: [...state.coinFlipAnimations, ...newCoinFlipAnimations] } : {}),
+    ...(newTargetReselectedAnimations.length > 0
+      ? { targetReselectedAnimations: [...state.targetReselectedAnimations, ...newTargetReselectedAnimations] }
+      : {}),
     waitingForOpponentMulligan: false,
     revealedHandCardIds: (() => {
       if (faceDownCastByOpponent) return null

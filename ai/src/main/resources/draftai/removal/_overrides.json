@@ -1,5 +1,5 @@
 {
-  "_comment": "Manual removal overrides, keyed by set code. Merged on top of the Scryfall-generated <SET>.json files. Use this for cards whose o-tags are missing or wrong (e.g. freshly-previewed cards that haven't been tagged yet).",
+  "_comment": "Manual removal overrides, keyed by set code. Merged on top of the <SET>.json files extracted from the Draftsim bundle. Use this for cards whose o-tags are missing or wrong (e.g. freshly-previewed cards that haven't been tagged yet).",
   "SOS": {
     "Ajani's Response": [
       "removal",
@@ -37,6 +37,81 @@
       "creature-removal"
     ],
     "Wilt in the Heat": [
+      "removal",
+      "creature-removal"
+    ]
+  },
+  "HOB": {
+    "Bilbo, Luckwearer // Burglar's Plot": [
+      "removal",
+      "creature-removal"
+    ],
+    "Bilbo's Deadly Slice": [
+      "removal",
+      "creature-removal"
+    ],
+    "Celebrate the Mountain-king": [
+      "removal",
+      "creature-removal",
+      "artifact-removal",
+      "enchantment-removal",
+      "planeswalker-removal"
+    ],
+    "Crude Bent Blade": [
+      "removal",
+      "creature-removal"
+    ],
+    "Giant's Boulder": [
+      "removal",
+      "creature-removal",
+      "artifact-removal",
+      "enchantment-removal",
+      "planeswalker-removal"
+    ],
+    "Glóin the Mighty // Easy Pickings": [
+      "removal",
+      "creature-removal"
+    ],
+    "Magnificent End": [
+      "removal",
+      "creature-removal"
+    ],
+    "Pinecone Strike": [
+      "removal",
+      "creature-removal",
+      "artifact-removal"
+    ],
+    "Quarrel": [
+      "removal",
+      "creature-removal"
+    ],
+    "Smaug, the Great Calamity // Spew Flame": [
+      "removal",
+      "creature-removal"
+    ],
+    "Stir Up Trouble": [
+      "removal",
+      "creature-removal"
+    ],
+    "Stone-Giant of High Pass": [
+      "removal",
+      "creature-removal",
+      "planeswalker-removal"
+    ],
+    "The Black Arrow": [
+      "removal",
+      "creature-removal"
+    ],
+    "Thorin's Last Stand": [
+      "removal",
+      "artifact-removal",
+      "enchantment-removal"
+    ],
+    "Troll Negotiations": [
+      "removal",
+      "creature-removal"
+    ],
+    "Warg Tactics": [
       "removal",
       "creature-removal"
     ]

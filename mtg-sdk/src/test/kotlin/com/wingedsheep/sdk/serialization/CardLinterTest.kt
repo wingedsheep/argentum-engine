@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.serialization
 
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardDefinition
@@ -13,6 +14,12 @@ import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.GrantWard
+import com.wingedsheep.sdk.scripting.KeywordAbility
+import com.wingedsheep.sdk.scripting.ModifyStats
+import com.wingedsheep.sdk.scripting.effects.BecomeArtifactEffect
+import com.wingedsheep.sdk.scripting.effects.WardCost
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.conditions.CastChoiceMade
 import com.wingedsheep.sdk.scripting.conditions.EntityMatches
 import com.wingedsheep.sdk.scripting.ChoiceSlot
@@ -387,6 +394,116 @@ class CardLinterTest : DescribeSpec({
             CardLinter.lint(card)
                 .filterIsInstance<CardValidationError.UnsupportedEntityMatchesRole>()
                 .shouldBeEmpty()
+        }
+    }
+
+    describe("attach-scope filters on cards that can't be attached") {
+
+        // GrantWard's filter defaults to GroupFilter.attachedCreature(), so the buggy shape is
+        // literally "forgot the second argument" — as Harmonious Grovestrider did.
+        fun wardGrant(filter: GroupFilter? = null) =
+            if (filter == null) GrantWard(WardCost.Mana("{2}"))
+            else GrantWard(WardCost.Mana("{2}"), filter)
+
+        fun beast(script: CardScript, equipCost: ManaCost? = null, back: CardDefinition? = null) =
+            CardDefinition(
+                name = "Attach Scope Beast",
+                manaCost = ManaCost.parse("{3}{G}{G}"),
+                typeLine = TypeLine.creature(setOf(Subtype("Beast"))),
+                creatureStats = CreatureStats(3, 3),
+                script = script,
+                equipCost = equipCost,
+                backFace = back,
+            )
+
+        fun findings(card: CardDefinition) = CardLinter.lint(card)
+            .filterIsInstance<CardValidationError.AttachedScopeGrantOnNonAttachment>()
+
+        it("flags a creature whose ward grant kept the default attached-creature filter") {
+            val found = findings(beast(CardScript(staticAbilities = listOf(wardGrant()))))
+            found.shouldHaveSize(1)
+            found[0].message shouldContain "Scope.AttachedTo"
+            found[0].message shouldContain "silent no-op"
+        }
+
+        it("accepts the same grant on an Aura, where attach scope is the point") {
+            val aura = CardDefinition(
+                name = "Warding Aura",
+                manaCost = ManaCost.parse("{1}{W}"),
+                typeLine = TypeLine.aura(),
+                script = CardScript(
+                    auraTarget = AnyTarget(),
+                    staticAbilities = listOf(wardGrant()),
+                ),
+            )
+            findings(aura).shouldBeEmpty()
+        }
+
+        it("accepts the same grant on an Equipment") {
+            val boots = CardDefinition(
+                name = "Warding Boots",
+                manaCost = ManaCost.parse("{1}"),
+                typeLine = TypeLine.equipment(),
+                script = CardScript(staticAbilities = listOf(wardGrant())),
+                equipCost = ManaCost.parse("{1}"),
+            )
+            findings(boots).shouldBeEmpty()
+        }
+
+        it("accepts a creature's own printed ward, which is the correct fix") {
+            val card = beast(CardScript()).copy(
+                keywordAbilities = listOf(KeywordAbility.ward("{2}")),
+            )
+            findings(card).shouldBeEmpty()
+        }
+
+        it("accepts a lord-style grant with an explicit battlefield-scoped filter") {
+            val lord = beast(
+                CardScript(
+                    staticAbilities = listOf(wardGrant(GroupFilter.OtherCreaturesYouControl)),
+                ),
+            )
+            findings(lord).shouldBeEmpty()
+        }
+
+        // The Irencrag: a Legendary Artifact whose trigger turns it into an Equipment and grants
+        // "equipped creature gets +3/+3". Attach scope inside an effect is correct — by the time
+        // the grant applies, the card is an Equipment.
+        it("does not flag attach scope nested inside an effect that first makes it an Equipment") {
+            val irencrag = CardDefinition(
+                name = "Becomes Equipment",
+                manaCost = ManaCost.parse("{2}"),
+                typeLine = TypeLine.artifact(),
+                script = CardScript(
+                    triggeredAbilities = listOf(
+                        TriggeredAbility(
+                            id = AbilityId.generate(),
+                            trigger = EventPattern.CastThisSpellEvent,
+                            effect = BecomeArtifactEffect(
+                                target = EffectTarget.Self,
+                                cardTypes = setOf("ARTIFACT"),
+                                subtypes = setOf("Equipment"),
+                                loseAllAbilities = true,
+                                grantedStaticAbilities = listOf(ModifyStats(3, 3)),
+                            ),
+                        ),
+                    ),
+                ),
+            )
+            findings(irencrag).shouldBeEmpty()
+        }
+
+        it("does not flag a creature that transforms into an Aura on its back face") {
+            val back = CardDefinition(
+                name = "Beast Aura Back",
+                manaCost = ManaCost.parse("{3}{G}{G}"),
+                typeLine = TypeLine.aura(),
+                script = CardScript(
+                    auraTarget = AnyTarget(),
+                    staticAbilities = listOf(wardGrant()),
+                ),
+            )
+            findings(beast(CardScript(), back = back)).shouldBeEmpty()
         }
     }
 })

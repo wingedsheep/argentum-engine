@@ -14,13 +14,24 @@ For each set we've catalogued (a `definitions/<code>/` folder with a `*Set.kt`):
   - reads the set `code` and `displayName` from the Kotlin source
   - loads the canonical card list from `~/.cache/scryfall/<code>.json`
     (same cache `scripts/card-status` reads/writes)
-  - partitions canonical front-face names into draft (Scryfall `booster: true`)
-    and extras, deduping extras against draft — identical semantics to
-    `card-status`, so the numbers match the mtgish coverage TUI
+  - partitions canonical front-face names into draft (some printing of the card
+    in that set has Scryfall `booster: true`) and extras, deduping extras against
+    draft — identical semantics to `card-status`, so the numbers match the mtgish
+    coverage TUI
 
 Output: `game-server/src/main/resources/coverage/set-totals.json`, an array of
   { code, name, releaseDate, setType, standardLegal,
-    draft: [{ name, img }, ...], extra: [{ name, img }, ...] }
+    draft: [{ name, img, notPlanned? }, ...],
+    extra: [{ name, img, products, group, notPlanned? }, ...] }
+Extras additionally carry `group` — a Scryfall-style section heading ("Starter Decks", "Promos",
+…) derived from their `products` (Scryfall `promo_types`) per `EXTRA_GROUPS` below — and are
+emitted pre-sorted into those sections, so the Set Completion view can break the extras out the
+way scryfall.com/sets/<code> does instead of showing one undifferentiated "Extras" pile.
+`notPlanned` is present only for the cards listed in `coverage/card-exclusions.json`
+(ante, subgames, physical dexterity) and carries `{ kind, why }` — the short reason key
+and the sentence explaining it. Those cards stay in the list so the detail view can show
+them, but the server drops them from the denominator while they're unimplemented, so a
+set reads complete once everything we intend to build is built.
 `standardLegal` is the set's current Standard-format membership, computed with the
 same rule as `card-status` (a core/expansion/draft-innovation set whose canonical
 cards are majority Standard-legal) so the Set Completion view doesn't have to
@@ -48,12 +59,47 @@ import sys
 from datetime import date, timedelta
 from pathlib import Path
 
+from card_exclusions import load_exclusions, load_reasons
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFINITIONS_ROOT = REPO_ROOT / "mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions"
 OUTPUT = REPO_ROOT / "game-server/src/main/resources/coverage/set-totals.json"
+PRODUCTS_OUTPUT = REPO_ROOT / "game-server/src/main/resources/coverage/set-products.json"
 CACHE_ROOT = Path.home() / ".cache" / "scryfall"
-CACHE_SCHEMA_VERSION = 6
+CACHE_SCHEMA_VERSION = 8
 REFRESH_WINDOW_DAYS = 30
+
+# Scryfall's set pages split a set's printings into named sections — "Draft Cards" first, then the
+# non-booster ones by where they came from ("Starter Decks", "Promos", the art-variant runs). Our
+# denominator is card *names*, not printings, so the art-variant sections collapse to nothing (a
+# borderless Woodland Showcase is another printing of a card already in the draft pool). What is
+# left worth naming is the extras: we mirror Scryfall's headings for them, derived from the
+# printing-level `promo_types` in the cache, so the Set Completion view says *which product* a
+# completionist card comes from instead of lumping all of them into one "Extras" pile.
+#
+# One card can carry several tags — a starter-deck exclusive that later got a stamped promo printing
+# — so the first matching row wins: the product that put the card in the set beats how it was
+# subsequently reprinted. Order here is also the display order of the sections.
+EXTRA_GROUPS: list[tuple[str, tuple[str, ...]]] = [
+    ("Starter Decks", ("starterdeck", "intropack", "themepack")),
+    ("Planeswalker Decks", ("planeswalkerdeck",)),
+    ("Brawl Decks", ("brawldeck",)),
+    ("Starter Collection", ("startercollection",)),
+    ("Beginner Box", ("beginnerbox",)),
+    ("Set Extension", ("setextension",)),
+    ("Promos", ("promopack", "prerelease", "buyabox", "bundle", "release", "draftweekend",
+                "gameday", "judgegift", "setpromo", "datestamped", "stamped", "playerrewards",
+                "convention", "openhouse", "instore", "giftbox", "boxtopper", "themepackpromo")),
+    ("Special Art", ("boosterfun", "showcase", "borderless", "extendedart", "raisedfoil",
+                     "galaxyfoil", "surgefoil", "textured", "serialized", "halofoil", "fracturefoil")),
+]
+# Extras Scryfall tags with nothing we recognise (`extra_products` records them as `other`). On its
+# own pages Scryfall names these from curated collector-number ranges — "Deck Reprints" for the
+# Baldur's Gate precons, "Jumpstart Cards" for the Wilds of Eldraine ones — which isn't derivable
+# from card data, so they share one honest catch-all section instead of a guessed name.
+EXTRA_GROUP_FALLBACK = "Other Cards"
+EXTRA_GROUP_RANK = {label: i for i, (label, _) in enumerate(EXTRA_GROUPS)}
+EXTRA_GROUP_RANK[EXTRA_GROUP_FALLBACK] = len(EXTRA_GROUPS)
 
 # Standard-format membership, computed here (not at runtime) because the signal lives only in the
 # Scryfall cache: a set is "in Standard" when it is a core/expansion/draft-innovation set the bulk
@@ -70,6 +116,15 @@ SKIP_FOLDERS = {"custom"}
 def front_face(name: str) -> str:
     """Strip ` // back` suffix from DFC / adventure names (matches card-status)."""
     return name.split(" // ", 1)[0].strip()
+
+
+def extra_group(product_ids: list[str]) -> str:
+    """The Scryfall-style section heading for one extra, from its printings' `promo_types`."""
+    tags = set(product_ids)
+    for label, ids in EXTRA_GROUPS:
+        if not tags.isdisjoint(ids):
+            return label
+    return EXTRA_GROUP_FALLBACK
 
 
 def discover_sets() -> list[tuple[str, str]]:
@@ -144,7 +199,11 @@ def main() -> int:
             print(f"note: {len(missing)} set(s) missing/stale in cache: {' '.join(missing)}", file=sys.stderr)
             print("      run `scripts/card-status --refresh` to populate them, then re-run.", file=sys.stderr)
 
+    exclusions = load_exclusions()
+    reasons = load_reasons()
+
     entries = []
+    product_entries: dict[str, dict[str, list[str]]] = {}
     skipped = []
     for code, name in sets:
         payload = load_cache(code)
@@ -153,11 +212,39 @@ def main() -> int:
             continue
         cards = payload.get("cards", {})
 
-        def card_entries(names: set[str]) -> list[dict]:
+        extra_products = payload.get("extra_products", {})
+        grouped_products: dict[str, list[str]] = {}
+        for card_name, product_ids in extra_products.items():
+            for product_id in product_ids:
+                grouped_products.setdefault(product_id, []).append(front_face(card_name))
+        if grouped_products:
+            product_entries[code] = {
+                product_id: sorted(set(names))
+                for product_id, names in sorted(grouped_products.items())
+            }
+
+        # `extra_products` is keyed by the full Scryfall name while the card lists are front-faced,
+        # so index it that way or a double-faced extra silently loses its product tags.
+        products_by_front = {front_face(n): ids for n, ids in extra_products.items()}
+
+        def card_entries(names: set[str], with_group: bool = False) -> list[dict]:
             out = []
             for n in sorted(names):
                 meta = cards.get(n) or {}
-                out.append({"name": n, "img": meta.get("image_uri")})
+                entry = {"name": n, "img": meta.get("image_uri")}
+                if with_group:
+                    entry["products"] = products_by_front.get(n, ["other"])
+                    entry["group"] = extra_group(entry["products"])
+                kind = exclusions.get(n)
+                if kind:
+                    # Exclusion is carried as its reason — a not-planned card without a "why"
+                    # can't be represented, so the UI never has to render a bare "skipped".
+                    entry["notPlanned"] = {"kind": kind, "why": reasons[kind]}
+                out.append(entry)
+            # Extras ship pre-grouped (sections in EXTRA_GROUPS order, A→Z inside each) so every
+            # consumer renders the same Scryfall-style sections by walking the list once.
+            if with_group:
+                out.sort(key=lambda e: (EXTRA_GROUP_RANK[e["group"]], e["name"]))
             return out
 
         draft = {front_face(n) for n in payload.get("draft_names", [])}
@@ -169,18 +256,23 @@ def main() -> int:
             "setType": payload.get("set_type"),
             "standardLegal": is_standard_legal(payload),
             "draft": card_entries(draft),
-            "extra": card_entries(extra),
+            "extra": card_entries(extra, with_group=True),
         })
 
     entries.sort(key=lambda e: ((e["releaseDate"] or ""), e["code"]), reverse=True)
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(json.dumps(entries, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    PRODUCTS_OUTPUT.write_text(
+        json.dumps(product_entries, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
     total_cards = sum(len(e["draft"]) + len(e["extra"]) for e in entries)
     with_img = sum(1 for e in entries for c in (e["draft"] + e["extra"]) if c["img"])
-    print(f"wrote {len(entries)} sets ({total_cards} canonical names, {with_img} with art) "
-          f"-> {OUTPUT.relative_to(REPO_ROOT)}")
+    not_planned = sum(1 for e in entries for c in (e["draft"] + e["extra"]) if c.get("notPlanned"))
+    print(f"wrote {len(entries)} sets ({total_cards} canonical names, {with_img} with art, "
+          f"{not_planned} flagged not planned) -> {OUTPUT.relative_to(REPO_ROOT)}")
     if skipped:
         print(f"skipped {len(skipped)} set(s) with no cache entry: {' '.join(sorted(skipped))}", file=sys.stderr)
         print("  run `scripts/card-status --refresh` to populate the cache, then re-run.", file=sys.stderr)

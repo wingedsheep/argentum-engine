@@ -1,8 +1,10 @@
 package com.wingedsheep.gameserver.persistence
 
+import org.springframework.data.jdbc.repository.query.Modifying
 import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
+import java.time.Instant
 import java.util.UUID
 
 /**
@@ -21,6 +23,12 @@ interface LoginTokenRepository : CrudRepository<LoginTokenRow, Long> {
 interface DeckRepository : CrudRepository<DeckRow, Long> {
     fun findByUserIdOrderByUpdatedAtDesc(userId: UUID): List<DeckRow>
     fun findByIdAndUserId(id: Long, userId: UUID): DeckRow?
+    fun deleteByIdAndUserId(id: Long, userId: UUID): Int
+}
+
+interface CubeRepository : CrudRepository<CubeRow, Long> {
+    fun findByUserIdOrderByUpdatedAtDesc(userId: UUID): List<CubeRow>
+    fun findByIdAndUserId(id: Long, userId: UUID): CubeRow?
     fun deleteByIdAndUserId(id: Long, userId: UUID): Int
 }
 
@@ -57,6 +65,55 @@ interface FriendshipRepository : CrudRepository<FriendshipRow, UUID> {
 
 interface GameReplayRepository : CrudRepository<GameReplayRow, Long> {
     fun findByGameId(gameId: String): GameReplayRow?
+
+    /** In-flight recordings to resume after a restart — a handful of rows at most. */
+    fun findByStatus(status: String): List<GameReplayRow>
+
+    /**
+     * Finished games this seat played in, newest first. Joins the seat index rather than scanning
+     * the (large, gzipped) payload column.
+     */
+    @Query(
+        """
+        SELECT r.* FROM game_replays r
+        JOIN game_replay_players p ON p.replay_id = r.id
+        WHERE p.player_id = :playerId AND r.status = 'FINISHED'
+        ORDER BY r.ended_at DESC
+        LIMIT :limit
+        """
+    )
+    fun findRecentForPlayer(@Param("playerId") playerId: String, @Param("limit") limit: Int): List<GameReplayRow>
+
+    /**
+     * The in-progress flush write: only the columns that actually move.
+     *
+     * Deliberately *not* `save()`. A full aggregate write would name `pinned_cards` (and re-insert the
+     * seat children) on every flush, and Postgres only keeps a TOASTed value's storage when an UPDATE
+     * leaves that column alone — assigning identical bytes still rewrites it. Naming just the volatile
+     * columns is what makes the pins genuinely write-once for the length of a game.
+     */
+    @Modifying
+    @Query(
+        """
+        UPDATE game_replays
+        SET data = :data,
+            status = :status,
+            resume_fingerprint = :resumeFingerprint,
+            frame_count = :frameCount,
+            ended_at = :endedAt,
+            engine_version = :engineVersion
+        WHERE game_id = :gameId
+        """
+    )
+    fun updateRecording(
+        @Param("gameId") gameId: String,
+        @Param("data") data: String,
+        @Param("status") status: String,
+        @Param("resumeFingerprint") resumeFingerprint: String?,
+        @Param("frameCount") frameCount: Int,
+        @Param("endedAt") endedAt: Instant,
+        @Param("engineVersion") engineVersion: String?,
+    ): Int
 }
 
 interface UserRatingRepository : CrudRepository<UserRatingRow, Long> {

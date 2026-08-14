@@ -354,9 +354,7 @@ class WordsOfWasteTest : FunSpec({
         driver.getHandSize(opponent) shouldBe 0
     }
 
-    // --- promptOnDraw tests ---
-
-    test("draw step prompts to activate Words of Waste, player accepts") {
+    test("manual activation — shield replaces draw during the draw step") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -367,39 +365,38 @@ class WordsOfWasteTest : FunSpec({
         val opponent = driver.getOpponent(activePlayer)
 
         driver.putPermanentOnBattlefield(activePlayer, "Words of Waste")
-        driver.putPermanentOnBattlefield(activePlayer, "Swamp")
 
-        // Advance past turn 1 to reach active player's draw step on turn 3
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
 
-        driver.state.activePlayerId shouldBe activePlayer
-        val opponentInitialHandSize = driver.getHandSize(opponent)
-        val initialHandSize = driver.getHandSize(activePlayer)
+        val wordsId = driver.findPermanent(activePlayer, "Words of Waste")!!
 
-        // Pass through upkeep to reach draw step
+        // Activate Words of Waste
+        driver.giveMana(activePlayer, Color.BLACK, 1)
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = wordsId,
+                abilityId = abilityId,
+                targets = emptyList()
+            )
+        )
         driver.bothPass()
 
-        // Should now be at DRAW with a mana source selection decision
-        driver.state.step shouldBe Step.DRAW
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
+        // Cast Inspiration (draw 2) — 1st draw replaced with opponent discard
+        val opponentInitialHandSize = driver.getHandSize(opponent)
+        driver.giveMana(activePlayer, Color.BLUE, 4)
+        val inspiration = driver.putCardInHand(activePlayer, "Inspiration")
+        driver.castSpell(activePlayer, inspiration)
+        driver.bothPass()
 
-        // Accept: auto-pay to activate Words of Waste
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Draw replaced with opponent discard
+        // Opponent discards
         driver.resolveAllDiscardDecisions()
 
-        // Active player did not draw
-        driver.getHandSize(activePlayer) shouldBe initialHandSize
-        // Opponent discarded 1 card
+        // Opponent lost 1 card, active player drew 1 normally
         driver.getHandSize(opponent) shouldBe opponentInitialHandSize - 1
     }
 
-    test("draw step allows declining Words of Waste activation") {
+    test("unactivated Words of Waste does nothing during draw step") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -410,31 +407,25 @@ class WordsOfWasteTest : FunSpec({
         val opponent = driver.getOpponent(activePlayer)
 
         driver.putPermanentOnBattlefield(activePlayer, "Words of Waste")
-        driver.putPermanentOnBattlefield(activePlayer, "Swamp")
 
-        // Advance past turn 1 to reach active player's draw step on turn 3
+        // Advance to draw step on turn 3
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
         driver.passPriorityUntil(Step.UPKEEP)
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
         driver.passPriorityUntil(Step.UPKEEP)
 
-        val opponentInitialHandSize = driver.getHandSize(opponent)
         val initialHandSize = driver.getHandSize(activePlayer)
+        val opponentInitialHandSize = driver.getHandSize(opponent)
 
-        // Pass through upkeep to reach draw step
+        // Pass through upkeep to reach draw step — normal draw
         driver.bothPass()
-        driver.state.step shouldBe Step.DRAW
 
-        // Decline the activation
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Normal draw happens - opponent hand unchanged
         driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
         driver.getHandSize(opponent) shouldBe opponentInitialHandSize
     }
 
-    test("spell draw prompts to activate Words of Waste for each draw") {
+    test("activating for each draw of a multi-draw spell shields each draw") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -446,39 +437,33 @@ class WordsOfWasteTest : FunSpec({
 
         driver.putPermanentOnBattlefield(activePlayer, "Words of Waste")
 
-        // Give untapped lands for mana to pay for activations
-        driver.putPermanentOnBattlefield(activePlayer, "Swamp")
-        driver.putPermanentOnBattlefield(activePlayer, "Swamp")
-        driver.putPermanentOnBattlefield(activePlayer, "Swamp")
-
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
+        val wordsId = driver.findPermanent(activePlayer, "Words of Waste")!!
+
+        // Activate 3 times
+        driver.giveMana(activePlayer, Color.BLACK, 3)
+        repeat(3) {
+            driver.submitSuccess(
+                ActivateAbility(
+                    playerId = activePlayer,
+                    sourceId = wordsId,
+                    abilityId = abilityId,
+                    targets = emptyList()
+                )
+            )
+            driver.bothPass()
+        }
+
+        // Cast Concentrate (draw 3) — all replaced
         val opponentInitialHandSize = driver.getHandSize(opponent)
-
-        // Give mana to cast Concentrate ({2}{U}{U})
         driver.giveMana(activePlayer, Color.BLUE, 4)
-
-        // Cast Concentrate (draw 3)
         val concentrate = driver.putCardInHand(activePlayer, "Concentrate")
         driver.castSpell(activePlayer, concentrate)
         driver.bothPass()
 
-        // Draw 1: Prompted - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
         driver.resolveAllDiscardDecisions()
 
-        // Draw 2: Prompted - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-        driver.resolveAllDiscardDecisions()
-
-        // Draw 3: Prompted - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-        driver.resolveAllDiscardDecisions()
-
-        // All 3 draws replaced with opponent discards
         driver.getHandSize(opponent) shouldBe opponentInitialHandSize - 3
     }
 })

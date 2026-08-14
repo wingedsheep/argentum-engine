@@ -117,6 +117,16 @@ class AdminStatsController(
             .body(entries)
     }
 
+    /**
+     * Storage overview of the accounts database: total size plus per-table row counts and on-disk
+     * footprint. Row counts are exact, so this does a scan per table — fetch it on demand, don't poll.
+     */
+    @GetMapping("/database")
+    fun database(
+        @RequestHeader("X-Admin-Password", required = false) password: String?,
+        @RequestHeader(HttpHeaders.AUTHORIZATION, required = false) authorization: String?,
+    ): ResponseEntity<Any> = adminAuth.guard(password, authorization) { ResponseEntity.ok(statsQuery.databaseStats()) }
+
     @GetMapping("/geo")
     fun geo(
         @RequestHeader("X-Admin-Password", required = false) password: String?,

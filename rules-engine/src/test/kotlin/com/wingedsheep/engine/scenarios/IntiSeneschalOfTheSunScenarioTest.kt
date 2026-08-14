@@ -5,12 +5,14 @@ import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
@@ -136,6 +138,39 @@ class IntiSeneschalOfTheSunScenarioTest : FunSpec({
         // Cast (-1) plus the two discarded cards (-2).
         d.getHandSize(you) shouldBe handBefore - 3
         d.getExileCardNames(you) shouldBe listOf("Savannah Lions")
+    }
+
+    test("an empty hand is not offered the discard at all — no counter, no trample, no impulse exile") {
+        val d = driver()
+        val you = d.activePlayer!!
+        val opponent = d.getOpponent(you)
+
+        val inti = d.putCreatureOnBattlefield(you, "Inti, Seneschal of the Sun")
+        d.removeSummoningSickness(inti)
+        d.putCardOnTopOfLibrary(you, "Savannah Lions")
+
+        d.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        // Empty the hand *after* the draw step, so nothing is left to discard.
+        val handZone = ZoneKey(you, Zone.HAND)
+        var emptied = d.state
+        d.getHand(you).toList().forEach { card -> emptied = emptied.removeFromZone(handZone, card) }
+        d.replaceState(emptied)
+        d.getHandSize(you) shouldBe 0
+
+        d.declareAttackers(you, listOf(inti), opponent)
+
+        // With no card to discard the action is impossible, so the "you may discard a card"
+        // question is never asked — answering it would hand out the reflexive payoff for free.
+        var guard = 0
+        while (guard++ < 40) {
+            val dec = d.pendingDecision
+            if (dec != null) error("No decision should be offered with an empty hand, got: $dec")
+            if (d.state.stack.isNotEmpty()) d.bothPass() else break
+        }
+
+        d.plusOneCounters(inti) shouldBe 0
+        projector.project(d.state).hasKeyword(inti, Keyword.TRAMPLE) shouldBe false
+        d.getExileCardNames(you).contains("Savannah Lions") shouldBe false
     }
 
     test("declining the optional discard leaves no counter, no trample, and no impulse exile") {

@@ -23,6 +23,8 @@ export {
   ErrorCode,
   GameOverReason,
   CombatDamageStep,
+  TAP_FOR_GENERIC_LABEL_IMPROVISE,
+  TAP_FOR_GENERIC_LABEL_WATERBEND,
 } from './enums'
 
 // Entities
@@ -158,7 +160,7 @@ export type {
   ModalLegalEnumerationInfo,
   ModalEnumerationModeInfo,
   ConvokeCreatureInfo,
-  WaterbendPermanentInfo,
+  TapForGenericPermanentInfo,
   TapForPowerCreatureInfo,
   DelveCardInfo,
   HarmonizeCreatureInfo,
@@ -233,6 +235,7 @@ export type {
   // Lobby types
   TournamentFormat,
   CommanderPreset,
+  GameRules,
   LobbyPlayerInfo,
   LobbySettings,
   LobbyCreatedMessage,
@@ -315,6 +318,11 @@ export type {
   QuickGameLobbyPlayerView,
   QuickGameLobbyStateMessage,
   QuickGameLobbyClosedMessage,
+  AiDeckSpec,
+  AiDeckSpecView,
+  SetQuickGameAiDeckMessage,
+  AddQuickGameAiMessage,
+  RemoveQuickGameAiMessage,
   CreateQuickGameLobbyMessage,
   JoinQuickGameLobbyMessage,
   LeaveQuickGameLobbyMessage,
@@ -376,6 +384,7 @@ export {
   createLeaveLobbyMessage,
   createAddAiToLobbyMessage,
   createRemoveAiFromLobbyMessage,
+  createSetLobbyAiDeckMessage,
   createStopLobbyMessage,
   createUnsubmitDeckMessage,
   createUpdateLobbySettingsMessage,
@@ -434,6 +443,9 @@ export {
   createSetQuickGameLobbyPublicMessage,
   createSetQuickGameLobbyRankedMessage,
   createSetQuickGameLobbyFormatMessage,
+  createSetQuickGameAiDeckMessage,
+  createAddQuickGameAiMessage,
+  createRemoveQuickGameAiMessage,
   isQuickGameLobbyStateMessage,
   isQuickGameLobbyClosedMessage,
 } from './messages'

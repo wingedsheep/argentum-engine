@@ -28,6 +28,28 @@ tasks.register<JavaExec>("syncLegality") {
     workingDir = rootProject.projectDir
 }
 
+// One-shot Scryfall sync — populates tokens.json with every token printing of every registered
+// set, read at runtime by TokenArtData so a created token shows its own set's art.
+// Run with: ./gradlew :mtg-sets:syncTokenArt
+tasks.register<JavaExec>("syncTokenArt") {
+    description = "Fetch per-set token art from Scryfall's token sets into tokens.json."
+    group = "build"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.wingedsheep.mtg.sets.tokens.SyncTokenArtKt")
+    workingDir = rootProject.projectDir
+}
+
+// Report every token our cards create that has no set-scoped art — the work list for self-hosting
+// art for sets Scryfall has no token printings for.
+// Run with: just token-art-gaps   (or ./gradlew :mtg-sets:tokenArtGaps)
+tasks.register<JavaExec>("tokenArtGaps") {
+    description = "List tokens with no set-scoped art into backlog/token-art-gaps.md."
+    group = "verification"
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.wingedsheep.mtg.sets.tokens.TokenArtGapsKt")
+    workingDir = rootProject.projectDir
+}
+
 // Offline sync from a Scryfall bulk-data dump. Pass the dump path via --args.
 // Run with: ./gradlew :mtg-sets:syncLegalityFromDump --args="/path/to/all-cards.json"
 tasks.register<JavaExec>("syncLegalityFromDump") {

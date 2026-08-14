@@ -8,10 +8,15 @@ For each set folder under `mtg-sets/.../definitions/<code>/`:
   - scans `.kt` files in `<code>/cards/` for implemented names
     (matches both `card("Name") { }` DSL calls and `name = "..."` Printing rows)
   - loads the canonical name list from Scryfall, cached under
-    `~/.cache/scryfall/<code>.json`, partitioned into draft cards
-    (Scryfall `booster: true`) and extras (starter-deck exclusives,
-    Special Guests, bonus sheets, etc.)
+    `~/.cache/scryfall/<code>.json`, partitioned into draft cards (any
+    printing in the set has Scryfall `booster: true`) and extras
+    (starter-deck exclusives, Special Guests, bonus sheets, etc.)
   - diffs the two to compute what's missing, reported per partition
+
+Cards listed in `coverage/card-exclusions.json` (ante, subgames, physical
+dexterity — see scripts/card_exclusions.py) are reported as "not planned" in a
+`Skip` column and drop out of the denominator, so a set reads 100% once
+everything we intend to build is built.
 
 Cache strategy: a cached payload is "fresh" (no re-fetch) once its set's
 Scryfall `released_at` is more than 30 days in the past — MTG sets are
@@ -40,14 +45,19 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path
 
+from card_exclusions import load_exclusions
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFINITIONS_ROOT = REPO_ROOT / "mtg-sets/src/main/kotlin/com/wingedsheep/mtg/sets/definitions"
 CACHE_ROOT = Path.home() / ".cache" / "scryfall"
 SCRYFALL_BASE = "https://api.scryfall.com"
 USER_AGENT = "argentum-engine-card-status/1.0"
 REQUEST_DELAY_SEC = 0.15  # Scryfall asks for 50–100ms between requests; pad for bursty paginations
+# urlopen blocks forever by default. A Scryfall outage left a socket half-open mid-refresh and hung
+# the script for 1h44m on one set, so every request is bounded and a timeout is retried like a 429.
+REQUEST_TIMEOUT_SEC = 30
 REFRESH_WINDOW_DAYS = 30
-CACHE_SCHEMA_VERSION = 6  # v6: per-card oracle_text captured for the codegen bridge
+CACHE_SCHEMA_VERSION = 8  # v8: `extra_products` (Scryfall promo_types per extra) recorded for every set
 
 # A set is in current Standard if both:
 #   (a) its set_type is one of these (excludes commander, masters, alchemy, etc.), AND
@@ -63,6 +73,10 @@ CARD_DSL_RE = re.compile(r'\b(?:card|basicLand)\(\s*"([^"]+)"')
 PRINTING_NAME_RE = re.compile(r'\bname\s*=\s*"([^"]+)"')
 
 SKIP_FOLDERS = {"custom"}
+
+# Card name -> reason key for the cards we've decided never to implement. Global by name:
+# one entry covers every set that prints the card.
+EXCLUSIONS = load_exclusions()
 
 
 @dataclass
@@ -90,16 +104,34 @@ class Report:
         return self.implemented & self.draft_canonical
 
     @property
+    def draft_skipped(self) -> set[str]:
+        """Excluded-by-policy draft cards still unimplemented — off the denominator, not the report."""
+        return {n for n in self.draft_canonical if n in EXCLUSIONS} - self.implemented
+
+    @property
+    def draft_countable(self) -> set[str]:
+        """Draft cards we intend to build: canonical minus the not-planned ones."""
+        return self.draft_canonical - self.draft_skipped
+
+    @property
     def draft_missing(self) -> set[str]:
-        return self.draft_canonical - self.implemented
+        return self.draft_countable - self.implemented
 
     @property
     def extra_hits(self) -> set[str]:
         return self.implemented & self.extra_canonical
 
     @property
+    def extra_skipped(self) -> set[str]:
+        return {n for n in self.extra_canonical if n in EXCLUSIONS} - self.implemented
+
+    @property
+    def extra_countable(self) -> set[str]:
+        return self.extra_canonical - self.extra_skipped
+
+    @property
     def extra_missing(self) -> set[str]:
-        return self.extra_canonical - self.implemented
+        return self.extra_countable - self.implemented
 
 
 def front_face(name: str) -> str:
@@ -161,7 +193,12 @@ def is_cache_fresh(payload: dict) -> bool:
 
 
 def scryfall_get(url: str, *, max_retries: int = 5) -> dict:
-    """GET a Scryfall URL with polite pacing and 429-aware exponential backoff."""
+    """GET a Scryfall URL with polite pacing and exponential backoff.
+
+    Retries the transient failures: 429 (rate limit), 5xx (Scryfall outage — a 503 storm once left
+    47 sets on a stale cache mid-migration), and network timeouts. Any other HTTPError is a real
+    answer about the URL (404 for an unknown set) and propagates on the first try.
+    """
     for attempt in range(max_retries):
         time.sleep(REQUEST_DELAY_SEC)
         req = urllib.request.Request(
@@ -169,14 +206,19 @@ def scryfall_get(url: str, *, max_retries: int = 5) -> dict:
             headers={"User-Agent": USER_AGENT, "Accept": "application/json"},
         )
         try:
-            with urllib.request.urlopen(req) as resp:
+            with urllib.request.urlopen(req, timeout=REQUEST_TIMEOUT_SEC) as resp:
                 return json.loads(resp.read().decode("utf-8"))
         except urllib.error.HTTPError as e:
-            if e.code != 429 or attempt == max_retries - 1:
+            if (e.code != 429 and e.code < 500) or attempt == max_retries - 1:
                 raise
             retry_after = e.headers.get("Retry-After") if e.headers else None
             wait = float(retry_after) if retry_after and retry_after.isdigit() else 2 ** attempt
             time.sleep(wait)
+        except (urllib.error.URLError, TimeoutError):
+            # Includes the read timeout above and DNS/connection blips — same backoff as a 429.
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(2 ** attempt)
     raise RuntimeError("unreachable")  # loop either returns or raises
 
 
@@ -189,38 +231,69 @@ def is_standard_legal(payload: dict) -> bool:
     return payload.get("standard_legal_count", 0) >= total * STANDARD_LEGAL_RATIO
 
 
+def printing_rank(card: dict) -> tuple[int, int, str]:
+    """Sort key choosing a name's representative printing: a booster printing first, then the
+    lowest collector number. That's the Play Booster art and number a card generator wants —
+    not whichever reprint Scryfall happens to order first."""
+    number = card.get("collector_number") or ""
+    leading = re.match(r"\d+", number)
+    return (
+        0 if card.get("booster", False) else 1,
+        int(leading.group()) if leading else sys.maxsize,
+        number,
+    )
+
+
 def fetch_from_scryfall(code: str) -> dict:
-    """Metadata + paginated card search for one set, returned as a cache payload."""
+    """Metadata + paginated card search for one set, returned as a cache payload.
+
+    Searches `unique=prints`, not `unique=cards`: one card can have several printings *inside* a
+    single set (a Play Booster printing plus a Beginner Box or set-extension reprint), and the
+    per-card row Scryfall serves is an arbitrary one of them. Reading `booster` off that arbitrary
+    row files a genuine booster card as an extra whenever the pick lands on the non-booster
+    printing — 14 Foundations cards did exactly that, shrinking FDN's booster denominator from 276
+    to 262. So the flag is OR-ed across a name's printings instead, and the printing whose metadata
+    we keep is chosen deliberately (see `printing_rank`) rather than inherited from result order.
+    """
     set_meta = scryfall_get(f"{SCRYFALL_BASE}/sets/{code.lower()}")
     released_at = set_meta.get("released_at")
     set_type = set_meta.get("set_type")
-    draft_names: list[str] = []
-    extra_names: list[str] = []
-    standard_legal_count = 0
-    cards: dict[str, dict] = {}  # front-face name -> per-card Scryfall metadata (for codegen)
+    printings: dict[str, list[dict]] = {}  # card name -> every printing of it in this set
     url = (
         f"{SCRYFALL_BASE}/cards/search"
         f"?q={urllib.parse.quote(f'set:{code.lower()} -is:rebalanced')}"
-        f"&unique=cards&order=name"
+        f"&unique=prints&order=name"
     )
     while url:
         data = scryfall_get(url)
         for card in data.get("data", []):
-            name = card["name"]
-            if card.get("booster", False):
-                draft_names.append(name)
-            else:
-                extra_names.append(name)
-            if card.get("legalities", {}).get("standard") == "legal":
-                standard_legal_count += 1
-            cards.setdefault(front_face(name), card_metadata(card))
+            printings.setdefault(card["name"], []).append(card)
         url = data.get("next_page") if data.get("has_more") else None
+
+    draft_names: list[str] = []
+    extra_names: list[str] = []
+    extra_products: dict[str, list[str]] = {}
+    standard_legal_count = 0
+    cards: dict[str, dict] = {}  # front-face name -> per-card Scryfall metadata (for codegen)
+    for name, group in printings.items():
+        if any(p.get("booster", False) for p in group):
+            draft_names.append(name)
+        else:
+            extra_names.append(name)
+            tags = sorted({tag for p in group for tag in p.get("promo_types", [])})
+            extra_products[name] = tags or ["other"]
+        representative = min(group, key=printing_rank)
+        # Format legality is a property of the card, not the printing — read it off the one.
+        if representative.get("legalities", {}).get("standard") == "legal":
+            standard_legal_count += 1
+        cards.setdefault(front_face(name), card_metadata(representative))
     return {
         "_v": CACHE_SCHEMA_VERSION,
         "released_at": released_at,
         "set_type": set_type,
         "draft_names": draft_names,
         "extra_names": extra_names,
+        "extra_products": extra_products,
         "standard_legal_count": standard_legal_count,
         "cards": cards,
     }
@@ -266,7 +339,9 @@ def load_canonical(code: str, *, force_refresh: bool) -> dict | None:
             return cached
     try:
         payload = fetch_from_scryfall(code)
-    except urllib.error.HTTPError as e:
+    except (urllib.error.URLError, TimeoutError) as e:
+        # URLError covers HTTPError; a timeout or DNS blip that outlived the retries must degrade to
+        # the stale cache for this one set, not abort the whole sweep.
         if path.is_file():
             print(
                 f"warning: refresh for {code} failed ({e}); using stale cache",
@@ -301,16 +376,17 @@ def print_table(reports: list[Report]) -> None:
     rows = []
     for r in reports:
         impl = len(r.draft_hits)
-        total = len(r.draft_canonical)
+        total = len(r.draft_countable)
         pct = (impl / total * 100.0) if total else 0.0
+        skipped = len(r.draft_skipped) + len(r.extra_skipped)
         extra_impl = len(r.extra_hits)
-        extra_total = len(r.extra_canonical)
+        extra_total = len(r.extra_countable)
         extra_display = f"{extra_impl}/{extra_total}" if extra_total else "—"
         released = r.released_at or "?"
         standard = "Yes" if r.standard_legal else ""
         rows.append(
             (r.info.code, r.info.display_name, released, standard,
-             impl, total, total - impl, pct, extra_display)
+             impl, total, total - impl, pct, str(skipped) if skipped else "", extra_display)
         )
     rows.sort(key=lambda row: (row[2], row[0]), reverse=True)
 
@@ -318,47 +394,63 @@ def print_table(reports: list[Report]) -> None:
     name_w = max(4, max((len(r[1]) for r in rows), default=4))
     rel_w = max(len("Released"), max((len(r[2]) for r in rows), default=8))
     std_w = max(len("Std"), 3)
-    extra_w = max(len("+Extra"), max((len(r[8]) for r in rows), default=6))
+    skip_w = max(len("Skip"), 4)
+    extra_w = max(len("+Extra"), max((len(r[9]) for r in rows), default=6))
     header = (
         f"{'Set':<{code_w}}  {'Name':<{name_w}}  {'Released':<{rel_w}}  "
         f"{'Std':<{std_w}}  {'Done':>5}  {'Total':>5}  {'Missing':>7}  "
-        f"{'%':>5}  {'+Extra':<{extra_w}}"
+        f"{'%':>5}  {'Skip':>{skip_w}}  {'+Extra':<{extra_w}}"
     )
     print(header)
     print("-" * len(header))
-    for code, name, released, standard, impl, total, missing, pct, extra in rows:
+    for code, name, released, standard, impl, total, missing, pct, skipped, extra in rows:
         print(
             f"{code:<{code_w}}  {name:<{name_w}}  {released:<{rel_w}}  "
             f"{standard:<{std_w}}  {impl:>5}  {total:>5}  {missing:>7}  "
-            f"{pct:>4.0f}%  {extra:<{extra_w}}"
+            f"{pct:>4.0f}%  {skipped:>{skip_w}}  {extra:<{extra_w}}"
         )
+    if any(row[8] for row in rows):
+        print()
+        print("Skip = cards we've decided not to implement (coverage/card-exclusions.json); "
+              "they're off the Total.")
+
+
+def card_line(name: str, report: Report) -> str:
+    """`[x]` implemented, `[-]` not planned (with its reason), `[ ]` still to do."""
+    if name in report.implemented:
+        return f"  [x] {name}"
+    if name in EXCLUSIONS:
+        return f"  [-] {name}  (not planned: {EXCLUSIONS[name]})"
+    return f"  [ ] {name}"
 
 
 def print_set_cards(report: Report) -> None:
     draft_impl = len(report.draft_hits)
-    draft_total = len(report.draft_canonical)
+    draft_total = len(report.draft_countable)
     extra_impl = len(report.extra_hits)
-    extra_total = len(report.extra_canonical)
+    extra_total = len(report.extra_countable)
+    skipped = len(report.draft_skipped) + len(report.extra_skipped)
     summary = f"{draft_impl}/{draft_total} draft"
     if extra_total:
         summary += f", {extra_impl}/{extra_total} extra"
+    if skipped:
+        summary += f", {skipped} not planned"
     print(f"== {report.info.code} {report.info.display_name} — {summary} ==")
     print("Draft:")
     for name in sorted(report.draft_canonical):
-        marker = "[x]" if name in report.implemented else "[ ]"
-        print(f"  {marker} {name}")
-    if extra_total:
+        print(card_line(name, report))
+    if report.extra_canonical:
         print("Extra:")
         for name in sorted(report.extra_canonical):
-            marker = "[x]" if name in report.implemented else "[ ]"
-            print(f"  {marker} {name}")
+            print(card_line(name, report))
 
 
 def print_missing_lists(reports: list[Report]) -> None:
     for r in sorted(reports, key=lambda r: r.info.code):
         draft_missing = sorted(r.draft_missing)
         extra_missing = sorted(r.extra_missing)
-        if not draft_missing and not extra_missing:
+        skipped = sorted(r.draft_skipped | r.extra_skipped)
+        if not draft_missing and not extra_missing and not skipped:
             continue
         total = len(draft_missing) + len(extra_missing)
         print()
@@ -371,6 +463,10 @@ def print_missing_lists(reports: list[Report]) -> None:
             print("Extra:")
             for n in extra_missing:
                 print(f"  - {n}")
+        if skipped:
+            print("Not planned:")
+            for n in skipped:
+                print(f"  - {n}  ({EXCLUSIONS[n]})")
 
 
 def main() -> int:

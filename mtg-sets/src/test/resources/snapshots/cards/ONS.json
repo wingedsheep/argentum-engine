@@ -963,7 +963,8 @@
                 "id": "ability_1",
                 "trigger": {
                     "type": "DealsDamageEvent",
-                    "recipient": "You"
+                    "recipient": "You",
+                    "sourceFilter": "creature"
                 },
                 "binding": "ANY",
                 "effect": {
@@ -4270,7 +4271,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "enchantment ctrl:opponent"
+                        "baseFilter": "enchantment ctrl:triggering-player"
                     },
                     "id": "target"
                 }
@@ -7064,7 +7065,9 @@
                         "destination": "Hand"
                     }
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ]
     },
@@ -17991,8 +17994,7 @@
                         "type": "AnyTarget",
                         "id": "any target"
                     }
-                ],
-                "promptOnDraw": true
+                ]
             }
         ]
     },
@@ -18068,8 +18070,7 @@
                             ]
                         }
                     }
-                },
-                "promptOnDraw": true
+                }
             }
         ]
     },
@@ -18115,8 +18116,7 @@
                             "Bear"
                         ]
                     }
-                },
-                "promptOnDraw": true
+                }
             }
         ]
     },
@@ -18151,8 +18151,7 @@
                 "effect": {
                     "type": "ReplaceNextDrawWith",
                     "replacementEffect": "EachPlayerReturnsPermanentToHand"
-                },
-                "promptOnDraw": true
+                }
             }
         ]
     },
@@ -18194,8 +18193,7 @@
                             "amount": 5
                         }
                     }
-                },
-                "promptOnDraw": true
+                }
             }
         ]
     },

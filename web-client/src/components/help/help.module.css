@@ -1,0 +1,420 @@
+/**
+ * Shared styles for every help surface: the inline HelpTip popover, the in-game drawer, and the
+ * /help page. One stylesheet so a topic looks the same wherever it is rendered.
+ */
+
+/* =========================================================================
+ * HelpTip button + popover
+ * ========================================================================= */
+/* A quiet affordance: it annotates a label or sits on top of card art, so at rest it should read as
+   punctuation, not as a second button competing with the control it explains. The disc is tinted
+   *dark* rather than white — a translucent white fill turns muddy over bright artwork (the lobby
+   header sits on set art), while a dark one keeps its edge on every background. */
+.tipButton {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(8, 10, 16, 0.42);
+  color: var(--text-tertiary);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  -webkit-font-smoothing: antialiased;
+  transition: color var(--transition-fast), border-color var(--transition-fast),
+    background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.tipButtonSm {
+  width: 14px;
+  height: 14px;
+  font-size: 10px;
+}
+
+/* `?` carries more sidebearing on its right and no descender, so a geometrically centred glyph
+   looks pushed down-left inside the disc. One shared nudge, applied at both sizes. */
+.tipGlyph {
+  display: block;
+  transform: translate(0.5px, -0.5px);
+}
+
+.tipButton:hover,
+.tipButtonOpen {
+  color: var(--text-primary);
+  border-color: var(--color-accent, #4fc3f7);
+  background: rgba(79, 195, 247, 0.18);
+}
+
+.tipButton:focus-visible {
+  outline: none;
+  color: var(--text-primary);
+  border-color: var(--color-accent, #4fc3f7);
+  box-shadow: 0 0 0 2px rgba(79, 195, 247, 0.35);
+}
+
+.tipPopover {
+  position: fixed;
+  z-index: 4000;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(24, 26, 36, 0.98) 0%, rgba(12, 13, 20, 0.98) 100%);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+  color: var(--text-primary);
+}
+
+.tipTitle {
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.tipSummary {
+  margin: 0;
+  font-size: var(--font-xs, 0.75rem);
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+.tipReadMore {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-accent, #4fc3f7);
+  font-size: var(--font-xs, 0.75rem);
+  font-weight: 600;
+}
+
+.tipReadMore:hover {
+  text-decoration: underline;
+}
+
+/* =========================================================================
+ * Topic rendering (page + drawer)
+ * ========================================================================= */
+/* The topic's own stacking. Separating one topic from the next is the surface's call: the drawer
+   adds `.topicSeparated` rules below, the `/help` page gives each topic a card instead. */
+.topic {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  scroll-margin-top: var(--space-6);
+}
+
+.topicSeparated {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.topicSeparated:last-child {
+  border-bottom: none;
+}
+
+/* Title plus whatever the surface wants beside it (the `/help` page's copy-link button). */
+.topicHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.topicTitle {
+  margin: 0;
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.topicSummary {
+  margin: 0;
+  font-size: var(--font-sm);
+  line-height: 1.55;
+  color: var(--text-secondary, var(--text-tertiary));
+}
+
+.topicBody {
+  margin: 0;
+  font-size: var(--font-sm);
+  line-height: 1.6;
+  color: var(--text-tertiary);
+}
+
+.topicList {
+  margin: 0;
+  padding-left: 1.15em;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: var(--font-sm);
+  line-height: 1.5;
+  color: var(--text-tertiary);
+}
+
+/* `code` spans inside topic prose — see `withCode` in HelpTopicView. */
+.inlineCode {
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-secondary, #ddd);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.88em;
+  white-space: nowrap;
+}
+
+.shortcutChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: 2px;
+}
+
+.shortcutChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-xs, 0.75rem);
+  color: var(--text-muted);
+}
+
+.kbd {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom-width: 2px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-primary);
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.kbdSep {
+  margin: 0 4px;
+  color: var(--text-disabled);
+  font-size: 10px;
+}
+
+.relatedRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: 2px;
+}
+
+.relatedLabel {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+}
+
+.relatedLink {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-accent, #4fc3f7);
+  font-size: var(--font-xs, 0.75rem);
+  text-decoration: none;
+}
+
+.relatedLink:hover {
+  text-decoration: underline;
+}
+
+/* Off-site references — marked with ↗ so it is clear before clicking that this one leaves. */
+.externalLink {
+  color: var(--color-accent, #4fc3f7);
+  font-size: var(--font-xs, 0.75rem);
+  text-decoration: none;
+}
+
+.externalLink:hover {
+  text-decoration: underline;
+}
+
+.externalMark {
+  color: var(--text-disabled);
+}
+
+/* =========================================================================
+ * Shortcut table
+ * ========================================================================= */
+.shortcutTableWrap {
+  overflow-x: auto;
+}
+
+.shortcutTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-sm);
+}
+
+.shortcutTable th {
+  text-align: left;
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
+}
+
+.shortcutTable td {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--text-tertiary);
+  vertical-align: top;
+}
+
+/* Wraps rather than forcing the whole table into a horizontal scroll: the third column carries the
+   longest strings ("Any card preview — hand, battlefield, deckbuilder") and neither the 460px drawer
+   nor the reading-width `/help` column has room for them on one line. */
+.shortcutWhere {
+  color: var(--text-disabled);
+  font-size: var(--font-xs, 0.75rem);
+}
+
+/* =========================================================================
+ * Persistent ? entry point
+ * ========================================================================= */
+/* Sized to sit in the in-game floating bar next to undo / auto-tap / priority mode, which is a
+   flex row with `align-items: stretch` — so no fixed height. */
+.helpEntryButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid #555;
+  background: rgba(40, 40, 40, 0.8);
+  color: #999;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.helpEntryButton:hover {
+  color: var(--text-primary);
+  border-color: var(--color-accent, #4fc3f7);
+}
+
+/* =========================================================================
+ * In-game drawer
+ * ========================================================================= */
+.drawerBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3500;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3600;
+  width: min(460px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg, rgba(20, 22, 32, 0.99) 0%, rgba(10, 11, 18, 0.99) 100%);
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.6);
+  animation: drawerIn 0.18s ease-out;
+}
+
+@keyframes drawerIn {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.drawerTitle {
+  margin: 0;
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.drawerClose {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--font-lg);
+  line-height: 1;
+  padding: 4px 8px;
+}
+
+.drawerClose:hover {
+  color: var(--text-primary);
+}
+
+.drawerTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.drawerTab {
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  font-size: var(--font-xs, 0.75rem);
+  cursor: pointer;
+}
+
+.drawerTab:hover {
+  color: var(--text-primary);
+}
+
+.drawerTabActive {
+  border-color: var(--color-accent, #4fc3f7);
+  background: rgba(79, 195, 247, 0.16);
+  color: var(--text-primary);
+}
+
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--space-4) var(--space-5);
+}
+
+.drawerFooter {
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: var(--font-xs, 0.75rem);
+  color: var(--text-disabled);
+}

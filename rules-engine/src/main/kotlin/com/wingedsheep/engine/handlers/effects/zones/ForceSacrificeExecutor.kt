@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.mechanics.SacrificeImmunity
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.EntitySnapshot
@@ -55,7 +56,15 @@ class ForceSacrificeExecutor(
             ?.let { dynamicAmountEvaluator.evaluate(state, it, context) }
             ?: effect.count
 
-        return processPlayers(state, playerIds, effect.filter, count, context.sourceId)
+        // Sigarda, Host of Herons: an edict is the canonical "a spell or ability your opponents
+        // control causes you to sacrifice", so a protected player is dropped from the list before
+        // anyone is prompted — they are never offered the choice (CR 101.2).
+        val effectControllerId = context.effectControllerId ?: context.controllerId
+        val eligiblePlayers = playerIds.filterNot {
+            SacrificeImmunity.appliesTo(state, it, effectControllerId)
+        }
+
+        return processPlayers(state, eligiblePlayers, effect.filter, count, context.sourceId)
     }
 
     /**

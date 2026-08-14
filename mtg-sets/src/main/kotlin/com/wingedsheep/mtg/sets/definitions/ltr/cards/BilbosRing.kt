@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.ltr.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
-import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Filters
 import com.wingedsheep.sdk.dsl.Triggers
@@ -11,14 +10,11 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
-import com.wingedsheep.sdk.scripting.TimingRule
 import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import com.wingedsheep.sdk.scripting.events.AttackPredicate
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
 /**
  * Bilbo's Ring
@@ -60,15 +56,12 @@ val BilbosRing = card("Bilbo's Ring") {
     }
 
     // Equip Halfling {1}: Attach to target Halfling you control. Equip only as a sorcery.
-    activatedAbility {
-        cost = Costs.Mana("{1}")
-        timing = TimingRule.SorcerySpeed
-        val halfling = target(
-            "Halfling you control",
-            TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Halfling").youControl()))
-        )
-        effect = AttachEquipmentEffect(target = halfling)
-    }
+    // An "Equip [quality]" variant (CR 702.6c).
+    equipAbility(
+        "{1}",
+        quality = "Halfling",
+        targetFilter = TargetFilter(GameObjectFilter.Creature.withSubtype("Halfling").youControl()),
+    )
 
     // Equip {4}: Attach to target creature you control. Equip only as a sorcery.
     equipAbility("{4}")

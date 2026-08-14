@@ -6,6 +6,7 @@ import com.wingedsheep.gameserver.protocol.DeckEntryDTO
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.DeckFormat
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.model.CommanderEligibility
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.PrintingRef
 import org.springframework.beans.factory.annotation.Autowired

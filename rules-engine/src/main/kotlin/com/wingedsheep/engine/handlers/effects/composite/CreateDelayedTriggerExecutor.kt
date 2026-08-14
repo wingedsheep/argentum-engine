@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect
 import com.wingedsheep.sdk.scripting.effects.CreateTokenCopyOfTargetEffect
+import com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry
 import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
 import com.wingedsheep.sdk.scripting.effects.DealDamagePerEntityInZoneEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -25,9 +26,11 @@ import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.WarpExileEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
+import com.wingedsheep.sdk.scripting.effects.MoveTrackedBattlefieldObjectEffect
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerSpec
 import com.wingedsheep.sdk.scripting.predicates.CardPredicate
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
@@ -103,7 +106,10 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
             resolved
         }
 
-        // The earliest turn this delayed trigger may fire, derived from effect.timing:
+        // The earliest turn this delayed trigger may fire, derived from effect.timing. Because
+        // GameState.turnNumber counts player turns, `+ 1` means "not this turn" — the very next
+        // turn any player takes qualifies. Narrowing that to a particular player's turn is
+        // fireOnPlayer's job, not this floor's.
         //  - NEXT_END_STEP ("at the beginning of your next end step"): fires at the next
         //    upcoming end step on the controller's turn. If we're still before the end step
         //    on the controller's current turn, that end step qualifies — don't skip to the
@@ -121,6 +127,17 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
                 if (onControllersTurn && endStepAlreadyStarted) state.turnNumber + 1 else null
             }
             DelayedTriggerTiming.CURRENT_TURN_OR_LATER -> null
+            DelayedTriggerTiming.THIS_TURN_ONLY -> null
+        }
+
+        // A step-based one-shot normally carries no expiry: "at the beginning of your next end
+        // step" has to survive the turn boundary when it's scheduled during the end step itself.
+        // THIS_TURN_ONLY is the opposite promise — "the next [step] *this turn*" — so it takes the
+        // end-of-turn sweep, and a turn with no further matching step drops it unfired.
+        val expiry = when {
+            effect.trigger != null || effect.repeatAtEachMatchingStep -> effect.expiry
+            effect.timing == DelayedTriggerTiming.THIS_TURN_ONLY -> DelayedTriggerExpiry.EndOfTurn
+            else -> null
         }
 
         val delayedTrigger = DelayedTriggeredAbility(
@@ -133,10 +150,12 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
             trigger = resolvedTrigger,
             watchedEntityId = watchedEntityId,
             watchedRecipientId = watchedRecipientId,
-            expiry = if (effect.trigger != null) effect.expiry else null,
+            expiry = expiry,
             fireOnce = effect.trigger != null && effect.fireOnce,
+            repeatAtEachMatchingStep = effect.trigger == null && effect.repeatAtEachMatchingStep,
             notBeforeTurn = notBeforeTurn,
             targetRequirement = effect.targetRequirement,
+            additionalTargetRequirements = effect.additionalTargetRequirements,
             fireOnPlayerId = fireOnPlayerId
         )
 
@@ -158,20 +177,50 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
     private fun bakeChosenValuesIntoTrigger(trigger: TriggerSpec, context: EffectContext): TriggerSpec {
         val chosen = context.pipeline.chosenValues
         if (chosen.isEmpty()) return trigger
-        val event = trigger.event
-        if (event !is EventPattern.SpellCastEvent) return trigger
-        val filter = event.spellFilter
+        return when (val event = trigger.event) {
+            is EventPattern.SpellCastEvent -> {
+                val newFilter = bakeChosenValuesIntoFilter(event.spellFilter, chosen) ?: return trigger
+                trigger.copy(event = event.copy(spellFilter = newFilter))
+            }
+            // The Clone Saga ch. III: "whenever a creature with the chosen name deals combat damage
+            // to a player this turn, draw a card." The chosen name is baked into the damage source
+            // filter now, so the delayed-trigger matcher can evaluate it without the (gone) pipeline.
+            is EventPattern.DealsDamageEvent -> {
+                val filter = event.sourceFilter ?: return trigger
+                val newFilter = bakeChosenValuesIntoFilter(filter, chosen) ?: return trigger
+                trigger.copy(event = event.copy(sourceFilter = newFilter))
+            }
+            else -> trigger
+        }
+    }
+
+    /**
+     * Rewrite chosen-value-dependent card predicates in [filter] into concrete ones using [chosen]
+     * (= `EffectContext.pipeline.chosenValues`). Returns null when nothing changed so the caller
+     * keeps the original TriggerSpec instance.
+     *
+     *  - `HasSubtypeFromVariable(v)` → `HasSubtype(Subtype(chosen[v]))` (Long List of the Ents)
+     *  - `NameEqualsChosen(v)`       → `NameEquals(chosen[v])`          (The Clone Saga ch. III)
+     */
+    private fun bakeChosenValuesIntoFilter(
+        filter: GameObjectFilter,
+        chosen: Map<String, String>
+    ): GameObjectFilter? {
         val newPredicates = filter.cardPredicates.map { predicate ->
-            if (predicate is CardPredicate.HasSubtypeFromVariable) {
-                val value = chosen[predicate.variableName] ?: return@map predicate
-                CardPredicate.HasSubtype(Subtype(value))
-            } else {
-                predicate
+            when (predicate) {
+                is CardPredicate.HasSubtypeFromVariable -> {
+                    val value = chosen[predicate.variableName] ?: return@map predicate
+                    CardPredicate.HasSubtype(Subtype(value))
+                }
+                is CardPredicate.NameEqualsChosen -> {
+                    val value = chosen[predicate.variableName] ?: return@map predicate
+                    CardPredicate.NameEquals(value)
+                }
+                else -> predicate
             }
         }
-        if (newPredicates == filter.cardPredicates) return trigger
-        val newFilter = filter.copy(cardPredicates = newPredicates)
-        return trigger.copy(event = event.copy(spellFilter = newFilter))
+        if (newPredicates == filter.cardPredicates) return null
+        return filter.copy(cardPredicates = newPredicates)
     }
 
     /**
@@ -223,6 +272,17 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
                     // Snapshot the tracked object's entry stamp NOW (CR 603.7c), mirroring the
                     // StackResolver warp path — a permanent that leaves and re-enters before
                     // the trigger fires is a new object the exile must not hit.
+                    val entryTimestamp = state.getEntity(resolvedId)
+                        ?.get<BattlefieldEntryTimestampComponent>()?.timestamp
+                    effect.copy(
+                        target = EffectTarget.SpecificEntity(resolvedId),
+                        enteredBattlefieldTimestamp = entryTimestamp
+                    )
+                } else effect
+            }
+            is MoveTrackedBattlefieldObjectEffect -> {
+                val resolvedId = context.resolveTarget(effect.target)
+                if (resolvedId != null) {
                     val entryTimestamp = state.getEntity(resolvedId)
                         ?.get<BattlefieldEntryTimestampComponent>()?.timestamp
                     effect.copy(

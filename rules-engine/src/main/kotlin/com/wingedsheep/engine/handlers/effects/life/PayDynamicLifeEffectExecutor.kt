@@ -1,16 +1,11 @@
 package com.wingedsheep.engine.handlers.effects.life
 
 import com.wingedsheep.engine.core.EffectResult
-import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
-import com.wingedsheep.engine.core.LifeChangedEvent
-import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
-import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.sdk.scripting.effects.PayDynamicLifeEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
@@ -43,20 +38,8 @@ class PayDynamicLifeEffectExecutor(
             .resolvePlayerTarget(EffectTarget.PlayerRef(effect.payer), context, state)
             ?: context.controllerId
 
-        if (state.getEntity(playerId)?.get<LifeTotalComponent>() == null) {
-            return EffectResult.error(state, "Player not found for life payment")
-        }
-
-        // CR 810.9a — life paid as a cost comes out of the team's shared total.
-        val currentLife = state.lifeTotal(playerId)
-        val newLife = currentLife - amount
-        val newState = state.withLifeTotal(playerId, newLife)
-
-        val events = listOf<EngineGameEvent>(
-            LifeChangedEvent(playerId, currentLife, newLife, LifeChangeReason.PAYMENT)
-        )
-
-        val finalState = DamageUtils.markLifeLostThisTurn(newState, playerId)
-        return EffectResult.success(finalState, events)
+        val (newState, events) = LifePaymentService.pay(state, playerId, amount)
+            ?: return EffectResult.error(state, "Player not found for life payment")
+        return EffectResult.success(newState, events)
     }
 }

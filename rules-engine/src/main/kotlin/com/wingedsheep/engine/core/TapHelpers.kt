@@ -5,9 +5,11 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.TapReason
 
 /**
  * Tap a single permanent on the battlefield, emitting the [TappedEvent] that
@@ -22,7 +24,8 @@ import com.wingedsheep.sdk.model.EntityId
  * `TapEventEnforcementTest` now bans that pattern outside the legitimate
  * enters-tapped/cleanup sites.
  *
- * Tapping is a transition (CR 603.2f): a permanent that is *already* tapped does not
+ * Tapping is a transition (CR 701.26a — "only untapped permanents can be tapped"):
+ * a permanent that is *already* tapped does not
  * become tapped again, so this is a no-op that emits no event. The same is true for an
  * entity that no longer exists. In both cases the original [state] is returned paired
  * with `null`, so callers can fold the event in without a special case:
@@ -37,16 +40,56 @@ import com.wingedsheep.sdk.model.EntityId
  * not transitioning from untapped to tapped, so those sites set [TappedComponent]
  * directly and emit no event — they are the allowlist in `TapEventEnforcementTest`.
  *
+ * **Attribution.** [TappedEvent.tappedById] records *who tapped it*, which the "whenever you tap a
+ * creature an opponent controls" trigger family reads. It defaults to the permanent's own
+ * controller, which is already correct for every tap a permanent's controller performs on it — a
+ * cost payment (convoke, crew, saddle, a tap symbol in an activation cost), a mana ability, or the
+ * turn-based action of declaring it as an attacker. Only an *effect* that taps a permanent needs to
+ * pass [tappedById] explicitly: there the tapper is the controller of that effect, not of the
+ * permanent, and the two differ exactly when it matters. Pass the player the game instructs to tap,
+ * not the controller of the card that gave the instruction — a spell you control that makes an
+ * opponent tap their own creature is *their* tap (Tangle Wire; Hylda of the Icy Crown ruling).
+ *
+ * The default reads the controller from **projected** state, so a permanent whose control was changed
+ * (Threaten, Mind Control) attributes its cost/attack taps to the player actually wielding it rather
+ * than to its owner. That costs a projection on a state instance that may not have one cached yet —
+ * deliberate, and the same price [untapOrConsumeStun] already pays for its can't-untap check. It is
+ * bounded by how many permanents one action taps (a mana payment, a combat declaration), not by board
+ * size; if it ever shows up in a profile, the fix is to pass [tappedById] at the tapping call sites
+ * — every one of them knows the acting player — not to fall back to base [ControllerComponent],
+ * which would misattribute a stolen creature's taps to its owner.
+ *
+ * **Cause.** [TappedEvent.reason] records *why* it was tapped, which "becomes tapped to pay a
+ * teamwork cost" (Agent Maria Hill) reads. It is a separate axis from [tappedById] — a teamwork tap
+ * and an attack tap are both performed by the permanent's own controller, so attribution alone can
+ * never tell them apart. It defaults to [TapReason.UNSPECIFIED] and stays there for every tap site
+ * the engine has not been taught to name: an unclassified cause must never masquerade as a
+ * classified one, because a card reading that cause would then fire wrongly. Only the teamwork
+ * additional-cost payment classifies itself today; see [TapReason] for how to add the next cause.
+ *
+ * @param tappedById the player causing the tap; null (the default) attributes it to the permanent's
+ *   controller.
+ * @param reason why the permanent is becoming tapped; [TapReason.UNSPECIFIED] (the default) leaves
+ *   the cause unnamed.
  * @return the updated state paired with the emitted [TappedEvent], or `state to null`
  *   when the permanent was already tapped or doesn't exist (no mutation performed).
  */
-fun tap(state: GameState, entityId: EntityId): Pair<GameState, TappedEvent?> {
+fun tap(
+    state: GameState,
+    entityId: EntityId,
+    tappedById: EntityId? = null,
+    reason: TapReason = TapReason.UNSPECIFIED,
+): Pair<GameState, TappedEvent?> {
     val container = state.getEntity(entityId) ?: return state to null
-    // CR 603.2f: tapping an already-tapped permanent is not a transition — no event.
+    // CR 701.26a: only untapped permanents can be tapped, so tapping an already-tapped
+    // permanent is not a transition — no event.
     if (container.has<TappedComponent>()) return state to null
     val cardName = container.get<CardComponent>()?.name ?: "Permanent"
+    val tapper = tappedById
+        ?: state.projectedState.getController(entityId)
+        ?: container.get<ControllerComponent>()?.playerId
     val newState = state.updateEntity(entityId) { it.with(TappedComponent) }
-    return newState to TappedEvent(entityId, cardName)
+    return newState to TappedEvent(entityId, cardName, tapper, reason)
 }
 
 /**

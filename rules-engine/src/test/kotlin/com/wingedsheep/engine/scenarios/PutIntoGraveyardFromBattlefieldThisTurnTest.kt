@@ -1,7 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
-import com.wingedsheep.engine.state.components.identity.PutIntoGraveyardFromBattlefieldThisTurnMarker
+import com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -19,9 +19,10 @@ import io.kotest.matchers.shouldBe
  * was put there from the battlefield this turn") and Lobelia Sackville-Baggins
  * (analogous against an opponent's graveyard).
  *
- * The marker is set on the card entity by `ZoneTransitionService` whenever it moves
- * battlefield → graveyard, and stripped when it leaves the graveyard so a later arrival
- * via mill or exile → graveyard doesn't falsely match. It carries no turn number —
+ * The marker is set on the card entity by `ZoneTransitionService` on every graveyard
+ * arrival and records whether that arrival came from the battlefield; this predicate
+ * requires that flag. It is stripped when the card leaves the graveyard, so a later
+ * arrival via mill or exile → graveyard doesn't falsely match. It carries no turn number —
  * `BeginningPhaseManager` wipes it from every entity during the untap step of each turn,
  * which is what gives the predicate MTG-correct per-turn semantics.
  */
@@ -79,8 +80,10 @@ class PutIntoGraveyardFromBattlefieldThisTurnTest : FunSpec({
         // battlefield, so the marker should never be set.
         val deadBear = driver.putCardInGraveyard(player, "Grizzly Bears")
         driver.matches(deadBear) shouldBe false
-        driver.state.getEntity(deadBear)
-            ?.get<PutIntoGraveyardFromBattlefieldThisTurnMarker>() shouldBe null
+        // The marker may be present (the card did arrive in a graveyard this turn), but it
+        // must not claim a battlefield origin.
+        (driver.state.getEntity(deadBear)
+            ?.get<PutIntoGraveyardThisTurnComponent>()?.fromBattlefield ?: false) shouldBe false
     }
 
     test("marker is stripped when the card leaves the graveyard") {
@@ -104,7 +107,7 @@ class PutIntoGraveyardFromBattlefieldThisTurnTest : FunSpec({
         )
         driver.replaceState(moveToExile.state)
         driver.state.getEntity(bear)
-            ?.get<PutIntoGraveyardFromBattlefieldThisTurnMarker>() shouldBe null
+            ?.get<PutIntoGraveyardThisTurnComponent>() shouldBe null
         driver.matches(bear) shouldBe false
     }
 

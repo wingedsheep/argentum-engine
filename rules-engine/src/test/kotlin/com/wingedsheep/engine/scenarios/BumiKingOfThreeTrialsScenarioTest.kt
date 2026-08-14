@@ -111,8 +111,8 @@ class BumiKingOfThreeTrialsScenarioTest : ScenarioTestBase() {
         test("regression: choosing scry then Earthbend — the scry's mid-resolution pause must not drop the Earthbend mode") {
             // The bug: with scry chosen before Earthbend, the scry mode paused mid-resolution for
             // its reorder decision, and the remaining Earthbend mode was silently dropped — the
-            // player never got to target a land. A ModalChosenModeTailContinuation now sits beneath
-            // the scry's pause so the queue resumes afterward.
+            // Earthbend never applied. A ModalPreChosenContinuation now sits beneath the scry's
+            // pause so the mode queue resumes afterward.
             val game = scenario()
                 .withPlayers("Alice", "Bob")
                 .withCardInHand(1, "Bumi, King of Three Trials")
@@ -130,26 +130,27 @@ class BumiKingOfThreeTrialsScenarioTest : ScenarioTestBase() {
             if (game.hasPendingDecision()) game.submitManaSourcesAutoPay()
             game.resolveStack()
 
-            // X = 2 → two picks. Choose scry FIRST, then Earthbend.
+            // X = 2 → two picks. Choose scry FIRST, then Earthbend. Modes and per-mode targets are
+            // all settled as the trigger goes on the stack (CR 603.3c–d), so both target decisions
+            // come before anything resolves: the scry mode's player, then Earthbend's land.
             game.chooseModeContaining(scryMode)
             game.chooseModeContaining(earthbendMode)
 
             // Scry mode's player target (two players → an explicit target decision).
             game.selectTargets(listOf(game.player1Id)).error shouldBe null
 
-            // Scry pauses mid-resolution: first choose none of the looked-at cards to put on
-            // the bottom, then keep the remaining cards in their current order on top.
+            val earthbendTarget = game.getPendingDecision()
+            earthbendTarget.shouldNotBeNull()
+            earthbendTarget.shouldBeInstanceOf<ChooseTargetsDecision>()
+            val land = game.findPermanents("Forest").first()
+            game.selectTargets(listOf(land)).error shouldBe null
+
+            // Now the ability resolves. Scry pauses mid-resolution: first choose none of the
+            // looked-at cards to put on the bottom, then keep the remaining cards on top.
+            game.resolveStack()
             game.getPendingDecision().shouldNotBeNull()
             game.skipSelection()
             game.keepLibraryOrder()
-
-            // The Earthbend mode survived the scry pause and now demands its land target.
-            val afterScry = game.getPendingDecision()
-            afterScry.shouldNotBeNull()
-            afterScry.shouldBeInstanceOf<ChooseTargetsDecision>()
-
-            val land = game.findPermanents("Forest").first()
-            game.selectTargets(listOf(land)).error shouldBe null
             game.resolveStack()
 
             // Earthbend applied: the chosen land is now a 3/3 creature-land with haste.

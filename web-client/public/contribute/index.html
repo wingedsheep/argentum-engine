@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Argentum Engine</title>
+<meta name="description" content="A step-by-step guide to contributing your first card to the Argentum Engine — no prior programming experience assumed.">
+<link rel="icon" href="assets/images/logo/mark-icon.png" type="image/png">
+<link rel="preload" href="assets/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/fraunces-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">Skip to main content</a>
+<div id="sticky-nav" role="navigation" aria-label="Reading navigation">
+  <div id="progress-bar"><div id="progress-fill"></div></div>
+  <div class="sticky-inner">
+    <span class="icons-row" id="sticky-icons"></span>
+    <span id="sticky-label"></span>
+    <span id="sticky-title"></span>
+    <span id="sticky-step"></span>
+    <button class="sticky-search-btn" id="sticky-search-btn" type="button"><span class="label">Search</span> /</button>
+    <button class="sticky-nav-btn" id="sticky-prev" type="button" aria-label="Previous section">&larr;</button>
+    <button class="sticky-nav-btn" id="sticky-next" type="button" aria-label="Next section">&rarr;</button>
+  </div>
+</div>
+<header class="masthead" role="banner">
+  <a class="brand-mark" href="#main-content" aria-label="Argentum Engine, home">
+    <img class="mark-icon" src="assets/images/logo/mark-icon.png" alt="">
+    <span class="brand-wordmark">ARGENTUM<span class="brand-engine">ENGINE</span></span>
+  </a>
+  <nav aria-label="Argentum project navigation">
+    <a href="https://magic.wingedsheep.com">Play</a>
+    <a href="https://github.com/wingedsheep/argentum-engine">GitHub</a>
+    <a href="https://wingedsheep.com/">WingedSheep</a>
+    <a href="https://discord.com/invite/dy6eSRPWzu">Discord</a>
+    <a href="https://magic.wingedsheep.com/set-completion">Cards</a>
+  </nav>
+</header>
+<section class="hero">
+  <div class="content">
+    <div class="hero-frame">
+      <span class="corner tl"></span><span class="corner tr"></span>
+      <span class="corner bl"></span><span class="corner br"></span>
+      <div class="pip-row">
+        <img src="assets/images/mana/white.png" width="32" height="32" alt="" loading="lazy">
+        <img src="assets/images/mana/blue.png" width="32" height="32" alt="" loading="lazy">
+        <img src="assets/images/mana/black.png" width="32" height="32" alt="" loading="lazy">
+        <img src="assets/images/mana/red.png" width="32" height="32" alt="" loading="lazy">
+        <img src="assets/images/mana/green.png" width="32" height="32" alt="" loading="lazy">
+      </div>
+      <div class="eyebrow">&#9670; Open-Source Magic: The Gathering Rules Engine &#9670;</div>
+      <img class="hero-logo-img" src="assets/images/logo/wingedsheep-logo.png" alt="Argentum Engine">
+      <div class="doc-label">&#9671; The Official Contributor Guide &#9671;</div>
+      <p class="tagline">Everything you need, start to finish &mdash; <em>zero assumptions</em>, every term explained, every step numbered.</p>
+    </div>
+  </div>
+</section>
+
+<div class="hero-divider"></div>
+<main class="page" id="main-content">
+  <div class="front-matter">
+  <p>Argentum is building one of the most ambitious open-source projects in the history of Magic: The Gathering: a free, open-source rules engine and digital play platform designed to make every card ever printed playable online under the real rules of the game. Thousands of cards are already implemented, and more are added every day. That's where you come in.</p>
+<p>Most new contributors begin by implementing cards, and that's exactly what this guide prepares you to do. Along the way, you'll learn the tools, workflow, and development practices behind Argentum. As your experience grows, you'll also have opportunities to contribute bug fixes, engine improvements, new features, and other enhancements across the project.</p>
+<p>If you know Magic but have never written software before, we'll teach you everything you need to get started.</p>
+<h3>Before You Begin</h3>
+<p>This guide assumes you know Magic: The Gathering, <strong>not</strong> software development. Every technical term is explained the first time it appears, and every hands-on task is broken into clearly numbered steps, so you'll always know exactly where you are.</p>
+<p>Parts 1–4 introduce the project, the workflow, and the terminology you'll need. Part 5 begins the hands-on work, with every section after that building toward your first implemented card. If you'd rather learn by doing, start with <a href="#quickstart">Quick Start</a> below and return to the earlier sections whenever you need more context.</p>
+<hr />
+  
+<div class="search-wrap" role="search">
+  <input type="text" class="search-input" placeholder="Search sections, steps, commands, glossary terms&hellip;" aria-label="Search the guide" autocomplete="off">
+  <div class="search-results" role="listbox" aria-live="polite"></div>
+  <div class="search-hint">Press <code>/</code> anywhere on the page to jump here.</div>
+</div>
+
+  
+<div id="quickstart">
+  <div class="qs-eyebrow">Express Lane &middot; For Experienced Developers</div>
+  <h2>Quick Start</h2>
+  <p>Already comfortable with Git, GitHub, and a terminal? Here's the condensed path. Each step links to the full section if you need more detail.</p>
+  <ol>
+    <li>Install dependencies: <a href="#part-9">Git</a>, <a href="#part-10">JDK 21+</a>, <a href="#part-11">Node.js LTS</a>, <a href="#part-12">just</a> &mdash; or skip the manual clicking entirely with <code>mise</code> (see the callout at the top of <a href="#part-9">Part 9</a>).</li>
+    <li>Get a paid plan for a frontier-LLM coding tool &mdash; this guide defaults to <a href="#part-14">Claude Pro and Claude Code</a>, though other tools work via the project's AGENTS.md setup (more in Part 14). Budget to pay for whichever one you pick; free tiers generally aren't enough for this kind of work.</li>
+    <li><a href="#part-15">Fork and clone</a> <code>wingedsheep/argentum-engine</code>.</li>
+    <li>Run <code>just init</code>, then <code>just server</code> and <code>just client</code> in separate terminals &mdash; see <a href="#part-16">Part 16</a>.</li>
+    <li>Open the repo in Claude Code (or your AGENTS.md-compatible tool of choice) and run the <code>add-card</code> skill for your chosen card &mdash; see <a href="#part-18">Part 18</a> for the full pipeline, including testing and review.</li>
+    <li>Commit, push, and open a PR &mdash; see <a href="#part-19">Part 19</a>.</li>
+  </ol>
+  <p class="qs-note">New to Magic's software side, or to Git and terminals entirely? Skip this and start at Part 1 &mdash; the full guide assumes zero prior knowledge and walks through every click.</p>
+</div>
+
+  <div id="cost-callout"><div class="eyebrow small">BEFORE YOU START</div><h2 class="part-title">A quick word on cost</h2>
+<p>Almost everything here is free, with one exception tied to how this project actually works: <strong>Argentum Engine's contribution tools rely heavily on AI coding assistants.</strong> The project originally standardized on Claude Code specifically, and now also supports other frontier-LLM tools (like Codex) through a file called AGENTS.md — you're not locked into one option (more on this in Part 14).</p>
+<p>This guide uses <strong>Claude Code</strong> as its default, tested path — Pro at <strong>$17/month billed annually (~$200 upfront) or $20/month billed monthly</strong>, with no free option. Whichever frontier-LLM tool you end up using, budget for a real chance you'll need to pay for it: free tiers generally aren't capable enough for the kind of sustained, multi-step work this project's card-implementation skills require. <strong>Docker</strong> is optional and free for personal use if you do install it.</p></div>
+  
+<details class="section neutral" id="toc-section">
+  <summary><h2 class="part-title">Table of Contents</h2></summary>
+  <div class="section-body">
+    <ul>
+<li><a class="toc-link" href="#part-1"><strong>Part 1</strong> — Glossary — The Words You'll See Throughout This Guide</a></li>
+<li><a class="toc-link" href="#part-2"><strong>Part 2</strong> — What Is Argentum Engine? (The Big Picture)</a></li>
+<li><a class="toc-link" href="#part-3"><strong>Part 3</strong> — The Wider Magic Software World (Optional Context — Scryfall, Moxfield, Archidekt, EDHREC, ManaBox, ManaPool, Forge, XMage, EDHPlay, and where this project fits)</a></li>
+<li><a class="toc-link" href="#part-4"><strong>Part 4</strong> — How Contributions Get Reviewed and Accepted</a></li>
+<li><a class="toc-link" href="#part-5"><strong>Part 5</strong> — Your First Hands-On Step: Check What's Already Installed <em>(Steps 1–9)</em></a></li>
+<li><a class="toc-link" href="#part-6"><strong>Part 6</strong> — Create Your GitHub Account <em>(Steps 10–24)</em></a></li>
+<li><a class="toc-link" href="#part-7"><strong>Part 7</strong> — Create Your Claude Account <em>(Steps 25–29)</em></a></li>
+<li><a class="toc-link" href="#part-8"><strong>Part 8</strong> — Join the Community: The Discord Server <em>(Steps 30–34)</em></a></li>
+<li><a class="toc-link" href="#part-9"><strong>Part 9</strong> — Install Git <em>(Steps 35–44)</em></a></li>
+<li><a class="toc-link" href="#part-10"><strong>Part 10</strong> — Install Java <em>(Steps 45–55)</em></a></li>
+<li><a class="toc-link" href="#part-11"><strong>Part 11</strong> — Install Node.js <em>(Steps 56–62)</em></a></li>
+<li><a class="toc-link" href="#part-12"><strong>Part 12</strong> — Install "just" <em>(Steps 63–68)</em></a></li>
+<li><a class="toc-link" href="#part-13"><strong>Part 13</strong> — Docker (Optional) <em>(Step 69)</em></a></li>
+<li><a class="toc-link" href="#part-14"><strong>Part 14</strong> — Upgrade to Claude Pro and Install Claude Code <em>(Steps 70–81)</em></a></li>
+<li><a class="toc-link" href="#part-15"><strong>Part 15</strong> — Fork and Clone the Project <em>(Steps 82–95)</em></a></li>
+<li><a class="toc-link" href="#part-16"><strong>Part 16</strong> — Run Argentum Locally <em>(Steps 96–103)</em></a></li>
+<li><a class="toc-link" href="#part-17"><strong>Part 17</strong> — Working Effectively with Claude Code</a></li>
+<li><a class="toc-link" href="#part-18"><strong>Part 18</strong> — Implement Your First Card <em>(Steps 104–120)</em></a></li>
+<li><a class="toc-link" href="#part-19"><strong>Part 19</strong> — Submit Your Work: Opening Your First Pull Request <em>(Steps 121–128)</em></a></li>
+<li><a class="toc-link" href="#part-20"><strong>Part 20</strong> — Troubleshooting: When Something Doesn't Match This Guide</a></li>
+<li><a class="toc-link" href="#part-21"><strong>Part 21</strong> — Index</a></li>
+</ul>
+<hr />
+  </div>
+</details>
+
+  </div>
+  
+<details class="section themed" id="part-1" style="--c1:#eae3b8; --c2:#6fc3e8; --c3:#9d84c2; --bar:linear-gradient(90deg, #eae3b8, #6fc3e8, #9d84c2);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/white.png" width="26" height="26" alt="white mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/blue.png" width="26" height="26" alt="blue mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/black.png" width="26" height="26" alt="black mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 01 &middot; <span class="guild-name">Esper</span></span>
+    </div>
+    <h2 class="part-title">Glossary — The Words You'll See Throughout This Guide</h2>
+  </summary>
+  <div class="section-body">
+    <p>A quick note before you start reading: this is a reference, not a test. Skim it once so the words are vaguely familiar, then move on — you are not expected to remember all of this. Every term reappears with its explanation the first time it actually matters, and this list will still be here to jump back to.</p>
+<ul>
+<li><strong>Software project / codebase</strong> — a collection of instruction files (code) that together make a program run.</li>
+<li><strong>Code / source code</strong> — the actual instructions a computer follows, similar in spirit to the Comprehensive Rules, but written for a computer.</li>
+<li><strong>Kotlin</strong> — the language most of this project is written in. Claude Code writes it; you review and test it.</li>
+<li><strong>Repository (repo)</strong> — the full project folder, tracked by Git.</li>
+<li><strong>Git</strong> — a program that tracks every change made to a repo, who made it, and when.</li>
+<li><strong>GitHub</strong> — a website that hosts Git repos online.</li>
+<li><strong>Fork</strong> — your own personal copy of someone else's repo, under your own account.</li>
+<li><strong>Clone</strong> — downloading a repo from GitHub onto your actual computer.</li>
+<li><strong>Commit</strong> — a saved snapshot of changes, with a short note.</li>
+<li><strong>Push</strong> — uploading commits from your computer to your fork on GitHub.</li>
+<li><strong>Branch</strong> — an isolated line of work, so changes don't disturb the main version until ready.</li>
+<li><strong>Pull Request (PR)</strong> — a formal request: "please review and merge this branch."</li>
+<li><strong>Merge</strong> — when your PR is accepted into the main project.</li>
+<li><strong>Terminal</strong> — a plain text window for typing commands.</li>
+<li><strong>Command Prompt</strong> — the built-in Windows terminal. <strong>This guide's steps are written for Command Prompt.</strong> On a Mac, use <strong>Terminal</strong> instead (Applications &gt; Utilities &gt; Terminal, or search "Terminal" with Spotlight) — the actual commands you type (<code>git --version</code>, <code>java -version</code>, and so on) are identical either way; only the app you type them into differs.</li>
+<li><strong>Git Bash</strong> — a different terminal installed alongside Git on Windows. Not needed here — deliberately skipped.</li>
+<li><strong>PowerShell</strong> — yet another built-in Windows terminal, more modern than Command Prompt. Also not needed for this guide — if you ever open it by accident, just close it and open Command Prompt (<code>cmd</code>) instead, since this guide's commands are all written for Command Prompt specifically.</li>
+<li><strong>Command</strong> — a line of text you type into the terminal and run with Enter.</li>
+<li><strong>PATH / Environment Variable</strong> — a setting that tells your computer <em>where to look</em> when you type a program's name. See the diagram in Part 20 (Troubleshooting) — this is the single most common thing that goes wrong during setup.</li>
+<li><strong>Install / installer</strong> — the process of putting software on your computer.</li>
+<li><strong>Build / compile</strong> — turning source code into a running program. The <code>just</code> tool does this for you.</li>
+<li><strong>Server</strong> — a background program other programs talk to. The "game server" runs games and enforces rules.</li>
+<li><strong>Client</strong> — the part you see and click — your browser screen.</li>
+<li><strong>Port</strong> — a numbered "door" a program listens on. <code>localhost:8080</code> means "this computer, door 8080."</li>
+<li><strong><code>.env</code> file</strong> — a settings file you won't need to edit by hand.</li>
+<li><strong>Dependency</strong> — other software this project needs installed to run — Java, Node.js, and <code>just</code>.</li>
+<li><strong>API</strong> — a defined way for software to ask other software for information. "The Scryfall API" (see Part 3) means fetching real card data automatically.</li>
+<li><strong>Skill (Claude Code skill)</strong> — pre-written instructions a coding agent follows automatically for a repeatable task. Originally Claude Code-only; see Part 14 for how this now extends to other tools.</li>
+</ul>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-2" style="--c1:#eae3b8; --c2:#6fc3e8; --c3:#4fbf82; --bar:linear-gradient(90deg, #eae3b8, #6fc3e8, #4fbf82);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/white.png" width="26" height="26" alt="white mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/blue.png" width="26" height="26" alt="blue mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/green.png" width="26" height="26" alt="green mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 02 &middot; <span class="guild-name">Bant</span></span>
+    </div>
+    <h2 class="part-title">What Is Argentum Engine? (The Big Picture)</h2>
+  </summary>
+  <div class="section-body">
+    <p><strong>The big idea:</strong> Argentum Engine is hobbyist-built software (unaffiliated with Wizards of the Coast) that plays Magic by the real Comprehensive Rules, so people can draft, build decks, and play real games online for free. It's already live at magic.wingedsheep.com. We're setting up a copy on your computer so you can help teach it new cards.</p>
+<p><img alt="How Argentum Engine fits together" src="assets/images/diagrams/diagram-four-pieces.png" /></p>
+<p><strong>The four pieces</strong>, in Magic terms:
+1. <strong>Rules Engine</strong> — an automatic head judge. Knows every rule, resolves the stack, decides legality.
+2. <strong>Game Server</strong> — "the table." Lets people connect and share a game over the internet.
+3. <strong>Web Client</strong> — the actual screen you click on.
+4. <strong>Gym</strong> — irrelevant to you; it's for AI researchers training bots.</p>
+<p><strong>What's already playable at magic.wingedsheep.com today</strong>, straight from the project's own feature list:
+- <strong>Drafting</strong> — host booster drafts with up to 8 players, then build a deck from what you opened.
+- <strong>Play</strong> — full games against friends, with the stack, combat, triggers, and state-based actions enforced automatically.
+- <strong>Free-for-All Multiplayer</strong> — 2–6 players at one shared table (not a 2-player bracket), matching real multiplayer rules (Comprehensive Rule 806). Eliminated players are removed while the rest of the table plays on.
+- <strong>An AI opponent</strong> — a built-in bot works instantly with no setup, or an optional more advanced AI that uses a language model for its decisions.</p>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-3" style="--c1:#4fbf82; --c2:#6fc3e8; --c3:#6fc3e8; --bar:linear-gradient(90deg, #4fbf82, #6fc3e8);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/green.png" width="26" height="26" alt="green mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/blue.png" width="26" height="26" alt="blue mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 03 &middot; <span class="guild-name">Simic</span></span>
+    </div>
+    <h2 class="part-title">The Wider Magic Software World (Optional Context)</h2>
+  </summary>
+  <div class="section-body">
+    <p>This Part is genuinely optional — nothing in it is required to set up the project or submit your first card. If you'd rather get moving, skip straight to Part 4 and come back here later.</p>
+<p>You know Magic deeply as a <em>player</em>. This section is a primer on the software side of the hobby — the tools and sites the online Magic community has built, since you'll see these names come up and it helps to know what they actually are and how they relate (or don't) to what we're building.</p>
+<p><img alt="The wider Magic software world" src="assets/images/diagrams/diagram-ecosystem.png" /></p>
+<h3>Where does all this card data actually come from?</h3>
+<p><strong>Scryfall</strong> is the answer, almost universally. It's a free, community-run database containing essentially every Magic card ever printed — full rules text, official rulings, and card images — accessible by any piece of software through something called an API (explained in the glossary: a structured way for software to ask for data). It operates under Wizards of the Coast's official Fan Content Policy, meaning it's explicitly sanctioned to exist even though it isn't run by WotC itself.</p>
+<p>This matters directly to what you're doing: when the <code>add-card</code> skill "looks up the card," it is specifically querying Scryfall to pull the real, current, correct card text — the same source basically every tool below also uses, so you're not learning some Argentum-specific data source, you're learning the same one the whole hobbyist ecosystem shares.</p>
+<h3>Deck-building, collection, and recommendation tools</h3>
+<p>These don't let you <em>play</em> a game — they help you build, analyze, and track decks and collections.</p>
+<ul>
+<li><strong>Moxfield</strong> — one of the most popular deckbuilding sites. Lets you build a decklist, see stats (mana curve, color balance), playtest by drawing sample hands, import/export from other formats, and write "primers" (detailed writeups) for a deck.</li>
+<li><strong>Archidekt</strong> — a similar visual deckbuilder, with drag-and-drop card entry, price comparisons across stores, and its own playtester.</li>
+<li><strong>EDHREC</strong> — specifically for Commander (EDH). It's a recommendation engine: it aggregates real decklists from Moxfield, Archidekt, and Scryfall, then tells you what cards are commonly played with a given commander, flags combos, and scores cards by how much they annoy other players at the table (the "salt score").</li>
+<li><strong>ManaBox</strong> — a phone app for managing a <em>physical</em> card collection: scan real cards with your camera to catalog them, check current market prices, and build/simulate decks from what you own.</li>
+<li><strong>ManaPool</strong> — an actual marketplace for buying and selling real physical Magic cards and sealed product; ManaBox pulls price data from it, among other stores.</li>
+<li><strong>MTGGoldfish</strong> — the dominant site for the <em>competitive</em> side of the hobby specifically, as distinct from the Commander-leaning tools above: metagame breakdowns by format, card price tracking, and tournament-result aggregation. Its own deck-builder is considered clunky by modern standards — most people go there for the data, not the editor.</li>
+</ul>
+<h3>Ways to actually play Magic digitally — and where Argentum Engine fits</h3>
+<ul>
+<li><strong>MTGO (Magic Online)</strong> and <strong>MTG Arena</strong> — Wizards of the Coast's own official digital clients. MTGO requires buying digital versions of cards; Arena is free-to-play with its own card-earning system. Both are closed-source (nobody outside WotC can see or modify the code).</li>
+<li><strong>Forge</strong> — a free, open-source, community-built Magic simulator, historically strongest for solo play against AI, including RPG-style "Quest" modes.</li>
+<li><strong>XMage</strong> — another free, open-source engine, historically strongest for reliable online multiplayer with friends.</li>
+<li><strong>Cockatrice</strong> — a free, open-source virtual tabletop that's been actively maintained for well over a decade, arguably the single best-known open-source Magic client outside of Forge and XMage. The important distinction: it doesn't enforce any rules automatically. It's closer to paper Magic streamed over a shared digital table — you and your opponent are trusted to track life totals, tapping, and triggers correctly yourselves, the same as playing in person. That's also <em>why</em> its card coverage is close to total: a card only needs a name, cost, and image in a shared data file, since nobody has to program what the card actually <em>does</em>.</li>
+<li><strong>EDHPlay</strong> — a free web app specifically built for playing Commander games online, with Discord voice integration. Important distinction: it's closer to a <strong>virtual tabletop</strong> than a full rules engine — it doesn't automatically enforce every rule the way MTGO, Arena, Forge, XMage, or Argentum Engine do; you and your opponents manage more of the state yourselves.</li>
+<li><strong>Argentum Engine</strong> — where you come in. Same basic goal as Forge and XMage (free, open-source, real rules enforcement), but built more recently, browser-based like Arena, and — critically for you — openly built to grow through community contributions like the one you're about to make. Set against Cockatrice specifically, the tradeoff is direct: Cockatrice trusts the players and gets near-total card coverage in return; Argentum removes the need for that trust — a card that's implemented literally cannot be misplayed, no forgotten triggers, no disputed rulings — but every single card has to be actually coded and tested before it exists here at all, which is a slower road to full coverage. Neither approach is simply "better"; they're solving different problems.</li>
+</ul>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-4" style="--c1:#4fbf82; --c2:#eae3b8; --c3:#eae3b8; --bar:linear-gradient(90deg, #4fbf82, #eae3b8);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/green.png" width="26" height="26" alt="green mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/white.png" width="26" height="26" alt="white mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 04 &middot; <span class="guild-name">Selesnya</span></span>
+    </div>
+    <h2 class="part-title">How Contributions Get Reviewed and Accepted</h2>
+  </summary>
+  <div class="section-body">
+    <p><strong>The one rule that matters most:</strong> the maintainer calls it "no slop PRs." Don't submit anything you haven't personally tested and read through. A small, tested change beats a big unverified one.</p>
+<p><img alt="Your contribution workflow" src="assets/images/diagrams/diagram-workflow.png" /></p>
+<p><strong>What a good submission looks like</strong>, in order of importance to the reviewer:
+1. Faithful to the card's real rules text (checked against Scryfall — see Part 3).
+2. Reuses existing building blocks instead of reinventing something.
+3. Actually tested — loaded and played, not just "looks right."
+4. Feels right to play — visible triggers, clear prompts.
+5. Scoped to one card per submission (safest for a first contribution).</p>
+<p><strong>The actual pipeline</strong>, which Part 18 walks you through hands-on: run <code>add-card</code> → run <code>generate-scenario</code> and manually play the result → check it feels right from both seats → for anything nontrivial, run <code>review-changes</code>.</p>
+<p><strong>The rule that applies to you specifically:</strong> the maintainer explicitly rejects PRs where it's clear the human didn't actually verify the AI-generated work. Using Claude Code is fine and encouraged — but you personally need to have read every line and played the card before opening the PR.</p>
+<p><strong>Where to ask questions:</strong> the Discord's <code>#dev</code> channel for "would you accept a PR that does X?", <code>#showcase</code> for sharing what you've built, general channels for playing and bug reports.</p>
+<p><strong>The license:</strong> MIT — one of the most permissive licenses that exists, which is why forking (Part 15) requires no special permission.</p>
+<p>That's everything you need to know before touching a keyboard. From here on, every remaining Part is something you actually do, in order, starting with a simple check of what's already on your computer.</p>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-5" style="--c1:#6fc3e8; --c2:#9d84c2; --c3:#9d84c2; --bar:linear-gradient(90deg, #6fc3e8, #9d84c2);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/blue.png" width="26" height="26" alt="blue mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/black.png" width="26" height="26" alt="black mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 05 &middot; <span class="guild-name">Dimir</span></span>
+    </div>
+    <h2 class="part-title">Your First Hands-On Step: Check What's Already Installed</h2>
+  </summary>
+  <div class="section-body">
+    <div class="step-row" id="step-1"><span class="step-badge">001</span><div class="step-text">Open your terminal. <strong>Windows:</strong> click the Start menu, type <code>cmd</code>, press Enter — this opens Command Prompt. <strong>Mac:</strong> open Terminal (Applications &gt; Utilities &gt; Terminal, or Spotlight search "Terminal"). Every command in this guide works identically either way — just substitute "Terminal" wherever the guide says "Command Prompt."</div></div>
+<div class="step-row" id="step-2"><span class="step-badge">002</span><div class="step-text">Type <code>git --version</code> and press Enter.</div></div>
+<div class="step-row" id="step-3"><span class="step-badge">003</span><div class="step-text">Note the result — a version number, or "not recognized."</div></div>
+<div class="step-row" id="step-4"><span class="step-badge">004</span><div class="step-text">Type <code>java -version</code> and press Enter.</div></div>
+<div class="step-row" id="step-5"><span class="step-badge">005</span><div class="step-text">Note the result.</div></div>
+<div class="step-row" id="step-6"><span class="step-badge">006</span><div class="step-text">Type <code>node --version</code> and press Enter.</div></div>
+<div class="step-row" id="step-7"><span class="step-badge">007</span><div class="step-text">Note the result.</div></div>
+<div class="step-row" id="step-8"><span class="step-badge">008</span><div class="step-text">Type <code>just --version</code> and press Enter.</div></div>
+<div class="step-row" id="step-9"><span class="step-badge">009</span><div class="step-text">Note the result. If any already showed a version number, you can skip that specific install Part later, though it's worth still reading in case a troubleshooting note applies. Keep this window open for the rest of the guide.</div></div>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-6" style="--c1:#eae3b8; --c2:#6fc3e8; --c3:#6fc3e8; --bar:linear-gradient(90deg, #eae3b8, #6fc3e8);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/white.png" width="26" height="26" alt="white mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/blue.png" width="26" height="26" alt="blue mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 06 &middot; <span class="guild-name">Azorius</span></span>
+    </div>
+    <h2 class="part-title">Create your GitHub account</h2>
+  </summary>
+  <div class="section-body">
+    <div class="step-row" id="step-10"><span class="step-badge">010</span><div class="step-text">Go to <strong>github.com</strong> in a browser.</div></div>
+<div class="step-row" id="step-11"><span class="step-badge">011</span><div class="step-text">Click <strong>Sign up</strong>, top right.</div></div>
+<div class="step-row" id="step-12"><span class="step-badge">012</span><div class="step-text">Enter an email address you check regularly.</div></div>
+<div class="step-row" id="step-13"><span class="step-badge">013</span><div class="step-text">Click <strong>Continue</strong>.</div></div>
+<div class="step-row" id="step-14"><span class="step-badge">014</span><div class="step-text">Create a password — at least 15 characters, or at least 8 with a number and a lowercase letter. Write it down somewhere safe.</div></div>
+<div class="step-row" id="step-15"><span class="step-badge">015</span><div class="step-text">Click <strong>Continue</strong>.</div></div>
+<div class="step-row" id="step-16"><span class="step-badge">016</span><div class="step-text">Choose a username (this is public, part of your project URL).</div></div>
+<div class="step-row" id="step-17"><span class="step-badge">017</span><div class="step-text">If it's taken, try another until accepted.</div></div>
+<div class="step-row" id="step-18"><span class="step-badge">018</span><div class="step-text">Answer or skip the "product updates" question.</div></div>
+<div class="step-row" id="step-19"><span class="step-badge">019</span><div class="step-text">Click <strong>Continue</strong>.</div></div>
+<div class="step-row" id="step-20"><span class="step-badge">020</span><div class="step-text">Complete the human-verification puzzle GitHub shows you.</div></div>
+<div class="step-row" id="step-21"><span class="step-badge">021</span><div class="step-text">Check the email from Step 12 for a verification code.</div></div>
+<div class="step-row" id="step-22"><span class="step-badge">022</span><div class="step-text">Enter that code where GitHub asks for it.</div></div>
+<div class="step-row" id="step-23"><span class="step-badge">023</span><div class="step-text">Skip the optional "personalize your experience" questions if you don't want to answer them (look for a <strong>Skip</strong> link).</div></div>
+<div class="step-row" id="step-24"><span class="step-badge">024</span><div class="step-text">Confirm you're logged in — your username should show top right. Keep this tab open.</div></div>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-7" style="--c1:#6fc3e8; --c2:#f2665a; --c3:#f2665a; --bar:linear-gradient(90deg, #6fc3e8, #f2665a);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/blue.png" width="26" height="26" alt="blue mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/red.png" width="26" height="26" alt="red mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 07 &middot; <span class="guild-name">Izzet</span></span>
+    </div>
+    <h2 class="part-title">Create your Claude account</h2>
+  </summary>
+  <div class="section-body">
+    <div class="step-row" id="step-25"><span class="step-badge">025</span><div class="step-text">Go to <strong>claude.ai</strong></div></div>
+<div class="step-row" id="step-26"><span class="step-badge">026</span><div class="step-text">Click <strong>Sign up</strong>.</div></div>
+<div class="step-row" id="step-27"><span class="step-badge">027</span><div class="step-text">Sign up with email or an existing Google account.</div></div>
+<div class="step-row" id="step-28"><span class="step-badge">028</span><div class="step-text">Verify your email if prompted.</div></div>
+<div class="step-row" id="step-29"><span class="step-badge">029</span><div class="step-text">You're now on a free Claude account — Part 14 upgrades this to Pro.</div></div>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-8" style="--c1:#eae3b8; --c2:#9d84c2; --c3:#9d84c2; --bar:linear-gradient(90deg, #eae3b8, #9d84c2);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/white.png" width="26" height="26" alt="white mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/black.png" width="26" height="26" alt="black mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 08 &middot; <span class="guild-name">Orzhov</span></span>
+    </div>
+    <h2 class="part-title">Join the Community: The Discord Server</h2>
+  </summary>
+  <div class="section-body">
+    <div class="step-row" id="step-30"><span class="step-badge">030</span><div class="step-text">Go to <strong>github.com/wingedsheep/argentum-engine</strong></div></div>
+<div class="step-row" id="step-31"><span class="step-badge">031</span><div class="step-text">Find the Discord invite link near the top and click it.</div></div>
+<div class="step-row" id="step-32"><span class="step-badge">032</span><div class="step-text">Create a Discord account if you don't have one (same basic pattern as Part 6).</div></div>
+<div class="step-row" id="step-33"><span class="step-badge">033</span><div class="step-text">Open the <strong>#dev</strong> channel in the server's channel list.</div></div>
+<div class="step-row" id="step-34"><span class="step-badge">034</span><div class="step-text">Read the pinned message — the short version of Part 4's rules.</div></div>
+<p>Accounts are done. Next come the actual software installs — four short Parts, one tool each, and you'll check your own work after every one.</p>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-9" style="--c1:#9d84c2; --c2:#4fbf82; --c3:#4fbf82; --bar:linear-gradient(90deg, #9d84c2, #4fbf82);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/black.png" width="26" height="26" alt="black mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/green.png" width="26" height="26" alt="green mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 09 &middot; <span class="guild-name">Golgari</span></span>
+    </div>
+    <h2 class="part-title">Install Git</h2>
+  </summary>
+  <div class="section-body">
+    <h3>A faster alternative: <code>mise</code></h3>
+<p>Parts 9 through 12 walk through installing Git, Java, Node, and <code>just</code> one at a time by hand — good for understanding what's happening, but slower than it needs to be if you're comfortable with a terminal. <code>mise</code> is a tool that installs and manages all of these for you in a few commands, and it also sidesteps most of the PATH problems covered in Part 20.</p>
+<p><strong>Windows:</strong> <code>winget install jdx.mise</code>
+<strong>Mac:</strong> <code>brew install mise</code> (or <code>curl https://mise.run | sh</code>)</p>
+<p>Then, either platform:</p>
+<pre><code>mise use -g node@latest
+mise use -g java@latest kotlin@latest
+mise ls
+</code></pre>
+<p>If you use this, you can skip straight past Steps 35–68 (Parts 9–12) — just confirm <code>git</code>, <code>java</code>, <code>node</code>, and <code>just</code> all show version numbers, then jump to Step 69. If you'd rather follow the guided click-by-click path instead, continue below.</p>
+<p><strong>Mac note for the steps below:</strong> the click-through steps in Part 9 are written for Windows. On a Mac, the simplest path for Git specifically is to just run <code>git --version</code> in Terminal — macOS will usually offer to install it automatically (via Xcode Command Line Tools) if it's missing. Accept the prompt, wait for it to finish, then skip straight to Step 44 to verify. Homebrew (<code>brew install git</code>) works too, if you'd rather.</p>
+<div class="step-row" id="step-35"><span class="step-badge">035</span><div class="step-text">Go to <strong>git-scm.com</strong></div></div>
+<div class="step-row" id="step-36"><span class="step-badge">036</span><div class="step-text">Click <strong>Download for Windows</strong>.</div></div>
+<div class="step-row" id="step-37"><span class="step-badge">037</span><div class="step-text">Open the downloaded installer.</div></div>
+<div class="step-row" id="step-38"><span class="step-badge">038</span><div class="step-text">Click "Next" through the screens. On <strong>"Adjusting your PATH environment,"</strong> confirm <strong>"Git from the command line and also from 3rd-party software"</strong> is selected — this is what lets <code>git</code> work in Command Prompt, why we skip Git Bash.</div></div>
+<div class="step-row" id="step-39"><span class="step-badge">039</span><div class="step-text">On the terminal-emulator screen, the default is fine (irrelevant since we're not using that terminal).</div></div>
+<div class="step-row" id="step-40"><span class="step-badge">040</span><div class="step-text">Continue with defaults through the rest of the screens.</div></div>
+<div class="step-row" id="step-41"><span class="step-badge">041</span><div class="step-text">Click <strong>Install</strong>, wait for it to finish.</div></div>
+<div class="step-row" id="step-42"><span class="step-badge">042</span><div class="step-text">Click <strong>Finish</strong>.</div></div>
+<div class="step-row" id="step-43"><span class="step-badge">043</span><div class="step-text">Close every open Command Prompt window and open a fresh one.</div></div>
+<div class="step-row" id="step-44"><span class="step-badge">044</span><div class="step-text">Type <code>git --version</code> — confirm a version number appears. If not, see Part 20.</div></div>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-10" style="--c1:#f2665a; --c2:#4fbf82; --c3:#4fbf82; --bar:linear-gradient(90deg, #f2665a, #4fbf82);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/red.png" width="26" height="26" alt="red mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/green.png" width="26" height="26" alt="green mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 10 &middot; <span class="guild-name">Gruul</span></span>
+    </div>
+    <h2 class="part-title">Install Java (JDK 21+)</h2>
+  </summary>
+  <div class="section-body">
+    <p><strong>Mac:</strong> the steps below are written for Windows. On a Mac, either use <code>mise use -g java@latest</code> from Part 9's callout, or run <code>brew install openjdk@21</code> in Terminal — Homebrew handles PATH automatically, no manual setup needed. Otherwise, adoptium.net (Step 45) also offers a macOS <code>.pkg</code> installer that works almost identically to the Windows steps below, just without the PATH checkboxes (macOS handles that step itself).</p>
+<div class="step-row" id="step-45"><span class="step-badge">045</span><div class="step-text">Go to <strong>adoptium.net</strong></div></div>
+<div class="step-row" id="step-46"><span class="step-badge">046</span><div class="step-text">Confirm the download button shows version <strong>21</strong> or higher (use the version dropdown if not).</div></div>
+<div class="step-row" id="step-47"><span class="step-badge">047</span><div class="step-text">Click download for Windows.</div></div>
+<div class="step-row" id="step-48"><span class="step-badge">048</span><div class="step-text">Open the <code>.msi</code> file.</div></div>
+<div class="step-row" id="step-49"><span class="step-badge">049</span><div class="step-text">On "Custom Setup," confirm <strong>"Set JAVA_HOME variable"</strong> and <strong>"Add to PATH"</strong> are both selected.</div></div>
+<div class="step-row" id="step-50"><span class="step-badge">050</span><div class="step-text">Continue with defaults, then click <strong>Install</strong>.</div></div>
+<div class="step-row" id="step-51"><span class="step-badge">051</span><div class="step-text">Approve the Windows security prompt if shown ("allow this app to make changes").</div></div>
+<div class="step-row" id="step-52"><span class="step-badge">052</span><div class="step-text">Click <strong>Finish</strong>.</div></div>
+<div class="step-row" id="step-53"><span class="step-badge">053</span><div class="step-text">Close and reopen Command Prompt.</div></div>
+<div class="step-row" id="step-54"><span class="step-badge">054</span><div class="step-text">Type <code>java -version</code>.</div></div>
+<div class="step-row" id="step-55"><span class="step-badge">055</span><div class="step-text">Confirm it mentions "21" or higher. If "not recognized," or if it shows an older number instead, see Part 20.</div></div>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-11" style="--c1:#9d84c2; --c2:#f2665a; --c3:#f2665a; --bar:linear-gradient(90deg, #9d84c2, #f2665a);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/black.png" width="26" height="26" alt="black mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/red.png" width="26" height="26" alt="red mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 11 &middot; <span class="guild-name">Rakdos</span></span>
+    </div>
+    <h2 class="part-title">Install Node.js</h2>
+  </summary>
+  <div class="section-body">
+    <p><strong>Mac:</strong> the steps below are written for Windows. On a Mac, either use <code>mise use -g node@latest</code> from Part 9's callout, or run <code>brew install node</code> in Terminal. Otherwise, nodejs.org (Step 56) also has a macOS installer that works the same way as the Windows steps below.</p>
+<div class="step-row" id="step-56"><span class="step-badge">056</span><div class="step-text">Go to <strong>nodejs.org</strong></div></div>
+<div class="step-row" id="step-57"><span class="step-badge">057</span><div class="step-text">Download the <strong>LTS</strong> version (not "Current").</div></div>
+<div class="step-row" id="step-58"><span class="step-badge">058</span><div class="step-text">Open the <code>.msi</code> file.</div></div>
+<div class="step-row" id="step-59"><span class="step-badge">059</span><div class="step-text">Click through with defaults (Node's installer adds itself to PATH automatically).</div></div>
+<div class="step-row" id="step-60"><span class="step-badge">060</span><div class="step-text">Click <strong>Install</strong>, approve any security prompt, then <strong>Finish</strong>.</div></div>
+<div class="step-row" id="step-61"><span class="step-badge">061</span><div class="step-text">Close and reopen Command Prompt.</div></div>
+<div class="step-row" id="step-62"><span class="step-badge">062</span><div class="step-text">Type <code>node --version</code> — confirm <code>v18.x.x</code> or higher. If not, see Part 20.</div></div>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-12" style="--c1:#f2665a; --c2:#eae3b8; --c3:#eae3b8; --bar:linear-gradient(90deg, #f2665a, #eae3b8);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/red.png" width="26" height="26" alt="red mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/white.png" width="26" height="26" alt="white mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 12 &middot; <span class="guild-name">Boros</span></span>
+    </div>
+    <h2 class="part-title">Install "just"</h2>
+  </summary>
+  <div class="section-body">
+    <p><strong>Mac:</strong> <code>winget</code> (Step 63) is Windows-only. On a Mac, run <code>brew install just</code> in Terminal instead, then skip to Step 68 to confirm it worked.</p>
+<div class="step-row" id="step-63"><span class="step-badge">063</span><div class="step-text">In Command Prompt: <code>winget install --id Casey.Just</code></div></div>
+<div class="step-row" id="step-64"><span class="step-badge">064</span><div class="step-text">Approve any confirmation prompt.</div></div>
+<div class="step-row" id="step-65"><span class="step-badge">065</span><div class="step-text">Wait for it to finish.</div></div>
+<div class="step-row" id="step-66"><span class="step-badge">066</span><div class="step-text">Close and reopen Command Prompt.</div></div>
+<div class="step-row" id="step-67"><span class="step-badge">067</span><div class="step-text">Type <code>just --version</code>.</div></div>
+<div class="step-row" id="step-68"><span class="step-badge">068</span><div class="step-text">If "not recognized" after retrying, go to <strong>just.systems</strong>, find their Windows install instructions, and follow those instead.</div></div>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-13" style="--c1:#4fbf82; --c2:#6fc3e8; --c3:#f2665a; --bar:linear-gradient(90deg, #4fbf82, #6fc3e8, #f2665a);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/green.png" width="26" height="26" alt="green mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/blue.png" width="26" height="26" alt="blue mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/red.png" width="26" height="26" alt="red mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 13 &middot; <span class="guild-name">Temur</span></span>
+    </div>
+    <h2 class="part-title">Docker — optional, skip unless you want it</h2>
+  </summary>
+  <div class="section-body">
+    <div class="step-row" id="step-69"><span class="step-badge">069</span><div class="step-text">Not required for this guide. If you want it anyway (for an optional Redis feature), go to <strong>docker.com</strong>, download, and install with defaults — free for personal use.</div></div>
+<p>Every dependency is installed. Two Parts stand between you and your own copy of the project: getting Claude Code itself set up, then actually fetching the code.</p>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-14" style="--c1:#6fc3e8; --c2:#f2665a; --c3:#eae3b8; --bar:linear-gradient(90deg, #6fc3e8, #f2665a, #eae3b8);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/blue.png" width="26" height="26" alt="blue mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/red.png" width="26" height="26" alt="red mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/white.png" width="26" height="26" alt="white mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 14 &middot; <span class="guild-name">Jeskai</span></span>
+    </div>
+    <h2 class="part-title">Upgrade to Claude Pro and install Claude Code</h2>
+  </summary>
+  <div class="section-body">
+    <p>A quick note on why this Part exists specifically: Argentum Engine's contributor tooling was originally built around Claude Code alone. It's since grown to support other frontier-LLM coding tools too, through a file in the repo called <code>AGENTS.md</code> — so if you already use something like Codex, that can work here as well. This guide standardizes on <strong>Claude Code</strong> because it's what the rest of these steps are written and tested against, not because it's the only option.</p>
+<div class="step-row" id="step-70"><span class="step-badge">070</span><div class="step-text">Log into <strong>claude.ai</strong></div></div>
+<div class="step-row" id="step-71"><span class="step-badge">071</span><div class="step-text">Open your account menu, go to <strong>Settings</strong>.</div></div>
+<div class="step-row" id="step-72"><span class="step-badge">072</span><div class="step-text">Go to <strong>Billing</strong>.</div></div>
+<div class="step-row" id="step-73"><span class="step-badge">073</span><div class="step-text">Select <strong>Pro</strong>.</div></div>
+<div class="step-row" id="step-74"><span class="step-badge">074</span><div class="step-text">Choose annual (~$17/month, $200 upfront) or monthly ($20/month).</div></div>
+<div class="step-row" id="step-75"><span class="step-badge">075</span><div class="step-text">Complete payment.</div></div>
+<div class="step-row" id="step-76"><span class="step-badge">076</span><div class="step-text">Go to <strong>claude.ai/download</strong></div></div>
+<div class="step-row" id="step-77"><span class="step-badge">077</span><div class="step-text">Download the Windows version of Claude Desktop.</div></div>
+<div class="step-row" id="step-78"><span class="step-badge">078</span><div class="step-text">Run the installer with default options.</div></div>
+<div class="step-row" id="step-79"><span class="step-badge">079</span><div class="step-text">Open Claude Desktop.</div></div>
+<div class="step-row" id="step-80"><span class="step-badge">080</span><div class="step-text">Log in with your upgraded account.</div></div>
+<div class="step-row" id="step-81"><span class="step-badge">081</span><div class="step-text">Find the <strong>Code</strong> tab or section inside the app.</div></div>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-15" style="--c1:#9d84c2; --c2:#4fbf82; --c3:#6fc3e8; --bar:linear-gradient(90deg, #9d84c2, #4fbf82, #6fc3e8);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/black.png" width="26" height="26" alt="black mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/green.png" width="26" height="26" alt="green mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/blue.png" width="26" height="26" alt="blue mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 15 &middot; <span class="guild-name">Sultai</span></span>
+    </div>
+    <h2 class="part-title">Fork and clone the project</h2>
+  </summary>
+  <div class="section-body">
+    <div class="step-row" id="step-82"><span class="step-badge">082</span><div class="step-text">Go to <strong>github.com/wingedsheep/argentum-engine</strong></div></div>
+<div class="step-row" id="step-83"><span class="step-badge">083</span><div class="step-text">Confirm you're logged in.</div></div>
+<div class="step-row" id="step-84"><span class="step-badge">084</span><div class="step-text">Click <strong>Fork</strong>, top right.</div></div>
+<div class="step-row" id="step-85"><span class="step-badge">085</span><div class="step-text">Click <strong>Create fork</strong>.</div></div>
+<div class="step-row" id="step-86"><span class="step-badge">086</span><div class="step-text">You land on <code>github.com/YOUR-USERNAME/argentum-engine</code> — your copy.</div></div>
+<div class="step-row" id="step-87"><span class="step-badge">087</span><div class="step-text">Click the green <strong>Code</strong> button.</div></div>
+<div class="step-row" id="step-88"><span class="step-badge">088</span><div class="step-text">Confirm <strong>HTTPS</strong> is selected.</div></div>
+<div class="step-row" id="step-89"><span class="step-badge">089</span><div class="step-text">Click the copy icon next to the URL.</div></div>
+<div class="step-row" id="step-90"><span class="step-badge">090</span><div class="step-text">Go to your Command Prompt window.</div></div>
+<div class="step-row" id="step-91"><span class="step-badge">091</span><div class="step-text">Type <code>cd Desktop</code> and press Enter.</div></div>
+<div class="step-row" id="step-92"><span class="step-badge">092</span><div class="step-text">Type <code>git clone</code>, then right-click to paste the copied URL, so it reads:
+<code>git clone https://github.com/YOUR-USERNAME/argentum-engine.git</code></div></div>
+<div class="step-row" id="step-93"><span class="step-badge">093</span><div class="step-text">Press Enter, wait for the download (a minute or two).</div></div>
+<div class="step-row" id="step-94"><span class="step-badge">094</span><div class="step-text">Type <code>cd argentum-engine</code> and press Enter.</div></div>
+<div class="step-row" id="step-95"><span class="step-badge">095</span><div class="step-text">You're now inside the project folder. If you ever close Command Prompt, <code>cd Desktop\argentum-engine</code> gets you back.</div></div>
+<p>You've now got a real local copy of a Kotlin project. Claude Code can read and write these files for you, but at some point you'll likely want to just look around yourself — a proper code editor makes that much easier than a plain text editor. <strong>IntelliJ IDEA</strong> (free Community Edition) is Kotlin's native IDE, built by the same company that made the language; <strong>VS Code</strong> is a lighter, more general-purpose alternative. Either is optional but worth having open alongside Claude Code once you're browsing generated files in Part 18.</p>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-16" style="--c1:#f2665a; --c2:#4fbf82; --c3:#eae3b8; --bar:linear-gradient(90deg, #f2665a, #4fbf82, #eae3b8);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/red.png" width="26" height="26" alt="red mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/green.png" width="26" height="26" alt="green mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/white.png" width="26" height="26" alt="white mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 16 &middot; <span class="guild-name">Naya</span></span>
+    </div>
+    <h2 class="part-title">Run Argentum Locally</h2>
+  </summary>
+  <div class="section-body">
+    <div class="step-row" id="step-96"><span class="step-badge">096</span><div class="step-text">Type <code>just init</code> and press Enter.</div></div>
+<div class="step-row" id="step-97"><span class="step-badge">097</span><div class="step-text">Type <code>just server</code> and press Enter — log text will scroll. <strong>Leave this window open.</strong></div></div>
+<div class="step-row" id="step-98"><span class="step-badge">098</span><div class="step-text">Open a second, new Command Prompt window.</div></div>
+<div class="step-row" id="step-99"><span class="step-badge">099</span><div class="step-text">In it, type <code>cd Desktop\argentum-engine</code> and press Enter.</div></div>
+<div class="step-row" id="step-100"><span class="step-badge">100</span><div class="step-text">Type <code>just client</code> and press Enter. <strong>Leave this window open too.</strong></div></div>
+<div class="step-row" id="step-101"><span class="step-badge">101</span><div class="step-text">Confirm both windows show scrolling text with no red error lines.</div></div>
+<div class="step-row" id="step-102"><span class="step-badge">102</span><div class="step-text">Open a browser to <strong>http://localhost:5173</strong></div></div>
+<div class="step-row" id="step-103"><span class="step-badge">103</span><div class="step-text">Confirm the game's main menu loads. If not, see Part 20.</div></div>
+<p>The project is running on your machine. Before you touch a real card, five minutes on how to actually get good results out of Claude Code will save you a lot of back-and-forth.</p>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-17" style="--c1:#6fc3e8; --c2:#9d84c2; --c3:#f2665a; --bar:linear-gradient(90deg, #6fc3e8, #9d84c2, #f2665a);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/blue.png" width="26" height="26" alt="blue mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/black.png" width="26" height="26" alt="black mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/red.png" width="26" height="26" alt="red mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 17 &middot; <span class="guild-name">Grixis</span></span>
+    </div>
+    <h2 class="part-title">Working Effectively with Claude Code</h2>
+  </summary>
+  <div class="section-body">
+    <p>Before diving into Part 18, a few minutes on how to actually get good results out of Claude Code — since the quality of what it builds depends heavily on how clearly you ask.</p>
+<p><img alt="Anatomy of a good prompt" src="assets/images/diagrams/diagram-prompt.png" /></p>
+<p><strong>Be specific about which exact thing you want.</strong> "Implement Swords to Plowshares" is weaker than "Implement Swords to Plowshares from set LEA" — there can be reprints, and the skill needs to know which printing to treat as canonical (this came up back in Part 4 and 15's earlier discussion of reprints).</p>
+<p><strong>Tell it what to actually test, not just the obvious case.</strong> As a strong Magic player, you already know the interesting rules interactions on any given card — a "may" ability someone declines, a target that becomes illegal, an effect interacting with something like hexproof or indestructible. Naming that specific interaction when you ask for a test scenario (Step 114 in Part 18) gets you a far more useful test than "test that it works."</p>
+<p><strong>Tell it how much to do before checking back with you.</strong> Claude Code will happily run for a while on its own. If you want to review before it moves to the next step, say so explicitly — e.g., "implement this, then stop and show me before testing." If you're comfortable letting it proceed further unsupervised, say that instead.</p>
+<p><strong>Treat it like a conversation, not a single command.</strong> If what it produces isn't quite right, you don't need to start over — just tell it what's wrong and ask it to fix that specific thing. It has the context from what it just did.</p>
+<p><strong>Ask it to explain anything you don't understand.</strong> If Claude Code shows you a chunk of Kotlin and you don't follow what it does, just ask — "explain what this part does" is a completely normal, expected question, not an interruption.</p>
+<p><strong>When in doubt, ask a clarifying question yourself before it starts.</strong> If you're not sure which set code to use, or which of two similar cards you mean, say so rather than guessing — "I'm not sure if this should go in DOM or a later set, can you check?" is a better opener than picking one and hoping.</p>
+<p><strong>This applies to any AI assistant, not just this project.</strong> These same habits — being specific, naming the actual edge case you care about, saying how much autonomy you want, treating it as back-and-forth — carry over directly to using ChatGPT, Claude in a browser, or any other AI tool you pick up later.</p>
+<p>Time to put it into practice — this next Part is where everything so far actually comes together.</p>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-18" style="--c1:#eae3b8; --c2:#9d84c2; --c3:#4fbf82; --bar:linear-gradient(90deg, #eae3b8, #9d84c2, #4fbf82);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/white.png" width="26" height="26" alt="white mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/black.png" width="26" height="26" alt="black mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/green.png" width="26" height="26" alt="green mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 18 &middot; <span class="guild-name">Abzan</span></span>
+    </div>
+    <h2 class="part-title">Implement Your First Card</h2>
+  </summary>
+  <div class="section-body">
+    <div class="step-row" id="step-104"><span class="step-badge">104</span><div class="step-text">Open Claude Desktop.</div></div>
+<div class="step-row" id="step-105"><span class="step-badge">105</span><div class="step-text">Go to the <strong>Code</strong> section (Step 81).</div></div>
+<div class="step-row" id="step-106"><span class="step-badge">106</span><div class="step-text">Find the option to open a folder.</div></div>
+<div class="step-row" id="step-107"><span class="step-badge">107</span><div class="step-text">Select your <code>argentum-engine</code> folder from Step 94.</div></div>
+<div class="step-row" id="step-108"><span class="step-badge">108</span><div class="step-text">Pick one specific card — something with clean, standard rules text for a first attempt.</div></div>
+<div class="step-row" id="step-109"><span class="step-badge">109</span><div class="step-text">(Optional, recommended) Ask in Discord's <code>#dev</code> whether it's a reasonable first pick.</div></div>
+<div class="step-row" id="step-110"><span class="step-badge">110</span><div class="step-text">In Claude Code, type: <code>Please run the add-card skill for "Card Name" in set CODE</code> (using Part 17's guidance — be specific about the set).</div></div>
+<div class="step-row" id="step-111"><span class="step-badge">111</span><div class="step-text">Press Enter, wait for it to look up the card and write the code.</div></div>
+<div class="step-row" id="step-112"><span class="step-badge">112</span><div class="step-text">Read through what it shows you; ask questions per Part 17 if anything's unclear.</div></div>
+<div class="step-row" id="step-113"><span class="step-badge">113</span><div class="step-text">Type: <code>Please run the generate-scenario skill to test [the specific interesting interaction you identified]</code></div></div>
+<div class="step-row" id="step-114"><span class="step-badge">114</span><div class="step-text">Press Enter and wait.</div></div>
+<div class="step-row" id="step-115"><span class="step-badge">115</span><div class="step-text">Confirm <code>just server</code> and <code>just client</code> are still running (Steps 97, 100).</div></div>
+<div class="step-row" id="step-116"><span class="step-badge">116</span><div class="step-text">Go to <code>http://localhost:5173</code></div></div>
+<div class="step-row" id="step-117"><span class="step-badge">117</span><div class="step-text">Load the generated scenario and actually play the card yourself — not optional, per Part 4.</div></div>
+<div class="step-row" id="step-118"><span class="step-badge">118</span><div class="step-text">Type: <code>Please run the review-changes skill on my changes</code></div></div>
+<div class="step-row" id="step-119"><span class="step-badge">119</span><div class="step-text">Personally read through every line of the generated code before proceeding — a hard requirement, per Part 4.</div></div>
+<div class="step-row" id="step-120"><span class="step-badge">120</span><div class="step-text">If anything felt off during testing, go back to Claude Code and describe specifically what was wrong, per Part 17, rather than starting over from scratch.</div></div>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-19" style="--c1:#f2665a; --c2:#eae3b8; --c3:#9d84c2; --bar:linear-gradient(90deg, #f2665a, #eae3b8, #9d84c2);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/red.png" width="26" height="26" alt="red mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/white.png" width="26" height="26" alt="white mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/black.png" width="26" height="26" alt="black mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 19 &middot; <span class="guild-name">Mardu</span></span>
+    </div>
+    <h2 class="part-title">Submit Your Work: Opening Your First Pull Request</h2>
+  </summary>
+  <div class="section-body">
+    <div class="step-row" id="step-121"><span class="step-badge">121</span><div class="step-text">Back in your first Command Prompt window: <code>git checkout -b my-first-card</code></div></div>
+<div class="step-row" id="step-122"><span class="step-badge">122</span><div class="step-text"><code>git add .</code></div></div>
+<div class="step-row" id="step-123"><span class="step-badge">123</span><div class="step-text"><code>git commit -m "Add [Card Name]"</code></div></div>
+<div class="step-row" id="step-124"><span class="step-badge">124</span><div class="step-text"><code>git push origin my-first-card</code></div></div>
+<div class="step-row" id="step-125"><span class="step-badge">125</span><div class="step-text">If prompted to log into GitHub (first push only), a browser window may open — approve it.</div></div>
+<div class="step-row" id="step-126"><span class="step-badge">126</span><div class="step-text">Go to <code>github.com/YOUR-USERNAME/argentum-engine</code></div></div>
+<div class="step-row" id="step-127"><span class="step-badge">127</span><div class="step-text">Click the Pull Request banner GitHub shows for your new branch, write a short description, and click <strong>Create pull request</strong>.</div></div>
+<div class="step-row" id="step-128"><span class="step-badge">128</span><div class="step-text">Watch for comments on the PR page or in your email/GitHub notifications.</div></div>
+<p>That's the complete loop, start to finish — you've gone from a blank machine to a real submitted contribution. The two remaining Parts are reference material you'll dip into as needed, not more reading to do now: Troubleshooting for when something doesn't match this guide, and an Index if you need to jump back to a specific concept.</p>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-20" style="--c1:#9d84c2; --c2:#f2665a; --c3:#4fbf82; --bar:linear-gradient(90deg, #9d84c2, #f2665a, #4fbf82);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/black.png" width="26" height="26" alt="black mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/red.png" width="26" height="26" alt="red mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/green.png" width="26" height="26" alt="green mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 20 &middot; <span class="guild-name">Jund</span></span>
+    </div>
+    <h2 class="part-title">Troubleshooting: When Something Doesn't Match This Guide</h2>
+  </summary>
+  <div class="section-body">
+    <h3>The PATH concept, illustrated</h3>
+<p><img alt="What PATH actually means" src="assets/images/diagrams/diagram-path.png" /></p>
+<p><strong>A general note before the Windows-specific fixes below:</strong> everything in this Part is written against Windows' Command Prompt and Environment Variables panel. On a Mac, the same underlying problem (PATH) shows up far less often, because Homebrew and <code>mise</code> (see Part 9) configure it automatically. When it does happen, the fix is almost always the same first step as Windows — fully quit and reopen Terminal — or checking <code>~/.zshrc</code> or <code>~/.zprofile</code> for a line your installer added. If you're stuck on a Mac-specific version of one of these, Discord's <code>#dev</code> is the right place to ask.</p>
+<h3>"Not recognized" errors (Git, Java, Node, or <code>just</code>)</h3>
+<ol>
+<li>Close <strong>every</strong> open Command Prompt window, not just one.</li>
+<li>Open a brand new one and try again — new installs often don't register until the terminal restarts.</li>
+<li>Still failing? Restart your whole computer, then retry. Some installers need a full restart.</li>
+<li>Still failing? Manually check PATH: Start menu → type "environment variables" → open <strong>"Edit the system environment variables"</strong> → click <strong>"Environment Variables..."</strong> → under "System variables," select <strong>Path</strong> → <strong>Edit</strong>. Look for a folder related to the program (e.g. containing "Java" or "nodejs"). If missing, click <strong>New</strong> and add it — for Java, typically <code>C:\Program Files\Eclipse Adoptium\jdk-21.x.x-hotspot\bin</code>; for Node, typically <code>C:\Program Files\nodejs\</code>.</li>
+<li>Click OK on everything, fully restart Command Prompt.</li>
+</ol>
+<h3>Java shows the wrong (older) version</h3>
+<p>An old Java install can shadow the new one in PATH.
+1. Try the "not recognized" steps above first (sometimes fixes it).
+2. Open Environment Variables as above, edit <strong>Path</strong>.
+3. You'll likely see two Java entries — select the JDK 21 one and click <strong>Move Up</strong> so it's listed before the old one.
+4. OK everything, restart Command Prompt, recheck.
+5. To remove the old version instead: Windows Settings → Apps → Installed apps → find the old Java entry → Uninstall → restart your computer.</p>
+<h3><code>npm</code> specifically says "not recognized" even though <code>node</code> works</h3>
+<p>This is a known, fairly common Node.js quirk on Windows (not unique to you — it shows up regularly in Node's own bug tracker). Try, in order:
+1. The standard "not recognized" steps above.
+2. If it persists, fully uninstall Node (Windows Settings → Apps → Installed apps → Node.js → Uninstall), then also manually delete any leftover folder at <code>C:\Program Files\nodejs</code> if it still exists, restart your computer, and reinstall Node from Part 11 fresh.
+3. If it still fails after that, this is a good one to bring to Discord's <code>#dev</code> with the exact error text — it can have a few different underlying causes.</p>
+<h3>"Filename or extension is too long" during <code>just init</code>, <code>just client</code>, or any Node-related step</h3>
+<p>Windows has an old limit on how long a file path can be, and Node.js projects sometimes create deeply nested folders inside <code>node_modules</code> that exceed it. If you see an error mentioning a very long file path:
+1. Try moving the whole project folder somewhere shorter and closer to the drive root — e.g., instead of <code>Desktop\argentum-engine</code>, use <code>C:\argentum-engine</code>. You'd redo Step 91 as <code>cd C:\</code> (instead of <code>cd Desktop</code>) before cloning.
+2. Alternatively, enable long path support at the Windows system level (requires admin access): Start menu → type "gpedit.msc" (if available on your Windows edition) → Computer Configuration → Administrative Templates → System → Filesystem → enable "Enable Win32 long paths." If <code>gpedit.msc</code> isn't available on your Windows edition, this can also be set via the Registry Editor, but that's a good one to ask for direct help with in Discord's <code>#dev</code> rather than doing solo your first time.</p>
+<h3>"Port already in use" when running <code>just server</code> or <code>just client</code></h3>
+<p>This means something is already using port 8080 or 5173 — often a previous copy of the server/client that didn't fully close.
+1. In Command Prompt, run: <code>netstat -ano | find "8080"</code> (swap in <code>5173</code> for the client) — this lists the process using that port, ending with a number called a PID.
+2. Run <code>tasklist /FI "PID eq &lt;the number from step 1&gt;"</code> to see the program's name.
+3. If it's safe to close (almost always a leftover <code>java.exe</code> or <code>node.exe</code> from an earlier session), run <code>taskkill /F /IM java.exe</code> or <code>taskkill /F /IM node.exe</code> as appropriate — note this closes <em>all</em> running copies of that program, so make sure nothing else important is using it first.
+4. Try <code>just server</code> / <code>just client</code> again.</p>
+<h3>Antivirus or Windows Defender interferes with an install or download</h3>
+<p>Occasionally security software flags a legitimate installer or blocks part of an install silently. If an install seems to "complete" but the program still isn't found afterward, or a download keeps disappearing:
+1. Check your antivirus/Windows Defender's quarantine or blocked-items list for the file you just downloaded.
+2. If it's there, restore it and try again — official installers from git-scm.com, adoptium.net, and nodejs.org are safe sources.
+3. If your antivirus has a temporary "allow" option for a specific download, that's the safer choice over fully disabling protection.</p>
+<h3>The browser shows nothing / an error at localhost:5173</h3>
+<ol>
+<li>Check both Command Prompt windows for red error text.</li>
+<li>Confirm neither window was accidentally closed — if so, <code>cd Desktop\argentum-engine</code> and rerun the matching command.</li>
+<li>Confirm the exact address: <code>http://localhost:5173</code> (not 8080 — that's the server, not what you visit).</li>
+<li>Still stuck? Screenshot both Command Prompt windows and the browser and share them in Discord's <code>#dev</code> — a real screenshot beats any description.</li>
+</ol>
+<h3>General rule for anything not covered above</h3>
+<p>If your actual screen doesn't match this guide — different button placement, extra prompts — the software's own installer likely changed slightly since this was written. Screenshot what you're actually seeing and ask about it directly rather than guessing.</p>
+<hr />
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+
+<details class="section themed" id="part-21" style="--c1:#eae3b8; --c2:#6fc3e8; --c3:#9d84c2; --bar:linear-gradient(90deg, #eae3b8, #6fc3e8, #9d84c2, #f2665a, #4fbf82);">
+  <summary>
+    <div class="summary-top">
+      <span class="icons-row"><img class="mana-icon" src="assets/images/mana/white.png" width="26" height="26" alt="white mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/blue.png" width="26" height="26" alt="blue mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/black.png" width="26" height="26" alt="black mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/red.png" width="26" height="26" alt="red mana" loading="lazy"><img class="mana-icon" src="assets/images/mana/green.png" width="26" height="26" alt="green mana" loading="lazy"></span>
+      <span class="eyebrow small">SECTION 21 &middot; <span class="guild-name">WUBRG</span></span>
+    </div>
+    <h2 class="part-title">Index</h2>
+  </summary>
+  <div class="section-body">
+    <ul>
+<li><strong>AGENTS.md / other frontier-LLM tools (Codex, etc.)</strong> — Part 14</li>
+<li><strong>AI opponent (in-game)</strong> — Part 2</li>
+<li><strong>Antivirus blocking installs</strong> — Part 20</li>
+<li><strong>API</strong> — Part 1, Part 3</li>
+<li><strong>Archidekt</strong> — Part 3</li>
+<li><strong>Branch</strong> — Part 1, Part 15, Part 19</li>
+<li><strong>Claude Code skill</strong> — Part 1, Part 17, Part 18</li>
+<li><strong>Clone</strong> — Part 1, Part 15</li>
+<li><strong>Command Prompt vs. Git Bash vs. PowerShell vs. Mac Terminal</strong> — Part 1</li>
+<li><strong>Commit</strong> — Part 1, Part 19</li>
+<li><strong>Contributing rules ("no slop PRs")</strong> — Part 4</li>
+<li><strong>Discord channels (#dev, #showcase)</strong> — Part 4, Part 8</li>
+<li><strong>Docker</strong> — Part 13</li>
+<li><strong>EDHPlay</strong> — Part 3</li>
+<li><strong>EDHREC</strong> — Part 3</li>
+<li><strong>Environment Variables / PATH</strong> — Part 1, Part 20</li>
+<li><strong>Filename too long errors</strong> — Part 20</li>
+<li><strong>Fork</strong> — Part 1, Part 15</li>
+<li><strong>Forge (MTG simulator)</strong> — Part 3</li>
+<li><strong>Free-for-All Multiplayer (in-game)</strong> — Part 2</li>
+<li><strong>Git installation</strong> — Part 9</li>
+<li><strong>GitHub account creation</strong> — Part 6</li>
+<li><strong>IDE (IntelliJ, VS Code)</strong> — Part 15</li>
+<li><strong>Java / JDK installation</strong> — Part 10</li>
+<li><strong>Java shows wrong version (fix)</strong> — Part 20</li>
+<li><strong>License (MIT)</strong> — Part 4</li>
+<li><strong>Mac equivalents for Windows-only steps</strong> — Part 1, Part 5, Parts 9–12, Part 20</li>
+<li><strong>ManaBox</strong> — Part 3</li>
+<li><strong>ManaPool</strong> — Part 3</li>
+<li><strong>Merge</strong> — Part 1</li>
+<li><strong><code>mise</code> (version manager)</strong> — Part 9</li>
+<li><strong>Moxfield</strong> — Part 3</li>
+<li><strong>MTGO / MTG Arena</strong> — Part 3</li>
+<li><strong>Node.js installation</strong> — Part 11</li>
+<li><strong>npm "not recognized" (fix)</strong> — Part 20</li>
+<li><strong>Port already in use (fix)</strong> — Part 20</li>
+<li><strong>Prompting Claude Code effectively</strong> — Part 17</li>
+<li><strong>Pull Request</strong> — Part 1, Part 4, Part 19</li>
+<li><strong>Push</strong> — Part 1, Part 19</li>
+<li><strong>Rules Engine (concept)</strong> — Part 2</li>
+<li><strong>Scryfall</strong> — Part 3</li>
+<li><strong>Testing a card manually (why it's required)</strong> — Part 4, Part 18</li>
+<li><strong><code>just</code> command runner, install</strong> — Part 12</li>
+<li><strong>XMage</strong> — Part 3</li>
+</ul>
+    <button class="complete-toggle" aria-pressed="false" type="button">Mark complete</button>
+  </div>
+</details>
+
+  <div class="legal-footer">
+    <div class="credit">Created by Wingedsheep. Guide by The 504.</div>
+    <div class="divider">&diams;</div>
+    <p>Fan-made project. Not affiliated with, endorsed, or sponsored by Wizards of the Coast.</p>
+    <p>Magic: The Gathering is &copy; Wizards of the Coast LLC.</p>
+    <p>The Argentum Engine project is released under the MIT License.</p>
+  </div>
+</main>
+<script src="assets/js/app.js"></script>
+</body>
+</html>

@@ -13,10 +13,37 @@ class DiscardAndDrawContinuationResumer(
     private val services: com.wingedsheep.engine.core.EngineServices
 ) : ContinuationResumerModule {
 
+    private val cycleCardHandler:
+        com.wingedsheep.engine.handlers.actions.ability.CycleCardHandler by lazy {
+            com.wingedsheep.engine.handlers.actions.ability.CycleCardHandler.create(services)
+        }
+
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(HandSizeDiscardContinuation::class, ::resumeHandSizeDiscard),
-        resumer(EachPlayerDiscardsOrLoseLifeContinuation::class, ::resumeEachPlayerDiscardsOrLoseLife)
+        resumer(EachPlayerDiscardsOrLoseLifeContinuation::class, ::resumeEachPlayerDiscardsOrLoseLife),
+        resumer(CycleCardChooseXContinuation::class, ::resumeCycleCardChooseX)
     )
+
+    /**
+     * Resume a cycling action once the player has announced X for an `{X}` cycling cost
+     * (CR 107.3a) — Webstrike Elite's "Cycling {X}{G}{G}". Re-enter the handler with X bound; the
+     * cost is then paid for that amount and the cycle proceeds normally. No follow-up decision —
+     * paying the mana is automatic.
+     */
+    fun resumeCycleCardChooseX(
+        state: GameState,
+        continuation: CycleCardChooseXContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number response for cycling X choice")
+        }
+        val chosenX = response.number.coerceAtLeast(0)
+        val result = cycleCardHandler.execute(state, continuation.action.copy(xValue = chosenX))
+        return if (result.isPaused || result.error != null) result
+        else checkForMore(result.newState, result.events)
+    }
 
     fun resumeHandSizeDiscard(
         state: GameState,

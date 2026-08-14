@@ -66,7 +66,7 @@ val BreechesEagerPillager = card("Breeches, Eager Pillager") {
         effect = ModalEffect.chooseOneNotYetChosenThisTurn(
             // • Create a Treasure token.
             Mode.noTarget(
-                Effects.CreateTreasure(1, imageUri = LciTokenArt.TREASURE),
+                Effects.CreateTreasure(1),
                 "Create a Treasure token",
             ),
             // • Target creature can't block this turn.

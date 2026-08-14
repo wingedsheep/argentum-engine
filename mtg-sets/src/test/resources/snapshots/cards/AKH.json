@@ -249,3 +249,63 @@
         "GREEN"
     ]
 }
+
+// Vizier of the Menagerie
+{
+    "name": "Vizier of the Menagerie",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Snake Cleric",
+    "oracleText": "You may look at the top card of your library any time.\nYou may cast creature spells from the top of your library.\nYou can spend mana of any type to cast creature spells.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            "LookAtTopOfLibrary",
+            {
+                "type": "CastSpellTypesFromTopOfLibrary",
+                "filter": "creature"
+            },
+            {
+                "type": "SpendAnyManaTypeForSpells",
+                "filter": "creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "MYTHIC",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/a/ca204351-7a7e-4e4b-8c2b-f90fa0f9d724.jpg?1783936465",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "Vizier of the Menagerie lets you look at the top card of your library whenever you want (with one restriction—see below), even if you don't have priority. This action doesn't use the stack. Knowing what that card is becomes part of the information you have access to, just like you can look at the cards in your hand."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "If the top card of your library changes while you're casting a spell, playing a land, or activating an ability, you can't look at the new top card until you finish doing so. This means that if you cast the top card of your library, you can't look at the next one until you're done paying for that spell."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "Normally, Vizier of the Menagerie allows you to cast the top card of your library if it's a creature card, it's your main phase, and the stack is empty. If that creature card has flash, you'll be able to cast it any time you could cast an instant, even on an opponent's turn."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "You may spend mana as though it were mana of any type to cast any creature spell, not just creature spells that you cast from the top of your library."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "You'll still pay all costs for that spell, including additional costs. You may also pay alternative costs such as emerge or that of As Foretold."
+            },
+            {
+                "date": "2017-04-18",
+                "text": "The top card of your library isn't in your hand, so you can't cycle it, discard it, or activate any of its activated abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

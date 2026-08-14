@@ -48,7 +48,7 @@ which passes both (`SPEC_deckbuild.md`).
 `oX` scores with `aX` (`SPEC_scoring.md` §5) and attaches a one-line `summary` to the argmax only:
 - if exactly 2 committed colors and the pick is on-color → `"Best on-color card available (deck: XX, rating R)."`
 - else → `"Highest-rated card in pack (rating R); colors still open."`
-No reason layer beyond that. The full §3 prose only runs on the `jm` path (FDN/SOS/SOSSPG/TMT).
+No reason layer beyond that. The full §3 prose only runs on the `jm` path (the tagged sets).
 
 ---
 
@@ -148,7 +148,7 @@ curve / mana / hate / default. (Late adds the hate-draft family that early/mid o
 - **RNG**: `h(arr) = arr[floor(random()*arr.length)]` is the only randomness in the whole system and it
   only chooses wording. For reproducible hints, seed it; for parity tests, ignore `summary` and compare
   `total`/`rawRating` only.
-- **Fallback vs full**: empty `arch` → `oX` (one-line summary, no §3). Only the 4 tagged sets reach the
+- **Fallback vs full**: empty `arch` → `oX` (one-line summary, no §3). Only the tagged sets reach the
   full reason tree. Don't block the port on §3 for untagged sets — they never use it.
 - **Reason strings are load-bearing for `dominantReason`**: the classifier matches substrings of the
   reasons emitted by `jm`. If you reword `jm`'s reason strings in the port, update `dominantReason`'s

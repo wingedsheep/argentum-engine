@@ -13,7 +13,7 @@ val RoboticsMastery = card("Robotics Mastery") {
     manaCost = "{4}{U}"
     colorIdentity = "U"
     typeLine = "Enchantment — Aura"
-    oracleText = "Flash\nEnchant creature\nEnchanted creature gets +2/+2.\nWhen Robotics Mastery enters the battlefield, create two 1/1 colorless Robot artifact creature tokens with flying."
+    oracleText = "Flash\nEnchant creature\nWhen this Aura enters, create two 1/1 colorless Robot artifact creature tokens with flying.\nEnchanted creature gets +2/+2."
 
     keywords(Keyword.FLASH)
 
@@ -40,6 +40,7 @@ val RoboticsMastery = card("Robotics Mastery") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "41"
         artist = "Domenico Cava"
+        flavorText = "Mendel Stromm didn't just seek revenge. He engineered it."
         imageUri = "https://cards.scryfall.io/normal/front/d/0/d0e92939-6d86-44b4-8a43-1963e97a2bb3.jpg?1757377005"
     }
 }

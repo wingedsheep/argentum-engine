@@ -111,6 +111,31 @@ class ScenarioControllerTest(
         names shouldContain "Grizzly Bears"
     }
 
+    test("a scenario session resolves set-scoped token art") {
+        // The scenario page is where a card gets eyeballed, so it is the worst place to render the
+        // wrong token: it shipped passing no TokenArtRegistry, and every token it minted quietly
+        // fell through to the engine-wide generic art for its creature type. Nothing failed — the
+        // picture was just wrong. Asserted on both session-creating endpoints below.
+        val response = post(
+            """{ "player1": { "lifeTotal": 20 }, "player2": { "lifeTotal": 20 }, "mode": "SELF" }"""
+        )
+        response.statusCode() shouldBe 200
+        val sessionId = json.parseToJsonElement(response.body()).jsonObject["sessionId"]!!.jsonPrimitive.content
+
+        gameRepository.findById(sessionId).shouldNotBeNull().hasTokenArtForTesting() shouldBe true
+    }
+
+    test("a from-state session resolves set-scoped token art too") {
+        val build = scenarioBuilderService.buildScenario(
+            ScenarioRequest(player1 = PlayerConfig(lifeTotal = 20), player2 = PlayerConfig(lifeTotal = 20))
+        )
+        val response = postFromState(persistenceJson.encodeToString(GameState.serializer(), build.state))
+        response.statusCode() shouldBe 200
+        val sessionId = json.parseToJsonElement(response.body()).jsonObject["sessionId"]!!.jsonPrimitive.content
+
+        gameRepository.findById(sessionId).shouldNotBeNull().hasTokenArtForTesting() shouldBe true
+    }
+
     test("unknown card name is rejected with a 400 and a clear message") {
         val response = post(
             """

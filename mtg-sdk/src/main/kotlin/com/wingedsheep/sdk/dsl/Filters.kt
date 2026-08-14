@@ -40,6 +40,10 @@ object Filters {
      */
     val Creature: GameObjectFilter = GameObjectFilter.Creature
 
+    /** Creature card with an empty Oracle rules-text box. */
+    val CreatureWithNoAbilities: GameObjectFilter =
+        GameObjectFilter.Creature.withCardPredicate(CardPredicate.HasNoAbilities)
+
     /**
      * Land card.
      */
@@ -104,6 +108,26 @@ object Filters {
      * Nonland permanent card.
      */
     val NonlandPermanent: GameObjectFilter = GameObjectFilter.NonlandPermanent
+
+    /**
+     * One filter per **permanent type** (CR 110.4), in the order the rules list them — the
+     * canonical expansion of "of each permanent type" (Liliana, Dreadhorde General's −9).
+     *
+     * CR 110.4 names six permanent types; battle is omitted because the engine has no `Battle`
+     * card type yet (see [com.wingedsheep.sdk.core.CardType]). When battles land, add the filter
+     * here and every card reading "each permanent type" picks it up.
+     *
+     * A permanent with several types satisfies each of them, and one that has lost all its
+     * permanent types (CR 110.4c) satisfies none — both fall out of matching each filter
+     * independently.
+     */
+    val PermanentTypes: List<GameObjectFilter> = listOf(
+        GameObjectFilter.Artifact,
+        GameObjectFilter.Creature,
+        GameObjectFilter.Enchantment,
+        GameObjectFilter.Land,
+        GameObjectFilter.Planeswalker
+    )
 
     /**
      * Card with a specific subtype.

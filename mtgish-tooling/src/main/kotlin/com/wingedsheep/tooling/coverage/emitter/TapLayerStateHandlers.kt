@@ -432,10 +432,14 @@ internal fun counterTypeDsl(counterNode: JsonElement?): String? {
                 else -> null
             }
         }
-        // Keyword counters (CR 122.1c) that grant their keyword via the engine's keyword-counter
+        // Keyword counters (CR 122.1b) that grant their keyword via the engine's keyword-counter
         // projection. Only the ones we can name render; anything else scaffolds.
         "FlyingCounter" -> "Counters.FLYING"
-        // Deathtouch counter (CR 122.1c): grants the DEATHTOUCH keyword via the StateProjector's
+        // Haste / menace counters (CR 122.1b): the last two keyword counters to be wired into
+        // StateProjector.KEYWORD_COUNTER_MAP. Adding one is a plain AddCounters (Super-Adaptoid).
+        "HasteCounter" -> "Counters.HASTE"
+        "MenaceCounter" -> "Counters.MENACE"
+        // Deathtouch counter (CR 122.1b): grants the DEATHTOUCH keyword via the StateProjector's
         // keyword-counter projection. Adding one is a plain AddCounters(Counters.DEATHTOUCH, …)
         // (Vraska Joins Up: "put a deathtouch counter on each creature you control").
         "DeathtouchCounter" -> "Counters.DEATHTOUCH"
@@ -443,6 +447,12 @@ internal fun counterTypeDsl(counterNode: JsonElement?): String? {
         // become untapped, instead remove a stun counter from it"), engine-wired via `untapOrConsumeStun`.
         // Adding one is a plain AddCounters(Counters.STUN, …) (Rapier Wit, Fractal Mascot).
         "StunCounter" -> "Counters.STUN"
+        // Shield counter (CR 122.1c): a built-in replacement + prevention pair ("if this permanent
+        // would be destroyed as the result of an effect, instead remove a shield counter"; "if damage
+        // would be dealt to this permanent, prevent it and remove a shield counter"), engine-wired via
+        // `consumeShieldCounter`. Adding one is a plain AddCounters(Counters.SHIELD, …) (Boon of
+        // Safety, Brokers Veteran, Captain America, Super-Soldier).
+        "ShieldCounter" -> "Counters.SHIELD"
         "FinalityCounter" -> "Counters.FINALITY"
         // Loot counter (OTJ — Bandit's Haul): a passive storage counter with no inherent rule; the
         // card's own abilities accumulate it and spend it. Adding one is a plain AddCounters.
@@ -822,7 +832,7 @@ private fun EmitCtx.adjustForEachCount(gn: JsonElement?): Dsl? {
     val subtype = gnObj.firstArgWordTagged("IsCreatureType") ?: return null
     val blob = compact(gnObj)
     if ("IsAttacking" !in blob) return null
-    val filter = Lit("GameObjectFilter.Creature").dot("withSubtype", arg("\"$subtype\"")).dot("attacking")
+    val filter = Lit("GameObjectFilter.Creature").dot("withSubtype", arg(subtypeArg(subtype))).dot("attacking")
     var count: Dsl = call("DynamicAmount.AggregateBattlefield", arg("Player.You"), arg(filter))
     if ("\"Other\"" in blob) count = call("DynamicAmount.Subtract", arg(count), arg(call("DynamicAmount.Fixed", arg("1"))))
     return count

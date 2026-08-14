@@ -36,11 +36,24 @@ object CardLoader {
      *
      * Assigns fresh AbilityIds after deserialization.
      */
-    fun fromJson(jsonString: String): CardDefinition {
+    fun fromJson(jsonString: String): CardDefinition = decode(jsonString).withGeneratedIds()
+
+    /**
+     * Deserialize a CardDefinition **keeping the `AbilityId`s written in the JSON**.
+     *
+     * [fromJson] mints fresh ids because authored card JSON isn't expected to carry any. Archived
+     * JSON is the opposite case: it was produced by [CardExporter.exportToCompactJson] from an
+     * already-compiled definition, and the ids in it are referenced from outside the card — a
+     * replay's recorded [com.wingedsheep.sdk.scripting.AbilityIdentity] yields name an ability by
+     * id, so re-minting would silently break the link. Only use this for round-tripping a
+     * previously exported definition, never for hand-authored card JSON.
+     */
+    fun fromJsonPreservingIds(jsonString: String): CardDefinition = decode(jsonString)
+
+    private fun decode(jsonString: String): CardDefinition {
         val element = CardSerialization.json.parseToJsonElement(jsonString)
         val expanded = CompactJsonTransformer.expand(element)
-        val card = CardSerialization.json.decodeFromJsonElement(CardDefinition.serializer(), expanded)
-        return card.withGeneratedIds()
+        return CardSerialization.json.decodeFromJsonElement(CardDefinition.serializer(), expanded)
     }
 
     /**

@@ -3,7 +3,27 @@
 CPU profile of the rules engine's hot path (legal-action enumeration + action processing),
 with a prioritized plan to cut total CPU. Generated May 2026 from a sampled profiling run.
 
-**Status:** Analysis complete, no fixes applied yet. Items below are ordered by impact ÷ risk.
+**Status:** **Steps 1–4 shipped** (Step 4 on 2026-07-28). **Step 5 dropped** — its profile gate was
+checked and does not open. Every item in this document is now closed; the next perf item is
+`PredicateEvaluator.matchesCardPredicate`, the top leaf in the post-Step-4 profile at **20.4%
+self**, which needs its own analysis rather than a line in this one.
+Items below are ordered by impact ÷ risk; each carries its own status marker.
+
+> ⚠️ **The profile and the May 2026 baseline below predate Steps 1–3.** The measured hotspot table
+> and the `~404 actions/sec/thread` figure describe the engine *before* the component-keying and
+> `getBattlefield()` fixes landed, so percentages for the fixed items are historical.
+>
+> **The random-action baseline has now been re-run** (2026-07-28, Step 4's own before/after) — see
+> ["Baseline"](#baseline) below and
+> [`docs/ai/baseline-metrics.md`](../docs/ai/baseline-metrics.md#phase-5a--the-on-battlefield-scans).
+> Read the 404 figure as *not comparable* rather than as a target: the BLB card pool has roughly
+> doubled since May, and `GameState.turnNumber` now counts player turns rather than rounds, so the
+> same game reports ~2× the turns. Only the same-session before/after pair says anything.
+>
+> Phase 0 of [`engine-ai-improvement.md`](engine-ai-improvement.md) measured
+> `ActionProcessor.process` at **~3,400 calls/sec/thread** on the AI-driven workload. Different
+> action mix, not directly comparable either — but it is why **Step 4 was never blocking the AI's
+> rollout evaluator**, and why it shipped on its own merits rather than as a prerequisite.
 
 ## Methodology
 
@@ -126,7 +146,9 @@ logic; ignore it for engine optimization.
 Ordered by impact ÷ risk. Steps 1 and 3 are independent, individually shippable, and together
 should be the bulk of the win.
 
-### Step 1 — Remove reflection from component keys *(quick · low risk · ~5–8%)*
+### Step 1 — Remove reflection from component keys ✅ **DONE** *(quick · low risk · ~5–8%)*
+
+> Shipped, and superseded by Step 2 — `ComponentContainer` no longer touches `qualifiedName` at all.
 
 Replace `T::class.qualifiedName` → `T::class.java.name` in all six sites in `ComponentContainer`
 (plus the two raw `::class.qualifiedName` lookups in `DamageUtils` / elsewhere). `Class.getName()`
@@ -137,7 +159,12 @@ serialization shape is **unchanged**. Pure mechanical swap; kills the
 - **Risk:** very low. `qualifiedName` and `java.name` differ only for nested classes (`.` vs `$`),
   and the key is internal — never persisted as a public contract. Verify with `just test-rules`.
 
-### Step 2 — Key components by `Class<*>` instead of `String` *(medium · ~8–12% on top of Step 1)*
+### Step 2 — Key components by `Class<*>` instead of `String` ✅ **DONE** *(medium · ~8–12% on top of Step 1)*
+
+> Shipped. `ComponentContainer.kt:23` is `Map<Class<*>, Component>`; `get`/`has`/`with`/`without`
+> (`:29`, `:45`, `:52`, `:59`) key on `T::class.java`. The required custom serializer exists —
+> `@Serializable(with = ComponentContainerSerializer::class)` (`:21`), `ComponentContainerSerializer`
+> (`:104`) — so the JSON wire format still uses class names and round-trips unchanged.
 
 Change the internal map to `Map<Class<*>, Component>` (`T::class.java` as key). `Class` uses
 identity hashCode — no string hashing at all — eliminating most of `HashMap.getNode` and the
@@ -149,7 +176,14 @@ load (no reflection).
 - **Risk:** medium — touches serialization. Gate behind the serialization tests; confirm a
   save/load round-trip of a live `GameState`.
 
-### Step 3 — Memoize `getBattlefield()` per `GameState` *(quick · low risk · ~10–15%)*
+### Step 3 — Memoize `getBattlefield()` per `GameState` ✅ **DONE** *(quick · low risk · ~10–15%)*
+
+> Shipped. `GameState.kt:808` returns a `by lazy cachedBattlefield` built in a single pass with one
+> list allocation, replacing the `filterKeys` + `flatten` + `filter` chain. A body `val`, so it is
+> not serialized. `allBattlefieldEntities()` (phased-out-inclusive) is unchanged as planned.
+>
+> **Note for Step 4:** this removed the *allocation* cost of the repeated battlefield scans but not
+> the *iteration*. Step 4 is the remaining half, and it is now the larger one.
 
 Make `getBattlefield()` a `by lazy val` mirroring `projectedState` — safe because `GameState` is
 immutable, so the battlefield set is constant for the lifetime of a state instance. Precompute the
@@ -159,18 +193,54 @@ phased-out filter once rather than a reflective `has<PhasedOutComponent>()` per 
   construction — which the immutability invariant already guarantees. Keep `allBattlefieldEntities()`
   (the phased-out-inclusive variant) as-is.
 
-### Step 4 — Hoist battlefield scans in ward / trigger / mana detection *(medium · ~5–8%)*
+### Step 4 — Hoist battlefield scans in ward / trigger / mana detection ✅ **DONE 2026-07-28** *(medium)*
 
-Compute the battlefield list **once** per `detectTriggers` / `findAvailableManaSources` call and
-pass it down to the inner loops instead of re-calling `getBattlefield()`. Fix the O(n²)
-`isWardSuppressed` by precomputing the set of ward-suppressors once per detection pass.
+> Shipped as Phase 5a of [`engine-ai-improvement.md`](engine-ai-improvement.md). Two new index
+> types own the walk, and the nine per-entity scans that used to hunt for these statics are gone:
+>
+> - `rules-engine/.../mechanics/mana/ManaStaticsIndex.kt` — built once per
+>   `findAvailableManaSources` / `calculateExplicitActivationBonusMana` call, and once per
+>   enumeration pass on `EnumerationContext.manaStatics`. It replaces **six** per-source battlefield
+>   walks: `getStaticGrantedManaAbilities`, `findEnchantedLandManaColorOverride` (twice — the solver
+>   and `ManaAbilityEnumerator` each carried a copy), `landMatchesManaColorReplacement`,
+>   `augmentWithAuraBonusMana`, `augmentWithSourceTapBonusMana`.
+> - `rules-engine/.../event/BattlefieldStaticsIndex.kt` — built once per `detectTriggers` pass and
+>   threaded into `getTriggeredAbilities` / `getTriggeredAbilitiesWithProviders`. It replaces the
+>   battlefield-scope `GrantWard` scan, the `isWardSuppressed` scan, and the two attachment scans in
+>   `getWardTriggeredAbilities` / `getAttachedGrantedTriggeredAbilities`.
+>
+> Both index the *rare* statics they are hunting for, so an ordinary board produces the `EMPTY`
+> instance and the per-entity cost collapses to a lookup that finds nothing. Each bucket reproduces
+> its original loop's collection rules exactly — including where those rules disagreed with each
+> other about face-down permanents and about `staticAbilities` vs `effectiveStaticAbilities` — so
+> this is a hoist, not a rules change.
+>
+> **Measured:** the fresh random-action baseline and the post-change numbers are in
+> [`docs/ai/baseline-metrics.md`](../docs/ai/baseline-metrics.md#phase-5a--the-on-battlefield-scans).
+> Gates: `just test-rules`, `:game-server:test`, `:ai:test` green; six new unit tests pin what each
+> index bucket collects (`ManaStaticsIndexTest`, `BattlefieldStaticsIndexTest`).
 
-- Largely subsumed by Step 3's memoization for the allocation cost, but eliminating the redundant
-  *iteration* (and the quadratic suppressor check) is a separate, additive win on big boards.
-- **Risk:** medium — refactors signatures in `TriggerAbilityResolver` / `ManaSolver`; behavior
-  must be identical. Cover with existing ward / trigger scenario tests.
+**The original plan, kept for the record:** compute the battlefield list once per `detectTriggers` /
+`findAvailableManaSources` call and pass it down instead of re-calling `getBattlefield()`; fix the
+O(n²) `isWardSuppressed` by precomputing the set of ward-suppressors once per detection pass.
 
-### Step 5 (optional) — Reduce component-map copy churn *(only if still hot)*
+What changed in execution: hoisting the *list* would have removed only the allocation, which Step 3
+had already removed. The cost that remained was the **iteration**, so the fix had to hoist the
+*result of the scan* — hence an index per concern rather than a shared battlefield list. And once
+one scan in each file was indexed, leaving its four siblings scanning would have left the O(n²)
+in place, so all of them moved.
+
+### Step 5 (optional) — Reduce component-map copy churn ❌ **DROPPED 2026-07-28** *(gate checked, does not open)*
+
+> The gate is "only if `Arena::grow` is still prominent after 1–4". It is not: in the post-Step-4
+> profile `Arena::grow` is **1.37%** self and `posix_madvise` ~0.7% — about **2%** of the engine,
+> against the 4–6 days plus serializer work [`engine-ai-improvement.md`](engine-ai-improvement.md)
+> Phase 5c scopes. The mechanism below is still correctly described, and the
+> `kotlinx.collections.immutable` migration would still work; there is just no longer a number
+> behind it. Revisit only if a fresh profile puts allocation back near the top.
+>
+> **What is at the top instead:** `PredicateEvaluator.matchesCardPredicate` at **20.4% self**, more
+> than 3× the next entry. That is the next perf item on this plan.
 
 If `Arena::grow` is still prominent after 1–4, reduce the `map + (k to v)` / `map - k` rebuild
 cost in `with` / `without` for hot single-component updates (e.g. a small persistent map or a
@@ -184,14 +254,41 @@ After **each** step:
 2. `just benchmark-random 200 BLB` — compare wall time / throughput against the baseline below.
 3. Re-profile (commands above) — confirm the targeted leaf shrank and nothing regressed.
 
-### Baseline (pre-optimization, for comparison)
+### Baseline
 
-`just benchmark-random 200 BLB`, 8 threads:
+`just benchmark-random 200 BLB`, 8 threads. **Compare against a run from the same session on the
+same machine** — see the warning below.
+
+**Current (2026-07-28, post-Step-4):**
 
 - Completed 200 / 200, 0 crashes
+- Turns avg 54.8, actions avg 1,528 / game
+- Engine CPU 832 s total — Enumerate 688 s (83%) / Process 144 s (17%)
+- Wall time ~108 s; ~1.9 games/sec wall-clock
+
+**Immediately before Step 4 (2026-07-28, same session):** engine CPU 1,051 s — Enumerate 764 s
+(73%) / Process 287 s (27%); wall ~133 s. So Step 4 is **−21% engine CPU**, with `process` nearly
+halving. Full three-point series, including the intermediate version that regressed 10%:
+[`docs/ai/baseline-metrics.md`](../docs/ai/baseline-metrics.md#phase-5a--the-on-battlefield-scans).
+
+**Historical (May 2026, pre-Steps-1–3):**
+
 - Turns avg 26.5, actions avg 1,569 / game
 - Throughput ~404 actions/sec per thread
 - Wall time ~98 s; ~2.0 games/sec wall-clock
 - Time split: Enumerate ~57% / Process ~43%
 
-Conservatively, **Steps 1 + 3 alone** should cut total CPU by **~20–30%** at low risk. Start there.
+> ⚠️ **The May figure is not a target and never was comparable.** `GameState.turnNumber` counts
+> player turns rather than rounds since the multiplayer fix, so the same game now reports ~2× the
+> turns; and the implemented BLB pool has roughly doubled, so sealed decks are richer and each
+> priority window enumerates more. Two runs three months apart describe two different workloads.
+> Per-game CPU on this box also spans 1 s to 25 s depending on what else is running, so a ±5%
+> difference between two runs means nothing. **Use the profile to say why a number moved.**
+
+### Related: AI-workload baseline (July 2026)
+
+[`docs/ai/baseline-metrics.md`](../docs/ai/baseline-metrics.md) measures the same engine under real
+AI games rather than random actions: `ActionProcessor.process` ~3,400/sec/thread, `StateProjector.project`
+~47 µs cold (11% of one `process()`), and 6.36 legal actions per priority window. That confirms the
+"leave projection alone" call above from a second angle — a perfect cross-state projection cache
+caps out near 12%.

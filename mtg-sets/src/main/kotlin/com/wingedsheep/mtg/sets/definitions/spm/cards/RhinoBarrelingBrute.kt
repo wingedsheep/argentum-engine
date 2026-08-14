@@ -14,7 +14,7 @@ val RhinoBarrelingBrute = card("Rhino, Barreling Brute") {
     typeLine = "Legendary Creature — Human Villain"
     power = 6
     toughness = 7
-    oracleText = "Vigilance, trample, haste\nWhenever Rhino, Barreling Brute attacks, if you've cast a spell with mana value 4 or greater this turn, draw a card."
+    oracleText = "Vigilance, trample, haste\nWhenever Rhino attacks, if you've cast a spell with mana value 4 or greater this turn, draw a card."
 
     keywords(Keyword.VIGILANCE, Keyword.TRAMPLE, Keyword.HASTE)
 
@@ -28,6 +28,7 @@ val RhinoBarrelingBrute = card("Rhino, Barreling Brute") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "140"
         artist = "Filipe Pagliuso"
+        flavorText = "\"I'm Rhino. I knock things down. That's what I do. That's who I am.\"\n—Rhino, Aleksei Sytsevich"
         imageUri = "https://cards.scryfall.io/normal/front/4/b/4b8ac400-1e98-49fc-94be-00386d15f2ae.jpg?1757377784"
     }
 }

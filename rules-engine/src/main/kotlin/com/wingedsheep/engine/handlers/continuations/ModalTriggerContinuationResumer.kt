@@ -65,11 +65,16 @@ class ModalTriggerContinuationResumer(
                 ability = continuation.ability,
                 outerTargets = continuation.outerTargets,
                 outerTargetRequirements = continuation.outerTargetRequirements,
+                // `chooseCount` / `minChooseCount` are the already-resolved effective counts, so a
+                // "choose up to X" cap is not re-evaluated between picks; `dynamicChooseCount` is
+                // deliberately left null here for that reason.
                 modal = ModalEffect(
                     modes = continuation.modes,
                     chooseCount = continuation.chooseCount,
                     minChooseCount = continuation.minChooseCount,
-                    allowRepeat = continuation.allowRepeat
+                    allowRepeat = continuation.allowRepeat,
+                    excludePreviouslyChosenModes = continuation.recordChosenModesOnSource,
+                    excludeModesChosenThisTurn = continuation.recordChosenModesThisTurn
                 ),
                 selectedModeIndices = newSelected,
                 availableIndices = nextAvailable,
@@ -86,7 +91,9 @@ class ModalTriggerContinuationResumer(
             chosenModeIndices = newSelected,
             resolvedModeTargets = emptyList(),
             currentOrdinal = 0,
-            causedByAttack = continuation.causedByAttack
+            causedByAttack = continuation.causedByAttack,
+            recordChosenModesOnSource = continuation.recordChosenModesOnSource,
+            recordChosenModesThisTurn = continuation.recordChosenModesThisTurn
         ).thenCheckForMore(checkForMore)
     }
 
@@ -114,7 +121,9 @@ class ModalTriggerContinuationResumer(
             chosenModeIndices = continuation.chosenModeIndices,
             resolvedModeTargets = continuation.resolvedModeTargets + listOf(chosenTargets),
             currentOrdinal = continuation.currentOrdinal + 1,
-            causedByAttack = continuation.causedByAttack
+            causedByAttack = continuation.causedByAttack,
+            recordChosenModesOnSource = continuation.recordChosenModesOnSource,
+            recordChosenModesThisTurn = continuation.recordChosenModesThisTurn
         ).thenCheckForMore(checkForMore)
     }
 

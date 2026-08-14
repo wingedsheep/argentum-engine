@@ -339,11 +339,24 @@ ZoneChange/SpellCast/Attack/DealsDamage variants:
 
 ### Costs (`scripting/AdditionalCost.kt`, `scripting/costs/PayCost.kt`)
 
-- **`AdditionalCost.BlightOrPay`** / **`BeholdOrPay`** → wrap any cost with
-  `OrPayMana(inner: AdditionalCost, manaCost: String)`.
+- ~~**`AdditionalCost.BeholdOrPay`** → wrap any cost with
+  `OrPayMana(inner: AdditionalCost, manaCost: String)`.~~ **Done** — landed as
+  `AdditionalCost.OrPay(cost: AdditionalCost, alternativeManaCost: String)`, which also
+  absorbed the `SacrificeOrPay` / `DiscardOrPay` / `ExileFromGraveyardOrPay` types.
+  `BlightOrPay` is the one holdout: there is no standalone blight `AdditionalCost` for
+  `OrPay` to wrap, so collapsing it means introducing one first.
 - **Strategic:** `AdditionalCost` (cast-time) and `PayCost` (activation-time) share
   concepts but neither references the other. Eventually unify under a single `Cost`
   sealed interface — flag, not an immediate change.
+- **Watch: the "pick a cost to pay" picker now has two copies.**
+  `CostPaymentService.choicePrompt` (for `PayCost.Choice`) and
+  `WardCounterEffectExecutor.handleChoiceCost` (for `WardCost.Choice`, landed with Titania,
+  Rugged Rumbler) are structurally the same ~35 lines: filter to the options the payer can pay,
+  label them plus a trailing decline, raise a `ChooseOptionDecision`, and stash the *reduced*
+  list on the continuation so the chosen index maps positionally. Two copies is defensible —
+  the vocabularies are separate sealed hierarchies with separate continuation families, and
+  neither module can call the other. A **third** cost vocabulary growing a `Choice` is the
+  trigger to extract the pattern instead of copying it a third time.
 
 ### DSL pattern files (`dsl/*Patterns.kt`)
 

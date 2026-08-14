@@ -24,7 +24,7 @@ class LegendRuleTest : FunSpec({
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
         driver.initMirrorMatch(
-            deck = Deck.of("Mountain" to 20, "Ragavan, Nimble Pilferer" to 4)
+            deck = Deck.of("Mountain" to 20, "Test Hasty Prospector" to 4)
         )
 
         val p1 = driver.player1
@@ -33,11 +33,11 @@ class LegendRuleTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
         // Put first Ragavan directly on the battlefield
-        val firstRagavan = driver.putCreatureOnBattlefield(p1, "Ragavan, Nimble Pilferer")
+        val firstRagavan = driver.putCreatureOnBattlefield(p1, "Test Hasty Prospector")
 
         // Cast second Ragavan through the normal spell flow (SBAs checked after resolution)
         driver.giveMana(p1, Color.RED, 1)
-        val ragavanInHand = driver.putCardInHand(p1, "Ragavan, Nimble Pilferer")
+        val ragavanInHand = driver.putCardInHand(p1, "Test Hasty Prospector")
         driver.castSpell(p1, ragavanInHand)
 
         // Resolve the spell - SBAs are checked after resolution, triggering legend rule
@@ -45,7 +45,7 @@ class LegendRuleTest : FunSpec({
 
         // Get the second Ragavan's entity ID (should be on battlefield now)
         val ragavansOnField = driver.getPermanents(p1).filter {
-            driver.getCardName(it) == "Ragavan, Nimble Pilferer"
+            driver.getCardName(it) == "Test Hasty Prospector"
         }
         ragavansOnField.size shouldBe 2
         val secondRagavan = ragavansOnField.first { it != firstRagavan }
@@ -77,7 +77,7 @@ class LegendRuleTest : FunSpec({
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
         driver.initMirrorMatch(
-            deck = Deck.of("Mountain" to 20, "Ragavan, Nimble Pilferer" to 4)
+            deck = Deck.of("Mountain" to 20, "Test Hasty Prospector" to 4)
         )
 
         val p1 = driver.player1
@@ -85,11 +85,11 @@ class LegendRuleTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
         // Put first Ragavan directly on the battlefield
-        val firstRagavan = driver.putCreatureOnBattlefield(p1, "Ragavan, Nimble Pilferer")
+        val firstRagavan = driver.putCreatureOnBattlefield(p1, "Test Hasty Prospector")
 
         // Cast second Ragavan through normal spell flow
         driver.giveMana(p1, Color.RED, 1)
-        val ragavanInHand = driver.putCardInHand(p1, "Ragavan, Nimble Pilferer")
+        val ragavanInHand = driver.putCardInHand(p1, "Test Hasty Prospector")
         driver.castSpell(p1, ragavanInHand)
         driver.bothPass()
 
@@ -98,11 +98,11 @@ class LegendRuleTest : FunSpec({
 
         // Second Ragavan should be in graveyard
         val graveyardNames = driver.getGraveyardCardNames(p1)
-        graveyardNames.count { it == "Ragavan, Nimble Pilferer" } shouldBe 1
+        graveyardNames.count { it == "Test Hasty Prospector" } shouldBe 1
 
         // Only one Ragavan on battlefield
         val remaining = driver.getPermanents(p1).filter {
-            driver.getCardName(it) == "Ragavan, Nimble Pilferer"
+            driver.getCardName(it) == "Test Hasty Prospector"
         }
         remaining.size shouldBe 1
         remaining.first() shouldBe firstRagavan
@@ -120,7 +120,7 @@ class LegendRuleTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
         // Put two different legendary creatures on the battlefield
-        driver.putCreatureOnBattlefield(p1, "Ragavan, Nimble Pilferer")
+        driver.putCreatureOnBattlefield(p1, "Test Hasty Prospector")
         driver.putCreatureOnBattlefield(p1, "Ghalta, Primal Hunger")
 
         // Both pass - should NOT trigger legend rule (different names)
@@ -134,7 +134,7 @@ class LegendRuleTest : FunSpec({
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all)
         driver.initMirrorMatch(
-            deck = Deck.of("Mountain" to 20, "Ragavan, Nimble Pilferer" to 4)
+            deck = Deck.of("Mountain" to 20, "Test Hasty Prospector" to 4)
         )
 
         val p1 = driver.player1
@@ -143,8 +143,8 @@ class LegendRuleTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
         // Put Ragavan on each player's battlefield
-        driver.putCreatureOnBattlefield(p1, "Ragavan, Nimble Pilferer")
-        driver.putCreatureOnBattlefield(p2, "Ragavan, Nimble Pilferer")
+        driver.putCreatureOnBattlefield(p1, "Test Hasty Prospector")
+        driver.putCreatureOnBattlefield(p2, "Test Hasty Prospector")
 
         // Both pass - should NOT trigger legend rule (different controllers)
         driver.bothPass()

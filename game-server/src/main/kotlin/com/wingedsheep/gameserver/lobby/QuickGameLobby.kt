@@ -21,8 +21,8 @@ import java.util.UUID
 class QuickGameLobby(
     val lobbyId: String = generateLobbyCode(),
     val createdAt: Long = System.currentTimeMillis(),
-    val vsAi: Boolean,
-    /** Set used for "Random" sealed-pool decks. Mutable: the host can change it from the lobby UI. */
+    @Volatile var vsAi: Boolean,
+    /** Legacy lobby-wide fallback set for "Random" decks. New clients choose sets per player. */
     @Volatile var setCode: String?,
     /**
      * If true the lobby is listed by `GET /api/quick-games/public` so other players can find it
@@ -46,11 +46,51 @@ class QuickGameLobby(
     /**
      * When true this is a Two-Headed Giant lobby (CR 810): four seats forming two teams of two
      * (join order 0+1 vs 2+3), played under [com.wingedsheep.sdk.core.Format.TwoHeadedGiant].
-     * Fixed at creation. Human-only (the built-in AI is not team-aware yet — Phase 8).
+     * Fixed at creation. Human-only, because a quick lobby seats at most one AI ([vsAi] is a
+     * boolean, not a count) and 2HG needs three of them to fill the table. Not an AI limitation:
+     * the engine AI plays a team format (`ai/engine/Sides.kt` reads a team's pooled life as one
+     * total), and a Two-Headed Giant *tournament* lobby seats AI teammates and opponents today.
      */
     val twoHeadedGiant: Boolean = false,
+    /**
+     * Which rules this lobby's game runs under — the same Rules axis as
+     * [TournamentLobby.rules]. A quick lobby has no separate control for it, so it is *derived*
+     * from [format] via [com.wingedsheep.sdk.core.GameRules.inferred] whenever the host changes the
+     * format; reporting it on the wire is what lets the client answer "is this Commander?" from one
+     * field on either lobby kind instead of re-deriving it per kind.
+     */
+    @Volatile var rules: com.wingedsheep.sdk.core.GameRules =
+        com.wingedsheep.sdk.core.GameRules.inferred(commanderPackShape = false, deckFormat = format),
 ) {
     val players: MutableList<QuickGameLobbyPlayer> = mutableListOf()
+
+    /** **The** answer to "does this game run Commander rules?" — see [TournamentLobby.usesCommanderRules]. */
+    val usesCommanderRules: Boolean get() = rules.usesCommanders
+
+    /** Why this lobby's Rules and table contradict each other, or null. One statement, shared. */
+    val rulesTableConflict: String? get() = commanderRulesTableConflict(rules, twoHeadedGiant)
+
+    /**
+     * Set the deck-legality restriction and re-derive [rules] from it in the same step, so the two
+     * cannot drift. This lobby kind offers the host no Rules control, so a commander-shaped
+     * [DeckFormat] is the only way it can ask for Commander.
+     */
+    fun applyFormat(newFormat: DeckFormat?) {
+        format = newFormat
+        rules = com.wingedsheep.sdk.core.GameRules.inferred(
+            commanderPackShape = false,
+            deckFormat = newFormat,
+        )
+    }
+
+    /**
+     * What the AI seat plays, when [vsAi]. Host-controlled from the lobby's AI panel and resolved
+     * into a decklist at game start by [com.wingedsheep.gameserver.ai.RandomDeckResolver] — deferred so
+     * that changing [format] re-rolls the AI's deck under the new restriction. Ignored entirely in
+     * a human-only lobby, and overridden by [momirBasic] (every seat plays the fixed 60 basics).
+     */
+    @Volatile
+    var aiDeckSpec: AiDeckSpec = AiDeckSpec.Auto
 
     @Volatile
     var started: Boolean = false
@@ -112,10 +152,12 @@ data class QuickGameLobbyPlayer(
     var deckList: Map<String, Int>? = null,
     var ready: Boolean = false,
     /**
-     * Per-player set code used when [deckList] is empty (Random pool).
-     * null means "any set, server picks one". Each player chooses their own.
+     * Legacy single-set view used when [deckList] is empty (Random pool).
+     * Kept on the wire for older clients; [setCodes] is authoritative.
      */
     var setCode: String? = null,
+    /** All sets used to build a Random deck. Empty means any set. */
+    var setCodes: List<String> = listOfNotNull(setCode),
     /**
      * Designated commander card name for commander-shape formats (Commander / Brawl / Standard
      * Brawl). Null when [deckList] is empty (random pool) or the lobby format isn't commander-

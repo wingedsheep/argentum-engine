@@ -98,6 +98,55 @@ class IrreverentGremlinScenarioTest : ScenarioTestBase() {
                     game.findCardsInGraveyard(1, "Hill Giant").size shouldBe graveyardAfterFirst
                 }
             }
+
+            test("declining does not spend the turn — a later creature still offers the rummage") {
+                // CR 603.2h keys the rider to the rummage, not to the trigger: declining the
+                // first small creature (nothing worth pitching yet) leaves the turn's use intact.
+                // Under the old `oncePerTurn` modelling the second creature never asked.
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Irreverent Gremlin")
+                    .withCardInHand(1, "Grizzly Bears")
+                    .withCardInHand(1, "Llanowar Elves")
+                    .withCardInHand(1, "Hill Giant")    // the one discardable card
+                    .withLandsOnBattlefield(1, "Forest", 4)
+                    .withCardInLibrary(1, "Mountain")
+                    .withCardInLibrary(1, "Plains")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // First small creature: decline the rummage.
+                game.castSpell(1, "Grizzly Bears").error shouldBe null
+                game.resolveStack()
+                withClue("the first creature offers the rummage") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                game.answerYesNo(false)
+                game.resolveStack()
+                withClue("declining discarded nothing") {
+                    game.findCardsInGraveyard(1, "Hill Giant").size shouldBe 0
+                }
+
+                // Second small creature the same turn: the ability triggers again.
+                game.castSpell(1, "Llanowar Elves").error shouldBe null
+                game.resolveStack()
+                withClue("the ability triggers again after a decline") {
+                    game.hasPendingDecision() shouldBe true
+                }
+                game.answerYesNo(true)
+                game.resolveStack()
+                if (game.hasPendingDecision()) {
+                    val hillGiant = game.state.getHand(game.player1Id).first { id ->
+                        game.state.getEntity(id)?.get<CardComponent>()?.name == "Hill Giant"
+                    }
+                    game.selectCards(listOf(hillGiant))
+                    game.resolveStack()
+                }
+                withClue("the accepted second rummage discarded Hill Giant") {
+                    game.findCardsInGraveyard(1, "Hill Giant").size shouldBe 1
+                }
+            }
         }
     }
 }

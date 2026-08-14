@@ -23,7 +23,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetCreature
  * If you do, return this card from your graveyard to your hand.
  *
  * The recursion ability functions only while this card is in the graveyard
- * ([activeZone] = [Zone.GRAVEYARD], CR 113.6). The optional hybrid payment is modeled with
+ * ([activeZones] = {[Zone.GRAVEYARD]}, CR 113.6b). The optional hybrid payment is modeled with
  * [MayPayManaEffect]; on payment the card returns itself ([EffectTarget.Self]) to its owner's hand.
  */
 val KilliansConfidence = card("Killian's Confidence") {

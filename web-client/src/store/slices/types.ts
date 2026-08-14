@@ -5,11 +5,10 @@ import type { StateCreator } from 'zustand'
 import type {
   EntityId,
   ClientGameState,
-  ClientEvent,
   GameAction,
   LegalActionInfo,
   ConvokeCreatureInfo,
-  WaterbendPermanentInfo,
+  TapForGenericPermanentInfo,
   TapForPowerCreatureInfo,
   DelveCardInfo,
   HarmonizeCreatureInfo,
@@ -21,23 +20,34 @@ import type {
   LobbyPlayerInfo,
   LobbySettings,
   TournamentFormat,
-  CommanderPreset,
+  GameRules,
   PlayerStandingInfo,
   MatchResultInfo,
   ActiveMatchInfo,
   FfaStandingInfo,
   LobbyGameMode,
-  AttackMode,
   SpectatorPlayerState,
   SealedCardInfo,
   Step,
   AvailableSet,
   QuickGameLobbyStateMessage,
+  AiDeckSpec,
   DeckFormat,
   YieldKind,
 } from '@/types'
 import type { ConnectionStatus } from '@/network/websocket.ts'
-import type { CounterRemovalCreatureInfo, SpectatorCombatState, SpectatorDecisionStatus } from '@/types/messages.ts'
+import type { CounterRemovalCreatureInfo, SpectatorCombatState, SpectatorDecisionStatus, UpdateLobbySettingsMessage } from '@/types/messages.ts'
+
+/**
+ * Every field of the omnibus lobby-settings message except its discriminator.
+ *
+ * Derived from the wire type rather than restated. There used to be *two* hand-written copies of this
+ * object — one here and one in `lobbySlice.ts` — and they had drifted: the slice's was missing
+ * `deckSizeMin`, `allowDuplicates` and `commanderPreset`, all three of which the lobby's Commander
+ * rows had been sending for some time. Only this copy was reachable from components, which is the
+ * only reason that compiled.
+ */
+export type LobbySettingsUpdate = Omit<UpdateLobbySettingsMessage, 'type'>
 
 // Re-export for convenience
 export type { EntityId, ConnectionStatus }
@@ -76,6 +86,15 @@ export interface TargetingState {
   isSacrificeSelection?: boolean
   /** If set, this targeting phase is for tapping permanents as a cost */
   isTapPermanentSelection?: boolean
+  /**
+   * Teamwork N (CR 702.194a) and any other `TapForTotalPower` cost: the selection is complete
+   * once the chosen permanents' combined power reaches this number, however many that takes —
+   * so `minTargets`/`maxTargets` don't gate confirm, this does. Powers come from the server in
+   * `powerByEntityId`; the client never derives them (rules stay server-side).
+   */
+  requiredTotalPower?: number
+  /** Server-supplied projected power per selectable entity, for `requiredTotalPower` progress. */
+  powerByEntityId?: Readonly<Record<EntityId, number>>
   /** If set, this targeting phase is for discarding cards as a cost */
   isDiscardSelection?: boolean
   /** If set, this targeting phase is for revealing cards from hand as a cost */
@@ -101,6 +120,14 @@ export interface TargetingState {
   targetRequirements?: LegalActionInfo['targetRequirements']
   /** If set, this spell requires damage distribution after target selection */
   requiresDamageDistribution?: boolean
+  /**
+   * Collect evidence N (CR 701.59a): the floor on the combined mana value of the selected cards.
+   * When set, the confirm button stays disabled until the running total reaches it, and the
+   * overlay shows that total — `minTargets` / `maxTargets` say nothing useful here, because the
+   * cost constrains no card count at all. An empty selection is exempt so an optional collection
+   * can still be declined.
+   */
+  minTotalManaValue?: number
   /** The zone the current targets are in (e.g., "Graveyard"). Set by server via targetRequirements. */
   targetZone?: string
   /** Description of the current target requirement (e.g., "non-Zombie creature") */
@@ -109,6 +136,14 @@ export interface TargetingState {
   totalRequirements?: number
   /** Name of the card that initiated this targeting (shown in overlay header) */
   sourceCardName?: string
+  /**
+   * Emerge (CR 702.119): the spell's mana cost before any reduction, and the cost that remains
+   * after sacrificing each candidate (server-computed, keyed by candidate). Set only for a
+   * sacrifice step whose choice changes the mana owed, so the overlay can show
+   * `{5}{U} → {2}{U}` live instead of leaving the player to do the arithmetic.
+   */
+  costBeforeSacrifice?: string
+  costAfterSacrifice?: Readonly<Record<EntityId, string>>
   /** Transient warning shown when the user tries an illegal toggle (e.g. clicking past max
    * on a multi-target step). Cleared on the next successful add/remove. */
   warning?: string | null
@@ -280,10 +315,10 @@ export interface XSelectionState {
  * Damage distribution state for DividedDamageEffect spells.
  */
 export interface DamageDistributionState {
-  /** The action info containing the spell being cast */
+  /** The action info containing the spell being cast or the ability being activated */
   actionInfo: LegalActionInfo
-  /** The action with targets already set */
-  action: import('../../types').CastSpellAction
+  /** The action with targets already set (a divided-damage spell or activated ability) */
+  action: import('../../types').CastSpellAction | import('../../types').ActivateAbilityAction
   /** Card name for display */
   cardName: string
   /** Selected target entity IDs */
@@ -387,24 +422,28 @@ export interface ModalModeSelectionState {
 }
 
 /**
- * Waterbend selection state (Avatar: The Last Airbender). Like Convoke but generic-only —
- * each tapped artifact/creature pays {1} of the generic cost, with no color choice.
+ * Tap-for-generic selection state — the one HUD behind every "tap untapped permanents you
+ * control, each paying {1} generic" payment. Like Convoke but generic-only: no color choice.
+ * Improvise (CR 702.126, artifacts only) and Waterbend (artifacts or creatures) differ only in
+ * [label] and in which permanents the server put in [validPermanents].
  */
-export interface WaterbendSelectionState {
+export interface TapForGenericSelectionState {
   actionInfo: LegalActionInfo
   cardName: string
-  /** The cost being paid (the waterbend cost's mana string) */
+  /** The cost being paid (the mana string the taps come off) */
   manaCost: string
-  /** Entity ids of permanents selected to tap for waterbend */
+  /** Entity ids of permanents selected to tap */
   selectedPermanents: EntityId[]
-  /** All valid artifacts/creatures that can be tapped */
-  validPermanents: readonly WaterbendPermanentInfo[]
+  /** All valid permanents that can be tapped, as sent by the server */
+  validPermanents: readonly TapForGenericPermanentInfo[]
   /**
-   * Maximum number of permanents that may be tapped — one per generic in the waterbend {N}
-   * (CR). For a spell-level waterbend this is the waterbend amount (the chosen X for the
-   * "waterbend {X}" shape); for an ability waterbend it's the generic in the cost.
+   * Maximum number of permanents that may be tapped — one per generic mana being paid this way.
+   * For a spell-level waterbend cost that is its amount N (the chosen X for "waterbend {X}");
+   * for improvise and an ability waterbend it is the generic in the cost.
    */
   maxTaps: number
+  /** Player-facing verb — `"improvise"` / `"waterbend"`. Shown in the HUD. */
+  label: string
 }
 
 /**
@@ -513,6 +552,11 @@ export interface DeckBuildingState {
    * [cardPool] (the deckbuilder UI gates the picker to eligible pool cards).
    */
   commander: string | null
+  /**
+   * Cube Pool Play: [cardPool] is the entire cube and copies are unlimited (bounded only by the
+   * usual 4-of cap), so adding a card must not remove it from the pool view.
+   */
+  poolPlay: boolean
 }
 
 /**
@@ -654,7 +698,7 @@ export interface SpectatingState {
   combat: SpectatorCombatState | null
   /** Pending decision status (null if no decision in progress) */
   decisionStatus: SpectatorDecisionStatus | null
-  /** When true, the ReplayViewer handles its own UI — SpectatorGameBoard should not render */
+  /** When true, `ReplayPlayer` handles its own UI — SpectatorGameBoard should not render */
   isReplay?: boolean
 }
 
@@ -750,10 +794,17 @@ export type PipelinePhase =
   | { type: 'xSelection' }
   | { type: 'delve' }
   | { type: 'convoke' }
-  | { type: 'waterbend' }
+  | { type: 'tapForGeneric' }
   | { type: 'harmonize' }
   | { type: 'manaSource' }
   | { type: 'costPayment' }
+  /**
+   * Non-mana escalate (CR 702.120a): pay the escalate cost once for each mode chosen beyond the
+   * first. Its own phase rather than a plain `costPayment` because the cost and its count come
+   * from `modalEnumeration.additionalCostPerExtraMode` scaled by the modes just picked, not from
+   * the action's card-level `additionalCostInfo`. Injected after `modalModes` resolves.
+   */
+  | { type: 'escalateCost' }
   | { type: 'blightVariable' }
   | { type: 'payXLife' }
   | { type: 'manaColorChoice' }
@@ -774,7 +825,7 @@ export type PhaseResult =
   | { type: 'xSelection'; xValue: number; isRepeatCount?: boolean }
   | { type: 'delve'; delvedCards: EntityId[]; modifiedManaCost: string }
   | { type: 'convoke'; convokedCreatures: Record<string, { color: string | null }> }
-  | { type: 'waterbend'; waterbendPermanents: EntityId[] }
+  | { type: 'tapForGeneric'; tapForGenericPermanents: EntityId[] }
   | { type: 'harmonize'; harmonizeCreature: EntityId | null; reduction: number }
   | { type: 'manaSource'; selectedSources: EntityId[] }
   | { type: 'costPayment'; costType: string; selectedTargets: EntityId[] }
@@ -827,7 +878,6 @@ export type GameStore = {
   opponentDecisionStatus: OpponentDecisionStatus | null
   mulliganState: MulliganState | null
   waitingForOpponentMulligan: boolean
-  pendingEvents: readonly ClientEvent[]
   eventLog: readonly LogEntry[]
   gameOverState: GameOverState | null
   lastError: ErrorState | null
@@ -865,6 +915,7 @@ export type GameStore = {
     selectedSources: readonly EntityId[],
     autoPay: boolean,
     waterbendPermanents?: readonly EntityId[],
+    declined?: boolean,
   ) => void
   submitCancelDecision: () => void
   submitSplitPilesDecision: (piles: readonly (readonly EntityId[])[]) => void
@@ -885,21 +936,22 @@ export type GameStore = {
   returnToMenu: () => void
   setError: (error: ErrorState) => void
   clearError: () => void
-  consumeEvent: () => ClientEvent | undefined
 
   // Lobby slice
   lobbyState: LobbyState | null
   tournamentState: TournamentState | null
   ffaState: FfaState | null
   spectatingState: SpectatingState | null
-  createTournamentLobby: (setCodes: string[], format?: TournamentFormat, boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean, gameMode?: LobbyGameMode) => void
+  createTournamentLobby: (setCodes: string[], format?: TournamentFormat, boosterCount?: number, maxPlayers?: number, pickTimeSeconds?: number, isPublic?: boolean, gameMode?: LobbyGameMode, rules?: GameRules) => void
   joinLobby: (lobbyId: string) => void
   startLobby: () => void
   leaveLobby: () => void
   addAiToLobby: () => void
   removeAiFromLobby: (playerId: string) => void
+  /** Host picks what one AI seat plays (premade-decks lobbies — elsewhere it builds from its pool). */
+  setLobbyAiDeck: (playerId: string, spec: AiDeckSpec) => void
   stopLobby: () => void
-  updateLobbySettings: (settings: { setCodes?: string[]; format?: TournamentFormat; boosterCount?: number; boosterDistribution?: Record<string, number>; maxPlayers?: number; gamesPerMatch?: number; pickTimeSeconds?: number; picksPerRound?: number; isPublic?: boolean; deckFormat?: DeckFormat | '' | null; deckSizeMin?: number; allowDuplicates?: boolean; commanderPreset?: CommanderPreset; chaosBoosters?: boolean; bannedCardNames?: string[]; aiAssistEnabled?: boolean; gameMode?: LobbyGameMode; attackMode?: AttackMode; randomTeams?: boolean; teamAssignments?: Record<string, number>; ranked?: boolean }) => void
+  updateLobbySettings: (settings: LobbySettingsUpdate) => void
   /** Disconnected tournament players: playerId -> info */
   disconnectedPlayers: Record<string, { playerName: string; secondsRemaining: number; disconnectedAt: number }>
   readyForNextRound: () => void
@@ -921,14 +973,18 @@ export type GameStore = {
   // Quick Game Lobby slice
   quickGameLobbyState: QuickGameLobbyStateMessage | null
   createQuickGameLobby: (vsAi?: boolean, setCode?: string, isPublic?: boolean, format?: DeckFormat, momirBasic?: boolean, ranked?: boolean) => void
+  addQuickGameAi: () => void
+  removeQuickGameAi: () => void
   joinQuickGameLobby: (lobbyId: string) => void
   leaveQuickGameLobby: () => void
   submitQuickGameLobbyDeck: (deckList: Record<string, number>, commander?: string | null) => void
   setQuickGameLobbyReady: (ready: boolean) => void
-  setQuickGameLobbySetCode: (setCode: string | null) => void
+  setQuickGameLobbySetCode: (setCodes: readonly string[]) => void
   setQuickGameLobbyPublic: (isPublic: boolean) => void
   setQuickGameLobbyRanked: (ranked: boolean) => void
   setQuickGameLobbyFormat: (format: DeckFormat | null, momirBasic?: boolean) => void
+  /** Host-only: choose what the AI opponent plays (auto / built from sets / an exact list). */
+  setQuickGameAiDeck: (spec: AiDeckSpec) => void
 
   // Draft slice
   deckBuildingState: DeckBuildingState | null
@@ -1011,7 +1067,7 @@ export type GameStore = {
   xSelectionState: XSelectionState | null
   modalModeSelectionState: ModalModeSelectionState | null
   convokeSelectionState: ConvokeSelectionState | null
-  waterbendSelectionState: WaterbendSelectionState | null
+  tapForGenericSelectionState: TapForGenericSelectionState | null
   tapForPowerSelectionState: TapForPowerSelectionState | null
   delveSelectionState: DelveSelectionState | null
   manaColorSelectionState: ManaColorSelectionState | null
@@ -1113,10 +1169,10 @@ export type GameStore = {
   toggleConvokeCreature: (entityId: EntityId, name: string, payingColor: string | null) => void
   cancelConvokeSelection: () => void
   confirmConvokeSelection: () => void
-  startWaterbendSelection: (state: WaterbendSelectionState) => void
-  toggleWaterbendPermanent: (entityId: EntityId) => void
-  cancelWaterbendSelection: () => void
-  confirmWaterbendSelection: () => void
+  startTapForGenericSelection: (state: TapForGenericSelectionState) => void
+  toggleTapForGenericPermanent: (entityId: EntityId) => void
+  cancelTapForGenericSelection: () => void
+  confirmTapForGenericSelection: () => void
   harmonizeSelectionState: HarmonizeSelectionState | null
   startHarmonizeSelection: (state: HarmonizeSelectionState) => void
   toggleHarmonizeCreature: (entityId: EntityId) => void

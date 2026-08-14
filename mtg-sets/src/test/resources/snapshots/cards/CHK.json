@@ -1618,7 +1618,11 @@
                 "type": "ConditionalStaticAbility",
                 "ability": {
                     "type": "GrantKeyword",
-                    "keyword": "INDESTRUCTIBLE"
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
                 },
                 "condition": {
                     "type": "EntityMatches",
@@ -2780,6 +2784,97 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Through the Breach
+{
+    "name": "Through the Breach",
+    "manaCost": "{4}{R}",
+    "typeLine": "Instant — Arcane",
+    "oracleText": "You may put a creature card from your hand onto the battlefield. That creature gains haste. Sacrifice that creature at the beginning of the next end step.\nSplice onto Arcane {2}{R}{R} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)",
+    "keywords": [
+        "SPLICE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Splice",
+            "cost": "{2}{R}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "filter": "creature"
+                    },
+                    "storeAs": "put_candidates"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "put_candidates",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "putting"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "putting",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "putting",
+                    "ifNotEmpty": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "putting"
+                                },
+                                "duration": "Permanent"
+                            },
+                            {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "SacrificeTarget",
+                                    "target": {
+                                        "type": "PipelineTarget",
+                                        "collectionName": "putting"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "RARE",
+        "artist": "Hugh Jamieson",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6da09e6a-2965-4855-bd41-41b41ba188fb.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

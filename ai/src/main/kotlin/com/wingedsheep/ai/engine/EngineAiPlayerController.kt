@@ -2,8 +2,7 @@ package com.wingedsheep.ai.engine
 
 import com.wingedsheep.ai.ActionResponse
 import com.wingedsheep.ai.AiPlayerController
-import com.wingedsheep.ai.engine.advisor.modules.BloomburrowAdvisorModule
-import com.wingedsheep.ai.engine.advisor.modules.OnslaughtAdvisorModule
+import com.wingedsheep.ai.insight.AiInsightSink
 import com.wingedsheep.ai.llm.BottomCardsInfo
 import com.wingedsheep.ai.llm.CardSummary
 import com.wingedsheep.ai.llm.MulliganInfo
@@ -21,8 +20,28 @@ private val logger = LoggerFactory.getLogger(EngineAiPlayerController::class.jav
 /**
  * AI controller powered by the built-in rules-engine [AIPlayer].
  *
- * Runs entirely locally with no API calls. Uses the engine's ActionProcessor,
- * board evaluator, multi-ply searcher, and combat advisor directly.
+ * Runs entirely locally with no API calls. Uses the engine's ActionProcessor, board evaluator,
+ * [Strategist] and [CombatAdvisor] directly, configured by
+ * [AiProfile.PRODUCTION_CANDIDATE_EXPIRING]
+ * — rollout candidate evaluation over a determinized state, on a four-tier decision budget, with a
+ * land drop priced as the card conversion it is, land *order* priced by the mana it makes usable,
+ * a combat trick held until blocks are in and searched properly once they are, the race scored
+ * in urgency rather than in turns, removal held for a target worth a card, and a creature priced by
+ * what it can still do — marked damage wearing off at cleanup, "can't attack" costing the power —
+ * a cantrip cashed in the window where its mana was going to evaporate anyway, a counterspell
+ * held while the caster still has the mana for something bigger, and an activated ability whose
+ * whole payoff expires at cleanup held for a window that can actually spend it.
+ * Each superseded configuration is kept as the baseline its successor was measured against:
+ * [AiProfile.PRODUCTION_CANDIDATE_COUNTERPATIENCE] ran immediately before it,
+ * [AiProfile.PRODUCTION_CANDIDATE_CANTRIP] before it,
+ * [AiProfile.PRODUCTION_CANDIDATE_BOARDVALUE] before it,
+ * [AiProfile.PRODUCTION_CANDIDATE_PATIENCE] before it,
+ * [AiProfile.PRODUCTION_CANDIDATE_RACECLOCK] before it,
+ * [AiProfile.PRODUCTION_CANDIDATE_TRICKWINDOW] before it,
+ * [AiProfile.PRODUCTION_CANDIDATE_LANDSEQ] before it,
+ * [AiProfile.PRODUCTION_CANDIDATE_LANDDROP] before that,
+ * [AiProfile.PRODUCTION_CANDIDATE_TUNED] before that, and the greedy 1-ply
+ * [AiProfile.PRODUCTION] first of all.
  *
  * Requires a [gameStateProvider] to access the real (unmasked) [GameState] from
  * the [com.wingedsheep.gameserver.session.GameSession]. This allows the engine AI
@@ -31,13 +50,18 @@ private val logger = LoggerFactory.getLogger(EngineAiPlayerController::class.jav
 class EngineAiPlayerController(
     private val cardRegistry: CardRegistry,
     private val playerId: EntityId,
-    private val gameStateProvider: () -> GameState?
+    private val gameStateProvider: () -> GameState?,
+    /**
+     * Local testing mode: publishes the scores the [Strategist] assigned each candidate, so a human
+     * can browse what the AI weighed. Null in normal play.
+     */
+    insightSink: AiInsightSink? = null,
 ) : AiPlayerController {
 
-    private val aiPlayer = AIPlayer.create(
-        cardRegistry, playerId,
-        advisorModules = listOf(BloomburrowAdvisorModule(), OnslaughtAdvisorModule())
-    )
+    private val aiPlayer =
+        AIPlayer.create(
+            cardRegistry, playerId, AiProfile.PRODUCTION_CANDIDATE_EXPIRING, insightSink = insightSink,
+        )
 
     override fun chooseAction(
         state: ClientGameState,

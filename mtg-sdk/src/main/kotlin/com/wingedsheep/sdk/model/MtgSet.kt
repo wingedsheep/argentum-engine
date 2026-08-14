@@ -109,6 +109,22 @@ interface MtgSet {
      */
     val printings: List<Printing> get() = emptyList()
 
+    /**
+     * Token art this set prints, consulted when one of its cards creates a token.
+     *
+     * Tokens have no [CardDefinition] and no [Printing] row of their own, so this is where a set
+     * says "my Cat token looks like *this*". The engine resolves art as: an explicit `imageUri`
+     * on the effect → this list, for the set the creating card was printed in → the engine-wide
+     * generic fallback by creature type. Declaring art here rather than on the card's
+     * `CreateToken` effect is what makes a reprint mint its own set's token instead of the
+     * original's.
+     *
+     * Entries are matched by name plus whatever [TokenPrinting] discriminators are pinned; see
+     * [TokenPrinting.matches]. A set that printed one token with several illustrations declares a row
+     * per art — a batch of tokens created at once is dealt out of them in order.
+     */
+    val tokenArt: List<TokenPrinting> get() = emptyList()
+
     companion object {
         /**
          * Release date of Shards of Alara, the first set with mythic rares and

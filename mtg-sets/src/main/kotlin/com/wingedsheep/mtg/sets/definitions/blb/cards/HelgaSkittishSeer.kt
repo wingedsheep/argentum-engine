@@ -72,7 +72,7 @@ val HelgaSkittishSeer = card("Helga, Skittish Seer") {
                 EntityReference.Source,
                 EntityNumericProperty.Power
             ),
-            ManaRestriction.CreatureMV4OrXCost
+            ManaRestriction.SpellsWithManaValueAtLeast(4, orXInCost = true, creatureOnly = true)
         )
         manaAbility = true
         timing = TimingRule.ManaAbility

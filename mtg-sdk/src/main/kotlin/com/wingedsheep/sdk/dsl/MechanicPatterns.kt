@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.dsl
 
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -15,6 +16,9 @@ import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOpponentForSourceEffect
 import com.wingedsheep.sdk.scripting.effects.CollectionFilter
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.ConditionalOnCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.CreateTokenEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
 import com.wingedsheep.sdk.scripting.conditions.CollectionContainsMatch
@@ -27,6 +31,7 @@ import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import com.wingedsheep.sdk.scripting.effects.Mode
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.SacrificeEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
@@ -35,7 +40,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
- * Named MTG keyword-mechanic recipes (Blight, Bolster, Explore, Forage, Gift, Incubate).
+ * Named MTG keyword-mechanic recipes (Blight, Bolster, Explore, Forage, Gift, Incubate, Recruit).
  *
  * Reached through the [Patterns] index — `Patterns.Mechanic.blight(...)`. Each composes existing
  * atomic effects into the printed keyword behaviour; they live here (rather than a zone-based
@@ -303,11 +308,11 @@ object MechanicPatterns {
         )
 
     // =========================================================================
-    // Incubate Pattern (CR 701.53)
+    // Incubate Pattern (CR 701.51)
     // =========================================================================
 
     /**
-     * Incubate N (CR 701.53). Atomic composition: create the (DFC) Incubator token, then
+     * Incubate N (CR 701.51). Atomic composition: create the (DFC) Incubator token, then
      * place N +1/+1 counters on it via the pipeline-published entity ID.
      *
      * The Incubator's `{2}: Transform this token` activated ability is declared on the
@@ -326,7 +331,7 @@ object MechanicPatterns {
     )
 
     /**
-     * Incubate X (CR 701.53), where X is a [DynamicAmount] resolved at trigger/spell
+     * Incubate X (CR 701.51), where X is a [DynamicAmount] resolved at trigger/spell
      * resolution time (e.g., the triggering spell's mana value for Chrome Host Seedshark).
      *
      * Same shape as [incubate] but uses [AddDynamicCountersEffect] so the +1/+1 counter
@@ -341,5 +346,68 @@ object MechanicPatterns {
                 target = EffectTarget.PipelineTarget(CREATED_TOKENS, 0)
             )
         )
+    )
+
+    // =========================================================================
+    // Recruit Pattern (The Hobbit)
+    // =========================================================================
+
+    /**
+     * Recruit (The Hobbit) — "Draw a card, then discard a card. If you discarded a nonland card,
+     * create a 1/1 white Human Soldier creature token."
+     *
+     * A keyword *action* with fixed reminder text (like explore or amass), not a keyword ability,
+     * so it needs no `Keyword` entry. Mechanically it is connive (CR 701.50) with a token payoff
+     * instead of a +1/+1 counter, and it reuses that proven pipeline shape exactly: Draw →
+     * Gather(hand) → Select(1) → Move(Discard) → ConditionalOnCollection(Nonland). See
+     * [HandPatterns.connive].
+     *
+     * Two details the shape is load-bearing for:
+     *
+     * - The discard is a real discard ([MoveType.Discard]), not a bare move to the graveyard, so
+     *   madness and "whenever you discard a card" triggers see it.
+     * - The payoff is gated on the discarded card being a *nonland*, never on "no land was
+     *   discarded": with an empty hand nothing is discarded at all, and CR's "if you discarded a
+     *   nonland card" is then false. `ChooseExactly(1)` auto-resolves on an empty or single-card
+     *   hand, leaving the collection empty so no token is created.
+     *
+     * The draw comes first and is unconditional, so an empty library still sets up the usual
+     * draw-from-empty loss at the next state-based check.
+     *
+     * Token art is left to the set-scoped resolver (`MtgSet.tokenArt`, keyed off the creating
+     * card's printing) rather than baked in here — ten HOB cards share this facade.
+     */
+    fun recruit(): CompositeEffect = CompositeEffect(
+        listOf(
+            DrawCardsEffect(1, EffectTarget.Controller),
+            GatherCardsEffect(
+                source = CardSource.FromZone(Zone.HAND, Player.You),
+                storeAs = "recruit_hand"
+            ),
+            SelectFromCollectionEffect(
+                from = "recruit_hand",
+                selection = SelectionMode.ChooseExactly(DynamicAmount.Fixed(1)),
+                chooser = Chooser.Controller,
+                storeSelected = "recruit_discarded",
+                prompt = "Recruit — choose a card to discard"
+            ),
+            MoveCollectionEffect(
+                from = "recruit_discarded",
+                destination = CardDestination.ToZone(Zone.GRAVEYARD, Player.You),
+                moveType = MoveType.Discard
+            ),
+            ConditionalOnCollectionEffect(
+                collection = "recruit_discarded",
+                filter = GameObjectFilter.Nonland,
+                ifNotEmpty = CreateTokenEffect(
+                    count = DynamicAmount.Fixed(1),
+                    power = 1,
+                    toughness = 1,
+                    colors = setOf(Color.WHITE),
+                    creatureTypes = setOf("Human", "Soldier")
+                )
+            )
+        ),
+        descriptionOverride = "Recruit"
     )
 }

@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.registry.TokenArtRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
@@ -35,7 +36,8 @@ import kotlin.reflect.KClass
 class CreatePredefinedTokenExecutor(
     private val cardRegistry: CardRegistry,
     private val staticAbilityHandler: StaticAbilityHandler? = null,
-    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator()
+    private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
+    private val tokenArtRegistry: TokenArtRegistry? = null
 ) : EffectExecutor<CreatePredefinedTokenEffect> {
 
     override val effectType: KClass<CreatePredefinedTokenEffect> = CreatePredefinedTokenEffect::class
@@ -69,10 +71,29 @@ class CreatePredefinedTokenExecutor(
         )
         if (replacementResult != null) return replacementResult
 
+        // Art: an explicit per-card override wins, then the art printed by the set the creating
+        // card came from (so a reprint mints its own set's Treasure), then the one canonical
+        // printing shared engine-wide by PredefinedTokens.
+        //
+        // A list, because a set may have printed the same token with several illustrations: the
+        // batch is dealt out of it in order and wraps. Indexing by position in the batch keeps it
+        // deterministic, so a replay re-simulates the same board. See CreateTokenExecutor.
+        val sourceCard = context.sourceId
+            ?.let { state.getEntity(it) }
+            ?.get<CardComponent>()
+        val resolvedImageUris = effect.imageUri?.let(::listOf)
+            ?: tokenArtRegistry?.resolveAll(
+                sourceCardDefinitionId = sourceCard?.cardDefinitionId,
+                tokenName = effect.tokenType,
+                sourcePrintingSetCode = sourceCard?.printingSetCode,
+            )?.takeIf { it.isNotEmpty() }
+            ?: listOf(cardDef.metadata.imageUri)
+
         var newState = state
         val createdTokenIds = mutableListOf<EntityId>()
 
-        repeat(com.wingedsheep.engine.core.GameLimits.cappedTokenCount(tokenCount, "predefined tokens")) {
+        repeat(com.wingedsheep.engine.core.GameLimits.cappedTokenCount(tokenCount, "predefined tokens")) { indexInBatch ->
+            val resolvedImageUri = resolvedImageUris[indexInBatch % resolvedImageUris.size]
             val (tokenId, stateWithId) = newState.newEntity()
             newState = stateWithId
             createdTokenIds.add(tokenId)
@@ -89,8 +110,7 @@ class CreatePredefinedTokenExecutor(
                 // Fall back to the mana-cost-derived colors for tokens without an override.
                 colors = cardDef.colorIdentityOverride ?: cardDef.colors,
                 ownerId = tokenControllerId,
-                // Set-specific token art when the effect overrides it, else the predefined printing.
-                imageUri = effect.imageUri ?: cardDef.metadata.imageUri
+                imageUri = resolvedImageUri
             )
 
             var container = ComponentContainer.of(
@@ -105,7 +125,7 @@ class CreatePredefinedTokenExecutor(
                 container = container.with(TappedComponent)
             }
 
-            // Transforming double-faced tokens (CR 701.53b — Incubator). The token
+            // Transforming double-faced tokens (CR 701.51b — Incubator). The token
             // enters with its front face up; the back face's CardDefinition is
             // already auto-registered in the CardRegistry by registry.register(...).
             cardDef.backFace?.let { backFace ->

@@ -35,7 +35,7 @@ class OutlawsFuryScenarioTest : FunSpec({
         val me = driver.player1
 
         // Ragavan is a Monkey Pirate — Pirate is an outlaw subtype.
-        val ragavan = driver.putCreatureOnBattlefield(me, "Ragavan, Nimble Pilferer") // 2/1
+        val ragavan = driver.putCreatureOnBattlefield(me, "Test Hasty Prospector") // 2/1
         val exileBefore = driver.getExile(me).size
 
         val fury = driver.putCardInHand(me, "Outlaws' Fury")

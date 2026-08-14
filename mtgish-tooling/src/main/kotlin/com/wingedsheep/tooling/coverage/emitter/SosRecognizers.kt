@@ -391,7 +391,7 @@ internal fun EmitCtx.manaSculptCounterWizardManaEffect(actions: List<JsonObject>
     )
     val gated = call(
         "ConditionalEffect",
-        arg("condition", "Conditions.YouControl(GameObjectFilter.Creature.withSubtype(\"Wizard\"))"),
+        arg("condition", "Conditions.YouControl(GameObjectFilter.Creature.withSubtype(${subtypeArg("Wizard")}))"),
         arg("effect", delayedTrigger),
     )
     return Composite(listOf(gated, call("Effects.CounterSpell")))

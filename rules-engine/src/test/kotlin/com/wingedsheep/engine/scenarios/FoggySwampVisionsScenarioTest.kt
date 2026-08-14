@@ -41,7 +41,7 @@ class FoggySwampVisionsScenarioTest : ScenarioTestBase() {
             tappers.size shouldBe 2
 
             val action = game.getLegalActions(1).firstOrNull {
-                it.actionType == "CastSpell" && it.action is CastSpell && it.isAffordable && it.hasWaterbend
+                it.actionType == "CastSpell" && it.action is CastSpell && it.isAffordable && it.hasTapForGeneric
             }
             withClue("Foggy Swamp Visions should be offered as an X-carrying waterbend cast") {
                 action shouldNotBe null
@@ -52,7 +52,7 @@ class FoggySwampVisionsScenarioTest : ScenarioTestBase() {
             val cast = (action!!.action as CastSpell).copy(
                 xValue = 2,
                 targets = graveyardCreatures.map { ChosenTarget.Card(it, game.player1Id, Zone.GRAVEYARD) },
-                alternativePayment = AlternativePaymentChoice(waterbendPermanents = tappers.toSet()),
+                alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = tappers.toSet()),
             )
             val result = game.execute(cast)
             withClue("casting Foggy Swamp Visions for waterbend {X=2} should succeed: ${result.error}") {

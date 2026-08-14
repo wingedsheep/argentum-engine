@@ -1,0 +1,539 @@
+/**
+ * `/help` page chrome. Topic *internals* are styled by `components/help/help.module.css`, which the
+ * in-game drawer shares; everything here is the page's own frame around them.
+ */
+
+.page {
+  /* `#root` is locked to height:100% / overflow:hidden for the game board, so this must be its own
+     scroll container. It has to be `height`, not `min-height`: with min-height the box grows to fit
+     its content, so `overflow-y: auto` has nothing to scroll and #root just clips the overflow. */
+  height: 100vh;
+  overflow-y: auto;
+  background:
+    radial-gradient(1100px 520px at 18% -10%, rgba(79, 195, 247, 0.09), transparent 65%),
+    radial-gradient(900px 480px at 92% 0%, rgba(124, 58, 237, 0.09), transparent 60%),
+    var(--bg-app, #0b0c12);
+  color: var(--text-primary);
+
+  /*
+   * The client sets no body font anywhere — only monospace, on the handful of places that want it —
+   * so unstyled prose falls through to the UA default, which is Times. That is fine for the two
+   * lines of flavour on the landing card and wrong for pages of documentation, so this one declares
+   * its own. Scoped to the page rather than fixed globally: a global body font would reflow every
+   * screen in the app, which is not this change.
+   */
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+
+  /*
+   * The global type scale is tuned for the game board, where every pixel is board space — it puts
+   * body text at 12px on desktop and 9px on a phone. That is a reading page's job description
+   * inverted, so the tokens are re-pointed for this subtree only. Everything inside (including the
+   * shared topic styles) picks the new values up through the cascade.
+   */
+  --font-xs: 12px;
+  --font-sm: 14px;
+  --font-md: 15px;
+
+  /* What the sticky top bar occupies. Anything else that sticks, or that a deep link scrolls to,
+     has to clear it. */
+  --help-bar-h: 54px;
+}
+
+/* =========================================================================
+ * Sticky top bar — back out, and search from anywhere in a long section
+ * ========================================================================= */
+.topBar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgba(11, 12, 18, 0.82);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.topBarInner {
+  max-width: 976px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+}
+
+.topBarTitle {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.backButton {
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 5px var(--space-3);
+  font-size: var(--font-sm);
+}
+
+.backButton:hover {
+  color: var(--text-primary);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.searchBox {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: min(300px, 42vw);
+  padding: 5px var(--space-3);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.searchBox:focus-within {
+  border-color: rgba(79, 195, 247, 0.55);
+  background: rgba(79, 195, 247, 0.07);
+}
+
+.searchIcon {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  color: var(--text-disabled);
+}
+
+.searchBox:focus-within .searchIcon {
+  color: var(--color-accent, #4fc3f7);
+}
+
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  font-size: var(--font-sm);
+  font-family: inherit;
+  outline: none;
+}
+
+.searchInput::placeholder {
+  color: var(--text-disabled);
+}
+
+/* Chrome's own search affordance duplicates the clear button next to it. */
+.searchInput::-webkit-search-cancel-button {
+  display: none;
+}
+
+.searchHint {
+  flex-shrink: 0;
+  padding: 0 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--text-disabled);
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 16px;
+}
+
+.searchClear {
+  flex-shrink: 0;
+  border: none;
+  background: none;
+  padding: 0 2px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.searchClear:hover {
+  color: var(--text-primary);
+}
+
+@media (max-width: 640px) {
+  .topBarTitle {
+    display: none;
+  }
+
+  .searchBox {
+    flex: 1;
+    width: auto;
+  }
+}
+
+/* =========================================================================
+ * Page body
+ * ========================================================================= */
+/* 244 nav + 32 gap + 660 content + the page's own padding. Sized so the content column *is* the
+   reading measure — see `.content`. */
+.body {
+  max-width: 976px;
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-5) var(--space-8);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: flex-start;
+  margin-bottom: var(--space-7);
+}
+
+/* Display type stays serif, the way the landing wordmark is — `ui-serif` is New York on macOS and a
+   real reading serif elsewhere, rather than the Times the page used to fall through to. */
+.title {
+  margin: 0;
+  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: var(--font-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.01em;
+}
+
+.subtitle {
+  margin: 0;
+  max-width: 64ch;
+  font-size: var(--font-md);
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 244px minmax(0, 1fr);
+  gap: var(--space-7);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+}
+
+/* =========================================================================
+ * Section nav + on-this-page index
+ * ========================================================================= */
+.nav {
+  position: sticky;
+  /* Clears the sticky top bar rather than the viewport edge. Bounded and scrollable because the
+     longest section's topic index is taller than a laptop viewport, and a sticky box taller than the
+     scrollport can never show its own tail. */
+  top: calc(var(--help-bar-h) + var(--space-4));
+  max-height: calc(100vh - var(--help-bar-h) - var(--space-7));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  /* Room for the scrollbar so it never sits on the text. */
+  padding-right: var(--space-2);
+}
+
+.navSections {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.navItem {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.navItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.navItemActive,
+.navItemActive:hover {
+  background: rgba(79, 195, 247, 0.1);
+  border-color: rgba(79, 195, 247, 0.35);
+  color: var(--text-primary);
+}
+
+.navItemHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.navItemTitle {
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.navItemCount {
+  flex-shrink: 0;
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-disabled);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.navItemActive .navItemCount {
+  background: rgba(79, 195, 247, 0.18);
+  color: var(--text-secondary);
+}
+
+.navItemBlurb {
+  font-size: var(--font-xs);
+  line-height: 1.45;
+  color: var(--text-disabled);
+}
+
+.onThisPage {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding-left: var(--space-3);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.onThisPageLabel {
+  margin-bottom: 3px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.onThisPageLink {
+  border: none;
+  background: none;
+  padding: 1px 0;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  line-height: 1.5;
+}
+
+.onThisPageLink:hover {
+  color: var(--color-accent, #4fc3f7);
+}
+
+/* On one column the nav is a header, not a sidebar: the section blurbs and the topic index would
+   push the first topic below the fold, so both are dropped and the sections become a chip row. */
+@media (max-width: 900px) {
+  .nav {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+    gap: var(--space-3);
+  }
+
+  .navSections {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .navItem {
+    border-color: rgba(255, 255, 255, 0.1);
+    border-radius: 999px;
+    padding: 5px var(--space-3);
+  }
+
+  .navItemBlurb,
+  .onThisPage {
+    display: none;
+  }
+}
+
+/* =========================================================================
+ * Content column
+ * ========================================================================= */
+/*
+ * Capped so a line of body text runs ~90 characters rather than the ~130 the full 1040px column
+ * produced — past that the eye starts losing its place on the return sweep. Capping the column
+ * rather than the paragraphs keeps each topic card the same width as the text inside it.
+ */
+.content {
+  min-width: 0;
+  max-width: 660px;
+}
+
+.sectionIntro {
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-size: var(--font-xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.01em;
+}
+
+.sectionBlurb {
+  margin: var(--space-2) 0 0;
+  max-width: 70ch;
+  font-size: var(--font-sm);
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.topics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Each topic gets its own surface instead of a hairline rule. Applied from the page rather than in
+   `help.module.css`, which the 460px in-game drawer shares and which wants no card at all. */
+.topicCard {
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-2xl);
+  background: rgba(255, 255, 255, 0.022);
+  /* Clears the sticky top bar when a deep link scrolls this into view. */
+  scroll-margin-top: calc(var(--help-bar-h) + var(--space-4));
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.topicCard:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+/* Briefly ringed after a deep link or a "See also" jump, so you can see where you landed. */
+.topicCardFlagged {
+  border-color: rgba(79, 195, 247, 0.5);
+  background: rgba(79, 195, 247, 0.06);
+  box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.1);
+}
+
+.resultSection {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-disabled);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.copyLink {
+  flex-shrink: 0;
+  min-width: 24px;
+  padding: 1px 6px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  color: var(--text-faint);
+  font-size: var(--font-xs);
+  font-weight: var(--font-weight-semibold);
+  transition: color var(--transition-fast), border-color var(--transition-fast), opacity 0.2s ease;
+  opacity: 0;
+}
+
+.topicCard:hover .copyLink,
+.copyLink:focus-visible,
+.copyLinkCopied {
+  opacity: 1;
+}
+
+.copyLink:hover {
+  color: var(--color-accent, #4fc3f7);
+  border-color: rgba(79, 195, 247, 0.4);
+}
+
+.copyLinkCopied,
+.copyLinkCopied:hover {
+  color: var(--color-success-light, #00cc44);
+  border-color: rgba(0, 204, 68, 0.4);
+}
+
+/* Touch devices never hover, so the affordance would be unreachable. */
+@media (hover: none) {
+  .copyLink {
+    opacity: 1;
+  }
+}
+
+/* =========================================================================
+ * Prev / next section pager
+ * ========================================================================= */
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.pagerLink {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  color: var(--text-tertiary);
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.pagerLinkNext {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.pagerLink:hover {
+  border-color: rgba(79, 195, 247, 0.35);
+  background: rgba(79, 195, 247, 0.07);
+  color: var(--text-primary);
+}
+
+.pagerDirection {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.pagerTitle {
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-semibold);
+}

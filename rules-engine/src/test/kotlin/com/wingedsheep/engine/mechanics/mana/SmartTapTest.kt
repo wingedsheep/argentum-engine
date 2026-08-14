@@ -197,7 +197,7 @@ class SmartTapTest : FunSpec({
 
         // Put Forest and Ragavan (hasty mana dork) on battlefield
         driver.putLandOnBattlefield(playerId, "Forest")
-        val ragavanId = driver.putCreatureOnBattlefield(playerId, "Ragavan, Nimble Pilferer")
+        val ragavanId = driver.putCreatureOnBattlefield(playerId, "Test Hasty Prospector")
 
         // Ragavan has haste so can attack immediately - verify this is detected
         val solver = ManaSolver(createRegistry())
@@ -212,7 +212,7 @@ class SmartTapTest : FunSpec({
         // Should tap Forest (land) before Ragavan (creature that can attack)
         val tappedSourceNames = getSolvedSourceNames(solution)
         tappedSourceNames shouldContain "Forest"
-        tappedSourceNames shouldNotContain "Ragavan, Nimble Pilferer"
+        tappedSourceNames shouldNotContain "Test Hasty Prospector"
     }
 
     test("five-color land is tapped last for generic costs") {

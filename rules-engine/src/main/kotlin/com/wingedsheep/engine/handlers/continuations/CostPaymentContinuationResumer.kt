@@ -2,6 +2,12 @@ package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.CostPaymentContinuation
+import com.wingedsheep.engine.core.CostPaymentManaSelectionContinuation
+import com.wingedsheep.engine.core.DecisionContext
+import com.wingedsheep.engine.core.DecisionPhase
+import com.wingedsheep.engine.core.DecisionRequestedEvent
+import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
+import com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow
 import com.wingedsheep.engine.core.DecisionResponse
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.core.ExecutionResult
@@ -34,7 +40,8 @@ class CostPaymentContinuationResumer(
     private val paymentService = CostPaymentService(services)
 
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
-        resumer(CostPaymentContinuation::class, ::resume)
+        resumer(CostPaymentContinuation::class, ::resume),
+        resumer(CostPaymentManaSelectionContinuation::class, ::resumeManaSelection)
     )
 
     fun resume(
@@ -48,15 +55,19 @@ class CostPaymentContinuationResumer(
         is PayCost.OwnManaCost ->
             ExecutionResult.error(state, "OwnManaCost should have been resolved before payment")
         is PayCost.Atom -> when (val atom = cost.atom) {
-            // Yes/no costs: mana, life, and random discard.
-            is CostAtom.Mana, is CostAtom.PayLife ->
+            // Yes/no costs: mana, life, mill (the milled cards are the top of the library, so
+            // there is nothing to select), and random discard.
+            is CostAtom.Mana, is CostAtom.PayLife, is CostAtom.Mill ->
                 resumeYesNo(state, continuation, cost, response, checkForMore)
             is CostAtom.Discard ->
                 if (atom.random) resumeYesNo(state, continuation, cost, response, checkForMore)
                 else resumeSelection(state, continuation, cost, response, checkForMore)
             // Selection costs.
             is CostAtom.ExileFrom, is CostAtom.RevealFromHand, is CostAtom.Sacrifice,
-            is CostAtom.ReturnToHand, is CostAtom.TapPermanents ->
+            is CostAtom.ReturnToHand, is CostAtom.TapPermanents,
+            // Collect evidence is a selection cost too — the sum gate rides on the decision's
+            // `minTotalManaValue`, so resuming it is the ordinary selection path.
+            is CostAtom.CollectEvidence ->
                 resumeSelection(state, continuation, cost, response, checkForMore)
             is CostAtom.RemoveCounters ->
                 if (atom.self || atom.counterType == null) {
@@ -68,9 +79,9 @@ class CostPaymentContinuationResumer(
             // (nothing to select) if one is ever built.
             is CostAtom.PutCountersOnSelf ->
                 resumeYesNo(state, continuation, cost, response, checkForMore)
-            // ExilePermanents is an activated-ability-only cost, never a PayCost — unreachable here.
-            is CostAtom.ExilePermanents ->
-                ExecutionResult.error(state, "ExilePermanents is not a payable cost in this context")
+            // VariablePermanents is an activated-ability-only cost, never a PayCost — unreachable here.
+            is CostAtom.VariablePermanents ->
+                ExecutionResult.error(state, "VariablePermanents is not a payable cost in this context")
         }
     }
 
@@ -86,10 +97,92 @@ class CostPaymentContinuationResumer(
         }
         if (!response.choice) return declined(state, continuation, checkForMore)
 
+        // A mana cost gets a second step: which sources to tap. Ward and "counter unless you pay"
+        // have always worked this way; going straight to the solver here meant the payer couldn't
+        // choose, and couldn't activate a mana ability to cover a cost the solver can't auto-tap
+        // (CR 605.3a — see [ManaPaymentWindow]).
+        manaSourceWindow(state, continuation, cost)?.let { return it }
+
         val execution = paymentService.performPayment(state, continuation.payerId, cost, continuation.sourceId, emptyMap())
         // A defensive payment failure (e.g. mana solve came up short) falls through to declined.
         return if (execution.success) paid(execution.state, execution.events, continuation, checkForMore)
         else declined(state, continuation, checkForMore)
+    }
+
+    /**
+     * Raises the mana-source window for a [cost] the payer just agreed to, or returns null when the
+     * cost isn't mana or their floating mana already covers it (nothing to choose).
+     */
+    private fun manaSourceWindow(
+        state: GameState,
+        continuation: CostPaymentContinuation,
+        cost: PayCost
+    ): ExecutionResult? {
+        val manaCost = ((cost as? PayCost.Atom)?.atom as? CostAtom.Mana)?.cost ?: return null
+        if (ManaPaymentWindow.floatingManaCovers(state, continuation.payerId, manaCost)) return null
+
+        val decisionId = java.util.UUID.randomUUID().toString()
+        val decision = ManaPaymentWindow.buildDecision(
+            state = state,
+            playerId = continuation.payerId,
+            cost = manaCost,
+            decisionId = decisionId,
+            prompt = "Pay $manaCost",
+            context = DecisionContext(
+                sourceId = continuation.sourceId,
+                sourceName = continuation.sourceName,
+                phase = DecisionPhase.RESOLUTION
+            ),
+            canDecline = true,
+            cardRegistry = services.cardRegistry
+        )
+        val frame = CostPaymentManaSelectionContinuation(
+            decisionId = decisionId,
+            inner = continuation,
+            manaCost = manaCost,
+            availableSources = decision.availableSources
+        )
+        return ExecutionResult.paused(
+            state.withPendingDecision(decision).pushContinuation(frame),
+            decision,
+            listOf(
+                DecisionRequestedEvent(
+                    decisionId = decisionId,
+                    playerId = continuation.payerId,
+                    decisionType = "SELECT_MANA_SOURCES",
+                    prompt = decision.prompt
+                )
+            )
+        )
+    }
+
+    /**
+     * Applies the payer's source picks, then finishes the payment [manaSourceWindow] interrupted.
+     * Declining here is the same outcome as answering "no" to the original prompt.
+     */
+    private fun resumeManaSelection(
+        state: GameState,
+        continuation: CostPaymentManaSelectionContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is ManaSourcesSelectedResponse) {
+            return ExecutionResult.error(state, "Expected mana sources selected response for cost payment")
+        }
+        val inner = continuation.inner
+        val floated = ManaPaymentWindow.floatSelectedMana(
+            state, inner.payerId, continuation.manaCost, response, continuation.availableSources, services
+        )
+        if (!floated.paid) return declined(floated.state, inner, checkForMore)
+
+        val execution = paymentService.performPayment(
+            floated.state, inner.payerId, inner.cost, inner.sourceId, emptyMap()
+        )
+        return if (execution.success) {
+            paid(execution.state, floated.events + execution.events, inner, checkForMore)
+        } else {
+            declined(floated.state, inner, checkForMore)
+        }
     }
 
     private fun resumeSelection(

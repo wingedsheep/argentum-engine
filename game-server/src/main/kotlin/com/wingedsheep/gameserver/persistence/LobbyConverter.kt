@@ -6,6 +6,7 @@ import com.wingedsheep.gameserver.lobby.LobbyPlayerState
 import com.wingedsheep.gameserver.lobby.LobbyState
 import com.wingedsheep.gameserver.lobby.TournamentFormat
 import com.wingedsheep.gameserver.lobby.TournamentLobby
+import com.wingedsheep.gameserver.cube.ResolvedCube
 import com.wingedsheep.gameserver.persistence.dto.*
 import com.wingedsheep.engine.limited.BoosterGenerator
 import com.wingedsheep.gameserver.sealed.SealedPlayerState
@@ -32,6 +33,7 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
         setCodes = setCodes,
         setNames = setNames,
         format = format.name,
+        rules = rules.name,
         boosterCount = boosterCount,
         maxPlayers = maxPlayers,
         pickTimeSeconds = pickTimeSeconds,
@@ -53,6 +55,14 @@ fun TournamentLobby.toPersistent(): PersistentTournamentLobby {
                 submittedSideboard = playerState.submittedSideboard
             )
         },
+        cubeName = cube?.name,
+        cubeCardNames = cube?.cards?.map { it.name }.orEmpty(),
+        cubeBasicLandSetCode = cube?.basicLandSetCode,
+        cubePackSize = cube?.packSize,
+        cubeDealerRemainingCardNames = cubeDealerRemainingCards().map { it.name },
+        cubePoolPlay = cubePoolPlay,
+        bannedCardNames = bannedCardNames,
+        includedSetProducts = includedSetProducts,
         currentPackNumber = currentPackNumber,
         currentPickNumber = currentPickNumber,
         playerOrder = getPlayerOrderForPersistence(),
@@ -93,12 +103,23 @@ fun restoreTournamentLobby(
     cardRegistry: CardRegistry,
     boosterGenerator: BoosterGenerator
 ): Pair<TournamentLobby, List<PlayerIdentity>> {
+    val format = TournamentFormat.valueOf(persistent.format)
     val lobby = TournamentLobby(
         lobbyId = persistent.lobbyId,
         setCodes = persistent.setCodes,
         setNames = persistent.setNames,
         boosterGenerator = boosterGenerator,
-        format = TournamentFormat.valueOf(persistent.format),
+        format = format,
+        // A row written before the Rules axis existed carries null and has to be inferred. Its
+        // deckFormat was never persisted either (a pre-existing gap), so the pack shape is all
+        // there is to go on — which is exactly what the old code derived commander-ness from
+        // whenever it read a restored lobby.
+        rules = persistent.rules
+            ?.let { runCatching { com.wingedsheep.sdk.core.GameRules.valueOf(it) }.getOrNull() }
+            ?: com.wingedsheep.sdk.core.GameRules.inferred(
+                commanderPackShape = format.isCommanderFormat,
+                deckFormat = null,
+            ),
         boosterCount = persistent.boosterCount,
         maxPlayers = persistent.maxPlayers,
         pickTimeSeconds = persistent.pickTimeSeconds,
@@ -111,6 +132,29 @@ fun restoreTournamentLobby(
             .getOrDefault(com.wingedsheep.sdk.core.AttackMode.MULTIPLE),
         randomTeams = persistent.randomTeams
     )
+    lobby.bannedCardNames = persistent.bannedCardNames
+    lobby.includedSetProducts = persistent.includedSetProducts
+    if (persistent.cubeName != null &&
+        persistent.cubeBasicLandSetCode != null &&
+        persistent.cubePackSize != null
+    ) {
+        val cubeCards = persistent.cubeCardNames.mapNotNull(cardRegistry::getCard)
+        lobby.configureCube(
+            ResolvedCube(
+                name = persistent.cubeName,
+                cards = cubeCards,
+                basicLandSetCode = persistent.cubeBasicLandSetCode,
+                packSize = persistent.cubePackSize,
+            )
+        )
+        // configureCube() clears the flag (it is cube-scoped), so restore it afterwards.
+        lobby.cubePoolPlay = persistent.cubePoolPlay
+        if (persistent.cubeDealerRemainingCardNames.isNotEmpty()) {
+            lobby.restoreCubeDealer(
+                persistent.cubeDealerRemainingCardNames.mapNotNull(cardRegistry::getCard)
+            )
+        }
+    }
     // FFA in-flight state (last standings are deliberately not persisted — after a restart the
     // pod simply readies up for the next game).
     lobby.ffaGameSessionId = persistent.ffaGameSessionId

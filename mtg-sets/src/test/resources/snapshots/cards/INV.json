@@ -940,8 +940,7 @@
                     ],
                     "creatureTypes": [
                         "Saproling"
-                    ],
-                    "imageUri": "/images/tokens/inv-saproling.jpeg"
+                    ]
                 }
             ]
         },
@@ -1030,7 +1029,8 @@
                 }
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Atalya, Samite Master
@@ -1141,8 +1141,7 @@
                     ],
                     "creatureTypes": [
                         "Saproling"
-                    ],
-                    "imageUri": "/images/tokens/inv-saproling.jpeg"
+                    ]
                 }
             ]
         },
@@ -8741,7 +8740,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Phyrexian Altar
@@ -9958,7 +9958,6 @@
                             "creatureTypes": [
                                 "Reflection"
                             ],
-                            "imageUri": "/images/tokens/inv-reflection.jpeg",
                             "controller": {
                                 "type": "PlayerRef",
                                 "player": "TriggeringPlayer"
@@ -10024,7 +10023,9 @@
                         "destination": "Hand"
                     }
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ],
         "activatedAbilities": [
@@ -11120,8 +11121,7 @@
                             ],
                             "creatureTypes": [
                                 "Saproling"
-                            ],
-                            "imageUri": "/images/tokens/inv-saproling.jpeg"
+                            ]
                         }
                     }
                 }
@@ -11239,7 +11239,9 @@
                     },
                     "descriptionOverride": "You may exile this creature. If you do, shuffle all creature cards from your graveyard into your library."
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ]
     },
@@ -11640,8 +11642,7 @@
                     ],
                     "creatureTypes": [
                         "Saproling"
-                    ],
-                    "imageUri": "/images/tokens/inv-saproling.jpeg"
+                    ]
                 }
             }
         ]
@@ -11688,8 +11689,7 @@
             ],
             "creatureTypes": [
                 "Saproling"
-            ],
-            "imageUri": "/images/tokens/inv-saproling.jpeg"
+            ]
         }
     },
     "metadata": {
@@ -13210,7 +13210,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Spreading Plague
@@ -13438,7 +13439,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Stand or Fall
@@ -16651,8 +16653,7 @@
                     ],
                     "creatureTypes": [
                         "Saproling"
-                    ],
-                    "imageUri": "/images/tokens/inv-saproling.jpeg"
+                    ]
                 },
                 "triggerCondition": "WasKicked"
             }
@@ -17557,7 +17558,8 @@
                 ]
             }
         }
-    ]
+    ],
+    "hasNoManaCost": true
 }
 
 // Wayfaring Giant

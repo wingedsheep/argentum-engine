@@ -633,6 +633,16 @@ class MoveCollectionExecutor(
                 if (newState.projectedState.hasKeyword(cardId, Keyword.INDESTRUCTIBLE)) {
                     continue
                 }
+                // CR 122.1c — a shield counter replaces destruction by an effect, one counter per
+                // destruction. A board wipe destroys each permanent as a separate destruction event,
+                // so each shielded permanent spends exactly one counter and survives. Ordered ahead
+                // of regeneration for the reason given in `ZoneMovementUtils.destroyPermanent`.
+                val shielded = consumeShieldCounter(newState, cardId)
+                if (shielded != null) {
+                    newState = shielded.first
+                    events.add(shielded.second)
+                    continue
+                }
                 if (!noRegenerate) {
                     val (shieldState, wasRegenerated) = ZoneMovementUtils.applyRegenerationShields(newState, cardId)
                     if (wasRegenerated) {
@@ -658,9 +668,10 @@ class MoveCollectionExecutor(
                 else -> destPlayerId
             }
 
-            // Face-down battlefield entry (morph/manifest): derive each card's turn-up data from
-            // its identity and the mode. Per-card because manifested cards turn up for their own
-            // (differing) mana costs. Exile face-down (Hideaway) is just hidden — no turn-up data.
+            // Face-down battlefield entry (morph/manifest/disguise/cloak): derive each card's
+            // turn-up data from its identity and the mode. Per-card because manifested and cloaked
+            // cards turn up for their own (differing) mana costs. Exile face-down (Hideaway) is
+            // just hidden — no turn-up data.
             val isBattlefieldFaceDown = faceDown != null && destZone == Zone.BATTLEFIELD
             val morphData = if (isBattlefieldFaceDown) {
                 val cardDefinitionId = newState.getEntity(cardId)?.get<CardComponent>()?.cardDefinitionId
@@ -678,7 +689,7 @@ class MoveCollectionExecutor(
                 tappedAndAttacking = destination.placement == ZonePlacement.TappedAndAttacking,
                 faceDown = isBattlefieldFaceDown,
                 morphData = morphData,
-                manifested = isBattlefieldFaceDown && faceDown == FaceDownMode.MANIFEST,
+                faceDownMode = if (isBattlefieldFaceDown) faceDown else null,
                 faceDownExile = faceDown != null && destZone == Zone.EXILE
             )
 
@@ -739,6 +750,8 @@ class MoveCollectionExecutor(
         if (moveType == MoveType.Discard && cards.isNotEmpty()) {
             val discardNames = cards.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
             events.add(CardsDiscardedEvent(destPlayerId, cards, discardNames))
+            newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+                .trackDiscard(newState, destPlayerId, cards)
         }
 
         // Emit sacrifice event if configured. Track the per-turn sacrifice count + Food

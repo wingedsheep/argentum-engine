@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.copy.CopyExceptionApplier
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.event.DelayedTriggeredAbility
@@ -14,6 +15,8 @@ import com.wingedsheep.engine.event.GrantedTriggeredAbility
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -22,9 +25,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
-import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Zone
-import com.wingedsheep.sdk.model.CreatureStats
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.conditions.SourceIsRingBearer
@@ -43,6 +44,14 @@ import kotlin.reflect.KClass
  *
  * Creates N token copies of a targeted permanent (resolved via EffectTarget).
  * Used for "Create X tokens that are copies of target token you control."
+ *
+ * **Aura copies (CR 303.4h).** A token copy of an Aura is put onto the battlefield without being
+ * cast, so it doesn't target — its controller instead *chooses* what it enchants as it enters,
+ * bound by the copied Aura's own enchant restriction (CR 303.4f; targeting restrictions such as
+ * hexproof and shroud are ignored). The choice is raised *before* the token exists, so the token
+ * enters already attached and its enters-the-battlefield triggers see the attachment. If there is
+ * no legal object to enchant, the token isn't created at all (CR 303.4g) — Yenna, Redtooth Regent
+ * copying an Aura whose only legal hosts have left the battlefield.
  */
 class CreateTokenCopyOfTargetExecutor(
     private val amountEvaluator: DynamicAmountEvaluator = DynamicAmountEvaluator(),
@@ -84,35 +93,62 @@ class CreateTokenCopyOfTargetExecutor(
         )
         if (replacementResult != null) return replacementResult
 
+        // An Aura token needs its host chosen before it can be created (CR 303.4h) — the copy's
+        // type line decides, so read it off the copied CardComponent (copiable values only).
+        if (auraTypeLineOf(effect, targetCard).isAura) {
+            return AuraTokenHostChooser.pause(
+                state = state,
+                effect = effect,
+                context = context,
+                auraDefinitionId = targetCard.cardDefinitionId,
+                auraName = targetCard.name,
+                controllerId = controllerId,
+                remaining = com.wingedsheep.engine.core.GameLimits
+                    .cappedTokenCount(count, "target-copy tokens"),
+                cardRegistry = cardRegistry,
+            )
+        }
+
+        return createTokens(state, effect, context, controllerId, count, auraHostId = null)
+    }
+
+    /**
+     * Create [count] token copies of the effect's target. When [auraHostId] is non-null every
+     * created token enters attached to it (the Aura path — see the class docs); otherwise the
+     * tokens enter unattached. Split out of [execute] so the Aura host-choice continuation can
+     * re-enter here once the controller has picked a host.
+     */
+    internal fun createTokens(
+        state: GameState,
+        effect: CreateTokenCopyOfTargetEffect,
+        context: EffectContext,
+        controllerId: EntityId,
+        count: Int,
+        auraHostId: EntityId?,
+    ): EffectResult {
+        val targetId = context.resolveTarget(effect.target, state)
+            ?: return EffectResult.success(state)
+        val targetContainer = state.getEntity(targetId)
+            ?: return EffectResult.success(state)
+        val targetCard = targetContainer.get<CardComponent>()
+            ?: return EffectResult.success(state)
+
         var newState = state
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
         val createdTokens = mutableListOf<EntityId>()
 
-        repeat(com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "target-copy tokens")) {
+        // Every "except …" clause (CR 707.9) — added/removed types, added keywords, base P/T,
+        // colors, no-mana-cost — is applied by the shared CopyExceptionApplier, so the token
+        // path and the "permanent becomes a copy" path can't drift. Both the exceptions view and
+        // the resulting component are loop-invariant, so they are built once rather than per token.
+        val exceptions = effect.copyExceptions
+        val tokenCard = CopyExceptionApplier.apply(targetCard, exceptions)
+            .copy(ownerId = controllerId)
+
+        val cappedCount = com.wingedsheep.engine.core.GameLimits.cappedTokenCount(count, "target-copy tokens")
+        for (index in 0 until cappedCount) {
             val (tokenId, stateWithId) = newState.newEntity()
             newState = stateWithId
-            val op = effect.overridePower
-            val ot = effect.overrideToughness
-            val overrideStats = if (op != null && ot != null) {
-                CreatureStats(op, ot)
-            } else null
-            val extraCardTypes = effect.addCardTypes
-                .mapNotNull { name -> runCatching { CardType.valueOf(name.uppercase()) }.getOrNull() }
-                .toSet()
-            val tokenTypeLine = targetCard.typeLine.copy(
-                cardTypes = (effect.overrideCardTypes ?: targetCard.typeLine.cardTypes) + extraCardTypes,
-                supertypes = targetCard.typeLine.supertypes + effect.addedSupertypes - effect.removedSupertypes,
-                subtypes = effect.overrideSubtypes ?: (targetCard.typeLine.subtypes + effect.addedSubtypes)
-            )
-            val tokenCard = targetCard.copy(
-                ownerId = controllerId,
-                typeLine = tokenTypeLine,
-                baseStats = overrideStats ?: targetCard.baseStats,
-                baseKeywords = targetCard.baseKeywords + effect.addedKeywords,
-                // overrideColors replaces outright; addedColors unions onto the copied colors
-                // ("red ... in addition to its other colors"). overrideColors wins if both set.
-                colors = effect.overrideColors ?: (targetCard.colors + effect.addedColors)
-            )
 
             val components = mutableListOf<Component>(
                 tokenCard,
@@ -150,6 +186,13 @@ class CreateTokenCopyOfTargetExecutor(
                 )
             }
 
+            // CR 303.4h: an Aura token enters already attached to the host its controller chose
+            // before it was created, so the attachment is in place for any enters-the-battlefield
+            // trigger and for the very first state-based check.
+            if (auraHostId != null) {
+                components.add(AttachedToComponent(auraHostId))
+            }
+
             var container = ComponentContainer.of(*components.toTypedArray())
 
             if (staticAbilityHandler != null) {
@@ -166,7 +209,39 @@ class CreateTokenCopyOfTargetExecutor(
                 .applyCreatedTokenEntryTap(
                     newState, tokenId, controllerId, definedTapped = effect.tapped,
                 )
-            createdTokens.add(tokenId)
+            // Wire the host side of the attachment and announce it, so "becomes attached"
+            // triggers (Eriette, the Beguiler) fire for an Aura token the same way they do when
+            // an Aura card is put onto the battlefield attached (CR 603.2e).
+            if (auraHostId != null) {
+                newState = newState.updateEntity(auraHostId) { hostContainer ->
+                    val existing = hostContainer.get<AttachmentsComponent>()
+                    hostContainer.with(
+                        AttachmentsComponent((existing?.attachedIds ?: emptyList()) + tokenId)
+                    )
+                }
+                events.add(
+                    com.wingedsheep.engine.core.PermanentAttachedEvent(
+                        attachmentId = tokenId,
+                        attachmentName = tokenCard.name,
+                        attachedToId = auraHostId,
+                        controllerId = controllerId,
+                    )
+                )
+            }
+
+            // As-enters "enters with counters" (CR 614.1c): the copied card's own
+            // EntersWithCounters (a copy of a creature that "enters with a +1/+1 counter"), plus
+            // global grants from other permanents (Gev, Scaled Scorch). BattlefieldEntry.place skips
+            // this setup, so apply it here the way the standard entry pipeline does. Non-pausing.
+            val (afterCounters, counterEvents) = if (cardRegistry != null) {
+                com.wingedsheep.engine.handlers.effects.EntersWithReplacements
+                    .applyOnEntry(newState, tokenId, controllerId, cardRegistry)
+            } else {
+                com.wingedsheep.engine.handlers.effects.EntersWithReplacements
+                    .applyGlobal(newState, tokenId, controllerId)
+            }
+            newState = afterCounters
+            events.addAll(counterEvents)
 
             for (ability in effect.triggeredAbilities) {
                 val grant = GrantedTriggeredAbility(
@@ -209,6 +284,48 @@ class CreateTokenCopyOfTargetExecutor(
                 )
             }
 
+            // As-enters "choose X as this enters" (CR 614.12) + granted riot (CR 702.136/702.136b).
+            // A token copy of a creature that "enters with your choice of …" — or a Spider entering
+            // while Spider-Punk grants it riot — pauses for a player decision. We deliberately do NOT
+            // emit this token's entry ZoneChangeEvent when we pause: the choice resumer synthesizes it
+            // after the choice resolves, so ETB triggers fire exactly once (mirroring
+            // TokenFromDefinition). Counters already added ride along as carryEvents.
+            val choicePlan = if (cardRegistry != null) {
+                TokenEntryReplacements.firstEntersWithChoice(newState, tokenId, cardRegistry)
+            } else null
+            if (choicePlan != null) {
+                val remaining = cappedCount - (index + 1)
+                var pausedState = newState
+                if (remaining > 0) {
+                    // The rest of the batch resumes below the choice's continuation once this token's
+                    // choice (and every granted-riot instance) has fully resolved.
+                    pausedState = pausedState.pushContinuation(
+                        com.wingedsheep.engine.core.CreateTokenCopyRemainingContinuation(
+                            decisionId = "create-token-copy-remaining-${UUID.randomUUID()}",
+                            effect = effect,
+                            context = context,
+                            controllerId = controllerId,
+                            remaining = remaining,
+                        )
+                    )
+                }
+                val paused = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+                    .pauseForEntersWithChoice(
+                        state = pausedState,
+                        entityId = tokenId,
+                        controllerId = controllerId,
+                        cardComponent = tokenCard,
+                        choice = choicePlan.choice,
+                        fromZone = null,
+                        carryEvents = events,
+                        syntheticRiot = choicePlan.syntheticRiot,
+                        syntheticRiotRemaining = choicePlan.syntheticRiotRemaining,
+                    )
+                if (paused != null) return EffectResult.from(paused)
+                // A null pause means the choice couldn't actually be presented (e.g. no legal object) —
+                // fall through and complete this token's entry normally.
+            }
+
             events.add(
                 ZoneChangeEvent(
                     entityId = tokenId,
@@ -227,6 +344,18 @@ class CreateTokenCopyOfTargetExecutor(
                 .applySagaEntryIfNeeded(newState, tokenId)
             newState = sagaState
             events.addAll(sagaEvents)
+
+            // CR 306.5b: likewise a token copy of a planeswalker enters with the copied printed
+            // loyalty (a copiable value, CR 707.2). Without it state-based actions (CR 704.5i)
+            // bin the token the instant it enters. No-op for non-planeswalkers.
+            cardRegistry?.let { registry ->
+                val (loyaltyState, loyaltyEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+                    .applyIntrinsicEntryCountersIfNeeded(newState, tokenId, controllerId, registry)
+                newState = loyaltyState
+                events.addAll(loyaltyEvents)
+            }
+
+            createdTokens.add(tokenId)
         }
 
         // If sacrificeAtStep is set, create a delayed trigger to sacrifice each created token
@@ -297,4 +426,15 @@ class CreateTokenCopyOfTargetExecutor(
             updatedCollections = mapOf(com.wingedsheep.sdk.scripting.effects.CREATED_TOKENS to createdTokens.toList())
         )
     }
+
+    /**
+     * The type line the copy will actually have, after every "except …" type clause. Read to
+     * decide whether the Aura host choice applies — "except it's a creature" turns an Aura copy
+     * into something that isn't an Aura and needs no host. Shares [CopyExceptionApplier.typeLine]
+     * with the token that is actually built, so the two can't disagree about what the copy is.
+     */
+    private fun auraTypeLineOf(
+        effect: CreateTokenCopyOfTargetEffect,
+        targetCard: CardComponent,
+    ) = CopyExceptionApplier.typeLine(targetCard.typeLine, effect.copyExceptions)
 }

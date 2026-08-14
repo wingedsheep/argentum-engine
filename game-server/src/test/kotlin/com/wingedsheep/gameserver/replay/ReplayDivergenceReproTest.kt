@@ -69,7 +69,7 @@ class ReplayDivergenceReproTest : ScenarioTestBase() {
                 session.keepHand(p1)
                 session.keepHand(p2)
 
-                playRandomGame(session, enumerator, rng, maxTurns = 25)
+                playRandomGame(session, enumerator, rng, maxTurns = 50)
 
                 val setup = session.getReplaySetup() ?: continue
                 val liveFinal = session.getStateForTesting()
@@ -85,9 +85,10 @@ class ReplayDivergenceReproTest : ScenarioTestBase() {
                     yields = session.getReplayYields(),
                 )
 
-                // The durable store + the in-progress Redis snapshot both serialize the action log
-                // via persistenceJson. If any recorded action/response type fails to round-trip, the
-                // saved replay is silently short — exactly the "partial replay" symptom.
+                // Every write to the store — the periodic in-progress flush and the final record
+                // alike — serializes the action log via persistenceJson. If any recorded
+                // action/response type fails to round-trip, the saved replay is silently short —
+                // exactly the "partial replay" symptom.
                 val roundTripped = runCatching { ReplayCodec.decode(ReplayCodec.encode(replay)) }
                 if (roundTripped.getOrNull() != replay) {
                     val msg = "game $gi: action log does NOT round-trip through the codec " +

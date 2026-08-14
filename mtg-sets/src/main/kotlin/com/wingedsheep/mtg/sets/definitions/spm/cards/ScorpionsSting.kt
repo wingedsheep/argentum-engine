@@ -20,6 +20,7 @@ val ScorpionsSting = card("Scorpion's Sting") {
         rarity = Rarity.COMMON
         collectorNumber = "65"
         artist = "Lee Woo-chul"
+        flavorText = "\"I'm going to kill you, bug.\""
         imageUri = "https://cards.scryfall.io/normal/front/0/f/0fb03437-32cf-4c97-bf91-ea8b2ad3f964.jpg?1757377164"
     }
 }

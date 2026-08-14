@@ -85,6 +85,30 @@ class CombatManager(
         damagePhase.applyCombatDamage(state, firstStrike)
 
     /**
+     * Drop the damage assignments chosen in the first-strike combat damage step, so the regular
+     * one assigns from scratch.
+     *
+     * CR 510.1 / 510.4: the second combat damage step is its own assignment — every creature that
+     * still deals damage (double strikers, plus everything that had no first strike) announces a
+     * fresh division. Carrying the first-strike [DamageAssignmentComponent] over is wrong whenever
+     * first-strike damage killed only *some* of the blockers: the amounts aimed at the dead ones
+     * would spill onto the defending player through trample, while the blockers still blocking
+     * were never assigned the lethal damage CR 702.19b requires first.
+     *
+     * Only the assignment is cleared. Damage assignment *order* ([DamageAssignmentOrderComponent],
+     * [AttackerOrderComponent]) is chosen once per combat and stays put.
+     */
+    fun clearDamageAssignmentsForNewDamageStep(state: GameState): GameState {
+        var newState = state
+        for ((entityId, _) in state.findEntitiesWith<DamageAssignmentComponent>()) {
+            newState = newState.updateEntity(entityId) { container ->
+                container.without<DamageAssignmentComponent>()
+            }
+        }
+        return newState
+    }
+
+    /**
      * Re-pause the same combat damage step for the next chooser (CR 510.1c sequencing and the
      * CR 702.22j/k two-actor banding case). Delegates to [CombatDamageManager.repauseCombatResolution].
      */

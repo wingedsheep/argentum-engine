@@ -53,7 +53,7 @@ class AddCountersExecutor : EffectExecutor<AddCountersEffect> {
 
         val newState = state.updateEntity(targetId) { container ->
             container.with(current.withAdded(counterType, modifiedCount))
-        }.let { DamageUtils.markCounterPlacedOnCreature(it, context.controllerId, targetId) }
+        }.let { DamageUtils.markCounterPlacedOnCreature(it, context.controllerId, targetId, counterTypeToString(counterType)) }
 
         val entityName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: ""
 

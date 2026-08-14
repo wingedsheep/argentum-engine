@@ -112,7 +112,7 @@ class CaptainStormCosmiumRaiderScenarioTest : FunSpec({
 
         val captain = driver.putCreatureOnBattlefield(me, "Captain Storm, Cosmium Raider")
         // Ragavan is a Monkey Pirate; it is a valid target for the trigger.
-        val ragavan = driver.putCreatureOnBattlefield(me, "Ragavan, Nimble Pilferer")
+        val ragavan = driver.putCreatureOnBattlefield(me, "Test Hasty Prospector")
 
         val artifact = driver.putCardInHand(me, "Test Artifact")
         driver.castSpell(me, artifact).isSuccess shouldBe true

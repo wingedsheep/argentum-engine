@@ -4,9 +4,11 @@ import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.EntitySnapshot
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import kotlinx.serialization.Serializable
@@ -94,7 +96,15 @@ data class EffectContext(
      * Read by `DynamicAmount.ManaSpentOnX`. Empty when X was unrestricted.
      */
     val manaSpentOnXByColor: Map<Color, Int> = emptyMap(),
-    val wasKicked: Boolean = false,
+    /**
+     * The optional-additional-cost mechanic declared for the spell being cast or resolved
+     * ([com.wingedsheep.sdk.scripting.ChoiceSlot.KICKED] for kicker, `BARGAINED` for bargain), or
+     * null when none was. Read by `WasKicked` and by `CastChoiceMade(slot)` — the latter is how a
+     * spell's own "if this spell was bargained" rider resolves while the spell is still on the
+     * stack, before any durable cast-choices bag exists, and how a `CostGating.OnlyIf` cost
+     * reduction is priced against the branch being enumerated.
+     */
+    val declaredCostSlot: ChoiceSlot? = null,
     /** True if the spell's optional Blight additional cost was paid (BlightOrPay path chosen). */
     val wasBlightPaid: Boolean = false,
     /**
@@ -105,6 +115,10 @@ data class EffectContext(
     val wasWaterbendPaid: Boolean = false,
     /** True if the spell was cast for its sneak cost (CR 702.190). Read by `SneakCostWasPaid`. */
     val wasSneaked: Boolean = false,
+    /** True if the spell was cast using web-slinging (CR 702.188). Read by `WebSlungCostWasPaid`. */
+    val wasWebSlung: Boolean = false,
+    /** True if the spell was cast for its mayhem cost (CR 702.187). Read by `MayhemCostWasPaid`. */
+    val wasMayhem: Boolean = false,
     // --- Cast-time state ---
     /**
      * Projected snapshots of permanents sacrificed as part of the cost (Rule 112.7a /
@@ -203,6 +217,13 @@ data class EffectContext(
     /** The spell or ability that targeted a permanent (for ward triggers) */
     val targetingSourceEntityId: EntityId? = null,
     /**
+     * The host an attachment came *off*, captured when a "becomes unattached" trigger fired. Backs
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.AttachedToTriggeringPermanent] there,
+     * where the live `AttachedToComponent` is by resolution either gone or already re-pointed at a
+     * new host — Stitcher's Graft's "sacrifice that permanent". Null for every other trigger.
+     */
+    val triggerUnattachedFromEntityId: EntityId? = null,
+    /**
      * The defending player for a per-defender combat legality check (CR 508.1 attack
      * declaration). Bound by [com.wingedsheep.engine.mechanics.combat.rules.CantAttackUnlessDefenderRule]
      * so `Player.DefendingPlayer` conditions ("can't attack unless defending player controls
@@ -283,6 +304,11 @@ data class EffectContext(
      */
     val triggerScryCount: Int? = null,
     /**
+     * Number of cards discarded in the batch that fired this trigger (CR 603.2c). Read by
+     * `ContextPropertyKey.TRIGGER_DISCARD_COUNT` (Magmakin Artillerist).
+     */
+    val triggerDiscardCount: Int? = null,
+    /**
      * Discover value N of the discover that fired this trigger (CR 701.57). Read by
      * `ContextPropertyKey.TRIGGER_DISCOVER_VALUE` (Curator of Sun's Creation).
      */
@@ -309,6 +335,20 @@ data class EffectContext(
     val chosenColor: Color? = null,
     /** Creature type chosen during casting (e.g., Aphetto Dredging) */
     val chosenCreatureType: String? = null,
+    /**
+     * The opponent the controller picked to make a
+     * [com.wingedsheep.sdk.scripting.effects.Chooser.Opponent] decision, when the game has more
+     * than one opponent to choose from (CR 601.7a / 602.3a and the matching resolution-time
+     * rulings). Set by
+     * [com.wingedsheep.engine.core.ChooseOpponentDeciderContinuation]'s resumer just before the
+     * effect is re-executed, and read back by
+     * [com.wingedsheep.engine.handlers.effects.ChooserResolution.resolve].
+     *
+     * Resolution-scoped on purpose: the stamp rides only the re-run context, so each separate
+     * "an opponent chooses" step gets its own prompt. Null in two-player games (a sole opponent
+     * is a forced choice, never asked) and before the pick is made.
+     */
+    val opponentDeciderId: EntityId? = null,
     // --- Zone state ---
     /** Zone the spell was cast from (e.g., HAND, GRAVEYARD for flashback) */
     val castFromZone: Zone? = null,
@@ -447,5 +487,74 @@ data class EffectContext(
             }
             return result
         }
+
+        /**
+         * Build the execution context for a triggered ability sitting on the stack.
+         *
+         * Shared by the two places that need to evaluate the ability's own text against the game
+         * state: [com.wingedsheep.engine.mechanics.stack.StackResolver] when the ability resolves,
+         * and [com.wingedsheep.engine.event.TriggerProcessor] when it resolves a modal
+         * `dynamicChooseCount` as the ability goes onto the stack (CR 603.3c). Both must see the
+         * same trigger payload — an `xValue`, a `MODES_CHOSEN_ON_TRIGGERING_SPELL` count or a
+         * carried pipeline collection that only one of them populated would read as zero/absent.
+         */
+        fun forTriggeredAbility(
+            ability: TriggeredAbilityOnStackComponent,
+            targets: List<ChosenTarget> = emptyList(),
+            targetRequirements: List<TargetRequirement> = emptyList()
+        ): EffectContext = EffectContext(
+            sourceId = ability.sourceId,
+            controllerId = ability.controllerId,
+            granterId = ability.granterId,
+            abilityIdentity = ability.abilityIdentity,
+            targets = targets,
+            triggerDamageAmount = ability.triggerDamageAmount,
+            triggerCounterCount = ability.triggerCounterCount,
+            triggerTotalCounterCount = ability.triggerTotalCounterCount,
+            triggerLastKnownCounters = ability.triggerLastKnownCounters,
+            triggerLastKnownDamageDealtByPlayers = ability.triggerLastKnownDamageDealtByPlayers,
+            triggerLastKnownBlockingOrBlockedByIds = ability.triggerLastKnownBlockingOrBlockedByIds,
+            triggeringEntityId = ability.triggeringEntityId,
+            triggeringPlayerId = ability.triggeringPlayerId,
+            targetingSourceEntityId = ability.targetingSourceEntityId,
+            triggerUnattachedFromEntityId = ability.triggerUnattachedFromEntityId,
+            triggerLastKnownPower = ability.lastKnownPower,
+            triggerLastKnownToughness = ability.lastKnownToughness,
+            triggerDiedBatchTotalPower = ability.diedBatchTotalPower,
+            enchantedCreatureLastKnownPower = ability.enchantedCreatureLastKnownPower,
+            triggerModesChosenCount = ability.triggerModesChosenCount,
+            triggerScryCount = ability.triggerScryCount,
+            triggerDiscardCount = ability.triggerDiscardCount,
+            triggerDiscoverValue = ability.triggerDiscoverValue,
+            triggerExcessDamageAmount = ability.triggerExcessDamageAmount,
+            triggerRecipientToughness = ability.triggerRecipientToughness,
+            triggerManaSpentOnTriggeringSpell = ability.triggerManaSpentOnTriggeringSpell,
+            triggerColorsSpentOnTriggeringSpell = ability.triggerColorsSpentOnTriggeringSpell,
+            triggerManaValueOfTriggeringSpell = ability.triggerManaValueOfTriggeringSpell,
+            triggerXValueOfTriggeringSpell = ability.triggerXValueOfTriggeringSpell,
+            xValue = ability.xValue,
+            damageDistribution = ability.damageDistribution,
+            chosenModes = ability.chosenModes,
+            modeTargetsOrdered = ability.modeTargetsOrdered,
+            modeTargetRequirements = ability.modeTargetRequirements,
+            pipeline = PipelineState(
+                namedTargets = buildNamedTargets(targetRequirements, targets) +
+                    (ability.carriedPipeline?.namedTargets ?: emptyMap()),
+                // Expose a batch trigger's captured permanents (the matching members of a
+                // PermanentsEnteredEvent batch) so a ForEachInCollectionEffect payoff can iterate
+                // them — "for each of them, create a tapped copy of it" (Kambal). The copy executor
+                // reads each entity at resolution, so any that left the battlefield meanwhile no-op.
+                storedCollections = (if (ability.capturedEntityIds.isNotEmpty()) {
+                    mapOf(PipelineState.TRIGGER_CAPTURED_COLLECTION to ability.capturedEntityIds)
+                } else emptyMap()) + (ability.carriedPipeline?.storedCollections ?: emptyMap()),
+                // A `ReflexiveTriggerEffect`'s action half (e.g. `Amass`, a discard) may have stashed
+                // subtype groups or scalar values the reflexive effect reads (CR 603.12) — carried
+                // across the stack round-trip since this ability builds a fresh context on resolve.
+                storedSubtypeGroups = ability.carriedPipeline?.storedSubtypeGroups ?: emptyMap(),
+                chosenValues = ability.carriedPipeline?.chosenValues ?: emptyMap(),
+                storedNumbers = ability.carriedPipeline?.storedNumbers ?: emptyMap(),
+                storedStringLists = ability.carriedPipeline?.storedStringLists ?: emptyMap()
+            )
+        )
     }
 }

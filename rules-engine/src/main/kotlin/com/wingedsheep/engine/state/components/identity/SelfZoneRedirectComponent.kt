@@ -6,7 +6,9 @@ import kotlinx.serialization.Serializable
 
 /**
  * A card's own "would be put into [zone] from anywhere → redirect instead" replacement
- * effect(s), carried on the card entity so they function in **every** zone (CR 614.12), not
+ * effect(s), carried on the card entity so they function in **every** zone (CR 113.6b — an
+ * ability that states which zones it functions in functions only from those zones, and these say
+ * "from anywhere"), not
  * only while the source is on the battlefield.
  *
  * Built at entity creation from the printed [RedirectZoneChange] effects marked

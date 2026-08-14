@@ -63,6 +63,44 @@
     ]
 }
 
+// Creeping Mold
+{
+    "name": "Creeping Mold",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target artifact, enchantment, or land.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "artifact|enchantment|land"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "UNCOMMON",
+        "artist": "David Seeley",
+        "flavorText": "\"Mold could catch you.\"\n—Suq'Ata insult",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36e7691f-c771-4451-ac54-3532ca10d48f.jpg?1783946984"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Elven Cache
 {
     "name": "Elven Cache",

@@ -26,7 +26,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 /**
- * Substrate tests for the "Whenever you scry" trigger (CR 701.18):
+ * Substrate tests for the "Whenever you scry" trigger (CR 701.22):
  * `Patterns.Library.scry(N)` ends by emitting [ScriedEvent], which drives
  * `Triggers.WheneverYouScry` and surfaces "the number of cards looked at" via
  * [ContextPropertyKey.TRIGGER_SCRY_COUNT].
@@ -82,7 +82,7 @@ class ScryTriggerScenarioTest : FunSpec({
         state.getEntity(id)?.get<CountersComponent>()?.getCount(CounterType.PLUS_ONE_PLUS_ONE) ?: 0
 
     // Truncate a player's library to exactly [size] cards (top of library = front of list),
-    // so scry can be exercised against a library shorter than N (CR 701.18a) or empty (701.18d).
+    // so scry can be exercised against a library shorter than N (CR 701.22a) or empty (701.22d).
     fun GameTestDriver.truncateLibrary(player: EntityId, size: Int) {
         val key = ZoneKey(player, Zone.LIBRARY)
         replaceState(state.copy(zones = state.zones + (key to state.getZone(key).take(size))))
@@ -163,7 +163,7 @@ class ScryTriggerScenarioTest : FunSpec({
         driver.plusOneCounters(counter) shouldBe 4
     }
 
-    test("scry counts only the cards actually looked at when the library is shorter than N (CR 701.18a)") {
+    test("scry counts only the cards actually looked at when the library is shorter than N (CR 701.22a)") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
         val active = driver.activePlayer!!
@@ -181,7 +181,7 @@ class ScryTriggerScenarioTest : FunSpec({
         driver.plusOneCounters(counter) shouldBe 2
     }
 
-    test("scry with an empty library still fires the trigger with count 0 (CR 701.18d)") {
+    test("scry with an empty library still fires the trigger with count 0 (CR 701.22d)") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
         val active = driver.activePlayer!!
@@ -198,11 +198,11 @@ class ScryTriggerScenarioTest : FunSpec({
 
         val scried = driver.events.drop(before).filterIsInstance<ScriedEvent>().single()
         scried.count shouldBe 0
-        driver.plusOneCounters(watcher) shouldBe 1 // trigger fired (701.18d)
+        driver.plusOneCounters(watcher) shouldBe 1 // trigger fired (701.22d)
         driver.plusOneCounters(counter) shouldBe 0 // ... but scaled to 0 cards looked at
     }
 
-    test("scry 0 fires no trigger and emits no event (CR 701.18b)") {
+    test("scry 0 fires no trigger and emits no event (CR 701.22b)") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40))
         val active = driver.activePlayer!!

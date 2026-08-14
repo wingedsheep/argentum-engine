@@ -12,9 +12,11 @@ import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.legalactions.utils.CostEnumerationUtils
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
+import com.wingedsheep.engine.mechanics.mana.TapForGeneric
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.TriggeredAbilityEffectAppliedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
@@ -25,6 +27,7 @@ import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.DynamicHint
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
@@ -88,6 +91,15 @@ class GatedEffectExecutor(
             }
         }
 
+        // Gate.OnceEachTurn: the per-turn *effect* budget behind "Do this only once each turn".
+        // A synchronous test like WhenCondition, but it also *spends* the budget in the same step —
+        // check and stamp are atomic, so two instances of the ability resolving back to back can
+        // never both pass. Being inside any enclosing consent gate (the engine's lowering puts it
+        // there) is what makes declining a "you may" free.
+        if (gate is Gate.OnceEachTurn) {
+            return executeOnceEachTurn(state, gate, effect, context)
+        }
+
         // Gate.DoAction: an action-outcome gate, not a decision. Run `action` (which may pause for
         // its own sub-decisions); once it has fully drained, score it via the SuccessCriterion
         // against a pre-action snapshot to pick `then` (it happened) vs `otherwise` (it didn't).
@@ -118,6 +130,21 @@ class GatedEffectExecutor(
                 then.choices.none { checkFeasibility(state, context.controllerId, it.feasibilityCheck) }
             ) {
                 return EffectResult.success(state)
+            }
+            // CR 701.59b — "if a player is given the choice to collect evidence but is unable to
+            // exile cards with total mana value N or greater … they can't choose to collect
+            // evidence." The option must be absent, not offered and refused, so an unreachable
+            // threshold skips the prompt outright (the same treatment ReflexiveTriggerEffect gives
+            // the "you may collect evidence N. When you do, …" shape).
+            if (then is com.wingedsheep.sdk.scripting.effects.CollectEvidenceEffect) {
+                val collector = TargetResolutionUtils
+                    .resolvePlayerRef(then.player, context, state)
+                if (collector == null ||
+                    !com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
+                        .canCollect(state, collector, then.amount)
+                ) {
+                    return EffectResult.success(state)
+                }
             }
             // A declared feasibility that isn't met means the may-action is impossible — the player
             // "doesn't", so skip the prompt and run `otherwise` directly. This is the no-target
@@ -181,11 +208,15 @@ class GatedEffectExecutor(
         }
 
         val hint = when (gate) {
-            is Gate.MayDecide -> gate.hint ?: effect.hint
+            // A dynamic hint wins over the static one: it is the only thing distinguishing two
+            // instances of the same ability whose prompts are otherwise identical sentences.
+            is Gate.MayDecide -> gate.dynamicHint?.let { renderDynamicHint(state, it, context) }
+                ?: gate.hint ?: effect.hint
             is Gate.MayPay -> effect.hint
             is Gate.WhenCondition -> effect.hint // unreachable: handled by the synchronous branch above
             is Gate.DoAction -> effect.hint // unreachable: handled by the action-drain branch above
             is Gate.MayPayX -> effect.hint // unreachable: handled by the number-chooser branch above
+            is Gate.OnceEachTurn -> effect.hint // unreachable: handled by the budget branch above
         }
 
         // For a pay-gate, label the "yes" button with the concrete cost — a dynamic cost
@@ -198,11 +229,9 @@ class GatedEffectExecutor(
             id = decisionId,
             playerId = playerId,
             prompt = effect.description,
-            context = DecisionContext(
-                sourceId = context.sourceId,
-                sourceName = sourceName,
-                phase = DecisionPhase.RESOLUTION,
-                triggeringEntityId = context.triggeringEntityId,
+            context = decisionContext(
+                context,
+                sourceName,
                 inlineOnTrigger = (gate as? Gate.MayDecide)?.inlineOnTrigger ?: false
             ),
             yesText = payLabel ?: "Yes",
@@ -257,12 +286,7 @@ class GatedEffectExecutor(
             id = decisionId,
             playerId = playerId,
             prompt = "Pay $manaCost?",
-            context = DecisionContext(
-                sourceId = context.sourceId,
-                sourceName = sourceName,
-                phase = DecisionPhase.RESOLUTION,
-                triggeringEntityId = context.triggeringEntityId
-            ),
+            context = decisionContext(context, sourceName),
             yesText = "Pay $manaCost",
             noText = "Don't pay"
         )
@@ -296,7 +320,7 @@ class GatedEffectExecutor(
      * Resolve an in-resolution **waterbend** payment gate (Avatar: The Last Airbender):
      * "you may waterbend [manaCost]. Otherwise, [otherwise]." Surfaces a [SelectManaSourcesDecision]
      * that also lists the untapped artifacts/creatures the player may tap to help pay the generic
-     * (each {1}, via [CostEnumerationUtils.findWaterbendPermanents]); the shared
+     * (each {1}, via [CostEnumerationUtils.findTapForGenericPermanents]); the shared
      * [MayPayManaSelectionContinuation] resumer then taps them, pays the remainder with mana, and
      * runs [then] on payment or [otherwise] on decline. If the player can't possibly pay (no mana
      * and no tappable permanents), [otherwise] runs immediately with no pointless prompt — mirroring
@@ -313,9 +337,9 @@ class GatedEffectExecutor(
         val costUtils = CostEnumerationUtils(
             manaSolver, CostCalculator(cardRegistry), PredicateEvaluator(), cardRegistry
         )
-        val waterbendPermanents = costUtils.findWaterbendPermanents(state, playerId)
+        val waterbendPermanents = costUtils.findTapForGenericPermanents(state, playerId, TapForGeneric.WATERBEND)
         val affordable = manaSolver.canPay(state, playerId, manaCost) ||
-            costUtils.canAffordWithWaterbend(state, playerId, manaCost, waterbendPermanents)
+            costUtils.canAffordWithTapForGeneric(state, playerId, manaCost, waterbendPermanents)
         if (!affordable) {
             // Can't pay → the "unless" fires (e.g. discard a card).
             return otherwise?.let { effectExecutor(state, it, context) } ?: EffectResult.success(state)
@@ -350,12 +374,7 @@ class GatedEffectExecutor(
             } else {
                 "Waterbend $manaCost (tap artifacts/creatures to help)"
             },
-            context = DecisionContext(
-                sourceId = context.sourceId,
-                sourceName = sourceName,
-                phase = DecisionPhase.RESOLUTION,
-                triggeringEntityId = context.triggeringEntityId
-            ),
+            context = decisionContext(context, sourceName),
             availableSources = sourceOptions,
             requiredCost = manaCost.toString(),
             autoPaySuggestion = autoPaySuggestion,
@@ -393,6 +412,61 @@ class GatedEffectExecutor(
     }
 
     /**
+     * Resolve a [Gate.OnceEachTurn] gate — the per-turn action budget behind the printed rider
+     * "Do this only once each turn" (see [com.wingedsheep.sdk.scripting.TriggeredAbility.effectOncePerTurn]).
+     *
+     * The budget lives on the source permanent as a
+     * [TriggeredAbilityEffectAppliedThisTurnComponent] keyed by ability id, so two capped abilities
+     * on one permanent — or the same ability on two permanents — never share one. Spending it is
+     * part of the same step as the check: the stamped state is what [GatedEffect.then] executes
+     * against, so a second instance resolving immediately afterwards already sees a spent budget.
+     * An already-spent gate falls to [GatedEffect.otherwise] (normally absent), which is how CR
+     * 603.2h's "instances already on the stack do nothing as they resolve" is realised.
+     *
+     * A [Gate.OnceEachTurn.spend]`= false` gate is the read-only half of the same test: it lets
+     * `TriggerProcessor` put a check *outside* an optional ability's consent gate so a spent
+     * instance resolves silently instead of raising a pointless yes/no, without that check itself
+     * consuming the turn's use.
+     *
+     * A source with no entity in state (it left the battlefield before this resolved) has nowhere
+     * to keep the stamp; the effect still applies, matching how the other per-turn trackers behave
+     * for a departed permanent.
+     */
+    private fun executeOnceEachTurn(
+        state: GameState,
+        gate: Gate.OnceEachTurn,
+        effect: GatedEffect,
+        context: EffectContext
+    ): EffectResult {
+        val sourceId = context.sourceId
+        val alreadyApplied = sourceId
+            ?.let { state.getEntity(it) }
+            ?.get<TriggeredAbilityEffectAppliedThisTurnComponent>()
+            ?.hasApplied(gate.abilityId) == true
+
+        if (alreadyApplied) {
+            return effect.otherwise
+                ?.let { effectExecutor(state, it, context) }
+                ?: EffectResult.success(state)
+        }
+
+        if (!gate.spend) {
+            return effectExecutor(state, effect.then, context)
+        }
+
+        val stamped = if (sourceId != null && state.getEntity(sourceId) != null) {
+            state.updateEntity(sourceId) { container ->
+                val tracker = container.get<TriggeredAbilityEffectAppliedThisTurnComponent>()
+                    ?: TriggeredAbilityEffectAppliedThisTurnComponent()
+                container.with(tracker.withApplied(gate.abilityId))
+            }
+        } else {
+            state
+        }
+        return effectExecutor(stamped, effect.then, context)
+    }
+
+    /**
      * Resolve a [Gate.MayPayX] gate (the lowered `MayPayXForEffect`). Computes the most generic mana
      * the decision-maker can produce and, if any, pauses with a 0..max number chooser; the existing
      * [MayPayXContinuation] resumer (`resumeMayPayX`) then auto-taps the chosen X and runs
@@ -424,12 +498,7 @@ class GatedEffectExecutor(
             id = decisionId,
             playerId = playerId,
             prompt = "Pay {X}? Choose X (0 to decline)",
-            context = DecisionContext(
-                sourceId = context.sourceId,
-                sourceName = sourceName,
-                phase = DecisionPhase.RESOLUTION,
-                triggeringEntityId = context.triggeringEntityId
-            ),
+            context = decisionContext(context, sourceName),
             minValue = 0,
             maxValue = maxAffordable
         )
@@ -460,14 +529,37 @@ class GatedEffectExecutor(
     }
 
     /**
-     * Whether [playerId] can pay [cost] right now. Mirrors the former
-     * `OptionalCostEffectExecutor`: recognizes the payment primitives that appear in a
-     * [Gate.MayPay] cost slot ([PayManaCostEffect], [PayDynamicManaCostEffect], [PayLifeEffect], and
-     * a [CompositeEffect] composing them). The dynamic-mana branch charges the cost's own `payer`, so
-     * affordability stays correct even when it differs from the gate's decisionMaker. Unknown shapes
-     * fail open (assumed payable) so exotic cost pipelines still prompt and abort later via the
-     * resumer's `stopOnError` composite.
+     * The [DecisionContext] every gate prompt in this executor carries.
+     *
+     * Beyond the source/trigger plumbing, it stamps the *subject* of the prompt from the enclosing
+     * per-entity iteration ([com.wingedsheep.engine.handlers.PipelineState.iterationTarget], the
+     * binding `EffectTarget.Self` already reads inside a `ForEachInGroup` body). A gate that runs
+     * once per creature — Killing Wave's "sacrifice it unless you pay X life" — otherwise raises N
+     * character-identical prompts, and the player has no way to tell which creature each covers.
      */
+    private fun decisionContext(
+        context: EffectContext,
+        sourceName: String?,
+        inlineOnTrigger: Boolean = false
+    ): DecisionContext = DecisionContext(
+        sourceId = context.sourceId,
+        sourceName = sourceName,
+        phase = DecisionPhase.RESOLUTION,
+        triggeringEntityId = context.triggeringEntityId,
+        inlineOnTrigger = inlineOnTrigger,
+        subjectEntityId = context.pipeline.iterationTarget
+    )
+
+    /**
+     * Fill a [DynamicHint]'s `{n}` from the resolving context, so a "that much damage" prompt says
+     * which number *this* instance carries (CR 603.3d locks targets at trigger time, but the
+     * amount is only read here, as the instance resolves).
+     */
+    private fun renderDynamicHint(state: GameState, hint: DynamicHint, context: EffectContext): String {
+        val amount = dynamicAmountEvaluator.evaluate(state, hint.amount, context)
+        return hint.template.replace(DynamicHint.PLACEHOLDER, amount.toString())
+    }
+
     /**
      * Render a [Gate.MayPay] cost as a concrete "Pay …" button label, or null for shapes with no
      * single obvious rendering (life, sacrifice, composites) — those keep the plain "Yes". A
@@ -491,6 +583,15 @@ class GatedEffectExecutor(
             else -> null
         }
 
+    /**
+     * Whether [playerId] can pay [cost] right now. Mirrors the former
+     * `OptionalCostEffectExecutor`: recognizes the payment primitives that appear in a
+     * [Gate.MayPay] cost slot ([PayManaCostEffect], [PayDynamicManaCostEffect], [PayLifeEffect], and
+     * a [CompositeEffect] composing them). The dynamic-mana branch charges the cost's own `payer`, so
+     * affordability stays correct even when it differs from the gate's decisionMaker. Unknown shapes
+     * fail open (assumed payable) so exotic cost pipelines still prompt and abort later via the
+     * resumer's `stopOnError` composite.
+     */
     private fun canAfford(state: GameState, playerId: EntityId, cost: Effect, context: EffectContext): Boolean =
         when (cost) {
             is PayManaCostEffect -> manaSolver.canPay(state, playerId, cost.cost)
@@ -689,7 +790,20 @@ class GatedEffectExecutor(
             is SuccessCriterion.DamageDealt -> evaluateDamageDealt(criterion, effectContext, priorEvents)
             is SuccessCriterion.ControlChanged -> evaluateControlChanged(priorEvents)
             is SuccessCriterion.CountersRemoved -> evaluateCountersRemoved(priorEvents)
+            is SuccessCriterion.PermanentsSacrificed -> evaluatePermanentsSacrificed(priorEvents)
         }
+
+        /**
+         * Did the gated action actually sacrifice something? Scans the action's own events for a
+         * [PermanentsSacrificedEvent] with a non-empty permanent list. A player who controls nothing
+         * the filter matches sacrifices nothing and emits no such event — exactly the "you didn't do
+         * it" case the gate must catch (Garruk, the Veil-Cursed's −1 on an empty board).
+         */
+        private fun evaluatePermanentsSacrificed(priorEvents: List<GameEvent>): Boolean =
+            priorEvents.any { event ->
+                event is com.wingedsheep.engine.core.PermanentsSacrificedEvent &&
+                    event.permanentIds.isNotEmpty()
+            }
 
         /**
          * Did the gated action actually change control of a permanent? Scans the action's events for

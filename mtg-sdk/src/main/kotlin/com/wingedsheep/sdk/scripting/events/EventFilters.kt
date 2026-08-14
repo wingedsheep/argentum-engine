@@ -180,10 +180,30 @@ sealed interface SourceFilter {
         override val description = "a $type"
     }
 
+    /**
+     * The creature this replacement's host Aura is attached to — damage dealt *by* the enchanted
+     * creature. Source-side mirror of [RecipientFilter.EnchantedCreature].
+     */
     @SerialName("SourceEnchantedCreature")
     @Serializable
     data object EnchantedCreature : SourceFilter {
         override val description = "enchanted creature"
+    }
+
+    /**
+     * The creature this replacement's host Equipment is attached to — damage dealt *by* the
+     * equipped creature ("Double all damage equipped creature would deal", Mjölnir, Hammer of
+     * Thor). Source-side mirror of [RecipientFilter.EquippedCreature].
+     *
+     * Resolves identically to [EnchantedCreature] (both read the host's attachment), and the two
+     * share a branch in the engine's source matcher exactly as the [RecipientFilter] pair does.
+     * They are kept distinct so an Equipment's card definition reads in Equipment vocabulary
+     * rather than borrowing Aura wording.
+     */
+    @SerialName("SourceEquippedCreature")
+    @Serializable
+    data object EquippedCreature : SourceFilter {
+        override val description = "equipped creature"
     }
 
     @SerialName("SourceCreature")
@@ -388,6 +408,26 @@ sealed interface ControllerFilter {
 }
 
 // =============================================================================
+// Damage Predicates - extensible facts about a damage event the trigger requires
+// =============================================================================
+
+/** Additional facts a damage trigger can require beyond source and recipient filters. */
+@Serializable
+sealed interface DamagePredicate {
+    val description: String
+
+    /**
+     * The damage source has exactly one chosen target, and that target is this damage recipient.
+     * Collateral damage to another permanent or player does not satisfy this relationship.
+     */
+    @SerialName("DamageSourceSoleTargetIsRecipient")
+    @Serializable
+    data object SourceSoleTargetIsRecipient : DamagePredicate {
+        override val description = "and its only target is the damage recipient"
+    }
+}
+
+// =============================================================================
 // Spell-Cast Predicates - extensible "facts about a cast" the trigger requires
 // =============================================================================
 
@@ -499,6 +539,24 @@ sealed interface SpellCastPredicate {
     }
 
     /**
+     * The spell was cast targeting the trigger's own source permanent and **nothing else** — every
+     * instance of the word "target" on the spell points at the source ("a spell that targets only
+     * [this creature]" — Zada, Hedron Grinder; Mirrorwing Dragon).
+     *
+     * Strictly narrower than [TargetsSource], which is satisfied as soon as the source is among the
+     * chosen targets: a spell targeting both the source and another permanent satisfies
+     * [TargetsSource] but not this. A spell with **no** targets never satisfies it either. A spell
+     * with several instances of "target" all pointed at the source does — the copies made by
+     * [com.wingedsheep.sdk.scripting.effects.CopySpellForEachOtherPossibleTargetEffect] then have to
+     * be legal for each of those instances (CR 707.10d).
+     */
+    @SerialName("SpellTargetsOnlySource")
+    @Serializable
+    data object TargetsOnlySource : SpellCastPredicate {
+        override val description = "that targets only this"
+    }
+
+    /**
      * The spell was cast with at least one chosen target matching [filter]
      * ("a spell that targets a creature you don't control" — Legolas, Master Archer).
      * The filter is evaluated against each chosen target relative to the trigger
@@ -511,17 +569,40 @@ sealed interface SpellCastPredicate {
     }
 
     /**
-     * The just-cast spell is **owned by a player other than the trigger's controller** — the
-     * card's owner (CR 108.3, fixed at game start) differs from who cast it. This is true when
-     * you cast a spell that isn't yours: a card exiled from an opponent's graveyard/hand that you
+     * The just-cast spell is **owned by a player other than the one who cast it** — the card's
+     * owner (CR 108.3, fixed at game start) differs from its caster. This is true when a player
+     * casts a spell that isn't theirs: a card exiled from an opponent's graveyard/hand that they
      * may cast (Nita, Forum Conciliator; Gonti, Lord of Luxury), a spell stolen with control of
-     * the stack object, etc. A spell you cast from your own zones (owner == controller) does not
-     * satisfy it. Resolved against the spell entity's owner record vs. the trigger controller.
+     * the stack object, etc. A spell cast from the caster's own zones (owner == caster) does not
+     * satisfy it.
+     *
+     * Resolved against the spell entity's owner record vs. the *caster*, not the trigger's
+     * controller, so it reads the same under both wordings: "whenever **you** cast a spell you
+     * don't own" (where the [EventPattern.SpellCastEvent.player] gate has already pinned the
+     * caster to the trigger's controller) and "whenever **a player** casts a spell they don't
+     * own" (Gonti, Night Minister), which observes every seat.
      */
     @SerialName("SpellNotOwnedByController")
     @Serializable
     data object NotOwnedByController : SpellCastPredicate {
         override val description = "you don't own"
+    }
+
+    /**
+     * The spell was cast **as an Adventure** (CR 715.3) — "Whenever you cast an Adventure spell"
+     * (Chancellor of Tales). This is about how the card was cast, not what the card is: the same
+     * adventurer card cast as its creature half does *not* satisfy it, and per the 2023-09-01
+     * rulings an "Adventure spell" is never found among instants/sorceries that merely have an
+     * Adventure printed on them.
+     *
+     * Contrast [com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasAdventure], which is a
+     * zone-independent characteristic of the *card* (Frantic Firebolt tallying adventurer cards in
+     * a graveyard) and is true regardless of which half was cast.
+     */
+    @SerialName("SpellCastAsAdventure")
+    @Serializable
+    data object CastAsAdventure : SpellCastPredicate {
+        override val description = "as an Adventure"
     }
 }
 

@@ -178,6 +178,15 @@ export function SetCompletionPage() {
                         </span>
                         <span>
                           <strong>{summary.setsComplete}</strong> / {summary.setCount} sets complete
+                          {summary.distinctNotPlanned > 0 && (
+                            <span
+                              className={styles.summaryNote}
+                              title="Cards needing mechanics the engine will never carry — ante, subgames, physical dexterity. They're excluded from every total here."
+                            >
+                              {' '}
+                              ({summary.distinctNotPlanned} cards not planned)
+                            </span>
+                          )}
                         </span>
                       </>
                     ) : (
@@ -259,6 +268,7 @@ export function SetCompletionPage() {
 function SetCard({ set, onOpen }: { set: SetCoverage; onOpen: () => void }) {
   const t = tier(set.percent)
   const remaining = set.total - set.implemented
+  const notPlanned = set.notPlanned + set.extraNotPlanned
   return (
     <button className={styles.card} data-tier={t} onClick={onOpen} title={`View ${set.name} cards`}>
       <SetIcon code={set.code} className={styles.watermark} />
@@ -295,6 +305,14 @@ function SetCard({ set, onOpen }: { set: SetCoverage; onOpen: () => void }) {
             {set.extraImplemented}/{set.extraTotal} extra
           </span>
         )}
+        {notPlanned > 0 && (
+          <span
+            className={styles.notPlannedTag}
+            title={`${notPlanned} card${notPlanned === 1 ? '' : 's'} we won't implement (ante, subgames, dexterity) — not counted in the total`}
+          >
+            {notPlanned} not planned
+          </span>
+        )}
         {t === 'done' ? (
           <span className={styles.doneTag}>Complete</span>
         ) : (
@@ -305,7 +323,14 @@ function SetCard({ set, onOpen }: { set: SetCoverage; onOpen: () => void }) {
   )
 }
 
-type CardFilter = 'all' | 'implemented' | 'missing'
+type CardFilter = 'all' | 'implemented' | 'missing' | 'notPlanned'
+
+const CARD_FILTER_LABELS: Record<CardFilter, string> = {
+  all: 'All',
+  implemented: 'Implemented',
+  missing: 'Missing',
+  notPlanned: 'Not planned',
+}
 
 function SetDetailOverlay({ code, onClose }: { code: string; onClose: () => void }) {
   const [detail, setDetail] = useState<SetDetail | null>(null)
@@ -356,13 +381,101 @@ function SetDetailOverlay({ code, onClose }: { code: string; onClose: () => void
   useEffect(() => () => {
     if (rafRef.current != null) cancelAnimationFrame(rafRef.current)
   }, [])
+  // "Missing" means still to do, so the not-planned cards live in their own bucket rather than
+  // padding a list of work that will never happen.
   const matches = useCallback(
-    (c: CardCoverage) =>
-      cardFilter === 'all' || (cardFilter === 'implemented' ? c.implemented : !c.implemented),
+    (c: CardCoverage) => {
+      switch (cardFilter) {
+        case 'implemented':
+          return c.implemented
+        case 'missing':
+          return !c.implemented && c.notPlanned === null
+        case 'notPlanned':
+          return c.notPlanned !== null
+        default:
+          return true
+      }
+    },
     [cardFilter],
   )
   const draftCards = useMemo(() => detail?.draft.filter(matches) ?? [], [detail, matches])
-  const extraCards = useMemo(() => detail?.extra.filter(matches) ?? [], [detail, matches])
+  // Each extras section keeps its own tally, so filtering to "Missing" still shows a section as
+  // e.g. 0/13 done rather than making the reader count tiles.
+  const extraSections = useMemo(
+    () => detail?.extraGroups.map((g) => ({ group: g, cards: g.cards.filter(matches) })) ?? [],
+    [detail, matches],
+  )
+  const notPlannedCount = detail ? detail.notPlanned + detail.extraNotPlanned : 0
+
+  // One list drives both the index and the body, so a section can never appear in the rail without
+  // a heading to jump to (or vice versa).
+  const sections = useMemo(
+    () =>
+      detail
+        ? [
+            {
+              label: extraSections.length > 0 ? 'Draft Cards' : 'Cards',
+              cards: draftCards,
+              total: detail.draft.length,
+              done: detail.implemented,
+              of: detail.total,
+            },
+            ...extraSections.map(({ group, cards }) => ({
+              label: group.label,
+              cards,
+              total: group.cards.length,
+              done: group.implemented,
+              of: group.total,
+            })),
+          ]
+        : [],
+    [detail, draftCards, extraSections],
+  )
+
+  // The index stays put while the card grid scrolls under it, so it needs the scroller and each
+  // heading's node to translate a click into a scroll offset.
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const sectionNodes = useRef(new Map<string, HTMLElement>())
+  const [activeSection, setActiveSection] = useState<string | null>(null)
+  const registerSection = useCallback((label: string, el: HTMLElement | null) => {
+    if (el) sectionNodes.current.set(label, el)
+    else sectionNodes.current.delete(label)
+  }, [])
+
+  const jumpTo = useCallback((label: string) => {
+    const body = bodyRef.current
+    const el = sectionNodes.current.get(label)
+    if (!body || !el) return
+    const top = body.scrollTop + el.getBoundingClientRect().top - body.getBoundingClientRect().top
+    body.scrollTo({ top, behavior: 'smooth' })
+  }, [])
+
+  // Highlight whichever section the reader is actually in: the last one whose heading has reached
+  // the top of the scroller. Coalesced to one measurement per frame — scroll fires far faster.
+  useEffect(() => {
+    const body = bodyRef.current
+    if (!body || sections.length < 2) return
+    let raf: number | null = null
+    const measure = () => {
+      raf = null
+      const bodyTop = body.getBoundingClientRect().top
+      let current: string | null = null
+      for (const s of sections) {
+        const el = sectionNodes.current.get(s.label)
+        if (el && el.getBoundingClientRect().top - bodyTop <= 8) current = s.label
+      }
+      setActiveSection(current ?? sections[0]?.label ?? null)
+    }
+    const onScroll = () => {
+      if (raf == null) raf = requestAnimationFrame(measure)
+    }
+    measure()
+    body.addEventListener('scroll', onScroll, { passive: true })
+    return () => {
+      body.removeEventListener('scroll', onScroll)
+      if (raf != null) cancelAnimationFrame(raf)
+    }
+  }, [sections])
 
   const t = detail ? tier(detail.percent) : 'empty'
 
@@ -390,6 +503,7 @@ function SetDetailOverlay({ code, onClose }: { code: string; onClose: () => void
                     {detail.extraImplemented}/{detail.extraTotal} extra
                   </>
                 )}
+                {notPlannedCount > 0 && <> · {notPlannedCount} not planned</>}
               </span>
             </div>
           )}
@@ -405,33 +519,59 @@ function SetDetailOverlay({ code, onClose }: { code: string; onClose: () => void
         )}
 
         <div className={styles.overlayControls}>
-          {(['all', 'implemented', 'missing'] as CardFilter[]).map((f) => (
-            <button
-              key={f}
-              className={cardFilter === f ? styles.segmentActive : styles.segment}
-              onClick={() => setCardFilter(f)}
-            >
-              {f === 'all' ? 'All' : f === 'implemented' ? 'Implemented' : 'Missing'}
-            </button>
-          ))}
+          {(Object.keys(CARD_FILTER_LABELS) as CardFilter[])
+            // The not-planned tab only exists for the handful of sets that have such a card.
+            .filter((f) => f !== 'notPlanned' || notPlannedCount > 0)
+            .map((f) => (
+              <button
+                key={f}
+                className={cardFilter === f ? styles.segmentActive : styles.segment}
+                onClick={() => setCardFilter(f)}
+              >
+                {CARD_FILTER_LABELS[f]}
+                {f === 'notPlanned' && ` (${notPlannedCount})`}
+              </button>
+            ))}
         </div>
 
-        <div className={styles.overlayBody}>
-          {error && <div className={styles.error}>Couldn’t load cards: {error}</div>}
-          {!detail && !error && <div className={styles.loading}>Loading {code} cards…</div>}
-          {detail && (
-            <>
-              <CardSection
-                title={detail.extra.length > 0 ? 'Booster' : 'Cards'}
-                cards={draftCards}
-                total={detail.draft.length}
-                onHover={onHover}
-              />
-              {detail.extra.length > 0 && (
-                <CardSection title="Extras" cards={extraCards} total={detail.extra.length} onHover={onHover} />
-              )}
-            </>
+        <div className={styles.overlayLayout}>
+          {/* Pinned beside the grid rather than hidden in a menu (Scryfall's own set pages use a
+              dropdown): what a set contains stays readable without scrolling a 280-tile grid. */}
+          {sections.length > 1 && (
+            <nav className={styles.sectionIndex} aria-label={`${code} sections`}>
+              {sections.map((s) => (
+                <button
+                  key={s.label}
+                  className={activeSection === s.label ? styles.indexItemActive : styles.indexItem}
+                  onClick={() => jumpTo(s.label)}
+                >
+                  <span className={styles.indexLabel}>{s.label}</span>
+                  <span className={styles.indexCount}>
+                    {s.done}/{s.of}
+                  </span>
+                </button>
+              ))}
+            </nav>
           )}
+
+          <div className={styles.overlayBody} ref={bodyRef}>
+            {error && <div className={styles.error}>Couldn’t load cards: {error}</div>}
+            {!detail && !error && <div className={styles.loading}>Loading {code} cards…</div>}
+            {/* Scryfall's own set-page sectioning: the draftable pool first, then each
+                completionist product that added cards of its own. */}
+            {sections.map((s) => (
+              <CardSection
+                key={s.label}
+                title={s.label}
+                cards={s.cards}
+                total={s.total}
+                done={s.done}
+                of={s.of}
+                onHover={onHover}
+                register={registerSection}
+              />
+            ))}
+          </div>
         </div>
       </div>
       {hover && <HoverCardPreview name={hover.name} imageUri={hover.imageUri} pos={hover.pos} />}
@@ -443,18 +583,32 @@ const CardSection = memo(function CardSection({
   title,
   cards,
   total,
+  done,
+  of,
   onHover,
+  register,
 }: {
   title: string
+  /** The cards passing the active filter — what actually renders. */
   cards: readonly CardCoverage[]
+  /** Cards in the section before filtering; a section with none never renders at all. */
   total: number
+  /** Implemented count for the whole section, so the tally survives filtering. */
+  done: number
+  /** Section cards we intend to build (not-planned ones excluded). */
+  of: number
   onHover: (h: HoverState | null) => void
+  /** Publishes this section's node so the index can scroll to it and track it. */
+  register: (label: string, el: HTMLElement | null) => void
 }) {
   if (total === 0) return null
   return (
-    <section className={styles.cardSection}>
+    <section className={styles.cardSection} ref={(el) => register(title, el)}>
       <h3 className={styles.sectionTitle}>
-        {title} <span className={styles.sectionCount}>({cards.length})</span>
+        {title}{' '}
+        <span className={styles.sectionCount}>
+          {done}/{of}
+        </span>
       </h3>
       {cards.length === 0 ? (
         <div className={styles.sectionEmpty}>Nothing here for this filter.</div>
@@ -476,10 +630,17 @@ const CardTile = memo(function CardTile({
   card: CardCoverage
   onHover: (h: HoverState | null) => void
 }) {
+  // A not-planned card is neither done nor outstanding, so it gets its own look and always
+  // explains itself — the reason travels with the flag from the manifest to this tooltip.
+  const className = card.implemented
+    ? styles.tile
+    : card.notPlanned
+      ? styles.tileNotPlanned
+      : styles.tileMissing
   return (
     <div
-      className={card.implemented ? styles.tile : styles.tileMissing}
-      title={card.name}
+      className={className}
+      title={card.notPlanned ? `${card.name} — not planned: ${card.notPlanned.why}` : card.name}
       onMouseEnter={(e) => onHover({ name: card.name, imageUri: card.imageUri, pos: { x: e.clientX, y: e.clientY } })}
       onMouseMove={(e) => onHover({ name: card.name, imageUri: card.imageUri, pos: { x: e.clientX, y: e.clientY } })}
       onMouseLeave={() => onHover(null)}
@@ -491,7 +652,9 @@ const CardTile = memo(function CardTile({
         loading="lazy"
         decoding="async"
       />
-      <span className={styles.tileBadge}>{card.implemented ? '✓' : 'Missing'}</span>
+      <span className={styles.tileBadge}>
+        {card.implemented ? '✓' : card.notPlanned ? card.notPlanned.kind : 'Missing'}
+      </span>
       <span className={styles.tileName}>{card.name}</span>
     </div>
   )

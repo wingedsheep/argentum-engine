@@ -89,7 +89,6 @@ class EmeritusCycleScenarioTest : ScenarioTestBase() {
                     cast shouldNotBe null
                     (cast!!.action as CastSpell).faceIndex shouldBe 0
                     cast.manaCostString shouldBe "{R}"
-                    Unit
                 }
             }
         }
@@ -266,7 +265,9 @@ class EmeritusCycleScenarioTest : ScenarioTestBase() {
         }
 
         context("Emeritus of Truce — ETB token then conditional prepare (Swords to Plowshares)") {
-            test("enters prepared (keyword) and ETB makes target player an Inkling token") {
+            // No Keyword.PREPARED — it only becomes prepared from the ETB "Then if …" conditional.
+            // Why, and the Scryfall trap behind it: EmeritusOfTruce's KDoc.
+            fun playTruce(opponentBears: Int, tokenTo: Int = 1): TestGame {
                 var builder = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardInHand(1, "Emeritus of Truce")
@@ -274,19 +275,27 @@ class EmeritusCycleScenarioTest : ScenarioTestBase() {
                     .withLifeTotal(2, 20)
                     .withActivePlayer(1)
                     .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                repeat(opponentBears) { builder = builder.withCardOnBattlefield(2, "Grizzly Bears") }
                 repeat(5) { builder = builder.withCardInLibrary(1, "Plains") }
                 repeat(5) { builder = builder.withCardInLibrary(2, "Forest") }
                 val game = builder.build()
 
                 game.castSpell(1, "Emeritus of Truce")
                 game.resolveStack()
-                // The creature resolved; its ETB trigger is on the stack asking for a target
-                // player — choose self.
-                game.selectTargets(listOf(game.player1Id))
+                // The creature resolved; its ETB trigger is on the stack asking for a target player.
+                game.selectTargets(listOf(if (tokenTo == 1) game.player1Id else game.player2Id))
                 game.resolveStack()
+                return game
+            }
 
-                withClue("Emeritus of Truce enters prepared (has the PREPARED keyword)") {
-                    game.isPrepared("Emeritus of Truce") shouldBe true
+            test("does not enter prepared; ETB makes target player an Inkling token") {
+                val game = playTruce(opponentBears = 0)
+
+                withClue("no PREPARED keyword, and the opponent controls no creatures") {
+                    game.isPrepared("Emeritus of Truce") shouldBe false
+                }
+                withClue("nothing became prepared, so there is no Swords to Plowshares in exile") {
+                    game.findExileCopy(1, "Emeritus of Truce") shouldBe null
                 }
                 val projected = game.state.projectedState
                 val inklings = game.state.getBattlefield(game.player1Id).filter { entity ->
@@ -298,6 +307,43 @@ class EmeritusCycleScenarioTest : ScenarioTestBase() {
                 }
                 withClue("ETB creates a 1/1 flying Inkling token for the chosen player") {
                     inklings.size shouldBe 1
+                }
+            }
+
+            test("becomes prepared when an opponent controls more creatures than you") {
+                // Opponent: 3 Bears. You: Emeritus + the Inkling = 2. 3 > 2 → prepared.
+                val game = playTruce(opponentBears = 3)
+
+                withClue("an opponent controls more creatures than you") {
+                    game.isPrepared("Emeritus of Truce") shouldBe true
+                }
+                withClue("becoming prepared exiles a castable Swords to Plowshares copy") {
+                    game.findExileCopy(1, "Emeritus of Truce") shouldNotBe null
+                }
+            }
+
+            test("the Inkling is counted — CR 608.2c/608.2h: 'Then if' reads state after the token") {
+                // Opponent: 2 Bears. You: Emeritus + the Inkling = 2. 2 > 2 is false → not prepared.
+                // Were the condition checked before the token existed (you: 1), it would prepare.
+                val game = playTruce(opponentBears = 2)
+
+                withClue("creature counts are tied once the Inkling is on the battlefield") {
+                    game.isPrepared("Emeritus of Truce") shouldBe false
+                }
+            }
+
+            test("giving the Inkling away swings the count — both battlefields are read after it") {
+                // Same 2 Bears as above, but the token goes to the opponent: they have 2 Bears +
+                // the Inkling = 3, you have Emeritus alone = 1. 3 > 1 → prepared. The identical
+                // board with the token kept at home does NOT prepare, so this pins that the
+                // condition reads both players' battlefields, after the token is created.
+                val game = playTruce(opponentBears = 2, tokenTo = 2)
+
+                withClue("the Inkling grows the opponent's creature count, not yours") {
+                    game.isPrepared("Emeritus of Truce") shouldBe true
+                }
+                withClue("becoming prepared exiles a castable Swords to Plowshares copy") {
+                    game.findExileCopy(1, "Emeritus of Truce") shouldNotBe null
                 }
             }
         }
@@ -331,7 +377,6 @@ class EmeritusCycleScenarioTest : ScenarioTestBase() {
                 withClue("Demonic Tutor copy is offered from exile for {1}{B}") {
                     cast shouldNotBe null
                     cast!!.manaCostString shouldBe "{1}{B}"
-                    Unit
                 }
             }
         }

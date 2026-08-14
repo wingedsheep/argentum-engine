@@ -158,7 +158,7 @@ class TeamVsTeamTest : FunSpec({
         // Put a "can't lose the game" permanent under p1's control (teammate of p0).
         val (permId, withId) = state.newEntity()
         val protectedState = withId
-            .withEntity(permId, ComponentContainer.of(ControllerComponent(p[1]), GrantsCantLoseGameComponent))
+            .withEntity(permId, ComponentContainer.of(ControllerComponent(p[1]), GrantsCantLoseGameComponent()))
             .addToZone(ZoneKey(p[1], Zone.BATTLEFIELD), permId)
         // Drop p0 (who does NOT control the grant) to 0 life.
         val zeroed = DamageUtils.loseLife(protectedState, p[0], 20, LifeChangeReason.LIFE_LOSS).first

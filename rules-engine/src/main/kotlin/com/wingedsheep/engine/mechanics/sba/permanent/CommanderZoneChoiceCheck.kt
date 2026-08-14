@@ -19,8 +19,8 @@ import com.wingedsheep.sdk.core.Zone
  * that zone since the last time state-based actions were checked, its owner may put it
  * into the command zone.
  *
- * Implementation: when the format is [Format.Commander] *without* the
- * [Format.Commander.alwaysDivertToCommand] shortcut, pause the SBA loop with a yes/no
+ * Implementation: when the format enables commanders *without* the
+ * [Format.alwaysDivertToCommand] shortcut, pause the SBA loop with a yes/no
  * decision the first time the SBA sees a given commander outside the command zone. After
  * the prompt (yes or no) we attach [CommanderZoneChoiceAskedComponent] so the SBA does
  * not re-ask on the next iteration; [ZoneTransitionService.moveToZone] strips that marker
@@ -37,7 +37,8 @@ class CommanderZoneChoiceCheck(
     override val order = SbaOrder.COMMANDER_ZONE_CHOICE
 
     override fun check(state: GameState): ExecutionResult {
-        val format = state.format as? Format.Commander ?: return ExecutionResult.success(state)
+        val format = state.format
+        if (!format.usesCommanders) return ExecutionResult.success(state)
         // alwaysDivertToCommand sends the commander to the command zone synchronously via the
         // zone-change replacement, so it never sits in a non-command zone for this SBA to see.
         if (format.alwaysDivertToCommand) return ExecutionResult.success(state)

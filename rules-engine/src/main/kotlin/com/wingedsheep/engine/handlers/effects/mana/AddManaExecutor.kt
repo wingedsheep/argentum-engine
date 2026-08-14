@@ -35,7 +35,12 @@ class AddManaExecutor(
             val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
             val updatedPool = when {
                 effect.restriction != null ->
-                    manaPool.addRestricted(effect.color, amount, effect.restriction!!, expiry = effect.expiry)
+                    manaPool.addRestricted(effect.color, amount, effect.restriction!!, effect.riders, expiry = effect.expiry)
+                effect.riders.isNotEmpty() ->
+                    // Rider-carrying mana (Pyromancer's Goggles): stored as an AnySpend restricted
+                    // entry so the rider set survives in the pool while the mana itself stays
+                    // spendable on anything. Mirrors AddManaOfChoiceExecutor.
+                    manaPool.addRestricted(effect.color, amount, ManaRestriction.AnySpend, effect.riders, expiry = effect.expiry)
                 effect.expiry != ManaExpiry.END_OF_TURN ->
                     // Combat-duration (firebending) mana: spendable anywhere, but tagged so the
                     // pool discards it when combat ends. Stored as an AnySpend restricted entry
@@ -48,7 +53,7 @@ class AddManaExecutor(
         }
 
         // Treasure tagging only applies to ordinary, plain-counter mana (the `add` branch above).
-        if (effect.restriction == null && effect.expiry == ManaExpiry.END_OF_TURN) {
+        if (effect.restriction == null && effect.riders.isEmpty() && effect.expiry == ManaExpiry.END_OF_TURN) {
             newState = ManaProvenanceTracker.tagAddedMana(newState, context.controllerId, context.sourceId, amount)
         }
 

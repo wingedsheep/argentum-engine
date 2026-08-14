@@ -15,7 +15,7 @@ import kotlinx.serialization.Serializable
  *   the higher tax next time
  * - CR 903.9a state-based action: when the card sits in graveyard / exile / hand / library,
  *   the owner is prompted to put it into the command zone (see
- *   `CommanderZoneChoiceCheck`). The legacy `Format.Commander.alwaysDivertToCommand` flag
+ *   `CommanderZoneChoiceCheck`). The `Format.alwaysDivertToCommand` flag
  *   short-circuits the prompt with a synchronous replacement-time divert.
  * - commander-damage tracking — combat damage dealt by this entity contributes to the
  *   `commanderDamage` map, gated by absence of `TokenComponent` (CR 903.10a — token copies are

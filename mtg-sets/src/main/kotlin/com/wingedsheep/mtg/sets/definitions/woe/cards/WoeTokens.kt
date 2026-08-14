@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
 import com.wingedsheep.sdk.scripting.CantBlock
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -28,6 +29,27 @@ internal fun woeRatToken(count: DynamicAmount = DynamicAmount.Fixed(1)): Effect 
     creatureTypes = setOf("Rat"),
     imageUri = "https://cards.scryfall.io/normal/front/1/e/1e0205f2-25c1-403b-b408-56e3f2d63b4d.jpg?1783915000",
     staticAbilities = listOf(CantBlock())
+)
+
+/**
+ * Wilds of Eldraine's Human token: a plain 1/1 white Human creature token.
+ *
+ * Another type-named token (see [woeRatToken]) shared by several WOE cards — Welcome to Sweettooth,
+ * Return from the Wilds, Stroke of Midnight. [controller] is who creates the token; `null` means the
+ * effect's controller, and Stroke of Midnight passes [EffectTarget.TargetController] for "its
+ * controller creates a 1/1 white Human creature token".
+ */
+internal fun woeHumanToken(
+    count: DynamicAmount = DynamicAmount.Fixed(1),
+    controller: EffectTarget? = null,
+): Effect = Effects.CreateToken(
+    count = count,
+    power = 1,
+    toughness = 1,
+    colors = setOf(Color.WHITE),
+    creatureTypes = setOf("Human"),
+    controller = controller,
+    imageUri = "https://cards.scryfall.io/normal/front/5/0/50240867-3a3e-4a8d-9569-816ab4a3671a.jpg?1783914992",
 )
 
 /**

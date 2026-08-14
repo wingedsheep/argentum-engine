@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.discovery
 
+import com.wingedsheep.sdk.model.BasicLandArt
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
 import com.wingedsheep.sdk.model.Printing
@@ -137,7 +138,12 @@ object CardDiscovery {
             }
         return ScannedPackage(
             cards = cards.sortedBy { it.name },
-            basicLands = basicLands.sortedBy { it.name },
+            // Name alone is not a total order for basics — every art variant of a type shares one
+            // name, so a stable sort by name would leave the within-type order at the mercy of
+            // whatever order reflection happened to yield this run. Break the tie on collector
+            // number so `basicLands` is deterministic and each type leads with its standard art
+            // (see [BasicLandArt]); limited deck building takes that first variant.
+            basicLands = basicLands.sortedWith(compareBy<CardDefinition> { it.name }.then(BasicLandArt.standardFirst)),
             // Sort by name first so `printings.toString()` reads naturally; the
             // (setCode, collectorNumber) tiebreakers are only relevant if a future
             // discovery picks up >1 reprint of the same card from the same package.

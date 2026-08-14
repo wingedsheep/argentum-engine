@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ReduceActivatedAbilityCost
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Power Artifact
@@ -33,7 +34,7 @@ val PowerArtifact = card("Power Artifact") {
     staticAbility {
         ability = ReduceActivatedAbilityCost(
             filter = GroupFilter.attachedCreature(),
-            amount = 2,
+            amount = DynamicAmount.Fixed(2),
             manaFloor = 1
         )
     }

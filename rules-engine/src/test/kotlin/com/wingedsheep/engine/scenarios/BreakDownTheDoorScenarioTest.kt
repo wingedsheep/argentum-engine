@@ -5,7 +5,8 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.ManifestedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
@@ -115,7 +116,7 @@ class BreakDownTheDoorScenarioTest : FunSpec({
 
         val entity = driver.state.getEntity(creature)
         entity?.get<FaceDownComponent>() shouldBe FaceDownComponent
-        entity?.get<ManifestedComponent>() shouldBe ManifestedComponent
+        entity?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
         driver.state.projectedState.getPower(creature) shouldBe 2
         driver.getGraveyard(me) shouldContain land
     }

@@ -21,6 +21,7 @@ import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.StateProjector
+import com.wingedsheep.engine.replacement.ReplacementEffectIdentity
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.model.GameRng
 import com.wingedsheep.sdk.scripting.AbilityIdentity
@@ -40,7 +41,18 @@ data class GameState(
     /** Zone contents - maps zone keys to lists of entity IDs */
     val zones: Map<ZoneKey, List<EntityId>> = emptyMap(),
 
-    /** Current turn number (starts at 0, becomes 1 when first player's turn starts) */
+    /**
+     * Current turn number, counting **player turns** — every turn the game begins gets its own
+     * number, including extra turns (CR 500.7) and every seat's turn in a multiplayer pod. Starts
+     * at 0 and becomes 1 when the first player's turn starts, so in a four-player pod the opening
+     * round is turns 1, 2, 3, 4 and the second round is 5, 6, 7, 8.
+     *
+     * This is deliberately *not* a round counter. `turnNumber + 1` is read across the engine as
+     * "the next turn" (delayed triggers, rebound, may-play expiries) and `stamp == turnNumber` as
+     * "this turn" (graveyard/exile entry stamps) — both of which are only true of a per-turn count.
+     * A round counter also stops advancing entirely once the first seat is eliminated, because the
+     * seat that used to mark the round boundary never takes another turn.
+     */
     val turnNumber: Int = 0,
 
     /** ID of the player whose turn it is */
@@ -112,6 +124,37 @@ data class GameState(
     /** Per-player spell records cast this turn, for conditional evasion and "first of type" triggers */
     val spellsCastThisTurnByPlayer: Map<EntityId, List<CastSpellRecord>> = emptyMap(),
 
+    /**
+     * The game's **day/night** designation (CR 731, "Day and Night"). `null` models the CR 731.1
+     * "neither day nor night" state the game starts in; once it has become day or night it is always
+     * exactly one of the two thereafter. All writes go through
+     * [com.wingedsheep.engine.mechanics.daynight.DayNightService] (the single writer, mirroring
+     * `SpeedService`), which also cascades the daybound/nightbound transforms (CR 702.145b/c/e/f) that
+     * "become day"/"become night" entails. Read directly by the `IsDay`/`IsNight` conditions and by
+     * the untap-step turn-based action (CR 502.2 / 731.2).
+     */
+    val dayNight: com.wingedsheep.sdk.core.DayNight? = null,
+
+    /**
+     * Entity id of the **previous turn's active player**, snapshotted by
+     * [com.wingedsheep.engine.core.TurnManager.startTurn] the instant a new turn begins — before the
+     * per-turn spell counters are zeroed. `null` on the game's first turn (there is no previous turn).
+     * Read together with [previousTurnActiveTeamSpellCounts] by the untap-step day/night check
+     * (CR 502.2 / 731.2), which must know how many spells the active player—or each player on the
+     * active team in a shared-team-turns game—cast during that turn even though the counters for the
+     * new turn have already reset.
+     */
+    val previousTurnActivePlayerId: EntityId? = null,
+
+    /**
+     * Per-player spell counts for the previous turn's active side, snapshotted in
+     * [com.wingedsheep.engine.core.TurnManager.startTurn] before the counters reset. This is a
+     * singleton map in ordinary games and contains every member of the previous active team when
+     * the format uses shared team turns. The untap-step day/night action becomes night if none of
+     * those players cast a spell, and becomes day if any one of them cast two or more.
+     */
+    val previousTurnActiveTeamSpellCounts: Map<EntityId, Int> = emptyMap(),
+
     /** Pending spell copies — copy the next instant/sorcery spell cast by a player (e.g., Howl of the Horde) */
     val pendingSpellCopies: List<PendingSpellCopy> = emptyList(),
 
@@ -119,12 +162,19 @@ data class GameState(
     val pendingUncounterableSpells: List<PendingUncounterableSpell> = emptyList(),
     val pendingNextSpellAffinities: List<PendingNextSpellAffinity> = emptyList(),
 
+    /**
+     * Turn-scoped "spells you cast this turn that match … cost {N} less" discounts (the Scion
+     * cycle). Unlike [pendingNextSpellAffinities] these are not consumed by the spell they
+     * discount — they apply to every matching spell until the turn ends.
+     */
+    val turnSpellCostReductions: List<TurnSpellCostReduction> = emptyList(),
+
     /** Whether a spell was warped this turn (for Void condition: "a spell was warped this turn") */
     val spellWarpedThisTurn: Boolean = false,
 
     /**
-     * Whether damage can't be prevented for the rest of this turn (CR 615.6 — a prevention effect
-     * can't apply to damage that can't be prevented). Set by the
+     * Whether damage can't be prevented for the rest of this turn (CR 615.12 — prevention shields
+     * aren't reduced and prevent nothing). Set by the
      * [com.wingedsheep.sdk.scripting.effects.DamageCantBePreventedThisTurnEffect] one-shot (Fear,
      * Fire, Foes!) and read by [com.wingedsheep.engine.handlers.effects.DamageUtils.isDamagePreventionDisabled].
      * Reset to false at every turn boundary.
@@ -236,7 +286,7 @@ data class GameState(
      * Cumulative combat damage dealt by each commander to each player, keyed by
      * `(commanderEntityId, defendingPlayerId)`. Populated by `CombatDamageManager` at the
      * `DamageDealtEvent` emission sites for combat damage to a player. Read by the
-     * `CommanderDamageLossCheck` SBA against [Format.Commander.commanderDamageThreshold].
+     * `CommanderDamageLossCheck` SBA against [Format.commanderDamageThreshold].
      */
     val commanderDamage: List<CommanderDamageEntry> = emptyList(),
 
@@ -276,6 +326,17 @@ data class GameState(
      * (auto-answer). Empty entries are pruned, so an absent key means "no yields".
      */
     val yieldsByPlayer: Map<EntityId, PlayerYields> = emptyMap(),
+
+    /**
+     * Active replacement-effect chain (CR 614.5 — each effect applies at most once).
+     *
+     * Set by the [com.wingedsheep.engine.replacement.ReplacementEffectProcessor] when a [com.wingedsheep.engine.handlers.effects.drawing.DrawReplacementDispatcher.DispatchResult.Replaced]
+     * outcome is produced, and cleared after the replacement effect finishes executing.
+     * Prevents already-applied effects from re-triggering when a replacement effect
+     * (e.g. Phial of Galadriel's "draw two cards instead") contains sub-effects that
+     * would be independently checked against the processor.
+     */
+    val activeReplacementChain: Set<ReplacementEffectIdentity>? = null,
 ) {
     /**
      * Cached projection of the game state with all continuous effects (Rule 613) applied.
@@ -473,13 +534,33 @@ data class GameState(
         }
 
     /**
+     * [activePlayers] rotated into **APNAP order** (CR 101.4): the active player first, then the
+     * remaining players in turn order starting from the one after them. This is the order in which
+     * players make simultaneous choices — "each player sacrifices a creature" asks the active
+     * player first, then each nonactive player in turn order, and only then do the sacrifices
+     * happen.
+     *
+     * Note this is a *rotation*, not "active player prepended to seat order": with seats [A, B, C]
+     * and B active the order is [B, C, A], not [B, A, C]. Falls back to plain turn order when
+     * there is no active player (before the first turn begins).
+     */
+    val apnapOrder: List<EntityId>
+        get() {
+            val ordered = activePlayers
+            val active = activePlayerId ?: return ordered
+            val index = ordered.indexOf(active)
+            return if (index <= 0) ordered else ordered.drop(index) + ordered.take(index)
+        }
+
+    /**
      * Opponents of a player, in turn order, excluding players who have lost or left the
      * game. There is deliberately no single-opponent helper: any code that needs one
      * specific opponent must say which one (a chosen target, an iteration, or the
      * per-creature defending player — CR 802.2a).
      */
     fun getOpponents(playerId: EntityId): List<EntityId> {
-        // CR 810: an opponent is a player on an opposing team, so exclude the player's whole team
+        // CR 102.3: in a multiplayer game between teams a player's opponents are all players not
+        // on their team, so exclude the player's whole team
         // (themselves and any teammates), not just themselves. In a non-team game a player is its
         // own team, so this is identical to "everyone but me".
         val ownTeam = teamOf(playerId).toHashSet()
@@ -666,6 +747,29 @@ data class GameState(
     fun lifeTotal(playerId: EntityId): Int =
         getEntity(teamLifeOwnerOf(playerId))
             ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 0
+
+    /**
+     * [playerId]'s **speed** (Aetherdrift, CR 702.179), 0–[com.wingedsheep.sdk.core.Speed.MAX].
+     *
+     * A player who has no speed reads as 0 per CR 702.179f, so every consumer — dynamic amounts, the
+     * max-speed gate, the client DTO — can treat speed as a plain number. Use [hasSpeed] for the two
+     * rules that genuinely distinguish "no speed" from "speed 0".
+     *
+     * Speed is per-player even in team games: unlike life and poison, CR 810 does not pool it.
+     */
+    fun speed(playerId: EntityId): Int =
+        getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.PlayerSpeedComponent>()?.speed
+            ?: com.wingedsheep.sdk.core.Speed.NONE
+
+    /**
+     * Whether [playerId] has a speed at all (CR 702.179b). False means the CR 704.5z state-based
+     * action may still start their speed at 1, and that they have no inherent speed trigger yet
+     * (CR 702.179d).
+     */
+    fun hasSpeed(playerId: EntityId): Boolean =
+        getEntity(playerId)
+            ?.has<com.wingedsheep.engine.state.components.player.PlayerSpeedComponent>() == true
 
     /**
      * Set [playerId]'s (team's) life total to [newLife], writing the canonical owner's component.

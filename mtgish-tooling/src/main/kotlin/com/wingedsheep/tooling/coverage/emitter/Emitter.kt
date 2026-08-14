@@ -98,6 +98,21 @@ object Emitter {
             return incomplete(ctx, pre, header, body, scryfall, pkg)
         }
 
+        // Conservative fidelity guardrails for oracle shapes the current IR handlers flatten into a
+        // different effect. Keep these cards in SCAFFOLD until their structure can be recovered exactly.
+        val oracle = ctx.oracleText.orEmpty().lowercase()
+        val unsupportedOracleShape = when {
+            "can't be blocked by tokens" in oracle -> "token blocker restriction"
+            "for each other creature you control" in oracle -> "self-excluding creature count"
+            "return this card from your graveyard to the battlefield attached" in oracle -> "return attached"
+            "put one onto the battlefield tapped and the other into your hand" in oracle -> "split search destinations"
+            else -> null
+        }
+        if (unsupportedOracleShape != null) {
+            ctx.reasons.add(unsupportedOracleShape)
+            return incomplete(ctx, pre, header, body, scryfall, pkg)
+        }
+
         body.add(RawLine("    manaCost = \"${renderMana(card["ManaCost"])}\""))
         colorIdentityDsl(scryfall)?.let { body.add(RawLine("    colorIdentity = \"$it\"")) }
         body.add(RawLine("    typeLine = \"${renderTypeline(card["Typeline"])}\""))
@@ -214,6 +229,12 @@ object Emitter {
                 rname == "AbilitiesTriggerAnAdditionalTime" -> block = ctx.additionalSourceTriggersBlock(rule)
                 rname == "FromAnyZone" -> block = ctx.fromAnyZoneBlock(rule)
                 rname == "FromGraveyard" -> block = ctx.fromGraveyardBlock(rule)
+                // Eminence (C17's commander cycle) — a triggered ability that functions from the
+                // command zone as well as the battlefield.
+                rname == "FromCommandZoneOrBattlefield" -> {
+                    block = ctx.fromCommandZoneOrBattlefieldBlock(rule)
+                    if (block == null) { gap(rname)?.let { return it }; continue }
+                }
                 // "You may cast this from your graveyard if [condition]. If you do, it enters with a +1/+1
                 // counter." (Undead Sprinter) — a conditional self-cast permission + cast-this-way counter
                 // rider. Only the exact MayCastGraveyardCardWithEnterActions(self, [+1/+1]) shape gated by a
@@ -244,6 +265,14 @@ object Emitter {
                 // cost (none printed) declines -> scaffold.
                 rname == "TypeCycling" -> block = ctx.typecyclingLine(rule)
                 rname == "Morph" -> block = manaKeywordCost(rule)?.let { listOf(Assign("morph", Lit("\"$it\""))) }
+                // Disguise (CR 702.168) — morph plus ward {2}, and identical in the IR: a `Cost PayMana`
+                // arg. Renders the card-level `disguise = "{cost}"` assignment; the {3} face-down cast,
+                // the turn-face-up special action and the ward {2} all come from the keyword + the
+                // engine's FaceDownMode.DISGUISE, so nothing else needs emitting. Pure-mana only —
+                // `DisguiseX` has no branch here and falls through to SCAFFOLD, because CR 702.168e's
+                // "other abilities may refer to X" is the cast-time-chosen-value shape this emitter
+                // deliberately declines (see the module README).
+                rname == "Disguise" -> block = manaKeywordCost(rule)?.let { listOf(Assign("disguise", Lit("\"$it\""))) }
                 // FlashForCasters (conditional flash, CR 702.8) — "<this> has flash as long as you
                 // control a [filter]" (Colossal Rattlewurm: "...as long as you control a Desert"). The
                 // condition rides as `PlayerPassesFilter(You, ControlsA(filter))`; render the card-level
@@ -294,6 +323,32 @@ object Emitter {
                 rname == "Plot" -> block = manaKeywordCost(rule)?.let {
                     listOf(Eval(call("keywordAbility", arg(call("KeywordAbility.plot", arg("\"$it\""))))))
                 }
+                // Madness [cost] (CR 702.35) carries a `_Cost: PayMana` arg -> the `madness("{cost}")`
+                // CardBuilder helper. Like Ward this must never fall through to the bare-keyword case:
+                // `Keyword.MADNESS` exists, so PascalCase auto-resolve would happily stamp
+                // `keywords(Keyword.MADNESS)`, printing the word while dropping the cost that the
+                // discard-into-exile replacement and its cast trigger both key off. Every printed
+                // madness cost is mana; anything else declines -> scaffold.
+                rname == "Madness" -> block = manaKeywordCost(rule)?.let {
+                    listOf(Eval(call("madness", arg("\"$it\""))))
+                }
+                // Emerge [cost] (CR 702.119) carries a `_Cost: PayMana` arg -> the `emerge("{cost}")`
+                // CardBuilder helper. Same trap as Madness/Ward: `Keyword.EMERGE` exists, so falling
+                // through to the bare-keyword case would print the word while dropping the cost that
+                // the whole alternative-cost pipeline (sacrifice + generic reduction by the sacrificed
+                // creature's mana value) keys off. Every printed emerge cost is mana; anything else
+                // declines -> scaffold.
+                rname == "Emerge" -> block = manaKeywordCost(rule)?.let {
+                    listOf(Eval(call("emerge", arg("\"$it\""))))
+                }
+                // Splice onto [quality] [cost] (CR 702.47) -> the `splice("{cost}")` CardBuilder helper.
+                // Same trap as Madness/Emerge/Ward: `Keyword.SPLICE` exists, so falling through to the
+                // bare-keyword case would print the word while dropping the cost the whole mechanic keys
+                // off. The `onto` quality defaults to Arcane, which is every printed splice card, so only
+                // the cost has to be rendered; a non-mana splice cost (none printed) declines -> scaffold.
+                rname == "Splice" -> block = manaKeywordCost(rule)?.let {
+                    listOf(Eval(call("splice", arg("\"$it\""))))
+                }
                 // Affinity for <group> (cost-reduction keyword, CR 702.41) — "this spell costs {1} less
                 // to cast for each <filter> you control." The engine has no Keyword.AFFINITY card-keyword
                 // path for arbitrary group affinity, so render a self-cast ModifySpellCost whose
@@ -308,11 +363,25 @@ object Emitter {
                 rname == "StackSpellsEffect" -> block = ctx.stackSpellsEffectBlock(rule)
                 // Station keyword ability (CR 702.184a) — fully fixed, renders the no-arg builder.
                 rname == "Station" -> block = listOf(Eval(call("station")))
+                // Start your engines! (CR 702.179a, Aetherdrift) — the keyword is the whole card-side
+                // mechanic: the CR 704.5z state-based action starts the controller's speed at 1. Render
+                // the `startYourEngines()` builder call (like `station()`); it carries no args.
+                rname == "StartYourEngines" -> block = listOf(Eval(call("startYourEngines")))
+                // Max speed — [Ability] (CR 702.178a). Delegates the nested ability to its normal
+                // builder and re-parents it under `maxSpeed { }`; declines to SCAFFOLD for payloads the
+                // block can't hold (notably a gated replacement effect). See SpeedHandlers.kt.
+                rname == "MaxSpeed" -> block = ctx.maxSpeedBlock(rule)
                 // Increment (Secrets of Strixhaven) — a keyword whose whole mechanic ("whenever you cast
                 // a spell, if the mana you spent exceeds this creature's power or toughness, +1/+1
                 // counter") is composed by the `increment()` CardBuilder helper. Like `station()` /
                 // `firebending(n)`, render the builder call directly rather than a bare keywordAbility
                 // (which would print the keyword but drop the cast-spell trigger). The rule carries no args.
+                // Bargain (CR 702.166, Wilds of Eldraine) — the keyword's whole mechanic (the optional
+                // "sacrifice an artifact, enchantment, or token" additional cost plus the
+                // ChoiceSlot.BARGAINED declaration its payoffs read) is composed by the `bargain()`
+                // CardBuilder helper. Render the builder call, never a bare keyword stamp, which would
+                // drop the cost. The rule carries no args.
+                rname == "Bargain" -> block = listOf(Eval(call("bargain")))
                 rname == "Increment" -> block = listOf(Eval(call("increment")))
                 // {N+} station symbol that animates into a creature (CR 721.2b). Non-animating
                 // `StationCharged` (gating an activated/triggered ability) is left to the default
@@ -371,8 +440,11 @@ object Emitter {
      *  the keyword as `[equip-filter, cost]`. We render the bare `equipAbility("{cost}")` (which
      *  synthesises the canonical sorcery-speed attach ability) ONLY for the unrestricted "any creature"
      *  filter with a pure-mana cost. Equip-quality variants ("equip legendary creature", a creature-type
-     *  restriction) and non-mana costs aren't expressible by `equipAbility`, so they return null ->
-     *  scaffold rather than silently drop the restriction. */
+     *  restriction) and non-mana costs return null -> scaffold rather than silently drop the
+     *  restriction. The SDK *can* express the quality variants — `equipAbility(cost, quality = …,
+     *  targetFilter = …)`, CR 702.6c — but translating mtgish's permanent-filter IR into a
+     *  `TargetFilter` (and into the human wording `quality` carries) isn't implemented here, so
+     *  declining stays the correct output. */
     private fun equipAbilityLine(rule: JsonObject): List<Stmt>? {
         val args = rule["args"].asArr ?: return null
         if (args.size != 2) return null

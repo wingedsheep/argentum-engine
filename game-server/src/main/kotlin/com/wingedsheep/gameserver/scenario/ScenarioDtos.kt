@@ -130,6 +130,12 @@ data class BattlefieldCardConfig(
     /** For permanents with "As this enters, choose a creature type" — skips the ETB choice by pre-setting it. */
     val chosenCreatureType: String? = null,
     /**
+     * For permanents that durably choose a card type (CR 205.2a — e.g. Arachne, Psionic Weaver's
+     * "choose a card type other than creature") — skips the ETB choice by pre-setting it. Value is a
+     * card-type name, e.g. "Artifact", "Enchantment", "Instant".
+     */
+    val chosenCardType: String? = null,
+    /**
      * For permanents with "As this enters, choose a color" — skips the ETB choice by pre-setting it.
      * Value must be a [com.wingedsheep.sdk.core.Color] name, e.g. "WHITE", "GREEN".
      */

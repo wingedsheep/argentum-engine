@@ -51,7 +51,7 @@ class RandomActionBenchmark : FunSpec({
                 completionService.submit {
                     val deck1 = buildRandomSealedDeck(allCards)
                     val deck2 = buildRandomSealedDeck(allCards)
-                    playRandomGame(registry, deck1, deck2, maxTurns = 50).also {
+                    playRandomGame(registry, deck1, deck2, maxTurns = 100).also {
                         val n = finished.incrementAndGet()
                         if (n <= 5 || n % 10 == 0 || n == numGames) {
                             println("  [${n}/${numGames}] ${it.turns} turns, ${it.actions} actions, ${it.durationMs}ms, ${it.winner}")
@@ -120,7 +120,8 @@ private data class RandomGameResult(
  * Play a game using purely random legal actions. No AI evaluation at all.
  */
 private fun playRandomGame(
-    registry: CardRegistry, deck1: Deck, deck2: Deck, maxTurns: Int = 50
+    // maxTurns counts player turns (`GameState.turnNumber`), so 100 is 50 turns each.
+    registry: CardRegistry, deck1: Deck, deck2: Deck, maxTurns: Int = 100
 ): RandomGameResult {
     val processor = ActionProcessor(registry)
     val enumerator = LegalActionEnumerator.create(registry)

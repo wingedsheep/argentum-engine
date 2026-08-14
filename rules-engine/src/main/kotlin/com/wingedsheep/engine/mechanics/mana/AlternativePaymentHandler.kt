@@ -404,23 +404,17 @@ class AlternativePaymentHandler(
      * Apply a waterbend payment for an activated ability (Avatar: The Last Airbender).
      *
      * Waterbend is "Pay [cost]. For each generic mana in that cost, you may tap an untapped
-     * artifact or creature you control rather than pay that mana." It mirrors convoke but
-     * (a) the eligible-permanent set is widened to artifacts, and (b) every tapped permanent
-     * pays {1} *generic* — there is no colored-pip option. Tapping is bounded by the generic
-     * mana remaining in the cost: once no generic is left, any further selections are ignored
-     * (you can't tap a permanent for no reason).
+     * artifact or creature you control rather than pay that mana." One case of the shared
+     * [applyTapForGeneric] rail: eligibility [TapForGeneric.WATERBEND], and no cap beyond the
+     * generic mana remaining in the cost (the whole cost *is* the waterbend cost).
      */
     fun applyWaterbendForAbility(
         state: GameState,
         cost: ManaCost,
         payment: AlternativePaymentChoice,
         playerId: EntityId
-    ): AlternativePaymentResult {
-        if (payment.waterbendPermanents.isEmpty()) {
-            return AlternativePaymentResult(cost, state, emptyList())
-        }
-        return applyWaterbend(state, cost, payment.waterbendPermanents, playerId)
-    }
+    ): AlternativePaymentResult =
+        applyTapForGeneric(state, cost, payment, playerId, TapForGeneric.WATERBEND)
 
     /**
      * Apply a waterbend payment for a **spell's** additional waterbend cost (Avatar: The Last
@@ -437,11 +431,33 @@ class AlternativePaymentHandler(
         payment: AlternativePaymentChoice,
         playerId: EntityId,
         maxGenericReduction: Int
+    ): AlternativePaymentResult =
+        applyTapForGeneric(state, cost, payment, playerId, TapForGeneric.WATERBEND, maxGenericReduction)
+
+    /**
+     * Apply an **improvise** payment for a spell (CR 702.126a: "For each generic mana in this
+     * spell's total cost, you may tap an untapped artifact you control rather than pay that
+     * mana"). The artifacts-only case of the shared [applyTapForGeneric] rail.
+     *
+     * Improvise is neither an additional nor an alternative cost and applies only after the total
+     * cost is determined (CR 702.126b), so [cost] here is already the fully-modified total cost
+     * and the only bound is its generic portion — no extra cap. Colored pips are never touched.
+     *
+     * Ignored unless the spell effectively has improvise (printed, or granted to it by a
+     * permanent such as Ironheart, Clever Champion) — so a stale or forged choice can't tap
+     * artifacts for a spell that never had the keyword.
+     */
+    fun applyImproviseForSpell(
+        state: GameState,
+        cost: ManaCost,
+        payment: AlternativePaymentChoice,
+        playerId: EntityId,
+        cardDef: CardDefinition
     ): AlternativePaymentResult {
-        if (payment.waterbendPermanents.isEmpty() || maxGenericReduction <= 0) {
+        if (!effectivelyHasKeyword(state, playerId, cardDef, Keyword.IMPROVISE)) {
             return AlternativePaymentResult(cost, state, emptyList())
         }
-        return applyWaterbend(state, cost, payment.waterbendPermanents, playerId, maxGenericReduction)
+        return applyTapForGeneric(state, cost, payment, playerId, TapForGeneric.IMPROVISE)
     }
 
     /**
@@ -451,7 +467,7 @@ class AlternativePaymentHandler(
     fun calculateReducedCostForWaterbend(
         cost: ManaCost,
         payment: AlternativePaymentChoice
-    ): ManaCost = calculateReducedCostForWaterbend(cost, payment, Int.MAX_VALUE)
+    ): ManaCost = calculateReducedCostForTapForGeneric(cost, payment, Int.MAX_VALUE)
 
     /**
      * Calculate the reduced cost after a waterbend payment, capping the generic reduction at
@@ -462,10 +478,43 @@ class AlternativePaymentHandler(
         cost: ManaCost,
         payment: AlternativePaymentChoice,
         maxGenericReduction: Int
+    ): ManaCost = calculateReducedCostForTapForGeneric(cost, payment, maxGenericReduction)
+
+    /**
+     * Calculate the reduced cost after an improvise payment (CR 702.126a), without mutating
+     * state. Bounded only by the generic mana in the total cost. Returns [cost] unchanged when
+     * the spell doesn't effectively have improvise.
+     *
+     * [state] and [playerId] are required, not optional: improvise is grantable at runtime
+     * (Ironheart, Clever Champion), and without them [effectivelyHasKeyword] degrades to a
+     * printed-keyword-only check — a caller that omitted them would silently make every *granted*
+     * improvise vanish from the cost, with no error to notice.
+     */
+    fun calculateReducedCostForImprovise(
+        cost: ManaCost,
+        payment: AlternativePaymentChoice,
+        cardDef: CardDefinition,
+        state: GameState,
+        playerId: EntityId
+    ): ManaCost {
+        if (!effectivelyHasKeyword(state, playerId, cardDef, Keyword.IMPROVISE)) return cost
+        return calculateReducedCostForTapForGeneric(cost, payment, Int.MAX_VALUE)
+    }
+
+    /**
+     * Shared "each tapped permanent pays {1} generic" cost math for [TapForGeneric] payments.
+     * Every tap removes one generic, bounded by the generic left in [cost] and by
+     * [maxGenericReduction]. Eligibility isn't re-checked here — this is the no-state
+     * affordability twin of [applyTapForGeneric], which does validate.
+     */
+    private fun calculateReducedCostForTapForGeneric(
+        cost: ManaCost,
+        payment: AlternativePaymentChoice,
+        maxGenericReduction: Int
     ): ManaCost {
         var reducedCost = cost
         var applied = 0
-        for (i in 0 until payment.waterbendPermanents.size) {
+        for (i in 0 until payment.tapForGenericPermanents.size) {
             if (applied >= maxGenericReduction) break
             if (reducedCost.genericAmount <= 0) break
             reducedCost = reduceGenericCost(reducedCost, 1)
@@ -475,40 +524,52 @@ class AlternativePaymentHandler(
     }
 
     /**
-     * Tap the chosen artifacts/creatures, each reducing the generic portion of [cost] by {1}.
-     * Invalid choices (not on battlefield, tapped, not controlled, not an artifact/creature)
-     * are silently ignored — the enumerator and handler validation gate the legal choices.
-     * Reads types/controller from projected state so animated lands and type-changed
-     * permanents are honored (CR battlefield reads).
+     * Tap the chosen permanents, each reducing the generic portion of [cost] by {1}. The one
+     * rail behind every "tap untapped permanents you control, each paying {1} generic" mechanic;
+     * [eligibility] is the only thing that differs between them (see [TapForGeneric]).
+     *
+     * Invalid choices (not on battlefield, tapped, not controlled, wrong type) are silently
+     * ignored — the enumerator and handler validation gate the legal choices. Reads
+     * types/controller from projected state so animated lands and type-changed permanents are
+     * honored (CR battlefield reads).
      */
-    private fun applyWaterbend(
+    private fun applyTapForGeneric(
         state: GameState,
         cost: ManaCost,
-        waterbendPermanents: Set<EntityId>,
+        payment: AlternativePaymentChoice,
         playerId: EntityId,
+        eligibility: TapForGeneric,
         maxGenericReduction: Int = Int.MAX_VALUE
     ): AlternativePaymentResult {
+        if (payment.tapForGenericPermanents.isEmpty() || maxGenericReduction <= 0) {
+            return AlternativePaymentResult(cost, state, emptyList())
+        }
+
         var currentState = state
         var reducedCost = cost
         var applied = 0
         val events = mutableListOf<GameEvent>()
 
         val battlefieldZone = ZoneKey(playerId, Zone.BATTLEFIELD)
-        // Tapping a permanent for waterbend changes neither type nor controller, so the projection
+        // Tapping a permanent this way changes neither type nor controller, so the projection
         // computed once from the starting state is valid for every eligibility check below.
         val projected = state.projectedState
 
-        for (permanentId in waterbendPermanents) {
-            // Bound by the generic mana in the cost (CR: "for each generic mana in that cost") and,
-            // for a spell-level cost, by the waterbend amount [maxGenericReduction].
+        for (permanentId in payment.tapForGenericPermanents) {
+            // Bound by the generic mana in the cost (CR 702.126a / waterbend: "for each generic
+            // mana in that cost") and, for a spell-level waterbend cost, by its amount N.
             if (applied >= maxGenericReduction) break
             if (reducedCost.genericAmount <= 0) break
             if (permanentId !in currentState.getZone(battlefieldZone)) continue
             val container = currentState.getEntity(permanentId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
+            // Card-backed permanents only, mirroring the eligibility scan in
+            // `CostEnumerationUtils.findTapForGenericPermanents` (which needs the name). Every
+            // battlefield permanent carries one today, so this is symmetry rather than a live
+            // guard — but the two sides of the same payment should agree on what qualifies.
+            container.get<CardComponent>() ?: continue
 
-            // Must be an untapped artifact or creature the player controls.
-            if (!projected.isCreature(permanentId) && !projected.hasType(permanentId, "ARTIFACT")) continue
+            // Must be an untapped, eligible permanent the player controls.
+            if (!eligibility.matches(projected, permanentId)) continue
             if (container.has<TappedComponent>()) continue
             if (projected.getController(permanentId) != playerId) continue
 
@@ -520,28 +581,5 @@ class AlternativePaymentHandler(
         }
 
         return AlternativePaymentResult(reducedCost, currentState, events)
-    }
-
-    /**
-     * Does [cardDef] support alternative payment when cast by [playerId] in [state]?
-     * Returns true when the card prints DELVE/CONVOKE or a battlefield permanent grants one.
-     */
-    fun supportsAlternativePayment(
-        state: GameState,
-        playerId: EntityId,
-        cardDef: CardDefinition
-    ): Boolean =
-        effectivelyHasKeyword(state, playerId, cardDef, Keyword.DELVE) ||
-            effectivelyHasKeyword(state, playerId, cardDef, Keyword.CONVOKE)
-
-    companion object {
-        /**
-         * Legacy check — considers only the card's printed keywords. Prefer the instance method
-         * that accounts for granted keywords.
-         */
-        fun supportsAlternativePayment(cardDef: CardDefinition): Boolean {
-            return cardDef.keywords.contains(Keyword.DELVE) ||
-                    cardDef.keywords.contains(Keyword.CONVOKE)
-        }
     }
 }

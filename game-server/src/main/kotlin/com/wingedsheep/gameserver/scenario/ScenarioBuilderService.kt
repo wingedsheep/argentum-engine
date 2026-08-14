@@ -158,6 +158,7 @@ class ScenarioBuilderService(
                 summoningSickness = card.summoningSickness ?: false,
                 counters = card.counters ?: emptyMap(),
                 chosenCreatureType = card.chosenCreatureType,
+                chosenCardType = card.chosenCardType,
                 chosenColor = card.chosenColor
             )
         }
@@ -243,6 +244,7 @@ class ScenarioBuilderService(
             summoningSickness: Boolean = false,
             counters: Map<String, Int> = emptyMap(),
             chosenCreatureType: String? = null,
+            chosenCardType: String? = null,
             chosenColor: String? = null
         ): ScenarioBuilder {
             val playerId = playerFor(playerNumber)
@@ -269,6 +271,12 @@ class ScenarioBuilderService(
             if (chosenCreatureType != null) {
                 container = container.withCastChoice(
                     ChoiceSlot.CREATURE_TYPE, ChoiceValue.TextChoice(chosenCreatureType)
+                )
+            }
+
+            if (chosenCardType != null) {
+                container = container.withCastChoice(
+                    ChoiceSlot.CARD_TYPE, ChoiceValue.TextChoice(chosenCardType)
                 )
             }
 

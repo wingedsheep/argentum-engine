@@ -1,0 +1,104 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Cosmic Cube"
+    ],
+    "battlefield": [
+      {
+        "name": "Shuri, Wakandan Inventor",
+        "summoningSickness": false
+      },
+      {
+        "name": "Absorbing Man"
+      },
+      {
+        "name": "Taskmaster, Mercenary Mimic"
+      },
+      {
+        "name": "The Mind Stone"
+      },
+      {
+        "name": "Futurist Forge"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "graveyard": [
+      "Kree Commandos"
+    ],
+    "library": [
+      "Island",
+      "Plains",
+      "Island"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Wakandan Drone Flock"
+      },
+      {
+        "name": "HYDRA Infiltration"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      }
+    ],
+    "graveyard": ["Serra Angel"],
+    "library": [
+      "Swamp",
+      "Swamp",
+      "Swamp"
+    ]
+  },
+  "phase": "BEGINNING",
+  "step": "UPKEEP",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "UPKEEP",
+    "PRECOMBAT_MAIN",
+    "POSTCOMBAT_MAIN"
+  ],
+  "player2StopAtSteps": [
+    "PRECOMBAT_MAIN"
+  ],
+  "player1OpponentStopAtSteps": [
+    "PRECOMBAT_MAIN"
+  ],
+  "player2OpponentStopAtSteps": [],
+  "mode": "AI"
+}

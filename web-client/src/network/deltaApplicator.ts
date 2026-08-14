@@ -90,6 +90,8 @@ export function applyStateDelta(
     turnNumber: delta.turnNumber ?? current.turnNumber,
     isGameOver: delta.isGameOver ?? current.isGameOver,
     winnerId: delta.winnerId !== undefined ? delta.winnerId : current.winnerId,
+    // Carried forward: a null delta value means unchanged (the game never reverts to neither, CR 731.1).
+    dayNight: delta.dayNight ?? current.dayNight ?? null,
     combat,
     gameLog,
     youAreHijacking: delta.youAreHijacking ?? null,

@@ -66,8 +66,7 @@ class SozinsCometScenarioTest : FunSpec({
     /**
      * Advance play from the current (my) turn to my next precombat main phase.
      *
-     * Each iteration ends the current turn and stops at the *following* turn's precombat main
-     * (turnNumber is round-based — it increments only when the starting player begins a turn), so
+     * Each iteration ends the current turn and stops at the *following* turn's precombat main, so
      * the loop exits precisely on my own main phase in a later turn. Ending each iteration on
      * `PRECOMBAT_MAIN` (rather than looping to END and only afterwards advancing to a main) is what
      * keeps it from overshooting onto the opponent's turn.

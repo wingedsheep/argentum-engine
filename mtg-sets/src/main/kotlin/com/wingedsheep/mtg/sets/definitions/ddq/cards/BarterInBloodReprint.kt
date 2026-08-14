@@ -3,7 +3,12 @@ package com.wingedsheep.mtg.sets.definitions.ddq.cards
 import com.wingedsheep.sdk.model.Printing
 import com.wingedsheep.sdk.model.Rarity
 
-val BarterInBloodReprint = Printing(
+/**
+ * Barter in Blood reprint in Duel Decks: Blessed vs. Cursed. Canonical CardDefinition lives in
+ * Mirrodin (its earliest real printing),
+ * `com.wingedsheep.mtg.sets.definitions.mrd.cards.BarterInBlood`.
+ */
+val BarterInBloodDdqReprint = Printing(
     oracleId = "9167998d-5cac-47d7-99f2-f38122f7b8e7",
     name = "Barter in Blood",
     setCode = "DDQ",

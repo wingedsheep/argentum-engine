@@ -210,6 +210,29 @@ data object GrantHexproofToController : StaticAbility {
 }
 
 /**
+ * Spells and abilities your opponents control can't cause you to sacrifice permanents
+ * (Sigarda, Host of Herons).
+ *
+ * A player-scoped "can't" that outranks the instruction (CR 101.2): as an opponent's spell or
+ * ability resolves, the sacrifice it would impose on this permanent's controller simply doesn't
+ * happen, and an *optional* sacrifice offered by such a source can't be chosen — including
+ * paying a sacrifice cost the opponent's spell or ability imposes (a ward—sacrifice, or an
+ * "unless you sacrifice …" clause). Effects the controller themselves controls are untouched,
+ * and so is every non-sacrifice way a permanent leaves the battlefield (lethal damage, 0
+ * toughness, the legend rule, destruction) — those aren't sacrifices.
+ *
+ * Stamped as `GrantsSacrificeImmunityComponent` by the static-ability handler and read by
+ * `SacrificeImmunity`, which every sacrifice site consults; it is not a Rule 613 continuous
+ * effect.
+ */
+@SerialName("OpponentsCantMakeYouSacrifice")
+@Serializable
+data object OpponentsCantMakeYouSacrifice : StaticAbility {
+    override val description: String =
+        "Spells and abilities your opponents control can't cause you to sacrifice permanents"
+}
+
+/**
  * You have protection from [scope] (CR 702.16).
  *
  * Grants player-level protection to the permanent's controller — the continuous, static

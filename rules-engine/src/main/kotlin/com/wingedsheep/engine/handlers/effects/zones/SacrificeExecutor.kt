@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.mechanics.SacrificeImmunity
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.captureEntitySnapshots
@@ -41,6 +42,14 @@ class SacrificeExecutor(
     ): EffectResult {
         val controllerId = context.controllerId
         val sourceId = context.sourceId
+
+        // Sigarda, Host of Herons. Normally the sacrificing player *is* the spell's controller, so
+        // this never fires — but a per-player iteration ("each player sacrifices a permanent")
+        // rebinds controllerId to each iterated player while effectControllerId stays the caster,
+        // and that is exactly the case Sigarda stops.
+        if (SacrificeImmunity.appliesTo(state, controllerId, context.effectControllerId ?: controllerId)) {
+            return EffectResult.success(state)
+        }
 
         val sourceName = if (sourceId != null) {
             state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Unknown"

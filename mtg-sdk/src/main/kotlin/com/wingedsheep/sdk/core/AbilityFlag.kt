@@ -64,6 +64,16 @@ enum class AbilityFlag(val displayName: String) {
      */
     CANT_GAIN_CONTROL("Can't be gained control of"),
 
+    // ── Transform restriction flags ─────────────────────────────
+    /**
+     * "This permanent can't transform" (CR 701.27b — a permanent that can't transform simply
+     * doesn't). Enforced in the single shared transform-in-place implementation
+     * (`flipDfcInPlace`), so it blocks *every* cause: a `TransformEffect` one-shot, an
+     * activated/triggered transform ability, and the daybound/nightbound day-change flips.
+     * Granted to the enchanted creature by Bound by Moonsilver.
+     */
+    CANT_TRANSFORM("Can't transform"),
+
     // ── Combat damage assignment flags ──────────────────────────
     ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS("Assigns combat damage equal to its toughness rather than its power")
 }

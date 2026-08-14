@@ -36,7 +36,7 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *    round down. The non-God filter is `Creature.notSubtype(GOD)`, so a player's own Gods (and
  *    Zodiark) are never sacrificed and don't count toward the half.
  *  - The counter trigger uses the "a player sacrifices" scope
- *    ([EventPattern.PermanentsSacrificedEvent.byAnyPlayer] = true, ANY binding): it fires for any
+ *    ([EventPattern.PermanentsSacrificedEvent.sacrificedBy] = [Player.Each], ANY binding): it fires for any
  *    player's sacrifices, not just Zodiark's controller's. Following the engine's batching
  *    convention for sacrifice triggers, it fires once per sacrificing player per batch. The filter
  *    is `Creature`; "another" is satisfied in practice because Zodiark is indestructible and, as a
@@ -81,7 +81,7 @@ val ZodiarkUmbralGod = card("Zodiark, Umbral God") {
         trigger = TriggerSpec(
             event = EventPattern.PermanentsSacrificedEvent(
                 filter = GameObjectFilter.Creature,
-                byAnyPlayer = true
+                sacrificedBy = Player.Each
             ),
             binding = TriggerBinding.ANY
         )

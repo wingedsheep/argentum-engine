@@ -6,7 +6,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.dom.cards.DAvenantTrapper
-import com.wingedsheep.mtg.sets.definitions.dom.cards.GildedLotus
+import com.wingedsheep.mtg.sets.definitions.mrd.cards.GildedLotus
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.Deck

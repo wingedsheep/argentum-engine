@@ -14,7 +14,7 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 
 /**
- * Tests for [enumerators.GraveyardAbilityEnumerator].
+ * Tests for [enumerators.ZoneActivatedAbilityEnumerator].
  *
  * The enumerator handles activated abilities whose `activateFromZone == GRAVEYARD`
  * (e.g. Undead Gladiator's self-return, Eternal Dragon's self-return). Unlike the

@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { useGameStore, ConvokeCreatureSelection } from '@/store/gameStore.ts'
 import { Color, ColorSymbols } from '@/types/enums'
 import { useViewingPlayer } from '@/store/selectors'
-import type { ClientManaPool } from '@/types/gameState'
+import { applyManaPoolToCost, totalManaNeeded } from '@/utils/manaCost'
 import { ManaSymbol } from './ManaSymbols'
 
 /**
@@ -81,71 +81,6 @@ function calculateRemainingCost(
 }
 
 /**
- * Subtract the player's floating mana from [symbols], paying exact-color pips first,
- * then hybrid pips, then generic. Returns the symbols still owed after the pool is
- * applied. Mirrors the order the server's autoPay uses so the affordability check
- * matches the actual payment.
- */
-function applyManaPool(symbols: string[], pool: ClientManaPool | undefined): string[] {
-  if (!pool) return symbols
-  const remaining = [...symbols]
-  const available: Record<string, number> = {
-    W: pool.white,
-    U: pool.blue,
-    B: pool.black,
-    R: pool.red,
-    G: pool.green,
-    C: pool.colorless,
-  }
-
-  for (const pip of ['W', 'U', 'B', 'R', 'G', 'C']) {
-    while (available[pip]! > 0) {
-      const idx = remaining.indexOf(pip)
-      if (idx < 0) break
-      remaining.splice(idx, 1)
-      available[pip]!--
-    }
-  }
-
-  for (const pip of ['W', 'U', 'B', 'R', 'G']) {
-    while (available[pip]! > 0) {
-      const idx = remaining.findIndex(s => hybridCoversColor(s, pip))
-      if (idx < 0) break
-      remaining.splice(idx, 1)
-      available[pip]!--
-    }
-  }
-
-  let generic = available.W! + available.U! + available.B! + available.R! + available.G! + available.C!
-  while (generic > 0) {
-    const idx = remaining.findIndex(s => /^\d+$/.test(s))
-    if (idx < 0) break
-    const value = parseInt(remaining[idx]!, 10)
-    if (value > 1) {
-      remaining[idx] = String(value - 1)
-    } else {
-      remaining.splice(idx, 1)
-    }
-    generic--
-  }
-
-  return remaining
-}
-
-/**
- * Calculate the total mana value of remaining cost symbols.
- * Generic symbols count as their numeric value, colored symbols count as 1 each.
- */
-function totalManaNeeded(symbols: string[]): number {
-  let total = 0
-  for (const s of symbols) {
-    const num = parseInt(s, 10)
-    total += isNaN(num) ? 1 : num
-  }
-  return total
-}
-
-/**
  * Calculate the total mana available from mana sources, excluding entities the
  * player has already chosen to tap for convoke (a creature with its own mana
  * ability, e.g. Llanowar Elves, can pay either a convoke pip or a mana ability —
@@ -186,9 +121,13 @@ export function ConvokeSelector() {
     return calculateRemainingCost(originalSymbols, convokeSelectionState.selectedCreatures)
   }, [originalSymbols, convokeSelectionState?.selectedCreatures])
 
+  // Conditional mana ("spend this mana only to …") counts only when the server flagged it
+  // eligible for this exact cast — e.g. Ashling, Rimebound's mana on an MV4+ spell.
+  const eligibleRestricted = convokeSelectionState?.actionInfo.eligibleRestrictedMana
+
   const symbolsAfterPool = useMemo(
-    () => applyManaPool(remainingSymbols, manaPool),
-    [remainingSymbols, manaPool]
+    () => applyManaPoolToCost(remainingSymbols, manaPool, eligibleRestricted),
+    [remainingSymbols, manaPool, eligibleRestricted]
   )
 
   const convokedIds = useMemo(

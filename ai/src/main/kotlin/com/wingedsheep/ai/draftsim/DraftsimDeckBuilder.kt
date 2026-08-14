@@ -17,24 +17,79 @@ data class DraftsimBuild(
 )
 
 /**
+ * How big a deck the builder is aiming at, and the caps that shape it.
+ *
+ * Draftsim is natively a *limited* autobuilder — 23 spells + 17 lands, per-CMC caps tuned for a
+ * sealed pool. None of the machinery around those numbers is limited-specific though: the archetype
+ * ranking, the greedy fill, the hill-climbing refinement and the manabase allocation all just read
+ * them. Pulling them into a shape lets the same engine build the 60-card constructed shape for
+ * [com.wingedsheep.ai.engine.deck.ConstructedDeckGenerator], instead of the constructed path having
+ * to keep a second, worse builder with no card-quality signal in it at all.
+ *
+ * [CONSTRUCTED] is [LIMITED] scaled by 36/23 and rounded, not a separately tuned table. The ratios
+ * — curve shape, removal share, creature share — are what Draftsim actually encodes, and they carry
+ * over to a bigger deck; inventing new numbers would just be guessing.
+ */
+data class DraftsimDeckShape(
+    /** Nonland cards in the finished deck. */
+    val nonlandCount: Int,
+    /** Lands in the finished deck: pool lands first, basics for the remainder. */
+    val landCount: Int,
+    /** `dl` — swap the weakest spells for creatures until the deck holds at least this many. */
+    val creatureFloor: Int,
+    /** `M4` — per-CMC-bucket caps; a bucket that isn't listed defaults to 2. */
+    val bucketCap: Map<Int, Int>,
+    /** Removal taken before anything else (greedy phase 1). */
+    val removalFirstPass: Int,
+    /** Ceiling on removal across the removal-vs-best-card interleave (greedy phase 2). */
+    val removalMax: Int,
+) {
+    companion object {
+        /** Draftsim's own shape, as ported: a 40-card limited deck. */
+        val LIMITED = DraftsimDeckShape(
+            nonlandCount = 23,
+            landCount = 17,
+            creatureFloor = 13,
+            bucketCap = mapOf(0 to 0, 1 to 3, 2 to 8, 3 to 8, 4 to 6, 5 to 4, 6 to 2),
+            removalFirstPass = 6,
+            removalMax = 9,
+        )
+
+        /** A 60-card constructed deck: [LIMITED]'s caps scaled by 36/23. */
+        val CONSTRUCTED = DraftsimDeckShape(
+            nonlandCount = 36,
+            landCount = 24,
+            creatureFloor = 20,
+            bucketCap = mapOf(0 to 0, 1 to 5, 2 to 13, 3 to 13, 4 to 9, 5 to 6, 6 to 3),
+            removalFirstPass = 9,
+            removalMax = 14,
+        )
+    }
+}
+
+/**
  * Auto-deckbuilding, ported from `SPEC_deckbuild.md`: `dW` ranks archetypes (`kf`), builds each with
  * the greedy `vX`, refines with the hill-climbing `ek`, and sorts by the final `Mm` score. Sealed
  * adds one `SX` "good stuff" build. Bound to one pool's [tables]; reuses [DraftsimCardOps] /
  * [DraftsimScorer] (jm) / [DraftsimDeckScorer] (kf, Mm, tk).
+ *
+ * [shape] defaults to the ported limited 23+17; pass [DraftsimDeckShape.CONSTRUCTED] to build the
+ * 60-card shape with the same ranking and refinement.
  */
-class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
+class DraftsimDeckBuilder(
+    private val tables: DraftsimSetTables,
+    private val shape: DraftsimDeckShape = DraftsimDeckShape.LIMITED,
+) {
 
     private val ops = DraftsimCardOps(tables)
     private val scorer = DraftsimScorer(tables)
     private val deckScorer = DraftsimDeckScorer(tables)
 
+    private val nonlandTarget = shape.nonlandCount
+    private val landTarget = shape.landCount
+
     private companion object {
-        const val DECK_NONLAND = 23
-        const val DECK_LANDS = 17
-        const val CREATURE_FLOOR = 13      // dl
         const val BOMB = 3.9
-        // per-CMC-bucket card caps M4; default 2 for missing bucket.
-        val BUCKET_CAP = mapOf(0 to 0, 1 to 3, 2 to 8, 3 to 8, 4 to 6, 5 to 4, 6 to 2)
         val COLOR_TO_BASIC = mapOf("W" to "Plains", "U" to "Island", "B" to "Swamp", "R" to "Mountain", "G" to "Forest")
         // Ten three-color guild shells for the sealed good-stuff build.
         val THREE_COLOR = DraftsimDeckScorerGuilds.THREE_COLOR
@@ -154,7 +209,7 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
         fun canAdd(item: Scored): Boolean {
             val card = item.pc.card
             val bucket = ops.cmcBucket(card.cmc)
-            return (copies[card.name] ?: 0) < copyCap(card) && (buckets[bucket] ?: 0) < (BUCKET_CAP[bucket] ?: 2)
+            return (copies[card.name] ?: 0) < copyCap(card) && (buckets[bucket] ?: 0) < (shape.bucketCap[bucket] ?: 2)
         }
 
         fun add(item: Scored) {
@@ -194,19 +249,20 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
         // Completion: seed the locked cards first so the phases fill around them (and never drop them).
         if (forced.isNotEmpty()) for (item in scored) if (item.pc.instanceId in forced) st.seed(item)
 
-        // Phase 1 — removal first (cap 6). Seeded (locked) removal is already in the deck: skip it so
-        // it isn't double-added, but count it against the cap so completion doesn't over-stack removal.
+        // Phase 1 — removal first (cap `removalFirstPass`). Seeded (locked) removal is already in the
+        // deck: skip it so it isn't double-added, but count it against the cap so completion doesn't
+        // over-stack removal.
         var removalTaken = st.deck.count { isRemoval(it.pc.card) }
         for (item in removalCards) {
-            if (removalTaken >= 6 || st.deck.size >= DECK_NONLAND) break
+            if (removalTaken >= shape.removalFirstPass || st.deck.size >= nonlandTarget) break
             if (item.pc.instanceId in st.chosen) continue
             if (st.canAdd(item)) { st.add(item); removalTaken++ }
         }
-        // Phase 2 — interleave removal vs. best other until 9 removal or 23 cards.
+        // Phase 2 — interleave removal vs. best other until `removalMax` removal or a full deck.
         run {
             val remaining = removalCards.filter { it.pc.instanceId !in st.chosen }
             var wi = 0; var gi = 0
-            while (removalTaken < 9 && st.deck.size < DECK_NONLAND) {
+            while (removalTaken < shape.removalMax && st.deck.size < nonlandTarget) {
                 while (wi < remaining.size && !st.canAdd(remaining[wi])) wi++
                 while (gi < otherCards.size && (otherCards[gi].pc.instanceId in st.chosen || !st.canAdd(otherCards[gi]))) gi++
                 val f = remaining.getOrNull(wi)
@@ -217,19 +273,19 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
         }
         // Phase 3 — fill by pure score to 23.
         for (item in scored) {
-            if (st.deck.size >= DECK_NONLAND) break
+            if (st.deck.size >= nonlandTarget) break
             if (item.pc.instanceId in st.chosen || !castable(item.pc.card, archColors)) continue
             if (st.canAdd(item)) st.add(item)
         }
         // Phase 4 — relax bucket caps.
         for (item in scored) {
-            if (st.deck.size >= DECK_NONLAND) break
+            if (st.deck.size >= nonlandTarget) break
             if (item.pc.instanceId in st.chosen || !castable(item.pc.card, archColors)) continue
             if ((st.copies[item.pc.card.name] ?: 0) < copyCap(item.pc.card)) st.add(item)
         }
         // Phase 5 — relax castability + bucket caps.
         for (item in scored) {
-            if (st.deck.size >= DECK_NONLAND) break
+            if (st.deck.size >= nonlandTarget) break
             if (item.pc.instanceId in st.chosen) continue
             if ((st.copies[item.pc.card.name] ?: 0) < copyCap(item.pc.card)) st.add(item)
         }
@@ -248,13 +304,13 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
 
     /** §1.6 creature floor: swap weakest non-creature non-removal cards for best available creatures. */
     private fun creatureFloor(st: BuildState, scored: List<Scored>) {
-        if (st.creatures >= CREATURE_FLOOR) return
+        if (st.creatures >= shape.creatureFloor) return
         val candidates = scored.filter {
             ops.isCreature(it.pc.card) && it.pc.instanceId !in st.chosen &&
                 (st.copies[it.pc.card.name] ?: 0) < copyCap(it.pc.card)
         }
         val victims = st.deck.filter { !ops.isCreature(it.pc.card) && !isRemoval(it.pc.card) && it.pc.instanceId !in st.forced }.sortedBy { it.total }
-        val k = minOf(CREATURE_FLOOR - st.creatures, victims.size, candidates.size)
+        val k = minOf(shape.creatureFloor - st.creatures, victims.size, candidates.size)
         for (x in 0 until k) { st.remove(victims[x]); st.add(candidates[x]) }
     }
 
@@ -278,7 +334,7 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
         for (item in eligible) {
             val k = ops.colorsOf(item.pc.card).first { it !in d }
             if (splashColor != null && k != splashColor) continue
-            if (st.deck.size < DECK_NONLAND) { st.add(item); splashColor = k } else {
+            if (st.deck.size < nonlandTarget) { st.add(item); splashColor = k } else {
                 val weakest = st.deck.filter { !isRemoval(it.pc.card) && it.pc.instanceId !in st.forced }.minByOrNull { it.total } ?: break
                 if (item.rawRating > weakest.rawRating) { st.remove(weakest); st.add(item); splashColor = k } else break
             }
@@ -311,8 +367,8 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
             val fix = ops.archRecord(land.card.name)?.fixing?.takeIf { it.isNotEmpty() }
                 ?: ops.colorsOf(land.card).ifEmpty { land.card.colorIdentity }
             fix.isNotEmpty() && (fix.size >= 4 || fix.all { it in deckColorSet })
-        }.take(DECK_LANDS)
-        var basicsCount = max(0, DECK_LANDS - usefulLands.size)
+        }.take(landTarget)
+        var basicsCount = max(0, landTarget - usefulLands.size)
 
         // Basics only ever fix the deck's committed colors ([deckColorSet]) — never an off-color card
         // that the castability-relaxed greedy fill dragged in. `pipCounts` always counts plain colored
@@ -377,7 +433,7 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
     }
 
     private fun trimLands(basics: MutableMap<String, Int>, usefulCount: Int) {
-        var excess = usefulCount + basics.values.sum() - DECK_LANDS
+        var excess = usefulCount + basics.values.sum() - landTarget
         while (excess > 0) {
             val biggest = basics.entries.filter { it.value > 0 }.maxByOrNull { it.value } ?: break
             basics[biggest.key] = biggest.value - 1
@@ -431,6 +487,12 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
     // SX — sealed "good stuff" splash build
     // =========================================================================
 
+    /**
+     * The three-color splash build, reachable only from `mode = "sealed"`. Its own counts (top-16
+     * shell, 15 good-stuff picks, 7 removal) stay at the ported limited numbers: a three-color shell
+     * off an all-basics manabase is the wrong shape for constructed, so the constructed path builds
+     * in `"draft"` mode and never gets here.
+     */
     private fun goodStuffBuild(pool: List<DraftsimPoolCard>): DraftsimBuild? {
         val nonlandPC = pool.filter { !ops.isLand(it.card) }
         val poolLands = pool.filter { ops.isLand(it.card) && !ops.isBasic(it.card) }
@@ -463,21 +525,21 @@ class DraftsimDeckBuilder(private val tables: DraftsimSetTables) {
         val topIds = bestTop.map { it.instanceId }.toHashSet()
         var topTaken = 0
         for (item in scored) {
-            if (topTaken >= 15 || st.deck.size >= DECK_NONLAND) break
+            if (topTaken >= 15 || st.deck.size >= nonlandTarget) break
             if (item.pc.instanceId in topIds && item.pc.instanceId !in st.chosen && castable(item.pc.card, colors) && st.canAdd(item)) {
                 st.add(item); topTaken++
             }
         }
         var removalTaken = 0
         for (item in scored) {
-            if (removalTaken >= 7 || st.deck.size >= DECK_NONLAND) break
+            if (removalTaken >= 7 || st.deck.size >= nonlandTarget) break
             if (isRemoval(item.pc.card) && item.pc.instanceId !in st.chosen && castable(item.pc.card, colors) && st.canAdd(item)) {
                 st.add(item); removalTaken++
             }
         }
-        for (item in scored) { if (st.deck.size >= DECK_NONLAND) break; if (item.pc.instanceId !in st.chosen && castable(item.pc.card, colors) && st.canAdd(item)) st.add(item) }
-        for (item in scored) { if (st.deck.size >= DECK_NONLAND) break; if (item.pc.instanceId !in st.chosen && castable(item.pc.card, colors) && (st.copies[item.pc.card.name] ?: 0) < copyCap(item.pc.card)) st.add(item) }
-        for (item in scored) { if (st.deck.size >= DECK_NONLAND) break; if (item.pc.instanceId !in st.chosen && (st.copies[item.pc.card.name] ?: 0) < copyCap(item.pc.card)) st.add(item) }
+        for (item in scored) { if (st.deck.size >= nonlandTarget) break; if (item.pc.instanceId !in st.chosen && castable(item.pc.card, colors) && st.canAdd(item)) st.add(item) }
+        for (item in scored) { if (st.deck.size >= nonlandTarget) break; if (item.pc.instanceId !in st.chosen && castable(item.pc.card, colors) && (st.copies[item.pc.card.name] ?: 0) < copyCap(item.pc.card)) st.add(item) }
+        for (item in scored) { if (st.deck.size >= nonlandTarget) break; if (item.pc.instanceId !in st.chosen && (st.copies[item.pc.card.name] ?: 0) < copyCap(item.pc.card)) st.add(item) }
 
         creatureFloor(st, scored)
 

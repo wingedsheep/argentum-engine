@@ -61,6 +61,7 @@ val KravenTheHunter = card("Kraven the Hunter") {
         rarity = Rarity.RARE
         collectorNumber = "133"
         artist = "Greg Staples"
+        flavorText = "\"I have found honor, not in the civilized, but in the primal.\""
         imageUri = "https://cards.scryfall.io/normal/front/a/f/afdab464-3674-449b-be01-1cbd21fced23.jpg?1757377713"
     }
 }

@@ -39,6 +39,23 @@ export default defineConfig({
       },
     },
   },
+  // `vite preview` serves the real production bundle. Without the same proxy it can't reach the
+  // game server, so the only way to exercise a build the way a player meets it — minified, no
+  // StrictMode double-render — was to deploy it. Perf work needs those numbers, not dev's.
+  preview: {
+    port: 5175,
+    proxy: {
+      '/game': {
+        target: gameServerUrl,
+        ws: true,
+        changeOrigin: true,
+      },
+      '/api': {
+        target: gameServerUrl,
+        changeOrigin: true,
+      },
+    },
+  },
   build: {
     sourcemap: true,
   },

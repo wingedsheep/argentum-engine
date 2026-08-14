@@ -1,13 +1,16 @@
 import { useMemo, useState, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { useGameStore } from '@/store/gameStore.ts'
 import { selectGameState, selectViewingPlayerId, useCardLegalActions } from '@/store/selectors.ts'
-import { ZoneType, zoneIdEquals } from '@/types'
+import { AbilityFlagDisplayNames, ZoneType, zoneIdEquals } from '@/types'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStatCounters, getTokenFrameGradient, getTokenFrameTextColor, getPTColor } from '../board/shared'
 import { styles } from '../board/styles'
 import { counterManaClass } from '@/assets/icons/keywords'
 import { HoverCardPreview } from '../../ui/HoverCardPreview'
 import { ManaCost, AbilityText } from '../../ui/ManaSymbols'
+import { buildActionOptions, playCostRange, playLadderOptions } from '@/utils/actionOptions.ts'
+import { parseManaCost, totalManaNeeded } from '@/utils/manaCost.ts'
 
 /**
  * Game board card preview — wraps the shared HoverCardPreview with
@@ -53,33 +56,41 @@ export function CardPreview() {
     return () => window.removeEventListener('keydown', handleFlipKey)
   }, [isDfc, handleFlipKey])
 
+  // Every way the server offers to use this card, in the same order and with the same labels as the
+  // click-to-play action menu — the ladder below the image renders them one per row. Sharing
+  // `buildActionOptions` is the point: the menu and the preview can't disagree about what a card
+  // costs, which they did while each kept its own hand-maintained list of cast variants to ignore.
+  const actionOptions = useMemo(
+    () => (card ? buildActionOptions(card, cardActions) : []),
+    [card, cardActions]
+  )
+
+  // The badge on the image: the span of prices for playing the card, anchored on the printed cost so
+  // the reduced/increased tint means "cheaper or dearer than the card says" rather than "these two
+  // options differ". Only for cards in hand, where a price is something the player can act on.
   const manaCostInfo = useMemo(() => {
     if (!isInHand || !card?.manaCost) return null
-    const castAction = cardActions.find((a) =>
-      a.action.type === 'CastSpell' && a.actionType !== 'CastFaceDown' && a.actionType !== 'CastWithKicker' && a.actionType !== 'CastSpellMode'
-    )
-    const effectiveCost = castAction?.manaCostString
-    // No cast action or cost unchanged — show base cost without modification indicator
-    if (effectiveCost == null || effectiveCost === card.manaCost) {
-      return { baseCost: card.manaCost, effectiveCost: null, isReduced: false, isIncreased: false }
-    }
-    const countSymbols = (cost: string) => {
-      const symbols = cost.match(/\{([^}]+)\}/g) ?? []
-      return symbols.reduce((total, s) => {
-        const inner = s.slice(1, -1)
-        const num = parseInt(inner, 10)
-        return total + (isNaN(num) ? 1 : num)
-      }, 0)
-    }
-    const baseMV = countSymbols(card.manaCost)
-    const effectiveMV = countSymbols(effectiveCost)
+    const range = playCostRange(actionOptions)
+    if (!range) return { cost: card.manaCost, floor: null, isReduced: false, isIncreased: false }
+    // Tint judged on the cheapest way to play it — see the matching note in GameCard.
+    const printedMana = totalManaNeeded(parseManaCost(card.manaCost))
+    const lowMana = totalManaNeeded(parseManaCost(range.low))
     return {
-      baseCost: card.manaCost,
-      effectiveCost: effectiveCost === '' ? '{0}' : effectiveCost,
-      isReduced: effectiveMV < baseMV,
-      isIncreased: effectiveMV > baseMV,
+      cost: range.high,
+      floor: range.isRange ? range.low : null,
+      isReduced: lowMana < printedMana,
+      isIncreased: lowMana > printedMana,
     }
-  }, [isInHand, cardActions, card?.manaCost])
+  }, [isInHand, card?.manaCost, actionOptions])
+
+  // The ladder lists the ways to play the card wherever it is being played from — hand, a graveyard
+  // flashback, a command zone — not the activated abilities of a permanent already on the battlefield.
+  const costRows = useMemo(() => playLadderOptions(actionOptions), [actionOptions])
+
+  // Worth a panel when there is more than one row, or when a lone row's cost can be reduced — a
+  // convoke or delve spell has one way to cast it and still needs the hint saying what the floor costs
+  // you, which is otherwise invisible until the card is clicked.
+  const showCostLadder = costRows.length > 1 || costRows.some((o) => o.manaCostReducedTo)
 
   if (!card) return null
 
@@ -117,6 +128,8 @@ export function CardPreview() {
   let extraHeight = 0
   const GAP = 8
   // manaCostInfo overlay is on the image itself, no extra height needed
+  // The cost ladder is a real panel though: header + padding, then a row (plus its optional hint line).
+  if (showCostLadder) extraHeight += 40 + costRows.length * 26 + GAP
   if (hasStatModifications) extraHeight += 80 + GAP
   if (card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0)) extraHeight += 40 + GAP
 
@@ -125,13 +138,22 @@ export function CardPreview() {
   // the image rotated +90° (CW) to read landscape with the halves side by side. Source
   // stores face[1] on top and face[0] on bottom; after rotation face[1] → right, face[0]
   // → left. Rooms additionally dim the locked half with an upright lock chip (below).
+  // `isRoom` still drives the per-half lock chips below; orientation is isLandscapeFace's job.
   const isRoom = card.isRoom === true
-  const isSplit = card.cardFaces != null && card.cardFaces.length === 2
-  const splitImageRotateDeg: 0 | 90 = isSplit ? 90 : 0
+  // Rotation follows the image actually on screen, which the DFC flip toggle can swap: hovering a
+  // Siege and flipping shows the portrait Deluge of the Dead face (don't rotate), and flipping a
+  // permanent that is *already* the back face shows the landscape Siege front (do rotate). One
+  // server-side flag per face covers every sideways-printed family — splits, Rooms, battles — so
+  // this never re-derives orientation from `cardFaces` or a type line.
+  const shownFaceIsLandscape = showingBackFace
+    ? card.backFaceIsLandscape === true
+    : card.isLandscapeFace === true
+  const isLandscapePrint = shownFaceIsLandscape
+  const landscapeImageRotateDeg: 0 | 90 = isLandscapePrint ? 90 : 0
   // Flip-layout tokens (WOE "Cursed" / "Sorcerer" Roles) carry imageRotation = 180 so the bottom
   // face reads upright. Split-card landscape rotation takes precedence when both somehow apply.
-  const previewImageRotateDeg: 0 | 90 | 180 | 270 = splitImageRotateDeg !== 0
-    ? splitImageRotateDeg
+  const previewImageRotateDeg: 0 | 90 | 180 | 270 = landscapeImageRotateDeg !== 0
+    ? landscapeImageRotateDeg
     : ((card.imageRotation ?? 0) as 0 | 90 | 180 | 270)
 
   // Mana cost overlay badge for the card image (only for hand cards)
@@ -142,7 +164,8 @@ export function CardPreview() {
           position: 'absolute',
           top: 8,
           right: 8,
-          backgroundColor: manaCostInfo.effectiveCost
+          maxWidth: 'calc(100% - 16px)',
+          backgroundColor: manaCostInfo.isReduced || manaCostInfo.isIncreased
             ? 'rgba(0, 0, 0, 0.85)'
             : 'rgba(0, 0, 0, 0.7)',
           padding: '3px 6px',
@@ -157,10 +180,20 @@ export function CardPreview() {
             : 'none',
           display: 'flex',
           alignItems: 'center',
-          gap: 2,
+          justifyContent: 'flex-end',
+          flexWrap: 'wrap',
+          gap: 3,
           zIndex: 5,
         }}>
-          <ManaCost cost={manaCostInfo.effectiveCost ?? manaCostInfo.baseCost} size={18} gap={2} />
+          {/* Cheapest reachable price first, then the asking price — range convention, and the
+              cheap end is the one the player is deciding against. */}
+          {manaCostInfo.floor && (
+            <>
+              <ManaCost cost={manaCostInfo.floor} size={18} gap={2} />
+              <span aria-hidden style={{ color: '#9aa4b8', fontSize: 13 }}>–</span>
+            </>
+          )}
+          <ManaCost cost={manaCostInfo.cost} size={18} gap={2} />
         </div>
       )}
       {isDfc && (
@@ -242,6 +275,44 @@ export function CardPreview() {
       imageRotateDeg={previewImageRotateDeg}
       overlay={previewOverlay}
     >
+      {/* Ways to play, with what each one costs. The badge on the image can only fit the two ends of
+          the range; this is where an adventure face, a kicker, a morph, an alternative cost or a
+          cycling option becomes visible without clicking the card first. Rows the player can't pay
+          for stay listed and dimmed — "not yet" is an answer. */}
+      {showCostLadder && (
+        <div style={styles.cardPreviewCostOptions}>
+          <div style={styles.cardPreviewCostHeader}>Ways to play</div>
+          {costRows.map((option) => (
+            <div key={option.key}>
+              <div style={{
+                ...styles.cardPreviewCostRow,
+                ...(option.isAvailable ? {} : styles.cardPreviewCostRowUnavailable),
+              }}>
+                <span style={styles.cardPreviewCostLabel}>
+                  <AbilityText text={option.label} size={12} />
+                </span>
+                <span style={styles.cardPreviewCostValue}>
+                  {option.manaCostReducedTo ? (
+                    <>
+                      <span style={styles.cardPreviewCostStruck}>
+                        <ManaCost cost={option.manaCost} size={14} gap={1} />
+                      </span>
+                      <span aria-hidden style={{ color: '#9aa4b8', fontSize: 11 }}>→</span>
+                      <ManaCost cost={option.manaCostReducedTo} size={14} gap={1} />
+                    </>
+                  ) : (
+                    <ManaCost cost={option.manaCost} size={14} gap={1} />
+                  )}
+                </span>
+              </div>
+              {option.hint && (
+                <div style={styles.cardPreviewCostHint}>{option.hint}</div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Stats box (for creatures with modifications) */}
       {card.power !== null && card.toughness !== null && hasStatModifications && (
         <div style={styles.cardPreviewStatsBox}>
@@ -307,13 +378,36 @@ export function CardPreview() {
               <span style={styles.cardPreviewKeywordName}>{keyword}</span>
             </div>
           ))}
+          {/* Ability flags are engine enum names, not printed keywords — a raw "DOESNT_UNTAP" chip
+              is the one place the preview shouts an identifier at the player. Prefer the written
+              rules text, falling back to the enum name for a flag the client hasn't named yet. */}
           {card.abilityFlags?.map((flag) => (
             <div key={flag} style={styles.cardPreviewKeyword}>
-              <span style={styles.cardPreviewKeywordName}>{flag}</span>
+              <span style={styles.cardPreviewKeywordName}>{AbilityFlagDisplayNames[flag] ?? flag}</span>
             </div>
           ))}
         </div>
       )}
+
+      {/* Granted types — the printed image can't show a type an effect added (Super-Soldier Serum
+          making its target a Soldier), and the type line above is only printed for tokens, so the
+          grant would otherwise be invisible even though the rules apply it. */}
+      {(() => {
+        // Card types arrive uppercase (matching `cardTypes`); subtypes are already title-case.
+        const grantedTypes = [
+          ...(card.grantedCardTypes ?? []).map((t) => t.charAt(0) + t.slice(1).toLowerCase()),
+          ...(card.grantedSubtypes ?? []),
+        ]
+        if (grantedTypes.length === 0) return null
+        return (
+          <div style={styles.cardPreviewEffects}>
+            <div style={styles.cardPreviewEffect}>
+              <span style={styles.cardPreviewEffectName}>Granted types</span>
+              <span style={styles.cardPreviewEffectText}>{grantedTypes.join(', ')}</span>
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Granted / active-effect abilities — temporary text not in the printed oracle text
           (e.g. an ability granted by Dreadmaw's Ire). The DTO carries these in activeEffects;
@@ -348,7 +442,10 @@ function MobileCardPreview({ card }: { card: import('@/types').ClientCard }) {
   const previewWidth = 200
   const previewHeight = Math.round(previewWidth * 1.4)
 
-  return (
+  // Portalled to <body> for the same reason HoverCardPreview is: the spectator/replay shells
+  // wrap the board in their own stacking context, and the zone browsers (graveyard/exile/deck)
+  // portal to <body> — an in-tree preview lands underneath them.
+  return createPortal(
     <div style={{
       ...styles.cardPreviewOverlay,
       top: 0, left: 0, right: 0, bottom: 0,
@@ -362,7 +459,7 @@ function MobileCardPreview({ card }: { card: import('@/types').ClientCard }) {
           width: previewWidth,
           height: previewHeight,
         }}>
-          {card.isToken && card.imageUri ? (
+          {card.isToken && card.imageUri?.includes('/art_crop/') ? (
             <div style={{
               ...styles.tokenFrame,
               background: getTokenFrameGradient(card.colors),
@@ -416,6 +513,7 @@ function MobileCardPreview({ card }: { card: import('@/types').ClientCard }) {
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

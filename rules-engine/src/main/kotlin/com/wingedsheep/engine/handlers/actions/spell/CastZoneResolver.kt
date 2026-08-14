@@ -3,8 +3,11 @@ package com.wingedsheep.engine.handlers.actions.spell
 import com.wingedsheep.engine.core.GraveyardCastRiderSelection
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
+import com.wingedsheep.engine.mechanics.DisturbCasts
+import com.wingedsheep.engine.mechanics.FlashTypeGrants
 import com.wingedsheep.engine.mechanics.FlashbackGrants
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
+import com.wingedsheep.engine.mechanics.ModalDfcCasts
 import com.wingedsheep.engine.mechanics.WarpGrants
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -13,7 +16,9 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.ExileEntryTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.CastFromTopOfLibraryUsesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.GraveyardPlayPermissionUsedComponent
+import com.wingedsheep.engine.state.components.battlefield.MayCastFromGraveyardUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.battlefield.MayCastFromLinkedExileUsedThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -24,6 +29,7 @@ import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.engine.state.components.player.FlashGrantsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.MayCastCreaturesFromGraveyardWithForageComponent
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -102,7 +108,7 @@ class CastZoneResolver(
         // (Possibility Technician's "if you control a Kavu"), fall through to linked-exile
         // granters when the gate is closed — those are independent permission sources and
         // may still apply.
-        if (state.hasMayPlayFor(cardId, playerId, conditionEvaluator)) return true
+        if (state.hasMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)) return true
 
         // Check for GrantMayCastFromLinkedExile static abilities on battlefield permanents
         return hasLinkedExileCastPermission(state, playerId, cardId)
@@ -224,13 +230,27 @@ class CastZoneResolver(
         cardComponent: CardComponent
     ): List<MayCastFromGraveyard> {
         if (cardId !in state.getZone(ZoneKey(playerId, Zone.GRAVEYARD))) return emptyList()
-        val matches = mutableListOf<MayCastFromGraveyard>()
+        return mayCastFromGraveyardGrantsWithSources(state, playerId, cardId).map { it.second }
+    }
+
+    /**
+     * Every applicable [MayCastFromGraveyard] grant paired with the permanent it hangs off — the
+     * source-aware form of [applicableMayCastFromGraveyardGrants]. The source id is what an
+     * `oncePerTurn` grant's per-turn allowance is tracked against, so both the applies-check and
+     * [oncePerTurnGraveyardCastSourceToConsume] read the grant through this one enumeration.
+     */
+    private fun mayCastFromGraveyardGrantsWithSources(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): List<Pair<EntityId, MayCastFromGraveyard>> {
+        val matches = mutableListOf<Pair<EntityId, MayCastFromGraveyard>>()
         for (permId in state.getBattlefield(playerId)) {
             val permCard = state.getEntity(permId)?.get<CardComponent>() ?: continue
             val permDef = cardRegistry.getCard(permCard.cardDefinitionId) ?: continue
             for (sa in permDef.script.staticAbilities) {
-                if (sa is MayCastFromGraveyard && mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa)) {
-                    matches.add(sa)
+                if (sa is MayCastFromGraveyard && mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa, permId)) {
+                    matches.add(permId to sa)
                 }
             }
         }
@@ -242,11 +262,33 @@ class CastZoneResolver(
             val controller = anchor.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId
             if (controller != playerId) continue
             val sa = grant.ability
-            if (sa is MayCastFromGraveyard && mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa)) {
-                matches.add(sa)
+            if (sa is MayCastFromGraveyard &&
+                mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa, grant.entityId)
+            ) {
+                matches.add(grant.entityId to sa)
             }
         }
         return matches
+    }
+
+    /**
+     * After a graveyard cast authorized by a [MayCastFromGraveyard] grant, the permanent whose
+     * `oncePerTurn` allowance should be marked used — or null when an unlimited grant already
+     * authorized the same cast, so no per-turn use is burned. Mirrors
+     * [com.wingedsheep.engine.mechanics.mana.CostCalculator.oncePerTurnFreeCastSourceToConsume]:
+     * with several once-per-turn sources, the first eligible one pays.
+     */
+    fun oncePerTurnGraveyardCastSourceToConsume(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): EntityId? {
+        var candidate: EntityId? = null
+        for ((sourceId, sa) in mayCastFromGraveyardGrantsWithSources(state, playerId, cardId)) {
+            if (!sa.oncePerTurn) return null
+            if (candidate == null) candidate = sourceId
+        }
+        return candidate
     }
 
     /**
@@ -281,10 +323,18 @@ class CastZoneResolver(
         state: GameState,
         playerId: EntityId,
         cardId: EntityId,
-        sa: com.wingedsheep.sdk.scripting.StaticAbility
+        sa: com.wingedsheep.sdk.scripting.StaticAbility,
+        grantSourceId: EntityId
     ): Boolean {
         if (sa !is MayCastFromGraveyard) return false
         if (sa.duringYourTurnOnly && !state.isActiveTurnFor(playerId)) return false
+        // A `oncePerTurn` grant (Gisa and Geralf) stops authorizing casts once this specific
+        // granter has been used this turn; the marker is cleared at cleanup.
+        if (sa.oncePerTurn &&
+            state.getEntity(grantSourceId)?.has<MayCastFromGraveyardUsedThisTurnComponent>() == true
+        ) {
+            return false
+        }
         return predicateEvaluator.matches(
             state, state.projectedState, cardId, sa.filter,
             PredicateContext(controllerId = playerId)
@@ -311,6 +361,72 @@ class CastZoneResolver(
     }
 
     /**
+     * The back face a card in [playerId]'s graveyard would be cast as through disturb (CR 702.146a),
+     * or null when it isn't there, has no disturb keyword, or has no permanent back face.
+     *
+     * Returning the face rather than a boolean is deliberate: every disturb caller immediately needs
+     * the back face's characteristics (timing from its card types, its target requirements /
+     * `auraTarget`), so the permission check and the face lookup are the same question.
+     */
+    fun disturbCastFace(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): CardDefinition? {
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+        if (cardId !in state.getZone(graveyardZone)) return null
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
+        return DisturbCasts.castFace(cardRegistry.getCard(cardComponent.cardDefinitionId))
+    }
+
+    /**
+     * The back face a card would be cast as through a **transformed** may-play permission
+     * ([com.wingedsheep.engine.state.permissions.MayPlayPermission.castTransformed]), or null when
+     * no such permission covers it or the card has no permanent back face.
+     *
+     * The permission-granted sibling of [disturbCastFace], and it returns the face for the same
+     * reason: every caller needs the back face's characteristics (timing, targets, `auraTarget`)
+     * because that is the face the spell has on the stack (CR 712.8c). Backs CR 310.11b's "exile
+     * it, then you may cast it transformed"; unlike disturb the permission — not a printed keyword
+     * — is what authorizes the cast, so the zone the card sits in is the permission's business, not
+     * this lookup's.
+     */
+    fun permissionTransformedCastFace(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): CardDefinition? {
+        val transformedGrant = state.mayPlayPermissions.any { permission ->
+            permission.castTransformed &&
+                permission.controllerId == playerId &&
+                cardId in permission.cardIds
+        }
+        if (!transformedGrant) return null
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
+        return cardRegistry.getCard(cardComponent.cardDefinitionId)?.backFace
+    }
+
+    /**
+     * The back face a card in [playerId]'s **hand** would be cast as through the modal-DFC face
+     * choice (CR 712.11b), or null when it isn't there or isn't a modal DFC with a permanent back
+     * face.
+     *
+     * Mirrors [disturbCastFace] — same "hand back the face, not a boolean" contract, because every
+     * caller needs the face's characteristics (timing, targets, name) right away — and differs only
+     * in the zone it looks in.
+     */
+    fun modalBackCastFace(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): CardDefinition? {
+        val handZone = ZoneKey(playerId, Zone.HAND)
+        if (cardId !in state.getZone(handZone)) return null
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
+        return ModalDfcCasts.castFace(cardRegistry.getCard(cardComponent.cardDefinitionId))
+    }
+
+    /**
      * Check if a card in the graveyard has a Harmonize keyword ability — printed on the card or
      * granted at runtime (Songcrafter Mage) — allowing it to be cast from the graveyard for its
      * harmonize cost (and exiled on resolution).
@@ -325,6 +441,44 @@ class CastZoneResolver(
         val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
         return HarmonizeGrants.effectiveHarmonize(state, cardId, cardDef) != null
+    }
+
+    /**
+     * Check if a card in the graveyard has a Mayhem keyword ability — printed or granted (Green
+     * Goblin's Goblin Formula) — AND you discarded it this turn (CR 702.187b), allowing it to be
+     * cast from the graveyard for its mayhem cost. Unlike flashback/harmonize the spell is NOT
+     * exiled on resolution.
+     */
+    fun hasMayhemPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
+        if (cardId !in state.getZone(graveyardZone)) return false
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
+        // Lands use the no-cost "play from graveyard" form (CR 702.187c), not the cast path.
+        if (cardComponent.typeLine.isLand) return false
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        if (com.wingedsheep.engine.mechanics.MayhemGrants.effectiveMayhem(
+                state, cardId, cardDef, playerId, cardRegistry, predicateEvaluator
+            ) == null
+        ) return false
+        // The Mayhem gate: you must have discarded this card this turn.
+        return state.getEntity(playerId)
+            ?.get<com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent>()
+            ?.cardIds?.contains(cardId) == true
+    }
+
+    /**
+     * Get the mayhem cost for a card, or null if it doesn't have mayhem.
+     */
+    fun getMayhemCost(cardId: EntityId, state: GameState): com.wingedsheep.sdk.core.ManaCost? {
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        return com.wingedsheep.engine.mechanics.MayhemGrants.effectiveMayhem(
+            state, cardId, cardDef, cardComponent.ownerId, cardRegistry, predicateEvaluator
+        )?.cost
     }
 
     /**
@@ -364,6 +518,22 @@ class CastZoneResolver(
     }
 
     /**
+     * Check if a card has an active Dash keyword ability that can be used from its current
+     * zone. Hand-only (CR 702.109a) — printed only for now, no granted-dash resolver exists yet
+     * (mirrors [hasWarpPermission]'s shape, minus the graveyard/grant branches Warp alone has).
+     */
+    fun hasDashPermission(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): Boolean {
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return false
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: return false
+        if (cardDef.keywordAbilities.none { it is KeywordAbility.Dash }) return false
+        return cardId in state.getZone(ZoneKey(playerId, Zone.HAND))
+    }
+
+    /**
      * Check if a creature card in the graveyard can be cast via the forage permission
      * granted by `MayCastCreaturesFromGraveyardWithForageComponent` (e.g. Osteomancer Adept).
      */
@@ -397,7 +567,13 @@ class CastZoneResolver(
         val component = state.getEntity(cardId)?.get<PlayWithoutPayingCostComponent>()
         if (component?.controllerId == playerId) return true
         val granter = findLinkedExileGranter(state, playerId, cardId)
-        return granter?.withoutPayingManaCost == true
+        if (granter?.withoutPayingManaCost == true) return true
+        // Gwenom: a spell cast from the top of the library under a PlayFromTopWithAlternativeCost
+        // permission whose withoutPayingManaCost is set pays no mana (it pays life instead).
+        if (state.getLibrary(playerId).firstOrNull() == cardId) {
+            return playFromTopAlternativeCost(state, playerId)?.withoutPayingManaCost == true
+        }
+        return false
     }
 
     /**
@@ -445,6 +621,9 @@ class CastZoneResolver(
                     if (ability is GrantFlashToSpellType) {
                         // If controllerOnly, only the permanent's controller benefits
                         if (ability.controllerOnly && playerId != spellOwner) continue
+                        // "The first [type] spell you cast each turn" — the grant covers only one
+                        // spell per turn (Radagast of Rhosgobel).
+                        if (!FlashTypeGrants.nthGateAllows(state, spellOwner, ability, predicateEvaluator)) continue
                         if (predicateEvaluator.matches(state, state.projectedState, spellCardId, ability.filter, context)) {
                             return true
                         }
@@ -508,14 +687,60 @@ class CastZoneResolver(
                     ability.ability
                 } else ability
                 if (unwrapped is CastSpellTypesFromTopOfLibrary) {
-                    if (matchesCardFilter(cardComponent, unwrapped.filter)) return true
+                    val uses = state.getEntity(entityId)
+                        ?.get<CastFromTopOfLibraryUsesThisTurnComponent>()?.uses ?: 0
+                    val maxCasts = unwrapped.maxCastsPerTurn
+                    val hasUse = maxCasts == null || uses < maxCasts
+                    if (hasUse && matchesCardFilter(cardComponent, unwrapped.filter)) return true
                 }
                 if (unwrapped is PlayLandsAndCastFilteredFromTopOfLibrary) {
-                    if (matchesCardFilter(cardComponent, unwrapped.spellFilter)) return true
+                    // A null spellFilter is a lands-only permission: nothing is castable.
+                    val spellFilter = unwrapped.spellFilter
+                    if (spellFilter != null && matchesCardFilter(cardComponent, spellFilter)) return true
                 }
             }
         }
         return false
+    }
+
+    /**
+     * Returns the limited top-of-library permission source that should consume a use for this cast.
+     * An unlimited matching source wins without consuming a limited source. Otherwise each source
+     * has its own allowance, matching the identity of the granting permanent.
+     */
+    fun findLimitedTopLibraryCastSourceToConsume(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): EntityId? {
+        val cardComponent = state.getEntity(cardId)?.get<CardComponent>() ?: return null
+        // A card-specific MayPlayPermission (for example, a reveal-then-cast effect whose card
+        // remains in the library) can authorize the cast independently of a battlefield source.
+        if (state.hasMayPlayFor(cardId, playerId, conditionEvaluator, cardRegistry)) return null
+        var limitedSource: EntityId? = null
+        for (entityId in state.getBattlefield(playerId)) {
+            val sourceCard = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(sourceCard.cardDefinitionId) ?: continue
+            for (ability in cardDef.script.staticAbilities) {
+                val unwrapped = if (ability is ConditionalStaticAbility) {
+                    val ctx = EffectContext(sourceId = entityId, controllerId = playerId)
+                    if (!conditionEvaluator.evaluate(state, ability.condition, ctx)) continue
+                    ability.ability
+                } else ability
+                if (unwrapped is PlayFromTopOfLibrary) return null
+                if (unwrapped is PlayLandsAndCastFilteredFromTopOfLibrary &&
+                    unwrapped.spellFilter?.let { matchesCardFilter(cardComponent, it) } == true
+                ) return null
+                if (unwrapped !is CastSpellTypesFromTopOfLibrary ||
+                    !matchesCardFilter(cardComponent, unwrapped.filter)
+                ) continue
+                val maxCasts = unwrapped.maxCastsPerTurn ?: return null
+                val uses = state.getEntity(entityId)
+                    ?.get<CastFromTopOfLibraryUsesThisTurnComponent>()?.uses ?: 0
+                if (uses < maxCasts && limitedSource == null) limitedSource = entityId
+            }
+        }
+        return limitedSource
     }
 
     private fun hasPlayFromTopOfLibrary(state: GameState, playerId: EntityId): Boolean {
@@ -526,7 +751,49 @@ class CastZoneResolver(
                 return true
             }
         }
-        return false
+        return playFromTopAlternativeCost(state, playerId) != null
+    }
+
+    /**
+     * The effective [com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost] for [playerId]
+     * (Gwenom) — printed on a permanent they control or granted durationally — or null. Mirrors the
+     * printed-or-granted scan in `CastPermissionUtils.playFromTopAlternativeCost`.
+     */
+    private fun playFromTopAlternativeCost(
+        state: GameState,
+        playerId: EntityId
+    ): com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost? {
+        for (entityId in state.getBattlefield(playerId)) {
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+            cardDef.script.staticAbilities
+                .firstOrNull { it is com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost }
+                ?.let { return it as com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost }
+        }
+        for (grant in state.grantedStaticAbilities) {
+            val ability = grant.ability
+            if (ability !is com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost) continue
+            if (state.getEntity(grant.entityId)?.get<ControllerComponent>()?.playerId != playerId) continue
+            return ability
+        }
+        return null
+    }
+
+    /**
+     * The [com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost] covering [cardId] when it is
+     * the top card of [playerId]'s library and the grant's filter matches — else null. Used by
+     * `CastSpellHandler` to inject the grant's additional cost (Gwenom's pay-life) into a
+     * top-of-library cast.
+     */
+    fun topOfLibraryAlternativeGrant(
+        state: GameState,
+        playerId: EntityId,
+        cardId: EntityId
+    ): com.wingedsheep.sdk.scripting.PlayFromTopWithAlternativeCost? {
+        if (state.getLibrary(playerId).firstOrNull() != cardId) return null
+        val grant = playFromTopAlternativeCost(state, playerId) ?: return null
+        val filter = grant.filter ?: return grant
+        return if (predicateEvaluator.matches(state, state.projectedState, cardId, filter, PredicateContext(controllerId = playerId))) grant else null
     }
 
     private fun hasLinkedExileCastPermission(
@@ -665,6 +932,7 @@ class CastZoneResolver(
                 is CardPredicate.IsPermanent -> card.typeLine.isPermanent
                 is CardPredicate.IsBasicLand -> card.typeLine.isBasicLand
                 is CardPredicate.HasAdventure -> card.hasAdventure
+                is CardPredicate.HasNoAbilities -> card.oracleText.isBlank()
                 // --- Supertypes ---
                 is CardPredicate.IsLegendary -> card.typeLine.isLegendary
                 is CardPredicate.IsNonlegendary -> !card.typeLine.isLegendary
@@ -732,14 +1000,21 @@ class CastZoneResolver(
                 is CardPredicate.SharesChosenColorWithSource,
                 is CardPredicate.NameEqualsChosen,
                 is CardPredicate.NameEqualsChosenComponent,
+                is CardPredicate.CardTypeEqualsChosenComponent,
                 is CardPredicate.NameNotSharedWithControlledRoom,
+                is CardPredicate.NameNotSharedWithControlledToken,
+                is CardPredicate.NameNotSharedWithAnotherControlledPermanent,
                 is CardPredicate.ManaValueEqualsX,
                 is CardPredicate.ManaValueAtMostX,
                 is CardPredicate.ManaValueAtMostEntity,
                 is CardPredicate.ManaValueAtMostEntityManaSpent,
                 is CardPredicate.ManaValueAtMostColorsSpent,
                 is CardPredicate.ManaValueAtMostDynamic,
+                is CardPredicate.ManaValueEqualsDynamic,
+                is CardPredicate.PowerEqualsDynamic,
+                is CardPredicate.ToughnessEqualsDynamic,
                 is CardPredicate.PowerEqualsX,
+                is CardPredicate.PowerAtLeastX,
                 is CardPredicate.ToughnessAtMostX,
                 is CardPredicate.PowerAtMostEntity,
                 is CardPredicate.PowerGreaterThanEntity,
@@ -757,9 +1032,11 @@ class CastZoneResolver(
                 is CardPredicate.SharesColorWith,
                 is CardPredicate.SharesColorWithRecipient,
                 is CardPredicate.SharesColorWithPermanentYouControl,
+                is CardPredicate.SharesNameWithPermanentYouControl,
                 is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl,
                 is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl,
                 is CardPredicate.TargetsMatching,
+                is CardPredicate.AbilitySourceMatches,
                 is CardPredicate.IsActivatedOrTriggeredAbility,
                 is CardPredicate.IsTriggeredAbility,
                 is CardPredicate.IsActivatedAbility -> false

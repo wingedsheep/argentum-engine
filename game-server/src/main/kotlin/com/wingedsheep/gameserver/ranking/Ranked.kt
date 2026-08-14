@@ -2,6 +2,7 @@ package com.wingedsheep.gameserver.ranking
 
 import com.wingedsheep.gameserver.lobby.TournamentFormat
 import com.wingedsheep.sdk.core.DeckFormat
+import com.wingedsheep.sdk.core.GameRules
 
 /**
  * Derives the [RankedMode] a 1v1 game belongs to from its lobby's format. This is the single source of
@@ -11,25 +12,27 @@ import com.wingedsheep.sdk.core.DeckFormat
  */
 object Ranked {
     /**
-     * Quick-game mode: a commander-shaped [DeckFormat] is COMMANDER; any other constructed restriction
-     * (or Momir, which uses a fixed constructed-style pool) is CONSTRUCTED; no restriction means a
-     * random sealed pool, i.e. LIMITED.
+     * Quick-game mode: Commander rules put the game in the COMMANDER queue whatever the deck came
+     * from; any other constructed restriction (or Momir, which uses a fixed constructed-style pool)
+     * is CONSTRUCTED; no restriction means a random sealed pool, i.e. LIMITED.
      */
-    fun modeForQuickGame(format: DeckFormat?, momirBasic: Boolean): RankedMode = when {
-        format?.isCommanderShape == true -> RankedMode.COMMANDER
+    fun modeForQuickGame(rules: GameRules, format: DeckFormat?, momirBasic: Boolean): RankedMode = when {
+        rules.usesCommanders -> RankedMode.COMMANDER
         format != null || momirBasic -> RankedMode.CONSTRUCTED
         else -> RankedMode.LIMITED
     }
 
     /**
-     * Tournament mode: commander draft/sealed and a commander-shaped premade [deckFormat] are COMMANDER;
-     * other premade tournaments are CONSTRUCTED; pool-built tournaments (sealed/draft/winston/grid) are
-     * LIMITED.
+     * Tournament mode: the queue follows the Rules axis first — a Commander game is a Commander game
+     * whether its decks were drafted, sealed or brought. Failing that, brought decks are CONSTRUCTED
+     * and pool-built tournaments (sealed/draft/winston/grid) are LIMITED.
+     *
+     * This used to need three branches to ask one question, because commander-ness lived in two
+     * unrelated fields.
      */
-    fun modeForTournament(format: TournamentFormat, deckFormat: DeckFormat?): RankedMode = when {
-        format.isCommanderFormat -> RankedMode.COMMANDER
-        format == TournamentFormat.PREMADE_DECKS ->
-            if (deckFormat?.isCommanderShape == true) RankedMode.COMMANDER else RankedMode.CONSTRUCTED
+    fun modeForTournament(rules: GameRules, format: TournamentFormat): RankedMode = when {
+        rules.usesCommanders -> RankedMode.COMMANDER
+        format == TournamentFormat.PREMADE_DECKS -> RankedMode.CONSTRUCTED
         else -> RankedMode.LIMITED
     }
 }

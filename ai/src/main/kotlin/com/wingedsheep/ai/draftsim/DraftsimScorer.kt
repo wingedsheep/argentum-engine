@@ -8,7 +8,7 @@ import kotlin.math.min
  *
  * Two entry points share the helpers below:
  *  - [scoreFallback] / [scoreBoosterFallback] — the bundle's `aX`/`oX`, the **default path** for
- *    every set without archetype data (all but FDN/SOS/SOSSPG/TMT). Color-bias only.
+ *    every set without archetype data, which is most of them. Color-bias only.
  *  - [score] / [scoreBooster] — the bundle's `jm`/`xs`, the archetype-aware path (added in the
  *    main-scorer stage of the port).
  *
@@ -381,7 +381,7 @@ class DraftsimScorer(private val tables: DraftsimSetTables) {
 
     /**
      * `jm(card, pool, ratings, removal, arch, archColors, removalFlag, forcedArch)` — the full,
-     * archetype-aware scorer. Used directly for the 4 tagged sets at draft time, and for **every**
+     * archetype-aware scorer. Used directly for the tagged sets at draft time, and for **every**
      * set during deckbuild (where [forcedArch]/[removalFlag] are set and, for untagged sets, the
      * archetype-aware path collapses to the color-only path).
      *

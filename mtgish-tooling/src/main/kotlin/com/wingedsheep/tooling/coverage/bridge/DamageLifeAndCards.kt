@@ -58,6 +58,15 @@ internal fun BridgeBuilder.damageLifeAndCards() {
     effect("LoseLife", "LoseLife")
 
     effect("SacrificePermanent", "Sacrifice")
+    // "chooses a permanent they control of each permanent type" (Liliana, Dreadhorde General's −9) —
+    // the ChooseOnePerCategory pipeline step over Filters.PermanentTypes. The IR follows this action
+    // with `SacrificeEachPermanent(ExceptFor(ThePermanentsChosenThisWay))`, which is the
+    // exclude → sacrifice tail of the same pipeline; that trio is *deliberately left unmapped*,
+    // because those three tags appear on 100+ cards in shapes this step does not cover and mapping
+    // them here would score all of them as coverable. Recovering the pair (which would also unlock
+    // Cataclysm / Divine Reckoning / Tragic Arrogance) is its own emitter pass.
+    effect("ChooseAPermanentOfEachPermanentTypeAvailable", "ChooseOnePerCategory",
+        "one pick per permanent type — chooseOnePerCategory(pool, Filters.PermanentTypes)")
     effect("CounterSpell", "Counter")
     // "Counter target spell, activated ability, or triggered ability" (Overcharged Amalgam's exploit
     // payoff, Teferi's Response). Same CounterEffect as CounterSpell, but its target dispatches at
@@ -86,8 +95,12 @@ internal fun BridgeBuilder.damageLifeAndCards() {
     // (Impractical Joke); other game effects scaffold in the emitter.
     effect("CreateGameEffect", "DamageCantBePreventedThisTurn")
     effect("Shuffle", "ShuffleLibrary")
-    // Investigate (CR 701.36) — create a Clue token (Effects.Investigate() / Effects.CreateClue()).
-    effect("Investigate", "Investigate")
+    // Investigate (CR 701.36) — create a Clue token. `Effects.Investigate(n)` is a NAMED FACADE, not
+    // its own Effect type: it returns `CreatePredefinedTokenEffect("Clue", n)`, so the leaf SerialName
+    // is `CreatePredefinedToken`. The entry used to name a SerialName "Investigate" that has never
+    // existed, which the registry validation correctly reported as a MISSING gap — blocking every
+    // investigate card in the corpus rather than scoring the capability we do have.
+    effect("Investigate", "CreatePredefinedToken", "investigate -> Effects.Investigate(n) = a Clue predefined token (CR 701.36)")
     effect("RevealHand", "RevealHand")
     effect("LookAtPlayersHand", "LookAtTargetHand")
 

@@ -9,6 +9,7 @@ Run through `just` from the repo root:
 
 ```bash
 just coverage-dashboard          # interactive TUI over everything below
+just coverage-cross              # cross-set capability ranking, non-interactively (dashboard `c`)
 just coverage --set POR
 just coverage-fidelity --set POR
 just coverage-verify POR
@@ -91,6 +92,12 @@ rather than re-implementing coverage logic, and memoizes per-set results so a ke
   it unlocks → detail) · `←`/`esc` back · `tab` Kotlin/capabilities · `/` search/filter · `s` sort ·
   `f` scan-all · `r` fetch a set from Scryfall · `c` cross-set · `q` quit.
   Needs an interactive terminal (drives `/dev/tty` via `stty`).
+
+`just coverage-cross` (`dashboard --cross [--top N]`) prints the **`c` view's ranking only**, without
+raw mode — the same `Analyzer.crossSet` roll-up, as a plain table for piping or pasting into a
+backlog doc. It reads each set's *full* leaderboard, so unlike aggregating `probe --set` output (which
+truncates to a top-20 per set) the counts are exact. Use the TUI when you want to drill from a row
+into the cards it would unlock.
 
 The dashboard adds no runtime dependency — it uses raw ANSI escapes and `stty` raw mode
 (`dashboard/Tui.kt`), keeping the module dependency-light. `dashboard --render` prints static frames

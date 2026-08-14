@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
@@ -32,8 +33,18 @@ data class ActivatedAbility(
      * and "the first equip ability you activate each turn costs {0}" (Forge Anew).
      */
     val isEquipAbility: Boolean = false,
+    /**
+     * The quality of an "Equip [quality]" variant (CR 702.6c) — `"Human"` for Dúnedain Blade's
+     * *Equip Human {1}*, `"worthy"` for Mjölnir, Hammer of Thor. Null for a plain equip ability and
+     * for everything that isn't one.
+     *
+     * Wording only: the rules half is the [targetRequirements] filter, which is what decides legal
+     * targets. This exists so [describeWithCost] can render the printed "Equip [quality] [cost]"
+     * line instead of the generated "[cost]: Attach this equipment to …", *and* keep doing so when a
+     * cost reduction rewrites the cost — which a static `descriptionOverride` could not.
+     */
+    val equipQuality: String? = null,
     val activateFromZone: Zone = Zone.BATTLEFIELD,
-    val promptOnDraw: Boolean = false,
     val descriptionOverride: String? = null,
     val hasConvoke: Boolean = false,
     /**
@@ -59,6 +70,28 @@ data class ActivatedAbility(
      * needed.
      */
     val isExhaust: Boolean = false,
+    /**
+     * True for a *power-up* ability (Marvel Super Heroes; CR 702.193). "Power-up — [cost]: [effect]"
+     * means "[cost]: [effect]. If this permanent entered this turn, this ability's cost is reduced
+     * by this permanent's mana cost. Activate this ability only once."
+     *
+     * Two of those three clauses are carried elsewhere, so this flag is the keyword marker plus the
+     * switch for the third:
+     *  - **"Activate only once"** is an [ActivationRestriction.Once] in [restrictions], which the
+     *    `powerUpAbility(cost) { }` DSL adds automatically — the same arrangement [isExhaust] uses,
+     *    and per CR 400.7 a permanent that leaves and re-enters is a new object whose power-up may
+     *    be activated again, which the per-object `Once` tracker gives for free.
+     *  - **The cost reduction** is the part that needs this flag: the engine reduces the activation
+     *    cost by the source's own printed mana cost, pip-wise per CR 702.193b / 118.7
+     *    ([com.wingedsheep.sdk.core.ManaCost.subtract]), but only while the source entered this
+     *    turn. It is deliberately *not* modelled as [genericCostReduction], which is generic-only
+     *    (CR 118.7a) and so could not express Thanos's `{C}{W}{U}{B}{R}{G}` − `{R}{W}{B}`.
+     *
+     * The flag also lets other cards name the mechanic — Hulk, Gamma Goliath ("power-up abilities of
+     * other creatures you control cost {3} less") and Kang the Conqueror ("power-up abilities can't
+     * be activated") both need to pick power-up abilities out of every other activated ability.
+     */
+    val isPowerUp: Boolean = false,
     /** When true, prevents auto-pass whenever this ability is available.
      *  Used for abilities that interact with transient game state the player would miss,
      *  such as copying a spell on the stack. */
@@ -101,7 +134,6 @@ data class ActivatedAbility(
         isManaAbility: Boolean = false,
         isPlaneswalkerAbility: Boolean = false,
         activateFromZone: Zone = Zone.BATTLEFIELD,
-        promptOnDraw: Boolean = false,
         descriptionOverride: String? = null
     ) : this(
         id = id,
@@ -113,7 +145,6 @@ data class ActivatedAbility(
         isManaAbility = isManaAbility,
         isPlaneswalkerAbility = isPlaneswalkerAbility,
         activateFromZone = activateFromZone,
-        promptOnDraw = promptOnDraw,
         descriptionOverride = descriptionOverride
     )
 
@@ -129,13 +160,33 @@ data class ActivatedAbility(
      * the keyword-action prefixes in printed order: "Exhaust — Waterbend {N}: ...". The legal-action
      * enumerator calls this when a cost reduction means the printed [cost] no longer matches what the
      * player will pay, so the rebuilt label keeps the same prefixes the [description] getter shows.
+     *
+     * Power-up matters here more than the other prefixes: its cost reduction applies on the turn the
+     * permanent entered, so the printed cost and the payable cost differ on exactly the turn the
+     * player is most likely to activate it, and the menu must show the reduced one.
      */
     fun describeWithCost(effectiveCost: AbilityCost): String {
         // A waterbend cost renders as "Waterbend {N}" (the keyword action precedes the cost).
         val base = effectiveCost.description.ifEmpty { "{0}" }
+        // An equip ability is *printed* as "Equip [cost]" (CR 702.6a) or "Equip [quality] [cost]"
+        // (CR 702.6c) — never as the attach effect's generated text. Rendering it here rather than
+        // via a per-card descriptionOverride means Eowyn's discount and Forge Anew's free first
+        // equip rewrite the cost in the menu, which a static override could not.
+        //
+        // A non-mana equip cost takes the printed em dash instead of a space — "Equip—Sacrifice a
+        // creature" (Demonmail Hauberk, Dissection Tools), not "Equip Sacrifice a creature".
+        if (isEquipAbility) {
+            val keyword = "Equip" + (equipQuality?.let { " $it" } ?: "")
+            return if (effectiveCost.manaCostOrNull != null) "$keyword $base" else "$keyword—$base"
+        }
         val costText = if (hasWaterbend) "Waterbend $base" else base
-        // An exhaust ability prefixes "Exhaust — " before the (already waterbend-prefixed) cost.
-        val prefixed = if (isExhaust) "Exhaust — $costText" else costText
+        // An exhaust or power-up ability prefixes its keyword before the (already
+        // waterbend-prefixed) cost. The two never co-occur — both mean "activate only once".
+        val prefixed = when {
+            isExhaust -> "Exhaust — $costText"
+            isPowerUp -> "Power-up — $costText"
+            else -> costText
+        }
         return "$prefixed: ${effect.description}"
     }
 
@@ -198,6 +249,21 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
     @Serializable
     data object Untap : AbilityCost {
         override val description: String = "{Q}"
+    }
+
+    /**
+     * Exert this permanent (CR 701.43a) — choose to have it not untap during your next untap
+     * step. Always payable: a permanent can be exerted even if it's untapped or was already
+     * exerted this turn (701.43b); exerting it more than once before the next untap step doesn't
+     * stack multiple skips (they all expire at that same untap step). Used as a component of an
+     * activated ability's cost — e.g. Arena of Glory's "{R}, {T}, Exert this land: ...". Distinct
+     * from the "you may exert [this] as it attacks" attack-cost template (701.43d), which is a
+     * separate optional-cost-to-attack shape, not an ability cost.
+     */
+    @SerialName("CostExert")
+    @Serializable
+    data object Exert : AbilityCost {
+        override val description: String = "Exert this permanent"
     }
 
     /**

@@ -8,7 +8,7 @@ import com.wingedsheep.ai.draftsim.toScorerCard
 /**
  * Draft engine backed by the ported Draftsim scorer ([DraftsimScorer]). Loads the lobby set's
  * ratings/removal/archetype tables ([DraftsimData]) and scores the pack with the bundle's `xs`
- * dispatch (color-bias `aX` for untagged sets, archetype-aware `jm` for FDN/SOS/TMT). Falls back to
+ * dispatch (color-bias `aX` for untagged sets, archetype-aware `jm` for tagged ones). Falls back to
  * the rarity ladder for any set we have no table for, so it always returns a ranking.
  */
 object DraftsimDraftAdvisor : DraftAdvisor {

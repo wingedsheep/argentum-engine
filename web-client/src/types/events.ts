@@ -1,4 +1,5 @@
 import { EntityId } from './entities'
+import { DayNight } from './enums'
 
 /**
  * Client-facing game events.
@@ -9,6 +10,8 @@ import { EntityId } from './entities'
  */
 export type ClientEvent =
   | LifeChangedEvent
+  | SpeedChangedEvent
+  | DayNightChangedEvent
   | DamageDealtEvent
   | StatsModifiedEvent
   | CardDrawnEvent
@@ -56,6 +59,33 @@ export interface LifeChangedEvent {
   readonly oldLife: number
   readonly newLife: number
   readonly change: number
+  readonly description: string
+}
+
+/**
+ * A player's speed went up (Aetherdrift, CR 702.179) — "Start your engines!" starting it at 1
+ * (`oldSpeed` 0) or the inherent speed trigger raising it. `reachedMaxSpeed` fires at most once per
+ * player per game, since speed only rises and stops at 4.
+ */
+export interface SpeedChangedEvent {
+  readonly type: 'speedChanged'
+  readonly playerId: EntityId
+  readonly oldSpeed: number
+  readonly newSpeed: number
+  readonly isYours?: boolean
+  readonly reachedMaxSpeed: boolean
+  readonly description: string
+}
+
+/**
+ * The game's day/night designation changed (Innistrad, CR 731). `oldDesignation` is null when the game
+ * leaves the neither state it starts in; a non-null → non-null change is a day↔night flip (CR 731.1a).
+ */
+export interface DayNightChangedEvent {
+  readonly type: 'dayNightChanged'
+  readonly oldDesignation: DayNight | null
+  readonly newDesignation: DayNight
+  readonly sourceName: string
   readonly description: string
 }
 
@@ -157,6 +187,12 @@ export interface SpellCastEvent {
   readonly spellId: EntityId
   readonly spellName: string
   readonly casterId: EntityId
+  /**
+   * How the spell was cast — "disturb, from graveyard", "from command zone" — or absent for an
+   * ordinary cast from hand. Already folded into {@link description}; present separately so the
+   * log could style it without re-deriving it.
+   */
+  readonly castProvenance?: string
   readonly description: string
 }
 
@@ -436,6 +472,10 @@ export interface DecisionMadeEvent {
 
 export function isLifeChangedEvent(event: ClientEvent): event is LifeChangedEvent {
   return event.type === 'lifeChanged'
+}
+
+export function isSpeedChangedEvent(event: ClientEvent): event is SpeedChangedEvent {
+  return event.type === 'speedChanged'
 }
 
 export function isDamageDealtEvent(event: ClientEvent): event is DamageDealtEvent {

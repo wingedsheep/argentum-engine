@@ -4,7 +4,8 @@ import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.ManifestedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.state.components.identity.RoomComponent
 import com.wingedsheep.engine.state.components.identity.RoomFaceId
 import com.wingedsheep.engine.support.GameTestDriver
@@ -65,7 +66,7 @@ class TicketBoothTunnelOfHateTest : FunSpec({
 
         // The chosen card is now a face-down 2/2 manifested creature.
         d.state.getEntity(creature)?.get<FaceDownComponent>() shouldBe FaceDownComponent
-        d.state.getEntity(creature)?.get<ManifestedComponent>() shouldBe ManifestedComponent
+        d.state.getEntity(creature)?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
     }
 
     test("Tunnel of Hate gives a target attacking creature double strike when you attack") {

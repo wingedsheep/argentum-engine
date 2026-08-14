@@ -1,3 +1,120 @@
+// Aberrant Researcher
+{
+    "name": "Aberrant Researcher",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Insect",
+    "oracleText": "Flying\nAt the beginning of your upkeep, mill a card. If an instant or sorcery card was milled this way, transform this creature. (To mill a card, put the top card of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "milled",
+                                    "filter": "instant|sorcery"
+                                }
+                            },
+                            "then": "Transform"
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of your upkeep, mill a card. If an instant or sorcery card was milled this way, transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Perfected Form",
+        "manaCost": "",
+        "typeLine": "Creature — Insect Horror",
+        "oracleText": "Flying",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 4
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "metadata": {
+            "collectorNumber": "49",
+            "rarity": "UNCOMMON",
+            "artist": "Nils Hamm",
+            "flavorText": "The final pages of the experiment log were blank. Investigators found it abandoned on a desk in the researcher's lab, open, the pages flipping in the wind from a shattered window.",
+            "imageUri": "https://cards.scryfall.io/normal/back/b/5/b5c9649e-9ae5-4926-bf08-71ba23aa37f1.jpg?1783937809"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "UNCOMMON",
+        "artist": "Nils Hamm",
+        "flavorText": "\"Metamorphosis is a process.\"\n—Laboratory notes",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b5c9649e-9ae5-4926-bf08-71ba23aa37f1.jpg?1783937809",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "No player may take any action between the two steps of Aberrant Researcher's triggered ability. If the card put into your graveyard is an instant or sorcery card, Aberrant Researcher will have transformed before a player can take any action."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If a replacement effect causes the top card of your library to go to a zone other than your graveyard, Aberrant Researcher will still transform if that card was an instant or sorcery card."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Aim High
 {
     "name": "Aim High",
@@ -59,6 +176,67 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Altered Ego
+{
+    "name": "Altered Ego",
+    "manaCost": "{X}{2}{G}{U}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "This spell can't be countered.\nYou may have this creature enter as a copy of any creature on the battlefield, except it enters with X additional +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersAsCopy",
+                "additionalCounters": "XValue"
+            }
+        ],
+        "cantBeCountered": true
+    },
+    "metadata": {
+        "collectorNumber": "241",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c05da08d-8fac-47bc-80d8-78a80d1463d2.jpg?1783937715",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "Altered Ego copies exactly what was printed on the original creature (unless that creature is copying something else or is a token; see below). It doesn't copy whether that creature is tapped or untapped, whether it has any counters on it or any Auras and Equipment attached to it, or any non-copy effects that have changed its power, toughness, types, color, or so on."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "Any \"enters\" abilities of the copied creature will trigger when Altered Ego enters the battlefield. Any \"as [this creature] enters\" or \"[this creature] enters with\" abilities of the chosen creature will also work."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If the chosen creature is a token, Altered Ego copies the original characteristics of that token as stated by the effect that created that token. Altered Ego isn't a token."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If Altered Ego somehow enters at the same time as another creature, Altered Ego can't become a copy of that creature. You may choose only a creature that's already on the battlefield."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If the chosen creature has {X} in its mana cost, that X is considered to be 0. The value of X in Altered Ego's last ability will be whatever value was chosen for X while casting Altered Ego."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "You can choose not to copy anything. In that case, Altered Ego enters as a 0/0 creature and is probably put into the graveyard immediately. It won't have +1/+1 counters placed on it by its ability."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "X can be 0. Altered Ego won't enter with any additional +1/+1 counters, and it will just be a copy of the chosen creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
     ]
 }
 
@@ -148,6 +326,646 @@
         "artist": "Franz Vohwinkel",
         "flavorText": "For some customers, the old apothecary shop still opens its doors.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/7/37e2358c-211e-4d79-8120-88bb9e656cba.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Archangel Avacyn
+{
+    "name": "Archangel Avacyn",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Legendary Creature — Angel",
+    "oracleText": "Flash\nFlying, vigilance\nWhen Archangel Avacyn enters, creatures you control gain indestructible until end of turn.\nWhen a non-Angel creature you control dies, transform Archangel Avacyn at the beginning of the next upkeep.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "INDESTRUCTIBLE",
+                        "target": "Self"
+                    }
+                },
+                "descriptionOverride": "Creatures you control gain indestructible until end of turn."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Angel"
+                            }
+                        ],
+                        "controllerPredicate": "ControlledByYou"
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateDelayedTrigger",
+                    "step": "UPKEEP",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "EntityMatches",
+                                "entity": "Self",
+                                "filter": "name:Archangel Avacyn"
+                            }
+                        },
+                        "then": "Transform"
+                    }
+                },
+                "descriptionOverride": "Transform Archangel Avacyn at the beginning of the next upkeep."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Avacyn, the Purifier",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Angel",
+        "oracleText": "Flying\nWhen this creature transforms into Avacyn, the Purifier, it deals 3 damage to each other creature and each opponent.",
+        "creatureStats": {
+            "power": 6,
+            "toughness": 5
+        },
+        "keywords": [
+            "FLYING"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_3",
+                    "trigger": {
+                        "type": "TransformEvent",
+                        "intoBackFace": true
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature",
+                                        "excludeSelf": true
+                                    }
+                                },
+                                "body": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "Fixed",
+                                        "amount": 3
+                                    },
+                                    "target": "Self"
+                                }
+                            },
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "EachOpponent"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Avacyn, the Purifier deals 3 damage to each other creature and each opponent."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "5",
+            "rarity": "MYTHIC",
+            "artist": "James Ryman",
+            "flavorText": "\"Wings that once bore hope are now stained with blood. She is our guardian no longer.\"\n—Grete, cathar apostate",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/e/ae155ee2-008f-4dc6-82bf-476be7baa224.jpg?1783937831"
+        },
+        "colorIdentityOverride": [
+            "RED",
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "MYTHIC",
+        "artist": "James Ryman",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae155ee2-008f-4dc6-82bf-476be7baa224.jpg?1783937831",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Archangel Avacyn's delayed triggered ability triggers at the beginning of the next upkeep regardless of whose turn it is."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Archangel Avacyn's delayed triggered ability won't cause it to transform back into Archangel Avacyn if it has already transformed into Avacyn, the Purifier, perhaps because several creatures died in one turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Arlinn Kord
+{
+    "name": "Arlinn Kord",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Legendary Planeswalker — Arlinn",
+    "oracleText": "+1: Until end of turn, up to one target creature gets +2/+2 and gains vigilance and haste.\n0: Create a 2/2 green Wolf creature token. Transform Arlinn Kord.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "creature"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "creature"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "HASTE",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "creature"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "creature"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 0
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 2,
+                            "toughness": 2,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Wolf"
+                            ]
+                        },
+                        "Transform"
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Arlinn, Embraced by the Moon",
+        "manaCost": "",
+        "typeLine": "Legendary Planeswalker — Arlinn",
+        "oracleText": "+1: Creatures you control get +1/+1 and gain trample until end of turn.\n−1: Arlinn deals 3 damage to any target. Transform Arlinn.\n−6: You get an emblem with \"Creatures you control have haste and '{T}: This creature deals damage equal to its power to any target.'\"",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_3",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": 1
+                    },
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "ModifyStats",
+                                    "powerModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "toughnessModifier": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    },
+                                    "target": "Self"
+                                },
+                                {
+                                    "type": "GrantKeyword",
+                                    "keyword": "TRAMPLE",
+                                    "target": "Self"
+                                }
+                            ]
+                        }
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true
+                },
+                {
+                    "id": "ability_4",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -1
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DealDamage",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target"
+                                }
+                            },
+                            "Transform"
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "AnyTarget",
+                            "id": "target"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true
+                },
+                {
+                    "id": "ability_5",
+                    "cost": {
+                        "type": "CostLoyalty",
+                        "change": -6
+                    },
+                    "effect": {
+                        "type": "CreatePermanentEmblem",
+                        "groupFilter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "grantedKeywords": [
+                            "HASTE"
+                        ],
+                        "grantedActivatedAbilities": [
+                            {
+                                "id": "ability_6",
+                                "cost": "CostTap",
+                                "effect": {
+                                    "type": "DealDamage",
+                                    "amount": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": "Power"
+                                    },
+                                    "target": {
+                                        "type": "ContextTarget",
+                                        "index": 0
+                                    }
+                                },
+                                "targetRequirements": [
+                                    "AnyTarget"
+                                ],
+                                "descriptionOverride": "{T}: This creature deals damage equal to its power to any target."
+                            }
+                        ],
+                        "emblemDescription": "Creatures you control have haste and '{T}: This creature deals damage equal to its power to any target.'"
+                    },
+                    "timing": "SorcerySpeed",
+                    "isPlaneswalkerAbility": true
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "243",
+            "rarity": "MYTHIC",
+            "artist": "Winona Nelson",
+            "imageUri": "https://cards.scryfall.io/normal/back/b/3/b37aa12c-a6b3-4cf8-b5a4-0a999ff12d02.jpg?1783937719"
+        },
+        "colorIdentityOverride": [
+            "RED",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "MYTHIC",
+        "artist": "Winona Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b37aa12c-a6b3-4cf8-b5a4-0a999ff12d02.jpg?1783937719"
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Asylum Visitor
+{
+    "name": "Asylum Visitor",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Vampire Wizard",
+    "oracleText": "At the beginning of each player's upkeep, if that player has no cards in hand, you draw a card and you lose 1 life.\nMadness {1}{B} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{1}{B}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "Count",
+                                "player": "TriggeringPlayer",
+                                "zone": "Hand"
+                            },
+                            "operator": "EQ",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            {
+                                "type": "LoseLife",
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        ]
+                    }
+                },
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Count",
+                        "player": "TriggeringPlayer",
+                        "zone": "Hand"
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "Bastien L. Deharme",
+        "flavorText": "\"The ravings of the mad are laced with eldritch knowledge.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55a4bf6c-167a-4122-a55b-7bc28ca4f0d4.jpg?1783937781",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Asylum Visitor's triggered ability checks the active player's hand as the upkeep begins and as the trigger resolves. If that player has a card in hand as it resolves, you won't draw a card or lose 1 life."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Bloodmad Vampire
+{
+    "name": "Bloodmad Vampire",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Vampire Berserker",
+    "oracleText": "Whenever this creature deals combat damage to a player, put a +1/+1 counter on it.\nMadness {1}{R} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "146",
+        "artist": "Johannes Voss",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b64e974a-3cf7-49f1-9d5a-c74f920f0169.jpg?1783937758"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Bound by Moonsilver
+{
+    "name": "Bound by Moonsilver",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack, block, or transform.\nSacrifice another permanent: Attach this Aura to target creature. Activate only as a sorcery and only once each turn.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "excludeSelf": true
+                    }
+                },
+                "effect": "AttachEquipment",
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "Sacrifice another permanent: Attach this Aura to target creature"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "CANT_TRANSFORM"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bdf107d-eb67-421c-a7a9-b3e62e03f766.jpg?1783937825",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Activated and triggered abilities of the enchanted creature that would cause it to transform can still be activated or triggered. If those abilities have any other effects, those effects will happen."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "You control Bound by Moonsilver even while it enchants an opponent's creature. Only you can activate its last ability."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -410,6 +1228,173 @@
     ]
 }
 
+// Duskwatch Recruiter
+{
+    "name": "Duskwatch Recruiter",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Warrior Werewolf",
+    "oracleText": "{2}{G}: Look at the top three cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in any order.\nAt the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "creature",
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "prompt": "You may reveal a creature card and put it into your hand",
+                            "showAllCards": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}{G}: Look at the top three cards of your library. You may reveal a creature card from among them and put it into your hand. Put the rest on the bottom of your library in any order."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Krallenhorde Howler",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Creature spells you cast cost {1} less to cast.\nAt the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_3",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "triggerCondition": {
+                        "type": "Compare",
+                        "left": "SpellsCastLastTurn",
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifySpellCost",
+                    "target": {
+                        "type": "YouCast",
+                        "filter": "creature"
+                    },
+                    "modification": {
+                        "type": "ReduceGeneric",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "203",
+            "rarity": "UNCOMMON",
+            "artist": "Craig J Spearing",
+            "imageUri": "https://cards.scryfall.io/normal/back/e/1/e1915d93-c7dd-4bb7-bd5c-63a359a02b97.jpg?1783937740"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "rarity": "UNCOMMON",
+        "artist": "Craig J Spearing",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1915d93-c7dd-4bb7-bd5c-63a359a02b97.jpg?1783937740"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Epitaph Golem
 {
     "name": "Epitaph Golem",
@@ -536,6 +1521,49 @@
     ]
 }
 
+// Falkenrath Gorger
+{
+    "name": "Falkenrath Gorger",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Vampire Berserker",
+    "oracleText": "Each Vampire creature card you own that isn't on the battlefield has madness. The madness cost is equal to its mana cost. (If you discard a card with madness, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantMadnessToOwnedCards",
+                "filter": "creature Vampire"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "RARE",
+        "artist": "Anna Steinbauer",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/7/474895d8-1f2c-45bb-b721-4cf7c290eb23.jpg?1783937755",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "If Falkenrath Gorger leaves the battlefield before the madness trigger has resolved for a Vampire card that gained madness with its ability, the madness ability will still let you cast that Vampire card for the appropriate cost even though it no longer has madness."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you discard a Vampire creature card that already has a madness ability, you'll choose which madness ability exiles it. You may choose either the one it normally has or the one it gains from Falkenrath Gorger."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Falkenrath Gorger's ability only applies while it's on the battlefield. If you discard it, it won't give itself madness."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Game Trail
 {
     "name": "Game Trail",
@@ -609,6 +1637,162 @@
     ]
 }
 
+// Geier Reach Bandit
+{
+    "name": "Geier Reach Bandit",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Rogue Werewolf",
+    "oracleText": "Haste\nAt the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Vildin-Pack Alpha",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Whenever a Werewolf you control enters, you may transform it.\nAt the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_2",
+                    "trigger": {
+                        "type": "ZoneChangeEvent",
+                        "filter": "creature Werewolf ctrl:you",
+                        "to": "Battlefield"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Transform",
+                            "target": "TriggeringEntity"
+                        }
+                    },
+                    "descriptionOverride": "Whenever a Werewolf you control enters, you may transform it."
+                },
+                {
+                    "id": "ability_3",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "triggerCondition": {
+                        "type": "Compare",
+                        "left": "SpellsCastLastTurn",
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "159",
+            "rarity": "RARE",
+            "artist": "Slawomir Maniak",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/5/4570117d-c04b-4bdc-b804-21d49154721b.jpg?1783937760"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "RARE",
+        "artist": "Slawomir Maniak",
+        "flavorText": "The cathars realized they had not tracked her—she had led them here.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/4570117d-c04b-4bdc-b804-21d49154721b.jpg?1783937760"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Gisa's Bidding
+{
+    "name": "Gisa's Bidding",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Create two 2/2 black Zombie creature tokens.\nMadness {2}{B} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{2}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "CreateToken",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            },
+            "power": 2,
+            "toughness": 2,
+            "colors": [
+                "BLACK"
+            ],
+            "creatureTypes": [
+                "Zombie"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "flavorText": "\"Soft dirt makes for light work.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e01e904c-7d8e-447b-90cb-1f4ae3fb304d.jpg?1783937773"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Gryff's Boon
 {
     "name": "Gryff's Boon",
@@ -673,6 +1857,199 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Harvest Hand
+{
+    "name": "Harvest Hand",
+    "manaCost": "{3}",
+    "typeLine": "Artifact Creature — Scarecrow",
+    "oracleText": "When this creature dies, return it to the battlefield transformed under your control.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": "ReturnSelfFromZoneTransformed",
+                "descriptionOverride": "When Harvest Hand dies, return it to the battlefield transformed under your control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Scrounged Scythe",
+        "manaCost": "",
+        "typeLine": "Artifact — Equipment",
+        "oracleText": "Equipped creature gets +1/+1.\nAs long as equipped creature is a Human, it has menace.\nEquip {2}",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}"
+                        }
+                    },
+                    "effect": {
+                        "type": "AttachEquipment",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "creature you control"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "creature you control"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isEquipAbility": true
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1
+                },
+                {
+                    "type": "ConditionalStaticAbility",
+                    "ability": {
+                        "type": "GrantKeyword",
+                        "keyword": "MENACE"
+                    },
+                    "condition": {
+                        "type": "EntityMatches",
+                        "entity": "EquippedCreature",
+                        "filter": "creature Human"
+                    }
+                }
+            ]
+        },
+        "equipCost": "{2}",
+        "metadata": {
+            "collectorNumber": "256",
+            "rarity": "UNCOMMON",
+            "artist": "Jason Felix",
+            "imageUri": "https://cards.scryfall.io/normal/back/0/d/0d200f98-3377-46a3-9197-3cbd95d03dbf.jpg?1783937712"
+        },
+        "colorIdentityOverride": [],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "256",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "flavorText": "The harvest is never finished.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/d/0d200f98-3377-46a3-9197-3cbd95d03dbf.jpg?1783937712"
+    },
+    "colorIdentityOverride": []
+}
+
+// Hinterland Logger
+{
+    "name": "Hinterland Logger",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "At the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Timber Shredder",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Trample\nAt the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 2
+        },
+        "keywords": [
+            "TRAMPLE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_2",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "triggerCondition": {
+                        "type": "Compare",
+                        "left": "SpellsCastLastTurn",
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "210",
+            "artist": "Karl Kopinski",
+            "flavorText": "\"She even had the audacity to criticize my wares as inferior.\"\n—Old Rutstein",
+            "imageUri": "https://cards.scryfall.io/normal/back/1/4/14529bed-9632-4d58-8edc-c5a1359f6604.jpg?1783937734"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "artist": "Karl Kopinski",
+        "flavorText": "\"There's a forester lives up in the highlands. Tried to sell her one of my finest axes at a bargain, but she wasn't interested.\"\n—Old Rutstein",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14529bed-9632-4d58-8edc-c5a1359f6604.jpg?1783937734"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -913,6 +2290,778 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Jace, Unraveler of Secrets
+{
+    "name": "Jace, Unraveler of Secrets",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Planeswalker — Jace",
+    "oracleText": "+1: Scry 1, then draw a card.\n−2: Return target creature to its owner's hand.\n−8: You get an emblem with \"Whenever an opponent casts their first spell each turn, counter that spell.\"",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 1
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "creature"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -8
+                },
+                "effect": {
+                    "type": "CreateGlobalTriggeredAbility",
+                    "ability": {
+                        "id": "ability_4",
+                        "trigger": {
+                            "type": "NthSpellCastEvent",
+                            "nthSpell": 1,
+                            "player": "EachOpponent"
+                        },
+                        "binding": "ANY",
+                        "effect": {
+                            "type": "Counter",
+                            "targetSource": "CounterTargetSource.TriggeringEntity"
+                        }
+                    },
+                    "descriptionOverride": "Whenever an opponent casts their first spell each turn, counter that spell."
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "MYTHIC",
+        "artist": "Tyler Jacobson",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/0/20d5521d-e9f1-49e0-aa13-8e6de794cb12.jpg?1783937795",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "The emblem's triggered ability counters the first spell an opponent casts on each turn, not just that opponent's turn."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If Jace's emblem's triggered ability doesn't counter the first spell an opponent casts (perhaps because that spell can't be countered), it won't trigger again in the same turn to try to counter that player's second spell."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If you have multiple opponents, Jace's emblem can trigger once each turn for each opponent."
+            }
+        ]
+    },
+    "startingLoyalty": 5,
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Magnifying Glass
+{
+    "name": "Magnifying Glass",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {C}.\n{4}, {T}: Investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Clue"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "258",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "flavorText": "Knight-Inquisitors of Saint Raban delve deep into mysteries best left unexplored.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/7/f7a708d5-f757-4fcf-a167-5b5920c6adeb.jpg?1783937707",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Clue is an artifact type. Even though it appears on some cards with other permanent types, it's never a creature type, a land type, or anything but an artifact type."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "If an effect refers to a Clue, it means any Clue artifact, not just a Clue artifact token."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Moonlight Hunt
+{
+    "name": "Moonlight Hunt",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Choose target creature you don't control. Each creature you control that's a Wolf or a Werewolf deals damage equal to its power to that creature.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature Wolf|Werewolf ctrl:you"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "EntityProperty",
+                    "entity": "IterationEntity",
+                    "numericProperty": "Power"
+                },
+                "target": {
+                    "type": "ContextTarget",
+                    "index": 0
+                },
+                "damageSource": "Self"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:opponent"
+                },
+                "id": "creature you don't control"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Joseph Meehan",
+        "flavorText": "Courage alone won't keep you alive.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9633603-a80f-448d-98d9-00064d379c26.jpg?1783937725"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Murderous Compulsion
+{
+    "name": "Murderous Compulsion",
+    "manaCost": "{1}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target tapped creature.\nMadness {1}{B} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{1}{B}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "ContextTarget",
+                "index": 0
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature tapped"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "artist": "David Palumbo",
+        "flavorText": "\"Thank you. This blade becomes so hot in my hand, but your blood has quenched it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33b94db1-ac8c-4667-81d5-408df0f30879.jpg?1783937768"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Neglected Heirloom
+{
+    "name": "Neglected Heirloom",
+    "manaCost": "{1}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\nWhen equipped creature transforms, transform this Equipment.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "TransformEvent",
+                "binding": "ATTACHED",
+                "effect": "Transform",
+                "descriptionOverride": "Transform this Equipment."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "backFace": {
+        "name": "Ashmouth Blade",
+        "manaCost": "",
+        "typeLine": "Artifact — Equipment",
+        "oracleText": "Equipped creature gets +3/+3 and has first strike.\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)",
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_3",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{3}"
+                        }
+                    },
+                    "effect": {
+                        "type": "AttachEquipment",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "creature you control"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            },
+                            "id": "creature you control"
+                        }
+                    ],
+                    "timing": "SorcerySpeed",
+                    "isEquipAbility": true
+                }
+            ],
+            "staticAbilities": [
+                {
+                    "type": "ModifyStats",
+                    "powerBonus": 3,
+                    "toughnessBonus": 3
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE"
+                }
+            ]
+        },
+        "equipCost": "{3}",
+        "metadata": {
+            "collectorNumber": "260",
+            "rarity": "UNCOMMON",
+            "artist": "Volkan Baǵa",
+            "flavorText": "\"Its previous owners had some stories to share, I'm certain.\"\n—Old Rutstein",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/c/5cc2ac21-d31f-4a0d-956a-dabb6e1f3b5a.jpg?1783937716"
+        },
+        "colorIdentityOverride": [],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "260",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"There is a rich history in a blade like this.\"\n—Old Rutstein",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cc2ac21-d31f-4a0d-956a-dabb6e1f3b5a.jpg?1783937716",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "When Neglected Heirloom transforms, it remains attached to the creature it's attached to. If the equipped creature transforms into a noncreature permanent, Neglected Heirloom will become unattached before it transforms into Ashmouth Blade."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Odric, Lunarch Marshal
+{
+    "name": "Odric, Lunarch Marshal",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "At the beginning of each combat, creatures you control gain first strike until end of turn if a creature you control has first strike. The same is true for flying, deathtouch, double strike, haste, hexproof, indestructible, lifelink, menace, reach, skulk, trample, and vigilance.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "BEGIN_COMBAT",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:first_strike"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "FIRST_STRIKE",
+                                    "target": "Self"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:flying"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "FLYING",
+                                    "target": "Self"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:deathtouch"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "DEATHTOUCH",
+                                    "target": "Self"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:double_strike"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "DOUBLE_STRIKE",
+                                    "target": "Self"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:haste"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HASTE",
+                                    "target": "Self"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:hexproof"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "HEXPROOF",
+                                    "target": "Self"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:indestructible"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "INDESTRUCTIBLE",
+                                    "target": "Self"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:lifelink"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "LIFELINK",
+                                    "target": "Self"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:menace"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "MENACE",
+                                    "target": "Self"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:reach"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "REACH",
+                                    "target": "Self"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:trample"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "TRAMPLE",
+                                    "target": "Self"
+                                }
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "You",
+                                    "zone": "Battlefield",
+                                    "filter": "creature kw:vigilance"
+                                }
+                            },
+                            "then": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "creature ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "GrantKeyword",
+                                    "keyword": "VIGILANCE",
+                                    "target": "Self"
+                                }
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Creatures you control gain first strike until end of turn if a creature you control has first strike. The same is true for flying, deathtouch, double strike, haste, hexproof, indestructible, lifelink, menace, reach, trample, and vigilance."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "RARE",
+        "artist": "Chase Stone",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c77c30f-d813-46e6-9cdd-938b4a6359ad.jpg?1783937814",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Odric's ability triggers at the beginning of each combat, not just combat on your turn, whether or not any creatures you control have any of the listed abilities. If a creature gains one of the listed abilities before Odric's triggered ability resolves, perhaps due to another ability that triggered at the beginning of combat, then creatures you control will gain that ability."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "The set of creatures affected by Odric's ability and how they are affected is determined as the ability resolves. Creatures you begin to control later in the turn won't gain any abilities or cause creatures to gain new abilities, and the abilities gained won't change even if every creature that normally had the abilities leaves the battlefield."
+            },
+            {
+                "date": "2016-04-08",
+                "text": "Multiple instances of any of the abilities Odric can grant your creatures are redundant."
+            },
+            {
+                "date": "2020-01-24",
+                "text": "If one of those creatures has one or more variants of the listed keywords (for example, hexproof from white), creatures you control gain those specific variants."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -1233,6 +3382,67 @@
     ]
 }
 
+// Stensia Masquerade
+{
+    "name": "Stensia Masquerade",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Attacking creatures you control have first strike.\nWhenever a Vampire you control deals combat damage to a player, put a +1/+1 counter on it.\nMadness {2}{R} (If you discard this card, discard it into exile. When you do, cast it for its madness cost or put it into your graveyard.)",
+    "keywords": [
+        "MADNESS"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Madness",
+            "cost": "{2}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer",
+                    "sourceFilter": "creature Vampire ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "TriggeringEntity"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "FIRST_STRIKE",
+                "filter": {
+                    "baseFilter": "creature attacking ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "184",
+        "rarity": "UNCOMMON",
+        "artist": "Willian Murai",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/48f1b024-d7d5-4e81-b016-06826e2b8bbf.jpg?1783937740",
+        "rulings": [
+            {
+                "date": "2016-04-08",
+                "text": "Losing or gaining first strike after first-strike damage has been dealt won't cause a creature to deal combat damage twice or to not deal combat damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Stitched Mangler
 {
     "name": "Stitched Mangler",
@@ -1459,6 +3669,254 @@
     "colorIdentityOverride": []
 }
 
+// The Gitrog Monster
+{
+    "name": "The Gitrog Monster",
+    "manaCost": "{3}{B}{G}",
+    "typeLine": "Legendary Creature — Frog Horror",
+    "oracleText": "Deathtouch\nAt the beginning of your upkeep, sacrifice The Gitrog Monster unless you sacrifice a land.\nYou may play an additional land on each of your turns.\nWhenever one or more land cards are put into your graveyard from anywhere, draw a card.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomSacrifice",
+                            "filter": "land"
+                        }
+                    },
+                    "suffer": "SacrificeSelf"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, sacrifice The Gitrog Monster unless you sacrifice a land."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "CardsPutIntoYourGraveyardEvent",
+                    "filter": "land"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever one or more land cards are put into your graveyard from anywhere, draw a card."
+            }
+        ],
+        "staticAbilities": [
+            "GrantAdditionalLandDrop"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "MYTHIC",
+        "artist": "Jason Kang",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/5790dd89-2be5-4a77-9450-2d3c1422bfc9.jpg?1783937714",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "If multiple land cards are put into your graveyard at once, The Gitrog Monster's last ability triggers only once. This could happen because an effect put them there from your library at the same time (such as by a mill effect) or because they were destroyed at the same time (such as two land creatures that were dealt lethal combat damage)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
+// Thing in the Ice
+{
+    "name": "Thing in the Ice",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Horror",
+    "oracleText": "Defender\nThis creature enters with four ice counters on it.\nWhenever you cast an instant or sorcery spell, remove an ice counter from this creature. Then if it has no ice counters on it, transform it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    "IsInstant",
+                                    "IsSorcery"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "RemoveCounters",
+                            "counterType": "ice",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "EntityProperty",
+                                        "entity": "Source",
+                                        "numericProperty": {
+                                            "type": "CounterCount",
+                                            "counterType": {
+                                                "type": "Named",
+                                                "name": "ice"
+                                            }
+                                        }
+                                    },
+                                    "operator": "LTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": "Transform"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Remove an ice counter from this creature. Then if it has no ice counters on it, transform it."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": {
+                    "type": "Named",
+                    "name": "ice"
+                },
+                "count": 4,
+                "selfOnly": true
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Awoken Horror",
+        "manaCost": "",
+        "typeLine": "Creature — Kraken Horror",
+        "oracleText": "When this creature transforms into Awoken Horror, return all non-Horror creatures to their owners' hands.",
+        "creatureStats": {
+            "power": 7,
+            "toughness": 8
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_2",
+                    "trigger": {
+                        "type": "TransformEvent",
+                        "intoBackFace": true
+                    },
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "NotSubtype",
+                                                "subtype": "Horror"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "storeAs": "returnAllToHand_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "returnAllToHand_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Return all non-Horror creatures to their owners' hands."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "92",
+            "rarity": "RARE",
+            "artist": "Svetlin Velinov",
+            "flavorText": "\"It serves as evidence of the ancient power of the deep, a reminder that the sea is the only thing worthy of reverence.\"\n—Runo Stromkirk",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/5/359d1b13-6156-43b0-a9a7-6bfff36c1a91.jpg?1783937788"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "RARE",
+        "artist": "Svetlin Velinov",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/359d1b13-6156-43b0-a9a7-6bfff36c1a91.jpg?1783937788",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "An ability that triggers when a player casts a spell resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack without resolving."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "When Thing in the Ice's triggered ability transforms it, Awoken Horror's ability will trigger and resolve before the spell that caused Thing in the Ice's last ability to trigger."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "Removing all ice counters from Thing in the Ice some other way will not cause it to transform. You'll need to cast an instant or sorcery spell and cause its last ability to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Thraben Inspector
 {
     "name": "Thraben Inspector",
@@ -1492,6 +3950,194 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Tireless Tracker
+{
+    "name": "Tireless Tracker",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Scout",
+    "oracleText": "Landfall — Whenever a land you control enters, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nWhenever you sacrifice a Clue, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "OTHER",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Clue"
+                },
+                "descriptionOverride": "Landfall — Whenever a land you control enters, investigate."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "artifact Clue",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "descriptionOverride": "Whenever you sacrifice a Clue, put a +1/+1 counter on this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "RARE",
+        "artist": "Eric Deschamps",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee8e9928-d9b2-4570-adb8-44b34115decd.jpg?1783937719",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "A landfall ability triggers whenever a land you control enters for any reason. It triggers whenever you play a land, as well as whenever a spell or ability puts a land onto the battlefield under your control."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "A landfall ability doesn't trigger if a permanent already on the battlefield becomes a land."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Some abilities trigger \"whenever you sacrifice a Clue\". Those abilities trigger whenever you sacrifice a Clue for any reason, not just to activate a Clue's activated ability."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If an effect refers to a Clue, it means any Clue artifact, not just a Clue artifact token."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Town Gossipmonger
+{
+    "name": "Town Gossipmonger",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human",
+    "oracleText": "{T}, Tap an untapped creature you control: Transform this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": "Transform",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Incited Rabble",
+        "manaCost": "",
+        "typeLine": "Creature — Human",
+        "oracleText": "This creature attacks each combat if able.\n{2}: This creature gets +1/+0 until end of turn.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 3
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "ability_2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}"
+                        }
+                    },
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 0
+                        },
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "This creature gets +1/+0 until end of turn."
+                }
+            ],
+            "staticAbilities": [
+                "MustAttack"
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "46",
+            "rarity": "UNCOMMON",
+            "artist": "John Stanko",
+            "flavorText": "Rumors are sparks: gather enough of them and something's going to catch fire.",
+            "imageUri": "https://cards.scryfall.io/normal/back/d/2/d238d324-8c88-43ca-b203-133830d29447.jpg?1783937812"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "UNCOMMON",
+        "artist": "John Stanko",
+        "flavorText": "\"You'll never believe what I heard.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d238d324-8c88-43ca-b203-133830d29447.jpg?1783937812",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "You can tap any untapped creature you control, including one you haven't controlled continuously since the beginning of your most recent turn, to pay the cost of Town Gossipmonger's activated ability. You must have controlled Town Gossipmonger continuously since the beginning of your most recent turn, however."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "Incited Rabble's controller still chooses which player, planeswalker, or battle it attacks."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If, during its controller's declare attackers step, Incited Rabble is tapped or is affected by a spell or ability that says it can't attack, then it doesn't attack. If there's a cost associated with having Incited Rabble attack, its controller isn't forced to pay that cost, so it doesn't have to attack in that case either. Note that transforming Town Gossipmonger won't untap it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
     ]
 }
 
@@ -1788,6 +4434,79 @@
     ]
 }
 
+// Ulvenwald Mysteries
+{
+    "name": "Ulvenwald Mysteries",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a nontoken creature you control dies, investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nWhenever you sacrifice a Clue, create a 1/1 white Human Soldier creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature nontoken ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Clue"
+                },
+                "descriptionOverride": "Whenever a nontoken creature you control dies, investigate."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "artifact Clue",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Soldier"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9cbf36e-4044-4f08-9bae-f0dcb2455716.jpg?1783937683"
+                },
+                "descriptionOverride": "Whenever you sacrifice a Clue, create a 1/1 white Human Soldier creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Opalinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/911a2b5d-7e2d-4358-8e38-cbae7192e4d4.jpg?1783937718",
+        "rulings": [
+            {
+                "date": "2025-01-24",
+                "text": "If a nontoken creature dies at the same time as Ulvenwald Mysteries leaves the battlefield, the first ability triggers. Similarly, if Ulvenwald Mysteries isn't a token and has become a creature, it dying will cause its own first ability to trigger."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "The last ability is a triggered ability, not an activated ability. It doesn't allow you to sacrifice a Clue whenever you want; rather, you need some other way of sacrificing it, such as the activated ability that Clue tokens have."
+            },
+            {
+                "date": "2025-01-24",
+                "text": "If you sacrifice a Clue as part of casting a spell or activating an ability, the last ability will resolve before that spell or ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Uncaged Fury
 {
     "name": "Uncaged Fury",
@@ -1844,6 +4563,103 @@
     ]
 }
 
+// Village Messenger
+{
+    "name": "Village Messenger",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Werewolf",
+    "oracleText": "Haste\nAt the beginning of each upkeep, if no spells were cast last turn, transform this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Transform",
+                "triggerCondition": {
+                    "type": "Compare",
+                    "left": "SpellsCastLastTurn",
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Moonrise Intruder",
+        "manaCost": "",
+        "typeLine": "Creature — Werewolf",
+        "oracleText": "Menace\nAt the beginning of each upkeep, if a player cast two or more spells last turn, transform this creature.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 2
+        },
+        "keywords": [
+            "MENACE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "ability_2",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "Each"
+                    },
+                    "binding": "ANY",
+                    "effect": "Transform",
+                    "triggerCondition": {
+                        "type": "Compare",
+                        "left": "SpellsCastLastTurn",
+                        "operator": "GTE",
+                        "right": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "190",
+            "rarity": "UNCOMMON",
+            "artist": "Daarken",
+            "imageUri": "https://cards.scryfall.io/normal/back/4/4/44deb8cf-b9d1-4a14-aeaf-e62cf3dc9ef2.jpg?1783937747"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ],
+        "colorIndicator": [
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "\"I'm afraid it's bad news.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/44deb8cf-b9d1-4a14-aeaf-e62cf3dc9ef2.jpg?1783937747"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Voldaren Duelist
 {
     "name": "Voldaren Duelist",
@@ -1890,6 +4706,150 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Westvale Abbey
+{
+    "name": "Westvale Abbey",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{5}, {T}, Pay 1 life: Create a 1/1 white and black Human Cleric creature token.\n{5}, {T}, Sacrifice five creatures: Transform this land, then untap it.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Human",
+                        "Cleric"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/9/4/94ed2eca-1579-411d-af6f-c7359c65de30.jpg?1783937680"
+                },
+                "descriptionOverride": "Create a 1/1 white and black Human Cleric creature token."
+            },
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "count": 5
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        "Transform",
+                        {
+                            "type": "TapUntap",
+                            "target": "Self",
+                            "tap": false
+                        }
+                    ]
+                },
+                "descriptionOverride": "Transform this land, then untap it."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Ormendahl, Profane Prince",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Demon",
+        "oracleText": "Flying, lifelink, indestructible, haste",
+        "creatureStats": {
+            "power": 9,
+            "toughness": 7
+        },
+        "keywords": [
+            "FLYING",
+            "LIFELINK",
+            "INDESTRUCTIBLE",
+            "HASTE"
+        ],
+        "metadata": {
+            "collectorNumber": "281",
+            "rarity": "RARE",
+            "artist": "Min Yum",
+            "flavorText": "With Griselbrand gone, the Skirsdag eagerly awaited another demon to claim their devotion. Ormendahl did not make them wait long.",
+            "imageUri": "https://cards.scryfall.io/normal/back/c/1/c1f53d7a-9dad-46e8-b686-cd1362867445.jpg?1783937703"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "281",
+        "rarity": "RARE",
+        "artist": "Min Yum",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1f53d7a-9dad-46e8-b686-cd1362867445.jpg?1783937703",
+        "rulings": [
+            {
+                "date": "2016-07-13",
+                "text": "For more information on double-faced cards, see the Shadows over Innistrad mechanics article (http://magic.wizards.com/en/articles/archive/feature/shadows-over-innistrad-mechanics)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

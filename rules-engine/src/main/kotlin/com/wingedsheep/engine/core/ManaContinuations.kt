@@ -296,6 +296,101 @@ data class CounterUnlessSacrificeContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the controller chooses which graveyard cards to exile to collect evidence
+ * [amount] and so prevent their spell/ability from being countered
+ * (Ward—Collect evidence N, CR 701.59 / 702.21 — Axebane Ferox).
+ *
+ * The decision is a variable-size selection gated on a **sum**, not a count: the player may exile
+ * any number of cards as long as their total mana value reaches [amount] (over-paying is legal).
+ * A selection that falls short — including the empty selection, which is how declining is
+ * expressed — counters the spell. The payment itself runs through `CollectEvidenceResolver`, the
+ * single source of truth every collect-evidence context shares, so the legality rule and the exile
+ * are identical to the activated-ability and cast-cost forms.
+ *
+ * The graveyard is re-read at resume time, so cards that left it between the prompt and the
+ * response no longer count toward the total.
+ *
+ * @property payingPlayerId The spell's controller who must decide whether to pay
+ * @property spellEntityId The spell/ability that will be countered if they don't pay
+ * @property amount The total mana value the exiled cards must reach
+ */
+@Serializable
+data class CounterUnlessCollectEvidenceContinuation(
+    override val decisionId: String,
+    val payingPlayerId: EntityId,
+    val spellEntityId: EntityId,
+    val amount: Int,
+    val exileOnCounter: Boolean = false,
+    val controllerId: EntityId? = null,
+    /** See [CounterUnlessPaysManaSelectionContinuation.remainingWardParts]. */
+    val remainingWardParts: List<WardCost> = emptyList(),
+    /** See [CounterUnlessPaysManaSelectionContinuation.wardSourceId]. */
+    val wardSourceId: EntityId? = null
+) : ContinuationFrame
+
+/**
+ * Resume after the controller decides whether to take counters on themselves to prevent their
+ * spell/ability from being countered (e.g. Ward—Get five poison counters, CR 702.21a / 122.1).
+ *
+ * Yes → place [amount] [counterType] counters on the paying player and let the spell resolve.
+ * No  → counter the spell.
+ *
+ * There is no can-pay re-check on resume, unlike the life / discard / sacrifice continuations: a
+ * player can always get counters, so this cost never becomes unpayable between prompt and response.
+ *
+ * Ward is the only producer of this frame, and a ward never counters to exile, so unlike its
+ * siblings it carries no `exileOnCounter`.
+ *
+ * @property payingPlayerId The spell's controller who must decide whether to pay
+ * @property spellEntityId The spell/ability that will be countered if they don't pay
+ * @property counterType The `Counters.*` symbol placed on the payer (e.g. `Counters.POISON`)
+ * @property amount How many counters the payer gets
+ */
+@Serializable
+data class CounterUnlessPlayerCountersContinuation(
+    override val decisionId: String,
+    val payingPlayerId: EntityId,
+    val spellEntityId: EntityId,
+    val counterType: String,
+    val amount: Int,
+    val controllerId: EntityId? = null,
+    /** See [CounterUnlessPaysManaSelectionContinuation.remainingWardParts]. */
+    val remainingWardParts: List<WardCost> = emptyList(),
+    /** See [CounterUnlessPaysManaSelectionContinuation.wardSourceId]. */
+    val wardSourceId: EntityId? = null
+) : ContinuationFrame
+
+/**
+ * Resume after the controller picks **which** of a disjunctive ward cost's options to pay
+ * (`WardCost.Choice` — "Ward—Discard a card or pay {2}", CR 702.21a).
+ *
+ * [options] holds only the options the payer could actually pay when the prompt was built, index
+ * aligned with the decision's option labels; the trailing decision option (index == `options.size`)
+ * is "Counter spell" and declines. The chosen option is then charged through the ordinary
+ * per-cost ward machinery, carrying [remainingWardParts] so a Choice nested inside a
+ * `WardCost.Composite` still charges the composite's remaining components afterwards.
+ *
+ * Ward is the only producer of this frame, and a ward never counters to exile, so unlike the
+ * `CounterUnless*` siblings it carries no `exileOnCounter`.
+ *
+ * @property payingPlayerId The spell's controller who must pick and pay
+ * @property spellEntityId The spell/ability that will be countered if they decline
+ * @property options The payable options offered, positionally aligned with the decision's labels
+ */
+@Serializable
+data class WardCostChoiceContinuation(
+    override val decisionId: String,
+    val payingPlayerId: EntityId,
+    val spellEntityId: EntityId,
+    val options: List<WardCost>,
+    val controllerId: EntityId? = null,
+    /** See [CounterUnlessPaysManaSelectionContinuation.remainingWardParts]. */
+    val remainingWardParts: List<WardCost> = emptyList(),
+    /** See [CounterUnlessPaysManaSelectionContinuation.wardSourceId]. */
+    val wardSourceId: EntityId? = null
+) : ContinuationFrame
+
+/**
  * Information about a mana source available for manual selection.
  *
  * @property requiresSacrifice Selecting this source also sacrifices the permanent
@@ -402,4 +497,20 @@ data class AddManaPipsContinuation(
     val remainingPips: Int,
     val allowedColors: Set<Color>,
     val restriction: ManaRestriction? = null
+) : ContinuationFrame
+
+/**
+ * Restores a mana-payment window that was set aside so the player could activate a mana ability
+ * inside it (CR 605.3a).
+ *
+ * Pushed by [com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow.suspend] on top of the payment
+ * continuation the window belongs to, so a decision the mana ability raises for itself (a color
+ * choice for Birds of Paradise, a Fertile Ground tap bonus) nests above this frame and the window
+ * is re-raised only once the ability has fully resolved. Carries the decision verbatim; the
+ * auto-resumer refreshes it against the post-activation board before re-raising it.
+ */
+@Serializable
+data class ReopenManaPaymentDecisionContinuation(
+    override val decisionId: String,
+    val decision: SelectManaSourcesDecision
 ) : ContinuationFrame

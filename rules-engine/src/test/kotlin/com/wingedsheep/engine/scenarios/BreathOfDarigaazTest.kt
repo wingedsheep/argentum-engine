@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.support.GameTestDriver
@@ -69,7 +70,7 @@ class BreathOfDarigaazTest : FunSpec({
         val breath = driver.putCardInHand(player1, "Breath of Darigaaz")
 
         val result = driver.submit(
-            CastSpell(playerId = player1, cardId = breath, wasKicked = false, paymentStrategy = PaymentStrategy.AutoPay)
+            CastSpell(playerId = player1, cardId = breath, declaredCostSlot = null, paymentStrategy = PaymentStrategy.AutoPay)
         )
         result.isSuccess shouldBe true
         driver.bothPass()
@@ -96,7 +97,7 @@ class BreathOfDarigaazTest : FunSpec({
         val breath = driver.putCardInHand(player1, "Breath of Darigaaz")
 
         val result = driver.submit(
-            CastSpell(playerId = player1, cardId = breath, wasKicked = true, paymentStrategy = PaymentStrategy.AutoPay)
+            CastSpell(playerId = player1, cardId = breath, declaredCostSlot = ChoiceSlot.KICKED, paymentStrategy = PaymentStrategy.AutoPay)
         )
         result.isSuccess shouldBe true
         driver.bothPass()
@@ -121,7 +122,7 @@ class BreathOfDarigaazTest : FunSpec({
         val breath = driver.putCardInHand(player1, "Breath of Darigaaz")
 
         driver.submit(
-            CastSpell(playerId = player1, cardId = breath, wasKicked = false, paymentStrategy = PaymentStrategy.AutoPay)
+            CastSpell(playerId = player1, cardId = breath, declaredCostSlot = null, paymentStrategy = PaymentStrategy.AutoPay)
         )
         driver.bothPass()
 

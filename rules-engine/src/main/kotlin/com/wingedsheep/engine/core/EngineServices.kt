@@ -9,6 +9,7 @@ import com.wingedsheep.engine.handlers.EffectHandler
 import com.wingedsheep.engine.handlers.MulliganHandler
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.replacement.ReplacementEffectProcessor
 import com.wingedsheep.engine.legalactions.utils.CastPermissionUtils
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
@@ -25,6 +26,7 @@ import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.registry.PrintingRegistry
+import com.wingedsheep.engine.registry.TokenArtRegistry
 
 /**
  * Composition root for the rules engine.
@@ -41,6 +43,12 @@ class EngineServices(
      * lookup is null-safe.
      */
     val printingRegistry: PrintingRegistry? = null,
+    /**
+     * Optional per-set token art. Threaded into the token executors so a created token shows the
+     * art printed by the set of the card that created it. Null is fine — tokens then fall back to
+     * the engine-wide generic art for their creature type.
+     */
+    val tokenArtRegistry: TokenArtRegistry? = null,
 ) {
     init {
         DamageUtils.cardRegistry = cardRegistry
@@ -49,8 +57,21 @@ class EngineServices(
         // (reanimation, exile returns, leyline starts) gets the same wiring the cast pipeline
         // does. The handler is stateless beyond the registry, so a singleton is sufficient.
         ZoneTransitionService.staticAbilityHandler = StaticAbilityHandler(cardRegistry)
+        ZoneTransitionService.cardRegistry = cardRegistry
     }
-    val effectExecutorRegistry = EffectExecutorRegistry(cardRegistry = cardRegistry)
+    /**
+     * The one replacement-effect processor for this game. Declared before anything that
+     * consumes it so the whole graph — the draw path via [EffectExecutorRegistry] and
+     * [turnManager], and the continuation resumers — shares a single instance rather than
+     * each constructing its own. The processor is stateless today; keeping it single is what
+     * makes it safe for it to stop being so.
+     */
+    val replacementEffectProcessor = ReplacementEffectProcessor()
+    val effectExecutorRegistry = EffectExecutorRegistry(
+        cardRegistry = cardRegistry,
+        tokenArtRegistry = tokenArtRegistry,
+        replacementProcessor = replacementEffectProcessor
+    )
     val manaAbilitySideEffectExecutor = ManaAbilitySideEffectExecutor(
         cardRegistry = cardRegistry,
         effectExecutor = effectExecutorRegistry::execute
@@ -59,7 +80,7 @@ class EngineServices(
     val triggerDetector = TriggerDetector(cardRegistry)
     val stateTriggerPoller = com.wingedsheep.engine.event.StateTriggerPoller(cardRegistry)
     val stackResolver = StackResolver(
-        effectHandler = EffectHandler(cardRegistry = cardRegistry),
+        effectHandler = EffectHandler(cardRegistry = cardRegistry, registry = effectExecutorRegistry),
         cardRegistry = cardRegistry
     )
     val triggerProcessor = TriggerProcessor(cardRegistry = cardRegistry, stackResolver = stackResolver)
@@ -79,7 +100,8 @@ class EngineServices(
         cardRegistry = cardRegistry,
         combatManager = combatManager,
         sbaChecker = sbaChecker,
-        effectExecutor = effectExecutorRegistry::execute
+        effectExecutor = effectExecutorRegistry::execute,
+        replacementProcessor = replacementEffectProcessor
     )
     val continuationHandler = ContinuationHandler(this)
 

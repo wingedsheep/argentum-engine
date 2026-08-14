@@ -26,7 +26,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *  - **Recurring free recast** — [recastAbility] below, the single triggered ability the engine
  *    synthesizes for every exiled card carrying the paradigm marker. It fires at the beginning of
  *    the owner's precombat (first) main phase — the trigger detector already scans exile for
- *    `activeZone == EXILE` triggers and treats exiled cards as owner-controlled — and lets the owner
+ *    `EXILE in activeZones` triggers and treats exiled cards as owner-controlled — and lets the owner
  *    cast a **copy** of the exiled card for free through the ordinary
  *    [CopyCardIntoCollectionEffect] → [CastFromCollectionWithoutPayingCostEffect] pipeline (which
  *    handles target / X selection). The original never leaves exile, so the trigger recurs every
@@ -43,7 +43,7 @@ object Paradigm {
 
     /**
      * The synthesized triggered ability granted (by the engine) to any exiled card that carries
-     * the paradigm marker. Functions only in exile (`activeZone == EXILE`), so it is inert anywhere
+     * the paradigm marker. Functions only in exile (`activeZones == {EXILE}`), so it is inert anywhere
      * else and harmless to return universally.
      */
     val recastAbility: TriggeredAbility = TriggeredAbility(
@@ -51,7 +51,7 @@ object Paradigm {
         // "your first main phase" = the precombat main phase (CR 505 — the first main phase).
         trigger = EventPattern.StepEvent(Step.PRECOMBAT_MAIN, Player.You),
         binding = TriggerBinding.SELF,
-        activeZone = Zone.EXILE,
+        activeZones = setOf(Zone.EXILE),
         effect = MayEffect(
             CompositeEffect(
                 listOf(

@@ -9,7 +9,7 @@ import { ModalModeSelector } from './components/ui/ModalModeSelector'
 import { BlightVariableSelector } from './components/ui/BlightVariableSelector'
 import { PayXLifeSelector } from './components/ui/PayXLifeSelector'
 import { ConvokeSelector } from './components/ui/ConvokeSelector'
-import { WaterbendSelector } from './components/ui/WaterbendSelector'
+import { TapForGenericSelector } from './components/ui/TapForGenericSelector'
 import { HarmonizeSelector } from './components/ui/HarmonizeSelector'
 import { TapForPowerSelector } from './components/ui/TapForPowerSelector'
 import { DelveSelector } from './components/ui/DelveSelector'
@@ -28,6 +28,8 @@ import { trackPageView } from './utils/analytics'
 import { randomBackground } from './utils/background'
 import { useNavigate } from 'react-router-dom'
 import { useGameStore } from './store/gameStore'
+import { useConnectName } from './store/useConnectName'
+import { useRematch } from '@/components/lobby/useRematch'
 import { useViewingPlayer, useBattlefieldCards } from './store/selectors'
 import type { ClientAttacker, EntityId } from './types'
 import { GameOverReason } from './types'
@@ -50,6 +52,7 @@ export default function App() {
   const connect = useGameStore((state) => state.connect)
   const spectateGame = useGameStore((state) => state.spectateGame)
   const sessionReplaced = useGameStore((state) => state.sessionReplaced)
+  const { name: connectName } = useConnectName()
   const hasConnectedRef = useRef(false)
 
   // Dev deep-link: /?spectate=<gameSessionId> connects and auto-spectates that game,
@@ -83,13 +86,14 @@ export default function App() {
       connect(`Spectator-${Math.floor(Math.random() * 9000 + 1000)}`, { spectator: true })
       return
     }
-    // Otherwise only auto-connect for a returning user with a stored name; new users see name entry.
-    const storedName = localStorage.getItem('argentum-player-name')
-    if (storedName) {
+    // Otherwise only auto-connect for someone who already has a name — a stored one, or the display
+    // name of a signed-in account. Genuinely new users see name entry. `connectName` starts null
+    // while the account check is in flight, so this re-runs once it resolves.
+    if (connectName) {
       hasConnectedRef.current = true
-      connect(storedName)
+      connect(connectName)
     }
-  }, [connectionStatus, connect, spectateParam, sessionReplaced])
+  }, [connectionStatus, connect, connectName, spectateParam, sessionReplaced])
 
   // Once connected, honor a /?spectate=<gameId> deep-link (fire once).
   useEffect(() => {
@@ -99,7 +103,19 @@ export default function App() {
     }
   }, [spectateParam, connectionStatus, spectatingState, spectateGame])
 
-  // Keep the URL bar in sync with tournament state so the link is shareable
+  /**
+   * Keep the URL bar in sync with tournament state so the link is shareable.
+   *
+   * **Deliberately raw `history.replaceState`, not `navigate()`.** `/tournament/:lobbyId` is a real
+   * route that renders `TournamentEntryPage`, so routing there would unmount this component and drop
+   * the WebSocket. This writes the address bar without telling the router — which is why React
+   * Router's location is stale relative to the bar during lobby play. Giving the in-`/` screens their
+   * own routes is the remaining half of Phase 6.
+   *
+   * The reset arm is scoped to lobby paths. It used to send *any* non-`/` path back to `/`, which
+   * erased the wizard's `/play/...` steps (and would erase any future in-`/` route) on every lobby
+   * state change.
+   */
   useEffect(() => {
     const lobbyId = tournamentState?.lobbyId ?? lobbyState?.lobbyId
     if (lobbyId) {
@@ -107,7 +123,7 @@ export default function App() {
       if (window.location.pathname !== target) {
         window.history.replaceState(null, '', target)
       }
-    } else if (window.location.pathname !== '/') {
+    } else if (window.location.pathname.startsWith('/tournament/')) {
       window.history.replaceState(null, '', '/')
     }
   }, [tournamentState?.lobbyId, lobbyState?.lobbyId])
@@ -364,8 +380,8 @@ export default function App() {
       {/* Convoke selection overlay (when casting spells with Convoke) */}
       {showGame && <ConvokeSelector />}
 
-      {/* Waterbend selection overlay (activated abilities with a waterbend cost) */}
-      {showGame && <WaterbendSelector />}
+      {/* Tap-for-generic selection overlay (improvise CR 702.126 / waterbend costs) */}
+      {showGame && <TapForGenericSelector />}
 
       {/* Harmonize creature-tap overlay (when casting from graveyard via Harmonize) */}
       {showGame && <HarmonizeSelector />}
@@ -429,6 +445,7 @@ function GameOverlay() {
   const returnToMenu = useGameStore((state) => state.returnToMenu)
   const enterEliminatedSpectate = useGameStore((state) => state.enterEliminatedSpectate)
   const navigate = useNavigate()
+  const rematch = useRematch()
 
   // Auto-dismiss is handled centrally in the store (setError schedules clearError), so it
   // works on every route — not just where this overlay happens to be mounted. The × button
@@ -462,6 +479,23 @@ function GameOverlay() {
                 style={overlayStyles.replayButton}
               >
                 Keep Watching
+              </button>
+            )}
+            {/* The quick lobby is destroyed when the game starts
+                (`QuickGameLobbyHandler.startGame` removes it), but the recipe that built it is not —
+                so a rematch is that recipe replayed, and for a vs-AI game every input is decidable
+                locally: no new protocol, no lobby to keep alive. A human 1v1 rematch needs the
+                server to re-seat both players and is deliberately not faked here.
+
+                A rematch and a saved setup are the same object with different seats: a rematch is
+                a recipe replayed with the seats intact, a setup is one replayed with them open. */}
+            {rematch && (
+              <button
+                onClick={rematch.play}
+                style={overlayStyles.button}
+                data-testid="game-over-play-again"
+              >
+                Play Again
               </button>
             )}
             <button

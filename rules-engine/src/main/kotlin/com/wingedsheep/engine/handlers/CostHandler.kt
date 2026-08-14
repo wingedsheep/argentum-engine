@@ -4,8 +4,11 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.handlers.effects.library.MillAmountModifier
+import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.handlers.effects.permanent.counters.resolveCounterType
 import com.wingedsheep.engine.mechanics.cost.CostPaymentService
+import com.wingedsheep.engine.mechanics.cost.VariablePermanentsCost
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.SpellPaymentContext
 import com.wingedsheep.engine.state.GameState
@@ -24,7 +27,9 @@ import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.DistributedCounterRemoval
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.TapReason
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.costs.PermanentCostAction
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -83,6 +88,7 @@ class CostHandler {
             is AbilityCost.Untap -> {
                 state.getEntity(sourceId)!!.has<TappedComponent>()
             }
+            is AbilityCost.Exert -> true // CR 701.43b — always payable regardless of tapped/exerted state.
             is AbilityCost.PayXLife -> {
                 // X can be 0, so this is always payable as long as the player has a life total.
                 // maxAffordableX is capped by life total in calculateMaxAffordableX.
@@ -243,14 +249,26 @@ class CostHandler {
                 val (newState, events) = untapOrConsumeStun(state, sourceId)
                 CostPaymentResult.success(newState, manaPool, events)
             }
+            is AbilityCost.Exert -> {
+                // CR 701.43b: exerting an already-exerted permanent is legal but doesn't stack —
+                // only emit ExertedEvent (and only mutate state) the first time this turn cycle.
+                val container = state.getEntity(sourceId)
+                if (container?.has<ExertedComponent>() == true) {
+                    CostPaymentResult.success(state, manaPool)
+                } else {
+                    val cardName = container?.get<CardComponent>()?.name ?: "Permanent"
+                    val newState = state.updateEntity(sourceId) { it.with(ExertedComponent) }
+                    CostPaymentResult.success(newState, manaPool, listOf(ExertedEvent(sourceId, cardName)))
+                }
+            }
             is AbilityCost.PayXLife -> {
                 val amount = choices.xValue
                 if (amount == 0) {
                     CostPaymentResult.success(state, manaPool)
                 } else {
-                    val (newState, event) = DamageUtils.loseLife(state, controllerId, amount, LifeChangeReason.PAYMENT)
-                    if (event == null) return CostPaymentResult.failure("Player has no life total")
-                    CostPaymentResult.success(newState, manaPool, events = listOf(event))
+                    val (newState, events) = LifePaymentService.pay(state, controllerId, amount)
+                        ?: return CostPaymentResult.failure("Player has no life total")
+                    CostPaymentResult.success(newState, manaPool, events = events)
                 }
             }
             is AbilityCost.SacrificeChosenCreatureType -> {
@@ -563,7 +581,7 @@ class CostHandler {
                 eligible.size >= atom.count
             }
         }
-        is CostAtom.ExilePermanents -> {
+        is CostAtom.VariablePermanents -> {
             val candidates = findMatchingPermanentsUnified(state, controllerId, atom.filter)
             val eligible = if (atom.excludeSelf) candidates.filter { it != sourceId } else candidates
             eligible.size >= atom.minCount
@@ -576,6 +594,16 @@ class CostHandler {
             val zone = ZoneKey(controllerId, atom.zone)
             findMatchingCardsUnified(state, state.getZone(zone), atom.filter, controllerId).size >= atom.count
         }
+        // CR 701.59b — a player unable to exile cards totalling N can't choose to collect evidence,
+        // so the ability isn't activatable at all. The gate is the graveyard's summed mana value,
+        // never its card count.
+        is CostAtom.CollectEvidence ->
+            com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
+                .canCollect(state, controllerId, atom.amount)
+        // CR 701.17b — a player can't pay a cost that includes milling more cards than their
+        // library holds. Checked against the printed count; a ModifyMillAmount replacement only
+        // enlarges the mill once the cost is actually being paid.
+        is CostAtom.Mill -> state.getZone(ZoneKey(controllerId, Zone.LIBRARY)).size >= atom.count
         is CostAtom.TapPermanents -> {
             val candidates = findUntappedMatchingPermanentsUnified(state, controllerId, atom.filter)
                 .let { targets -> if (atom.excludeSelf) targets.filter { it != sourceId } else targets }
@@ -631,18 +659,17 @@ class CostHandler {
             CostPaymentResult.success(state, newPool)
         }
         is CostAtom.PayLife -> {
-            val (newState, event) = DamageUtils.loseLife(state, controllerId, atom.amount, LifeChangeReason.PAYMENT)
-            if (event == null) return CostPaymentResult.failure("Player has no life total")
-            CostPaymentResult.success(newState, manaPool, events = listOf(event))
+            val (newState, events) = LifePaymentService.pay(state, controllerId, atom.amount)
+                ?: return CostPaymentResult.failure("Player has no life total")
+            CostPaymentResult.success(newState, manaPool, events = events)
         }
         is CostAtom.Sacrifice -> paySacrificeList(
             state, choices.sacrificeChoices, atom.filter,
             requiredCount = atom.count, excludeSelf = atom.excludeSelf, sourceId, controllerId, manaPool,
             distinctNames = atom.distinctNames
         )
-        is CostAtom.ExilePermanents -> payExilePermanentsList(
-            state, choices.exileChoices, atom.filter,
-            minCount = atom.minCount, excludeSelf = atom.excludeSelf, sourceId, controllerId, manaPool
+        is CostAtom.VariablePermanents -> payVariablePermanentsList(
+            state, atom, choices.variablePermanentChoices, sourceId, controllerId, manaPool
         )
         is CostAtom.Discard -> {
             var workState = state
@@ -669,6 +696,33 @@ class CostHandler {
         }
         is CostAtom.ExileFrom ->
             exileCardsFromZone(state, controllerId, atom.zone, atom.count, atom.filter, choices.exileChoices, manaPool)
+        // Rides `exileChoices`, the same channel the client already fills for a graveyard exile
+        // cost. No card carries both an ExileFrom and a CollectEvidence cost, so the two can't be
+        // confused for one another.
+        is CostAtom.CollectEvidence ->
+            when (
+                val result = com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver.collect(
+                    state, controllerId, atom.amount, choices.exileChoices,
+                    state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Collect evidence"
+                )
+            ) {
+                is com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver.Result.Success ->
+                    CostPaymentResult.success(result.state, manaPool, result.events)
+                is com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver.Result.Failure ->
+                    CostPaymentResult.failure(result.reason)
+            }
+        is CostAtom.Mill -> {
+            // Same announcement semantics as the mill effect (GatherCardsExecutor): apply
+            // ModifyMillAmount replacements once to the announced count (CR 616), then take that
+            // many off the top. `take` clamps, so a replacement that enlarges the mill past the
+            // library mills as many as possible — the affordability check above already guaranteed
+            // the printed count is available. Emits plain library→graveyard zone changes, which is
+            // what mill triggers match on.
+            val effectiveCount = MillAmountModifier.apply(state, controllerId, atom.count)
+            val milled = state.getZone(ZoneKey(controllerId, Zone.LIBRARY)).take(effectiveCount)
+            val result = ZoneTransitionService.moveToZoneBatch(state, milled, Zone.GRAVEYARD)
+            CostPaymentResult.success(result.state, manaPool, result.events)
+        }
         is CostAtom.TapPermanents -> payTapPermanents(state, atom, sourceId, controllerId, manaPool, choices)
         is CostAtom.ReturnToHand -> payReturnToHand(state, atom, controllerId, manaPool, choices)
         is CostAtom.RevealFromHand ->
@@ -850,48 +904,118 @@ class CostHandler {
     }
 
     /**
-     * Pay a [CostAtom.ExilePermanents] variable-count cost: exile every permanent the player chose
-     * ([exileChoices]), re-validating that each matches [filter], is controlled by the activator,
-     * and — when [excludeSelf] — isn't the ability's own source. At least [minCount] must be chosen.
-     * Unlike the fixed-count sacrifice / exile-from-zone atoms this exiles *all* selected permanents
-     * (the count is the player's choice, CR 601.2b). Permanents move to exile via
-     * [ZoneTransitionService.moveToZone], so attached Auras fall off, tokens cease to exist, and
-     * leaves-the-battlefield triggers fire.
+     * Pay a [CostAtom.VariablePermanents] variable-count cost: exile or sacrifice *every* permanent
+     * the player chose, re-validating that each matches the atom's filter, is controlled by the
+     * activator, and — when `excludeSelf` — isn't the ability's own source. At least `minCount` must
+     * be chosen. Unlike the fixed-count sacrifice / exile-from-zone atoms this pays with all
+     * selected permanents (the count is the player's choice, CR 601.2b).
+     *
+     * A `SACRIFICE` atom delegates to the shared [paySacrificeList] so it fires "whenever you
+     * sacrifice" triggers and tracks Food/permanent sacrifices exactly like a fixed-count sacrifice
+     * cost; only the required count differs (all chosen, rather than a printed N). An `EXILE` atom
+     * moves the permanents via [ZoneTransitionService.moveToZone], so attached Auras fall off,
+     * tokens cease to exist, and leaves-the-battlefield triggers fire. A `TAP` atom taps them in
+     * place (Teamwork N, CR 702.194a) — the permanents stay on the battlefield, so only CR 701.26a's
+     * "only untapped permanents can be tapped" applies; summoning sickness (CR 302.6) governs the
+     * `{T}` symbol, not a tap cost, exactly as with crew.
      */
-    private fun payExilePermanentsList(
+    private fun payVariablePermanentsList(
         state: GameState,
-        exileChoices: List<EntityId>,
-        filter: GameObjectFilter,
-        minCount: Int,
-        excludeSelf: Boolean,
+        atom: CostAtom.VariablePermanents,
+        choices: List<EntityId>,
         sourceId: EntityId,
         controllerId: EntityId,
         manaPool: ManaPool,
     ): CostPaymentResult {
+        val filter = atom.filter
+        val minCount = atom.minCount
+        val excludeSelf = atom.excludeSelf
+        val verb = VariablePermanentsCost.verb(atom.action)
         // With no selection supplied, auto-pick ONLY when the choice is forced (exactly minCount
         // eligible). A real choice (more eligible than minCount) is paused for by
-        // ActivateAbilityHandler; never silently guess which permanents to exile.
-        val toExile: List<EntityId> = if (exileChoices.isEmpty()) {
+        // ActivateAbilityHandler; never silently guess which permanents to pay with.
+        val toPay: List<EntityId> = if (choices.isEmpty()) {
             val candidates = findMatchingCardsUnified(state, state.getBattlefield(controllerId), filter, controllerId)
                 .let { if (excludeSelf) it.filter { id -> id != sourceId } else it }
+                .let { if (atom.action == PermanentCostAction.TAP) it.filter { id -> state.getEntity(id)?.has<TappedComponent>() != true } else it }
             if (candidates.size < minCount) {
-                return CostPaymentResult.failure("Not enough permanents to exile (need $minCount, got ${candidates.size})")
+                return CostPaymentResult.failure("Not enough permanents to $verb (need $minCount, got ${candidates.size})")
             }
             if (candidates.size > minCount) {
-                return CostPaymentResult.failure("No permanents chosen to exile (need at least $minCount)")
+                return CostPaymentResult.failure("No permanents chosen to $verb (need at least $minCount)")
             }
             candidates
         } else {
-            exileChoices
+            choices
         }
-        if (toExile.size < minCount) {
-            return CostPaymentResult.failure("Not enough permanents chosen to exile (need $minCount, got ${toExile.size})")
+        // One permanent, one contribution. A repeated id would inflate both floors below — the
+        // count check immediately after and the measure check under it — while the permanent is
+        // only ever paid with once. Checked here, ahead of both, and for every action: TAP used to
+        // reject a duplicate incidentally (its second pass saw the permanent already tapped) but
+        // now validates against the pre-payment state, and SACRIFICE/EXILE only ever rejected one
+        // by accident (count arithmetic; "not found" on the second move). Mirrors the same guard in
+        // `CastSpellHandler.validate`.
+        if (toPay.size != toPay.distinct().size) {
+            return CostPaymentResult.failure("The same permanent can't be chosen twice to $verb")
+        }
+        if (toPay.size < minCount) {
+            return CostPaymentResult.failure("Not enough permanents chosen to $verb (need $minCount, got ${toPay.size})")
+        }
+        // A measure floor ("… with total power N or more") is checked instead of, or alongside, the
+        // count floor — CR 702.194a's teamwork threshold is on the sum, not the size.
+        if (atom.minMeasure > 0) {
+            val measured = VariablePermanentsCost.measure(state, atom.xMeasure, toPay)
+            if (measured < atom.minMeasure) {
+                return CostPaymentResult.failure(
+                    "Chosen permanents fall short of the required ${VariablePermanentsCost.measureName(atom.xMeasure)} " +
+                        "(need ${atom.minMeasure}, got $measured)"
+                )
+            }
+        }
+        // An **activated ability's** TAP variable-permanents cost. This is the only unreached one of
+        // the three actions on the activated-ability path today — no printed card pays a TAP
+        // `VariablePermanents` cost from an ability — but keeping it honest is what lets the shared
+        // helper serve the first one that does.
+        //
+        // The tap cause ([TapReason]) stays UNSPECIFIED here on purpose: a cause is named by the
+        // *mechanic that declared the cost* (see [TapReason.forChoiceSlot]), and an ability cost has
+        // no declared cast-choice slot. Teamwork is a spell's additional cost (CR 702.194a) and is
+        // stamped on the cast path in `CastSpellHandler`; naming any cause here would be a guess.
+        if (atom.action == PermanentCostAction.TAP) {
+            val context = PredicateContext(controllerId = controllerId)
+            val projected = state.projectedState
+            for (id in toPay) {
+                val container = state.getEntity(id)
+                    ?: return CostPaymentResult.failure("Permanent to tap not found")
+                if (projected.getController(id) != controllerId) {
+                    return CostPaymentResult.failure("Can only tap permanents you control")
+                }
+                if (container.has<TappedComponent>()) {
+                    return CostPaymentResult.failure("Permanent to tap is already tapped")
+                }
+                if (!predicateEvaluator.matches(state, projected, id, filter, context)) {
+                    return CostPaymentResult.failure("Permanent to tap does not match the required filter")
+                }
+                if (excludeSelf && id == sourceId) {
+                    return CostPaymentResult.failure("Cannot tap the source permanent for this cost")
+                }
+            }
+            val (newState, events) = VariablePermanentsCost.tapAll(state, toPay, TapReason.UNSPECIFIED)
+            return CostPaymentResult.success(newState, manaPool, events)
+        }
+        if (atom.action == PermanentCostAction.SACRIFICE) {
+            // requiredCount = the whole chosen set: the count is the payer's choice, not a printed N.
+            return paySacrificeList(
+                state, toPay, filter,
+                requiredCount = toPay.size, excludeSelf = excludeSelf,
+                sourceId = sourceId, controllerId = controllerId, manaPool = manaPool,
+            )
         }
         val context = PredicateContext(controllerId = controllerId)
         val projected = state.projectedState
         var newState = state
         val events = mutableListOf<GameEvent>()
-        for (id in toExile) {
+        for (id in toPay) {
             val container = newState.getEntity(id)
                 ?: return CostPaymentResult.failure("Permanent to exile not found")
             val itsController = container.get<ControllerComponent>()?.playerId
@@ -1026,6 +1150,11 @@ class CostHandler {
                 }
                 is CostAtom.ExileFrom ->
                     findMatchingCardsUnified(state, state.getZone(ZoneKey(controllerId, atom.zone)), atom.filter, controllerId).size >= atom.count
+                // CR 701.59b — see canPayAtom. An optional collect-evidence cast cost that can't be
+                // reached simply isn't offered as a second cast action.
+                is CostAtom.CollectEvidence ->
+                    com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
+                        .canCollect(state, controllerId, atom.amount)
                 is CostAtom.TapPermanents ->
                     findUntappedMatchingPermanentsUnified(state, controllerId, atom.filter).size >= atom.count
                 is CostAtom.RemoveCounters -> {
@@ -1044,12 +1173,21 @@ class CostHandler {
                         total >= needed
                     }
                 }
-                // Mana / return-to-hand / reveal / put-counters-on-self / exile-permanents are not
-                // produced as spell additional costs today (put-counters-on-self is inherently
-                // ability-scoped — a spell on the stack has no permanent to put the counters on; and
-                // ExilePermanents is an activated-ability cost only).
+                // A variable-count permanent cost is payable when the payer has enough candidates to
+                // clear both floors — Teamwork N's "tap any number of creatures you control with
+                // total power N or more" (CR 702.194a) is unpayable when every untapped creature
+                // together falls short. No `sourceId` is passed — this function has no such
+                // parameter, and every caller is a *spell's* additional cost, which has no source
+                // permanent on the battlefield to exclude (teamwork sets `excludeSelf = false`
+                // anyway). Reaching this from an ability means adding a `sourceId` parameter first,
+                // since the atom's default is `excludeSelf = true`.
+                is CostAtom.VariablePermanents ->
+                    com.wingedsheep.engine.mechanics.cost.VariablePermanentsCost.canPay(state, controllerId, atom)
+                // Mana / return-to-hand / reveal / put-counters-on-self / mill are not produced as
+                // spell additional costs today (put-counters-on-self is inherently ability-scoped —
+                // a spell on the stack has no permanent to put the counters on).
                 is CostAtom.Mana, is CostAtom.ReturnToHand, is CostAtom.RevealFromHand,
-                is CostAtom.PutCountersOnSelf, is CostAtom.ExilePermanents -> false
+                is CostAtom.PutCountersOnSelf, is CostAtom.Mill -> false
             }
             is AdditionalCost.PayLifePerTarget -> {
                 // Always payable: choosing zero targets pays zero life. Per-target life
@@ -1085,10 +1223,11 @@ class CostHandler {
                 // Payability determined by the preceding cost that populated the storage
                 true
             }
-            is AdditionalCost.BlightOrPay -> {
-                // Always payable: player can always choose the "pay mana" path
-                true
-            }
+            // The "… or pay {N}" family: always payable, because the caster can always decline the
+            // non-mana leg and fold the alternative mana into the spell's cost instead. Whether the
+            // non-mana leg is *available* only decides which cast paths the enumerator offers.
+            is AdditionalCost.OrPay,
+            is AdditionalCost.BlightOrPay -> true
             is AdditionalCost.BlightVariable -> {
                 // X = 0 is always legal (default minCount = 0); higher minCounts
                 // require a creature you control whose toughness >= minCount.
@@ -1111,18 +1250,6 @@ class CostHandler {
             is AdditionalCost.PayLifeEqualToManaValueOfSpell -> {
                 // Affordability is per-cast (depends on the cast card's mana value), so it is
                 // checked at CastSpellHandler time, not here. Always "payable" at this generic gate.
-                true
-            }
-            is AdditionalCost.BeholdOrPay -> {
-                // Always payable: player can always choose the "pay mana" path
-                true
-            }
-            is AdditionalCost.ExileFromGraveyardOrPay -> {
-                // Always payable: player can always choose the "pay mana" path
-                true
-            }
-            is AdditionalCost.SacrificeOrPay -> {
-                // Always payable: player can always choose the "pay mana" path
                 true
             }
             is AdditionalCost.Composite -> {
@@ -1429,6 +1556,12 @@ data class CostPaymentChoices(
     val sacrificeChoices: List<EntityId> = emptyList(),
     val discardChoices: List<EntityId> = emptyList(),
     val exileChoices: List<EntityId> = emptyList(),
+    /**
+     * Permanents chosen for a [CostAtom.VariablePermanents] variable-count cost, kept apart from
+     * [exileChoices] / [sacrificeChoices] so an ability carrying both a fixed and a variable
+     * permanent cost stays unambiguous. Mirrors `AdditionalCostPayment.variableCostPermanents`.
+     */
+    val variablePermanentChoices: List<EntityId> = emptyList(),
     val tapChoices: List<EntityId> = emptyList(),
     val bounceChoices: List<EntityId> = emptyList(),
     val xValue: Int = 0,

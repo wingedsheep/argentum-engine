@@ -45,6 +45,7 @@ val Kapow = card("Kapow!") {
         rarity = Rarity.COMMON
         collectorNumber = "103"
         artist = "Jessica Fong"
+        flavorText = "\"People are in danger—I don't have time for your games!\""
         imageUri = "https://cards.scryfall.io/normal/front/c/e/cec575f6-43c9-41c6-a996-bb806bf82185.jpg?1757377442"
     }
 }

@@ -51,7 +51,6 @@ val PoeticIngenuity = card("Poetic Ingenuity") {
                 Player.You,
                 GameObjectFilter.Creature.withSubtype(Subtype.DINOSAUR).attacking()
             ),
-            imageUri = LciTokenArt.TREASURE,
         )
     }
 

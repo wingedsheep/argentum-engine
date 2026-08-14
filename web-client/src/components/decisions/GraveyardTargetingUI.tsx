@@ -5,24 +5,53 @@ import type { EntityId, ChooseTargetsDecision, ClientCard } from '@/types'
 import { calculateFittingCardWidth, type ResponsiveSizes } from '@/hooks/useResponsive.ts'
 import { ZoneSelectionUI, type ZoneCardInfo } from './ZoneSelectionUI'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { derivePileAction } from '@/utils/targeting.ts'
 import styles from './DecisionUI.module.css'
 
 /**
- * Graveyard / exile pile targeting UI — uses the shared ZoneSelectionUI component.
- * Supports selecting from multiple piles with owner tabs. Labels adapt to the cards'
- * actual zone (Graveyard vs Exile) so the same component renders Blade of the Swarm's
- * exile-targeting mode and the existing graveyard-target spells with the right wording.
+ * Graveyard / exile pile targeting UI for **one** requirement of a ChooseTargetsDecision — uses the
+ * shared ZoneSelectionUI component. Supports selecting from multiple piles with owner tabs. Labels
+ * adapt to the cards' actual zone (Graveyard vs Exile) so the same component renders Blade of the
+ * Swarm's exile-targeting mode and the existing graveyard-target spells with the right wording.
+ *
+ * The picked cards go back to the parent [ChooseTargetsUI] rather than straight to the server: the
+ * pile slot may be one of several requirements (The Spot, Living Portal exiles a battlefield
+ * permanent *and* a graveyard card), and only the parent knows whether more slots follow.
  */
 export function GraveyardTargetingUI({
   decision,
   graveyardCards,
   responsive,
+  requirementIndex,
+  totalRequirements,
+  initialSelection,
+  onComplete,
+  onBack,
+  onViewBattlefield,
 }: {
   decision: ChooseTargetsDecision
   graveyardCards: ClientCard[]
   responsive: ResponsiveSizes
+  requirementIndex: number
+  totalRequirements: number
+  /**
+   * Picks to pre-select — non-empty when the player stepped Back into this requirement, or came
+   * here from the board on a mixed requirement carrying the permanents they picked there. Carried
+   * board picks are counted (they fill this requirement's slots) but aren't shown in the ribbon;
+   * they live on the battlefield, which is one click away on "View Battlefield".
+   */
+  initialSelection: readonly EntityId[]
+  onComplete: (targets: readonly EntityId[]) => void
+  /** Present when an earlier requirement can be revised. */
+  onBack?: () => void
+  /**
+   * Present on a mixed `battlefield ∪ pile` requirement, where the board half is collected by the
+   * banner this picker was opened from. "View Battlefield" then hands control (and the picks made
+   * here) back to that banner instead of minimising into a floating re-open button — the banner is
+   * where Confirm lives for this requirement.
+   */
+  onViewBattlefield?: (carried: readonly EntityId[]) => void
 }) {
-  const submitTargetsDecision = useGameStore((s) => s.submitTargetsDecision)
   const submitCancelDecision = useGameStore((s) => s.submitCancelDecision)
   const gameState = useGameStore((s) => s.gameState)
   const viewingPlayerId = gameState?.viewingPlayerId
@@ -85,45 +114,40 @@ export function GraveyardTargetingUI({
   }
 
   const handleConfirm = (selectedCards: EntityId[]) => {
-    // Submit with the selected targets for target index 0
-    // If minTargets is 0 (optional ability), submitting with 0 cards declines the ability
-    submitTargetsDecision({ 0: selectedCards })
+    // Hand this requirement's picks to the walker, which advances or submits.
+    // If minTargets is 0 (optional ability), confirming 0 cards declines this slot.
+    onComplete(selectedCards)
   }
 
   // Get target requirements
-  const targetReq = decision.targetRequirements[0]
+  const targetReq = decision.targetRequirements[requirementIndex]
   const minTargets = targetReq?.minTargets ?? 1
   const maxTargets = targetReq?.maxTargets ?? 1
   const isOptionalTarget = minTargets === 0
   const isMultiTarget = maxTargets > 1
   const sourceName = decision.context.sourceName ?? 'this ability'
-  const title = isOptionalTarget ? `Resolve ${sourceName}` : `Choose from ${pileNoun}`
+  const baseTitle = isOptionalTarget ? `Resolve ${sourceName}` : `Choose from ${pileNoun}`
+  const title = totalRequirements > 1
+    ? `${baseTitle} (${requirementIndex + 1}/${totalRequirements})`
+    : baseTitle
 
-  // Derive the action verb from effectHint so the button/text matches the actual effect
-  // (e.g., "Exile card in a graveyard" → "Exile"; "Shuffle … into its owner's library" → "Shuffle
-  // into Library"; "Put … onto the battlefield" → "Put onto Battlefield"; "Return … to its owner's
-  // hand" → "Return to Hand"). Effects can be wrapped (ForEachTargetEffect, CompositeEffect, etc.)
-  // so the keyword may not be at the start — match anywhere in the hint. "Return to Hand" is only
-  // the fallback, so reanimation effects (Shark Shredder) must be detected explicitly or they'd
-  // mislabel as returning the opponent's card to hand.
-  const effectHint = decision.context.effectHint?.toLowerCase() ?? ''
-  const isExile = effectHint.includes('exile')
-  const isReanimate = effectHint.includes('battlefield')
-  const isShuffleIntoLibrary = effectHint.includes('shuffle') && effectHint.includes('library')
-  const optionalConfirmText = isReanimate
-    ? 'Put onto Battlefield'
-    : isShuffleIntoLibrary
-      ? 'Shuffle into Library'
-      : isExile
-        ? 'Exile'
-        : 'Return to Hand'
-  const actionVerb = isReanimate
-    ? 'put onto the battlefield'
-    : isShuffleIntoLibrary
-      ? 'shuffle into your library'
-      : isExile
-        ? 'exile'
-        : 'return to your hand'
+  // Derive the action wording from effectHint so the button/text matches the actual effect.
+  //
+  // TODO(per-requirement action hints): effectHint describes the effect as a whole, while this UI
+  // now collects one requirement of it. Both of The Spot's slots exile, so a single verb still
+  // fits; a composite whose slots take different verbs ("destroy target creature and return target
+  // card from a graveyard to your hand") would mislabel this slot. The durable fix is an action
+  // hint on TargetRequirementInfo instead of sniffing prose — a server-side change.
+  //
+  // Playtesting proved the sharper half of this: prose sniffing doesn't merely go vague, it goes
+  // *wrong*. Taskmaster, Mercenary Mimic ("becomes a copy of … creature card in a graveyard")
+  // matched no known verb and inherited the old "Return to Hand" fallback, so the picker promised a
+  // card would come back to hand while the effect only copied it and left it in the graveyard. The
+  // fallback is neutral now and the copy shape has its own branch, but every unlisted effect is
+  // still one unlucky substring away from the same class of lie. A server-supplied action verb per
+  // requirement removes the guesswork rather than lengthening the keyword list.
+  const { confirmText: optionalConfirmText, verb: actionVerb } =
+    derivePileAction(decision.context.effectHint)
 
   const numWord = (n: number): string =>
     ({ 1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five' } as Record<number, string>)[n] ?? String(n)
@@ -143,8 +167,10 @@ export function GraveyardTargetingUI({
     ? `Optional: choose ${countPhrase} to ${actionVerb}, or decline.`
     : `Choose ${countPhrase} to ${actionVerb}.`
 
-  // Lift selection state to persist across tab switches
-  const [selectedCards, setSelectedCards] = useState<EntityId[]>([])
+  // Lift selection state to persist across tab switches. Seeded from initialSelection so stepping
+  // Back into this requirement keeps its confirmed picks — the parent remounts on requirement
+  // change (key={currentReqIndex}), so the initializer re-runs per slot.
+  const [selectedCards, setSelectedCards] = useState<EntityId[]>(() => [...initialSelection])
   const [minimized, setMinimized] = useState(false)
 
   // If only one graveyard, use simple UI
@@ -157,6 +183,7 @@ export function GraveyardTargetingUI({
         cards={cards}
         minSelections={minTargets}
         maxSelections={maxTargets}
+        initialSelection={initialSelection}
         responsive={responsive}
         onConfirm={handleConfirm}
         confirmText={isOptionalTarget ? optionalConfirmText : 'Confirm Target'}
@@ -165,7 +192,14 @@ export function GraveyardTargetingUI({
         confirmRequiresSelection={isOptionalTarget}
         sortByType={true}
         useGlobalHover={true}
-        onCancel={decision.canCancel ? () => submitCancelDecision() : undefined}
+        {...(onViewBattlefield ? { onViewBattlefield } : {})}
+        // The secondary button is "← Back" mid-walk (revise an earlier requirement) and
+        // "Cancel" otherwise; a cancellable cast can still be cancelled from requirement 0.
+        {...(onBack
+          ? { onCancel: onBack, cancelText: '← Back' }
+          : decision.canCancel
+            ? { onCancel: () => submitCancelDecision() }
+            : {})}
       />
     )
   }
@@ -243,9 +277,11 @@ export function GraveyardTargetingUI({
         responsive={responsive}
         onConfirm={handleConfirm}
         onMinimize={() => setMinimized(true)}
+        {...(onViewBattlefield ? { onViewBattlefield } : {})}
         confirmText={isOptionalTarget ? optionalConfirmText : 'Confirm Target'}
         declineText={isOptionalTarget ? 'Decline Trigger' : undefined}
         confirmRequiresSelection={isOptionalTarget}
+        {...(onBack ? { onBack } : {})}
       />
     </div>
   )
@@ -265,9 +301,11 @@ function GraveyardCardSelection({
   responsive,
   onConfirm,
   onMinimize,
+  onViewBattlefield,
   confirmText,
   declineText,
   confirmRequiresSelection,
+  onBack,
 }: {
   cards: ZoneCardInfo[]
   selectedCards: EntityId[]
@@ -278,9 +316,12 @@ function GraveyardCardSelection({
   responsive: ResponsiveSizes
   onConfirm: (selectedCards: EntityId[]) => void
   onMinimize: () => void
+  /** Overrides [onMinimize] on a mixed requirement — see GraveyardTargetingUI's prop of this name. */
+  onViewBattlefield?: (carried: readonly EntityId[]) => void
   confirmText: string
   declineText?: string | undefined
   confirmRequiresSelection: boolean
+  onBack?: () => void
 }) {
   const [hoveredCardId, setHoveredCardId] = useState<EntityId | null>(null)
   const hoverCard = useGameStore((s) => s.hoverCard)
@@ -326,15 +367,31 @@ function GraveyardCardSelection({
   const toggleCard = (cardId: EntityId) => {
     if (selectedCards.includes(cardId)) {
       onSelectedCardsChange(selectedCards.filter((id) => id !== cardId))
-    } else if (selectedCards.length < maxSelections) {
-      if (
-        totalManaValueAtMost != null &&
-        selectedManaValue + manaValueOf(cardId) > totalManaValueAtMost
-      ) {
-        return
-      }
-      onSelectedCardsChange([...selectedCards, cardId])
+      return
     }
+    if (selectedCards.length >= maxSelections) {
+      // Single-select slot at its cap: clicking a different card replaces the pick, the same rule
+      // the board path uses (toggleDecisionSelection). It also unblocks a mixed
+      // `battlefield ∪ pile` requirement — the pick carried in from the board fills the only slot
+      // and isn't in this ribbon, so without replacement no graveyard card could ever be clicked.
+      if (maxSelections === 1) {
+        if (
+          totalManaValueAtMost != null &&
+          manaValueOf(cardId) > totalManaValueAtMost
+        ) {
+          return
+        }
+        onSelectedCardsChange([cardId])
+      }
+      return
+    }
+    if (
+      totalManaValueAtMost != null &&
+      selectedManaValue + manaValueOf(cardId) > totalManaValueAtMost
+    ) {
+      return
+    }
+    onSelectedCardsChange([...selectedCards, cardId])
   }
 
   // Handle hover using global store (for the CardPreview component)
@@ -412,8 +469,16 @@ function GraveyardCardSelection({
 
       {/* Action buttons */}
       <div className={styles.optionButtonRow}>
+        {onBack && (
+          <button
+            onClick={onBack}
+            className={styles.viewBattlefieldButton}
+          >
+            ← Back
+          </button>
+        )}
         <button
-          onClick={onMinimize}
+          onClick={() => (onViewBattlefield ? onViewBattlefield(selectedCards) : onMinimize())}
           className={styles.viewBattlefieldButton}
         >
           View Battlefield

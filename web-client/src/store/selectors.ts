@@ -9,6 +9,7 @@ import type {
   ZoneId,
 } from '@/types'
 import { ZoneType, zoneIdEquals, graveyard, library } from '@/types'
+import { isViewerEliminated } from './slices/ui/boardViewSlice'
 import { seatColor, teamColor, type SeatColor } from '@/styles/seatColors'
 import {
   type GroupedCard,
@@ -239,6 +240,15 @@ export function useOpponents(): readonly ClientPlayer[] {
 }
 
 /**
+ * True when the local player's seat is out of a multiplayer game the others are still playing.
+ * See [isViewerEliminated] — derived from the roster, not from the elimination message, so it
+ * is right however the seat died.
+ */
+export function useViewerEliminated(): boolean {
+  return useGameStore(isViewerEliminated)
+}
+
+/**
  * The living seat that holds the bottom half of the table for an eliminated spectator.
  * A dead player has no board of their own to sit there, so the bottom side of the table
  * belongs to a survivor: their explicit pick from the spectating banner, or — by default —
@@ -246,19 +256,19 @@ export function useOpponents(): readonly ClientPlayer[] {
  * that seat dies. Null outside the eliminated-spectator layout, or when nobody is left.
  */
 export function useEliminatedBottomSeatId(): EntityId | null {
-  const eliminatedSpectating = useGameStore((state) => state.eliminatedSpectating)
+  const eliminated = useGameStore(isViewerEliminated)
   const pickedSeatId = useGameStore((state) => state.eliminatedBottomSeatId)
   const opponents = useOpponents()
   const teamMap = useGameStore(selectTeamMap)
   const viewerTeam = useViewerTeamIndex()
   return useMemo(() => {
-    if (!eliminatedSpectating) return null
+    if (!eliminated) return null
     const living = opponents.filter((p) => !p.hasLost)
     const picked = living.find((p) => p.playerId === pickedSeatId)
     if (picked) return picked.playerId
     const ally = viewerTeam != null ? living.find((p) => teamMap[p.playerId] === viewerTeam) : undefined
     return (ally ?? living[0])?.playerId ?? null
-  }, [eliminatedSpectating, pickedSeatId, opponents, teamMap, viewerTeam])
+  }, [eliminated, pickedSeatId, opponents, teamMap, viewerTeam])
 }
 
 /**
@@ -383,13 +393,15 @@ export function useIsAlly(playerId: EntityId | null): boolean {
 const EMPTY_ACTIONS: readonly LegalActionInfo[] = Object.freeze([])
 
 /** Extract the card-id this legal action is anchored to, if any. */
-function cardIdForAction(info: LegalActionInfo): EntityId | undefined {
+export function cardIdForAction(info: LegalActionInfo): EntityId | undefined {
   const a = info.action
   switch (a.type) {
     case 'PlayLand':
     case 'CastSpell':
     case 'CycleCard':
     case 'TypecycleCard':
+    case 'PlotCard':
+    case 'SuspendCardFromHand':
       return a.cardId
     case 'ActivateAbility':
     case 'TurnFaceUp':
@@ -405,7 +417,7 @@ function cardIdForAction(info: LegalActionInfo): EntityId | undefined {
   }
 }
 
-function isHighlightable(a: LegalActionInfo): boolean {
+export function isHighlightable(a: LegalActionInfo): boolean {
   return (!a.isManaAbility || a.additionalCostInfo != null || a.manaCostString != null) && a.isAffordable !== false
 }
 
@@ -552,6 +564,44 @@ function battlefieldCardsEqual(a: BattlefieldCards, b: BattlefieldCards): boolea
  * proper doesn't need it: there `selectViewingPlayerId` already resolves to the bottom
  * seat).
  */
+/**
+ * Reorder a creature row so soulbond-paired creatures sit **next to each other** (CR 702.95b).
+ *
+ * Without this the bond `SoulbondBonds` draws can stripe across the whole row over unrelated
+ * creatures that happen to sit between the pair, which reads as "these two are connected to
+ * something in the middle" rather than "these two are one". Adjacency makes the bond short and its
+ * meaning obvious, and it matches how a player physically slides two paired cards together.
+ *
+ * Stable and idempotent: cards keep their relative order except that a paired creature's partner is
+ * pulled up to immediately follow it. Only the *first* of a pair moves its partner, so the pair
+ * lands wherever the earlier half already was rather than jumping the row around.
+ */
+function orderPairsAdjacent(cards: readonly ClientCard[]): ClientCard[] {
+  if (cards.length < 3) return [...cards]
+  if (!cards.some((c) => c.pairedWithId)) return [...cards]
+
+  const byId = new Map(cards.map((c) => [c.id, c]))
+  const emitted = new Set<EntityId>()
+  const ordered: ClientCard[] = []
+
+  for (const card of cards) {
+    if (emitted.has(card.id)) continue
+    ordered.push(card)
+    emitted.add(card.id)
+
+    const partnerId = card.pairedWithId
+    if (!partnerId || emitted.has(partnerId)) continue
+    const partner = byId.get(partnerId)
+    // The partner may be off this row entirely — an opponent's creature after a control change, or
+    // a permanent that stopped being a creature. Leave the row alone in that case.
+    if (!partner) continue
+    ordered.push(partner)
+    emitted.add(partnerId)
+  }
+
+  return ordered
+}
+
 export function useBattlefieldCards(
   opponentId?: EntityId | null,
   playerIdOverride?: EntityId | null,
@@ -638,11 +688,11 @@ export function useBattlefieldCards(
 
     const result: BattlefieldCards = {
       playerLands: playerCards.filter((c) => isNonCreatureLand(c) && isNotAttached(c)),
-      playerCreatures: playerCards.filter((c) => isCreature(c) && isNotAttached(c)),
+      playerCreatures: orderPairsAdjacent(playerCards.filter((c) => isCreature(c) && isNotAttached(c))),
       playerPlaneswalkers: playerCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c) && isNotAttached(c)),
       playerOther: playerCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c) && isNotAttached(c)),
       opponentLands: opponentCards.filter((c) => isNonCreatureLand(c) && isNotAttached(c)),
-      opponentCreatures: opponentCards.filter((c) => isCreature(c) && isNotAttached(c)),
+      opponentCreatures: orderPairsAdjacent(opponentCards.filter((c) => isCreature(c) && isNotAttached(c))),
       opponentPlaneswalkers: opponentCards.filter((c) => isPlaneswalker(c) && !isCreature(c) && !isLand(c) && isNotAttached(c)),
       opponentOther: opponentCards.filter((c) => !isCreature(c) && !isPlaneswalker(c) && !isLand(c) && isNotAttached(c)),
       attachmentsByCardId,
@@ -683,13 +733,20 @@ const EMPTY_ID_SET: ReadonlySet<EntityId> = Object.freeze(new Set<EntityId>())
  * Eligible-but-unchosen targets are deliberately NOT included: identical tokens are
  * interchangeable, so the player can click the collapsed stack's representative to
  * pick one. Only a *committed* target needs its specific arrow to resolve.
+ *
+ * The pending decision's *subject* is included for the same reason: Killing Wave asks
+ * "pay X life or sacrifice it" once per creature, and a subject collapsed into a token
+ * stack would highlight the whole pile instead of the one creature being decided.
  */
 export function useSplitOutTargetIds(): ReadonlySet<EntityId> {
   const stackCards = useStackCards()
   const targetingState = useGameStore(selectTargetingState)
+  const decisionSubjectId = useGameStore((s) => s.pendingDecision?.context.subjectEntityId)
   return useMemo(() => {
     const selected = targetingState?.selectedTargets
-    if (stackCards.length === 0 && (!selected || selected.length === 0)) return EMPTY_ID_SET
+    if (stackCards.length === 0 && (!selected || selected.length === 0) && !decisionSubjectId) {
+      return EMPTY_ID_SET
+    }
     const ids = new Set<EntityId>()
     for (const card of stackCards) {
       for (const t of card.targets) {
@@ -698,8 +755,9 @@ export function useSplitOutTargetIds(): ReadonlySet<EntityId> {
       if (card.triggeringEntityId) ids.add(card.triggeringEntityId)
     }
     if (selected) for (const id of selected) ids.add(id)
+    if (decisionSubjectId) ids.add(decisionSubjectId)
     return ids
-  }, [stackCards, targetingState])
+  }, [stackCards, targetingState, decisionSubjectId])
 }
 
 /**

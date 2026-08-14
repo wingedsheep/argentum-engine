@@ -8,6 +8,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.SagaComponent
 import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.ExertedComponent
 import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -62,6 +63,21 @@ class BeginningPhaseManager(
             newState = phaseInPermanents(newState, member, events)
         }
 
+        // CR 502.2 / 731.2 — the second turn-based action of the untap step: check the previous
+        // active side's spell counts and change the day/night designation if warranted. If it's day
+        // and nobody on that side cast a spell, it becomes night; if it's night and any one of them
+        // cast two or more, it becomes day; if it's neither, nothing happens (731.2c). No stack, no
+        // priority. TurnManager.startTurn took the snapshot before resetting the counters. Any
+        // daybound/nightbound transforms this designation change entails are
+        // cascaded by DayNightService in the same event batch, and those events flow up through advanceStep
+        // to PassPriorityHandler's detectTriggers so "whenever this transforms" abilities fire (CR 702.145b/e).
+        run {
+            val (afterDayNight, dayNightEvents) = com.wingedsheep.engine.mechanics.daynight.DayNightService
+                .checkUntapStepDesignation(newState, cardRegistry)
+            newState = afterDayNight
+            events.addAll(dayNightEvents)
+        }
+
         // Check if the player has a SkipUntapComponent
         val skipUntap = newState.getEntity(activePlayer)?.get<SkipUntapComponent>()
 
@@ -102,8 +118,15 @@ class BeginningPhaseManager(
         // Temporal Distortion's hourglass counters route through DOESNT_UNTAP via a
         // counter-keyed static ability (so the restriction is projection-scoped and
         // disappears if Temporal Distortion leaves play).
+        //
+        // Exerted permanents (CR 701.43a, ExertedComponent — a one-shot per-object marker, not a
+        // continuous static ability) are filtered the same way. Unlike DOESNT_UNTAP, the marker is
+        // cleared unconditionally below regardless of whether this filter actually skipped an
+        // untap (2024-06-07 ruling: an exerted-but-already-untapped permanent's marker still
+        // expires having done nothing).
         val permanentsAfterCantUntap = permanentsToUntap.filter { entityId ->
-            !projected.doesntUntapDuringUntapStep(entityId)
+            !projected.doesntUntapDuringUntapStep(entityId) &&
+                newState.getEntity(entityId)?.has<ExertedComponent>() != true
         }
 
         // Check if any permanents have MAY_NOT_UNTAP keyword (e.g., Everglove Courier)
@@ -262,16 +285,28 @@ class BeginningPhaseManager(
             newState = newState.updateEntity(entityId) { it.without<EnteredThisTurnComponent>() }
         }
 
-        // Wipe "put into graveyard from battlefield this turn" markers on every turn
-        // boundary so the predicate (Samwise, Lobelia — LTR) matches only cards that
-        // arrived in a graveyard this turn, not last turn. Scans all entities (the
+        // Clear exert markers (CR 701.43a — "your next untap step") for every permanent the
+        // active team controls, unconditionally: an exerted permanent that was already untapped
+        // (or already had its untap replaced/skipped above) still has the marker expire here per
+        // the 2024-06-07 ruling, having prevented nothing. Scoped to the active team, not every
+        // permanent, since exert only ever refers to its controller's own next untap step.
+        val exertedForActiveTeam = newState.entities.filter { (entityId, container) ->
+            container.has<ExertedComponent>() && projectedAfterUntap.getController(entityId) in activeTeam
+        }.keys
+        for (entityId in exertedForActiveTeam) {
+            newState = newState.updateEntity(entityId) { it.without<ExertedComponent>() }
+        }
+
+        // Wipe "put into a graveyard this turn" markers on every turn boundary so the
+        // predicates (Abyssal Harvester — FDN; Samwise, Lobelia — LTR) match only cards
+        // that arrived in a graveyard this turn, not last turn. Scans all entities (the
         // marker lives on graveyard cards, not battlefield permanents).
         val stampedThisTurn = newState.entities.filter { (_, container) ->
-            container.has<com.wingedsheep.engine.state.components.identity.PutIntoGraveyardFromBattlefieldThisTurnMarker>()
+            container.has<com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent>()
         }.keys
         for (entityId in stampedThisTurn) {
             newState = newState.updateEntity(entityId) {
-                it.without<com.wingedsheep.engine.state.components.identity.PutIntoGraveyardFromBattlefieldThisTurnMarker>()
+                it.without<com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent>()
             }
         }
 
@@ -424,7 +459,8 @@ class BeginningPhaseManager(
         predicate: StatePredicate,
         container: ComponentContainer
     ): Boolean = when (predicate) {
-        // Graveyard-only predicate; untap filters never see a card with the marker.
+        // Graveyard-only predicates; untap filters never see a card with the marker.
+        StatePredicate.PutIntoGraveyardThisTurn -> false
         StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false
         // No granter context in untap filtering — granter-relative exclusion is resolution-time only.
         StatePredicate.IsGrantingPermanent -> false
@@ -441,6 +477,11 @@ class BeginningPhaseManager(
                 counterType != null && countersComponent.getCount(counterType) > 0
             }
         }
+        // Soulbond pairing (CR 702.95b) is plain per-entity state, so unlike the fail-open group
+        // below it can be answered exactly here — an "untap each paired creature" filter must not
+        // silently untap everything.
+        StatePredicate.IsPaired ->
+            container.has<com.wingedsheep.engine.state.components.battlefield.PairedComponent>()
         is StatePredicate.Or -> predicate.predicates.any { matchesStatePredicateForUntap(it, container) }
         is StatePredicate.And -> predicate.predicates.all { matchesStatePredicateForUntap(it, container) }
         is StatePredicate.Not -> !matchesStatePredicateForUntap(predicate.predicate, container)
@@ -450,9 +491,12 @@ class BeginningPhaseManager(
         // implied; combat is empty) or would require state we don't have here. Returning
         // true preserves the historical "no constraint" behavior, but the case is now
         // explicit so adding a new StatePredicate variant becomes a compile-time decision.
+        StatePredicate.IsOnBattlefield,
         StatePredicate.IsTapped,
         StatePredicate.IsUntapped,
         StatePredicate.IsAttacking,
+        StatePredicate.IsAttackingAlone,
+        StatePredicate.IsAttackingAnOpponent,
         StatePredicate.IsBlocking,
         StatePredicate.IsBlocked,
         StatePredicate.IsUnblocked,
@@ -478,8 +522,10 @@ class BeginningPhaseManager(
         StatePredicate.HasLeastPowerAmongAllCreatures,
         StatePredicate.HasLeastPower,
         StatePredicate.IsEquipped,
+        StatePredicate.IsEnchanted,
         StatePredicate.IsModified,
         StatePredicate.IsSaddled,
+        StatePredicate.IsSuspected,
         StatePredicate.HasLockedDoor,
         StatePredicate.CrewedOrSaddledSourceThisTurn,
         StatePredicate.CrewedOrSaddledBySourceThisTurn,
@@ -493,5 +539,6 @@ class BeginningPhaseManager(
         is StatePredicate.WasCastFromZone -> true
         is StatePredicate.AttachedToCardType -> true
         is StatePredicate.AttachedTo -> true
+        is StatePredicate.IsEnchantedByAura -> true
     }
 }

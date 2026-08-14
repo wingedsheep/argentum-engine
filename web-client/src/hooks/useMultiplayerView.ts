@@ -61,8 +61,9 @@ export function useMultiplayerView(enabled: boolean, opponents: readonly ClientP
       if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return
       const store = useGameStore.getState()
       if (e.key >= '1' && e.key <= '9') {
-        // Number keys also activate abilities while a card's action menu is open —
-        // that interaction wins.
+        // A selected card has an open action menu; don't yank the camera out from under a
+        // half-finished interaction. (There is deliberately no number-key ability activation —
+        // the action menu is click/tap only.)
         if (store.selectedCardId) return
         const living = opponents.filter((o) => !o.hasLost)
         const picked = living[Number(e.key) - 1]

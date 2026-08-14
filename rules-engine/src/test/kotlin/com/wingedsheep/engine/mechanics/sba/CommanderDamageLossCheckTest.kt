@@ -71,4 +71,16 @@ class CommanderDamageLossCheckTest : FunSpec({
         CommanderDamageLossCheck().check(state2).newState
             .getEntity(p2)!!.get<PlayerLostComponent>() shouldNotBe null
     }
+
+    test("Team vs Team applies commander damage when Commander rules are enabled") {
+        val format = Format.TeamVsTeam(
+            startingLife = 40,
+            commanderDamageThreshold = 21,
+            deckSize = 100,
+        )
+        val state = baseState(format).recordCommanderDamage(cmdrA, p2, 21)
+
+        CommanderDamageLossCheck().check(state).newState
+            .getEntity(p2)!!.get<PlayerLostComponent>() shouldNotBe null
+    }
 })

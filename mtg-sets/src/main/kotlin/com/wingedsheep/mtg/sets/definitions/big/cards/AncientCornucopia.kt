@@ -30,8 +30,11 @@ val AncientCornucopia = card("Ancient Cornucopia") {
         trigger = Triggers.youCastSpell(
             spellFilter = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsColored))
         )
-        // "Do this only once each turn." — the ability triggers at most once per turn.
-        oncePerTurn = true
+        // "Do this only once each turn." — CR 603.2h, keyed to the *action*, not the trigger:
+        // "Once you choose to gain life using Ancient Cornucopia's triggered ability, that
+        // ability won't trigger again that turn" (Scryfall ruling). Declining leaves the turn's
+        // use unspent, so a later colored spell still offers it.
+        effectOncePerTurn = true
         // "you may gain 1 life for each of that spell's colors" — resolution-time yes/no.
         effect = MayEffect(Effects.GainLife(DynamicAmounts.colorCountOf(EntityReference.Triggering)))
     }

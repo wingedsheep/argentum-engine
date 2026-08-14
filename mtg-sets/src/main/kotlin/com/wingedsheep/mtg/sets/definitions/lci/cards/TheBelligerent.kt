@@ -45,7 +45,7 @@ val TheBelligerent = card("The Belligerent") {
 
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = Effects.CreateTreasure(1, imageUri = LciTokenArt.TREASURE)
+        effect = Effects.CreateTreasure(1)
     }
 
     staticAbility {

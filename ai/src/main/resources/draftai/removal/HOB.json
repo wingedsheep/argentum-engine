@@ -1,0 +1,45 @@
+{
+  "Azog, Moria's Ruin": [
+    "removal",
+    "creature-removal"
+  ],
+  "Bolg of the North": [
+    "removal",
+    "creature-removal"
+  ],
+  "Burn, Burn, Tree and Fern": [
+    "removal",
+    "creature-removal",
+    "artifact-removal"
+  ],
+  "Desolation of Smaug": [
+    "removal",
+    "creature-removal"
+  ],
+  "Gandalf, Spark Starter": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Gnashing of Teeth": [
+    "removal",
+    "creature-removal"
+  ],
+  "Settle the Wreckage": [
+    "removal",
+    "creature-removal"
+  ],
+  "Smaug the Magnificent": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Stone by Sunlight": [
+    "removal",
+    "creature-removal"
+  ],
+  "Thorin, Mountain-king": [
+    "removal",
+    "creature-removal"
+  ]
+}

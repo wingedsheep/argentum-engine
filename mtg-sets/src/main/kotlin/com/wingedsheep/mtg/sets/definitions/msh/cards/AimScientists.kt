@@ -15,7 +15,7 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
  * When this creature enters, it connives.
  * Basic landcycling {2}
  *
- * Connive (CR 702.166) is the standard draw-then-discard-then-conditional-counter recipe, so the
+ * Connive (CR 701.50) is the standard draw-then-discard-then-conditional-counter recipe, so the
  * ETB is a plain [Effects.Connive] on the source itself. Basic landcycling is the typed-cycling
  * variant that searches for a basic land card ([KeywordAbility.basicLandcycling]).
  */

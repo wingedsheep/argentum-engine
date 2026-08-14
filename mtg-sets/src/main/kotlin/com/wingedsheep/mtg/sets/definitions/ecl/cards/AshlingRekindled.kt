@@ -48,7 +48,7 @@ private val addRimeboundMana = Effects.Composite(
         AddManaOfChoiceEffect(
             colorSet = ManaColorSet.SourceChosenColor,
             amount = 2,
-            restriction = ManaRestriction.SpellsMV4OrGreater
+            restriction = ManaRestriction.SpellsWithManaValueAtLeast(4)
         )
     )
 )

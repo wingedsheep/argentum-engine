@@ -15,7 +15,8 @@ import io.kotest.matchers.shouldBe
  * "If Darksteel Colossus would be put into a graveyard from anywhere, reveal it and shuffle it
  * into its owner's library instead."
  *
- * The redirect is a card-intrinsic self-replacement (CR 614.12) carried on the card entity via
+ * The redirect is a card-intrinsic replacement effect (CR 113.6b — it says "from anywhere", so it
+ * functions from every zone) carried on the card entity via
  * [com.wingedsheep.engine.state.components.identity.SelfZoneRedirectComponent], so it functions in
  * every zone — not just on the battlefield. These tests drive a graveyard-bound move from the
  * battlefield, the library (mill), and the hand (discard) and assert the Colossus ends up shuffled

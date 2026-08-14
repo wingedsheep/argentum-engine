@@ -835,6 +835,141 @@
     ]
 }
 
+// Settle the Wreckage
+{
+    "name": "Settle the Wreckage",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile all attacking creatures target player controls. That player may search their library for that many basic land cards, put those cards onto the battlefield tapped, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsAttacking"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControlledByReferencedPlayer",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target player"
+                                }
+                            }
+                        }
+                    },
+                    "storeAs": "attackers"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "attackers",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "ConditionalOnCollection",
+                    "collection": "attackers",
+                    "ifNotEmpty": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "player": "TargetPlayer",
+                                        "filter": "basicland"
+                                    },
+                                    "storeAs": "searchable"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "DistinctEntitiesInCollections",
+                                            "collections": [
+                                                "attackers"
+                                            ]
+                                        }
+                                    },
+                                    "chooser": "TargetPlayer",
+                                    "storeSelected": "found",
+                                    "prompt": "Search your library for basic land cards"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield",
+                                        "player": "TargetPlayer",
+                                        "placement": "Tapped"
+                                    }
+                                },
+                                {
+                                    "type": "ShuffleLibrary",
+                                    "target": {
+                                        "type": "PlayerRef",
+                                        "player": "TargetPlayer"
+                                    }
+                                }
+                            ]
+                        },
+                        "decisionMaker": {
+                            "type": "PlayerRef",
+                            "player": "TargetPlayer"
+                        },
+                        "descriptionOverride": "That player may search their library for that many basic land cards, put those cards onto the battlefield tapped, then shuffle."
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "target player"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Dimitar Marinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9cbd346e-098a-4cf6-a72f-468376fd2e8f.jpg?1783935791",
+        "rulings": [
+            {
+                "date": "2017-09-29",
+                "text": "Settle the Wreckage targets only the player. Creatures with hexproof that player controls will be exiled as this spell resolves."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "That player can find fewer basic land cards than the number of exiled creatures, whether because they want to or because they don't have that many basic land cards left."
+            },
+            {
+                "date": "2017-09-29",
+                "text": "The number of lands that player may find is the number of attacking creatures that were exiled, even if some of those creatures were tokens, weren't creature cards, or didn't end up in exile."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Skulduggery
 {
     "name": "Skulduggery",

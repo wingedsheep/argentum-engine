@@ -2,7 +2,7 @@
 
 **Set Size:** 153 cards
 **Release Date:** January 23, 2026
-**Implemented:** 1 / 153
+**Implemented:** 2 / 153
 | Color      | Total | Done |
 |------------|-------|------|
 | White      | 4     | 0    |
@@ -159,7 +159,7 @@
 - [ ] Thriving Moor
 - [ ] Timeless Lotus
 - [ ] Titan of Industry
-- [ ] Tree of Perdition
+- [x] Tree of Perdition
 - [ ] Unclaimed Territory
 - [ ] Vernal Fen
 - [ ] Vernal Sovereign

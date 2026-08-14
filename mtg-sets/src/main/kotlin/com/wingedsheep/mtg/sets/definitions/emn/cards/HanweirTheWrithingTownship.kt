@@ -18,9 +18,12 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * This is a meld result (Hanweir Garrison + Hanweir Battlements). Meld is out of scope, so Hanweir
  * is authored as a normal colorless legendary creature with its printed abilities. The
  * tapped-and-attacking tokens use [CreateTokenEffect] with `tapped`/`attacking`.
+ * `meldResult = true` keeps it out of booster, draft and deckbuilding pools — it's only ever
+ * created by melding the pair.
  */
 val HanweirTheWrithingTownship = card("Hanweir, the Writhing Township") {
     manaCost = ""
+    meldResult = true
     colorIdentity = ""
     typeLine = "Legendary Creature — Eldrazi Ooze"
     power = 7

@@ -5,8 +5,15 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.EffectHandler
+import com.wingedsheep.engine.handlers.effects.composite.PreTargetedEffectContext
+import com.wingedsheep.engine.handlers.effects.composite.processPreTargetedEffectQueue
+import com.wingedsheep.engine.mechanics.ControllerGrants
 import com.wingedsheep.engine.mechanics.FlashbackGrants
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
+import com.wingedsheep.engine.mechanics.SpliceCasts
+import com.wingedsheep.engine.mechanics.targeting.TargetValidator
+import com.wingedsheep.engine.mechanics.daynight.DayNightService
+import com.wingedsheep.engine.mechanics.layers.ContinuousEffectSourceComponent
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
@@ -27,9 +34,12 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
+import com.wingedsheep.engine.handlers.effects.FaceDownTurnUp
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.state.components.identity.ExileAfterResolveComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.identity.PlottedComponent
@@ -50,13 +60,18 @@ import com.wingedsheep.engine.event.DelayedTriggeredAbility
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.WarpExileEffect
+import com.wingedsheep.sdk.scripting.effects.MoveTrackedBattlefieldObjectEffect
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EntersAsCopy
 import com.wingedsheep.engine.handlers.effects.EntersWithReplacements
+import com.wingedsheep.engine.handlers.effects.permanent.types.buildCardComponentForDfcFace
+import com.wingedsheep.engine.handlers.effects.permanent.types.dfcBackFaceManaValue
 import com.wingedsheep.engine.handlers.effects.permanent.types.returnDfcFace
-import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
+import com.wingedsheep.engine.handlers.effects.permanent.types.withDfcFaceSelfRedirects
+import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.EntersWithChoice
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
@@ -87,6 +102,31 @@ class StackResolver(
     private val predicateEvaluator: PredicateEvaluator = PredicateEvaluator()
 ) {
 
+    /**
+     * Re-validates a spliced card's own targets as the spell resolves (CR 608.2b via 702.47d): the
+     * spliced text is skipped when its targets have become illegal, exactly as a modal spell's
+     * pre-chosen mode is.
+     */
+    private val spliceTargetValidator = TargetValidator()
+
+    /**
+     * The spliced text of [spellComponent]'s spell as a drain queue (CR 702.47b) — one entry per
+     * spliced card, in the caster's chosen order, each carrying its own target slice and requirements.
+     *
+     * A spliced card contributes its *rules text*, so what is queued is its `spellEffect`; a splice
+     * card with no spell effect (nothing splice-able) simply drops out.
+     */
+    private fun buildSpliceEntries(spellComponent: SpellOnStackComponent): List<PreTargetedEffectEntry> =
+        spellComponent.splicedCardNames.mapIndexedNotNull { index, name ->
+            val splicedDef = cardRegistry.getCard(name) ?: return@mapIndexedNotNull null
+            val effect = splicedDef.script.spellEffect ?: return@mapIndexedNotNull null
+            PreTargetedEffectEntry(
+                effect = effect,
+                targets = spellComponent.splicedTargetsOrdered.getOrNull(index) ?: emptyList(),
+                targetRequirements = splicedDef.script.targetRequirements
+            )
+        }
+
     // =========================================================================
     // Casting Spells
     // =========================================================================
@@ -97,6 +137,10 @@ class StackResolver(
      * @param castFaceDown If true, cast as a face-down 2/2 creature (morph). The spell
      *                     will resolve as a face-down creature with FaceDownComponent
      *                     and MorphDataComponent.
+     * @param castTransformed If true, the card goes on the stack **back face up** (CR 712.8c) —
+     *                     disturb (CR 702.146). The face swap happens here, before the push, so
+     *                     every downstream read (resolution, targeting, the client view) sees the
+     *                     back face's characteristics without a special case.
      * @param damageDistribution Pre-chosen damage distribution for DividedDamageEffect spells
      */
     fun castSpell(
@@ -107,25 +151,33 @@ class StackResolver(
         xValue: Int? = null,
         sacrificedPermanents: List<EntitySnapshot> = emptyList(),
         castFaceDown: Boolean = false,
+        castTransformed: Boolean = false,
         damageDistribution: Map<EntityId, Int>? = null,
         targetRequirements: List<TargetRequirement> = emptyList(),
         chosenCreatureType: String? = null,
         exiledCardCount: Int = 0,
         additionalCostBlightAmount: Int = 0,
         additionalCostPayXLifeAmount: Int? = null,
-        wasKicked: Boolean = false,
+        declaredCostSlot: ChoiceSlot? = null,
         wasBlightPaid: Boolean = false,
         wasWaterbendPaid: Boolean = false,
+        giftRecipient: EntityId? = null,
         wasWarped: Boolean = false,
+        wasDashed: Boolean = false,
         wasEvoked: Boolean = false,
         wasImpending: Boolean = false,
         wasCleaved: Boolean = false,
         wasSneaked: Boolean = false,
         sneakAttackDefenderId: EntityId? = null,
+        wasWebSlung: Boolean = false,
+        webSlungReturnedManaValue: Int = 0,
+        wasMayhem: Boolean = false,
         chosenModes: List<Int> = emptyList(),
         modeTargetsOrdered: List<List<ChosenTarget>> = emptyList(),
         modeTargetRequirements: Map<Int, List<TargetRequirement>> = emptyMap(),
         modeDamageDistribution: Map<Int, Map<EntityId, Int>> = emptyMap(),
+        /** Card-definition names spliced onto this spell, in splice order (CR 702.47a). */
+        splicedCardNames: List<String> = emptyList(),
         totalManaSpent: Int = 0,
         beheldCards: List<EntityId> = emptyList(),
         discardedAsCostCards: List<EntityId> = emptyList(),
@@ -140,7 +192,8 @@ class StackResolver(
         faceIndex: Int? = null,
         spentManaProvenance: com.wingedsheep.engine.mechanics.mana.SpentManaProvenance =
             com.wingedsheep.engine.mechanics.mana.SpentManaProvenance(),
-        castTimeFlags: Set<String> = emptySet()
+        castTimeFlags: Set<String> = emptySet(),
+        alternativeCost: com.wingedsheep.engine.core.AlternativeCostType? = null
     ): ExecutionResult {
         val container = state.getEntity(cardId)
             ?: return ExecutionResult.error(state, "Card not found: $cardId")
@@ -157,6 +210,75 @@ class StackResolver(
             newState = clearRevealedMorphsInHand(newState, casterId)
         }
 
+        // Cast transformed (CR 712.8c, disturb; CR 712.11b, a modal DFC's permanent back face): flip
+        // the card to its back face *before* it becomes a spell, so the stack object — and the
+        // permanent it resolves into — has only the back face's characteristics. The front-face
+        // CardComponent is stashed on the DoubleFacedComponent so Rule 712.8a restores it if the
+        // spell is countered or the permanent later leaves the battlefield (ZoneTransitionService
+        // does that restore, and it deliberately exempts the stack).
+        val transformedFrontDef = if (castTransformed) {
+            cardRegistry.getCard(cardComponent.cardDefinitionId)
+        } else null
+        val transformedBackDef = transformedFrontDef?.backFace
+        // CR 712.8c: a *nonmodal* transformed spell keeps the front face's mana value, which
+        // `cardComponent` still holds. CR 712.8f gives a modal one the face that's up, so the back's
+        // own cost stands and no override is needed. Null when this isn't a transformed cast at all.
+        val backFaceManaValue = transformedBackDef
+            ?.let { dfcBackFaceManaValue(transformedFrontDef, cardComponent.manaValue) }
+        if (transformedFrontDef != null && transformedBackDef != null) {
+            newState = newState.updateEntity(cardId) { c ->
+                var updated = c
+                    .with(buildCardComponentForDfcFace(cardComponent, transformedBackDef, backFaceManaValue))
+                    .with(
+                        DoubleFacedComponent(
+                            frontCardDefinitionId = transformedFrontDef.name,
+                            backCardDefinitionId = transformedBackDef.name,
+                            currentFace = DoubleFacedComponent.Face.BACK,
+                            frontFaceCard = cardComponent
+                        )
+                    )
+                    .without<ContinuousEffectSourceComponent>()
+                    .without<ReplacementEffectSourceComponent>()
+                // Register the back face's static and replacement effects (the "if this would
+                // be put into a graveyard from anywhere, exile it instead" clause the disturb
+                // cycle prints on its back faces is one of these, and it must function from the
+                // moment the card is a back-face object — CR 614.12).
+                updated = staticAbilityHandler.addContinuousEffectComponent(updated, transformedBackDef)
+                updated = staticAbilityHandler.addReplacementEffectComponent(updated, transformedBackDef)
+                withDfcFaceSelfRedirects(updated, transformedBackDef)
+            }
+        }
+
+        // The spell's mana value (CR 202.3), reported by the SpellCastEvent below — which feeds
+        // ContextPropertyKey.TRIGGERING_SPELL_MANA_VALUE and every "a spell with mana value N"
+        // payoff. It is the same number the stack object now carries, so it comes from the same
+        // decision: a disturb cast keeps the front's (CR 712.8c, `backFaceManaValue` non-null),
+        // while a modal DFC cast as its back face has that face's own — The Sensational She-Hulk is
+        // 6, not Jennifer Walters' 2. CastSpellHandler mirrors this for its CastSpellRecord.
+        val spellManaValue = backFaceManaValue
+            ?: transformedBackDef?.manaCost?.cmc
+            ?: cardComponent.manaValue
+
+        // CR 601.2b — a spell with `{X}` in its cost has X *announced as it is cast*; there is no
+        // such thing as a spell on the stack whose X is undetermined. A caller that announced
+        // nothing (the AI's CastSpell carries no xValue) paid nothing for X, so X is 0. For the
+        // other caller — a synthesized cast that pays no mana cost at all — CR 107.3b is directly
+        // on point: "the only legal choice for X is 0."
+        //
+        // Binding it here rather than leaving null is load-bearing, not cosmetic: the resolution-time
+        // `CardPredicate.ManaValueAtMostX` fails *open* on an unbound X — deliberately, so an X spell
+        // is still offered during legal-action enumeration, which runs before X is chosen. Left null
+        // all the way to resolution, "each creature with mana value X or less" matches *every*
+        // creature, and Day of Black Sun cast for X=0 wipes the board. It is also what puts the
+        // "(X=0)" in the game log's cast line, which is otherwise silently absent.
+        val boundXValue = xValue ?: run {
+            val castCost = faceIndex
+                ?.let { cardRegistry.getCard(cardComponent.cardDefinitionId)?.cardFaces?.getOrNull(it)?.manaCost }
+                ?: transformedBackDef?.manaCost
+                ?: cardComponent.manaCost
+            if (castCost.hasX) 0 else null
+        }
+
         // Build the flat target union for choose-N modal spells (Rule 700.2 / 601.2c).
         // TargetsComponent holds the union so existing target-arrow rendering and resolution-time
         // re-validation keep working; per-mode breakdown lives on SpellOnStackComponent.
@@ -171,14 +293,28 @@ class StackResolver(
             targetRequirements
         }
 
+        // Splice (CR 702.47d): the cast's flat target list runs main-spell targets first, then one
+        // group per spliced card in splice order. Slice the tail off now so resolution can hand each
+        // spliced card its own targets — its `ContextTarget(0)` means its own first target, not the
+        // main spell's. TargetsComponent keeps the flat union, so target arrows and the 608.2b
+        // re-validation pass keep working unchanged.
+        val splicedTargetsOrdered: List<List<ChosenTarget>> = if (splicedCardNames.isEmpty()) {
+            emptyList()
+        } else {
+            SpliceCasts.sliceSplicedTargets(effectiveTargets, splicedCardNames, cardRegistry)
+        }
+
         // Add spell components
         newState = newState.updateEntity(cardId) { c ->
             var updated = c.with(SpellOnStackComponent(
                 casterId = casterId,
-                xValue = xValue,
-                wasKicked = wasKicked,
+                xValue = boundXValue,
+                declaredCostSlot = declaredCostSlot,
                 wasBlightPaid = wasBlightPaid,
                 wasWaterbendPaid = wasWaterbendPaid,
+                giftRecipient = giftRecipient,
+                splicedCardNames = splicedCardNames,
+                splicedTargetsOrdered = splicedTargetsOrdered,
                 chosenModes = chosenModes,
                 modeTargetsOrdered = modeTargetsOrdered,
                 modeTargetRequirements = modeTargetRequirements,
@@ -191,12 +327,17 @@ class StackResolver(
                 additionalCostBlightAmount = additionalCostBlightAmount,
                 additionalCostPayXLifeAmount = additionalCostPayXLifeAmount,
                 castFromZone = castFromZone,
+                alternativeCost = alternativeCost,
                 wasWarped = wasWarped,
+                wasDashed = wasDashed,
                 wasEvoked = wasEvoked,
                 wasImpending = wasImpending,
                 wasCleaved = wasCleaved,
                 wasSneaked = wasSneaked,
                 sneakAttackDefenderId = sneakAttackDefenderId,
+                wasWebSlung = wasWebSlung,
+                webSlungReturnedManaValue = webSlungReturnedManaValue,
+                wasMayhem = wasMayhem,
                 beheldCards = beheldCards,
                 discardedAsCostCards = discardedAsCostCards,
                 chosenEntitySnapshots = chosenEntitySnapshots,
@@ -212,18 +353,19 @@ class StackResolver(
                 castTimeFlags = castTimeFlags
             ))
             if (effectiveTargets.isNotEmpty()) {
-                updated = updated.with(TargetsComponent(effectiveTargets, effectiveTargetRequirements))
+                updated = updated.with(
+                    TargetsComponent.capture(state, effectiveTargets, effectiveTargetRequirements)
+                )
             }
-            // Add morph data for creatures with morph (needed for face-down casting and
-            // for effects like Backslide that target "creature with a morph ability")
+            // Add turn-up data for cards castable face down (needed for face-down casting and
+            // for effects like Backslide that target "creature with a morph ability"). The mode
+            // decides which keyword's cost applies — FaceDownTurnUp is the single place that
+            // knows that mapping.
             val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
-            val morphAbility = cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Morph>()?.firstOrNull()
-            if (morphAbility != null) {
-                updated = updated.with(MorphDataComponent(
-                    morphCost = morphAbility.morphCost,
-                    originalCardDefinitionId = cardComponent.cardDefinitionId,
-                    faceUpEffect = morphAbility.faceUpEffect
-                ))
+            val castFaceDownMode = faceDownCastMode(cardDef)
+            if (castFaceDownMode != null) {
+                FaceDownTurnUp.dataFor(cardDef, cardComponent.cardDefinitionId, castFaceDownMode)
+                    ?.let { updated = updated.with(it) }
             }
             if (castFaceDown) {
                 updated = updated.without<RevealedToComponent>()
@@ -266,6 +408,9 @@ class StackResolver(
             }
             updated = updated.without<com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent>()
             updated = updated.without<com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent>()
+            // The madness offer (CR 702.35a) is spent the moment the card is cast; drop the marker
+            // with the fixed madness cost it published so the two never outlive each other.
+            updated = updated.without<com.wingedsheep.engine.state.components.identity.MadnessExiledComponent>()
             // A card cast face up is revealed as it goes on the stack. Foretold cards (and any
             // other hidden-in-exile card) carry a FaceDownComponent for opponent masking while
             // exiled; strip it here so the spell isn't masked on the stack (CR 702.143 — casting a
@@ -304,8 +449,19 @@ class StackResolver(
             newState = newState.removeMayPlayPermissionsForCard(cardId)
         }
 
+        // A cast-transformed spell is on the stack back face up (CR 712.8c), so its *name* is the
+        // back face's — `cardComponent` was captured before the face swap above and still holds the
+        // front face's. The log used to announce a disturb cast as "cast Covetous Castaway" while
+        // the stack showed Ghostly Castigator. The mana value is `spellManaValue`, resolved with the
+        // face swap above because the two routes differ (CR 712.8c vs 712.8f); every card-definition
+        // lookup keeps using `cardComponent.cardDefinitionId`, which addresses the whole card.
+        val spellName = if (castTransformed) {
+            newState.getEntity(cardId)?.get<CardComponent>()?.name ?: cardComponent.name
+        } else {
+            cardComponent.name
+        }
         // For face-down creatures, use a generic name in the event
-        val eventName = if (castFaceDown) "Face-down creature" else cardComponent.name
+        val eventName = if (castFaceDown) "Face-down creature" else spellName
 
         // Collect target names for the cast event log
         val targetNames = effectiveTargets.mapNotNull { target ->
@@ -338,15 +494,20 @@ class StackResolver(
                 cardName = eventName,
                 casterId = casterId,
                 targetNames = targetNames,
-                xValue = xValue,
-                wasKicked = wasKicked,
+                xValue = boundXValue,
+                declaredCostSlot = declaredCostSlot,
                 totalManaSpent = totalManaSpent,
                 distinctColorsSpent =
                     com.wingedsheep.engine.handlers.ManaSpentReader.distinctColorsSpent(newState, cardId),
                 spentManaSubtypes = spentManaProvenance.spentSubtypes,
                 spentManaSourceIds = spentManaProvenance.sourceIds,
                 chosenModesCount = reportedChosenModesCount,
-                manaValue = cardComponent.manaValue
+                manaValue = spellManaValue,
+                castFromZone = castFromZone,
+                alternativeCost = alternativeCost,
+                // Last-known names of the bodies the cost ate, so an emerge cast's reduced
+                // `totalManaSpent` reads as a consequence rather than a mystery (CR 702.119a).
+                sacrificedAsCostNames = sacrificedPermanents.mapNotNull { it.name }
             )
         )
 
@@ -468,7 +629,7 @@ class StackResolver(
 
         var container = ComponentContainer.of(ability)
         if (targets.isNotEmpty()) {
-            container = container.with(TargetsComponent(targets, targetRequirements))
+            container = container.with(TargetsComponent.capture(state, targets, targetRequirements))
         }
 
         var newState = stateWithId.withEntity(abilityId, container)
@@ -569,7 +730,7 @@ class StackResolver(
         val copiedCardComp = sourceCard.copy(ownerId = copyController)
 
         // Clone cast-time state; per 707.10 the copy inherits every decision made for
-        // the original. The data-class copy preserves: xValue, wasKicked, wasBlightPaid,
+        // the original. The data-class copy preserves: xValue, declaredCostSlot, wasBlightPaid,
         // wasWarped, wasEvoked, sacrificedPermanents (snapshots of P/T + subtypes), damageDistribution,
         // chosenCreatureType, exiledCardCount, castFromZone, beheldCards, and the
         // manaSpent{White,Blue,Black,Red,Green,Colorless} colors. Only the caster
@@ -585,7 +746,7 @@ class StackResolver(
 
         var container = ComponentContainer.of(copiedCardComp, copiedSpellComp)
         if (effectiveTargets.isNotEmpty()) {
-            container = container.with(TargetsComponent(effectiveTargets, effectiveRequirements))
+            container = container.with(TargetsComponent.capture(state, effectiveTargets, effectiveRequirements))
         }
         container = container.with(
             CopyOfComponent(
@@ -634,13 +795,14 @@ class StackResolver(
         targetRequirements: List<TargetRequirement> = emptyList(),
         emitActivationEvent: Boolean = true,
         costsTap: Boolean = false,
+        isExhaust: Boolean = false,
         cantBeCopied: Boolean = false
     ): ExecutionResult {
         val (abilityId, stateWithId) = state.newEntity()
 
         var container = ComponentContainer.of(ability)
         if (targets.isNotEmpty()) {
-            container = container.with(TargetsComponent(targets, targetRequirements))
+            container = container.with(TargetsComponent.capture(state, targets, targetRequirements))
         }
         // CR 707.10e — "This ability can't be copied": tag the ability instance on the stack so a
         // copy-ability effect (e.g. Gogo, Master of Mimicry) makes no copy of it.
@@ -666,7 +828,8 @@ class StackResolver(
                     ability.controllerId,
                     abilityEntityId = abilityId,
                     costsTap = costsTap,
-                    isManaAbility = false
+                    isManaAbility = false,
+                    isExhaust = isExhaust,
                 )
             )
         }
@@ -757,7 +920,8 @@ class StackResolver(
                 spellComponent.casterId, targetsComponent.targetRequirements,
                 sourceId = spellId,
                 targetingSourceType = TargetingSourceType.SPELL,
-                xValue = spellComponent.xValue
+                xValue = spellComponent.xValue,
+                targetEntryStamps = targetsComponent.targetEntryStamps
             )
             if (validTargets.isEmpty()) {
                 // All targets invalid - spell fizzles
@@ -921,7 +1085,8 @@ class StackResolver(
                         nameOverride = entersAsCopy.nameOverride,
                         powerOverride = entersAsCopy.powerOverride,
                         toughnessOverride = entersAsCopy.toughnessOverride,
-                        exileCopiedCard = entersAsCopy.exileCopiedCard
+                        exileCopiedCard = entersAsCopy.exileCopiedCard,
+                        additionalCounters = entersAsCopy.additionalCounters
                     )
 
                     val pausedState = state
@@ -936,12 +1101,26 @@ class StackResolver(
             // Process in priority order: COLOR → CREATURE_TYPE → CREATURE_ON_BATTLEFIELD
             // When a card has multiple choices (e.g., Riptide Replicator: color + creature type),
             // the first one pauses; its continuation resumer chains to the next.
-            val entersWithChoices = cardDef.script.replacementEffects.filterIsInstance<EntersWithChoice>()
+            val printedChoices = cardDef.script.replacementEffects.filterIsInstance<EntersWithChoice>()
+            // Granted Riot ("Other Spiders you control have riot") is not printed on the entering
+            // spell, so synthesize its enters-with choice — one per granting lord (CR 702.136b) —
+            // when a battlefield lord grants RIOT to it.
+            val grantedRiotCount = com.wingedsheep.engine.mechanics.RiotSynthesis
+                .grantedRiotInstanceCount(state, spellId, cardRegistry, predicateEvaluator)
+            val syntheticRiotChoice = if (grantedRiotCount > 0) {
+                com.wingedsheep.engine.mechanics.RiotSynthesis.RIOT_CHOICE
+            } else null
+            val entersWithChoices = printedChoices + listOfNotNull(syntheticRiotChoice)
             val firstChoice = entersWithChoices
                 .sortedBy { it.choiceType.ordinal }
                 .firstOrNull()
             if (firstChoice != null) {
-                val result = pauseForEntersWithChoice(state, spellId, controllerId, ownerId, cardComponent, firstChoice)
+                val isSynthetic = firstChoice === syntheticRiotChoice
+                val result = pauseForEntersWithChoice(
+                    state, spellId, controllerId, ownerId, cardComponent, firstChoice,
+                    syntheticRiot = isSynthetic,
+                    syntheticRiotRemaining = if (isSynthetic) grantedRiotCount - 1 else 0
+                )
                 if (result != null) return result
                 // null means choice couldn't be presented (e.g., no creatures on battlefield) — fall through
             }
@@ -987,6 +1166,53 @@ class StackResolver(
                     return ExecutionResult.paused(pausedState, decision)
                 }
                 // No valid cards — enter normally without counters
+            }
+
+            val exileCountersEffect = cardDef.script.replacementEffects
+                .filterIsInstance<com.wingedsheep.sdk.scripting.EntersWithExileCounters>()
+                .firstOrNull()
+            if (exileCountersEffect != null) {
+                val predicateContext = PredicateContext(controllerId = controllerId, sourceId = spellId)
+                val candidates = state.getZone(ZoneKey(controllerId, exileCountersEffect.sourceZone)).filter { cardId ->
+                    predicateEvaluator.matches(
+                        state, state.projectedState, cardId, exileCountersEffect.filter, predicateContext
+                    )
+                }
+                val maxCards = com.wingedsheep.engine.handlers.DynamicAmountEvaluator().evaluate(
+                    state,
+                    exileCountersEffect.maxCards,
+                    EffectContext(
+                        sourceId = spellId,
+                        controllerId = controllerId,
+                        xValue = spellComponent.xValue ?: 0
+                    )
+                ).coerceAtLeast(0).coerceAtMost(candidates.size)
+                if (candidates.isNotEmpty() && maxCards > 0) {
+                    val decisionId = "exile-counters-enters-${spellId.value}"
+                    val decision = SelectCardsDecision(
+                        id = decisionId,
+                        playerId = controllerId,
+                        prompt = "Exile up to $maxCards ${exileCountersEffect.filter.description} cards from your ${exileCountersEffect.sourceZone.name.lowercase()} for ${cardComponent.name}",
+                        context = DecisionContext(
+                            sourceId = spellId,
+                            sourceName = cardComponent.name,
+                            phase = DecisionPhase.RESOLUTION
+                        ),
+                        options = candidates,
+                        minSelections = 0,
+                        maxSelections = maxCards
+                    )
+                    val continuation = ExileCountersContinuation(
+                        decisionId = decisionId,
+                        spellId = spellId,
+                        controllerId = controllerId,
+                        ownerId = ownerId,
+                        counterType = exileCountersEffect.counterType.description,
+                        countersPerCard = exileCountersEffect.countersPerCard
+                    )
+                    val pausedState = state.pushContinuation(continuation).withPendingDecision(decision)
+                    return ExecutionResult.paused(pausedState, decision)
+                }
             }
 
             // Check for EntersWithDevour replacement effect (CR 702.82, Devour variants).
@@ -1128,12 +1354,16 @@ class StackResolver(
                 updated = updated.with(TokenComponent)
             }
 
-            // If cast face-down (morph), add FaceDownComponent and strip any
-            // RevealedToComponent from hand-peek effects (zone change = new object)
-            // MorphDataComponent was already added when the spell was cast
+            // If cast face-down (morph / disguise), add FaceDownComponent and strip any
+            // RevealedToComponent from hand-peek effects (zone change = new object).
+            // MorphDataComponent was already added when the spell was cast; the mode marker is
+            // what carries disguise's ward {2} (CR 702.168a) and the face-down art.
             if (spellComponent.castFaceDown) {
                 updated = updated.with(FaceDownComponent)
                     .without<RevealedToComponent>()
+                val castDef = state.getEntity(spellId)?.get<CardComponent>()
+                    ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+                faceDownCastMode(castDef)?.let { updated = updated.with(FaceDownModeComponent(it)) }
             }
 
             // All permanents enter summoning sick (CR 302.6 / 508.1a — the control-continuity
@@ -1163,6 +1393,12 @@ class StackResolver(
                 updated = updated.with(com.wingedsheep.engine.state.components.battlefield.CastFromLibraryComponent)
             }
 
+            // Track if this permanent was cast from exile (impulse draws, plot/foretell, an
+            // adventurer's permanent half, linked-exile grants) — Extraordinary Journey.
+            if (spellComponent.castFromZone == Zone.EXILE) {
+                updated = updated.with(com.wingedsheep.engine.state.components.battlefield.CastFromExileComponent)
+            }
+
             // Carry the cast-time choices durably onto the permanent (CR 601.2b choices ride the
             // stable entity onto the battlefield) so triggered/activated abilities can read "the X
             // / color / type / kicked-ness this was cast with" via DynamicAmount.CastX /
@@ -1177,9 +1413,13 @@ class StackResolver(
                 val entered = updated.get<com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent>()
                 var bag = entered ?: com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent()
                 spellComponent.xValue?.let { bag = bag.copy(x = it) }
-                if (spellComponent.wasKicked) {
+                // The optional additional cost declared while casting (kicker → KICKED, bargain →
+                // BARGAINED, CR 702.166b) marks the permanent under its own slot, so a bargained
+                // permanent's "if it was bargained" enters trigger reads true while a kicker payoff
+                // reading KICKED still reads false.
+                spellComponent.declaredCostSlot?.let { slot ->
                     bag = bag.withChoice(
-                        com.wingedsheep.sdk.scripting.ChoiceSlot.KICKED,
+                        slot,
                         com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
                     )
                 }
@@ -1191,12 +1431,51 @@ class StackResolver(
                         com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
                     )
                 }
+                // Web-slinging (CR 702.188): durably mark the permanent so Conditions.WebSlungCostWasPaid
+                // reads "it was cast using web-slinging" for its whole life, and carry the returned
+                // creature's mana value (CR 118.9c) so a rider like Scarlet Spider, Ben Reilly can enter
+                // with that many +1/+1 counters via DynamicAmount.CastChoice(WEB_SLUNG_RETURNED_MV).
+                if (spellComponent.wasWebSlung) {
+                    bag = bag.withChoice(
+                        com.wingedsheep.sdk.scripting.ChoiceSlot.WEB_SLUNG,
+                        com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
+                    ).withChoice(
+                        com.wingedsheep.sdk.scripting.ChoiceSlot.WEB_SLUNG_RETURNED_MV,
+                        com.wingedsheep.engine.state.components.battlefield.ChoiceValue.NumberChoice(
+                            spellComponent.webSlungReturnedManaValue
+                        )
+                    )
+                }
+                // Mayhem (CR 702.187): durably mark a permanent cast from the graveyard for its
+                // mayhem cost so Conditions.MayhemCostWasPaid reads it for the permanent's whole
+                // life. (Note: mayhem does NOT exile the spell on resolution — a permanent just
+                // enters the battlefield here via the normal permanent-resolution path.)
+                if (spellComponent.wasMayhem) {
+                    bag = bag.withChoice(
+                        com.wingedsheep.sdk.scripting.ChoiceSlot.MAYHEM_CAST,
+                        com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
+                    )
+                }
                 // Waterbend (Avatar): durably mark a permanent cast with its (optional) waterbend
                 // cost paid so Conditions.WaterbendWasPaid reads it for the permanent's whole life.
                 if (spellComponent.wasWaterbendPaid) {
                     bag = bag.withChoice(
                         com.wingedsheep.sdk.scripting.ChoiceSlot.WATERBEND_PAID,
                         com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
+                    )
+                }
+                // Gift (CR 702.174a–b): the promise was elected as an additional cost while casting,
+                // so the permanent carries both the flag and the promised opponent durably. Its gift
+                // trigger ("when this permanent enters, if its gift cost was paid, …") and any
+                // "if the gift was(n't) promised" rider read them back through
+                // Conditions.GiftWasPromised / Player.ChosenOpponent — no resolution-time question.
+                spellComponent.giftRecipient?.let { recipient ->
+                    bag = bag.withChoice(
+                        com.wingedsheep.sdk.scripting.ChoiceSlot.GIFT_PROMISED,
+                        com.wingedsheep.engine.state.components.battlefield.ChoiceValue.Flag
+                    ).withChoice(
+                        com.wingedsheep.sdk.scripting.ChoiceSlot.OPPONENT,
+                        com.wingedsheep.engine.state.components.battlefield.ChoiceValue.EntityChoice(recipient)
                     )
                 }
                 if (spellComponent.additionalCostBlightAmount > 0) {
@@ -1215,6 +1494,12 @@ class StackResolver(
             // Track if this permanent was cast for its warp cost
             if (spellComponent.wasWarped) {
                 updated = updated.with(WarpedComponent)
+            }
+
+            // Track if this permanent was cast for its dash cost (CR 702.109a — grants haste
+            // live off this marker; see DashedComponent's doc).
+            if (spellComponent.wasDashed) {
+                updated = updated.with(com.wingedsheep.engine.state.components.battlefield.DashedComponent)
             }
 
             // Track if this permanent was cast for its evoke cost
@@ -1305,6 +1590,24 @@ class StackResolver(
             }
 
             updated
+        }
+
+        // "A face-down creature entered the battlefield under your control this turn" (Tunnel
+        // Tipster, Oblivious Bookworm). The per-player counter is also bumped by the
+        // MoveToZone/MoveCollection face-down paths (manifest, cloak) in ZoneTransitionService;
+        // a morph/disguise *cast* resolves through here instead and never touches that service,
+        // so without this the tracker would miss the most common face-down entry of all.
+        // Cleared at the turn boundary by CleanupPhaseManager.
+        if (spellComponent.castFaceDown) {
+            newState = newState.updateEntity(controllerId) { playerContainer ->
+                val existing = playerContainer
+                    .get<com.wingedsheep.engine.state.components.player.PermanentEnteredFaceDownThisTurnComponent>()
+                    ?: com.wingedsheep.engine.state.components.player.PermanentEnteredFaceDownThisTurnComponent()
+                playerContainer.with(
+                    com.wingedsheep.engine.state.components.player
+                        .PermanentEnteredFaceDownThisTurnComponent(existing.count + 1)
+                )
+            }
         }
 
         // CR 707.10f token-copy riders: register the delayed "sacrifice this token" trigger after
@@ -1407,16 +1710,28 @@ class StackResolver(
             counterEvents.addAll(riderEvents)
         }
 
-        // Handle planeswalker starting loyalty (Rule 306.5b)
-        if (cardDef != null && !spellComponent.castFaceDown && cardDef.startingLoyalty != null) {
-            val loyaltyCount = cardDef.startingLoyalty!!
-            val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
-                newState, spellId, CounterType.LOYALTY, loyaltyCount, placerId = controllerId
-            )
-            val current = newState.getEntity(spellId)?.get<CountersComponent>() ?: CountersComponent()
-            newState = newState.updateEntity(spellId) { c ->
-                c.with(current.withAdded(CounterType.LOYALTY, modifiedCount))
+        // Handle the intrinsic entry counters of a planeswalker (starting loyalty, CR 306.5b) or a
+        // battle (printed defense, CR 310.4b). This is the cast pipeline's entry point for those
+        // intrinsic entry replacements — it runs here, while the permanent is still on the stack,
+        // because resolution places permanents via addToZone rather than
+        // ZoneTransitionService.moveToZone. Every other entry reaches the same shared
+        // placeEntryCounters call through ZoneMovementUtils.applyIntrinsicEntryCountersIfNeeded.
+        val intrinsicEntryCounters = if (cardDef != null && !spellComponent.castFaceDown) {
+            when {
+                cardDef.startingLoyalty != null ->
+                    CounterTypeFilter.Loyalty to cardDef.startingLoyalty!!
+                cardDef.startingDefense != null ->
+                    com.wingedsheep.engine.mechanics.battle.Battles.DEFENSE_COUNTER to cardDef.startingDefense!!
+                else -> null
             }
+        } else null
+        if (intrinsicEntryCounters != null) {
+            val (entryCounterState, entryCounterEvents) = EntersWithReplacements.placeEntryCounters(
+                newState, spellId, intrinsicEntryCounters.first, intrinsicEntryCounters.second,
+                controllerId, cardComponent?.name ?: ""
+            )
+            newState = entryCounterState
+            counterEvents.addAll(entryCounterEvents)
         }
 
         // Handle Class entering the battlefield (Rule 716)
@@ -1440,6 +1755,8 @@ class StackResolver(
                     )
                 )
             }
+
+            newState = DayNightService.applyDayboundEntry(newState, cardRegistry, spellId)
         }
 
         // Handle Saga entering the battlefield (Rule 714.3a)
@@ -1554,6 +1871,27 @@ class StackResolver(
             newState = newState.addDelayedTrigger(delayedTrigger)
         }
 
+        // Dash (CR 702.109a): create delayed trigger to return this permanent to its owner's
+        // hand at the beginning of the next end step. Same blink-safety shape as warp above.
+        if (spellComponent.wasDashed) {
+            val entryTimestamp = newState.getEntity(spellId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()
+                ?.timestamp
+            val delayedTrigger = DelayedTriggeredAbility(
+                id = java.util.UUID.randomUUID().toString(),
+                effect = MoveTrackedBattlefieldObjectEffect(
+                    target = EffectTarget.SpecificEntity(spellId),
+                    destination = Zone.HAND,
+                    enteredBattlefieldTimestamp = entryTimestamp
+                ),
+                fireAtStep = Step.END,
+                sourceId = spellId,
+                sourceName = cardComponent?.name ?: "Unknown",
+                controllerId = controllerId
+            )
+            newState = newState.addDelayedTrigger(delayedTrigger)
+        }
+
         // Prepared (Secrets of Strixhaven): a preparation creature whose face carries the PREPARED
         // keyword ("This creature enters prepared") enters prepared. Becoming prepared creates a
         // copy of the card's prepare spell in exile that its controller may cast (paying that
@@ -1655,7 +1993,7 @@ class StackResolver(
         }
         val baseSpellEffect = when {
             faceSpellEffect != null -> faceSpellEffect
-            spellComponent.wasKicked && cardComponent != null ->
+            spellComponent.declaredCostSlot != null && cardComponent != null ->
                 resolvedCardDef?.script?.kickerSpellEffect ?: cardComponent.spellEffect
             // Cleave (CR 702.148): a spell cast for its cleave cost resolves with its
             // brackets-removed effect variant, applied structurally at cast time rather than by
@@ -1671,16 +2009,42 @@ class StackResolver(
         } else {
             rawSpellEffect
         }
+        // Splice (CR 702.47): the spliced cards' text is a tail that runs after the main spell's own
+        // effects (CR 702.47b). Its targets were appended to the end of the flat list at cast time, so
+        // the same tail is peeled off here — the main spell must see only its own targets, or an effect
+        // that consumes "all targets" would swallow the spliced card's as well.
+        // A spell with no effect of its own can't be a splice host in practice (a splice card is
+        // spliced onto a spell that has text), so the tail lives inside the `spellEffect != null` guard.
+        val spliceEntries = buildSpliceEntries(spellComponent)
+        val splicedRequirementCount = spellComponent.splicedCardNames.sumOf { name ->
+            cardRegistry.getCard(name)?.script?.targetRequirements?.size ?: 0
+        }
+        val splicedSlotCount = SpliceCasts
+            .splicedTargetSlotCounts(spellComponent.splicedCardNames, cardRegistry).sum()
+
         if (spellEffect != null) {
-            val targetRequirements = state.getEntity(spellId)?.get<TargetsComponent>()?.targetRequirements ?: emptyList()
+            val allTargetRequirements = state.getEntity(spellId)?.get<TargetsComponent>()?.targetRequirements ?: emptyList()
+            // Requirements are never filtered, so the tail comes straight off the end.
+            val targetRequirements = allTargetRequirements.dropLast(splicedRequirementCount)
+            // The tail is dropped from `alignedTargets`, NOT from `targets`: only the aligned list is
+            // position-preserving (null wherever 608.2b dropped a target), so it is the one whose last
+            // `splicedSlotCount` entries are reliably the spliced cards'. `targets` is the already-
+            // filtered, shorter list — dropping from *it* would eat a main-spell target whenever any
+            // target had been dropped, silently shifting positional references like ContextTarget(n).
+            // The main spell's own live targets are then just its aligned slots that survived.
+            // Both expressions are deliberately identity when nothing was spliced.
+            val mainAlignedTargets =
+                if (splicedSlotCount == 0) alignedTargets else alignedTargets.dropLast(splicedSlotCount)
+            val mainTargets =
+                if (splicedSlotCount == 0) targets else mainAlignedTargets.filterNotNull()
             val context = EffectContext(
                 sourceId = spellId,
                 controllerId = spellComponent.casterId,
-                targets = targets,
+                targets = mainTargets,
                 // Position-preserving view (null in slots dropped by 608.2b) so positional
                 // references — ContextTarget(n), EntityReference.Target(n), ContextPlayer(n) —
                 // resolve by ORIGINAL slot and don't shift onto a later still-valid target.
-                alignedTargets = alignedTargets,
+                alignedTargets = mainAlignedTargets,
                 // A pay-X-life additional cost (AdditionalCost.PayXLife, e.g. Vicious Rivalry) feeds
                 // its declared X through the same X slot read by DynamicAmount.XValue and the
                 // ManaValue*X predicates. Such a card never also carries an {X} mana cost, so
@@ -1690,10 +2054,12 @@ class StackResolver(
                     spellComponent.manaSpentBlack + spellComponent.manaSpentRed +
                     spellComponent.manaSpentGreen + spellComponent.manaSpentColorless,
                 manaSpentOnXByColor = spellComponent.manaSpentOnXByColor,
-                wasKicked = spellComponent.wasKicked,
+                declaredCostSlot = spellComponent.declaredCostSlot,
                 wasBlightPaid = spellComponent.wasBlightPaid,
                 wasWaterbendPaid = spellComponent.wasWaterbendPaid,
                 wasSneaked = spellComponent.wasSneaked,
+                wasWebSlung = spellComponent.wasWebSlung,
+                wasMayhem = spellComponent.wasMayhem,
                 sacrificedPermanents = spellComponent.sacrificedPermanents,
                 discardedAsCostCards = spellComponent.discardedAsCostCards,
                 chosenEntitySnapshots = spellComponent.chosenEntitySnapshots,
@@ -1709,12 +2075,48 @@ class StackResolver(
                     // Use the positionally-aligned validated list so a sub-effect that
                     // references a target dropped by 608.2b through its BoundVariable id
                     // resolves to null and fizzles (CR 608.2b).
-                    namedTargets = EffectContext.buildNamedTargets(targetRequirements, alignedTargets),
+                    namedTargets = EffectContext.buildNamedTargets(targetRequirements, mainAlignedTargets),
                     storedCollections = buildBeheldStoredCollections(spellComponent.beheldCards, resolvedCardDef)
                 )
             )
 
-            val effectResult = effectHandler.execute(newState, spellEffect, context)
+            // Pre-push the splice tail so it runs whether the main spell's effect finishes here or
+            // pauses for a decision of its own — the frame sits beneath the inner decision's frames
+            // and auto-resumes once they finish (CR 702.47b: main spell first, then the spliced text).
+            val stateForMainEffect = if (spliceEntries.isNotEmpty()) {
+                newState.pushContinuation(
+                    SpliceTailContinuation(
+                        decisionId = "splice-tail-${java.util.UUID.randomUUID()}",
+                        controllerId = spellComponent.casterId,
+                        sourceId = spellId,
+                        sourceName = cardComponent?.name,
+                        remainingEntries = spliceEntries
+                    )
+                )
+            } else newState
+
+            var effectResult = effectHandler.execute(stateForMainEffect, spellEffect, context)
+
+            // Main spell done and nothing paused — pop the pre-pushed frame and run the spliced text
+            // inline, so the whole resolution stays one ExecutionResult.
+            if (spliceEntries.isNotEmpty() && !effectResult.isPaused && effectResult.error == null) {
+                val (_, afterPop) = effectResult.state.popContinuation()
+                val tail = processPreTargetedEffectQueue(
+                    state = afterPop,
+                    entries = spliceEntries,
+                    ctx = PreTargetedEffectContext(
+                        controllerId = spellComponent.casterId,
+                        sourceId = spellId,
+                        sourceName = cardComponent?.name,
+                        xValue = null,
+                        triggeringEntityId = null
+                    ),
+                    effectExecutor = { s, e, c -> effectHandler.execute(s, e, c) },
+                    targetValidator = spliceTargetValidator,
+                    accumulatedEvents = effectResult.events
+                )
+                effectResult = tail
+            }
 
             // If effect is paused awaiting a decision, we still need to move the spell
             // to graveyard/exile (it has already resolved from the stack). The decision only
@@ -2248,6 +2650,8 @@ class StackResolver(
                 xValue = abilityComponent.xValue,
                 triggeringEntityId = abilityComponent.triggeringEntityId,
                 triggeringPlayerId = abilityComponent.triggeringPlayerId,
+                targetEntryStamps = targetsComponent.targetEntryStamps,
+                storedCollections = abilityComponent.carriedPipeline?.storedCollections ?: emptyMap(),
             )
             if (validTargets.isEmpty()) {
                 // Fizzle - remove ability entity
@@ -2268,49 +2672,10 @@ class StackResolver(
         // Execute the effect
         val resolvedTargets2 = targetsComponent?.targets ?: emptyList()
         val targetReqs = targetsComponent?.targetRequirements ?: emptyList()
-        val context = EffectContext(
-            sourceId = abilityComponent.sourceId,
-            controllerId = abilityComponent.controllerId,
-            granterId = abilityComponent.granterId,
-            abilityIdentity = abilityComponent.abilityIdentity,
+        val context = EffectContext.forTriggeredAbility(
+            abilityComponent,
             targets = resolvedTargets2,
-            triggerDamageAmount = abilityComponent.triggerDamageAmount,
-            triggerCounterCount = abilityComponent.triggerCounterCount,
-            triggerTotalCounterCount = abilityComponent.triggerTotalCounterCount,
-            triggerLastKnownCounters = abilityComponent.triggerLastKnownCounters,
-            triggerLastKnownDamageDealtByPlayers = abilityComponent.triggerLastKnownDamageDealtByPlayers,
-            triggerLastKnownBlockingOrBlockedByIds = abilityComponent.triggerLastKnownBlockingOrBlockedByIds,
-            triggeringEntityId = abilityComponent.triggeringEntityId,
-            triggeringPlayerId = abilityComponent.triggeringPlayerId,
-            targetingSourceEntityId = abilityComponent.targetingSourceEntityId,
-            triggerLastKnownPower = abilityComponent.lastKnownPower,
-            triggerLastKnownToughness = abilityComponent.lastKnownToughness,
-            triggerDiedBatchTotalPower = abilityComponent.diedBatchTotalPower,
-            enchantedCreatureLastKnownPower = abilityComponent.enchantedCreatureLastKnownPower,
-            triggerModesChosenCount = abilityComponent.triggerModesChosenCount,
-            triggerScryCount = abilityComponent.triggerScryCount,
-            triggerDiscoverValue = abilityComponent.triggerDiscoverValue,
-            triggerExcessDamageAmount = abilityComponent.triggerExcessDamageAmount,
-            triggerRecipientToughness = abilityComponent.triggerRecipientToughness,
-            triggerManaSpentOnTriggeringSpell = abilityComponent.triggerManaSpentOnTriggeringSpell,
-            triggerColorsSpentOnTriggeringSpell = abilityComponent.triggerColorsSpentOnTriggeringSpell,
-            triggerManaValueOfTriggeringSpell = abilityComponent.triggerManaValueOfTriggeringSpell,
-            triggerXValueOfTriggeringSpell = abilityComponent.triggerXValueOfTriggeringSpell,
-            xValue = abilityComponent.xValue,
-            damageDistribution = abilityComponent.damageDistribution,
-            chosenModes = abilityComponent.chosenModes,
-            modeTargetsOrdered = abilityComponent.modeTargetsOrdered,
-            modeTargetRequirements = abilityComponent.modeTargetRequirements,
-            pipeline = PipelineState(
-                namedTargets = EffectContext.buildNamedTargets(targetReqs, resolvedTargets2),
-                // Expose a batch trigger's captured permanents (the matching members of a
-                // PermanentsEnteredEvent batch) so a ForEachInCollectionEffect payoff can iterate
-                // them — "for each of them, create a tapped copy of it" (Kambal). The copy executor
-                // reads each entity at resolution, so any that left the battlefield meanwhile no-op.
-                storedCollections = if (abilityComponent.capturedEntityIds.isNotEmpty()) {
-                    mapOf(PipelineState.TRIGGER_CAPTURED_COLLECTION to abilityComponent.capturedEntityIds)
-                } else emptyMap()
-            )
+            targetRequirements = targetReqs
         )
 
         val effectResult = effectHandler.execute(state, abilityComponent.effect, context)
@@ -2384,7 +2749,8 @@ class StackResolver(
                 state, targetsComponent.targets, sourceColors, sourceSubtypes,
                 abilityComponent.controllerId, targetsComponent.targetRequirements,
                 sourceId = abilityComponent.sourceId,
-                xValue = abilityComponent.xValue
+                xValue = abilityComponent.xValue,
+                targetEntryStamps = targetsComponent.targetEntryStamps
             )
             if (validTargets.isEmpty()) {
                 val newState = state.removeEntity(abilityId)
@@ -2421,6 +2787,7 @@ class StackResolver(
             lastKnownSourceCounters = abilityComponent.lastKnownSourceCounters,
             lastKnownSourceSnapshot = abilityComponent.lastKnownSourceSnapshot,
             lastKnownSourceAttachments = abilityComponent.lastKnownSourceAttachments,
+            damageDistribution = abilityComponent.damageDistribution,
             pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(activatedReqs, alignedActivatedTargets))
         )
 
@@ -2688,7 +3055,8 @@ class StackResolver(
         state: GameState,
         spellId: EntityId,
         makePlotted: Boolean,
-        fixedAlternativeManaCost: com.wingedsheep.sdk.core.ManaCost? = null
+        fixedAlternativeManaCost: com.wingedsheep.sdk.core.ManaCost? = null,
+        linkToSourceId: EntityId? = null
     ): ExecutionResult {
         if (spellId !in state.stack) {
             return ExecutionResult.error(state, "Spell not on stack: $spellId")
@@ -2717,6 +3085,14 @@ class StackResolver(
             newState = applyPlottedToExiledCard(newState, spellId, ownerId, cardComponent?.name ?: "Unknown", events)
         } else if (fixedAlternativeManaCost != null) {
             newState = applyFixedAltCostToExiledCard(newState, spellId, ownerId, fixedAlternativeManaCost)
+        }
+
+        // "Exile it with this permanent" (Spell Queller): record the card in the source's
+        // linked-exile pile so a later ability of that source can say "the exiled card". Only a
+        // handle — nothing returns or becomes castable on its own.
+        if (linkToSourceId != null) {
+            newState = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+                .linkExiledToSource(newState, spellId, linkToSourceId)
         }
 
         return ExecutionResult.success(newState, events)
@@ -2809,6 +3185,13 @@ class StackResolver(
             ?: container.get<ActivatedAbilityOnStackComponent>()?.let { "${it.sourceName}'s ability" }
             ?: "Unknown ability"
 
+        // "Abilities can't be countered" (Spider-Punk): a battlefield GrantCantBeCountered with
+        // includesAbilities = true whose filter matches this ability makes the counter fizzle — the
+        // ability stays on the stack and resolves normally.
+        if (isAbilityGrantedCantBeCountered(state, abilityId)) {
+            return ExecutionResult.success(state)
+        }
+
         // Remove from stack — abilities don't go to any zone
         val newState = state.removeFromStack(abilityId)
 
@@ -2839,7 +3222,21 @@ class StackResolver(
         targetingSourceType: TargetingSourceType = TargetingSourceType.ANY,
         xValue: Int? = null,
         triggeringEntityId: EntityId? = null,
-        triggeringPlayerId: EntityId? = null
+        triggeringPlayerId: EntityId? = null,
+        /**
+         * The object-identity stamps captured when these targets were chosen
+         * ([TargetsComponent.targetEntryStamps]) — a permanent that left the battlefield and came
+         * back in the meantime is a different object and no longer a legal target (CR 400.7).
+         */
+        targetEntryStamps: Map<EntityId, Long> = emptyMap(),
+        /**
+         * Pipeline collections available at resolution time (e.g. the amassed Army under
+         * `EntityReference.AmassedArmy`, from a `ReflexiveTriggerEffect`'s carried pipeline) — the
+         * CR 608.2b re-validation below re-checks the target filter, and a filter like Grishnákh's
+         * "power <= the amassed Army's power" needs this to resolve the referenced entity, or every
+         * target wrongly fails re-validation as unresolvable.
+         */
+        storedCollections: Map<String, List<EntityId>> = emptyMap()
     ): List<ChosenTarget> {
         // Always project state for shroud/hexproof checks (Rule 702.18, 702.11)
         val projected = state.projectedState
@@ -2849,6 +3246,7 @@ class StackResolver(
             xValue = xValue,
             triggeringEntityId = triggeringEntityId,
             triggeringPlayerId = triggeringPlayerId,
+            storedCollections = storedCollections,
         )
 
         return targets.filterIndexed { index, target ->
@@ -2871,6 +3269,13 @@ class StackResolver(
                 is ChosenTarget.Permanent -> {
                     // Permanent is valid if still on battlefield
                     if (target.entityId !in state.getBattlefield()) return@filterIndexed false
+
+                    // ...and if it's still the same object. A permanent blinked in response
+                    // (Personify, Cloudshift) reuses its entity id here, but it returned as a new
+                    // object (CR 400.7) that was never targeted, so the target is illegal.
+                    if (TargetsComponent.isDifferentObject(state, target.entityId, targetEntryStamps)) {
+                        return@filterIndexed false
+                    }
 
                     // Check shroud — can't be targeted by anyone (Rule 702.18)
                     if (projected.hasKeyword(target.entityId, "SHROUD")) return@filterIndexed false
@@ -2905,8 +3310,11 @@ class StackResolver(
 
                     // Check can't-be-targeted-by-abilities (Shanna, Sisay's Legacy)
                     if (targetingSourceType != TargetingSourceType.SPELL && entityController != controllerId) {
-                        val container = state.getEntity(target.entityId)
-                        if (container?.has<CantBeTargetedByOpponentAbilitiesComponent>() == true) {
+                        if (ControllerGrants.isActiveOn<CantBeTargetedByOpponentAbilitiesComponent>(
+                                state,
+                                target.entityId,
+                            )
+                        ) {
                             return@filterIndexed false
                         }
                     }
@@ -3119,14 +3527,31 @@ class StackResolver(
     }
 
     /**
-     * Once a player casts a face-down morph, opponents can no longer know whether
-     * any previously revealed morph card is still in that player's hand.
+     * Which face-down mechanic lets [cardDef] be cast face down for {3} — morph (CR 702.37a) or
+     * disguise (CR 702.168a) — or null when it can't be cast face down at all. A card never prints
+     * both; morph wins if one somehow did.
+     */
+    fun faceDownCastMode(cardDef: com.wingedsheep.sdk.model.CardDefinition?): FaceDownMode? = when {
+        cardDef == null -> null
+        cardDef.keywordAbilities.any { it is KeywordAbility.Morph } -> FaceDownMode.MORPH
+        cardDef.keywordAbilities.any { it is KeywordAbility.Disguise } -> FaceDownMode.DISGUISE
+        else -> null
+    }
+
+    /**
+     * Once a player casts a card face down, opponents can no longer know whether any previously
+     * revealed card that could have been the one cast is still in that player's hand — which
+     * covers every card castable face down, morph and disguise alike.
      */
     private fun clearRevealedMorphsInHand(state: GameState, playerId: EntityId): GameState {
         var newState = state
         for (handCardId in state.getZone(ZoneKey(playerId, Zone.HAND))) {
             val container = newState.getEntity(handCardId) ?: continue
-            if (!container.has<HasMorphAbilityComponent>()) continue
+            val castableFaceDown = container.has<HasMorphAbilityComponent>() ||
+                faceDownCastMode(
+                    container.get<CardComponent>()?.let { cardRegistry.getCard(it.cardDefinitionId) }
+                ) != null
+            if (!castableFaceDown) continue
             if (container.get<RevealedToComponent>() == null) continue
 
             newState = newState.updateEntity(handCardId) { c ->
@@ -3185,6 +3610,32 @@ class StackResolver(
         return false
     }
 
+    /**
+     * Whether an activated/triggered ability on the stack ([abilityId]) can't be countered because a
+     * battlefield [GrantCantBeCountered] with `includesAbilities = true` covers it (its filter matches
+     * the ability — an unrestricted `GameObjectFilter.Any` matches every ability). Spider-Punk's
+     * "Spells and abilities can't be countered."
+     */
+    private fun isAbilityGrantedCantBeCountered(state: GameState, abilityId: EntityId): Boolean {
+        for (playerId in state.turnOrder) {
+            for (entityId in state.getBattlefield(playerId)) {
+                val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
+                val def = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+                val sourceControllerId =
+                    state.getEntity(entityId)?.get<ControllerComponent>()?.playerId ?: playerId
+                val context = PredicateContext(controllerId = sourceControllerId, sourceId = entityId)
+                for (ability in def.staticAbilities) {
+                    if (ability is GrantCantBeCountered && ability.includesAbilities) {
+                        if (predicateEvaluator.matches(state, state.projectedState, abilityId, ability.filter, context)) {
+                            return true
+                        }
+                    }
+                }
+            }
+        }
+        return false
+    }
+
     // =========================================================================
     // Valiant / "first time targeted" tracking
     // =========================================================================
@@ -3219,7 +3670,9 @@ class StackResolver(
         controllerId: EntityId,
         ownerId: EntityId,
         cardComponent: CardComponent,
-        choice: EntersWithChoice
+        choice: EntersWithChoice,
+        syntheticRiot: Boolean = false,
+        syntheticRiotRemaining: Int = 0
     ): ExecutionResult? {
         val chooserId = when (choice.chooser) {
             com.wingedsheep.sdk.scripting.references.Player.AnOpponent ->
@@ -3285,10 +3738,9 @@ class StackResolver(
 
             ChoiceType.CREATURE_ON_BATTLEFIELD -> {
                 val battlefieldCreatures = state.getBattlefield().filter { entityId ->
-                    val container = state.getEntity(entityId) ?: return@filter false
-                    val card = container.get<CardComponent>() ?: return@filter false
-                    val controller = container.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId ?: return@filter false
-                    controller == controllerId && card.typeLine.isCreature && entityId != spellId
+                    entityId != spellId &&
+                        state.projectedState.getController(entityId) == controllerId &&
+                        state.projectedState.isCreature(entityId)
                 }
                 if (battlefieldCreatures.isEmpty()) return null // No creatures — enter without choice
                 val decisionId = "choose-creature-enters-${spellId.value}"
@@ -3323,7 +3775,10 @@ class StackResolver(
                 if (choice.modeOptions.isEmpty()) {
                     return null
                 }
-                val decisionId = "choose-mode-enters-${spellId.value}"
+                // A permanent granted multiple riot instances re-pauses on the same spell; suffix the
+                // id with the remaining count so each instance's decision is distinct (CR 702.136b).
+                val decisionId = "choose-mode-enters-${spellId.value}" +
+                    if (syntheticRiot) "-riot$syntheticRiotRemaining" else ""
                 val decision = ChooseOptionDecision(
                     id = decisionId,
                     playerId = chooserId,
@@ -3344,7 +3799,9 @@ class StackResolver(
                     controllerId = controllerId,
                     ownerId = ownerId,
                     choiceType = ChoiceType.MODE,
-                    modeOptionIds = choice.modeOptions.map { it.id }
+                    modeOptionIds = choice.modeOptions.map { it.id },
+                    syntheticRiot = syntheticRiot,
+                    syntheticRiotRemaining = syntheticRiotRemaining
                 )
                 val pausedState = state
                     .pushContinuation(continuation)
@@ -3424,10 +3881,7 @@ class StackResolver(
                 // (Sorcerous Spyglass / Pithing Needle) as the permanent spell resolves. The pool
                 // is land names or every registered card name per [EntersWithChoice.cardNamePool];
                 // the chosen name is stored durably under [ChoiceSlot.CARD_NAME] by the resumer.
-                val cardNames = when (choice.cardNamePool) {
-                    com.wingedsheep.sdk.scripting.CardNamePool.ANY -> cardRegistry.allCardNames()
-                    com.wingedsheep.sdk.scripting.CardNamePool.LAND -> cardRegistry.landCardNames()
-                }.sorted()
+                val cardNames = cardRegistry.cardNamesIn(choice.cardNamePool).sorted()
                 if (cardNames.isEmpty()) return null
                 // "As this enters, look at an opponent's hand, then …": reveal the opponent's hand
                 // to the controller before presenting the name choice.
@@ -3435,9 +3889,7 @@ class StackResolver(
                     com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
                         .revealOpponentHandForEntersChoice(state, controllerId)
                 } else state to emptyList()
-                val prompt = if (choice.cardNamePool == com.wingedsheep.sdk.scripting.CardNamePool.ANY) {
-                    "Choose a card name"
-                } else "Choose a land card name"
+                val prompt = choice.cardNamePool.prompt
                 val decisionId = "choose-card-name-enters-${spellId.value}"
                 val decision = ChooseOptionDecision(
                     id = decisionId,
@@ -3500,8 +3952,8 @@ class StackResolver(
 /**
  * Build pipeline `storedCollections` for cost-chosen card IDs.
  *
- * The chosen IDs (from [AdditionalCost.Behold], [AdditionalCost.BeholdOrPay], or
- * [AdditionalCost.ChooseEntity]) are stored on the stack object as
+ * The chosen IDs (from [AdditionalCost.Behold] — on its own or as an [AdditionalCost.OrPay] leg —
+ * or [AdditionalCost.ChooseEntity]) are stored on the stack object as
  * [SpellOnStackComponent.beheldCards]. Each of those costs declares its own
  * `storeAs` key that the card's resolution-time effects reference (e.g. via
  * `EntityReference.FromCostStorage`). To keep the effect's reference
@@ -3519,16 +3971,15 @@ internal fun buildBeheldStoredCollections(
 ): Map<String, List<EntityId>> {
     if (beheldCards.isEmpty()) return emptyMap()
     val keys = mutableSetOf("beheld")
-    cardDef?.script?.additionalCosts?.forEach { cost ->
-        val flat = if (cost is AdditionalCost.Composite) cost.steps else listOf(cost)
-        for (c in flat) {
-            when (c) {
-                is AdditionalCost.Behold -> keys += c.storeAs
-                is AdditionalCost.BeholdOrPay -> keys += c.storeAs
-                is AdditionalCost.ChooseEntity -> keys += c.storeAs
-                else -> {}
-            }
+    fun collect(cost: AdditionalCost) {
+        when (cost) {
+            is AdditionalCost.Behold -> keys += cost.storeAs
+            is AdditionalCost.ChooseEntity -> keys += cost.storeAs
+            is AdditionalCost.Composite -> cost.steps.forEach(::collect)
+            is AdditionalCost.OrPay -> collect(cost.cost)
+            else -> {}
         }
     }
+    cardDef?.script?.additionalCosts?.forEach(::collect)
     return keys.associateWith { beheldCards }
 }

@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.TimingRule
  * {3}{B}, Exile this card from your graveyard: The Ring tempts you. Activate only as a sorcery.
  *
  * Gap 11 (activated abilities from the graveyard) is already engine-landed (`activateFromZone =
- * Zone.GRAVEYARD`, `Costs.ExileSelf`, `GraveyardAbilityEnumerator`, template Bonebind Orator). The
+ * Zone.GRAVEYARD`, `Costs.ExileSelf`, `ZoneActivatedAbilityEnumerator`, template Bonebind Orator). The
  * instant's spell composes `Effects.ModifyStats`; the graveyard ability composes the existing
  * exile-from-graveyard cost + Ring tempt, gated to sorcery speed.
  */

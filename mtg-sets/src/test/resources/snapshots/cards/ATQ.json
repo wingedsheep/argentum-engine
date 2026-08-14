@@ -2797,7 +2797,10 @@
                     "baseFilter": "permanent",
                     "scope": "AttachedTo"
                 },
-                "amount": 2,
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
                 "manaFloor": 1
             }
         ],

@@ -3864,44 +3864,49 @@
                     "effect": {
                         "type": "Composite",
                         "effects": [
-                            "RevealHand",
                             {
-                                "type": "GatherCards",
-                                "source": {
-                                    "type": "FromZone",
-                                    "zone": "Hand",
-                                    "player": {
-                                        "type": "ContextPlayer",
-                                        "index": 0
+                                "type": "Composite",
+                                "effects": [
+                                    "RevealHand",
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand",
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            },
+                                            "filter": "nonland"
+                                        },
+                                        "storeAs": "chosenCardCandidates"
                                     },
-                                    "filter": "nonland"
-                                },
-                                "storeAs": "nonlandCards"
-                            },
-                            {
-                                "type": "SelectFromCollection",
-                                "from": "nonlandCards",
-                                "selection": {
-                                    "type": "ChooseExactly",
-                                    "count": {
-                                        "type": "Fixed",
-                                        "amount": 1
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "chosenCardCandidates",
+                                        "selection": {
+                                            "type": "ChooseExactly",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "storeSelected": "chosenCard",
+                                        "prompt": "Choose a nonland card to exile"
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "chosenCard",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile",
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            }
+                                        }
                                     }
-                                },
-                                "storeSelected": "chosenCard",
-                                "prompt": "Choose a nonland card to exile"
-                            },
-                            {
-                                "type": "MoveCollection",
-                                "from": "chosenCard",
-                                "destination": {
-                                    "type": "ToZone",
-                                    "zone": "Exile",
-                                    "player": {
-                                        "type": "ContextPlayer",
-                                        "index": 0
-                                    }
-                                }
+                                ]
                             }
                         ]
                     },
@@ -3932,44 +3937,49 @@
                                             "index": 0
                                         }
                                     },
-                                    "RevealHand",
                                     {
-                                        "type": "GatherCards",
-                                        "source": {
-                                            "type": "FromZone",
-                                            "zone": "Hand",
-                                            "player": {
-                                                "type": "ContextPlayer",
-                                                "index": 0
+                                        "type": "Composite",
+                                        "effects": [
+                                            "RevealHand",
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "FromZone",
+                                                    "zone": "Hand",
+                                                    "player": {
+                                                        "type": "ContextPlayer",
+                                                        "index": 0
+                                                    },
+                                                    "filter": "nonland"
+                                                },
+                                                "storeAs": "chosenCardCandidates"
                                             },
-                                            "filter": "nonland"
-                                        },
-                                        "storeAs": "nonlandCards"
-                                    },
-                                    {
-                                        "type": "SelectFromCollection",
-                                        "from": "nonlandCards",
-                                        "selection": {
-                                            "type": "ChooseExactly",
-                                            "count": {
-                                                "type": "Fixed",
-                                                "amount": 1
+                                            {
+                                                "type": "SelectFromCollection",
+                                                "from": "chosenCardCandidates",
+                                                "selection": {
+                                                    "type": "ChooseExactly",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 1
+                                                    }
+                                                },
+                                                "storeSelected": "chosenCard",
+                                                "prompt": "Choose a nonland card to exile"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "chosenCard",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Exile",
+                                                    "player": {
+                                                        "type": "ContextPlayer",
+                                                        "index": 0
+                                                    }
+                                                }
                                             }
-                                        },
-                                        "storeSelected": "chosenCard",
-                                        "prompt": "Choose a nonland card to exile"
-                                    },
-                                    {
-                                        "type": "MoveCollection",
-                                        "from": "chosenCard",
-                                        "destination": {
-                                            "type": "ToZone",
-                                            "zone": "Exile",
-                                            "player": {
-                                                "type": "ContextPlayer",
-                                                "index": 0
-                                            }
-                                        }
+                                        ]
                                     },
                                     {
                                         "type": "GrantMayPlayFromExile",
@@ -8278,7 +8288,12 @@
                         "entity": "Source",
                         "numericProperty": "Power"
                     },
-                    "restriction": "CreatureMV4OrXCost"
+                    "restriction": {
+                        "type": "SpellsWithManaValueAtLeast",
+                        "minManaValue": 4,
+                        "orXInCost": true,
+                        "creatureOnly": true
+                    }
                 },
                 "timing": "ManaAbility",
                 "isManaAbility": true
@@ -10014,6 +10029,12 @@
     "manaCost": "{2}{U}{U}",
     "typeLine": "Enchantment — Aura",
     "oracleText": "Gift a card (You may promise an opponent a gift as you cast this spell. If you do, when it enters, they draw a card.)\nEnchant creature\nWhen this Aura enters, tap enchanted creature. If the gift wasn't promised, put three stun counters on it.\nYou control enchanted creature.",
+    "keywordAbilities": [
+        {
+            "type": "Gift",
+            "kind": "CARD"
+        }
+    ],
     "script": {
         "triggeredAbilities": [
             {
@@ -10023,61 +10044,61 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "Composite",
+                    "effects": [
                         {
-                            "effect": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "TapUntap",
-                                        "target": "EnchantedCreature"
-                                    },
-                                    {
-                                        "type": "AddCounters",
-                                        "counterType": "STUN",
-                                        "count": 3,
-                                        "target": "EnchantedCreature"
-                                    }
-                                ]
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
                             },
-                            "description": "Don't promise a gift — tap enchanted creature and put three stun counters on it"
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "ChosenOpponent"
+                            }
+                        },
+                        "GiftGiven"
+                    ]
+                },
+                "triggerCondition": {
+                    "type": "CastChoiceMade",
+                    "slot": "GIFT_PROMISED"
+                },
+                "descriptionOverride": "When this Aura enters, if the gift was promised, the chosen player draws a card."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "EnchantedCreature"
                         },
                         {
-                            "effect": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "ChooseOpponentForSource",
-                                        "prompt": "Choose an opponent to receive the gift"
-                                    },
-                                    {
-                                        "type": "Composite",
-                                        "effects": [
-                                            {
-                                                "type": "DrawCards",
-                                                "count": {
-                                                    "type": "Fixed",
-                                                    "amount": 1
-                                                },
-                                                "target": {
-                                                    "type": "PlayerRef",
-                                                    "player": "ChosenOpponent"
-                                                }
-                                            },
-                                            {
-                                                "type": "TapUntap",
-                                                "target": "EnchantedCreature"
-                                            },
-                                            "GiftGiven"
-                                        ]
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Not",
+                                    "condition": {
+                                        "type": "CastChoiceMade",
+                                        "slot": "GIFT_PROMISED"
                                     }
-                                ]
+                                }
                             },
-                            "description": "Promise a gift — an opponent draws a card, tap enchanted creature"
+                            "then": {
+                                "type": "AddCounters",
+                                "counterType": "STUN",
+                                "count": 3,
+                                "target": "EnchantedCreature"
+                            }
                         }
-                    ],
-                    "countsAsModalSpell": false
+                    ]
                 }
             }
         ],
@@ -13535,7 +13556,9 @@
                         "placement": "TappedAndAttacking"
                     }
                 },
-                "activeZone": "Graveyard",
+                "activeZones": [
+                    "Graveyard"
+                ],
                 "triggerCondition": {
                     "type": "Compare",
                     "left": {
@@ -15888,6 +15911,12 @@
     "keywords": [
         "REACH"
     ],
+    "keywordAbilities": [
+        {
+            "type": "Gift",
+            "kind": "CARD"
+        }
+    ],
     "script": {
         "triggeredAbilities": [
             {
@@ -15897,63 +15926,52 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "Composite",
+                    "effects": [
                         {
-                            "effect": {
-                                "type": "Composite",
-                                "effects": []
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
                             },
-                            "description": "Don't promise a gift"
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "ChosenOpponent"
+                            }
                         },
-                        {
-                            "effect": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "ChooseOpponentForSource",
-                                        "prompt": "Choose an opponent to receive the gift"
-                                    },
-                                    {
-                                        "type": "Composite",
-                                        "effects": [
-                                            {
-                                                "type": "DrawCards",
-                                                "count": {
-                                                    "type": "Fixed",
-                                                    "amount": 1
-                                                },
-                                                "target": {
-                                                    "type": "PlayerRef",
-                                                    "player": "ChosenOpponent"
-                                                }
-                                            },
-                                            {
-                                                "type": "MoveToZone",
-                                                "target": {
-                                                    "type": "ContextTarget",
-                                                    "index": 0
-                                                },
-                                                "destination": "Graveyard",
-                                                "byDestruction": true
-                                            },
-                                            "GiftGiven"
-                                        ]
-                                    }
-                                ]
-                            },
-                            "targetRequirements": [
-                                {
-                                    "type": "TargetObject",
-                                    "filter": {
-                                        "baseFilter": "artifact|enchantment ctrl:opponent"
-                                    }
-                                }
-                            ],
-                            "description": "Promise a gift — opponent draws a card, destroy target artifact or enchantment an opponent controls"
-                        }
-                    ],
-                    "countsAsModalSpell": false
+                        "GiftGiven"
+                    ]
+                },
+                "triggerCondition": {
+                    "type": "CastChoiceMade",
+                    "slot": "GIFT_PROMISED"
+                },
+                "descriptionOverride": "When this creature enters, if the gift was promised, the chosen player draws a card."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|enchantment ctrl:opponent"
+                    }
+                },
+                "triggerCondition": {
+                    "type": "CastChoiceMade",
+                    "slot": "GIFT_PROMISED"
                 }
             }
         ]
@@ -17649,6 +17667,12 @@
     "manaCost": "{4}",
     "typeLine": "Artifact — Equipment",
     "oracleText": "Gift a tapped Fish (You may promise an opponent a gift as you cast this spell. If you do, when it enters, they create a tapped 1/1 blue Fish creature token.)\nWhen this Equipment enters, if the gift was promised, attach this Equipment to target creature you control.\nEquipped creature gets +3/+3 and loses flying.\nEquip {3}",
+    "keywordAbilities": [
+        {
+            "type": "Gift",
+            "kind": "TAPPED_FISH"
+        }
+    ],
     "script": {
         "triggeredAbilities": [
             {
@@ -17658,67 +17682,56 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Modal",
-                    "modes": [
+                    "type": "Composite",
+                    "effects": [
                         {
-                            "effect": {
-                                "type": "Composite",
-                                "effects": []
-                            },
-                            "description": "Don't promise a gift"
-                        },
-                        {
-                            "effect": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "ChooseOpponentForSource",
-                                        "prompt": "Choose an opponent to receive the gift"
-                                    },
-                                    {
-                                        "type": "Composite",
-                                        "effects": [
-                                            {
-                                                "type": "CreateToken",
-                                                "power": 1,
-                                                "toughness": 1,
-                                                "colors": [
-                                                    "BLUE"
-                                                ],
-                                                "creatureTypes": [
-                                                    "Fish"
-                                                ],
-                                                "imageUri": "https://cards.scryfall.io/normal/front/d/e/de0d6700-49f0-4233-97ba-cef7821c30ed.jpg?1721431109",
-                                                "controller": {
-                                                    "type": "PlayerRef",
-                                                    "player": "ChosenOpponent"
-                                                },
-                                                "tapped": true
-                                            },
-                                            "AttachEquipment",
-                                            "GiftGiven"
-                                        ]
-                                    }
-                                ]
-                            },
-                            "targetRequirements": [
-                                {
-                                    "type": "TargetObject",
-                                    "filter": {
-                                        "baseFilter": "creature ctrl:you"
-                                    }
-                                }
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "BLUE"
                             ],
-                            "description": "Promise a gift — opponent creates a tapped 1/1 blue Fish token, attach to target creature you control"
-                        }
-                    ],
-                    "countsAsModalSpell": false
+                            "creatureTypes": [
+                                "Fish"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/d/e/de0d6700-49f0-4233-97ba-cef7821c30ed.jpg?1721431109",
+                            "controller": {
+                                "type": "PlayerRef",
+                                "player": "ChosenOpponent"
+                            },
+                            "tapped": true
+                        },
+                        "GiftGiven"
+                    ]
+                },
+                "triggerCondition": {
+                    "type": "CastChoiceMade",
+                    "slot": "GIFT_PROMISED"
+                },
+                "descriptionOverride": "When this Equipment enters, if the gift was promised, the chosen player creates a tapped 1/1 blue Fish creature token."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": "AttachEquipment",
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                },
+                "triggerCondition": {
+                    "type": "CastChoiceMade",
+                    "slot": "GIFT_PROMISED"
                 }
             }
         ],
         "activatedAbilities": [
             {
-                "id": "ability_2",
+                "id": "ability_3",
                 "cost": {
                     "type": "CostAtomWrapper",
                     "atom": {

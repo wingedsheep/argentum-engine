@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { useBattlefieldCards, groupCards, visibleStackDepth, useSplitOutTargetIds, selectViewingPlayerId } from '@/store/selectors.ts'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useInteraction } from '@/hooks/useInteraction.ts'
-import { ResponsiveContext, useResponsiveContext, useSlotSizedResponsive, handleImageError } from './shared'
+import { ResponsiveContext, useResponsiveContext, useSlotSizedResponsive, handleImageError, attachmentStackLayout } from './shared'
 import { styles } from './styles'
 import { CardStack } from '../card'
 import { GameCard } from '../card'
@@ -224,8 +224,10 @@ function BattlefieldContent({
    * Renders a permanent with any attached cards (auras, equipment) stacked underneath.
    * Works for any permanent type - creatures, lands, planeswalkers, etc.
    *
-   * Untapped: attachments peek vertically from above the parent card.
-   * Tapped: attachments peek horizontally to the right of the parent card.
+   * Attachments peek vertically from above the parent card. Each card rotates itself
+   * when tapped, so orientation is per-card: tapping the equipped creature leaves an
+   * untapped Equipment upright (it's a separate permanent, CR 301.5d, and is still
+   * available to tap), and a tapped Equipment reads as tapped on an untapped host.
    */
   const renderWithAttachments = (group: GroupedCard) => {
     const resolved = attachmentsByCardId.get(group.card.id)
@@ -255,24 +257,18 @@ function BattlefieldContent({
     // still signalling that attachments exist.
     const collapsed = attachments.length >= ATTACHMENT_COLLAPSE_THRESHOLD
     const visibleAttachments = collapsed ? attachments.slice(0, 1) : attachments
-    const visiblePeek = visibleAttachments.length * attachmentPeek
     const cardWidth = responsive.battlefieldCardWidth
-    // Lay out the whole stack (peeking attachments, main card, tab, click-catcher) in a
-    // portrait inner container. When the parent is tapped, rotate that inner container 90°
-    // so every element rotates together — no per-element offset math required. The outer
-    // container takes the rotated footprint so the flex row reserves landscape space.
-    const portraitWidth = cardWidth
-    const portraitHeight = cardHeight + visiblePeek
-    // A tapped (rotated) card is visually much wider than a portrait one, so the default
-    // row gap feels tight next to its upright neighbours. Reserve a bit of extra space
-    // inside the outer container so the rotated card doesn't sit flush against the next.
-    const tappedGutter = parentTapped ? (responsive.isMobile ? 18 : 28) : 0
-    const containerWidth = parentTapped ? portraitHeight + tappedGutter : portraitWidth
-    // Match the non-attachment tapped container height (cardHeight) so the main card's
-    // vertical center sits at the same row-bottom offset in both tapped and untapped
-    // states. Using portraitWidth here would shrink the container and pull the card
-    // downward by (cardHeight - cardWidth) / 2 on tap.
-    const containerHeight = parentTapped ? cardHeight : portraitHeight
+    const layout = attachmentStackLayout({
+      cardWidth,
+      cardHeight,
+      peek: attachmentPeek,
+      hostTapped: parentTapped,
+      attachmentsTapped: visibleAttachments.map((tagged) => tagged.card.isTapped === true),
+      // A sideways card is much wider than an upright one, so the default row gap feels
+      // tight next to upright neighbours — reserve a little extra beside it.
+      gutter: responsive.isMobile ? 18 : 28,
+    })
+    const { containerWidth, containerHeight, columnLeft } = layout
     const tabHeight = responsive.isMobile ? 14 : 16
     const actionable = hasActionableAttachment(attachments)
     // Show the tab (and click-catcher) whenever browsing is the right path:
@@ -291,140 +287,122 @@ function BattlefieldContent({
           height: containerHeight,
         }}
       >
-        <div
-          style={{
-            position: 'absolute',
-            width: portraitWidth,
-            height: portraitHeight,
-            // Center the portrait inner inside the outer landscape box so rotation around
-            // the center keeps the visual centered in the reserved slot.
-            left: (containerWidth - portraitWidth) / 2,
-            top: (containerHeight - portraitHeight) / 2,
-            transform: parentTapped ? 'rotate(90deg)' : undefined,
-            transformOrigin: 'center center',
-          }}
-        >
-          {/* Attachments peek above the main card.
-           * When collapsed, the visible peek is non-interactive — clicks go through the overlay
-           * catcher below so the attachments browser is the single selection path. */}
-          {visibleAttachments.map((tagged, index) => {
-            const { card: attachment, kind } = tagged
-            // Attachments controlled by the player are interactive even on the opponent's battlefield
-            // (e.g., aura cast on opponent's creature — caster can still activate abilities)
-            const attachmentInteractive = !collapsed && !spectatorMode && attachment.controllerId === viewingPlayerId
-            return (
-              <div
-                key={attachment.id}
-                style={{
-                  position: 'absolute',
-                  left: 0,
-                  top: index * attachmentPeek,
-                  zIndex: index,
-                  pointerEvents: 'none',
-                }}
-              >
-                <GameCard
-                  card={attachment}
-                  interactive={attachmentInteractive}
-                  battlefield
-                  isOpponentCard={isOpponent}
-                  // Inner wrapper handles the tap rotation for the whole stack; individual
-                  // cards must stay unrotated so they don't double-rotate.
-                  suppressTapRotation
-                  hideKeywordIcons
-                  isGhost={kind === 'linkedExile'}
-                />
-              </div>
-            )
-          })}
-          {showBrowserAffordance && (
+        {/* Attachments peek above the main card.
+         * When collapsed, the visible peek is non-interactive — clicks go through the overlay
+         * catcher below so the attachments browser is the single selection path. */}
+        {visibleAttachments.map((tagged, index) => {
+          const { card: attachment, kind } = tagged
+          // Attachments controlled by the player are interactive even on the opponent's battlefield
+          // (e.g., aura cast on opponent's creature — caster can still activate abilities)
+          const attachmentInteractive = !collapsed && !spectatorMode && attachment.controllerId === viewingPlayerId
+          const box = layout.attachments[index]
+          return (
             <div
-              onClick={(e) => {
-                e.stopPropagation()
-                setBrowsingAttachmentsOf(group.card)
-              }}
-              title={`${attachments.length} attached — click to browse`}
+              key={attachment.id}
               style={{
                 position: 'absolute',
-                left: 0,
-                top: 0,
-                width: portraitWidth,
-                height: attachmentPeek + 6,
-                zIndex: visibleAttachments.length,
-                cursor: 'pointer',
-                pointerEvents: 'auto',
-              }}
-            />
-          )}
-          {/* Main card, on top of the peeking attachments */}
-          <div style={{
-            position: 'absolute',
-            left: 0,
-            top: visiblePeek,
-            zIndex: visibleAttachments.length + 1,
-            pointerEvents: 'none',
-          }}>
-            <GameCard
-              card={group.card}
-              // A face-down permanent (morph/manifest) must keep rendering as a card back
-              // even once it gains an attachment — the no-attachment path (CardStack) passes
-              // this too; omitting it here flips an enchanted/equipped morph face-up for its
-              // controller, who receives the real card data + isFaceDown from the server.
-              faceDown={group.card.isFaceDown}
-              interactive={interactive}
-              battlefield
-              isOpponentCard={isOpponent}
-              // Suppress GameCard's own tap rotation — the outer wrapper rotates instead.
-              suppressTapRotation
-            />
-          </div>
-          {showBrowserAffordance && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                setBrowsingAttachmentsOf(group.card)
-              }}
-              title={
-                actionable
-                  ? `${attachments.length} attached — action available`
-                  : `${attachments.length} attached — click to browse`
-              }
-              style={{
-                position: 'absolute',
-                // Folder tab above the first peeking attachment. Rotates with the inner
-                // wrapper when the card is tapped, so it always follows the card.
-                top: -tabHeight + 1,
-                left: 6,
-                height: tabHeight,
-                minWidth: tabHeight + 4,
-                background: 'rgba(124, 58, 237, 0.95)',
-                color: 'white',
-                fontWeight: 700,
-                fontSize: responsive.isMobile ? 10 : 11,
-                padding: '0 8px',
-                borderRadius: '6px 6px 0 0',
-                border: actionable
-                  ? `2px solid ${TARGET_COLOR}`
-                  : '1px solid rgba(255, 255, 255, 0.35)',
-                borderBottom: 'none',
-                cursor: 'pointer',
-                pointerEvents: 'auto',
-                zIndex: visibleAttachments.length + 2,
-                boxShadow: actionable
-                  ? `0 -1px 4px ${TARGET_GLOW}, 0 0 10px ${TARGET_SHADOW}`
-                  : '0 -1px 3px rgba(0, 0, 0, 0.45)',
-                userSelect: 'none',
-                lineHeight: 1,
-                whiteSpace: 'nowrap',
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                left: box?.left ?? columnLeft,
+                top: box?.top ?? index * attachmentPeek,
+                zIndex: index,
+                pointerEvents: 'none',
               }}
             >
-              {attachments.length}
-            </button>
-          )}
+              <GameCard
+                card={attachment}
+                interactive={attachmentInteractive}
+                battlefield
+                isOpponentCard={isOpponent}
+                hideKeywordIcons
+                isGhost={kind === 'linkedExile'}
+              />
+            </div>
+          )
+        })}
+        {showBrowserAffordance && (
+          <div
+            onClick={(e) => {
+              e.stopPropagation()
+              setBrowsingAttachmentsOf(group.card)
+            }}
+            title={`${attachments.length} attached — click to browse`}
+            style={{
+              position: 'absolute',
+              left: columnLeft,
+              top: 0,
+              width: cardWidth,
+              height: attachmentPeek + 6,
+              zIndex: visibleAttachments.length,
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+            }}
+          />
+        )}
+        {/* Main card, on top of the peeking attachments */}
+        <div style={{
+          position: 'absolute',
+          left: layout.host.left,
+          top: layout.host.top,
+          zIndex: visibleAttachments.length + 1,
+          pointerEvents: 'none',
+        }}>
+          <GameCard
+            card={group.card}
+            // A face-down permanent (morph/manifest) must keep rendering as a card back
+            // even once it gains an attachment — the no-attachment path (CardStack) passes
+            // this too; omitting it here flips an enchanted/equipped morph face-up for its
+            // controller, who receives the real card data + isFaceDown from the server.
+            faceDown={group.card.isFaceDown}
+            interactive={interactive}
+            battlefield
+            isOpponentCard={isOpponent}
+          />
         </div>
+        {showBrowserAffordance && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setBrowsingAttachmentsOf(group.card)
+            }}
+            title={
+              actionable
+                ? `${attachments.length} attached — action available`
+                : `${attachments.length} attached — click to browse`
+            }
+            style={{
+              position: 'absolute',
+              // Folder tab above the first peeking attachment, on the upright column axis
+              // so it stays put when the host taps and rotates underneath it.
+              top: -tabHeight + 1,
+              left: columnLeft + 6,
+              height: tabHeight,
+              minWidth: tabHeight + 4,
+              background: 'rgba(124, 58, 237, 0.95)',
+              color: 'white',
+              fontWeight: 700,
+              fontSize: responsive.isMobile ? 10 : 11,
+              padding: '0 8px',
+              borderRadius: '6px 6px 0 0',
+              border: actionable
+                ? `2px solid ${TARGET_COLOR}`
+                : '1px solid rgba(255, 255, 255, 0.35)',
+              borderBottom: 'none',
+              cursor: 'pointer',
+              pointerEvents: 'auto',
+              zIndex: visibleAttachments.length + 2,
+              boxShadow: actionable
+                ? `0 -1px 4px ${TARGET_GLOW}, 0 0 10px ${TARGET_SHADOW}`
+                : '0 -1px 3px rgba(0, 0, 0, 0.45)',
+              userSelect: 'none',
+              lineHeight: 1,
+              whiteSpace: 'nowrap',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {attachments.length}
+          </button>
+        )}
       </div>
     )
   }

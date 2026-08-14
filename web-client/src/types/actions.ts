@@ -14,6 +14,7 @@ export type GameAction =
   | CycleCardAction
   | TypecycleCardAction
   | PlotCardAction
+  | SuspendCardFromHandAction
   | CrewVehicleAction
   | SaddleMountAction
   | PlayLandAction
@@ -76,6 +77,12 @@ export interface AdditionalCostPayment {
   readonly blightAmount?: number
   /** X chosen for `AdditionalCost.PayXLife` (e.g., Vicious Rivalry). */
   readonly payXLifeAmount?: number
+  /**
+   * Permanents chosen for a variable-count permanent cost — the payer decides how many
+   * (`CostAtom.VariablePermanents`). Carries the creatures tapped to pay a Teamwork N cost
+   * (CR 702.194a).
+   */
+  readonly variableCostPermanents?: readonly EntityId[]
 }
 
 export interface AlternativePaymentChoice {
@@ -83,8 +90,11 @@ export interface AlternativePaymentChoice {
   readonly convokedCreatures: Record<EntityId, ConvokePayment>
   /** Single creature tapped for Harmonize, reducing the generic cost by its power. */
   readonly harmonizeCreature?: EntityId | null
-  /** Untapped artifacts/creatures tapped for Waterbend, each paying {1} generic. */
-  readonly waterbendPermanents?: readonly EntityId[]
+  /**
+   * Untapped permanents tapped for a tap-for-generic payment (improvise CR 702.126 / waterbend),
+   * each paying {1} generic.
+   */
+  readonly tapForGenericPermanents?: readonly EntityId[]
 }
 
 export interface ConvokePayment {
@@ -111,14 +121,34 @@ export interface CastSpellAction {
    * "SELF_ALTERNATIVE", "MIRACLE"). Used by the action menu to identify the impending cast option.
    */
   readonly alternativeCostType?: string
-  /** Whether to cast this spell with kicker */
-  readonly wasKicked?: boolean
+  /**
+   * Which optional additional cost this cast declares (the server's `ChoiceSlot` name — "KICKED"
+   * for kicker/multikicker/offspring, "BARGAINED" for bargain), or absent when none. The server
+   * stamps it on the cast variant it offers; the client only echoes it back.
+   */
+  readonly declaredCostSlot?: string
   /**
    * Whether the spell's optional waterbend additional cost was elected (Avatar: The Last
    * Airbender). Set by the server on the paid cast variant; preserved through the pipeline so the
    * resolving effect can branch on `WaterbendWasPaid`.
    */
   readonly wasWaterbendPaid?: boolean
+  /**
+   * The opponent promised this spell's gift additional cost (Bloomburrow gift — CR 702.174a), or
+   * absent when the gift wasn't promised. The server emits a `CastWithGift` variant of the normal
+   * cast per opponent; the client just plays the variant the player picked.
+   */
+  readonly giftRecipient?: EntityId
+  /**
+   * Cards revealed from hand and spliced onto this spell (CR 702.47a), in the order their text is
+   * added. The server emits a `CastWithSplice` variant per splice card in hand whose quality the spell
+   * carries, already priced with that card's splice cost; the client just plays the variant the player
+   * picked and echoes this back. The spliced cards stay in hand — only their text joins the spell.
+   *
+   * A spliced card's own targets are appended after the main spell's in `targets`, so the normal
+   * targeting flow fills them in with no special handling.
+   */
+  readonly splicedCardIds?: readonly EntityId[]
   /** Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount) */
   readonly damageDistribution?: Record<EntityId, number>
   /**
@@ -167,6 +197,12 @@ export interface ActivateAbilityAction {
   readonly paymentStrategy?: PaymentStrategy
   /** Alternative payment choices (e.g., convoke for abilities like Heirloom Epic) */
   readonly alternativePayment?: AlternativePaymentChoice
+  /**
+   * Pre-chosen damage distribution for a "N damage divided as you choose" ability
+   * (target ID -> damage amount). Chosen as the ability is activated, not at resolution, so
+   * removal in response can't let the player re-divide (Chandra, Flameshaper's −4).
+   */
+  readonly damageDistribution?: Record<EntityId, number>
 }
 
 // =============================================================================
@@ -178,6 +214,12 @@ export interface CycleCardAction {
   readonly playerId: EntityId
   readonly cardId: EntityId
   readonly paymentStrategy?: PaymentStrategy
+  /**
+   * Chosen X for an `{X}` cycling cost (Webstrike Elite's "Cycling {X}{G}{G}"), set by the
+   * xSelection pipeline phase. Omitted for ordinary cycling — and if omitted on an X cost, the
+   * engine raises its own ChooseNumber decision rather than defaulting X to 0.
+   */
+  readonly xValue?: number
 }
 
 export interface TypecycleCardAction {
@@ -194,6 +236,18 @@ export interface TypecycleCardAction {
  */
 export interface PlotCardAction {
   readonly type: 'PlotCard'
+  readonly playerId: EntityId
+  readonly cardId: EntityId
+  readonly paymentStrategy?: PaymentStrategy
+}
+
+/**
+ * Suspend a card from hand (CR 702.62, Time Spiral).
+ * Special action — pays the printed suspend cost and exiles the card with time counters.
+ * It counts down at the owner's upkeep and is cast for free when the last is removed.
+ */
+export interface SuspendCardFromHandAction {
+  readonly type: 'SuspendCardFromHand'
   readonly playerId: EntityId
   readonly cardId: EntityId
   readonly paymentStrategy?: PaymentStrategy
@@ -374,6 +428,8 @@ export function getActionSubject(action: GameAction): EntityId | null {
     case 'TypecycleCard':
       return action.cardId
     case 'PlotCard':
+      return action.cardId
+    case 'SuspendCardFromHand':
       return action.cardId
     case 'ActivateAbility':
       return action.sourceId

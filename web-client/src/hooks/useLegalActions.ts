@@ -102,6 +102,8 @@ export function useCardActions(cardId: EntityId | null): LegalActionInfo[] {
           return a.cardId === cardId
         case 'PlotCard':
           return a.cardId === cardId
+        case 'SuspendCardFromHand':
+          return a.cardId === cardId
         case 'ActivateAbility':
           return a.sourceId === cardId
         case 'TurnFaceUp':
@@ -171,6 +173,8 @@ function getActionCardId(action: GameAction): EntityId | null {
     case 'TypecycleCard':
       return action.cardId
     case 'PlotCard':
+      return action.cardId
+    case 'SuspendCardFromHand':
       return action.cardId
     case 'ActivateAbility':
       return action.sourceId

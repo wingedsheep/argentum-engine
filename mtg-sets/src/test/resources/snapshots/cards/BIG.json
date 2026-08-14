@@ -29,7 +29,7 @@
                         }
                     }
                 },
-                "oncePerTurn": true
+                "effectOncePerTurn": true
             }
         ],
         "activatedAbilities": [

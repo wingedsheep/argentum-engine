@@ -28,7 +28,10 @@ class CrewEnumerator : ActionEnumerator {
         for (entityId in context.battlefieldPermanents) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
-            val cardDef = context.cardRegistry.getCard(cardComponent.name) ?: continue
+            // By definition id, not name — `CrewVehicleHandler` resolves the crew keyword by id,
+            // so a renamed copy of a Vehicle (CR 707.9) would otherwise be crewable by the engine
+            // but never offered the Crew action.
+            val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
 
             val crewAbility = cardDef.keywordAbilities
                 .filterIsInstance<KeywordAbility.Numeric>()
@@ -43,7 +46,16 @@ class CrewEnumerator : ActionEnumerator {
                 if (crewActivations >= 1) continue
             }
 
-            // Find all untapped creatures controlled by the player that can crew
+            // Find all untapped creatures controlled by the player that can crew.
+            //
+            // This eligibility rule (untapped, controlled by the payer, projected, no
+            // summoning-sickness check) is duplicated in
+            // `com.wingedsheep.engine.mechanics.cost.VariablePermanentsCost.candidates`, which
+            // Teamwork N (CR 702.194a) pays through — the two agree, but nothing enforces that.
+            // The *measure* deliberately differs and must stay split: crew sums through
+            // `CrewSaddleContributionEvaluator` so crew-specific statics ("crews Vehicles as though
+            // its power were 2 greater") count, which they must not for teamwork. Folding the
+            // selection (not the measure) into the shared helper is an open follow-up.
             val validCrewCreatures = mutableListOf<TapForPowerCreatureData>()
             var totalAvailablePower = 0
             for (creatureId in context.battlefieldPermanents) {

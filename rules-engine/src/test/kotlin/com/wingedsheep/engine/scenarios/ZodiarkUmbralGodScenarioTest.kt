@@ -27,7 +27,7 @@ import io.kotest.matchers.shouldNotBe
  *    the interesting part (3 → 1, not 2), and Zodiark (a God) is excluded from the count and the
  *    sacrifice.
  *  - The reactive counter trigger: "Whenever a player sacrifices another creature, put a +1/+1
- *    counter on Zodiark." This exercises the new `PermanentsSacrificedEvent(byAnyPlayer = true)`
+ *    counter on Zodiark." This exercises the `PermanentsSacrificedEvent(sacrificedBy = Player.Each)`
  *    scope — an *opponent's* sacrifice (not just the controller's) must trigger it.
  */
 class ZodiarkUmbralGodScenarioTest : ScenarioTestBase() {

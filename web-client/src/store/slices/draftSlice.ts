@@ -18,6 +18,7 @@ import {
   autoBuildDeck as apiAutoBuildDeck,
 } from '@/api/aiAssist'
 import { getWebSocket, saveDeckState } from './shared'
+import { rulesFromLobbySettings } from '@/components/lobby/axes'
 
 export type { PickScore }
 
@@ -404,8 +405,11 @@ export const createDraftSlice: SliceCreator<DraftSlice> = (set, get) => ({
         if (count > 0) lockedDeck[land] = (lockedDeck[land] ?? 0) + count
       }
 
-      const format = lobbyState?.settings.format
-      const isCommander = format === 'COMMANDER_DRAFT' || format === 'COMMANDER_SEALED'
+      // Auto-build targets the deck size the lobby will actually validate against, so it follows the
+      // Rules axis rather than the pack format — a Commander game over ordinary draft packs still
+      // wants 60 cards, not 40.
+      const isCommander = lobbyState !== null &&
+        rulesFromLobbySettings(lobbyState.settings) === 'COMMANDER'
       const targetSize = isCommander ? lobbyState?.settings.deckSizeMin ?? 60 : 40
 
       const result = await apiAutoBuildDeck({

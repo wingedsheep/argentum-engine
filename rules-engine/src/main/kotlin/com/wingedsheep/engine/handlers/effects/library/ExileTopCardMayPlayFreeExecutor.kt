@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostCom
 import com.wingedsheep.engine.state.components.identity.PlottedComponent
 import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
+import com.wingedsheep.engine.state.permissions.revokeSupersededPermissionsFromSource
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.TriggerSpec
@@ -26,6 +27,7 @@ import com.wingedsheep.sdk.scripting.effects.GrantPlayWithCostIncreaseEffect
 import com.wingedsheep.sdk.scripting.effects.GrantPlayWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.MakePlottedEffect
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
@@ -56,9 +58,21 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
         // survives the per-player rebinding (the source itself may already be in exile from a
         // cost, so it can't be read off the source's ControllerComponent).
         val activatingPlayer = context.effectControllerId ?: controllerId
-        val isPermanent = effect.expiry is MayPlayExpiry.Permanent
+        // "Until you exile another card with this permanent" persists across turns like a
+        // permanent grant, so it is exempt from end-of-turn cleanup; the superseding revocation
+        // (below) is what ends it, not a turn boundary.
+        val supersedesSameSource = effect.expiry is MayPlayExpiry.UntilSourceExilesAnother
+        val isPermanent = effect.expiry is MayPlayExpiry.Permanent || supersedesSameSource
 
         var newState = state
+
+        // Superseding grant: this source (e.g. Superior Foes of Spider-Man) exiling another card
+        // revokes the play permission on the card it previously exiled — only the latest stays
+        // playable. Revoke the prior same-source grant before registering the new one. Requires a
+        // real source id to identify siblings; without one the grant just persists like Permanent.
+        if (supersedesSameSource) {
+            context.sourceId?.let { newState = newState.revokeSupersededPermissionsFromSource(it) }
+        }
 
         // "If a spell cast this way would be put into a graveyard, exile it instead" (Nita,
         // Forum Conciliator). Stamp the granted cards now; StackResolver honors
@@ -74,13 +88,21 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
         // ownerControls (Suspend Aggression): each exiled card's *owner* — not the effect's
         // controller — may play it, and any turn-keyed expiry ("until the end of their next turn")
         // is measured against that owner's own turns. Group cards by owner and grant one permission
-        // per owner, keyed to that owner; otherwise grant a single permission to the controller.
+        // per owner, keyed to that owner; otherwise grant a single permission to the recipient —
+        // the controller unless the effect names another player (Gonti, Night Minister grants to
+        // the damaging creature's controller). An unresolvable recipient falls back to the
+        // controller rather than dropping the grant silently.
+        val recipientId = if (effect.recipient == EffectTarget.Controller) {
+            controllerId
+        } else {
+            context.resolvePlayerTarget(effect.recipient, newState) ?: controllerId
+        }
         val groups: Map<EntityId, List<EntityId>> = if (effect.ownerControls) {
             collection.groupBy { cardId ->
                 newState.getEntity(cardId)?.get<CardComponent>()?.ownerId ?: controllerId
             }
         } else {
-            mapOf(controllerId to collection)
+            mapOf(recipientId to collection)
         }
 
         for ((grantee, cardIds) in groups) {
@@ -130,6 +152,10 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
                     expiresAfterTurn = expiresAfterTurn,
                     riderLinkId = riderLinkId,
                     expiryControllerId = expiryControllerId,
+                    supersededBySameSource = supersedesSameSource,
+                    nonLandOnly = effect.nonLandOnly,
+                    castFaceIndex = effect.castFaceIndex,
+                    castColorRestriction = effect.castColorRestriction,
                     timestamp = state.timestamp,
                 )
             )
@@ -166,57 +192,49 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
 
     /**
      * Translate a [MayPlayExpiry] into the turn whose cleanup will remove the permission.
-     * Returns `null` for [MayPlayExpiry.EndOfTurn] (default handling: cleared this cleanup)
-     * and for [MayPlayExpiry.Permanent] (component is flagged permanent and skipped).
+     * Returns `null` for [MayPlayExpiry.EndOfTurn] (default handling: cleared this cleanup),
+     * for [MayPlayExpiry.Permanent], and for [MayPlayExpiry.UntilSourceExilesAnother] (both
+     * flagged permanent and skipped by cleanup — the latter is ended by same-source revocation).
      */
     private fun expiresAfterTurnFor(
         state: GameState,
         controllerId: EntityId,
         expiry: MayPlayExpiry
     ): Int? = when (expiry) {
-        MayPlayExpiry.EndOfTurn, MayPlayExpiry.Permanent -> null
+        MayPlayExpiry.EndOfTurn,
+        MayPlayExpiry.Permanent,
+        MayPlayExpiry.UntilSourceExilesAnother -> null
         is MayPlayExpiry.UntilControllerStep -> resolveStepTurn(state, controllerId, expiry)
     }
 
     /**
-     * Resolve which turn's cleanup will mark "the controller's next [step]" given the
-     * current step and active player. The cleanup-driven removal is coarse — it runs once
-     * per turn at cleanup — so we map any step in the turn to that turn's cleanup.
+     * Resolve the earliest turn whose cleanup may mark "the controller's next [step]", given the
+     * current step and active player. The cleanup-driven removal is coarse — it runs once per turn
+     * at cleanup — so we map any step in the turn to that turn's cleanup.
      *
-     * The returned value is a *round* number, because [GameState.turnNumber] is round-based —
-     * it increments only when the starting player begins a new turn, so every player's turn
-     * within a round shares the same number. The cleanup expiry check disambiguates which
-     * player's turn it is by also requiring `activePlayerId == controllerId`; this function
-     * therefore only has to name the round in which the controller's next matching turn falls.
-     * Counting *player-turns* until the controller's turn (and adding them to a round-based
-     * number) over-counts whenever the grant happens on an opponent's turn — the bug that let
-     * "until your next end step" leak an extra full turn when a creature died on the opponent's
-     * turn (Shadow Urchin).
+     * This is a *floor*, not an exact turn: the expiry check in [CleanupPhaseManager] also requires
+     * `activePlayerId == controllerId`, so the permission dies at the cleanup of the first turn the
+     * controller actually takes at or after this number. That pairing is what keeps the answer right
+     * across skipped turns, extra turns and eliminated seats — none of which a turn count computed
+     * from seat positions would survive.
+     *
+     * So the whole question is only ever "does the current turn still count?": if it does, this
+     * turn's cleanup is the deadline; otherwise the deadline is the controller's next turn, which is
+     * some turn strictly after this one. Since [GameState.turnNumber] counts player turns, that is
+     * just `turnNumber + 1`.
      */
     private fun resolveStepTurn(
         state: GameState,
         controllerId: EntityId,
         expiry: MayPlayExpiry.UntilControllerStep
     ): Int {
-        val turnOrder = state.turnOrder
-        val playerIndex = turnOrder.indexOf(controllerId)
-        val activeIndex = turnOrder.indexOf(state.activePlayerId)
-
-        val onControllerTurn = playerIndex == activeIndex
-        val targetStep = expiry.step
-        val targetReachedThisTurn = state.step.ordinal >= targetStep.ordinal
+        val onControllerTurn = state.activePlayerId == controllerId
+        val targetReachedThisTurn = state.step.ordinal >= expiry.step.ordinal
         val thisTurnStillCounts = onControllerTurn && expiry.includeCurrentTurn && !targetReachedThisTurn
 
-        return when {
-            // This turn's matching step still counts — expire at this turn's cleanup.
-            thisTurnStillCounts -> state.turnNumber
-            // Controller's own turn, but this turn no longer counts — their next turn is next round.
-            onControllerTurn -> state.turnNumber + 1
-            // Opponent's turn: the controller still takes a turn *this* round if they come later in
-            // turn order; otherwise they already went and their next turn is in the next round.
-            playerIndex > activeIndex -> state.turnNumber
-            else -> state.turnNumber + 1
-        }
+        // This turn's matching step still counts — expire at this turn's cleanup. Otherwise the
+        // controller's next turn is the deadline, and every later turn number qualifies as a floor.
+        return if (thisTurnStillCounts) state.turnNumber else state.turnNumber + 1
     }
 }
 

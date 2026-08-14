@@ -1,16 +1,14 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
-import com.wingedsheep.sdk.dsl.Patterns
+import com.wingedsheep.sdk.dsl.gift
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
-import com.wingedsheep.sdk.scripting.effects.Mode
+import com.wingedsheep.sdk.scripting.GiftKind
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 
@@ -24,6 +22,12 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Reach
  * When this creature enters, if the gift was promised, destroy target artifact
  * or enchantment an opponent controls.
+ *
+ * The gift is promised as you cast (CR 702.174a) — `gift(...)` supplies both the additional cost
+ * and the "they draw a card" enters ability. The printed enters ability is an intervening-if
+ * trigger (CR 603.4) on the same promise, so a Scrapshooter cast without the gift never triggers
+ * and never asks for a target — which is what CR 702.174m requires: targets belonging to a
+ * gift-gated part of an ability are chosen only if the gift was promised.
  */
 val Scrapshooter = card("Scrapshooter") {
     manaCost = "{1}{G}{G}"
@@ -35,26 +39,13 @@ val Scrapshooter = card("Scrapshooter") {
 
     keywords(Keyword.REACH)
 
-    // Gift modeled as a modal ETB triggered ability
+    gift(GiftKind.CARD)
+
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = Patterns.Mechanic.giftSpell(
-            // Mode 1: No gift — do nothing
-            Mode.noTarget(
-                Effects.Composite(emptyList()),
-                "Don't promise a gift"
-            ),
-            // Mode 2: Gift a card — opponent draws, destroy target artifact or enchantment
-            Mode(
-                effect = DrawCardsEffect(1, EffectTarget.PlayerRef(Player.ChosenOpponent))
-                    .then(Effects.Destroy(EffectTarget.ContextTarget(0)))
-                    .then(Effects.GiftGiven()),
-                targetRequirements = listOf(
-                    TargetObject(filter = TargetFilter.ArtifactOrEnchantment.opponentControls())
-                ),
-                description = "Promise a gift — opponent draws a card, destroy target artifact or enchantment an opponent controls"
-            )
-        )
+        triggerCondition = Conditions.GiftWasPromised
+        target = TargetObject(filter = TargetFilter.ArtifactOrEnchantment.opponentControls())
+        effect = Effects.Destroy(EffectTarget.ContextTarget(0))
     }
 
     metadata {

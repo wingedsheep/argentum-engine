@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
 import com.wingedsheep.engine.core.CardCycledEvent
+import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CycleCard
 import com.wingedsheep.engine.core.CycleDrawContinuation
 import com.wingedsheep.engine.core.ExecutionResult
@@ -11,12 +12,17 @@ import com.wingedsheep.engine.core.tap
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.event.TriggerDetector
 import com.wingedsheep.engine.event.TriggerProcessor
+import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.EngineServices
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.handlers.effects.drawing.DrawCardsExecutor
+import com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
 import com.wingedsheep.engine.mechanics.mana.ManaPool
+import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.replacement.ReplacementEffectProcessor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -39,7 +45,9 @@ class CycleCardHandler(
     private val manaSolver: ManaSolver,
     private val triggerDetector: TriggerDetector,
     private val triggerProcessor: TriggerProcessor,
-    private val manaAbilitySideEffectExecutor: com.wingedsheep.engine.mechanics.mana.ManaAbilitySideEffectExecutor
+    private val manaAbilitySideEffectExecutor: ManaAbilitySideEffectExecutor,
+    private val effectExecutor: ((GameState, Effect, EffectContext) -> EffectResult)?,
+    private val replacementProcessor: ReplacementEffectProcessor = ReplacementEffectProcessor()
 ) : ActionHandler<CycleCard> {
     override val actionType: KClass<CycleCard> = CycleCard::class
 
@@ -71,6 +79,15 @@ class CycleCardHandler(
             .firstOrNull { it.searchFilter == null }
             ?: return "This card doesn't have cycling"
 
+        // The action is client-supplied: a negative X would underflow the cost substitution.
+        if (action.xValue != null && action.xValue < 0) {
+            return "X can't be negative"
+        }
+
+        // Affordability is judged against X=0 when the player hasn't announced X yet — the
+        // handler raises the choice, and X=0 is always a legal announcement (CR 107.3a).
+        val effectiveCost = cyclingAbility.cost.withXAs(action.xValue ?: 0)
+
         if (action.paymentStrategy is PaymentStrategy.Explicit) {
             for (sourceId in action.paymentStrategy.manaAbilitiesToActivate) {
                 val sourceContainer = state.getEntity(sourceId)
@@ -79,7 +96,7 @@ class CycleCardHandler(
                     return "Mana source is already tapped: $sourceId"
                 }
             }
-        } else if (!manaSolver.canPay(state, action.playerId, cyclingAbility.cost)) {
+        } else if (!manaSolver.canPay(state, action.playerId, effectiveCost)) {
             return "Not enough mana to cycle this card"
         }
 
@@ -100,6 +117,54 @@ class CycleCardHandler(
             .firstOrNull { it.searchFilter == null }
             ?: return ExecutionResult.error(state, "This card doesn't have cycling")
 
+        // ---------------------------------------------------------------------
+        // {X} cycling cost — announce X (CR 107.3a).
+        //
+        // Cycling is an activated ability (CR 702.29a), so its `{X}` is chosen as the ability is
+        // activated. The legal-actions submission path sends a bare CycleCard with no xValue; pause
+        // for the choice and re-enter with it bound. The engine-direct path (xValue pre-filled,
+        // as scenario tests and the AI use) skips this. Mirrors the mana-X pause in
+        // ActivateAbilityHandler.
+        // ---------------------------------------------------------------------
+        if (cyclingAbility.cost.hasX && action.xValue == null) {
+            val fixedMana = cyclingAbility.cost.withXAs(0).cmc
+            val maxX = ((manaSolver.getAvailableManaCount(state, action.playerId) - fixedMana) /
+                cyclingAbility.cost.xCount.coerceAtLeast(1)).coerceAtLeast(0)
+            val decisionId = java.util.UUID.randomUUID().toString()
+            val decision = com.wingedsheep.engine.core.ChooseNumberDecision(
+                id = decisionId,
+                playerId = action.playerId,
+                prompt = "Choose X for cycling ${cardComponent.name} (0-$maxX)",
+                context = com.wingedsheep.engine.core.DecisionContext(
+                    sourceId = action.cardId,
+                    sourceName = cardComponent.name,
+                    phase = com.wingedsheep.engine.core.DecisionPhase.CASTING
+                ),
+                minValue = 0,
+                maxValue = maxX
+            )
+            val pausedState = state
+                .withPendingDecision(decision)
+                .pushContinuation(
+                    com.wingedsheep.engine.core.CycleCardChooseXContinuation(
+                        decisionId = decisionId,
+                        action = action
+                    )
+                )
+            val event = com.wingedsheep.engine.core.DecisionRequestedEvent(
+                decisionId = decisionId,
+                playerId = action.playerId,
+                decisionType = "CHOOSE_NUMBER",
+                prompt = decision.prompt
+            )
+            return ExecutionResult.paused(pausedState, decision, listOf(event))
+        }
+
+        // X is settled from here on. Substituting it into the cost leaves an ordinary X-free cost,
+        // so every payment path below (pool, auto-tap, explicit taps) works unchanged.
+        val announcedX = action.xValue?.takeIf { cyclingAbility.cost.hasX }
+        val cyclingCost = cyclingAbility.cost.withXAs(announcedX ?: 0)
+
         var currentState = state
         val events = mutableListOf<GameEvent>()
         val ownerId = cardComponent.ownerId ?: action.playerId
@@ -116,7 +181,7 @@ class CycleCardHandler(
             colorless = poolComponent.colorless
         )
 
-        val partialResult = pool.payPartial(cyclingAbility.cost)
+        val partialResult = pool.payPartial(cyclingCost)
         val poolAfterPayment = partialResult.newPool
         val remainingCost = partialResult.remainingCost
         val manaSpentFromPool = partialResult.manaSpent
@@ -185,29 +250,25 @@ class CycleCardHandler(
             )
         )
 
-        // Discard the card (move from hand to graveyard)
-        val handZone = ZoneKey(action.playerId, Zone.HAND)
-        val graveyardZone = ZoneKey(ownerId, Zone.GRAVEYARD)
-        currentState = currentState.removeFromZone(handZone, action.cardId)
-        currentState = currentState.addToZone(graveyardZone, action.cardId)
-
-        events.add(
-            ZoneChangeEvent(
-                entityId = action.cardId,
-                entityName = cardComponent.name,
-                fromZone = Zone.HAND,
-                toZone = Zone.GRAVEYARD,
-                ownerId = ownerId
-            )
-        )
+        // Discard the card to pay the cycling cost (CR 702.29a: "Cycling [cost]" means
+        // "[Cost], Discard this card: Draw a card."), through the shared discard path so that
+        // "whenever you discard" payoffs see it (Magmakin Artillerist) *and* a card-intrinsic
+        // discard replacement applies — cycling a madness card exiles it and offers the madness
+        // cast (CR 702.35a), which is the classic Fiery Temper line. The discard event and the
+        // zone change land before CardCycledEvent, so a card that triggers on both (CR 702.29d)
+        // sees them in the order they happened.
+        val discardResult = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+            .discardCards(currentState, action.playerId, listOf(action.cardId), asCyclingCost = true)
+        currentState = discardResult.state
+        events.addAll(discardResult.events)
 
         // Emit cycling event (for cycling triggers like Astral Slide)
-        events.add(CardCycledEvent(action.playerId, action.cardId, cardComponent.name))
+        events.add(CardCycledEvent(action.playerId, action.cardId, cardComponent.name, announcedX))
 
         currentState = currentState.tick()
 
         // Detect and process triggers from discard + cycling events before drawing,
-        // since the draw may pause for promptOnDraw abilities (e.g., Words of War)
+        // since the draw may pause for replacement effects (e.g., Words cycle)
         val preTriggers = triggerDetector.detectTriggers(currentState, events)
         if (preTriggers.isNotEmpty()) {
             // Push draw continuation BEFORE processing triggers, so it ends up below
@@ -219,11 +280,15 @@ class CycleCardHandler(
             val triggerResult = triggerProcessor.processTriggers(stateWithDrawContinuation, preTriggers)
 
             if (triggerResult.isPaused) {
+                // triggersAlreadyProcessed: the cycling events above have been through
+                // detectTriggers here. Without the flag, SubmitDecisionHandler re-scans this
+                // result's events when the cycle was resumed from a decision (an {X} cycling
+                // cost's ChooseNumber) and queues the cycling trigger a second time.
                 return ExecutionResult.paused(
                     triggerResult.state,
                     triggerResult.pendingDecision!!,
                     events + triggerResult.events
-                )
+                ).copy(triggersAlreadyProcessed = true)
             }
 
             // Triggers resolved synchronously — pop the draw continuation and draw inline
@@ -232,25 +297,28 @@ class CycleCardHandler(
             events.addAll(triggerResult.events)
         }
 
-        // Draw a card using DrawCardsExecutor (checks replacement shields and promptOnDraw).
-        // Cycling is "Discard this card: Draw a card" (CR 702.29a), so its draw is an
-        // announcement site for ModifyDrawAmount (CR 121.2a) — e.g. Quantum Riddler's +1
-        // applies to a cycle draw while its hand-size restriction holds.
-        val drawExecutor = DrawCardsExecutor(cardRegistry = cardRegistry)
-        val drawCount = drawExecutor.applyDrawAmountModifier(currentState, action.playerId, 1)
-        val drawResult = drawExecutor.executeDraws(currentState, action.playerId, drawCount)
+        // Draw a card using DrawCardsExecutor (checks replacement shields).
+        // Cycling is "Discard this card: Draw a card" (CR 702.29a). The announcement-site
+        // modifier (CR 121.2a) fires via executeDraws → checkDrawAmount before the per-card loop.
+        val drawExecutor = DrawCardsExecutor(
+            cardRegistry = cardRegistry,
+            effectExecutor = effectExecutor,
+            replacementProcessor = replacementProcessor
+        )
+        val drawResult = drawExecutor.executeDraws(currentState, action.playerId, 1)
         if (drawResult.isPaused) {
             return ExecutionResult.paused(
                 drawResult.state,
                 drawResult.pendingDecision!!,
                 events + drawResult.events
-            )
+            ).copy(triggersAlreadyProcessed = true)
         }
         currentState = drawResult.newState
         events.addAll(drawResult.events)
 
         // Cycling doesn't change priority
         return ExecutionResult.success(currentState, events)
+            .copy(triggersAlreadyProcessed = true)
     }
 
     private fun isCyclingPrevented(state: GameState): Boolean {
@@ -271,7 +339,9 @@ class CycleCardHandler(
                 services.manaSolver,
                 services.triggerDetector,
                 services.triggerProcessor,
-                services.manaAbilitySideEffectExecutor
+                services.manaAbilitySideEffectExecutor,
+                services.effectExecutorRegistry::execute,
+                services.replacementEffectProcessor
             )
         }
     }

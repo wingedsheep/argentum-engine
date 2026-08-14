@@ -1,12 +1,16 @@
 import { useGameStore } from '@/store/gameStore.ts'
 import type { YesNoDecision, ClientGameState } from '@/types'
-import { getCardImageUrl } from '@/utils/cardImages.ts'
 import { AbilityText } from '../ui/ManaSymbols'
+import { DecisionContextCards, hasDecisionContextCards, resolveDecisionCards } from './DecisionContextCards'
 import styles from './DecisionUI.module.css'
 
 /**
  * Yes/No decision - make a binary choice.
- * Shows source card (the ability owner) and optionally the triggering entity for context.
+ *
+ * Shows the source card (the ability owner), the triggering entity when there is one, and — for a
+ * prompt raised once per object (Killing Wave asks "pay X life or sacrifice it" for each of your
+ * creatures in turn) — the subject this instance is about.
+ *
  * Supports an optional hint (e.g., keyword reminder text) and a View Battlefield button.
  */
 export function YesNoDecisionUI({
@@ -28,61 +32,12 @@ export function YesNoDecisionUI({
     submitYesNoDecision(false)
   }
 
-  // Look up source and triggering entity cards for display
-  const sourceCard = decision.context.sourceId ? gameState?.cards[decision.context.sourceId] : undefined
-  const triggeringCard = decision.context.triggeringEntityId ? gameState?.cards[decision.context.triggeringEntityId] : undefined
-  const sourceImageUrl = sourceCard ? getCardImageUrl(sourceCard.name, sourceCard.imageUri) : undefined
-  const triggeringImageUrl = triggeringCard ? getCardImageUrl(triggeringCard.name, triggeringCard.imageUri) : undefined
-
-  // Show card images when we have a source card with an image
-  const showCardContext = sourceImageUrl != null
+  const cards = resolveDecisionCards(decision.context, gameState)
+  const showCardContext = hasDecisionContextCards(cards)
 
   return (
     <>
-      {showCardContext && (
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 24,
-          marginBottom: 8,
-        }}>
-          {/* Source card (the ability owner) — shown prominently */}
-          <div style={{ textAlign: 'center' }}>
-            <img
-              src={sourceImageUrl}
-              alt={sourceCard?.name ?? ''}
-              style={{
-                width: 160,
-                borderRadius: 8,
-                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.6)',
-              }}
-            />
-          </div>
-
-          {/* Triggering entity — shown smaller as secondary context */}
-          {triggeringImageUrl && triggeringCard && sourceCard && triggeringCard.id !== sourceCard.id && (
-            <div style={{ textAlign: 'center' }}>
-              <p style={{
-                color: 'var(--text-tertiary)',
-                fontSize: 'var(--font-xs)',
-                margin: '0 0 4px 0',
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-              }}>Triggered by</p>
-              <img
-                src={triggeringImageUrl}
-                alt={triggeringCard.name}
-                style={{
-                  width: 120,
-                  borderRadius: 8,
-                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
-                  opacity: 0.85,
-                }}
-              />
-            </div>
-          )}
-        </div>
-      )}
+      <DecisionContextCards cards={cards} />
 
       <h2 className={styles.title}>
         <AbilityText text={decision.prompt} size={20} />

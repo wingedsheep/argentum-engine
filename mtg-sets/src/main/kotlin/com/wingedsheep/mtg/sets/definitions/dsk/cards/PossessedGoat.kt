@@ -51,5 +51,6 @@ val PossessedGoat = card("Possessed Goat") {
         flavorText = "When their would-be sacrifice wandered back to their encampment, the survivors " +
             "breathed a sigh of relief, assuming the demon had departed."
         imageUri = "https://cards.scryfall.io/normal/front/c/d/cd02b8ff-ff65-4a38-b8fb-f8dd130edbf7.jpg?1726285949"
+        imageUriByCreatureSubtype = mapOf("Demon" to "/images/custom/possessed-goat.jpeg")
     }
 }

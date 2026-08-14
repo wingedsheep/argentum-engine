@@ -34,8 +34,9 @@ import io.kotest.matchers.shouldBe
  * N-player correct once the single-opponent context is gone. A four-player game
  * initializes, priority round-trips through all four seats, a full turn cycle hands
  * the turn to the next player in turn order, [GameState.getOpponents] excludes lost
- * players, an `EachOpponent` effect fans out to all three opponents, and
- * [Player.DefendingPlayer] resolves per CR 802.2a from the attack assignment.
+ * players, an `EachOpponent` effect fans out to all three opponents,
+ * [Player.DefendingPlayer] resolves per CR 802.2a from the attack assignment, and
+ * [GameState.turnNumber] keeps counting turns after a seat is eliminated.
  */
 class MultiplayerSmokeTest : FunSpec({
 
@@ -134,6 +135,77 @@ class MultiplayerSmokeTest : FunSpec({
         playersSeenWithPriority shouldBe players.toSet()
         // The next turn belongs to the next player in turn order.
         state.activePlayerId shouldBe players[1]
+    }
+
+    test("turnNumber counts player turns and keeps advancing after a seat is eliminated") {
+        val (initial, players) = initFourPlayerGame()
+        val registry = CardRegistry().also { it.register(vanilla) }
+        val processor = ActionProcessor(registry)
+
+        /** Drive the game with pass-everything play until the turn leaves [from]. */
+        fun advanceOneTurn(start: GameState, from: EntityId): GameState {
+            var state = start
+            var safety = 0
+            while (state.activePlayerId == from && !state.gameOver) {
+                check(++safety < 500) { "turn never advanced (stuck at step ${state.step})" }
+
+                val pending = state.pendingDecision
+                if (pending is com.wingedsheep.engine.core.SelectCardsDecision) {
+                    val response = com.wingedsheep.engine.core.CardsSelectedResponse(
+                        pending.id, pending.options.take(pending.minSelections)
+                    )
+                    val result = processor.process(
+                        state, com.wingedsheep.engine.core.SubmitDecision(pending.playerId, response)
+                    ).result
+                    check(result.isSuccess || result.isPaused) { "discard failed: ${result.error}" }
+                    state = result.newState
+                    continue
+                }
+
+                val prio = state.priorityPlayerId ?: break
+                val action = when {
+                    state.step == Step.DECLARE_ATTACKERS &&
+                        state.activePlayerId == prio &&
+                        state.getEntity(prio)?.has<AttackersDeclaredThisCombatComponent>() != true ->
+                        DeclareAttackers(prio, emptyMap())
+                    state.step == Step.DECLARE_BLOCKERS && state.pendingDecision == null &&
+                        state.activePlayerId != prio -> DeclareBlockers(prio, emptyMap())
+                    else -> PassPriority(prio)
+                }
+                val result = processor.process(state, action).result
+                check(result.isSuccess || result.isPaused) { "action $action failed: ${result.error}" }
+                state = result.newState
+            }
+            return state
+        }
+
+        // The opening turn is turn 1, and every seat's turn gets its own number — this is a turn
+        // count, not a round count.
+        var state = initial
+        state.turnNumber shouldBe 1
+        state = advanceOneTurn(state, players[0])
+        state.activePlayerId shouldBe players[1]
+        state.turnNumber shouldBe 2
+
+        // Knock out seat 0 — the seat a round counter keyed its boundary on. `turnOrder` keeps
+        // eliminated players, so it would never come round again and the counter would freeze here
+        // for the rest of the game.
+        state = state.updateEntity(players[0]) { c ->
+            c.with(PlayerLostComponent(LossReason.CONCESSION))
+        }
+
+        state = advanceOneTurn(state, players[1])
+        state.activePlayerId shouldBe players[2]
+        state.turnNumber shouldBe 3
+
+        state = advanceOneTurn(state, players[2])
+        state.activePlayerId shouldBe players[3]
+        state.turnNumber shouldBe 4
+
+        // Wrapping past the eliminated seat is just another turn.
+        state = advanceOneTurn(state, players[3])
+        state.activePlayerId shouldBe players[1]
+        state.turnNumber shouldBe 5
     }
 
     test("an EachOpponent life-loss effect hits all three opponents and not the controller") {

@@ -22,10 +22,15 @@ import kotlinx.serialization.Serializable
  * @property entityId The entity that has the granted ability
  * @property ability The static ability that was granted
  * @property duration How long the grant lasts
+ * @property sourceId The permanent whose effect handed out the grant — see
+ *   [GrantedActivatedAbility.sourceId]. Required for source-keyed "for as long as …" durations so
+ *   `EndedDurationExpiryCheck` can drop the grant when its source leaves the battlefield; null for
+ *   durations that need no source.
  */
 @Serializable
 data class GrantedStaticAbility(
     val entityId: EntityId,
     val ability: StaticAbility,
-    val duration: Duration
+    val duration: Duration,
+    val sourceId: EntityId? = null
 )

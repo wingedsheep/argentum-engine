@@ -4,6 +4,8 @@ import com.wingedsheep.mtg.sets.discovery.CardDiscovery
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.MtgSet
 import com.wingedsheep.sdk.model.Printing
+import com.wingedsheep.sdk.model.TokenPrinting
+import com.wingedsheep.sdk.core.Color
 
 /**
  * Invasion (2000)
@@ -33,6 +35,27 @@ object InvasionSet : MtgSet {
     override val printings: List<Printing> by lazy {
         CardDiscovery.findPrintingsIn(CARDS_PACKAGE)
     }
+
+    /**
+     * Invasion predates token *cards* — Scryfall has no `tinv` set to sync from — so its token art
+     * is self-hosted under `web-client/public/images/tokens/` and declared here. Previously each
+     * token-making card repeated the path inline; the set is the right owner.
+     */
+    override val tokenArt: List<TokenPrinting> = listOf(
+        TokenPrinting(
+            name = "Saproling",
+            imageUri = "/images/tokens/inv-saproling.jpeg",
+            power = 1,
+            toughness = 1,
+            colors = setOf(Color.GREEN),
+        ),
+        // Pure Reflection's token is X/X, so power/toughness stay unpinned.
+        TokenPrinting(
+            name = "Reflection",
+            imageUri = "/images/tokens/inv-reflection.jpeg",
+            colors = setOf(Color.WHITE),
+        ),
+    )
 
     private const val CARDS_PACKAGE = "com.wingedsheep.mtg.sets.definitions.inv.cards"
 }

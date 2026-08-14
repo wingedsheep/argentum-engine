@@ -201,10 +201,7 @@ class ForEachExecutor(
     private fun resolvePlayers(player: Player, state: GameState, context: EffectContext): List<EntityId> {
         return when (player) {
             Player.Each -> state.activePlayers
-            Player.ActivePlayerFirst -> {
-                val activePlayer = state.activePlayerId ?: return state.activePlayers
-                listOf(activePlayer) + state.activePlayers.filter { it != activePlayer }
-            }
+            Player.ActivePlayerFirst -> state.apnapOrder
             Player.You -> listOf(context.controllerId)
             Player.EachOpponent -> state.getOpponents(context.controllerId)
             // Distinct owners of the cards still in the source's linked-exile pile. Resolve to
@@ -215,13 +212,12 @@ class ForEachExecutor(
             Player.TargetOpponent, Player.TargetPlayer -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )
-            // Single-player references (e.g. ControllerOf a targeted spell — Fear of Impostors'
-            // "its controller manifests dread") resolve to exactly that player. Fall back to all
-            // active players only when the reference yields nothing (a truly multi-player or
-            // unresolved ref).
-            else -> TargetResolutionUtils.resolvePlayerRef(player, context, state)
-                ?.let { listOf(it) }
-                ?: state.activePlayers
+            // Single-player references (e.g. ControllerOf a targeted permanent — Unwanted
+            // Remake's "its controller manifests dread") resolve to exactly that player. An
+            // unresolved reference means there is nobody to iterate, not "every player": that
+            // distinction is load-bearing for optional-target abilities whose "its controller"
+            // rider must do nothing when no target was chosen.
+            else -> listOfNotNull(TargetResolutionUtils.resolvePlayerRef(player, context, state))
         }
     }
 

@@ -48,7 +48,7 @@ val DiamondPickAxe = card("Diamond Pick-Axe") {
             ability = TriggeredAbility.create(
                 trigger = Triggers.attacks().event,
                 binding = Triggers.attacks().binding,
-                effect = Effects.CreateTreasure(imageUri = LciTokenArt.TREASURE)
+                effect = Effects.CreateTreasure()
             ),
             filter = Filters.EquippedCreature
         )

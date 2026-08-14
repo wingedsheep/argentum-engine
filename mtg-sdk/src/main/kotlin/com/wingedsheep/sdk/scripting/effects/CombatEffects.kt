@@ -95,7 +95,14 @@ sealed interface PreventionSourceFilter {
  *   [PreventionSourceFilter.FromGroup] (which filters the *source* of damage): one new field, so the
  *   next "prevent all damage to artifacts / to each opponent's creatures" card needs only a
  *   [GroupFilter], not a new effect. Only meaningful with [PreventionDirection.ToTarget]; honours
- *   [scope] (all damage vs combat-only) and [duration].
+ *   [scope] (all damage vs combat-only), [duration], and a [PreventionSourceFilter.FromGroup]
+ *   [sourceFilter] ("… by creatures").
+ * @property recipientGroupIncludesController Extends a [recipientGroup] shield to also protect the
+ *   shield's controller — the "you and" in "prevent all damage that would be dealt to **you and**
+ *   creatures you control this turn by creatures" (Eerie Interference, Riot Control). A player is
+ *   not a permanent, so it can never be expressed by the [GroupFilter] itself; this keeps the whole
+ *   recipient set on one shield instead of splitting it across two effects with divergent scopes.
+ *   Ignored when [recipientGroup] is null.
  * @property amount Amount of damage to prevent; null means prevent all
  * @property scope Whether to prevent all damage or only combat damage
  * @property direction Whether to prevent damage TO the target, FROM the target, or BOTH
@@ -116,6 +123,7 @@ sealed interface PreventionSourceFilter {
 data class PreventDamageEffect(
     val target: EffectTarget = EffectTarget.Controller,
     val recipientGroup: GroupFilter? = null,
+    val recipientGroupIncludesController: Boolean = false,
     val amount: DynamicAmount? = null,
     val scope: PreventionScope = PreventionScope.AllDamage,
     val direction: PreventionDirection = PreventionDirection.ToTarget,
@@ -153,8 +161,11 @@ data class PreventDamageEffect(
             PreventionScope.AllDamage -> append("damage ")
         }
         when {
-            recipientGroup != null ->
-                append("that would be dealt to ${recipientGroup.description.replaceFirstChar { it.lowercase() }}")
+            recipientGroup != null -> {
+                append("that would be dealt to ")
+                if (recipientGroupIncludesController) append("you and ")
+                append(recipientGroup.description.replaceFirstChar { it.lowercase() })
+            }
             direction == PreventionDirection.ToTarget -> append("that would be dealt to ${target.description}")
             direction == PreventionDirection.FromTarget -> append("${target.description} would deal")
             else -> append("that would be dealt to and dealt by ${target.description}")
@@ -505,6 +516,29 @@ data class MarkMustAttackThisTurnEffect(
 }
 
 /**
+ * Mark a creature as "blocks this turn if able" (Culvert Ambusher).
+ *
+ * The blocking mirror of [MarkMustAttackThisTurnEffect], and the *unrestricted* sibling of
+ * [ForceBlockEffect]: this requires the creature to block **some** attacker, not a named one, and
+ * the ability's source need not be attacking (or even be a creature). It is the one-shot,
+ * turn-scoped form of the static [com.wingedsheep.sdk.scripting.MustBlock] (Grand Melee) — both
+ * project the same "must block" requirement that the block-declaration validator enforces.
+ *
+ * Only a *requirement*, never a guarantee (CR 509.1c): a creature that is tapped, that can't block,
+ * or whose every possible block is illegal simply doesn't block, and its controller is never forced
+ * to pay a cost associated with blocking.
+ *
+ * @property target The creature to mark (typically `EffectTarget.ContextTarget(0)` — the ability's target)
+ */
+@SerialName("MarkMustBlockThisTurn")
+@Serializable
+data class MarkMustBlockThisTurnEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "${target.description} blocks this turn if able"
+}
+
+/**
  * Goad a target creature (CR 701.15).
  *
  * Until the goader's next turn, the targeted creature is goaded: it attacks each
@@ -693,6 +727,28 @@ data class SetSuspectedEffect(
     val duration: Duration = Duration.Permanent
 ) : Effect {
     override val description: String = "${target.description} becomes suspected"
+}
+
+/**
+ * "It's no longer suspected" (CR 701.60c) — the inverse of the whole suspect bundle.
+ *
+ * Undoes an [SetSuspectedEffect] *application*, not just its named status: the menace grant and the
+ * "can't block" restriction that [com.wingedsheep.sdk.dsl.Effects.Suspect] applies alongside it go
+ * away too, because they exist only for as long as the creature is suspected. Menace or can't-block
+ * from any *other* source is untouched — un-suspecting is not "lose menace".
+ *
+ * A no-op on a creature that isn't suspected. Suspect is not a copiable value and has no duration,
+ * so this is the only way the designation ever comes off a permanent that stays on the battlefield.
+ *
+ * Used by MKM's Absolving Lammasu ("all suspected creatures are no longer suspected"), and by the
+ * "you may have it become no longer suspected" riders (Airtight Alibi, Deadly Complication).
+ */
+@SerialName("RemoveSuspected")
+@Serializable
+data class RemoveSuspectedEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String = "${target.description} is no longer suspected"
 }
 
 

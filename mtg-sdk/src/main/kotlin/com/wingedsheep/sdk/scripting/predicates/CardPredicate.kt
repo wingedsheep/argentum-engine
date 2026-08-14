@@ -80,6 +80,13 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "has an Adventure"
     }
 
+    /** Matches a card whose Oracle rules-text box is empty. */
+    @SerialName("HasNoAbilities")
+    @Serializable
+    data object HasNoAbilities : CardPredicate {
+        override val description: String = "has no abilities"
+    }
+
     @SerialName("IsBasicLand")
     @Serializable
     data object IsBasicLand : CardPredicate {
@@ -295,6 +302,25 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Matches cards whose **card type** equals a card type **durably chosen by the source
+     * permanent** as it entered — read from that permanent's
+     * [com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent] under [slot] (a
+     * [com.wingedsheep.engine.state.components.battlefield.ChoiceValue.TextChoice] holding one of the
+     * CR 205.2a card-type names). The card-type analogue of [NameEqualsChosenComponent].
+     *
+     * Like its name sibling, this is **static-projection / cost-calculation safe**: the source
+     * permanent's id is supplied as the predicate-context source wherever a static ability's filter
+     * is evaluated. Used by card-type-keyed taxes such as Arachne, Psionic Weaver ("Spells of the
+     * chosen type cost {1} more to cast"). Fails closed (no match) when the source has made no such
+     * choice.
+     */
+    @SerialName("CardTypeEqualsChosenComponent")
+    @Serializable
+    data class CardTypeEqualsChosenComponent(val slot: ChoiceSlot = ChoiceSlot.CARD_TYPE) : CardPredicate {
+        override val description: String = "of the chosen type"
+    }
+
+    /**
      * Matches a card whose name is **not** shared with any Room the evaluating player controls
      * (CR 709). Per the Central Elevator ruling, only the names of a Room's *unlocked* doors
      * count: a Room with no unlocked doors contributes neither of its names, and a split Room
@@ -309,6 +335,38 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data object NameNotSharedWithControlledRoom : CardPredicate {
         override val description: String = "that doesn't have the same name as a Room you control"
+    }
+
+    /**
+     * Matches a permanent whose name isn't shared with a token the evaluating player controls.
+     * The candidate itself need not be a token; callers compose the appropriate card/type predicates.
+     * Models The Apprentice's Folly's target restriction.
+     */
+    @SerialName("NameNotSharedWithControlledToken")
+    @Serializable
+    data object NameNotSharedWithControlledToken : CardPredicate {
+        override val description: String = "that doesn't have the same name as a token you control"
+    }
+
+    /**
+     * Matches a permanent whose name isn't shared with **any other** permanent the evaluating
+     * player controls — "that doesn't have the same name as another permanent you control"
+     * (Yenna, Redtooth Regent).
+     *
+     * Broader than [NameNotSharedWithControlledToken] in two ways: the compared set is every
+     * permanent the controller has on the battlefield (tokens *and* cards), and the candidate
+     * itself is excluded so a permanent never disqualifies itself ("**another** permanent").
+     * Two permanents sharing a name therefore disqualify each other, not just one of them.
+     *
+     * Names are read through the projection ([ProjectedState.getName]) so a name-changing
+     * Layer 3 effect (Witness Protection, Honest Work) is respected on both sides of the
+     * comparison. Fails open (matches) when no controller is in scope.
+     */
+    @SerialName("NameNotSharedWithAnotherControlledPermanent")
+    @Serializable
+    data object NameNotSharedWithAnotherControlledPermanent : CardPredicate {
+        override val description: String =
+            "that doesn't have the same name as another permanent you control"
     }
 
     /**
@@ -461,6 +519,58 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         }
     }
 
+    /**
+     * Mana value *exactly* equal to a [DynamicAmount] resolved when the predicate is checked — the
+     * equality sibling of [ManaValueAtMostDynamic], and the open-ended counterpart of the fixed
+     * [ManaValueEquals] / cast-{X} [ManaValueEqualsX].
+     *
+     * Used by **Talion, the Kindly Lord** with `DynamicAmount.CastChoice(ChoiceSlot.CHOSEN_NUMBER)`
+     * to read the number chosen as it entered ("a spell with mana value … equal to the chosen
+     * number"). Per the printed ruling, an `{X}` spell's mana value on the stack already folds in
+     * the X it was cast for, so no special handling is needed here.
+     */
+    @SerialName("ManaValueEqualsDynamic")
+    @Serializable
+    data class ManaValueEqualsDynamic(val amount: DynamicAmount) : CardPredicate {
+        override val description: String = "with mana value equal to ${amount.description}"
+
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newAmount = amount.applyTextReplacement(replacer)
+            return if (newAmount === amount) this else copy(amount = newAmount)
+        }
+    }
+
+    /**
+     * Power *exactly* equal to a [DynamicAmount] resolved when the predicate is checked — the
+     * dynamic counterpart of [PowerEquals] / [PowerEqualsX]. An object with no power (a noncreature
+     * spell) never matches, whatever the amount resolves to.
+     */
+    @SerialName("PowerEqualsDynamic")
+    @Serializable
+    data class PowerEqualsDynamic(val amount: DynamicAmount) : CardPredicate {
+        override val description: String = "with power equal to ${amount.description}"
+
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newAmount = amount.applyTextReplacement(replacer)
+            return if (newAmount === amount) this else copy(amount = newAmount)
+        }
+    }
+
+    /**
+     * Toughness *exactly* equal to a [DynamicAmount] resolved when the predicate is checked — the
+     * dynamic counterpart of [ToughnessEquals]. An object with no toughness never matches.
+     */
+    @SerialName("ToughnessEqualsDynamic")
+    @Serializable
+    data class ToughnessEqualsDynamic(val amount: DynamicAmount) : CardPredicate {
+        override val description: String = "with toughness equal to ${amount.description}"
+
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newAmount = amount.applyTextReplacement(replacer)
+            return if (newAmount === amount) this else copy(amount = newAmount)
+        }
+    }
+
     @SerialName("ManaValueIsEven")
     @Serializable
     data object ManaValueIsEven : CardPredicate {
@@ -519,6 +629,21 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class PowerAtLeast(val min: Int) : CardPredicate {
         override val description: String = "with power $min or greater"
+    }
+
+    /**
+     * Power at least the X chosen for the source spell/ability — the "greater than or equal to"
+     * mirror of [ToughnessAtMostX], and the power analogue of [ManaValueAtMostX].
+     * Resolves against [PredicateContext.xValue] at evaluation time, so it works at a spell's
+     * resolution-time filter pass: Expel the Interlopers ("Choose a number between 0 and 10.
+     * Destroy all creatures with power greater than or equal to the chosen number") binds the
+     * chosen number as X and then wipes with this predicate.
+     */
+    @SerialName("PowerAtLeastX")
+    @Serializable
+    data object PowerAtLeastX : CardPredicate {
+        override val description: String = "with power X or greater"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate = this
     }
 
     @SerialName("ToughnessEquals")
@@ -779,6 +904,28 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Matches objects whose name equals that of at least one permanent the evaluating player
+     * controls matching [filter]. Used by Key to the Side-Door ("Discard a legendary card with the
+     * same name as a legendary permanent you control") with
+     * `filter = GameObjectFilter.Permanent.legendary()`. The name-sharing sibling of
+     * [SharesColorWithPermanentYouControl].
+     *
+     * Names are compared exactly, and read from the permanent's card definition rather than
+     * projected state — copy effects already rewrite the card component's name, and nothing in the
+     * layer system renames a permanent without doing so. A nameless object (a token with no name)
+     * never matches.
+     */
+    @SerialName("SharesNameWithPermanentYouControl")
+    @Serializable
+    data class SharesNameWithPermanentYouControl(val filter: GameObjectFilter) : CardPredicate {
+        override val description: String = "with the same name as ${filter.description} you control"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
      * Matches creature cards that share **no** creature type with any permanent the evaluating
      * player controls matching [filter]. Used by Radagast the Brown ("a creature card that doesn't
      * share a creature type with a creature you control") with `filter = GameObjectFilter.Creature`.
@@ -890,6 +1037,60 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     @Serializable
     data class TargetsMatching(val subfilter: GameObjectFilter) : CardPredicate {
         override val description: String = "that targets ${subfilter.description}"
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newSubfilter = subfilter.applyTextReplacement(replacer)
+            return if (newSubfilter !== subfilter) copy(subfilter = newSubfilter) else this
+        }
+    }
+
+    /**
+     * Matches an **activated or triggered ability on the stack** whose *source* (CR 113.7 — the
+     * object that generated it) matches [subfilter]. The "from a creature source" / "from an
+     * artifact source" clause: Echo, Perceptive Prodigy and Scientist Supreme of A.I.M.
+     *
+     * An ability on the stack is its own object (CR 113.3b/c) and carries none of its source's
+     * characteristics, so a plain type predicate applied to the ability entity can never be true.
+     * This predicate is the redirection: it re-points the match at the ability's source and
+     * evaluates [subfilter] there, which is why the restriction is a `CardPredicate` composed into
+     * the ordinary ability filter rather than a bespoke `TargetRequirement`. It composes with
+     * everything else the same way — `and`/`or`/`not`, controller predicates, any subfilter the SDK
+     * can express (`Creature`, `Artifact`, `Creature.youControl()`, a subtype, …) — instead of
+     * forcing a new target type per source category.
+     *
+     * **Last known information.** Once an ability is on the stack it exists independently of its
+     * source, and the source is routinely gone by the time the ability is targeted — a dies trigger's
+     * source is already in the graveyard, a self-sacrifice ability's source is already sacrificed
+     * (CR 113.7a, and CR 608.2b for the resolution-time re-check). The engine reads the source in
+     * two steps: its *projected* characteristics while it is on the battlefield, falling back to its
+     * printed ones once it has left, so "from a creature source" still matches a dead creature's
+     * dies trigger; and, when the source entity no longer exists at all — a **token** swept by
+     * CR 704.5d — the frozen `EntitySnapshot` the activation captured before the self-sacrifice cost
+     * took it, so "from an artifact source" matches a cracked Clue's draw ability. Equivalent
+     * source-characteristic resolution to `CantBeTargetedBySourceTypeAbilities` /
+     * protection-from-card-type (a parallel implementation, not shared code).
+     *
+     * Applied to a spell on the stack, or to any object that is not an ability, this is false — a
+     * spell is its own source and the clause deliberately does not reach it.
+     *
+     * **Known limits of that last-known read**, inherited from where the engine captures snapshots
+     * rather than from this predicate:
+     *  - a **nontoken** source that left the battlefield some other way (it died, it was exiled)
+     *    is read from the card sitting in that zone, so a type a continuous effect had granted it
+     *    (an animated land, a crewed Vehicle) is no longer visible — its *printed* types answer.
+     *    Only the self-sacrifice/self-exile cost path freezes the projected type line;
+     *  - a deleted-token source is only recoverable for an **activated** ability whose cost
+     *    sacrificed/exiled it (the Clue / Food / Blood / Treasure shape, which is where the clause
+     *    actually comes up). A *triggered* ability whose token source has since ceased to exist has
+     *    no equivalent snapshot on its stack object and stays unmatchable;
+     *  - the snapshot arm answers only card types, sub/supertypes, keywords, token-ness and
+     *    controller. A subfilter asking for anything else (mana value, color, a P/T comparison)
+     *    does not match a deleted-token source.
+     */
+    @SerialName("AbilitySourceMatches")
+    @Serializable
+    data class AbilitySourceMatches(val subfilter: GameObjectFilter) : CardPredicate {
+        override val description: String =
+            "from ${subfilter.indefiniteArticle} ${subfilter.description} source"
         override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
             val newSubfilter = subfilter.applyTextReplacement(replacer)
             return if (newSubfilter !== subfilter) copy(subfilter = newSubfilter) else this

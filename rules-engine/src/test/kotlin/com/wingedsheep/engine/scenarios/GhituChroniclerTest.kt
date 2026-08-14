@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseTargetsDecision
 import com.wingedsheep.engine.support.GameTestDriver
@@ -42,7 +43,7 @@ class GhituChroniclerTest : FunSpec({
         driver.giveMana(active, Color.RED, 2)
         driver.giveColorlessMana(active, 4)
         val chronicler = driver.putCardInHand(active, "Ghitu Chronicler")
-        driver.submitSuccess(CastSpell(playerId = active, cardId = chronicler, wasKicked = true))
+        driver.submitSuccess(CastSpell(playerId = active, cardId = chronicler, declaredCostSlot = ChoiceSlot.KICKED))
 
         // Resolve the creature; the kicked ETB trigger pauses for target selection.
         repeat(4) {

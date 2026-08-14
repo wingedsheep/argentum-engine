@@ -805,7 +805,9 @@
                         }
                     ]
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ],
         "staticAbilities": [
@@ -1329,7 +1331,8 @@
         "colorIdentityOverride": [
             "GREEN",
             "BLUE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "272",
@@ -2854,7 +2857,8 @@
         },
         "colorIdentityOverride": [
             "WHITE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "91",
@@ -3901,7 +3905,8 @@
         },
         "colorIdentityOverride": [
             "RED"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "133",
@@ -4819,7 +4824,8 @@
         },
         "colorIdentityOverride": [
             "WHITE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "13",
@@ -5366,7 +5372,8 @@
         },
         "colorIdentityOverride": [
             "WHITE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "16",
@@ -6101,7 +6108,8 @@
         "colorIdentityOverride": [
             "BLUE",
             "BLACK"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "218",
@@ -6291,7 +6299,8 @@
         },
         "colorIdentityOverride": [
             "GREEN"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "185",
@@ -6575,7 +6584,8 @@
         "colorIdentityOverride": [
             "BLACK",
             "GREEN"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "220",
@@ -7363,7 +7373,8 @@
         "colorIdentityOverride": [
             "BLACK",
             "RED"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "221",
@@ -9623,7 +9634,8 @@
         },
         "colorIdentityOverride": [
             "BLACK"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "104",
@@ -9957,7 +9969,8 @@
         },
         "colorIdentityOverride": [
             "BLUE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "58",
@@ -10151,7 +10164,8 @@
         "colorIdentityOverride": [
             "RED",
             "WHITE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "229",
@@ -10663,7 +10677,8 @@
             "BLUE",
             "BLACK",
             "RED"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "231",
@@ -10805,7 +10820,8 @@
         "colorIdentityOverride": [
             "BLACK",
             "RED"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "232",
@@ -11398,12 +11414,18 @@
         ],
         "additionalCosts": [
             {
-                "type": "SacrificeOrPay",
-                "filter": {
-                    "cardPredicates": [
-                        "IsCreature",
-                        "IsLegendary"
-                    ]
+                "type": "OrPay",
+                "cost": {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                "IsLegendary"
+                            ]
+                        }
+                    }
                 },
                 "alternativeManaCost": "{2}"
             }
@@ -14487,7 +14509,9 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
-    ]
+    ],
+    "hasNoManaCost": true,
+    "meldResult": true
 }
 
 // Random Encounter
@@ -17020,7 +17044,8 @@
         },
         "colorIdentityOverride": [
             "BLACK"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "115",
@@ -17237,7 +17262,8 @@
         "colorIdentityOverride": [
             "GREEN",
             "WHITE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "240",
@@ -17361,7 +17387,9 @@
                         "destination": "Hand"
                     }
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ],
         "replacementEffects": [
@@ -17689,7 +17717,8 @@
         },
         "colorIdentityOverride": [
             "BLUE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "73",
@@ -18012,7 +18041,8 @@
         },
         "colorIdentityOverride": [
             "BLACK"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "119",
@@ -18168,7 +18198,8 @@
         },
         "colorIdentityOverride": [
             "RED"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "158",
@@ -18350,7 +18381,8 @@
         },
         "colorIdentityOverride": [
             "GREEN"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "201",
@@ -21552,7 +21584,8 @@
             "BLACK",
             "RED",
             "GREEN"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "245",
@@ -21775,7 +21808,10 @@
                 },
                 "effect": {
                     "type": "DistributeCountersAmongTargets",
-                    "totalCounters": 2
+                    "totalCounters": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
                 },
                 "targetRequirements": [
                     {
@@ -21972,7 +22008,8 @@
         "colorIdentityOverride": [
             "BLUE",
             "RED"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "219",
@@ -24141,7 +24178,8 @@
         "colorIdentityOverride": [
             "BLUE",
             "BLACK"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "247",
@@ -24931,7 +24969,8 @@
         },
         "colorIdentityOverride": [
             "WHITE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "39",
@@ -25028,7 +25067,8 @@
         },
         "colorIdentityOverride": [
             "BLACK"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "125",
@@ -26620,7 +26660,8 @@
         },
         "colorIdentityOverride": [
             "BLACK"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "127",
@@ -26810,7 +26851,7 @@
                 "trigger": {
                     "type": "PermanentsSacrificedEvent",
                     "filter": "creature",
-                    "byAnyPlayer": true
+                    "sacrificedBy": "Each"
                 },
                 "binding": "ANY",
                 "effect": {

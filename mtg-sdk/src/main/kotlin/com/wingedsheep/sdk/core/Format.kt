@@ -15,6 +15,18 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 sealed interface Format {
+    /**
+     * Commander rules enabled by this game format. A non-null threshold means each player must
+     * designate a commander, receives a command zone, and can lose to commander damage.
+     *
+     * Team vs. Team may opt into these rules while retaining its team membership and individual
+     * life/turn model. Two-Headed Giant deliberately cannot: its shared-life rules conflict with
+     * Commander's per-player starting life.
+     */
+    val commanderDamageThreshold: Int? get() = null
+    val deckSize: Int? get() = null
+    val alwaysDivertToCommand: Boolean get() = false
+    val usesCommanders: Boolean get() = commanderDamageThreshold != null
 
     /**
      * CR 810.4 / 810.9 — the players on a team share **one life total** (and one pooled poison
@@ -49,7 +61,10 @@ sealed interface Format {
     data object Standard : Format
 
     /**
-     * 1v1 Commander (Phase 1). Multiplayer (3-4 free-for-all) is its own project.
+     * Commander, at any table size. Nothing here is per-seat-count: [startingLife] is already the
+     * multiplayer 40, and commander damage is tallied per *(commander, defending player)* pair
+     * rather than per opponent pair, so a pod needs no extra configuration — the same instance runs
+     * a 1v1 game and a six-player Free-for-All.
      *
      * @property commanderDamageThreshold Cumulative single-source combat damage that loses the
      *   game (CR 903.10a). Standard Commander is 21.
@@ -65,11 +80,11 @@ sealed interface Format {
      */
     @Serializable
     data class Commander(
-        val commanderDamageThreshold: Int = 21,
-        val deckSize: Int = 100,
+        override val commanderDamageThreshold: Int = 21,
+        override val deckSize: Int = 100,
         val startingLife: Int = 40,
         val startingHandSize: Int = 7,
-        val alwaysDivertToCommand: Boolean = false,
+        override val alwaysDivertToCommand: Boolean = false,
     ) : Format
 
     /**
@@ -147,19 +162,86 @@ sealed interface Format {
      *
      * @property startingLife Each player's own starting life total (standard 20).
      * @property startingHandSize Cards drawn for each player's opening hand.
+     * @property commanderDamageThreshold Non-null when this game also uses Commander rules.
+     * @property deckSize Total deck size including the commander for Commander-shaped games.
+     * @property alwaysDivertToCommand See [Commander.alwaysDivertToCommand].
      */
     @Serializable
     data class TeamVsTeam(
         val startingLife: Int = 20,
         val startingHandSize: Int = 7,
+        override val commanderDamageThreshold: Int? = null,
+        override val deckSize: Int? = null,
+        override val alwaysDivertToCommand: Boolean = false,
     ) : Format
 }
 
 /**
- * Preset shapes for drafted/sealed 1v1 commander formats. Each preset selects a
- * [Format.Commander] configuration tuned for 60-card limited play (paper Brawl life vs. classic
- * Commander life). The lobby host picks one of these when creating a Commander Draft or Sealed
- * lobby; the match builder converts it to a [Format.Commander] instance at game start.
+ * Which rules a lobby's games run under — the lobby-facing selection that resolves to a [Format]
+ * at match start.
+ *
+ * The engine has exactly one notion of commander-ness, [Format.usesCommanders], but the lobby used
+ * to reach it through three unrelated fields: the *pool-building* format (Commander Draft /
+ * Commander Sealed), the *deck-legality* restriction (Commander / Brawl / Standard Brawl), and the
+ * quick lobby's own format field. Every consumer therefore re-derived the same question, and the
+ * copies disagreed. This is the axis those reads should have been asking about all along:
+ *
+ * - Orthogonal to **[DeckFormat]**, which says what may go *in* a deck (Scryfall legality plus
+ *   singleton / size rules the deck validator enforces). Picking deck legality "Commander" no
+ *   longer implies 40 life and a command zone; that is this enum's job.
+ * - Orthogonal to **where the cards came from**. A Commander game can be played with a brought
+ *   deck, a sealed pool, or a draft — including a plain 15-card booster draft. The
+ *   Commander-Legends-shaped 20-card pack is a property of the pool, not of the rules.
+ * - Orthogonal to the **table**. Commander plays 1v1, in a Free-for-All pod and in Team vs. Team;
+ *   the one table it cannot have is Two-Headed Giant, whose shared team life total (CR 810.4) has
+ *   nowhere to put Commander's per-player 40 — which is why [Format.TwoHeadedGiant] exposes no
+ *   commander configuration.
+ *
+ * It is also the named slot the remaining commander variants become values of rather than new
+ * draft shapes: Oathbreaker and Pauper Commander (both Phase 4 in `backlog/commander-format.md`)
+ * are `Commander`-shaped data with different field values, so they belong here.
+ */
+@Serializable
+enum class GameRules {
+    /** The default: whatever [Format] the table implies, with no command zone. */
+    STANDARD,
+
+    /**
+     * Commander (CR 903): each player designates a commander, gets a command zone, and can lose to
+     * 21 commander damage. Resolves to [Format.Commander] — or to a commander-configured
+     * [Format.TeamVsTeam] at a team table.
+     */
+    COMMANDER;
+
+    /** Whether games under these rules use the engine's commander code path. */
+    val usesCommanders: Boolean get() = this == COMMANDER
+
+    companion object {
+        /**
+         * The rules an older client or an older persisted lobby meant, derived from the two fields
+         * that used to imply them.
+         *
+         * The only place that inference lives: a lobby created before the Rules axis existed said
+         * "Commander" either by choosing a Commander-Legends pack shape ([commanderPackShape]) or
+         * by restricting deck legality to a commander-shaped [DeckFormat]. Both now merely
+         * *default* the axis, so anything that reads a lobby without an explicit selection reads
+         * this instead of re-deriving the disjunction.
+         */
+        fun inferred(commanderPackShape: Boolean, deckFormat: DeckFormat?): GameRules =
+            if (commanderPackShape || deckFormat?.isCommanderShape == true) COMMANDER else STANDARD
+    }
+}
+
+/**
+ * Preset shapes for drafted/sealed commander formats. Each preset selects a [Format.Commander]
+ * configuration tuned for 60-card limited play; the match builder converts it to a
+ * [Format.Commander] instance at game start.
+ *
+ * [BRAWL] and [COMMANDER] are the two 1v1 life-total tunings the lobby host chooses between. [POD]
+ * is not a host choice at all — it is what a multiplayer table plays at, because paper Commander's
+ * 40 life *is* the multiplayer number (the lower two exist only to keep a 1v1 race from dragging).
+ * The server resolves which one applies from the lobby's table shape, so a Commander Draft pod
+ * can't accidentally start at 25 life.
  */
 @Serializable
 enum class CommanderPreset(
@@ -171,7 +253,14 @@ enum class CommanderPreset(
     BRAWL(deckSize = 60, startingLife = 25, commanderDamage = 16),
 
     /** Closer to Commander Legends' template — slower, more recursive games. */
-    COMMANDER(deckSize = 60, startingLife = 30, commanderDamage = 21);
+    COMMANDER(deckSize = 60, startingLife = 30, commanderDamage = 21),
+
+    /**
+     * Multiplayer pod (Free-for-All / Team vs. Team). Paper Commander's 40 life and 21 commander
+     * damage, over a 60-card limited deck: a pod spreads damage across several defenders, so the
+     * 1v1 tunings end games before the format's politics get a chance to happen.
+     */
+    POD(deckSize = 60, startingLife = 40, commanderDamage = 21);
 
     fun toFormat(): Format.Commander = Format.Commander(
         commanderDamageThreshold = commanderDamage,

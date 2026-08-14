@@ -654,7 +654,7 @@ internal fun EmitCtx.dynamicAmountExpr(node: JsonElement?): Dsl? {
         val bareLandCount = subtype == null && "\"Land\"" in countBlob &&
             "IsLandType" !in countBlob && "IsBasicLand" !in countBlob && "IsSupertype" !in countBlob
         var filter = when {
-            subtype != null -> Lit("GameObjectFilter.Creature").dot("withSubtype", arg("\"$subtype\""))
+            subtype != null -> Lit("GameObjectFilter.Creature").dot("withSubtype", arg(subtypeArg(subtype)))
             bareLandCount -> Lit("GameObjectFilter.Land")
             else -> landSearchFilterExpr(node)
         }
@@ -927,6 +927,17 @@ internal fun EmitCtx.actionConditionDsl(cond: JsonObject?): String? {
                 }
             }
         }
+    }
+    // "If this spell was bargained, …" (CR 702.166b, Wilds of Eldraine — Candy Grapple, Archon's
+    // Glory, Kellan's Lightblades): `SpellPassesFilter(ThisSpell, WasBargained)`. The declaration is
+    // carried by the spell on the stack, which `Conditions.WasBargained` reads directly. Only the
+    // this-spell subject renders — a `WasBargained` test on some *other* spell isn't the linked
+    // ability CR 702.166c describes, so it declines (-> SCAFFOLD).
+    if (cond.strField("_Condition") == "SpellPassesFilter") {
+        val args = cond["args"].asArr
+        val subject = (args?.getOrNull(0) as? JsonObject)?.strField("_Spell")
+        val filter = (args?.getOrNull(1) as? JsonObject)?.strField("_Spells")
+        if (subject == "ThisSpell" && filter == "WasBargained") return "Conditions.WasBargained"
     }
     // "if this spell was cast from anywhere other than your hand" (Antiquities on the Loose) — a
     // resolution-time gate on the resolving spell's cast-origin zone. The IR is

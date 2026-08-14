@@ -105,6 +105,72 @@
     ]
 }
 
+// Brainstorm
+{
+    "name": "Brainstorm",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Draw three cards, then put two cards from your hand on top of your library in any order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
+                            },
+                            "storeSelected": "selected1"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            },
+                            "order": "ControllerChooses"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Christopher Rush",
+        "flavorText": "\"I reeled from the blow, and then suddenly, I knew exactly what to do. Within moments, victory was mine.\"\n—Gustha Ebbasdotter,\nKjeldoran Royal Mage",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d42d7aa-7f53-4cfc-842a-086aab2448d1.jpg?1783947518"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Brushland
 {
     "name": "Brushland",

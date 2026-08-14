@@ -1,9 +1,13 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.ChooseOptionDecision
+import com.wingedsheep.engine.core.OptionChosenResponse
 import com.wingedsheep.engine.core.SelectManaSourcesDecision
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.ons.cards.WordsOfWilding
 import com.wingedsheep.mtg.sets.definitions.ons.cards.WordsOfWorship
 import com.wingedsheep.mtg.sets.definitions.scg.cards.CallToTheGrave
 import com.wingedsheep.sdk.core.Color
@@ -12,6 +16,8 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.CreatureStats
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
@@ -48,6 +54,12 @@ class WordsOfWorshipTest : FunSpec({
         val driver = GameTestDriver()
         driver.registerCards(TestCards.all + listOf(Inspiration, Concentrate))
         return driver
+    }
+
+    fun GameTestDriver.countBears(playerId: EntityId): Int {
+        return getCreatures(playerId).count { entityId ->
+            state.getEntity(entityId)?.get<CardComponent>()?.name == "Bear Token"
+        }
     }
 
     test("activating Words of Worship replaces next draw with 5 life gain") {
@@ -229,9 +241,9 @@ class WordsOfWorshipTest : FunSpec({
         driver.getLifeTotal(activePlayer) shouldBe initialLife
     }
 
-    // --- promptOnDraw tests ---
+    // --- Tests: activating via normal ability activation (promptOnDraw removed) ---
 
-    test("draw step prompts to activate Words of Worship, player accepts") {
+    test("manual activation — shield replaces draw during the draw step") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -241,39 +253,37 @@ class WordsOfWorshipTest : FunSpec({
         val activePlayer = driver.activePlayer!!
 
         driver.putPermanentOnBattlefield(activePlayer, "Words of Worship")
-        driver.putPermanentOnBattlefield(activePlayer, "Plains")
 
-        // Advance past turn 1 to reach active player's draw step on turn 3
+        // Advance to turn 1 precombat main (past skipped draw step)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
 
-        driver.state.activePlayerId shouldBe activePlayer
-        val initialLife = driver.getLifeTotal(activePlayer)
-        val initialHandSize = driver.getHandSize(activePlayer)
-
-        // Pass through upkeep to reach draw step
+        // Activate Words of Worship during the main phase
+        driver.giveMana(activePlayer, Color.WHITE, 1)
+        val wordsId = driver.findPermanent(activePlayer, "Words of Worship")!!
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = wordsId,
+                abilityId = abilityId,
+                targets = emptyList()
+            )
+        )
         driver.bothPass()
 
-        // Should now be at DRAW with a mana source selection decision
-        driver.state.step shouldBe Step.DRAW
-        val decision = driver.pendingDecision
-        decision shouldNotBe null
-        (decision is SelectManaSourcesDecision) shouldBe true
-        val manaDecision = decision as SelectManaSourcesDecision
-        manaDecision.canDecline shouldBe true
+        // Cast Inspiration (draw 2) — 1st draw replaced, 2nd normal
+        val initialLife = driver.getLifeTotal(activePlayer)
+        val initialHandSize = driver.getHandSize(activePlayer)
+        driver.giveMana(activePlayer, Color.BLUE, 4)
+        val inspiration = driver.putCardInHand(activePlayer, "Inspiration")
+        driver.castSpell(activePlayer, inspiration)
+        driver.bothPass()
 
-        // Accept: auto-pay to activate Words of Worship
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Draw replaced with +5 life, no card drawn
+        // 1 draw replaced with +5 life, 1 card drawn normally
         driver.getLifeTotal(activePlayer) shouldBe initialLife + 5
-        driver.getHandSize(activePlayer) shouldBe initialHandSize
+        driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
     }
 
-    test("draw step allows declining Words of Worship activation") {
+    test("unactivated Words of Worship does nothing during draw step") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -299,15 +309,12 @@ class WordsOfWorshipTest : FunSpec({
         driver.bothPass()
         driver.state.step shouldBe Step.DRAW
 
-        // Decline the activation
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Normal draw happens - no life gain
+        // No prompt — normal draw happens
         driver.getLifeTotal(activePlayer) shouldBe initialLife
         driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
     }
 
-    test("spell draw prompts to activate Words of Worship for each draw") {
+    test("manual activation covers multiple draws when stacked") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -317,8 +324,6 @@ class WordsOfWorshipTest : FunSpec({
         val activePlayer = driver.activePlayer!!
 
         driver.putPermanentOnBattlefield(activePlayer, "Words of Worship")
-
-        // Give untapped lands for mana to pay for activations
         driver.putPermanentOnBattlefield(activePlayer, "Plains")
         driver.putPermanentOnBattlefield(activePlayer, "Plains")
         driver.putPermanentOnBattlefield(activePlayer, "Plains")
@@ -326,6 +331,21 @@ class WordsOfWorshipTest : FunSpec({
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
         val initialLife = driver.getLifeTotal(activePlayer)
+
+        // Activate 3 times to create 3 shields
+        val wordsId = driver.findPermanent(activePlayer, "Words of Worship")!!
+        driver.giveMana(activePlayer, Color.WHITE, 3)
+        repeat(3) {
+            driver.submitSuccess(
+                ActivateAbility(
+                    playerId = activePlayer,
+                    sourceId = wordsId,
+                    abilityId = abilityId,
+                    targets = emptyList()
+                )
+            )
+            driver.bothPass()
+        }
 
         // Give mana to cast Concentrate ({2}{U}{U})
         driver.giveMana(activePlayer, Color.BLUE, 4)
@@ -335,23 +355,11 @@ class WordsOfWorshipTest : FunSpec({
         driver.castSpell(activePlayer, concentrate)
         driver.bothPass()
 
-        // Draw 1: Prompted to activate Words of Worship - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Draw 2: Prompted again - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Draw 3: Prompted again - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
         // All 3 draws replaced with +5 life each = +15 total
         driver.getLifeTotal(activePlayer) shouldBe initialLife + 15
     }
 
-    test("spell draw prompt can be declined per-draw") {
+    test("manual activation — one activation replaces one draw from a two-draw spell") {
         val driver = createDriver()
         driver.initMirrorMatch(
             deck = Deck.of("Grizzly Bears" to 40),
@@ -368,46 +376,18 @@ class WordsOfWorshipTest : FunSpec({
         val initialLife = driver.getLifeTotal(activePlayer)
         val initialHandSize = driver.getHandSize(activePlayer)
 
-        // Give mana to cast Inspiration ({3}{U})
-        driver.giveMana(activePlayer, Color.BLUE, 4)
-
-        // Cast Inspiration (draw 2)
-        val inspiration = driver.putCardInHand(activePlayer, "Inspiration")
-        driver.castSpell(activePlayer, inspiration)
-        driver.bothPass()
-
-        // Draw 1: Prompted - DECLINE
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
-
-        // Draw 2: Prompted again - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // 1 normal draw + 1 replaced with +5 life
-        driver.getLifeTotal(activePlayer) shouldBe initialLife + 5
-        // initialHandSize + 1 (putCardInHand) - 1 (cast Inspiration) + 1 (normal draw 1) = initialHandSize + 1
-        driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
-    }
-
-    test("spell draw prompt can be accepted then declined per-draw") {
-        val driver = createDriver()
-        driver.initMirrorMatch(
-            deck = Deck.of("Grizzly Bears" to 40),
-            startingLife = 20
+        // Activate once
+        driver.giveMana(activePlayer, Color.WHITE, 1)
+        val wordsId = driver.findPermanent(activePlayer, "Words of Worship")!!
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = wordsId,
+                abilityId = abilityId,
+                targets = emptyList()
+            )
         )
-
-        val activePlayer = driver.activePlayer!!
-
-        driver.putPermanentOnBattlefield(activePlayer, "Words of Worship")
-        // Two Plains so there's mana to be prompted for both draws
-        driver.putPermanentOnBattlefield(activePlayer, "Plains")
-        driver.putPermanentOnBattlefield(activePlayer, "Plains")
-
-        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-
-        val initialLife = driver.getLifeTotal(activePlayer)
-        val initialHandSize = driver.getHandSize(activePlayer)
+        driver.bothPass()
 
         // Give mana to cast Inspiration ({3}{U})
         driver.giveMana(activePlayer, Color.BLUE, 4)
@@ -416,91 +396,10 @@ class WordsOfWorshipTest : FunSpec({
         val inspiration = driver.putCardInHand(activePlayer, "Inspiration")
         driver.castSpell(activePlayer, inspiration)
         driver.bothPass()
-
-        // Draw 1: Prompted - ACCEPT
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Draw 2: Prompted again - DECLINE
-        (driver.pendingDecision is SelectManaSourcesDecision) shouldBe true
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = false)
 
         // 1 replaced with +5 life + 1 normal draw
         driver.getLifeTotal(activePlayer) shouldBe initialLife + 5
-        // initialHandSize + 1 (putCardInHand) - 1 (cast Inspiration) + 1 (normal draw 2) = initialHandSize + 1
         driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
-    }
-
-    test("draw step prompts for Words of Worship even when upkeep triggers exist (Call to the Grave)") {
-        val driver = createDriver()
-        driver.registerCards(listOf(CallToTheGrave))
-        driver.initMirrorMatch(
-            deck = Deck.of("Grizzly Bears" to 40),
-            startingLife = 20
-        )
-
-        val activePlayer = driver.activePlayer!!
-        val opponent = driver.getOpponent(activePlayer)
-
-        driver.putPermanentOnBattlefield(activePlayer, "Words of Worship")
-        driver.putPermanentOnBattlefield(activePlayer, "Plains")
-        driver.putPermanentOnBattlefield(activePlayer, "Call to the Grave")
-        // Put non-Zombie creatures for Call to the Grave sacrifice
-        // Need enough to survive through 3 upkeeps (turn 1 P1, turn 2 P2, turn 3 P1)
-        repeat(3) { driver.putPermanentOnBattlefield(activePlayer, "Grizzly Bears") }
-        repeat(2) { driver.putPermanentOnBattlefield(opponent, "Grizzly Bears") }
-
-        // Advance past turn 1 to reach active player's upkeep on turn 3
-        // (Same pattern as existing promptOnDraw tests)
-        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-        driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)
-        driver.passPriorityUntil(Step.UPKEEP)
-
-        driver.state.activePlayerId shouldBe activePlayer
-        val initialLife = driver.getLifeTotal(activePlayer)
-        val initialHandSize = driver.getHandSize(activePlayer)
-
-        // Debug: check state before resolving trigger
-        println("DEBUG: step=${driver.state.step}, stack=${driver.state.stack.size}, priority=${driver.state.priorityPlayerId}, pending=${driver.pendingDecision?.javaClass?.simpleName}")
-
-        // At UPKEEP, Call to the Grave trigger is on the stack.
-        // Both pass to resolve it (sacrifice a non-Zombie creature).
-        val resolveResult = driver.bothPass()
-        println("DEBUG after 1st bothPass: step=${driver.state.step}, stack=${driver.state.stack.size}, priority=${driver.state.priorityPlayerId}, pending=${driver.pendingDecision?.javaClass?.simpleName}, paused=${resolveResult.isPaused}, success=${resolveResult.isSuccess}")
-
-        // Handle any pending sacrifice decision
-        if (driver.pendingDecision != null && driver.state.step == Step.UPKEEP) {
-            println("DEBUG: auto-resolving decision: ${driver.pendingDecision?.javaClass?.simpleName}")
-            driver.autoResolveDecision()
-            println("DEBUG after auto-resolve: step=${driver.state.step}, stack=${driver.state.stack.size}, priority=${driver.state.priorityPlayerId}, pending=${driver.pendingDecision?.javaClass?.simpleName}")
-        }
-
-        // After trigger resolved, we're still at UPKEEP with priority.
-        // Both pass to advance to DRAW step.
-        if (driver.state.priorityPlayerId != null && driver.state.step == Step.UPKEEP) {
-            driver.bothPass()
-            println("DEBUG after 2nd bothPass: step=${driver.state.step}, stack=${driver.state.stack.size}, priority=${driver.state.priorityPlayerId}, pending=${driver.pendingDecision?.javaClass?.simpleName}")
-        }
-
-        if (driver.state.priorityPlayerId != null && driver.state.step == Step.UPKEEP) {
-            driver.bothPass()
-            println("DEBUG after 3rd bothPass: step=${driver.state.step}, stack=${driver.state.stack.size}, priority=${driver.state.priorityPlayerId}, pending=${driver.pendingDecision?.javaClass?.simpleName}")
-        }
-
-        // Should now be at DRAW with a mana source selection decision (Words of Worship prompt)
-        driver.state.step shouldBe Step.DRAW
-        val decision = driver.pendingDecision
-        decision shouldNotBe null
-        (decision is SelectManaSourcesDecision) shouldBe true
-
-        // Accept: pay to activate Words of Worship
-        driver.submitManaAutoPayOrDecline(activePlayer, autoPay = true)
-
-        // Draw replaced with +5 life, no card drawn
-        driver.getLifeTotal(activePlayer) shouldBe initialLife + 5
-        driver.getHandSize(activePlayer) shouldBe initialHandSize
     }
 
     test("draw step does not prompt when Words of Worship activation is not affordable") {
@@ -535,5 +434,73 @@ class WordsOfWorshipTest : FunSpec({
         // Normal draw happened, no life gain
         driver.getLifeTotal(activePlayer) shouldBe initialLife
         driver.getHandSize(activePlayer) shouldBe initialHandSize + 1
+    }
+
+    test("Words of Worship and Words of Wilding — activating both replaces both draws with life gain and a Bear") {
+        val driver = createDriver()
+        driver.initMirrorMatch(
+            deck = Deck.of("Grizzly Bears" to 40),
+            startingLife = 20
+        )
+
+        val activePlayer = driver.activePlayer!!
+
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Worship")
+        driver.putPermanentOnBattlefield(activePlayer, "Words of Wilding")
+
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val worshipId = driver.findPermanent(activePlayer, "Words of Worship")!!
+        val wildingId = driver.findPermanent(activePlayer, "Words of Wilding")!!
+        val worshipAbility = WordsOfWorship.activatedAbilities.first().id
+        val wildingAbility = WordsOfWilding.activatedAbilities.first().id
+
+        val initialLife = driver.getLifeTotal(activePlayer)
+
+        // Activate Words of Worship
+        driver.giveMana(activePlayer, Color.WHITE, 1)
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = worshipId,
+                abilityId = worshipAbility,
+                targets = emptyList()
+            )
+        )
+        driver.bothPass()
+
+        // Activate Words of Wilding
+        driver.giveMana(activePlayer, Color.GREEN, 1)
+        driver.submitSuccess(
+            ActivateAbility(
+                playerId = activePlayer,
+                sourceId = wildingId,
+                abilityId = wildingAbility,
+                targets = emptyList()
+            )
+        )
+        driver.bothPass()
+
+        // Cast Inspiration (draw 2) — 1st draw replaced with +5 life, 2nd with Bear token
+        driver.giveMana(activePlayer, Color.BLUE, 4)
+        val inspiration = driver.putCardInHand(activePlayer, "Inspiration")
+        driver.castSpell(activePlayer, inspiration)
+        driver.bothPass()
+
+        // Two different shields exist (Worship + Wilding) — engine pauses for choice (CR 616.1e)
+        val worshipIdx = (driver.pendingDecision as ChooseOptionDecision)
+            .options.indexOfFirst { it.contains("Worship", ignoreCase = true) }
+        driver.submitDecision(activePlayer, OptionChosenResponse(driver.pendingDecision!!.id, worshipIdx))
+
+        // Words of Worship replaced first draw: gained 5 life
+        driver.getLifeTotal(activePlayer) shouldBe initialLife + 5
+
+        // Words of Wilding replaced second draw: created a 2/2 green Bear token
+        driver.countBears(activePlayer) shouldBe 1
+        val bear = driver.findPermanent(activePlayer, "Bear Token")
+        bear shouldNotBe null
+        val bearCard = driver.state.getEntity(bear!!)!!.get<CardComponent>()!!
+        bearCard.baseStats shouldBe CreatureStats(2, 2)
+        bearCard.colors shouldBe setOf(Color.GREEN)
     }
 })

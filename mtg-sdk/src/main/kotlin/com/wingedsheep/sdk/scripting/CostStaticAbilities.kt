@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.text.TextReplacer
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -424,6 +425,20 @@ sealed interface CostReductionSource {
     }
 
     /**
+     * Reduces cost by your speed, 0–4 (CR 702.179) — "Noncreature spells you cast cost {X} less to
+     * cast, where X is your speed" (Samut, the Driving Force).
+     *
+     * "No speed" reads as 0 (CR 702.179f), so there is no has-speed distinction to make here: a
+     * player who never started their engines simply gets no reduction. Speed is per-player and never
+     * pooled in team games, so this always reads the *casting* player's speed.
+     */
+    @SerialName("YourSpeed")
+    @Serializable
+    data object YourSpeed : CostReductionSource {
+        override val description: String = "your speed"
+    }
+
+    /**
      * Reduces cost by number of creatures you control.
      */
     @SerialName("CreaturesYouControl")
@@ -557,6 +572,60 @@ sealed interface CostReductionSource {
     }
 
     /**
+     * Reduces cost by the *sum* of a numeric [property] over the permanents the caster controls
+     * matching a [filter] — "{X} less, where X is the total <property> of <filter> you control".
+     * Empty matches yield 0 reduction.
+     *
+     * The sum twin of [GreatestPropertyAmongPermanentsYouControl], sharing its `(property, filter)`
+     * axes and its read rules: power/toughness come from projected state (CR 613) so counters and
+     * lords count, and mana value comes from the card definition (X-cost permanents contribute
+     * X = 0). Negative power subtracts from the total, per Ghalta's ruling on the same "total
+     * power" wording; only the finished sum is floored at 0.
+     *
+     * The filtered generalization of [TotalPowerYouControl], the same way
+     * [PermanentsYouControlMatching] generalizes [CreaturesYouControl]:
+     *  - `TotalPropertyAmongPermanentsYouControl(EntityNumericProperty.Power, Filters.Creature.withKeyword(FLYING))`
+     *    — The Lord of the Eagles ("the total power of creatures you control with flying").
+     *
+     * @property property Which numeric characteristic to sum
+     * @property filter The filter that controlled permanents must match
+     */
+    @SerialName("TotalPropertyAmongPermanentsYouControl")
+    @Serializable
+    data class TotalPropertyAmongPermanentsYouControl(
+        val property: EntityNumericProperty,
+        val filter: GameObjectFilter
+    ) : CostReductionSource {
+        override val description: String = "the total ${property.description} of ${filter.description} you control"
+    }
+
+    /**
+     * Reduces cost by a numeric [property] of the permanent the *reducing ability's own source* is
+     * attached to — "{X} less to cast, where X is equipped creature's power" (Glamdring,
+     * Foe-hammer).
+     *
+     * The odd one out in this family: every other source aggregates over a group the caster
+     * controls, while this one reads a single permanent found by walking the Equipment's/Aura's
+     * attachment. It is therefore only meaningful on a [ModifySpellCost] printed on a permanent
+     * that can be attached; an unattached (or non-attaching) source contributes 0, which is exactly
+     * what an Equipment sitting on the battlefield with nothing equipped should do.
+     *
+     * Shares the read rules of [GreatestPropertyAmongPermanentsYouControl] and
+     * [TotalPropertyAmongPermanentsYouControl]: power/toughness come from projected state (CR 613),
+     * so counters, anthems, and the Equipment's own bonus all count; mana value comes from the card
+     * definition. Negative power floors at 0 — a cost can't be *increased* by a reduction clause.
+     *
+     * @property property Which numeric characteristic of the attached permanent to read
+     */
+    @SerialName("AttachedPermanentProperty")
+    @Serializable
+    data class AttachedPermanentProperty(
+        val property: EntityNumericProperty
+    ) : CostReductionSource {
+        override val description: String = "the attached permanent's ${property.description}"
+    }
+
+    /**
      * Reduces cost by a fixed amount if a creature is currently attacking the caster.
      * Used for cards like Swat Away ("This spell costs {2} less to cast if a creature
      * is attacking you").
@@ -571,6 +640,22 @@ sealed interface CostReductionSource {
     @Serializable
     data class FixedIfCreatureAttackingYou(val amount: Int) : CostReductionSource {
         override val description: String = "$amount if a creature is attacking you"
+    }
+
+    /**
+     * Reduces cost by a fixed amount if a creature died this turn under *any* player's control —
+     * the morbid family's cost-reduction shape ("This spell costs {3} less to cast if a creature
+     * died this turn", Dreaded Bat-Cloud).
+     *
+     * Reads the same per-player died-this-turn tally as
+     * [com.wingedsheep.sdk.scripting.conditions.CreatureDiedThisTurnCondition], summed across the
+     * table, so an opponent's creature dying counts. Turn history, not a graveyard scan: a creature
+     * that died and was then exiled or reanimated still counts.
+     */
+    @SerialName("FixedIfCreatureDiedThisTurn")
+    @Serializable
+    data class FixedIfCreatureDiedThisTurn(val amount: Int) : CostReductionSource {
+        override val description: String = "$amount if a creature died this turn"
     }
 
     /**
@@ -653,6 +738,55 @@ sealed interface CostReductionSource {
         val amountPerPermanent: Int = 1
     ) : CostReductionSource {
         override val description: String = "the number of permanents sacrificed this turn"
+    }
+
+    /**
+     * Reduces cost by [amountPerCreature] for each creature that was declared as an attacker this
+     * turn — by ANY player, not just the caster ("for each creature that attacked this turn" is
+     * not controller-scoped), and counting every combat phase this turn.
+     *
+     * The turn-history sibling of [PermanentsSacrificedThisTurn], and deliberately *not*
+     * `PermanentsOnBattlefieldMatching(Creature.attackedThisTurn())`: that reads the live
+     * battlefield, so an attacker that died in combat would stop counting. The count here is
+     * the union of every player's `PlayerAttackersThisTurnComponent.attackerIds` — the same set
+     * the engine already maintains for raid — which survives the attacker leaving the
+     * battlefield, so a trick cast after combat damage still sees the creatures that traded.
+     *
+     * Used for Witchstalker Frenzy ("This spell costs {1} less to cast for each creature that
+     * attacked this turn"). Per its ruling the reduction never touches the colored part of the
+     * cost, so it can't reduce below `{R}` — that clamping is the generic-reduction rail's, not
+     * this source's.
+     */
+    @SerialName("CreaturesThatAttackedThisTurn")
+    @Serializable
+    data class CreaturesThatAttackedThisTurn(
+        val amountPerCreature: Int = 1
+    ) : CostReductionSource {
+        override val description: String = "the number of creatures that attacked this turn"
+    }
+
+    /**
+     * Reduces cost by [amountPerType] for each *card type* among the cards in the caster's
+     * graveyard — Emrakul, the Promised End ("This spell costs {1} less to cast for each card type
+     * among cards in your graveyard").
+     *
+     * Counts distinct card types (CR 205.2a: artifact, battle, creature, enchantment, instant,
+     * kindred, land, planeswalker, sorcery), never supertypes or subtypes. A single card with
+     * several types (an artifact creature) contributes each of its types once, and the same type
+     * across many cards still counts once — so the cap is the number of card types in the game,
+     * not the graveyard's size.
+     *
+     * The counting sibling of [CardsInGraveyardMatchingFilter], which totals *cards*: nine
+     * creature cards reduce by nine there and by one here. Uses the same aggregation as
+     * `Conditions.Delirium` (`Aggregation.DISTINCT_TYPES` over the graveyard), so a card that
+     * satisfies delirium sees a matching reduction.
+     */
+    @SerialName("CardTypesInYourGraveyard")
+    @Serializable
+    data class CardTypesInYourGraveyard(
+        val amountPerType: Int = 1
+    ) : CostReductionSource {
+        override val description: String = "the number of card types among cards in your graveyard"
     }
 }
 
@@ -776,11 +910,12 @@ sealed interface UnlockCostTarget {
  * generalized so one type covers the family:
  *  - **Power Artifact** ("Enchanted artifact's activated abilities cost {2} less to activate. This
  *    effect can't reduce the mana in that cost to less than one mana.") →
- *    `ReduceActivatedAbilityCost(GroupFilter.attachedCreature(), amount = 2, manaFloor = 1)`. The
+ *    `ReduceActivatedAbilityCost(GroupFilter.attachedCreature(), amount = DynamicAmount.Fixed(2), manaFloor = 1)`. The
  *    `attachedCreature()` scope resolves to the enchanted permanent, so the reduction keys to the
  *    artifact this Aura is attached to.
- *  - A future "your creatures' activated abilities cost {1} less" lord →
- *    `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Creature.youControl()), amount = 1)`.
+ *  - A "your creatures' activated abilities cost {X} less, where X is this creature's power" lord →
+ *    `ReduceActivatedAbilityCost(GroupFilter(GameObjectFilter.Creature.youControl()),
+ *    amount = DynamicAmount.EntityProperty(EntityReference.Source, EntityNumericProperty.Power))`.
  *
  * Only the **generic** portion of the ability's mana cost is reduced; colored/hybrid/Phyrexian pips
  * are untouched (CR 118.7). [manaFloor] is the minimum *total* mana the cost may be reduced to: with
@@ -789,22 +924,41 @@ sealed interface UnlockCostTarget {
  * an ordinary reduction. Non-mana costs (`{T}`, sacrifice) and abilities with no mana cost are
  * unaffected. Multiple sources stack additively before the floor is applied.
  *
+ * [exhaustOnly] narrows the reduction to abilities marked `isExhaust` (CR 702.177) — Boom Scholar's
+ * "Exhaust abilities of other permanents you control cost {2} less to activate." It gates on the
+ * *ability*, not the permanent, so a matching permanent's ordinary activated abilities cost full
+ * price while its exhaust ability is discounted. [powerUpOnly] is its sibling for power-up
+ * (CR 702.193) — Hulk, Gamma Goliath's "Power-up abilities of other creatures you control cost {3}
+ * less to activate."
+ *
  * @property filter Which permanents' activated abilities are cheaper (matched via projected state;
  *   use [GroupFilter.attachedCreature] for an Aura's enchanted permanent, [GroupFilter.source] for
  *   "this permanent's abilities", or a battlefield filter for a group).
- * @property amount Generic-mana reduction applied to each matching ability's cost.
+ * @property amount Dynamic generic-mana reduction applied to each matching ability's cost.
  * @property manaFloor Minimum total mana the cost may be reduced to (default 0).
+ * @property exhaustOnly When true, only exhaust abilities (`ActivatedAbility.isExhaust`) are reduced.
+ * @property powerUpOnly When true, only power-up abilities (`ActivatedAbility.isPowerUp`) are reduced.
  */
 @SerialName("ReduceActivatedAbilityCost")
 @Serializable
 data class ReduceActivatedAbilityCost(
     val filter: GroupFilter,
-    val amount: Int,
-    val manaFloor: Int = 0
+    val amount: DynamicAmount,
+    val manaFloor: Int = 0,
+    val exhaustOnly: Boolean = false,
+    val powerUpOnly: Boolean = false
 ) : StaticAbility {
     override val description: String = buildString {
+        val abilities = when {
+            exhaustOnly -> "exhaust abilities"
+            powerUpOnly -> "power-up abilities"
+            else -> "activated abilities"
+        }
         append(filter.description.replaceFirstChar { it.uppercase() })
-        append("'s activated abilities cost {$amount} less to activate")
+        when (amount) {
+            is DynamicAmount.Fixed -> append("'s $abilities cost {${amount.amount}} less to activate")
+            else -> append("'s $abilities cost {X} less to activate, where X is ${amount.description}")
+        }
         if (manaFloor > 0) {
             append(". This effect can't reduce the mana in that cost to less than ")
             append(if (manaFloor == 1) "one mana" else "$manaFloor mana")
@@ -813,6 +967,47 @@ data class ReduceActivatedAbilityCost(
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
-        return if (newFilter !== filter) copy(filter = newFilter) else this
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newAmount !== amount) copy(filter = newFilter, amount = newAmount) else this
+    }
+}
+
+/**
+ * The activated abilities of sources matching [filter] cost [amount] generic mana **more** to
+ * activate — the taxing mirror of [ReduceActivatedAbilityCost], summed against it into a single
+ * net delta so a reduction and an increase on the same ability cancel (CR 601.2f: increases and
+ * reductions are applied to the mana part of the cost, and the two are netted before payment).
+ *
+ * Unlike a reduction, an increase applies even when the ability has *no* mana in its cost — a bare
+ * `{T}:` ability taxed by {2} becomes `{2}, {T}:`. There is no floor parameter: costs only grow.
+ *
+ * Used by Skyseer's Chariot — "Activated abilities of sources with the chosen name cost {2} more to
+ * activate", where [filter] is the bare chosen-name predicate
+ * ([com.wingedsheep.sdk.scripting.GameObjectFilter.namedFromChosenComponent]) so the tax keys off
+ * the Vehicle's durable as-enters card-name choice.
+ *
+ * @property filter Which sources' activated abilities are taxed (matched via projected state; use
+ *   [com.wingedsheep.sdk.scripting.filters.unified.GroupFilter.source] for "this permanent's
+ *   abilities" or a battlefield filter for a group).
+ * @property amount Dynamic generic-mana increase applied to each matching ability's cost.
+ */
+@SerialName("IncreaseActivatedAbilityCost")
+@Serializable
+data class IncreaseActivatedAbilityCost(
+    val filter: GroupFilter,
+    val amount: DynamicAmount
+) : StaticAbility {
+    override val description: String = buildString {
+        append(filter.description.replaceFirstChar { it.uppercase() })
+        when (amount) {
+            is DynamicAmount.Fixed -> append("'s activated abilities cost {${amount.amount}} more to activate")
+            else -> append("'s activated abilities cost {X} more to activate, where X is ${amount.description}")
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        val newAmount = amount.applyTextReplacement(replacer)
+        return if (newFilter !== filter || newAmount !== amount) copy(filter = newFilter, amount = newAmount) else this
     }
 }

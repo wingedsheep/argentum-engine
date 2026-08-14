@@ -25,8 +25,7 @@ val WebShooters = card("Web-Shooters") {
     manaCost = "{1}{W}"
     colorIdentity = "W"
     typeLine = "Artifact — Equipment"
-    oracleText = "Equipped creature gets +1/+1 and has reach and \"Whenever this creature attacks, " +
-        "tap target creature an opponent controls.\"\nEquip {2}"
+    oracleText = "Equipped creature gets +1/+1 and has reach and \"Whenever this creature attacks, tap target creature an opponent controls.\"\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)"
 
     staticAbility {
         ability = ModifyStats(1, 1, Filters.EquippedCreature)

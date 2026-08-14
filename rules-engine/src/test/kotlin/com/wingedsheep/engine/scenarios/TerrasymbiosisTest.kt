@@ -135,4 +135,39 @@ class TerrasymbiosisTest : FunSpec({
         // Two instants cast (-2) and exactly one draw of 2 (+2): net zero.
         driver.getHandSize(player) shouldBe handBefore - 2 + 2
     }
+
+    test("declining does not spend the turn — a later placement still offers the draw") {
+        // CR 603.2h keys "Do this only once each turn" to the *draw*, not to the trigger. Under
+        // the old `oncePerTurn` modelling the first declined trigger burned the turn and the
+        // second placement was never offered, which is the defect this pins.
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), startingLife = 20)
+
+        val player = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        driver.putPermanentOnBattlefield(player, "Terrasymbiosis")
+        val creature = driver.putCreatureOnBattlefield(player, "Savannah Lions")
+        val spell1 = driver.putCardInHand(player, "Counter Infusion")
+        val spell2 = driver.putCardInHand(player, "Counter Infusion")
+        driver.giveMana(player, Color.GREEN, 2)
+
+        val handBefore = driver.getHandSize(player)
+
+        // Decline the first placement — nothing drawn, and the turn's use is left unspent.
+        driver.castSpell(player, spell1, targets = listOf(creature))
+        driver.bothPass()
+        driver.bothPass()
+        driver.submitYesNo(player, false)
+
+        // Second placement the same turn: the ability triggers again and the draw is on offer.
+        driver.castSpell(player, spell2, targets = listOf(creature))
+        driver.bothPass()
+        driver.bothPass()
+        driver.submitYesNo(player, true)
+
+        plusCounters(driver, creature) shouldBe 4
+        // Two instants cast (-2), and the accepted second draw of 2 (+2).
+        driver.getHandSize(player) shouldBe handBefore - 2 + 2
+    }
 })

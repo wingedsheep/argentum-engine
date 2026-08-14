@@ -8,6 +8,7 @@ import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -33,9 +34,12 @@ class LegalActionEnumerator(
         MorphCastEnumerator(),
         CastSpellEnumerator(),
         SneakCastEnumerator(),
+        EmergeCastEnumerator(),
+        WebSlingingCastEnumerator(),
         CyclingEnumerator(),
         PlotEnumerator(),
         ForetellEnumerator(),
+        SuspendEnumerator(),
         CastFromZoneEnumerator(),
         ManaAbilityEnumerator(),
         TurnFaceUpEnumerator(),
@@ -43,7 +47,8 @@ class LegalActionEnumerator(
         ActivatedAbilityEnumerator(),
         CrewEnumerator(),
         SaddleEnumerator(),
-        GraveyardAbilityEnumerator(),
+        ZoneActivatedAbilityEnumerator(Zone.GRAVEYARD),
+        ZoneActivatedAbilityEnumerator(Zone.HAND),
         CommandZoneAbilityEnumerator()
     )
 
@@ -81,6 +86,31 @@ class LegalActionEnumerator(
         // Normal priority: enumerate all action categories
         return enumerators.flatMap { it.enumerate(context) }
     }
+
+    /**
+     * Enumerate only [playerId]'s mana abilities, ignoring priority.
+     *
+     * This is the CR 605.3a surface: while a rule or effect is asking a player for a mana payment
+     * they hold no priority, but they may still activate mana abilities to produce the mana. See
+     * [com.wingedsheep.engine.mechanics.mana.ManaPaymentWindow].
+     */
+    fun enumerateManaAbilities(
+        state: GameState,
+        playerId: EntityId,
+        mode: EnumerationMode = EnumerationMode.FULL
+    ): List<LegalAction> = ManaAbilityEnumerator().enumerate(
+        EnumerationContext(
+            state = state,
+            playerId = playerId,
+            cardRegistry = cardRegistry,
+            manaSolver = manaSolver,
+            costCalculator = costCalculator,
+            predicateEvaluator = predicateEvaluator,
+            conditionEvaluator = conditionEvaluator,
+            turnManager = turnManager,
+            mode = mode
+        )
+    )
 
     companion object {
         /**

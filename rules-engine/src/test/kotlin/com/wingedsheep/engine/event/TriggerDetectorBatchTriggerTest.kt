@@ -94,7 +94,7 @@ class TriggerDetectorBatchTriggerTest : FunSpec({
 
     // A dies trigger that functions from the graveyard (triggerZone = GRAVEYARD), the shape
     // Paramecia Coloniex uses so its effect can reference Self after the creature has died and
-    // is sitting in the graveyard. Its activeZone is GRAVEYARD, which made the graveyard-resident
+    // is sitting in the graveyard. Its activeZones is {GRAVEYARD}, which made the graveyard-resident
     // trigger scan match its own death event in addition to the dedicated death detector — the
     // double-fire this test guards against.
     val graveyardActiveDiesWatcher = card("Graveyard Active Dies Watcher") {

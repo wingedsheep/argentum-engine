@@ -22,6 +22,9 @@ import kotlinx.serialization.Serializable
  *
  * @property ability The fully built stack component, held until modes/targets are known.
  * @property outerTargets Targets already chosen for the ability's own (non-modal) requirements.
+ * @property chooseCount How many modes to pick. Already resolved: a
+ *   [com.wingedsheep.sdk.scripting.effects.ModalEffect.dynamicChooseCount] cap is evaluated once,
+ *   before the first pick, so the number can't drift between picks (CR 601.2c via 603.3d).
  */
 @Serializable
 data class TriggerModalModeSelectionContinuation(
@@ -37,7 +40,11 @@ data class TriggerModalModeSelectionContinuation(
     val availableIndices: List<Int>? = null,
     val selectedModeIndices: List<Int> = emptyList(),
     val doneOptionOffered: Boolean = false,
-    val causedByAttack: Boolean = false
+    val causedByAttack: Boolean = false,
+    /** See [TriggerModalTargetSelectionContinuation.recordChosenModesOnSource]. */
+    val recordChosenModesOnSource: Boolean = false,
+    /** See [TriggerModalTargetSelectionContinuation.recordChosenModesThisTurn]. */
+    val recordChosenModesThisTurn: Boolean = false
 ) : ContinuationFrame
 
 /**
@@ -58,5 +65,17 @@ data class TriggerModalTargetSelectionContinuation(
     val chosenModeIndices: List<Int>,
     val resolvedModeTargets: List<List<ChosenTarget>>,
     val currentOrdinal: Int,
-    val causedByAttack: Boolean = false
+    val causedByAttack: Boolean = false,
+    /**
+     * "Choose one that hasn't been chosen" (Gandalf the Grey): record every chosen mode in the
+     * source's [com.wingedsheep.engine.state.components.battlefield.ChosenModesEverComponent] once
+     * the ability is on the stack, so later triggers of the same object never offer it again.
+     */
+    val recordChosenModesOnSource: Boolean = false,
+    /**
+     * "…that hasn't been chosen this turn" (Breeches, Eager Pillager): the turn-scoped sibling of
+     * [recordChosenModesOnSource], written to
+     * [com.wingedsheep.engine.state.components.battlefield.ChosenModesThisTurnComponent].
+     */
+    val recordChosenModesThisTurn: Boolean = false
 ) : ContinuationFrame

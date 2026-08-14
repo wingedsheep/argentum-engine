@@ -675,7 +675,9 @@
                         "destination": "Battlefield"
                     }
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ],
         "staticAbilities": [
@@ -2507,7 +2509,9 @@
                     "then": "ReturnSelfToBattlefieldAttached",
                     "descriptionOverride": "Attach Dragon Breath to this creature?"
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ],
         "activatedAbilities": [
@@ -2583,7 +2587,9 @@
                     "then": "ReturnSelfToBattlefieldAttached",
                     "descriptionOverride": "Attach Dragon Fangs to this creature?"
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ],
         "staticAbilities": [
@@ -2713,7 +2719,9 @@
                     "then": "ReturnSelfToBattlefieldAttached",
                     "descriptionOverride": "Attach Dragon Scales to this creature?"
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ],
         "staticAbilities": [
@@ -2770,7 +2778,9 @@
                     "then": "ReturnSelfToBattlefieldAttached",
                     "descriptionOverride": "Attach Dragon Shadow to this creature?"
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ],
         "staticAbilities": [
@@ -2906,7 +2916,9 @@
                     "then": "ReturnSelfToBattlefieldAttached",
                     "descriptionOverride": "Attach Dragon Wings to this creature?"
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ],
         "staticAbilities": [

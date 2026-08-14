@@ -112,8 +112,8 @@ class KaaliaOfTheVastScenarioTest : ScenarioTestBase() {
 
                 game.advanceToPhase(Phase.COMBAT, Step.DECLARE_ATTACKERS)
                 // Attack the planeswalker, not the player.
-                game.declareAttackersWithPlaneswalkerTargets(
-                    planeswalkerAttackers = mapOf("Kaalia of the Vast" to "Sorin, Solemn Visitor")
+                game.declareAttackersWithPermanentTargets(
+                    permanentAttackers = mapOf("Kaalia of the Vast" to "Sorin, Solemn Visitor")
                 ).error shouldBe null
                 game.resolveStack()
 

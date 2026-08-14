@@ -18,6 +18,7 @@ import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.destroyPermanen
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
@@ -115,6 +116,16 @@ class MoveToZoneEffectExecutor(
             )
             resultState = counterState
             extraEvents.addAll(counterEvents)
+        }
+
+        // "Exile it with a stash counter on it" — one counter of the named type on the card once it
+        // has landed. Mirrors MoveCollectionEffect.addCounterType; no CountersAddedEvent is emitted
+        // because the card isn't a permanent in its new zone, so nothing can trigger off it.
+        effect.addCounterType?.let { counterType ->
+            resultState = resultState.updateEntity(targetId) { container ->
+                val existing = container.get<CountersComponent>() ?: CountersComponent()
+                container.with(existing.withAdded(counterType, 1))
+            }
         }
 
         // Link exiled card to source permanent via LinkedExileComponent
@@ -273,7 +284,7 @@ class MoveToZoneEffectExecutor(
             com.wingedsheep.engine.handlers.effects.FaceDownTurnUp.dataFor(
                 cardRegistry.getCard(cardComponent.cardDefinitionId),
                 cardComponent.cardDefinitionId,
-                faceDownMode!!
+                faceDownMode
             )
         } else null
 
@@ -284,7 +295,7 @@ class MoveToZoneEffectExecutor(
             tappedAndAttacking = effect.placement == ZonePlacement.TappedAndAttacking,
             faceDown = isBattlefieldFaceDown,
             morphData = morphData,
-            manifested = isBattlefieldFaceDown && faceDownMode == FaceDownMode.MANIFEST
+            faceDownMode = if (isBattlefieldFaceDown) faceDownMode else null
         )
     }
 

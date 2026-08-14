@@ -67,7 +67,7 @@ val BonehoardDracosaur = card("Bonehoard Dracosaur") {
             // If you exiled a nonland card this way, create a Treasure token.
             ConditionalEffect(
                 condition = Conditions.CollectionContainsMatch("dracosaurExiled", GameObjectFilter.Nonland),
-                effect = Effects.CreateTreasure(imageUri = LciTokenArt.TREASURE)
+                effect = Effects.CreateTreasure()
             )
         ))
     }

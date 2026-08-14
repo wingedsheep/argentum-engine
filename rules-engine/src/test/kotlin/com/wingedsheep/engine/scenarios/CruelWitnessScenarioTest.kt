@@ -39,7 +39,7 @@ class CruelWitnessScenarioTest : ScenarioTestBase() {
                 withClue("casting a noncreature spell triggers a surveil 1 look at the top card") {
                     val decision = game.getPendingDecision()
                     decision.shouldBeInstanceOf<SelectCardsDecision>()
-                    (decision as SelectCardsDecision).options.size shouldBe 1
+                    decision.options.size shouldBe 1
                 }
                 game.skipSelection() // keep the card out of the graveyard...
                 // ...which leaves it to be put back on top; the surveil pipeline's "put the rest on

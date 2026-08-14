@@ -32,14 +32,16 @@ class CostAtomSerializationTest : FunSpec({
         CostAtom.Sacrifice(GameObjectFilter.Creature, count = 2),
         CostAtom.Discard(count = 1, filter = GameObjectFilter.Any, random = true),
         CostAtom.ExileFrom(Zone.GRAVEYARD, GameObjectFilter.Creature, count = 3),
-        CostAtom.ExilePermanents(GameObjectFilter.Artifact, minCount = 1, excludeSelf = true),
+        CostAtom.Mill(count = 1),
+        CostAtom.VariablePermanents(GameObjectFilter.Artifact, minCount = 1, excludeSelf = true),
         CostAtom.TapPermanents(count = 1, filter = GameObjectFilter.Creature),
         CostAtom.ReturnToHand(GameObjectFilter.Any, count = 1),
         CostAtom.RevealFromHand(GameObjectFilter.Any, count = 1),
         CostAtom.RemoveCounters(Counters.PLUS_ONE_PLUS_ONE, filter = GameObjectFilter.Creature),
         CostAtom.RemoveCounters("charge", self = true),
         CostAtom.RemoveCounters(counterType = null, filter = GameObjectFilter.Creature),
-        CostAtom.PutCountersOnSelf(Counters.PAGE, count = 1)
+        CostAtom.PutCountersOnSelf(Counters.PAGE, count = 1),
+        CostAtom.CollectEvidence(amount = 6)
     )
 
     test("every concrete CostAtom subtype has a representative in this test") {

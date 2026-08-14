@@ -15,6 +15,7 @@ import com.wingedsheep.sdk.dsl.firebending
 import com.wingedsheep.sdk.dsl.impending
 import com.wingedsheep.sdk.dsl.mobilize
 import com.wingedsheep.sdk.dsl.sneak
+import com.wingedsheep.sdk.dsl.webSlinging
 
 /**
  * Represents a keyword ability, which may be simple (Flying) or parameterized (Ward {2}).
@@ -76,6 +77,9 @@ sealed interface KeywordAbility {
      * - `Ward(WardCost.Life(2))`             — "Ward—Pay 2 life"
      * - `Ward(WardCost.Discard())`           — "Ward—Discard a card"
      * - `Ward(WardCost.Sacrifice(filter))`   — "Ward—Sacrifice a Food"
+     * - `Ward(WardCost.CollectEvidence(4))`  — "Ward—Collect evidence 4"
+     * - `Ward(WardCost.PlayerCounters(Counters.POISON, 5))` — "Ward—Get five poison counters"
+     * - `Ward(WardCost.Choice(...))`         — "Ward—Discard a card or pay {2}"
      */
     @SerialName("Ward")
     @Serializable
@@ -88,6 +92,13 @@ sealed interface KeywordAbility {
             is WardCost.DynamicLife -> "Ward—Pay life equal to ${cost.amount.description}"
             is WardCost.Discard -> "Ward—Discard ${cost.description}"
             is WardCost.Sacrifice -> "Ward—Sacrifice ${cost.description}"
+            // Capitalized: "Collect evidence N" is a keyword action, and the printed line reads
+            // "Ward—Collect evidence 4."
+            is WardCost.CollectEvidence -> "Ward—Collect evidence ${cost.amount}"
+            is WardCost.PlayerCounters -> "Ward—Get ${cost.description}"
+            // A disjunction renders each option with its own verb, so it goes through `clause`
+            // (see WardCost.clause) rather than a prefix this branch supplies.
+            is WardCost.Choice -> "Ward—${cost.clause.replaceFirstChar { it.uppercase() }}"
             is WardCost.Composite -> "Ward—${cost.description}"
         }
     }
@@ -264,31 +275,35 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
-    // Optional Additional Cost (Kicker, Multikicker, Offspring, FlashKicker)
+    // Optional Additional Cost (Kicker, Multikicker, Offspring, FlashKicker, Bargain)
     // =========================================================================
 
     /**
      * **Optional additional cost paid at cast time.** Generalises Kicker, Multikicker,
-     * Offspring, and the pre-kicker "pay {N} more to cast as though it had flash" pattern
-     * (Ghitu Fire et al.). The card script gates effect variations on the [WasKicked]
-     * condition (or on `wasKicked` in trigger filters) when [branchesEffect] is `true`.
+     * Offspring, Bargain, and the pre-kicker "pay {N} more to cast as though it had flash"
+     * pattern (Ghitu Fire et al.). The card script gates effect variations on the durable
+     * fact recorded in [declaredSlot] — read via [WasKicked] / `Conditions.WasBargained`,
+     * or `wasKicked` in trigger filters — when [branchesEffect] is `true`.
      *
      * Mechanically all variants share the same plumbing: the player optionally pays
-     * [manaCost] and/or [additionalCost] as an extra cost while casting, the spell is
-     * marked with the `wasKicked` flag on the stack, and the cost calculator folds the
-     * extra mana into the effective cost. The variants differ only in *what the payment
-     * unlocks*:
+     * [manaCost] and/or [additionalCost] as an extra cost while casting, the spell carries
+     * [declaredSlot] as its declared-cost slot on the stack (and durably, once it resolves
+     * into a permanent), and the cost calculator folds the extra mana into the effective
+     * cost. The variants differ only in *what the payment unlocks*:
      *
      * - **Kicker / Multikicker / Offspring** ([branchesEffect] = `true`) — the spell's
      *   effect branches on `WasKicked`. [multi] = `true` lets the cost be paid any
      *   number of times (Multikicker).
+     * - **Bargain** ([declaredSlot] = [ChoiceSlot.BARGAINED]) — same shape as
+     *   kicker-with-a-sacrifice-cost, but a *different* fact (CR 702.166b), so bargaining
+     *   never reads as kicking and vice versa.
      * - **FlashKicker** ([grantsFlashTiming] = `true`) — paying the cost lets the spell
      *   be cast as though it had flash. Effect is unchanged unless the card also opts
      *   into [branchesEffect] (rare — Ghitu Fire does not).
      *
      * [displayPrefix] customises the printed label ("Kicker", "Multikicker", "Offspring");
      * for FlashKicker it's ignored and the description is rephrased to match the printed
-     * oracle text.
+     * oracle text, and for Bargain the `bargain()` DSL supplies the printed reminder text.
      *
      * The serial name remains `Kicker` for wire compatibility with previously serialised
      * card scripts.
@@ -301,7 +316,8 @@ sealed interface KeywordAbility {
      * - `OptionalAdditionalCost(manaCost = "{2}", grantsFlashTiming = true, branchesEffect = false)` — Ghitu Fire's flash unlock
      *
      * Prefer the [kicker] / [kickerSacrifice] / [multikicker] / [offspring] / [flashKicker]
-     * companion factories.
+     * companion factories, or the `bargain()` DSL helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder].
      */
     @SerialName("Kicker")
     @Serializable
@@ -327,7 +343,16 @@ sealed interface KeywordAbility {
          * non-mana [additionalCost] such as Behold (Molten Exhale: "you may cast this
          * as though it had flash if you behold a Dragon as an additional cost").
          */
-        val grantsFlashTiming: Boolean = false
+        val grantsFlashTiming: Boolean = false,
+        /**
+         * Which durable cast-choice slot records "this optional cost was declared" — the
+         * *identity* of the mechanic riding this rail. Kicker/Multikicker/Offspring stamp
+         * [ChoiceSlot.KICKED] (the default); Bargain stamps [ChoiceSlot.BARGAINED]
+         * (CR 702.166b). The engine stamps this slot on the spell as it is cast and carries it
+         * onto the resolving permanent, and the payoff conditions and cast-trigger filters key
+         * off it — so two mechanics on the same rail never read each other's declaration.
+         */
+        val declaredSlot: ChoiceSlot = ChoiceSlot.KICKED
     ) : KeywordAbility {
         init {
             require(manaCost != null || additionalCost != null) {
@@ -335,6 +360,16 @@ sealed interface KeywordAbility {
             }
         }
         override val description: String = when {
+            // Bargain's and Teamwork's costs are definitional (CR 702.166a / 702.194a), so the
+            // printed text is the bare keyword — never "Bargain—sacrifice …" / "Teamwork 2—tap …".
+            // The reminder text belongs to the card's `oracleText`.
+            declaredSlot == ChoiceSlot.BARGAINED || declaredSlot == ChoiceSlot.TEAMWORK -> displayPrefix
+            // Collect evidence is a keyword *action*, not a keyword ability, so it has no keyword
+            // label to hang a "Prefix—cost" shape on: the cards print the additional cost in full
+            // (CR 701.59, "As an additional cost to cast this spell, you may collect evidence 6").
+            declaredSlot == ChoiceSlot.EVIDENCE_COLLECTED ->
+                "As an additional cost to cast this spell, you may " +
+                    "${additionalCost?.description?.replaceFirstChar { it.lowercase() }}."
             grantsFlashTiming && additionalCost != null ->
                 "You may cast this spell as though it had flash if you " +
                     "${additionalCost.description.replaceFirstChar { it.lowercase() }} as an additional cost to cast it."
@@ -367,6 +402,42 @@ sealed interface KeywordAbility {
         constructor(cost: ManaCost) : this(PayCost.Atom(CostAtom.Mana(cost)))
 
         override val description: String = "Morph ${morphCost.description}"
+    }
+
+    // =========================================================================
+    // Disguise
+    // =========================================================================
+
+    /**
+     * Disguise with a cost to turn face up (CR 702.168).
+     * "Disguise {2}{U}" or "Disguise—Pay 5 life."
+     * You may cast this card face down as a 2/2 creature **with ward {2}** for {3}.
+     * Turn it face up any time you have priority for its disguise cost.
+     *
+     * Disguise is morph plus ward {2}; the ward is part of the face-down characteristic-defining
+     * effect ([com.wingedsheep.sdk.scripting.effects.FaceDownMode.DISGUISE]), not of this ability.
+     *
+     * The cost is a full [PayCost] rather than a [ManaCost] because CR 702.168e explicitly
+     * contemplates X in a disguise cost (other abilities of the permanent then refer to the value
+     * chosen as the special action was taken), and because non-mana costs are expressible in the
+     * same way morph costs are.
+     */
+    @SerialName("Disguise")
+    @Serializable
+    data class Disguise(
+        val disguiseCost: PayCost,
+        /**
+         * Effect applied as part of the turn-face-up action, for the "As this creature is turned
+         * face up, …" replacement clause (Bubble Smuggler: "put four +1/+1 counters on it"). The
+         * exact sibling of [Morph.faceUpEffect] — it does *not* use the stack and can't be
+         * responded to, which is what separates it from a `Triggers.TurnedFaceUp` ability.
+         */
+        val faceUpEffect: com.wingedsheep.sdk.scripting.effects.Effect? = null
+    ) : KeywordAbility {
+        /** Convenience constructor for mana-based disguise costs. */
+        constructor(cost: ManaCost) : this(PayCost.Atom(CostAtom.Mana(cost)))
+
+        override val description: String = "Disguise ${disguiseCost.description}"
     }
 
     // =========================================================================
@@ -420,6 +491,91 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Mayhem
+    // =========================================================================
+
+    /**
+     * Mayhem [cost] (CR 702.187, Marvel's Spider-Man). "As long as you discarded this card this
+     * turn, you may cast it from your graveyard by paying [cost] rather than paying its mana cost."
+     *
+     * Unlike [Flashback]/[Harmonize], a Mayhem spell is NOT exiled on resolution: a permanent
+     * simply enters the battlefield, and an instant/sorcery goes to the graveyard as normal. It
+     * grants no timing permission — normal timing rules still apply (a non-Flash creature/sorcery
+     * can only be Mayhem-cast at sorcery speed). The "you discarded this card this turn" gate is
+     * `Conditions.YouDiscardedThisCardThisTurn`, checked by the engine's Mayhem enumerator and
+     * cast-permission logic.
+     *
+     * [cost] is empty for the CR 702.187c "Mayhem" (no cost) form used by lands (Oscorp
+     * Industries) — those are *played* from the graveyard for no mana rather than cast.
+     */
+    @SerialName("Mayhem")
+    @Serializable
+    data class Mayhem(
+        val cost: ManaCost
+    ) : KeywordAbility {
+        override val keyword: Keyword = Keyword.MAYHEM
+        override val description: String = "Mayhem $cost"
+    }
+
+    // =========================================================================
+    // Disturb
+    // =========================================================================
+
+    /**
+     * Disturb [cost] (CR 702.146a). "You may cast this card transformed from your graveyard by
+     * paying [cost] rather than its mana cost."
+     *
+     * Printed on the front face of a transforming double-faced card, and functional only from its
+     * owner's graveyard. Casting this way puts the card on the stack **back face up**, so per
+     * CR 712.8c the spell has only the back face's characteristics — its card types decide the
+     * timing, and its `targetRequirements` / `auraTarget` decide what is targeted (the Innistrad
+     * disturb cycle has both creature and Aura back faces). Its mana value is still calculated from
+     * the front face's mana cost.
+     *
+     * Unlike [Flashback]/[Harmonize] a disturb cast does **not** exile the card on resolution: the
+     * back face enters the battlefield, and it is the back face's own printed "if this would be put
+     * into a graveyard from anywhere, exile it instead" replacement that keeps it from coming back a
+     * second time.
+     */
+    @SerialName("Disturb")
+    @Serializable
+    data class Disturb(
+        val cost: ManaCost
+    ) : KeywordAbility {
+        override val keyword: Keyword = Keyword.DISTURB
+        override val description: String = "Disturb $cost"
+    }
+
+    // =========================================================================
+    // Madness
+    // =========================================================================
+
+    /**
+     * Madness [cost] (CR 702.35). "If you discard this card, discard it into exile. When you do,
+     * cast it for its madness cost or put it into your graveyard."
+     *
+     * Per CR 702.35a this single keyword is two abilities: a static ability functioning in hand
+     * ("if a player would discard this card, that player discards it, but exiles it instead of
+     * putting it into their graveyard") and a triggered ability functioning on that exile ("when
+     * this card is exiled this way, its owner may cast it by paying [cost] rather than paying its
+     * mana cost. If that player doesn't, they put this card into their graveyard").
+     *
+     * Both halves are engine-driven off this entry rather than off printed script: the discard
+     * redirect lives in the zone-change replacement check, and the cast offer is the synthesized
+     * [com.wingedsheep.sdk.scripting.Madness.castAbility]. The cast follows the alternative-cost
+     * rules (CR 702.35b / 601.2b / 601.2f–h), so [cost] replaces the printed mana cost while
+     * additional costs and cost increases still apply.
+     */
+    @SerialName("Madness")
+    @Serializable
+    data class Madness(
+        val cost: ManaCost
+    ) : KeywordAbility {
+        override val keyword: Keyword = Keyword.MADNESS
+        override val description: String = "Madness $cost"
+    }
+
+    // =========================================================================
     // Warp
     // =========================================================================
 
@@ -451,6 +607,26 @@ sealed interface KeywordAbility {
         override val description: String =
             if (additionalCost == null) "Warp $cost"
             else "Warp—$cost, ${additionalCost.description}"
+    }
+
+    // =========================================================================
+    // Dash
+    // =========================================================================
+
+    /**
+     * Dash with a mana cost (CR 702.109, Khans of Tarkir).
+     * "Dash [cost]" — You may cast this card by paying [cost] rather than its mana cost. If you
+     * do, it gains haste, and it's returned from the battlefield to its owner's hand at the
+     * beginning of the next end step.
+     *
+     * Hand-only (CR 702.109a doesn't grant a graveyard/other-zone variant the way Warp's
+     * `fromGraveyard` flag does) — no sibling flag needed unless a future card's oracle text
+     * says otherwise.
+     */
+    @SerialName("Dash")
+    @Serializable
+    data class Dash(val cost: ManaCost) : KeywordAbility {
+        override val description: String = "Dash $cost"
     }
 
     // =========================================================================
@@ -497,6 +673,32 @@ sealed interface KeywordAbility {
     data class Foretell(val cost: ManaCost) : KeywordAbility {
         override val keyword: Keyword = Keyword.FORETELL
         override val description: String = "Foretell $cost"
+    }
+
+    // =========================================================================
+    // Suspend
+    // =========================================================================
+
+    /**
+     * Printed Suspend (CR 702.62, Time Spiral). "Suspend N—[cost]" — a static ability that
+     * functions while the card is in hand: "If you could begin to cast this card by putting
+     * it onto the stack from your hand, you may pay [cost] and exile it with N time counters
+     * on it. This action doesn't use the stack." (CR 702.62a / 116.2f special action.)
+     *
+     * This class only carries the printed *setup* half — [cost] and [timeCounters]. The
+     * countdown-and-cast half is component-driven, not definition-driven: the engine's
+     * synthesized [com.wingedsheep.sdk.scripting.Suspend.countdownAbility] is granted to
+     * *any* exiled card carrying the runtime `SuspendedComponent` marker, so the same
+     * machinery serves both a printed suspend (stamped by the engine's
+     * `SuspendCardFromHandHandler` special action) and a suspend granted at runtime to an
+     * otherwise-ordinary card (e.g. Taigam, Master Opportunist, via
+     * [com.wingedsheep.sdk.dsl.Effects.Suspend]).
+     */
+    @SerialName("Suspend")
+    @Serializable
+    data class Suspend(val cost: ManaCost, val timeCounters: Int) : KeywordAbility {
+        override val keyword: Keyword = Keyword.SUSPEND
+        override val description: String = "Suspend $timeCounters—$cost"
     }
 
     // =========================================================================
@@ -586,6 +788,60 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Emerge
+    // =========================================================================
+
+    /**
+     * Emerge [cost] (CR 702.119, Eldritch Moon).
+     * "You may cast this spell by paying [cost] and sacrificing a creature rather than paying its
+     * mana cost" plus "if you chose to pay this spell's emerge cost, its total cost is reduced by
+     * an amount of generic mana equal to the sacrificed creature's mana value" (CR 702.119a).
+     *
+     * An alternative cost (like [Evoke]) with two extra characteristics:
+     *  - an **additional cost** paid alongside the mana: sacrificing one creature you control,
+     *    chosen as you choose to pay the emerge cost and sacrificed as you pay the total cost
+     *    (CR 702.119c); and
+     *  - a **cost reduction** derived from that choice: the sacrificed creature's mana value comes
+     *    off the *generic* portion only, so it can never reduce a colored pip and any excess is
+     *    simply wasted.
+     *
+     * The sacrifice rides `CastSpell.additionalCostPayment.sacrificedPermanents`, exactly like
+     * [Sneak]'s bounce rides `bouncedPermanents`. Attach via the `emerge("{cost}")` DSL helper on
+     * [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    @SerialName("Emerge")
+    @Serializable
+    data class Emerge(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.EMERGE
+        override val description: String = "Emerge $cost"
+    }
+
+    // =========================================================================
+    // Gift
+    // =========================================================================
+
+    /**
+     * Gift a [kind] (CR 702.174, Bloomburrow).
+     *
+     * Two abilities in one keyword (CR 702.174a): the additional cost "as an additional cost to
+     * cast this spell, you may choose an opponent" — elected **as the spell is cast**, carried on
+     * [com.wingedsheep.sdk.scripting.ChoiceSlot.GIFT_PROMISED] + [ChoiceSlot.OPPONENT] and readable
+     * via [com.wingedsheep.sdk.dsl.Conditions.GiftWasPromised] — and, on a permanent, the triggered
+     * ability "when this permanent enters, if its gift cost was paid, [effect]" (CR 702.174b),
+     * whose effect [kind] defines.
+     *
+     * Attach via the `gift(kind)` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder], which adds
+     * this keyword *and* the derived enters-the-battlefield ability. Instants and sorceries fold
+     * their gift-paid branch into the spell's own effect instead — see
+     * [com.wingedsheep.sdk.dsl.MechanicPatterns.giftSpell].
+     */
+    @SerialName("Gift")
+    @Serializable
+    data class Gift(val kind: GiftKind) : KeywordAbility {
+        override val description: String = "Gift ${kind.label}"
+    }
+
+    // =========================================================================
     // Sneak
     // =========================================================================
 
@@ -646,6 +902,42 @@ sealed interface KeywordAbility {
     }
 
     // =========================================================================
+    // Splice
+    // =========================================================================
+
+    /**
+     * Splice onto [onto] [cost] (CR 702.47, Champions of Kamigawa).
+     * "You may reveal this card from your hand as you cast a [onto] spell. If you do, that spell
+     * gains the text of this card's rules text and you pay [cost] as an additional cost to cast that
+     * spell." (CR 702.47a)
+     *
+     * Unlike every other cost-carrying keyword here, splice never casts or moves the card it is
+     * printed on: it is a static ability functioning **in hand**, and the card stays there — free to
+     * be cast normally later, or spliced onto a different spell (CR 702.47a). What the splice cost
+     * buys is that the *spell being cast* gains this card's rules text.
+     *
+     * [onto] is the "[quality]" of the rules text, matched against the spell's subtypes; every
+     * printed splice card so far reads "splice onto Arcane", which is why that is the default.
+     *
+     * The engine surfaces one `CastWithSplice` legal-action variant per splice card in hand while an
+     * eligible spell is castable, charges [cost] as an additional cost (CR 601.2b / 601.2f–h),
+     * reveals the card, and appends this card's own spell effect and target requirements to the
+     * spell on the stack — after the main spell's effects (CR 702.47b) and without granting the
+     * spell any of this card's other characteristics (CR 702.47c).
+     *
+     * Attach via the `splice("{cost}")` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    @SerialName("Splice")
+    @Serializable
+    data class Splice(
+        val cost: ManaCost,
+        val onto: Subtype = Subtype.ARCANE,
+    ) : KeywordAbility {
+        override val keyword: Keyword = Keyword.SPLICE
+        override val description: String = "Splice onto $onto $cost"
+    }
+
+    // =========================================================================
     // Impending
     // =========================================================================
 
@@ -670,6 +962,40 @@ sealed interface KeywordAbility {
     data class Impending(val time: Int, val cost: ManaCost) : KeywordAbility {
         override val keyword: Keyword = Keyword.IMPENDING
         override val description: String = "Impending $time—$cost"
+    }
+
+    // =========================================================================
+    // Web-slinging
+    // =========================================================================
+
+    /**
+     * Web-slinging [cost] (CR 702.188, Marvel's Spider-Man).
+     * "Web-slinging [cost]" means "You may cast this spell by paying [cost] and returning a tapped
+     * creature you control to its owner's hand rather than paying its mana cost." (CR 702.188a)
+     *
+     * An alternative cost (like [Evoke]) whose payment bundles a non-mana portion — returning one
+     * tapped creature you control to its owner's hand — alongside the [cost] mana. Unlike the
+     * ninjutsu family ([Sneak] / [Ninjutsu]) it carries **no** timing permission: the spell is
+     * web-slung at its normal timing, so this is not routed through [ninjutsuStyleCost]. The mana
+     * value is unchanged by web-slinging (CR 118.9c) and any cost increases/reductions still apply
+     * on top (CR 118.9d).
+     *
+     * A permanent spell whose web-slinging cost was paid carries two durable facts merged into its
+     * [com.wingedsheep.engine…CastChoicesComponent]: the flag
+     * [com.wingedsheep.sdk.scripting.ChoiceSlot.WEB_SLUNG] (readable via
+     * [com.wingedsheep.sdk.dsl.Conditions.WebSlungCostWasPaid], used by Spiders-Man, Heroic Horde)
+     * and the returned creature's mana value under
+     * [com.wingedsheep.sdk.scripting.ChoiceSlot.WEB_SLUNG_RETURNED_MV] (read via
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CastChoice], used by Scarlet Spider,
+     * Ben Reilly to enter with that many +1/+1 counters).
+     *
+     * Attach via the `webSlinging("{cost}")` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+     */
+    @SerialName("WebSlinging")
+    @Serializable
+    data class WebSlinging(val cost: ManaCost) : KeywordAbility {
+        override val keyword: Keyword = Keyword.WEB_SLINGING
+        override val description: String = "Web-slinging $cost"
     }
 
     // =========================================================================
@@ -810,12 +1136,58 @@ sealed interface KeywordAbility {
             Ward(WardCost.Sacrifice(filter, count))
 
         /**
+         * Create Ward—Collect evidence N (CR 701.59) — "Ward—Collect evidence 4" (Axebane Ferox).
+         * The targeting opponent must exile cards with total mana value [amount] or greater from
+         * their own graveyard, or the spell/ability is countered.
+         */
+        fun wardCollectEvidence(amount: Int): KeywordAbility =
+            Ward(WardCost.CollectEvidence(amount))
+
+        /**
          * Create Ward with a composite cost — all components must be paid. E.g.
          * `wardComposite(WardCost.Mana("{2}"), WardCost.Life(2))` for "Ward—{2}, Pay 2 life"
          * (Gisa, the Hellraiser).
          */
         fun wardComposite(vararg parts: WardCost): KeywordAbility =
             Ward(WardCost.Composite(parts.toList()))
+
+        /**
+         * Create Ward with a cost paid in counters placed on the paying player — e.g.
+         * `wardPlayerCounters(Counters.POISON, 5)` for "Ward—Get five poison counters."
+         * (The Serpent Society). [counterType] is a `Counters.*` symbol.
+         */
+        fun wardPlayerCounters(counterType: String, amount: Int): KeywordAbility =
+            Ward(WardCost.PlayerCounters(counterType, amount))
+
+        /**
+         * Create Ward with a **disjunctive** cost — the payer picks exactly one of [options] and
+         * pays it. The OR sibling of [wardComposite]'s AND. E.g.
+         * `wardChoice(WardCost.Discard(), WardCost.Mana("{2}"))` for
+         * "Ward—Discard a card or pay {2}." Prefer the named [wardDiscardOrPay] for that printed
+         * wording; reach for this factory for any other combination.
+         */
+        fun wardChoice(vararg options: WardCost): KeywordAbility =
+            Ward(WardCost.Choice(options.toList()))
+
+        /**
+         * "Ward—Discard a card or pay {N}." (Titania, Rugged Rumbler) — the ward-side rendering of
+         * the same printed shape [com.wingedsheep.sdk.dsl.Costs.additional.DiscardOrPay] renders
+         * as an *additional cost*, deliberately named to match it so a card carrying both (as
+         * Titania does) reads as one shape twice, not two inventions.
+         *
+         * They stay separate types because the rails genuinely differ: an additional cost's mana
+         * leg folds into the spell's own mana cost at cast time (`AdditionalCost.OrPay`), while a
+         * ward cost is paid on its own as the ward trigger resolves — so on this side the mana leg
+         * is an ordinary [WardCost.Mana] option with no special status.
+         */
+        fun wardDiscardOrPay(
+            alternativeManaCost: String,
+            filter: GameObjectFilter? = null,
+            count: Int = 1,
+        ): KeywordAbility = wardChoice(
+            WardCost.Discard(count = count, filter = filter),
+            WardCost.Mana(alternativeManaCost),
+        )
 
         /**
          * Create Hexproof from a color.
@@ -897,6 +1269,12 @@ sealed interface KeywordAbility {
         fun foretell(cost: String): KeywordAbility = Foretell(ManaCost.parse(cost))
 
         /**
+         * Create printed Suspend with a mana cost from a string and its time-counter count
+         * (CR 702.62). E.g. `suspend("{U}", 4)` for "Suspend 4—{U}".
+         */
+        fun suspend(cost: String, timeCounters: Int): KeywordAbility = Suspend(ManaCost.parse(cost), timeCounters)
+
+        /**
          * Create Morph with mana cost from string.
          */
         fun morph(cost: String): KeywordAbility = Morph(ManaCost.parse(cost))
@@ -905,6 +1283,11 @@ sealed interface KeywordAbility {
          * Create Morph with life payment cost.
          */
         fun morphPayLife(amount: Int): KeywordAbility = Morph(PayCost.Atom(CostAtom.PayLife(amount)))
+
+        /**
+         * Create Disguise with mana cost from string (CR 702.168).
+         */
+        fun disguise(cost: String): KeywordAbility = Disguise(ManaCost.parse(cost))
 
         /**
          * Create Flashback with mana cost from string.
@@ -921,6 +1304,23 @@ sealed interface KeywordAbility {
          * Create Harmonize with mana cost from string (e.g., "Harmonize {5}{R}{R}").
          */
         fun harmonize(cost: String): KeywordAbility = Harmonize(ManaCost.parse(cost))
+
+        /**
+         * Create Mayhem with mana cost from string (e.g., "Mayhem {B}"). Pass "" for the CR
+         * 702.187c "Mayhem" (no cost) land form (Oscorp Industries).
+         */
+        fun mayhem(cost: String): KeywordAbility = Mayhem(ManaCost.parse(cost))
+
+        /**
+         * Create Madness with mana cost from string (e.g., "Madness {R}").
+         */
+        fun madness(cost: String): KeywordAbility = Madness(ManaCost.parse(cost))
+
+        /**
+         * Create Disturb with mana cost from string (e.g., "Disturb {1}{W}"). Belongs on the front
+         * face of a transforming double-faced card whose back face is a permanent.
+         */
+        fun disturb(cost: String): KeywordAbility = Disturb(ManaCost.parse(cost))
 
         /**
          * Create Kicker with a mana cost.
@@ -987,9 +1387,21 @@ sealed interface KeywordAbility {
         fun warp(cost: String): KeywordAbility = Warp(ManaCost.parse(cost))
 
         /**
+         * Create Dash with a mana cost from a string (CR 702.109). E.g. `dash("{1}{R}")` for
+         * "Dash {1}{R}".
+         */
+        fun dash(cost: String): KeywordAbility = Dash(ManaCost.parse(cost))
+
+        /**
          * Create Evoke with mana cost from string.
          */
         fun evoke(cost: String): KeywordAbility = Evoke(ManaCost.parse(cost))
+
+        /**
+         * Create Emerge with mana cost from string (CR 702.119). Prefer the `emerge(cost)` DSL
+         * helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+         */
+        fun emerge(cost: String): KeywordAbility = Emerge(ManaCost.parse(cost))
 
         /**
          * Create Sneak with mana cost from string. Prefer the `sneak(cost)` DSL helper on
@@ -1004,11 +1416,24 @@ sealed interface KeywordAbility {
         fun ninjutsu(cost: String): KeywordAbility = Ninjutsu(ManaCost.parse(cost))
 
         /**
+         * Create Splice onto [onto] with a splice cost from string (CR 702.47). Prefer the
+         * `splice(cost)` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+         */
+        fun splice(cost: String, onto: Subtype = Subtype.ARCANE): KeywordAbility =
+            Splice(ManaCost.parse(cost), onto)
+
+        /**
          * Create Impending with a time-counter count and an impending mana cost.
          * Prefer the `impending(n, cost)` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder],
          * which also wires the associated static ability and end-step trigger.
          */
         fun impending(time: Int, cost: String): KeywordAbility = Impending(time, ManaCost.parse(cost))
+
+        /**
+         * Create Web-slinging with a mana cost from string (CR 702.188). Prefer the
+         * `webSlinging(cost)` DSL helper on [com.wingedsheep.sdk.dsl.CardBuilder].
+         */
+        fun webSlinging(cost: String): KeywordAbility = WebSlinging(ManaCost.parse(cost))
 
         /**
          * Create Cleave with a cleave mana cost (CR 702.148). Declared on the card via

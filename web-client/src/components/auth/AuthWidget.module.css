@@ -1,21 +1,25 @@
 /**
- * Landing-screen account widget. Lives at the top of the fixed top-right side-panel stack (above the
- * Public Lobbies / Live Games panels), right-aligned so it never overlaps them. Frosted pills
- * matching the app's other overlay controls, kept visually distinct from the navigation row.
+ * Landing-screen account widget: the right-hand half of the landing top bar (`.landingTopBar` in
+ * `GameUI.module.css`), opposite the fullscreen and help controls. Frosted pills matching the app's
+ * other overlay controls, kept visually distinct from the navigation row.
  */
+/* Sized by its content and right-aligned, so the pills hug the top-right corner however many of
+   them there are — four signed in, five as an admin. Wraps rather than overflowing when the
+   viewport is too narrow to seat the row beside the fullscreen/help cluster. */
 .widget {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   align-items: stretch;
   gap: var(--space-2);
-  width: 100%;
+  min-width: 0;
 }
 
 /* Shared frosted-pill base for every control in the widget. */
 .identity,
 .login,
 .logout,
-.admin {
+.action {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -70,12 +74,14 @@
   white-space: nowrap;
 }
 
-/* Admin: matches the Log out pill's weight/casing; only renders for admin accounts. */
-.admin {
+/* Navigation pills: Friends, Stats, and Admin for admin accounts. Neutral hover — these used to
+   borrow the Log out pill's styling and so lit up red, which reads as destructive. */
+.action {
+  position: relative;
   padding: var(--space-2) var(--space-3);
 }
 
-.admin:hover {
+.action:hover {
   background-color: rgba(255, 255, 255, 0.16);
   border-color: rgba(255, 255, 255, 0.22);
   color: var(--text-primary);

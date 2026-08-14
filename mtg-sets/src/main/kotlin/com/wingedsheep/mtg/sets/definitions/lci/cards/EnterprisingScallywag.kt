@@ -23,7 +23,7 @@ val EnterprisingScallywag = card("Enterprising Scallywag") {
     triggeredAbility {
         trigger = Triggers.YourEndStep
         triggerCondition = Conditions.YouDescendedThisTurn()
-        effect = Effects.CreateTreasure(imageUri = LciTokenArt.TREASURE)
+        effect = Effects.CreateTreasure()
     }
 
     metadata {

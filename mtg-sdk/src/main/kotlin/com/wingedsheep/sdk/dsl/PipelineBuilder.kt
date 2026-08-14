@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.scripting.effects.CaptureControllersEffect
 import com.wingedsheep.sdk.scripting.effects.CardDestination
 import com.wingedsheep.sdk.scripting.effects.CardOrder
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.ChooseOnePerCategoryEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseOptionEffect
 import com.wingedsheep.sdk.scripting.effects.ChoosePileEffect
 import com.wingedsheep.sdk.scripting.effects.Chooser
@@ -26,6 +27,7 @@ import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.NoteCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.effects.OptionType
+import com.wingedsheep.sdk.scripting.effects.PairWithSourceEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
@@ -459,6 +461,26 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         name = name, remainderName = null, withRemainder = false
     ).selected
 
+    /**
+     * Each controller of a permanent in [from] picks one of their own for every filter in
+     * [categories] ([ChooseOnePerCategoryEffect]) — "chooses a permanent they control of each
+     * permanent type". Choosers are asked in APNAP order and one permanent may cover several
+     * categories. Returns the collection of everyone's picks; feed it to [exclude] for "the rest".
+     */
+    fun chooseOnePerCategory(
+        from: CollectionSlot,
+        categories: List<GameObjectFilter>,
+        name: String? = null
+    ): CollectionSlot {
+        val slot = CollectionSlot(slotKey("kept", nextIndex(), name))
+        steps += ChooseOnePerCategoryEffect(
+            from = from.key,
+            categories = categories,
+            storeAs = slot.key
+        )
+        return slot
+    }
+
     // =========================================================================
     // Filter / partition (no player choice)
     // =========================================================================
@@ -500,6 +522,14 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         name: String? = null,
         restName: String? = null
     ): FilterSlots = filterSplit(from, CollectionFilter.MatchesFilter(filter), name, restName)
+
+    /**
+     * Set difference: the members of [from] that are **not** in [minus]
+     * ([CollectionFilter.ExcludeOtherCollection]). The "…and \<does something to\> the rest"
+     * half of a choose-then-punish pipeline — pair with [chooseOnePerCategory] or a select step.
+     */
+    fun exclude(from: CollectionSlot, minus: CollectionSlot, name: String? = null): CollectionSlot =
+        filter(from, CollectionFilter.ExcludeOtherCollection(minus.key), name)
 
     // =========================================================================
     // Capture / store
@@ -685,6 +715,14 @@ class PipelineBuilder private constructor(private val shared: Shared) {
     /** Sacrifice the permanents in [from] (owners' graveyards, [MoveType.Sacrifice]). */
     fun sacrifice(from: CollectionSlot) =
         move(from, CardDestination.ToZone(Zone.GRAVEYARD), moveType = MoveType.Sacrifice)
+
+    /**
+     * Soulbond-pair the creature in [from] with the pipeline's source (CR 702.95a). An empty
+     * [from] is a no-op, so this is also the landing spot for a declined "you may pair".
+     */
+    fun pairWithSource(from: CollectionSlot) {
+        steps += PairWithSourceEffect(from = from.key)
+    }
 
     /** Exile the cards in [from]. */
     fun exile(

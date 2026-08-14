@@ -8,11 +8,6 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.battlefield.CantBeTargetedByOpponentAbilitiesComponent
-import com.wingedsheep.engine.state.components.battlefield.GrantsControllerHexproofComponent
-import com.wingedsheep.engine.state.components.battlefield.GrantsControllerShroudComponent
-import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
-import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -26,6 +21,13 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.*
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
+
+/**
+ * The card-type names (CR 205.2a). `ProjectedState.getTypes` folds supertypes (LEGENDARY, BASIC,
+ * SNOW, …) in beside them, so a "share a card type" comparison has to sieve through this — else two
+ * legendary permanents would qualify by both being legendary.
+ */
+private val CARD_TYPE_NAMES: Set<String> = CardType.entries.mapTo(mutableSetOf()) { it.name }
 
 /**
  * Validates that chosen targets match their target requirements.
@@ -69,12 +71,18 @@ class TargetValidator {
         // board state here, mirroring TriggerProcessor.snapshotDynamicCount — so a cast-time
         // spell with e.g. `dynamicMaxCount = Count(...)` caps correctly instead of falling
         // back to the static placeholder.
+        // An explicit `dynamicMaxCount` outranks the `unlimited` flag. `unlimited` means "no
+        // *static* upper bound" — it is the count the author didn't write down — whereas a
+        // dynamic cap is a bound the author did write down and is simply not knowable until
+        // cast time. Grove's Bounty needs both: "any number of target creatures you control"
+        // with X counters to hand out, where CR 601.2d still forbids declaring more targets
+        // than there are counters. Checking `unlimited` first would drop that cap on the floor.
         fun effectiveMaxCount(req: TargetRequirement): Int {
-            if (req.unlimited) return Int.MAX_VALUE
+            val unboundedFallback = if (req.unlimited) Int.MAX_VALUE else req.count
             if (req is TargetObject) {
                 val dyn = req.dynamicMaxCount
                 if (dyn == DynamicAmount.XValue) {
-                    return xValue ?: req.count
+                    return xValue ?: unboundedFallback
                 }
                 if (dyn != null) {
                     return try {
@@ -85,11 +93,11 @@ class TargetValidator {
                         )
                         DynamicAmountEvaluator().evaluate(state, dyn, context).coerceAtLeast(0)
                     } catch (_: Exception) {
-                        req.count
+                        unboundedFallback
                     }
                 }
             }
-            return req.count
+            return unboundedFallback
         }
         for ((index, requirement) in requirements.withIndex()) {
             // Get targets for this requirement (handle multi-target requirements)
@@ -104,11 +112,12 @@ class TargetValidator {
                 endIdx
             )
 
-            // Reject if too many targets were declared. When any requirement is unlimited
-            // ("any number of target ...", Drafna's Restoration) there is no upper bound, so
-            // skip this check — summing Int.MAX_VALUE would overflow to a negative cap and
-            // spuriously reject a legal cast.
-            if (requirements.none { it.unlimited }) {
+            // Reject if too many targets were declared. When a requirement is *effectively*
+            // unbounded ("any number of target ...", Drafna's Restoration) there is no upper
+            // bound, so skip this check — summing Int.MAX_VALUE would overflow to a negative cap
+            // and spuriously reject a legal cast. An unlimited requirement that also carries a
+            // resolved `dynamicMaxCount` (Grove's Bounty) is bounded after all, so it is checked.
+            if (requirements.none { effectiveMaxCount(it) == Int.MAX_VALUE }) {
                 val totalMax = requirements.sumOf { effectiveMaxCount(it) }
                 if (targets.size > totalMax) {
                     return "Too many targets for ${requirement.description}"
@@ -191,6 +200,25 @@ class TargetValidator {
                 }
             }
 
+            // "... that share a card type" — every chosen permanent target must hold at least one
+            // *card type* (CR 205.2a) in common with all the others (Burglar's Plot). Projected
+            // types, so an animated land counts as a creature; supertypes are sieved out, so two
+            // legendary permanents don't qualify by both being legendary. No-op for single-target
+            // requirements; a target off the battlefield contributes nothing and rejects the set.
+            if (requirement is TargetObject && requirement.sameCardType && targetsForReq.size > 1) {
+                val projected = state.projectedState
+                val typeSets = targetsForReq.map { target ->
+                    (target as? ChosenTarget.Permanent)
+                        ?.takeIf { it.entityId in state.getBattlefield() }
+                        ?.let { perm -> projected.getTypes(perm.entityId).filterTo(mutableSetOf()) { it in CARD_TYPE_NAMES } }
+                        ?: emptySet()
+                }
+                val shared = typeSets.reduce { acc, next -> acc intersect next }
+                if (shared.isEmpty()) {
+                    return "Targets must share a card type"
+                }
+            }
+
             // "... with total mana value N or less" — the summed mana value of the chosen card
             // targets may not exceed the resolved cap (Fire Lord Sozin's "total mana value X or
             // less"; XValue resolves against the paid [xValue]). CR 601.2c. No-op for non-card
@@ -213,6 +241,23 @@ class TargetValidator {
                 }
                 if (summedManaValue > cap) {
                     return "Targets must have total mana value $cap or less"
+                }
+            }
+
+            // "... with different names" — no two chosen targets for this requirement may share a
+            // name (Behold the Sinister Six!: "up to six target creature cards with different
+            // names"). CR 601.2c. Grouped by projected name on the battlefield, base card name in
+            // other zones (graveyard cards aren't projected).
+            if (requirement is TargetObject && requirement.differentNames && targetsForReq.size > 1) {
+                val names = targetsForReq.map { target ->
+                    val id = (target as? ChosenTarget.Permanent)?.entityId
+                        ?: (target as? ChosenTarget.Card)?.cardId
+                    id?.let {
+                        state.projectedState.getName(it) ?: state.getEntity(it)?.get<CardComponent>()?.name
+                    }
+                }
+                if (names.size != names.toSet().size) {
+                    return "Targets must have different names"
                 }
             }
         }
@@ -939,27 +984,11 @@ class TargetValidator {
      * Check if a player has shroud (e.g., from True Believer's "You have shroud"
      * or Gilded Light's "You gain shroud until end of turn").
      */
-    private fun playerHasShroud(state: GameState, playerId: EntityId): Boolean {
-        val playerEntity = state.getEntity(playerId)
-        if (playerEntity?.has<PlayerShroudComponent>() == true) return true
+    private fun playerHasShroud(state: GameState, playerId: EntityId): Boolean =
+        ControllerShroud.appliesTo(state, playerId)
 
-        return state.getBattlefield().any { entityId ->
-            val container = state.getEntity(entityId) ?: return@any false
-            container.get<GrantsControllerShroudComponent>() != null &&
-                container.get<ControllerComponent>()?.playerId == playerId
-        }
-    }
-
-    private fun playerHasHexproof(state: GameState, playerId: EntityId): Boolean {
-        val playerEntity = state.getEntity(playerId)
-        if (playerEntity?.has<PlayerHexproofComponent>() == true) return true
-
-        return state.getBattlefield().any { entityId ->
-            val container = state.getEntity(entityId) ?: return@any false
-            container.get<GrantsControllerHexproofComponent>() != null &&
-                container.get<ControllerComponent>()?.playerId == playerId
-        }
-    }
+    private fun playerHasHexproof(state: GameState, playerId: EntityId): Boolean =
+        ControllerHexproof.appliesTo(state, playerId)
 
     private fun playerHasHexproofAgainst(state: GameState, playerId: EntityId, casterId: EntityId): Boolean {
         return playerId != casterId && playerHasHexproof(state, playerId)

@@ -21,8 +21,10 @@ import kotlinx.serialization.Serializable
  * @property duration How long the copy persists. [Duration.Permanent] (default) bakes the copy
  *   into base state for good (Mirrorform). [Duration.EndOfTurn] makes a temporary copy that the
  *   end-of-turn cleanup reverts to each permanent's pre-copy identity (Naga Fleshcrafter's renew —
- *   "becomes a copy of that creature until end of turn"). Only `Permanent` and `EndOfTurn` are
- *   supported; other durations fall back to permanent.
+ *   "becomes a copy of that creature until end of turn"). [Duration.UntilNextEndStep] reverts on
+ *   entry to the next end step (Niko, Light of Hope), and [Duration.UntilYourNextTurn] reverts
+ *   after the untap step of the effect's controller's next turn (Absorbing Man, Taskmaster —
+ *   "until your next turn, this becomes a copy of …"). Any other duration falls back to permanent.
  * @property excludeTarget When true, the copy source [target] itself is excluded from the set of
  *   permanents that become copies — for "each **other** creature you control becomes a copy of
  *   that creature" wordings, where the target keeps its own identity (and any counter just placed
@@ -39,6 +41,21 @@ import kotlinx.serialization.Serializable
  *   of that card" off a card just put into exile — Lazav, Familiar Stranger: "you may exile a card
  *   from a graveyard. If a creature card was exiled this way, you may have Lazav become a copy of
  *   that card until end of turn."
+ * @property exceptions The "except …" modifications this copy effect specifies (CR 707.9) — name,
+ *   added/removed types, added keywords, base P/T, colors. The shared [CopyExceptions] vocabulary,
+ *   applied by the same engine helper the token-copy path uses, so "except it isn't legendary"
+ *   (Shuri, Wakandan Inventor) and "except his name is Absorbing Man and he's a legendary 4/4
+ *   Human Villain creature in addition to his other types" mean the same thing on both paths.
+ *   Exceptions ride the copy's base `CardComponent`, so they persist exactly as long as the copy
+ *   does and are themselves copiable (CR 707.2).
+ * @property retainActivatingAbility The "and this ability" half of the same exception: the copy
+ *   keeps the very activated ability that created it. The copy replaces the permanent's
+ *   `CardComponent` wholesale, so the printed ability would otherwise be gone with the rest of the
+ *   original card — this re-grants it through the durable granted-activated-ability record
+ *   (`Duration.Permanent`), which is keyed by entity and therefore survives further copies. The
+ *   grant is idempotent: activating the ability again off a copy re-reads the already-granted
+ *   instance rather than stacking a second one. No-op when the effect isn't resolving from an
+ *   activated ability. Not a characteristic, so it stays here rather than on [CopyExceptions].
  */
 @SerialName("EachPermanentBecomesCopyOfTarget")
 @Serializable
@@ -51,17 +68,24 @@ data class EachPermanentBecomesCopyOfTargetEffect(
     val excludeTarget: Boolean = false,
     val affected: EffectTarget? = null,
     val sourceFromAnyZone: Boolean = false,
+    val exceptions: CopyExceptions = CopyExceptions.None,
+    val retainActivatingAbility: Boolean = false,
 ) : Effect {
     override val description: String = run {
         val durationSuffix = when (duration) {
             Duration.EndOfTurn -> " until end of turn"
             Duration.UntilNextEndStep -> " until the next end step"
+            Duration.UntilYourNextTurn -> " until your next turn"
             else -> ""
         }
+        val clauses = exceptions.clauses() +
+            (if (retainActivatingAbility) listOf("it has this ability") else emptyList())
+        val exceptSuffix =
+            if (clauses.isEmpty()) "" else ", except ${clauses.joinToString(" and ")}"
         if (affected != null) {
-            "${affected.description} becomes a copy of ${target.description}$durationSuffix"
+            "${affected.description} becomes a copy of ${target.description}$durationSuffix$exceptSuffix"
         } else {
-            "Each ${if (excludeTarget) "other " else ""}${filter.baseFilter.description} becomes a copy of ${target.description}$durationSuffix"
+            "Each ${if (excludeTarget) "other " else ""}${filter.baseFilter.description} becomes a copy of ${target.description}$durationSuffix$exceptSuffix"
         }
     }
 

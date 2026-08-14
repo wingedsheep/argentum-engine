@@ -41,8 +41,8 @@ class WitnessProtectionScenarioTest : FunSpec({
         val player = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        // Ragavan, Nimble Pilferer: legendary 2/1 red Monkey Pirate with Haste + a mana ability.
-        val ragavan = driver.putCreatureOnBattlefield(player, "Ragavan, Nimble Pilferer")
+        // Test Hasty Prospector: legendary 2/1 red Monkey Pirate with Haste + a mana ability.
+        val ragavan = driver.putCreatureOnBattlefield(player, "Test Hasty Prospector")
         val aura = driver.putCardInHand(player, "Witness Protection")
         driver.giveMana(player, Color.BLUE, 1)
         driver.castSpell(player, aura, listOf(ragavan))
@@ -86,7 +86,7 @@ class WitnessProtectionScenarioTest : FunSpec({
         val player = driver.activePlayer!!
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
 
-        val ragavan = driver.putCreatureOnBattlefield(player, "Ragavan, Nimble Pilferer")
+        val ragavan = driver.putCreatureOnBattlefield(player, "Test Hasty Prospector")
         val aura = driver.putCardInHand(player, "Witness Protection")
         driver.giveMana(player, Color.BLUE, 1)
         driver.castSpell(player, aura, listOf(ragavan))
@@ -112,7 +112,7 @@ class WitnessProtectionScenarioTest : FunSpec({
         projected.hasSubtype(ragavan, "Citizen") shouldBe false
         // No more projected override — name falls back to the base CardComponent.
         projected.getName(ragavan) shouldBe null
-        driver.getCardName(ragavan) shouldBe "Ragavan, Nimble Pilferer"
+        driver.getCardName(ragavan) shouldBe "Test Hasty Prospector"
     }
 
     test("two different legendary creatures both renamed to Legitimate Businessperson trigger the legend rule") {
@@ -127,7 +127,7 @@ class WitnessProtectionScenarioTest : FunSpec({
 
         // Two distinctly-named legendary creatures — the legend rule would NOT normally apply
         // (see LegendRuleTest's "different legendary names" case).
-        val ragavan = driver.putCreatureOnBattlefield(player, "Ragavan, Nimble Pilferer")
+        val ragavan = driver.putCreatureOnBattlefield(player, "Test Hasty Prospector")
         val ghalta = driver.putCreatureOnBattlefield(player, "Ghalta, Primal Hunger")
 
         // Enchant each with its own copy of Witness Protection.

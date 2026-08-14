@@ -20,6 +20,25 @@ export interface DailyCount {
   readonly count: number
 }
 
+/** One table's row count and on-disk footprint in the accounts database. */
+export interface DatabaseTableStat {
+  readonly tableName: string
+  readonly rows: number
+  /** Heap + TOAST, excluding indexes. */
+  readonly tableBytes: number
+  readonly indexBytes: number
+  /** tableBytes + indexBytes. */
+  readonly totalBytes: number
+}
+
+/** Storage overview of the accounts database. */
+export interface DatabaseStats {
+  readonly databaseName: string
+  /** Whole-database size — includes catalogs, so it exceeds the sum of the tables. */
+  readonly databaseSizeBytes: number
+  readonly tables: DatabaseTableStat[]
+}
+
 export interface GeoBucket {
   readonly country: string | null
   readonly countryCode: string | null
@@ -111,6 +130,8 @@ export const fetchTopCards = (auth: AdminAuth, limit = 50) =>
   getAdminStats<CardStat[]>(auth, `/cards?limit=${limit}`)
 export const fetchCardWinRates = (auth: AdminAuth, minDecks = 10, limit = 50) =>
   getAdminStats<CardWinRate[]>(auth, `/cards/win-rates?minDecks=${minDecks}&limit=${limit}`)
+/** Per-table row counts + sizes. Exact counts server-side, so fetch on demand rather than polling. */
+export const fetchDatabaseStats = (auth: AdminAuth) => getAdminStats<DatabaseStats>(auth, '/database')
 export const fetchTournaments = (auth: AdminAuth, limit = 50) =>
   getAdminStats<TournamentSummary[]>(auth, `/tournaments?limit=${limit}`)
 

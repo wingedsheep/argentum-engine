@@ -2218,32 +2218,6 @@
             {
                 "id": "ability_1",
                 "trigger": {
-                    "type": "ZoneChangeEvent",
-                    "to": "Battlefield"
-                },
-                "effect": {
-                    "type": "Gated",
-                    "gate": {
-                        "type": "Gate.WhenCondition",
-                        "condition": {
-                            "type": "Compare",
-                            "left": {
-                                "type": "AggregateBattlefield",
-                                "player": "You"
-                            },
-                            "operator": "GTE",
-                            "right": {
-                                "type": "Fixed",
-                                "amount": 10
-                            }
-                        }
-                    },
-                    "then": "GainCitysBlessing"
-                }
-            },
-            {
-                "id": "ability_2",
-                "trigger": {
                     "type": "StepEvent",
                     "step": "UPKEEP",
                     "player": "Each"

@@ -1,12 +1,12 @@
 package com.wingedsheep.gameserver.auth
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.wingedsheep.gameserver.controller.AdminUsersController
 import com.wingedsheep.gameserver.controller.AuthController
 import com.wingedsheep.gameserver.stats.AdminUserStat
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.string.shouldContain
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter
+import tools.jackson.databind.ObjectMapper
 import java.util.UUID
 
 /**
@@ -16,10 +16,11 @@ import java.util.UUID
  * `isAdmin()` getter and — left unannotated — emits the key `admin`. The client reads `user.isAdmin`
  * / `u.isAdmin` / `detail.isAdmin` (the Admin button, the players-list badge, the promote toggle), so
  * the dropped `is` prefix made a promoted account look un-promoted everywhere. `@JsonProperty` pins
- * the name. This uses Spring's own mapper builder, so it sees exactly the modules Spring MVC uses.
+ * the name. The mapper is taken straight off Spring MVC's own JSON converter, so the test serializes
+ * a response exactly the way the server does.
  */
 class UserDtoSerializationTest : FunSpec({
-    val mapper: ObjectMapper = Jackson2ObjectMapperBuilder.json().build()
+    val mapper: ObjectMapper = JacksonJsonHttpMessageConverter().mapper
     val id: UUID = UUID.fromString("00000000-0000-0000-0000-000000000001")
 
     test("AuthController.UserDto serializes the admin flag as isAdmin") {

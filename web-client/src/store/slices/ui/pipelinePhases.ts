@@ -6,6 +6,7 @@
  * - enterPhase: calls the appropriate start* method for a phase
  */
 import type { EntityId, LegalActionInfo, GameAction, ClientGameState } from '@/types'
+import { TAP_FOR_GENERIC_LABEL_IMPROVISE, TAP_FOR_GENERIC_LABEL_WATERBEND } from '@/types'
 import type {
   PipelinePhase,
   PhaseResult,
@@ -15,7 +16,7 @@ import type {
   BlightVariableSelectionState,
   PayXLifeSelectionState,
   ConvokeSelectionState,
-  WaterbendSelectionState,
+  TapForGenericSelectionState,
   HarmonizeSelectionState,
   DelveSelectionState,
   CounterDistributionState,
@@ -40,7 +41,7 @@ export interface PipelineStoreMethods {
   startBlightVariableSelection: (state: BlightVariableSelectionState) => void
   startPayXLifeSelection: (state: PayXLifeSelectionState) => void
   startConvokeSelection: (state: ConvokeSelectionState) => void
-  startWaterbendSelection: (state: WaterbendSelectionState) => void
+  startTapForGenericSelection: (state: TapForGenericSelectionState) => void
   startHarmonizeSelection: (state: HarmonizeSelectionState) => void
   startDelveSelection: (state: DelveSelectionState) => void
   startCounterDistribution: (state: CounterDistributionState) => void
@@ -75,13 +76,19 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
   //    `costPayment` phase here rather than dropping it. Without this, the action submits with
   //    no blight and the engine rejects it ("Too many modes chosen"). Per-mode targeting + mana
   //    still run server-side after submit.
+  //
+  //    Teamwork N (CR 702.194) takes the same exception for the same reason: "Choose one. If this
+  //    spell was cast using teamwork, choose both instead" surfaces the teamwork cast as its own
+  //    modal variant, and the second mode only unlocks once the submitted action carries the
+  //    tapped creatures in `variableCostPermanents`.
   if (
     actionInfo.action.type === 'CastSpell' &&
     actionInfo.modalEnumeration &&
     actionInfo.modalEnumeration.chooseCount > 1
   ) {
     const modalPhases: PipelinePhase[] = [{ type: 'modalModes' }]
-    if (actionInfo.additionalCostInfo?.costType === 'Blight') {
+    const modalCostType = actionInfo.additionalCostInfo?.costType
+    if (modalCostType === 'Blight' || modalCostType === 'TapForTotalPower') {
       modalPhases.push({ type: 'costPayment' })
     }
     return modalPhases
@@ -139,15 +146,16 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
     phases.push({ type: 'convoke' })
   }
 
-  // 3a. Waterbend (activated abilities with a waterbend cost — Avatar: The Last Airbender).
-  //     Optional: the player may tap artifacts/creatures to help pay the generic cost.
+  // 3a. Tap-for-generic: improvise (CR 702.126) on a spell, or a waterbend cost on a spell or
+  //     activated ability. Optional either way — the player may tap eligible permanents to help
+  //     pay the generic cost, or confirm with none selected and pay it all with mana.
   if (
     (actionInfo.action.type === 'CastSpell' || actionInfo.action.type === 'ActivateAbility') &&
-    actionInfo.hasWaterbend &&
-    actionInfo.validWaterbendPermanents &&
-    actionInfo.validWaterbendPermanents.length > 0
+    actionInfo.hasTapForGeneric &&
+    actionInfo.validTapForGenericPermanents &&
+    actionInfo.validTapForGenericPermanents.length > 0
   ) {
-    phases.push({ type: 'waterbend' })
+    phases.push({ type: 'tapForGeneric' })
   }
 
   // 3b. Harmonize creature-tap (cast from graveyard via Harmonize). Optional: the player
@@ -162,9 +170,30 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
     phases.push({ type: 'harmonize' })
   }
 
+  // 3c. Emerge sacrifice (CR 702.119). The sacrificed creature's mana value reduces the emerge
+  //     cost, so — like the harmonize creature-tap above — the pick has to happen before any
+  //     manual mana-source selection, which prices what's left to pay. Pushed here instead of in
+  //     the generic cost-payment step below, which runs after mana selection.
+  const isEmergeCast =
+    actionInfo.action.type === 'CastSpell' &&
+    actionInfo.action.alternativeCostType === 'EMERGE' &&
+    (actionInfo.additionalCostInfo?.validSacrificeTargets?.length ?? 0) > 0
+  if (isEmergeCast) {
+    phases.push({ type: 'costPayment' })
+  }
+
   // 4. Mana source selection (skipped when auto-tap is enabled, except for delve/convoke
   //    spells where the player should always confirm land selection after alternative payment)
-  const hasAlternativePaymentPhase = phases.some((p) => p.type === 'delve' || p.type === 'convoke' || p.type === 'waterbend')
+  //
+  //    A `tapForGeneric` phase deliberately does NOT force it. Improvise is *grantable over a
+  //    whole card type* — Ironheart, Clever Champion gives every noncreature spell you cast
+  //    improvise — so treating it like delve/convoke would silently turn auto-tap off for the
+  //    rest of the game, two confirmation clicks per spell, on a board the player didn't opt into
+  //    per-card. The server applies the taps and then auto-solves the remainder (exactly what the
+  //    harmonize note below describes), so the manaSource step buys nothing under auto-tap.
+  const hasAlternativePaymentPhase = phases.some(
+    (p) => p.type === 'delve' || p.type === 'convoke',
+  )
   if (
     actionInfo.availableManaSources && actionInfo.availableManaSources.length > 0 &&
     (hasAlternativePaymentPhase || !options?.autoTapEnabled)
@@ -172,8 +201,8 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
     phases.push({ type: 'manaSource' })
   }
 
-  // 5. Cost payment (sacrifice/discard/tap/bounce/exile)
-  if (actionInfo.additionalCostInfo?.costType) {
+  // 5. Cost payment (sacrifice/discard/tap/bounce/exile) — emerge already pushed its own above.
+  if (actionInfo.additionalCostInfo?.costType && !isEmergeCast) {
     const costType = actionInfo.additionalCostInfo.costType
     const costTypesNeedingSelection = [
       'SacrificePermanent',
@@ -183,6 +212,7 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
       'BouncePermanent',
       'DiscardCard',
       'ExileFromGraveyard',
+      'CollectEvidence',
       'ExileFromZone',
       'RevealCard',
       'Behold',
@@ -191,6 +221,7 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
       'Conspire',
       'Casualty',
       'Craft',
+      'TapForTotalPower',
     ]
 
     if (costTypesNeedingSelection.includes(costType)) {
@@ -286,7 +317,8 @@ export function mergeResult(
       if (
         action.type === 'CastSpell' ||
         action.type === 'ActivateAbility' ||
-        action.type === 'TurnFaceUp'
+        action.type === 'TurnFaceUp' ||
+        action.type === 'CycleCard'
       ) {
         return { ...action, xValue: result.xValue }
       }
@@ -319,14 +351,14 @@ export function mergeResult(
       return action
     }
 
-    case 'waterbend': {
+    case 'tapForGeneric': {
       if (action.type === 'CastSpell' || action.type === 'ActivateAbility') {
         return {
           ...action,
           alternativePayment: {
             delvedCards: action.alternativePayment?.delvedCards ?? [],
             convokedCreatures: action.alternativePayment?.convokedCreatures ?? {},
-            waterbendPermanents: result.waterbendPermanents,
+            tapForGenericPermanents: result.tapForGenericPermanents,
           },
         }
       }
@@ -399,6 +431,16 @@ export function mergeResult(
         if (costType === 'Conspire') {
           return { ...action, conspiredCreatures: selectedTargets }
         }
+        // Teamwork (CR 702.194a) pays through the shared variable-count permanent channel.
+        if (costType === 'TapForTotalPower') {
+          return {
+            ...action,
+            additionalCostPayment: {
+              ...action.additionalCostPayment,
+              variableCostPermanents: selectedTargets,
+            },
+          }
+        }
         // Casualty sacrifices a single chosen creature into its own dedicated field.
         if (costType === 'Casualty') {
           const casualtyCreature = selectedTargets[0]
@@ -411,7 +453,7 @@ export function mergeResult(
               ? { discardedCards: selectedTargets }
               : costType === 'BouncePermanent'
                 ? { bouncedPermanents: selectedTargets }
-                : costType === 'ExileFromGraveyard'
+                : costType === 'ExileFromGraveyard' || costType === 'CollectEvidence'
                   ? { exiledCards: selectedTargets }
                   : costType === 'Behold' || costType === 'ChooseEntity'
                     ? { beheldCards: selectedTargets }
@@ -447,7 +489,8 @@ export function mergeResult(
               ? { discardedCards: selectedTargets }
               : costType === 'BouncePermanent'
                 ? { bouncedPermanents: selectedTargets }
-                : costType === 'ExileFromGraveyard' || costType === 'Craft'
+                : costType === 'ExileFromGraveyard' || costType === 'Craft' ||
+                    costType === 'CollectEvidence'
                   ? { exiledCards: selectedTargets }
                   : costType === 'Blight'
                     ? { blightTargets: selectedTargets }
@@ -497,7 +540,7 @@ export function mergeResult(
     }
 
     case 'damageDistribution': {
-      if (action.type === 'CastSpell') {
+      if (action.type === 'CastSpell' || action.type === 'ActivateAbility') {
         return { ...action, damageDistribution: result.distribution }
       }
       return action
@@ -621,23 +664,42 @@ export function enterPhase(
       break
     }
 
-    case 'waterbend': {
+    case 'tapForGeneric': {
       // Fold {X} -> the chosen X so the HUD shows the real generic the taps reduce. xValue is
       // set by the preceding xSelection phase (0 if none). "waterbend {X}" spells carry an {X}.
       const xValue = action.type === 'CastSpell' ? action.xValue ?? 0 : 0
       const manaCost = (actionInfo.manaCostString ?? '').replace(/\{X\}/g, `{${xValue}}`)
-      // Tap cap N (one per generic in the waterbend {N}): an explicit spell-level amount; else
-      // the chosen X for "waterbend {X}"; else (ability waterbend) the generic mana in the cost.
-      let genericInCost = 0
-      const genericRe = /\{(\d+)\}/g
-      let gm: RegExpExecArray | null
-      while ((gm = genericRe.exec(manaCost)) !== null) genericInCost += parseInt(gm[1]!, 10)
-      const maxTaps = actionInfo.waterbendAmount ?? (actionInfo.hasXCost ? xValue : genericInCost)
-      store.startWaterbendSelection({
+      const genericIn = (cost: string): number => {
+        let total = 0
+        const genericRe = /\{(\d+)\}/g
+        let gm: RegExpExecArray | null
+        while ((gm = genericRe.exec(cost)) !== null) total += parseInt(gm[1]!, 10)
+        return total
+      }
+      // Tap cap: an explicit spell-level waterbend {N}; else the chosen X for "waterbend {X}";
+      // else the generic mana in the cost.
+      //
+      // Improvise counts only the *printed* generic, which is a known gap rather than the rule:
+      // CR 702.126a bounds the taps at the generic in the spell's TOTAL cost, and X is locked in
+      // before that total is determined (CR 601.2b/601.2f), so improvise does pay X-derived
+      // generic — see the Whir of Invention ruling. Four printed cards have improvise with {X}
+      // (Whir of Invention, Universal Surveillance, Saheeli's Directive, Battle at the Bridge);
+      // none is implemented yet. The cap stays at the printed generic only because the *server*
+      // does not credit taps against the X mana yet (see the TODO in CastSpellEnumerator's
+      // maxAffordableX block) — offering more here would let the player tap artifacts the cast
+      // then refuses to credit. Lift this together with that TODO.
+      const isImprovise = actionInfo.tapForGenericLabel === TAP_FOR_GENERIC_LABEL_IMPROVISE
+      const maxTaps = actionInfo.tapForGenericAmount ??
+        (isImprovise
+          ? genericIn(actionInfo.manaCostString ?? '')
+          : actionInfo.hasXCost
+            ? xValue
+            : genericIn(manaCost))
+      store.startTapForGenericSelection({
         actionInfo,
         // Strip the leading verb and the trailing " (waterbend {N})" disambiguator the enumerator
-        // appends to the optional paid action's description — the HUD already says "Waterbend …"
-        // and shows the cost as mana pips, so the suffix would double the text and render {N} as
+        // appends to the optional paid action's description — the HUD already says the verb and
+        // shows the cost as mana pips, so the suffix would double the text and render {N} as
         // literal characters.
         cardName: actionInfo.description
           .replace('Cast ', '')
@@ -645,8 +707,9 @@ export function enterPhase(
           .replace(/\s*\(waterbend \{[^}]*\}\)\s*$/i, ''),
         manaCost,
         selectedPermanents: [],
-        validPermanents: actionInfo.validWaterbendPermanents!,
+        validPermanents: actionInfo.validTapForGenericPermanents!,
         maxTaps,
+        label: actionInfo.tapForGenericLabel ?? TAP_FOR_GENERIC_LABEL_WATERBEND,
       })
       break
     }
@@ -673,6 +736,66 @@ export function enterPhase(
       break
     }
 
+    // Escalate (CR 702.120a) with a non-mana cost: pay it once per mode chosen beyond the first.
+    // The enumeration advertises one extra mode's cost, so the counts scale by the modes picked in
+    // the preceding modalModes phase; the server capped chooseCount at what the caster can pay, so
+    // the candidate pool always covers them.
+    case 'escalateCost': {
+      const costInfo = actionInfo.modalEnumeration?.additionalCostPerExtraMode
+      const extraModes =
+        action.type === 'CastSpell' ? Math.max(0, (action.chosenModes?.length ?? 0) - 1) : 0
+      if (!costInfo || extraModes === 0) return
+
+      const scaled = (perMode: number | undefined) => (perMode ?? 1) * extraModes
+      const flags: Partial<TargetingState> = { targetDescription: costInfo.description }
+      let validTargets: EntityId[]
+      let count: number
+
+      switch (costInfo.costType) {
+        case 'DiscardCard':
+          validTargets = [...costInfo.validDiscardTargets!]
+          count = scaled(costInfo.discardCount)
+          flags.isSacrificeSelection = true
+          flags.isDiscardSelection = true
+          break
+        case 'TapPermanents':
+          validTargets = [...costInfo.validTapTargets!]
+          count = scaled(costInfo.tapCount)
+          flags.isSacrificeSelection = true
+          flags.isTapPermanentSelection = true
+          break
+        case 'SacrificePermanent':
+          validTargets = [...costInfo.validSacrificeTargets!]
+          count = scaled(costInfo.sacrificeCount)
+          flags.isSacrificeSelection = true
+          break
+        case 'BouncePermanent':
+          validTargets = [...costInfo.validBounceTargets!]
+          count = scaled(costInfo.bounceCount)
+          flags.isSacrificeSelection = true
+          flags.isBounceSelection = true
+          break
+        case 'ExileFromGraveyard':
+          validTargets = [...costInfo.validExileTargets!]
+          count = scaled(costInfo.exileMinCount)
+          flags.isSacrificeSelection = true
+          flags.targetZone = 'Graveyard'
+          break
+        default:
+          return
+      }
+
+      store.startTargeting({
+        action,
+        validTargets,
+        selectedTargets: [],
+        minTargets: count,
+        maxTargets: count,
+        ...flags,
+      })
+      break
+    }
+
     case 'costPayment': {
       const costInfo = actionInfo.additionalCostInfo!
       const costType = costInfo.costType!
@@ -689,12 +812,23 @@ export function enterPhase(
           minTargets = costInfo.sacrificeCount ?? 1
           maxTargets = costInfo.sacrificeCount ?? 1
           flags.isSacrificeSelection = true
+          // The cost knows what it wants ("sacrifice an artifact"); without forwarding it the
+          // overlay falls back to hardcoded "creature" wording and misdescribes every
+          // non-creature sacrifice cost (Castle Doom's artifact, a land, an enchantment).
+          flags.targetDescription = costInfo.description
+          // Emerge (CR 702.119) is the one sacrifice cost where the choice changes the mana owed.
+          // Forward the server's per-candidate costs so the overlay can price each pick.
+          if (costInfo.costAfterSacrifice) {
+            flags.costAfterSacrifice = costInfo.costAfterSacrifice
+            if (actionInfo.manaCostString) flags.costBeforeSacrifice = actionInfo.manaCostString
+          }
           break
         case 'SacrificeForCostReduction':
           validTargets = [...(costInfo.validSacrificeTargets ?? [])]
           minTargets = 0
           maxTargets = validTargets.length
           flags.isSacrificeSelection = true
+          flags.targetDescription = costInfo.description
           break
         case 'TapPermanents': {
           validTargets = [...(costInfo.validTapTargets ?? [])]
@@ -734,6 +868,22 @@ export function enterPhase(
           flags.isTapPermanentSelection = true
           flags.targetDescription = costInfo.description
           break
+        // Teamwork N (CR 702.194a) — "tap any number of creatures you control with total power N
+        // or more". The count is free, so the confirm gate is the power total, not minTargets.
+        case 'TapForTotalPower': {
+          const creatures = costInfo.tapForPowerCreatures ?? []
+          validTargets = creatures.map((c) => c.entityId)
+          minTargets = 0
+          maxTargets = validTargets.length
+          flags.isSacrificeSelection = true
+          flags.isTapPermanentSelection = true
+          flags.targetDescription = costInfo.description
+          flags.requiredTotalPower = costInfo.tapForPowerRequired ?? 0
+          const powerByEntityId: Record<EntityId, number> = {}
+          for (const c of creatures) powerByEntityId[c.entityId] = c.power
+          flags.powerByEntityId = powerByEntityId
+          break
+        }
         case 'BouncePermanent':
           validTargets = [...(costInfo.validBounceTargets ?? [])]
           minTargets = costInfo.bounceCount ?? 1
@@ -762,6 +912,20 @@ export function enterPhase(
           flags.sourceCardName = actionInfo.description
             .replace(/^Cast /, '')
             .replace(/^Activate /, '')
+          break
+        // Collect evidence N (CR 701.59a): any number of graveyard cards, gated on their summed
+        // mana value rather than a count — so the count bounds are simply 1..whole graveyard and
+        // `minTotalManaValue` carries the real constraint.
+        case 'CollectEvidence':
+          validTargets = [...(costInfo.validExileTargets ?? [])]
+          minTargets = 1
+          maxTargets = costInfo.validExileTargets?.length ?? 1
+          flags.isSacrificeSelection = true
+          flags.targetZone = 'Graveyard'
+          flags.targetDescription = costInfo.description
+          if (costInfo.exileMinTotalManaValue != null) {
+            flags.minTotalManaValue = costInfo.exileMinTotalManaValue
+          }
           break
         case 'ExileFromZone':
           validTargets = [...(costInfo.validExileTargets ?? [])]
@@ -857,11 +1021,27 @@ export function enterPhase(
           return typeof power === 'number' && power === chosenX
         })
       }
+      // Likeness Looter / Rydia: "with mana value X" is an *equality* filter, not "X or less".
+      const filterByExactManaValueX = (
+        ids: readonly EntityId[],
+        constrained: boolean | undefined,
+      ): EntityId[] => {
+        if (!constrained || chosenX == null || gameState == null) return [...ids]
+        return ids.filter((id) => {
+          const mv = gameState.cards[id]?.manaValue
+          return typeof mv === 'number' && mv === chosenX
+        })
+      }
       const applyXFilters = (
         ids: readonly EntityId[],
         mvConstrained: boolean | undefined,
         powerConstrained: boolean | undefined,
-      ): EntityId[] => filterByPowerX(filterByX(ids, mvConstrained), powerConstrained)
+        exactMvConstrained?: boolean | undefined,
+      ): EntityId[] =>
+        filterByExactManaValueX(
+          filterByPowerX(filterByX(ids, mvConstrained), powerConstrained),
+          exactMvConstrained,
+        )
 
       // When a requirement's max-count is X-driven (TargetObject.dynamicMaxCount =
       // XValue server-side), the static `count` field is just a placeholder (often
@@ -878,7 +1058,7 @@ export function enterPhase(
         const maxTargets = resolveMaxByX(firstReq.maxTargets, firstReq.xConstrainsCount)
         store.startTargeting({
           action,
-          validTargets: applyXFilters(firstReq.validTargets, firstReq.xConstrainsManaValue, firstReq.xConstrainsPower),
+          validTargets: applyXFilters(firstReq.validTargets, firstReq.xConstrainsManaValue, firstReq.xConstrainsPower, firstReq.xConstrainsManaValueExactly),
           selectedTargets: [],
           minTargets: Math.min(firstReq.minTargets, maxTargets),
           maxTargets,
@@ -896,7 +1076,7 @@ export function enterPhase(
         const rawMin = actionInfo.minTargets ?? rawMax
         store.startTargeting({
           action,
-          validTargets: applyXFilters(actionInfo.validTargets ?? [], actionInfo.xConstrainsTargetManaValue, actionInfo.xConstrainsTargetPower),
+          validTargets: applyXFilters(actionInfo.validTargets ?? [], actionInfo.xConstrainsTargetManaValue, actionInfo.xConstrainsTargetPower, actionInfo.xConstrainsTargetManaValueExactly),
           selectedTargets: [],
           minTargets: Math.min(rawMin, maxTargets),
           maxTargets,

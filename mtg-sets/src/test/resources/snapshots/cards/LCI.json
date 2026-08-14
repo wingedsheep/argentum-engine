@@ -939,8 +939,7 @@
                 },
                 {
                     "type": "CreatePredefinedToken",
-                    "tokenType": "Treasure",
-                    "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                    "tokenType": "Treasure"
                 }
             ]
         },
@@ -1872,8 +1871,7 @@
                             },
                             "then": {
                                 "type": "CreatePredefinedToken",
-                                "tokenType": "Treasure",
-                                "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                                "tokenType": "Treasure"
                             }
                         }
                     ]
@@ -2111,7 +2109,8 @@
         },
         "colorIdentityOverride": [
             "BLUE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "47",
@@ -2406,8 +2405,7 @@
                         {
                             "effect": {
                                 "type": "CreatePredefinedToken",
-                                "tokenType": "Treasure",
-                                "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                                "tokenType": "Treasure"
                             }
                         },
                         {
@@ -3164,8 +3162,7 @@
                 "trigger": "AttackEvent",
                 "effect": {
                     "type": "CreatePredefinedToken",
-                    "tokenType": "Treasure",
-                    "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                    "tokenType": "Treasure"
                 }
             }
         ]
@@ -3717,7 +3714,8 @@
         },
         "colorIdentityOverride": [
             "WHITE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "6",
@@ -4148,8 +4146,7 @@
                                     },
                                     {
                                         "type": "CreatePredefinedToken",
-                                        "tokenType": "Treasure",
-                                        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                                        "tokenType": "Treasure"
                                     }
                                 ]
                             }
@@ -5273,8 +5270,7 @@
                     "trigger": "AttackEvent",
                     "effect": {
                         "type": "CreatePredefinedToken",
-                        "tokenType": "Treasure",
-                        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                        "tokenType": "Treasure"
                     }
                 }
             }
@@ -5676,7 +5672,8 @@
         },
         "colorIdentityOverride": [
             "RED"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "145",
@@ -6379,8 +6376,7 @@
                 "binding": "ANY",
                 "effect": {
                     "type": "CreatePredefinedToken",
-                    "tokenType": "Treasure",
-                    "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                    "tokenType": "Treasure"
                 },
                 "triggerCondition": {
                     "type": "Compare",
@@ -6631,7 +6627,7 @@
                         {
                             "type": "CostAtomWrapper",
                             "atom": {
-                                "type": "AtomExilePermanents",
+                                "type": "AtomVariablePermanents",
                                 "filter": "artifact"
                             }
                         }
@@ -7709,8 +7705,7 @@
                         },
                         {
                             "type": "CreatePredefinedToken",
-                            "tokenType": "Treasure",
-                            "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                            "tokenType": "Treasure"
                         }
                     ]
                 }
@@ -8174,8 +8169,7 @@
                             "collectionName": "discovered"
                         }
                     }
-                },
-                "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                }
             }
         }
     },
@@ -8583,7 +8577,8 @@
             "WHITE",
             "RED",
             "GREEN"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "189",
@@ -8900,7 +8895,8 @@
         },
         "colorIdentityOverride": [
             "RED"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "155",
@@ -9374,7 +9370,8 @@
         },
         "colorIdentityOverride": [
             "BLUE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "60",
@@ -9574,7 +9571,10 @@
                 },
                 "effect": {
                     "type": "DistributeCountersAmongTargets",
-                    "totalCounters": 3
+                    "totalCounters": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -9645,7 +9645,8 @@
         },
         "colorIdentityOverride": [
             "GREEN"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "195",
@@ -9889,7 +9890,8 @@
         },
         "colorIdentityOverride": [
             "GREEN"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "197",
@@ -10462,7 +10464,8 @@
         },
         "colorIdentityOverride": [
             "BLUE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "62",
@@ -10534,8 +10537,7 @@
                 "binding": "ANY",
                 "effect": {
                     "type": "CreatePredefinedToken",
-                    "tokenType": "Treasure",
-                    "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                    "tokenType": "Treasure"
                 }
             }
         ]
@@ -11310,7 +11312,8 @@
         "colorIdentityOverride": [
             "WHITE",
             "BLUE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "233",
@@ -13002,7 +13005,8 @@
         },
         "colorIdentityOverride": [
             "WHITE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "29",
@@ -13396,7 +13400,8 @@
                     }
                 ],
                 "timing": "SorcerySpeed",
-                "descriptionOverride": "Equip Pirate {1}"
+                "isEquipAbility": true,
+                "equipQuality": "Pirate"
             },
             {
                 "id": "ability_2",
@@ -13608,8 +13613,7 @@
                 },
                 "effect": {
                     "type": "CreatePredefinedToken",
-                    "tokenType": "Treasure",
-                    "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                    "tokenType": "Treasure"
                 }
             }
         ]
@@ -13655,8 +13659,7 @@
                         "type": "AggregateBattlefield",
                         "player": "You",
                         "filter": "creature Dinosaur attacking"
-                    },
-                    "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                    }
                 }
             },
             {
@@ -15619,7 +15622,8 @@
         },
         "colorIdentityOverride": [
             "RED"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "164",
@@ -16969,7 +16973,8 @@
         },
         "colorIdentityOverride": [
             "WHITE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "36",
@@ -17651,7 +17656,8 @@
             "artist": "Aldo Domínguez",
             "imageUri": "https://cards.scryfall.io/normal/back/e/0/e0b6d40a-fded-4625-b03c-765c88d75766.jpg?1782694401"
         },
-        "colorIdentityOverride": []
+        "colorIdentityOverride": [],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "262",
@@ -18617,8 +18623,7 @@
                 "trigger": "AttackEvent",
                 "effect": {
                     "type": "CreatePredefinedToken",
-                    "tokenType": "Treasure",
-                    "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                    "tokenType": "Treasure"
                 }
             }
         ],
@@ -18757,7 +18762,8 @@
         },
         "colorIdentityOverride": [
             "BLUE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "55",
@@ -19817,7 +19823,8 @@
         ],
         "colorIndicator": [
             "BLACK"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "266",
@@ -20069,7 +20076,8 @@
         },
         "colorIdentityOverride": [
             "BLACK"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "128",
@@ -20643,7 +20651,8 @@
         },
         "colorIdentityOverride": [
             "WHITE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "41",
@@ -20914,7 +20923,8 @@
         },
         "colorIdentityOverride": [
             "BLACK"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "129",
@@ -21202,8 +21212,7 @@
                         },
                         {
                             "type": "CreatePredefinedToken",
-                            "tokenType": "Treasure",
-                            "imageUri": "https://cards.scryfall.io/normal/front/3/d/3dfaedeb-f8ec-4f0e-b243-c850770a86f2.jpg?1783913602"
+                            "tokenType": "Treasure"
                         }
                     ]
                 },
@@ -21766,7 +21775,8 @@
         },
         "colorIdentityOverride": [
             "BLUE"
-        ]
+        ],
+        "hasNoManaCost": true
     },
     "metadata": {
         "collectorNumber": "83",

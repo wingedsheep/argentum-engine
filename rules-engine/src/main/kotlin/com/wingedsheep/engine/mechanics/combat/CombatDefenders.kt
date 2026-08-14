@@ -17,14 +17,20 @@ import com.wingedsheep.sdk.model.EntityId
  */
 object CombatDefenders {
 
-    /** The player defending against an attack aimed at [defenderId] (a player attacks as
-     *  themselves; a planeswalker/battle defends on behalf of its controller). */
-    fun defendingPlayerOf(state: GameState, defenderId: EntityId): EntityId =
-        if (defenderId in state.turnOrder) {
-            defenderId
-        } else {
-            state.getEntity(defenderId)?.get<ControllerComponent>()?.playerId ?: defenderId
-        }
+    /**
+     * The player defending against an attack aimed at [defenderId]: a player defends as
+     * themselves, a planeswalker defends on behalf of its controller (CR 508.5), and a **battle
+     * defends on behalf of its protector, not its controller** (CR 310.8d — for a battle being
+     * attacked, every rule and effect that refers to the defending player means its protector).
+     * That asymmetry is the whole point of a Siege: its controller attacks it while an opponent
+     * defends it.
+     */
+    fun defendingPlayerOf(state: GameState, defenderId: EntityId): EntityId {
+        if (defenderId in state.turnOrder) return defenderId
+        com.wingedsheep.engine.mechanics.battle.Battles.protectorOf(state, defenderId)
+            ?.let { return it }
+        return state.getEntity(defenderId)?.get<ControllerComponent>()?.playerId ?: defenderId
+    }
 
     /** Every distinct defending player in the current combat: anyone who has a creature attacking
      *  them (or their planeswalkers/battles) — and, under shared team turns (Two-Headed Giant), their

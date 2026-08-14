@@ -17,7 +17,7 @@ val SpiderSuit = card("Spider-Suit") {
     manaCost = "{1}"
     colorIdentity = ""
     typeLine = "Artifact — Equipment"
-    oracleText = "Equipped creature gets +2/+2 and is a Spider Hero in addition to its other types.\nEquip {3}"
+    oracleText = "Equipped creature gets +2/+2 and is a Spider Hero in addition to its other types.\nEquip {3} ({3}: Attach to target creature you control. Equip only as a sorcery.)"
 
     staticAbility {
         ability = ModifyStats(2, 2, Filters.EquippedCreature)

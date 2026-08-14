@@ -3,7 +3,8 @@ package com.wingedsheep.engine.scenarios
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
-import com.wingedsheep.engine.state.components.identity.ManifestedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.mtg.sets.definitions.dsk.cards.ConductiveMachete
@@ -55,7 +56,7 @@ class ConductiveMacheteScenarioTest : FunSpec({
 
         // The creature is a manifested 2/2 on the battlefield.
         val manifested = d.state.getEntity(creature)
-        manifested?.get<ManifestedComponent>() shouldBe ManifestedComponent
+        manifested?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
 
         // The Machete (find it on the battlefield) is attached to that creature.
         val macheteEntity = d.getPermanents(you).first { d.getCardName(it) == "Conductive Machete" }

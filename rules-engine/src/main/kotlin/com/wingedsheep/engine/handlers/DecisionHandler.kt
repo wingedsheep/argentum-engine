@@ -77,7 +77,12 @@ class DecisionHandler {
         maxSelections: Int,
         ordered: Boolean = false,
         phase: DecisionPhase = DecisionPhase.RESOLUTION,
-        useTargetingUI: Boolean = false
+        useTargetingUI: Boolean = false,
+        /**
+         * Floor on the summed mana value of the selection — collect evidence N (CR 701.59a).
+         * See [SelectCardsDecision.minTotalManaValue].
+         */
+        minTotalManaValue: Int? = null
     ): ExecutionResult {
         val decision = SelectCardsDecision(
             id = generateDecisionId(),
@@ -92,7 +97,8 @@ class DecisionHandler {
             minSelections = minSelections,
             maxSelections = maxSelections,
             ordered = ordered,
-            useTargetingUI = useTargetingUI
+            useTargetingUI = useTargetingUI,
+            minTotalManaValue = minTotalManaValue
         )
 
         val newState = state.withPendingDecision(decision)

@@ -29,7 +29,7 @@ class TakeTheFallScenarioTest : FunSpec({
 
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        // Ragavan, Nimble Pilferer is a Monkey Pirate — Pirate makes it an outlaw.
+        // Test Hasty Prospector is a Monkey Pirate — Pirate makes it an outlaw.
         driver.registerCards(TestCards.all + listOf(TakeTheFall))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), startingLife = 20)
         driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
@@ -68,7 +68,7 @@ class TakeTheFallScenarioTest : FunSpec({
         val opp = driver.getOpponent(me)
 
         // I control an outlaw (Pirate).
-        driver.putCreatureOnBattlefield(me, "Ragavan, Nimble Pilferer")
+        driver.putCreatureOnBattlefield(me, "Test Hasty Prospector")
         val target = driver.putCreatureOnBattlefield(opp, "Centaur Courser") // 3/3
         val spell = driver.putCardInHand(me, "Take the Fall")
         driver.giveMana(me, Color.BLUE, 1)
@@ -96,7 +96,7 @@ class TakeTheFallScenarioTest : FunSpec({
         val opp = driver.getOpponent(me)
 
         // The outlaw belongs to the opponent — should NOT trigger the -4/-0 branch.
-        driver.putCreatureOnBattlefield(opp, "Ragavan, Nimble Pilferer")
+        driver.putCreatureOnBattlefield(opp, "Test Hasty Prospector")
         val target = driver.putCreatureOnBattlefield(opp, "Centaur Courser") // 3/3
         val spell = driver.putCardInHand(me, "Take the Fall")
         driver.giveMana(me, Color.BLUE, 1)

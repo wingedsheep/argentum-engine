@@ -6,7 +6,8 @@ import com.wingedsheep.engine.core.OrderedResponse
 import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
-import com.wingedsheep.engine.state.components.identity.ManifestedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.state.components.identity.RoomComponent
 import com.wingedsheep.engine.state.components.identity.RoomFaceId
 import com.wingedsheep.engine.support.GameTestDriver
@@ -99,7 +100,7 @@ class UnderwaterTunnelSlimyAquariumScenarioTest : FunSpec({
         while (!d.isPaused && d.state.stack.isNotEmpty()) d.bothPass()
 
         // The creature is a manifested 2/2 with a +1/+1 counter from the second clause = 3/3.
-        d.state.getEntity(creature)?.get<ManifestedComponent>() shouldBe ManifestedComponent
+        d.state.getEntity(creature)?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
         val counters = d.state.getEntity(creature)?.get<CountersComponent>()
         counters shouldNotBe null
         counters!!.getCount(CounterType.PLUS_ONE_PLUS_ONE) shouldBe 1

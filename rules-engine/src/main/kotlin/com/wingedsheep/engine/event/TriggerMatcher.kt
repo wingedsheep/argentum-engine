@@ -1,66 +1,42 @@
 package com.wingedsheep.engine.event
-import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
-import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
-import com.wingedsheep.engine.state.components.battlefield.CountersComponent
-import com.wingedsheep.engine.handlers.effects.permanent.counters.counterTypeToString
 
-import com.wingedsheep.engine.core.BecomesTargetEvent
-import com.wingedsheep.engine.core.AbilityActivatedEvent
-import com.wingedsheep.engine.core.AbilityTriggeredEvent
-import com.wingedsheep.engine.core.AttackersDeclaredEvent
-import com.wingedsheep.engine.core.BlockersDeclaredEvent
-import com.wingedsheep.engine.core.CardCycledEvent
-import com.wingedsheep.engine.core.CardsDiscardedEvent
-import com.wingedsheep.engine.core.GiftGivenEvent
-import com.wingedsheep.engine.core.RoomFullyUnlockedEvent
-import com.wingedsheep.engine.core.CardRevealedFromDrawEvent
-import com.wingedsheep.engine.core.CardsDrawnEvent
-import com.wingedsheep.engine.core.CommitCrimeEvent
-import com.wingedsheep.engine.core.CountersAddedEvent
-import com.wingedsheep.engine.core.SagaChapterResolvedEvent
-import com.wingedsheep.engine.core.DamageDealtEvent
-import com.wingedsheep.engine.core.LifeChangedEvent
-import com.wingedsheep.engine.core.SpellCastEvent
-import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
-import com.wingedsheep.engine.state.components.player.ManaSpentOnSpellsThisTurnComponent
-import com.wingedsheep.engine.core.LandTappedForManaEvent
-import com.wingedsheep.engine.core.TappedEvent
-import com.wingedsheep.engine.core.TransformedEvent
-import com.wingedsheep.engine.core.TurnFaceUpEvent
-import com.wingedsheep.engine.core.UntappedEvent
-import com.wingedsheep.engine.core.PhasedInEvent
-import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
+import com.wingedsheep.engine.handlers.predicates.isModified
+
+import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PipelineState
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.permanent.counters.counterTypeToString
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
+import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
+import com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent
+import com.wingedsheep.engine.state.components.player.ManaSpentOnSpellsThisTurnComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
-import com.wingedsheep.sdk.scripting.events.AbilityTargetMatch
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ExploreReveal
-import com.wingedsheep.sdk.scripting.events.ControllerFilter
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggerBinding
-import com.wingedsheep.sdk.scripting.events.DamageType
-import com.wingedsheep.sdk.scripting.events.RecipientFilter
-import com.wingedsheep.sdk.scripting.events.AttackPredicate
-import com.wingedsheep.sdk.scripting.events.SourceFilter
-import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
+import com.wingedsheep.sdk.scripting.events.*
 import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.predicates.evaluateWith
-
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 
@@ -89,6 +65,9 @@ class TriggerMatcher(
         ) return false
 
         return when (trigger) {
+            is EventPattern.AnyOf -> trigger.events.any {
+                matchesTrigger(it, binding, event, sourceId, controllerId, state)
+            }
             is EventPattern.ZoneChangeEvent -> matchesZoneChangeTrigger(trigger, binding, event, sourceId, controllerId, state)
             is EventPattern.DrawEvent -> {
                 event is CardsDrawnEvent && matchesPlayer(trigger.player, event.playerId, controllerId)
@@ -96,6 +75,10 @@ class TriggerMatcher(
             // MillEvent is a replacement-only pattern (ModifyMillAmount); it never matches a
             // triggered ability. Applied at the mill announcement by MillAmountModifier.
             is EventPattern.MillEvent -> false
+            // DrawCardsEvent is a replacement-only pattern (ModifyDrawAmount for "N or more" draws);
+            // it never matches a triggered ability. Checked at the draw announcement by
+            // DrawReplacementDispatcher.checkDrawAmount.
+            is EventPattern.DrawCardsEvent -> false
             is EventPattern.NthCardDrawnEvent -> {
                 // Fires on CardsDrawnEvent when the drawing player's per-turn draw count
                 // crosses the threshold inside this batch. The component is incremented
@@ -146,6 +129,14 @@ class TriggerMatcher(
                 } else {
                     event.attackers.size >= trigger.minAttackers
                 }
+            }
+            is EventPattern.LandPlayedEvent -> {
+                // "Whenever you play a land …" (Shadow of the Goblin). ANY-binding player trigger:
+                // the playing player must be the trigger's controller. `fromZoneOtherThan` excludes
+                // lands played from that zone (Shadow: not from hand).
+                if (event !is com.wingedsheep.engine.core.LandPlayedEvent) return false
+                if (event.controllerId != controllerId) return false
+                trigger.fromZoneOtherThan == null || event.fromZone != trigger.fromZoneOtherThan
             }
             is EventPattern.CreaturesAttackYouEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
@@ -235,7 +226,17 @@ class TriggerMatcher(
                 // reaches exactly the specified threshold (e.g., 2 for "second spell").
                 if (event !is SpellCastEvent) return false
                 if (!matchesPlayer(trigger.player, event.casterId, controllerId)) return false
-                val currentCount = state.playerSpellsCastThisTurn[event.casterId] ?: 0
+                val spellFilter = trigger.spellFilter
+                val currentCount = if (spellFilter == null) {
+                    state.playerSpellsCastThisTurn[event.casterId] ?: 0
+                } else {
+                    // "their first noncreature spell each turn" — the ordinal runs over matching
+                    // spells only, so count the caster's cast records instead of the flat total.
+                    // CastSpellHandler appends the spell being cast before triggers are detected,
+                    // so this count includes it and the `== nthSpell` comparison stays the same.
+                    val records = state.spellsCastThisTurnByPlayer[event.casterId] ?: emptyList()
+                    records.count { predicateEvaluator.matchesFilter(it, spellFilter) }
+                }
                 currentCount == trigger.nthSpell
             }
             is EventPattern.CastThisSpellEvent -> {
@@ -277,7 +278,12 @@ class TriggerMatcher(
             is EventPattern.AbilityActivatedEvent -> {
                 if (event !is AbilityActivatedEvent) return false
                 if (!matchesPlayer(trigger.player, event.controllerId, controllerId)) return false
-                if (trigger.requireNoTapInCost) {
+                if (trigger.requireExhaust) {
+                    if (!event.isExhaust) return false
+                    // Plain "whenever you activate an exhaust ability" counts an exhaust mana
+                    // ability too; only Pit Automaton's updated wording re-adds the exclusion.
+                    if (trigger.excludeManaAbilities && event.isManaAbility) return false
+                } else if (trigger.requireNoTapInCost) {
                     // Antiquities "activates an ability without {T} in its activation cost"
                     // (Haunting Wind / Powerleech / Artifact Possession). Match any activated
                     // ability whose cost lacks {T} — mana abilities without {T} count too.
@@ -373,6 +379,16 @@ class TriggerMatcher(
                     )
                 } else true
             }
+            is EventPattern.CrewsEvent ->
+                event is com.wingedsheep.engine.core.CrewOrSaddleContributionEvent &&
+                    event.kind == com.wingedsheep.engine.core.CrewOrSaddleKind.CREW &&
+                    binding == TriggerBinding.SELF &&
+                    event.contributorId == sourceId
+            is EventPattern.SaddlesEvent ->
+                event is com.wingedsheep.engine.core.CrewOrSaddleContributionEvent &&
+                    event.kind == com.wingedsheep.engine.core.CrewOrSaddleKind.SADDLE &&
+                    binding == TriggerBinding.SELF &&
+                    event.contributorId == sourceId
             is EventPattern.BecomesAttachedEvent -> {
                 if (event !is com.wingedsheep.engine.core.PermanentAttachedEvent) return false
                 // SELF binding = "whenever THIS Equipment/Aura becomes attached" (the attachment
@@ -404,6 +420,38 @@ class TriggerMatcher(
                     )
                 } else true
             }
+            is EventPattern.BecomesUnattachedEvent -> {
+                if (event !is com.wingedsheep.engine.core.PermanentUnattachedEvent) return false
+                // SELF binding = "whenever THIS Equipment becomes unattached" (Stitcher's Graft).
+                if (binding == TriggerBinding.SELF && event.attachmentId != sourceId) return false
+                // The attachment's controller as of the unattach — carried on the event because the
+                // leave-the-battlefield path has already stripped ControllerComponent by now.
+                if (!matchesPlayer(trigger.attachmentController, event.controllerId, controllerId)) return false
+                val attachmentCtx = com.wingedsheep.engine.handlers.PredicateContext(
+                    controllerId = controllerId,
+                    sourceId = sourceId,
+                )
+                if (trigger.attachmentFilter != GameObjectFilter.Any &&
+                    !PredicateEvaluator().matches(
+                        state, state.projectedState, event.attachmentId, trigger.attachmentFilter, attachmentCtx
+                    )
+                ) return false
+                // The former host, with the attachment exposed as EntityReference.Triggering so
+                // relative predicates resolve against it (mirrors BecomesAttachedEvent). A host that
+                // left the battlefield can't satisfy a battlefield filter, so an unfiltered trigger
+                // (Stitcher's Graft) is the shape that still fires in that case — matching the
+                // ruling that the ability triggers but does nothing.
+                if (trigger.unattachedFromFilter != GameObjectFilter.Any) {
+                    val hostCtx = com.wingedsheep.engine.handlers.PredicateContext(
+                        controllerId = controllerId,
+                        sourceId = sourceId,
+                        triggeringEntityId = event.attachmentId,
+                    )
+                    PredicateEvaluator().matches(
+                        state, state.projectedState, event.attachedToId, trigger.unattachedFromFilter, hostCtx
+                    )
+                } else true
+            }
             is EventPattern.TargetsChosenEvent -> {
                 event is com.wingedsheep.engine.core.TargetsChosenEvent &&
                     matchesPlayer(trigger.player, event.chooserId, controllerId)
@@ -425,6 +473,17 @@ class TriggerMatcher(
                 // detectTapBatchTriggers — never once per event here.
                 if (trigger.batch) return false
                 if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
+                // "… becomes tapped **to pay a teamwork cost**" — only a tap the engine classified
+                // with that cause counts. A null asks for no particular cause and matches every tap,
+                // which is what every cause-agnostic "becomes tapped" trigger keeps meaning.
+                val reason = trigger.reason
+                if (reason != null && event.reason != reason) return false
+                // "Whenever you tap …" — only a tap this trigger's controller caused counts.
+                val tapper = trigger.tapper
+                if (tapper != null) {
+                    val tappedById = event.tappedById ?: return false
+                    if (!matchesPlayer(tapper, tappedById, controllerId)) return false
+                }
                 val filter = trigger.filter
                 if (filter != null) {
                     val predicateEvaluator = PredicateEvaluator()
@@ -516,6 +575,10 @@ class TriggerMatcher(
                 event is com.wingedsheep.engine.core.DiscoveredEvent &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
+            is EventPattern.EvidenceCollectedEvent -> {
+                event is com.wingedsheep.engine.core.EvidenceCollectedEvent &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId)
+            }
             is EventPattern.ExploredEvent -> {
                 if (event !is com.wingedsheep.engine.core.PermanentExploredEvent) return false
                 // Reveal-type gate (CR 701.44a): ANY always matches; LAND/NONLAND require the
@@ -577,7 +640,27 @@ class TriggerMatcher(
             }
             is EventPattern.CreatureTurnedFaceUpEvent -> {
                 if (event !is TurnFaceUpEvent) return false
-                matchesPlayer(trigger.player, event.controllerId, controllerId)
+                if (!matchesPlayer(trigger.player, event.controllerId, controllerId)) return false
+                // "a Detective you control is turned face up" — the filter reads the permanent's
+                // post-flip characteristics, which is what the projected state already holds by
+                // detection time (the flip has happened; the event is the notification).
+                if (trigger.filter != GameObjectFilter.Any) {
+                    val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                        controllerId = controllerId,
+                        sourceId = sourceId
+                    )
+                    if (!predicateEvaluator.matches(
+                            state,
+                            state.projectedState,
+                            event.entityId,
+                            trigger.filter,
+                            predicateContext
+                        )
+                    ) {
+                        return false
+                    }
+                }
+                true
             }
             is EventPattern.TransformEvent -> {
                 if (event !is TransformedEvent) return false
@@ -610,6 +693,9 @@ class TriggerMatcher(
                     event.oldLife > event.newLife &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
+            // Replacement-effect-only: a life payment reaches triggers as the LifeChangedEvent it
+            // produces (matched by LifeLossEvent above), never as a payment event of its own.
+            is EventPattern.LifePaymentEvent -> false
             is EventPattern.LifeGainOrLossEvent -> {
                 event is LifeChangedEvent &&
                     event.oldLife != event.newLife &&
@@ -621,7 +707,7 @@ class TriggerMatcher(
             }
             is EventPattern.DiscardEvent -> {
                 event is CardsDiscardedEvent &&
-                    matchingDiscardCount(trigger, event, sourceId, controllerId, state) > 0
+                    matchingDiscardedCards(trigger, event, sourceId, controllerId, state).isNotEmpty()
             }
             is EventPattern.SearchLibraryEvent -> {
                 event is com.wingedsheep.engine.core.LibrarySearchedEvent &&
@@ -635,6 +721,8 @@ class TriggerMatcher(
             is EventPattern.CardsPutIntoYourGraveyardEvent -> false
             // Leave-graveyard batch triggers are handled by detectCardsLeftGraveyardBatchTriggers
             is EventPattern.CardsLeftYourGraveyardEvent -> false
+            // Exile batch triggers are handled by detectCardsPutIntoExileBatchTriggers
+            is EventPattern.CardsPutIntoExileEvent -> false
             // Sacrifice batch triggers are handled by detectSacrificeBatchTriggers
             is EventPattern.PermanentsSacrificedEvent -> false
             // Combat damage batch triggers are handled by detectCombatDamageBatchTriggers
@@ -677,6 +765,38 @@ class TriggerMatcher(
                 }
                 true
             }
+            is EventPattern.CountersRemovedEvent -> {
+                if (event !is com.wingedsheep.engine.core.CountersRemovedEvent) return false
+                // A removal of nothing is not a removal — it can't be "the last counter removed",
+                // and a zero-amount event would otherwise fire every "counters removed" payoff.
+                if (event.amount <= 0) return false
+                if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
+                if (binding == TriggerBinding.OTHER && event.entityId == sourceId) return false
+                // Counters.ANY is the wildcard "counters of any type" sentinel.
+                if (trigger.counterType != com.wingedsheep.sdk.core.Counters.ANY &&
+                    !counterTypesMatch(trigger.counterType, event.counterType)) return false
+                // "The last counter is removed": *this* removal must have emptied the permanent of
+                // that counter type. Read the count the event recorded, not the live one — two
+                // attackers damaging the same battle produce two removals in one batch, and by
+                // detection time the live count is 0 for both of them.
+                if (trigger.lastRemoved) {
+                    val remaining = event.remainingCount
+                        ?: remainingCounters(state, event.entityId, event.counterType)
+                    if (remaining > 0) return false
+                }
+                if (trigger.filter != GameObjectFilter.Any) {
+                    val projected = state.projectedState
+                    val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+                        controllerId = controllerId,
+                        sourceId = sourceId
+                    )
+                    val predicateEvaluator = PredicateEvaluator()
+                    if (!predicateEvaluator.matches(state, projected, event.entityId, trigger.filter, predicateContext)) {
+                        return false
+                    }
+                }
+                true
+            }
             is EventPattern.SagaChapterResolvedEvent -> {
                 if (event !is SagaChapterResolvedEvent) return false
                 // "of a Saga you control" — the resolving Saga's controller must match the
@@ -689,15 +809,42 @@ class TriggerMatcher(
     }
 
     /**
-     * How many of the discarded cards satisfy this discard trigger — i.e. how many times the
-     * ability fires. Discarding N cards in one resolution fires "whenever ... discards a card"
-     * N times (one per card); a [EventPattern.DiscardEvent.cardFilter] narrows that to the matching
-     * cards only. Returns 0 when the discarding player doesn't match the trigger's selector, so
-     * the boolean "does it trigger?" question is just `matchingDiscardCount(...) > 0`.
+     * Which of the discarded cards satisfy this discard trigger — one firing per card, in discard
+     * order. Discarding N cards in one resolution fires "whenever ... discards a card" N times (one
+     * per card); a [EventPattern.DiscardEvent.cardFilter] narrows that to the matching cards only.
+     * Returns an empty list when the discarding player doesn't match the trigger's selector.
+     *
+     * The ids matter, not just the count: each firing binds its card as the trigger's triggering
+     * entity, so "exile **it** from their graveyard" (Tinybones, Bauble Burglar) can find the card
+     * the discard put there (CR 400.7e — a trigger can find the new object a card became in a
+     * public zone).
      *
      * The filter is evaluated against post-discard state — the cards are already in the graveyard.
      * Safe for zone-independent predicates (type/subtype/color); a filter depending on hand-specific
      * state would read the wrong zone.
+     */
+    fun matchingDiscardedCards(
+        trigger: EventPattern.DiscardEvent,
+        event: CardsDiscardedEvent,
+        sourceId: EntityId,
+        controllerId: EntityId,
+        state: GameState
+    ): List<EntityId> {
+        if (!matchesPlayer(trigger.player, event.playerId, controllerId)) return emptyList()
+        val filter = trigger.cardFilter ?: return event.cardIds
+        val projected = state.projectedState
+        val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+            controllerId = controllerId,
+            sourceId = sourceId
+        )
+        return event.cardIds.filter { cardId ->
+            predicateEvaluator.matches(state, projected, cardId, filter, predicateContext)
+        }
+    }
+
+    /**
+     * How many times this discard trigger fires — the size of [matchingDiscardedCards], so the
+     * boolean "does it trigger?" question is just `matchingDiscardCount(...) > 0`.
      */
     fun matchingDiscardCount(
         trigger: EventPattern.DiscardEvent,
@@ -705,18 +852,7 @@ class TriggerMatcher(
         sourceId: EntityId,
         controllerId: EntityId,
         state: GameState
-    ): Int {
-        if (!matchesPlayer(trigger.player, event.playerId, controllerId)) return 0
-        val filter = trigger.cardFilter ?: return event.cardIds.size
-        val projected = state.projectedState
-        val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
-            controllerId = controllerId,
-            sourceId = sourceId
-        )
-        return event.cardIds.count { cardId ->
-            predicateEvaluator.matches(state, projected, cardId, filter, predicateContext)
-        }
-    }
+    ): Int = matchingDiscardedCards(trigger, event, sourceId, controllerId, state).size
 
     /**
      * How many times a [EventPattern.DrawEvent] trigger fires for one aggregate
@@ -846,7 +982,7 @@ class TriggerMatcher(
             // that was a Food artifact only because of Ygra's continuous effect). The base
             // cardComponent.typeLine in the new zone has only the printed types.
             val typeLine = if (event.fromZone == Zone.BATTLEFIELD && event.lastKnown?.typeLine != null) {
-                event.lastKnown?.typeLine
+                event.lastKnown.typeLine
             } else {
                 cardComponent?.typeLine ?: event.lastKnown?.typeLine
             }
@@ -907,7 +1043,7 @@ class TriggerMatcher(
                         // have its keywords (e.g., Jackdaw Savior: "whenever a creature you control
                         // with flying dies").
                         if (event.fromZone == Zone.BATTLEFIELD && event.lastKnown?.keywords?.isNotEmpty() == true) {
-                            predicate.keyword.name in (event.lastKnown?.keywords ?: emptySet())
+                            predicate.keyword.name in event.lastKnown.keywords
                         } else {
                             projected.hasKeyword(event.entityId, predicate.keyword)
                         }
@@ -1102,8 +1238,9 @@ class TriggerMatcher(
             }
             // Resolution-time only — TriggerMatcher has no X context, so the predicate never matches here.
             com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessAtMostX -> false
-            // Resolution-time chosen-number predicate; TriggerMatcher has no chosen-number context.
+            // Resolution-time chosen-number predicates; TriggerMatcher has no chosen-number context.
             com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerEqualsX -> false
+            com.wingedsheep.sdk.scripting.predicates.CardPredicate.PowerAtLeastX -> false
             is com.wingedsheep.sdk.scripting.predicates.CardPredicate.ToughnessEquals -> {
                 val toughness = if (isFaceDown) 2
                     else lastKnownToughness ?: projected.getToughness(entityId) ?: cardComponent.baseStats?.baseToughness ?: 0
@@ -1325,26 +1462,67 @@ class TriggerMatcher(
                 recipientControllerLki(event, state) == controllerId
             }
             RecipientFilter.AnyPermanent -> event.targetId !in state.turnOrder
+            is RecipientFilter.Matching -> {
+                // "deals damage to a [filtered] creature/permanent" (East-Mark Cavalier,
+                // Mauhur, Spider-Slayer). Evaluate the filter against the recipient in projected
+                // state — mirrors DamageCalculator's Matching handling. A recipient that left the
+                // battlefield to the same damage is no longer projectable, but there is nothing
+                // left to act on ("destroy that creature"), so a live match is sufficient. A null
+                // controller can't evaluate controller-relative filters (e.g. "a creature an
+                // opponent controls"), so require it rather than passing an empty sentinel id.
+                val filter = (trigger.recipient as RecipientFilter.Matching).filter
+                controllerId != null &&
+                    event.targetId !in state.turnOrder &&
+                    state.getEntity(event.targetId) != null &&
+                    predicateEvaluator.matches(
+                        state, state.projectedState, event.targetId, filter,
+                        PredicateContext(controllerId = controllerId)
+                    )
+            }
             RecipientFilter.Self -> false // handled elsewhere
             else -> false
         }
         // Check sourceFilter (e.g., "creature you control" for Gossip's Talent)
-        val sourceMatches = if (trigger.sourceFilter != null && event.sourceId != null) {
-            val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
-                controllerId = controllerId ?: EntityId(""),
-                sourceId = null
-            )
-            predicateEvaluator.matches(
-                state, state.projectedState, event.sourceId, trigger.sourceFilter!!, predicateContext
-            )
-        } else {
-            true
-        }
+        val sourceMatches = matchesDamageSourceFilter(trigger.sourceFilter, event, state, controllerId)
         // "Excess damage" triggers (Fall of Cair Andros) fire only when the recipient took
         // damage past lethal — CR 120.4a. Non-creature targets and at-or-below-lethal hits leave
         // event.excessAmount at 0 and silently fail this gate.
         val excessMatches = !trigger.requireExcess || event.excessAmount > 0
-        return combatMatches && recipientMatches && sourceMatches && excessMatches
+        val requirementsMatch = trigger.requires.all { requirement ->
+            when (requirement) {
+                DamagePredicate.SourceSoleTargetIsRecipient -> {
+                    event.sourceTargetIdsAtDamage?.singleOrNull() == event.targetId
+                }
+            }
+        }
+        return combatMatches && recipientMatches && sourceMatches && excessMatches && requirementsMatch
+    }
+
+    /**
+     * Whether the *source* of [event] matches [sourceFilter], evaluated relative to [controllerId]
+     * so controller-relative predicates ("a source you control" / "an opponent controls") read from
+     * the observing permanent's controller. A null filter matches every source — "whenever you're
+     * dealt damage" names no source at all (Sun Droplet), and a source-blind trigger must not be
+     * narrowed to creatures.
+     *
+     * Shared by [matchesDealsDamageTrigger] and the damage-to-you observer path in
+     * [DamageTriggerDetector.detectDamageToControllerTriggers], which reaches the same triggers
+     * through a different index and must apply the same gate.
+     */
+    fun matchesDamageSourceFilter(
+        sourceFilter: GameObjectFilter?,
+        event: DamageDealtEvent,
+        state: GameState,
+        controllerId: EntityId?
+    ): Boolean {
+        if (sourceFilter == null || event.sourceId == null) return true
+        val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
+            controllerId = controllerId ?: EntityId(""),
+            sourceId = null
+        )
+        return predicateEvaluator.matches(
+            state, state.projectedState, event.sourceId, sourceFilter, predicateContext
+        )
     }
 
     /**
@@ -1558,13 +1736,29 @@ class TriggerMatcher(
             val from = spellComponent?.castFromZone
             from != null && from != predicate.zone
         }
-        SpellCastPredicate.WasKicked -> event.wasKicked
+        // "a kicked spell" is specifically the kicker mechanic — a spell that declared some other
+        // optional additional cost on the same rail (bargain, CR 702.166c) does not qualify.
+        SpellCastPredicate.WasKicked -> event.declaredCostSlot == ChoiceSlot.KICKED
         is SpellCastPredicate.PaidWithManaFromSubtype -> predicate.subtype in event.spentManaSubtypes
         is SpellCastPredicate.PaidWithManaFromSource -> sourceId in event.spentManaSourceIds
         SpellCastPredicate.IsModal -> event.chosenModesCount > 0
         SpellCastPredicate.HasXInCost ->
             state.getEntity(event.spellEntityId)?.get<CardComponent>()?.manaCost?.hasX == true
         SpellCastPredicate.TargetsSource -> castTargetEntities(event, state).contains(sourceId)
+        // "targets only this" (Zada, Hedron Grinder; Mirrorwing Dragon). Every instance of the word
+        // "target" on the spell must point at the source, so this reads the raw chosen-target list
+        // rather than castTargetEntities — that helper drops player targets, and a spell aimed at
+        // both this creature and a player targets more than only this creature.
+        SpellCastPredicate.TargetsOnlySource -> {
+            val chosen = state.getEntity(event.spellEntityId)
+                ?.get<com.wingedsheep.engine.state.components.stack.TargetsComponent>()
+                ?.targets
+                ?: emptyList()
+            chosen.isNotEmpty() && chosen.all {
+                it is com.wingedsheep.engine.state.components.stack.ChosenTarget.Permanent &&
+                    it.entityId == sourceId
+            }
+        }
         is SpellCastPredicate.TargetsMatching -> {
             val predicateEvaluator = PredicateEvaluator()
             val predicateContext = com.wingedsheep.engine.handlers.PredicateContext(
@@ -1577,11 +1771,30 @@ class TriggerMatcher(
                 )
             }
         }
+        // Cast as an Adventure (CR 715.3): an ADVENTURE-layout card declares exactly one face —
+        // the Adventure — so a recorded faceIndex on an adventurer card means the alternative
+        // characteristics were used. Casting the same card as its creature half leaves faceIndex
+        // null and does not match.
+        SpellCastPredicate.CastAsAdventure -> {
+            val spellComponent = state.getEntity(event.spellEntityId)?.get<SpellOnStackComponent>()
+            val hasAdventure = state.getEntity(event.spellEntityId)
+                ?.get<CardComponent>()?.hasAdventure == true
+            hasAdventure && spellComponent?.faceIndex != null
+        }
+        // "a spell they don't own" — owner vs. the player who *cast* it, not vs. the trigger's
+        // controller. The two coincide for the "whenever you cast a spell you don't own" wording
+        // (Nita, Vaan), where `matchesPlayer(Player.You, …)` has already pinned casterId ==
+        // controllerId; they diverge for "whenever *a player* casts a spell they don't own"
+        // (Gonti, Night Minister), which observes every seat.
         SpellCastPredicate.NotOwnedByController -> {
-            val ownerId = state.getEntity(event.spellEntityId)
-                ?.get<com.wingedsheep.engine.state.components.identity.OwnerComponent>()
-                ?.playerId
-            ownerId != null && ownerId != controllerId
+            // Ownership lives on OwnerComponent for cards minted into a zone, but a card that has
+            // only ever been library/exile content carries it on CardComponent — read both, or a
+            // spell cast out of an opponent's exile reads as owner-less and never triggers.
+            val spellEntity = state.getEntity(event.spellEntityId)
+            val ownerId = spellEntity
+                ?.get<OwnerComponent>()?.playerId
+                ?: spellEntity?.get<CardComponent>()?.ownerId
+            ownerId != null && ownerId != event.casterId
         }
     }
 
@@ -1631,13 +1844,29 @@ class TriggerMatcher(
                 triggerLastKnownToughness = trigger.triggerContext.lastKnownToughness,
                 triggerDiedBatchTotalPower = trigger.triggerContext.diedBatchTotalPower,
                 triggerScryCount = trigger.triggerContext.scryCount,
+                triggerDiscardCount = trigger.triggerContext.discardedCardCount,
                 triggerDiscoverValue = trigger.triggerContext.discoverValue,
                 triggerExcessDamageAmount = trigger.triggerContext.excessDamageAmount,
                 triggerRecipientToughness = trigger.triggerContext.recipientToughnessAtDamage,
                 triggerManaSpentOnTriggeringSpell = trigger.triggerContext.manaSpentOnTriggeringSpell,
                 triggerColorsSpentOnTriggeringSpell = trigger.triggerContext.colorsSpentOnTriggeringSpell,
                 triggerManaValueOfTriggeringSpell = trigger.triggerContext.manaValueOfTriggeringSpell,
-                triggerXValueOfTriggeringSpell = trigger.triggerContext.xValueOfTriggeringSpell
+                triggerXValueOfTriggeringSpell = trigger.triggerContext.xValueOfTriggeringSpell,
+                // A batch trigger's captured members, under the same pipeline collection name the
+                // resolving ability sees (StackResolver seeds it from the stack component). Without
+                // this, a batch-scoped condition — "if one or more of them entered from exile",
+                // "if none of them were cast" — reads an empty capture as an intervening-"if" and
+                // can only be used as a resolution-time gate. That distinction is load-bearing for
+                // a `oncePerTurn` ability: CR 603.4 says an ability whose intervening-"if" is false
+                // never triggers, so it must not consume the turn's single firing.
+                pipeline = trigger.triggerContext.capturedEntityIds
+                    ?.takeIf { it.isNotEmpty() }
+                    ?.let {
+                        PipelineState(
+                            storedCollections = mapOf(PipelineState.TRIGGER_CAPTURED_COLLECTION to it)
+                        )
+                    }
+                    ?: PipelineState.EMPTY
             )
             conditionEvaluator.evaluate(state, condition, context)
         }
@@ -1730,6 +1959,27 @@ class TriggerMatcher(
                 counters?.counters?.values?.any { it > 0 } ?: false
             }
         }
+        // "Modified" (has a counter, an attached Equipment, or an attached Aura — CR 122/301/303) on
+        // a permanent that has left the battlefield reads last-known info: the live counters and
+        // attachment links are gone by trigger-gating time. Counters come from the snapshot; the
+        // equipped/enchanted legs come from the frozen wasEquipped/wasEnchanted flags captured in
+        // ZoneTransitionService before exit cleanup. For non-leave triggers (ETB) the entity is live.
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified -> {
+            if (event.fromZone == Zone.BATTLEFIELD) {
+                val lk = event.lastKnown
+                (lk?.totalCounters ?: 0) > 0 || lk?.wasEquipped == true || lk?.wasEnchanted == true
+            } else {
+                isModified(state, event.entityId)
+            }
+        }
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEquipped -> {
+            if (event.fromZone == Zone.BATTLEFIELD) event.lastKnown?.wasEquipped == true
+            else hasAttachmentOfKind(state, event.entityId, equipment = true)
+        }
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEnchanted -> {
+            if (event.fromZone == Zone.BATTLEFIELD) event.lastKnown?.wasEnchanted == true
+            else hasAttachmentOfKind(state, event.entityId, equipment = false)
+        }
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Or ->
             predicate.predicates.any { matchesStatePredicateForZoneChangeTrigger(it, state, event) }
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.And ->
@@ -1748,7 +1998,16 @@ class TriggerMatcher(
             val entity = state.getEntity(entityId) ?: return false
             entity.has<FaceDownComponent>()
         }
-        // Graveyard-zone-only predicate; trigger gating never sees a stamped entity here.
+        // Suspected (CR 701.60a) reads off the floating-effect list, which is available here, so a
+        // "whenever a suspected creature …" trigger filter gates exactly instead of failing open.
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsSuspected ->
+            com.wingedsheep.engine.handlers.predicates.isSuspected(state, entityId)
+        // Soulbond pairing (CR 702.95b) — plain per-entity state, evaluable here, so a
+        // "whenever a paired creature …" trigger filter gates correctly instead of failing open.
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsPaired ->
+            com.wingedsheep.engine.mechanics.SoulbondPairing.isPaired(state, entityId)
+        // Graveyard-zone-only predicates; trigger gating never sees a stamped entity here.
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.PutIntoGraveyardThisTurn -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false
         // No granter context in trigger gating — granter-relative exclusion is resolution-time only.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsGrantingPermanent -> false
@@ -1762,10 +2021,13 @@ class TriggerMatcher(
         // *trigger-gating* filters (those evaluate the triggering entity, not the source
         // state). Returning true preserves the prior "don't gate" behavior, but listing
         // every variant forces a compile-time choice when a new predicate is added.
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsOnBattlefield,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasLockedDoor,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsTapped,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsUntapped,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttacking,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingAlone,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingAnOpponent,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlocking,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlocked,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsUnblocked,
@@ -1789,6 +2051,7 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasLeastPowerAmongAllCreatures,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasLeastPower,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEquipped,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEnchanted,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsModified,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsSaddled,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.CrewedOrSaddledSourceThisTurn,
@@ -1803,6 +2066,7 @@ class TriggerMatcher(
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasCastFromZone,
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttachedToCardType -> true
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttachedTo -> true
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEnchantedByAura -> true
         // Counter predicates require last-known-info to evaluate a creature that has already left
         // the battlefield; the zone-change path ([matchesStatePredicateForZoneChangeTrigger])
         // handles them against the event's captured counters. This entity-only fallback has no LKI,
@@ -1821,9 +2085,36 @@ class TriggerMatcher(
         return normalizeCounterType(triggerType) == normalizeCounterType(eventType)
     }
 
+    /**
+     * How many counters of [counterType] [entityId] still has — the "did that removal take the
+     * last one?" half of [EventPattern.CountersRemovedEvent.lastRemoved]. Counter names are stored
+     * normalized on the component, so the lookup goes through the same normalization the type
+     * match uses. A missing entity counts as zero: a permanent that has already left has none.
+     */
+    private fun remainingCounters(state: GameState, entityId: EntityId, counterType: String): Int {
+        val counters = state.getEntity(entityId)?.get<CountersComponent>() ?: return 0
+        return counters.counters.entries
+            .filter { (type, _) -> counterTypesMatch(counterType, counterTypeToString(type)) }
+            .sumOf { (_, count) -> count }
+    }
+
     private fun normalizeCounterType(type: String): String =
         type.lowercase()
             .replace("+1/+1", "plus_one_plus_one")
             .replace("-1/-1", "minus_one_minus_one")
             .replace(" ", "_")
+
+    /**
+     * Live check for whether [entityId] has an Equipment (or, when [equipment] is false, an Aura)
+     * attached — the last-known-info counterpart is the `wasEquipped`/`wasEnchanted` flag on the
+     * [ZoneChangeEvent]'s snapshot. Used only for the non-leave (ETB) branch of an
+     * `IsEquipped`/`IsEnchanted` zone-change gate.
+     */
+    private fun hasAttachmentOfKind(state: GameState, entityId: EntityId, equipment: Boolean): Boolean {
+        val attachments = state.getEntity(entityId)?.get<AttachmentsComponent>() ?: return false
+        return attachments.attachedIds.any { attachId ->
+            val typeLine = state.getEntity(attachId)?.get<CardComponent>()?.typeLine
+            if (equipment) typeLine?.isEquipment == true else typeLine?.isAura == true
+        }
+    }
 }

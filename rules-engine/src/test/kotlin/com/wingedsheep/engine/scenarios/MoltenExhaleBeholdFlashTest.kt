@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -71,7 +72,7 @@ class MoltenExhaleBeholdFlashTest : FunSpec({
                 playerId = p1,
                 cardId = moltenExhale,
                 targets = listOf(ChosenTarget.Permanent(ogre)),
-                wasKicked = true,
+                declaredCostSlot = ChoiceSlot.KICKED,
                 additionalCostPayment = AdditionalCostPayment(beheldCards = listOf(dragon)),
                 paymentStrategy = PaymentStrategy.FromPool
             )

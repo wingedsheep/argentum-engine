@@ -30,8 +30,8 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  *   Put three +1/+1 counters on it. When it dies or is exiled, return it to the battlefield tapped.)
  *
  * Implementation:
- * - The novelty is a modal "choose up to X" whose cap X is a [DynamicAmount] resolved when the ETB
- *   trigger resolves — not a fixed literal. [ModalEffect.chooseUpToDynamic] already models exactly
+ * - The novelty is a modal "choose up to X" whose cap X is a [DynamicAmount] resolved as the ETB
+ *   trigger goes onto the stack — not a fixed literal. [ModalEffect.chooseUpToDynamic] models exactly
  *   this (Riku of Many Paths): `minChooseCount` is treated as 0 (declining all picks is legal,
  *   matching "up to"), the effective maximum is `min(eval, modes.size)`, and modes can't repeat
  *   (`allowRepeat = false`). Here the cap is `DynamicAmount.Count` of Lesson cards in your graveyard

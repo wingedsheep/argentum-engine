@@ -358,7 +358,10 @@
                 {
                     "effect": {
                         "type": "DistributeCountersAmongTargets",
-                        "totalCounters": 2
+                        "totalCounters": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
                     },
                     "targetRequirements": [
                         {
@@ -949,7 +952,10 @@
                 },
                 "effect": {
                     "type": "DistributeCountersAmongTargets",
-                    "totalCounters": 2
+                    "totalCounters": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -4243,7 +4249,8 @@
                     }
                 ],
                 "timing": "SorcerySpeed",
-                "descriptionOverride": "Equip colorless creature {1}"
+                "isEquipAbility": true,
+                "equipQuality": "colorless"
             },
             {
                 "id": "ability_2",

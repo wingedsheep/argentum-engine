@@ -16,6 +16,7 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.ManaRestriction
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import kotlin.reflect.KClass
 
 /**
@@ -99,8 +100,13 @@ class AddManaOfChoiceExecutor(
     }
 
     /**
-     * Add [color] mana to the controller's pool. Exposed for the
+     * Add [color] mana to the recipient's pool. Exposed for the
      * `ChooseManaColorContinuation` resumer to call after a color decision.
+     *
+     * The recipient is the controller for every mana ability (CR 605.1a) and for the default
+     * [AddManaOfChoiceEffect.recipient]; a targeted "target player adds …" ability (Radiant Lotus)
+     * resolves it to that player instead. A recipient that can no longer be resolved — a targeted
+     * player who has left the game — produces no mana rather than silently paying the controller.
      *
      * @param availableColors The resolved color set at decision time; passed back here so
      *   a stale `manaColorChoice` from another path can't slip an illegal color through.
@@ -113,6 +119,8 @@ class AddManaOfChoiceExecutor(
         availableColors: Set<Color>,
     ): EffectResult {
         if (color !in availableColors) return EffectResult.success(state)
+        val recipientId = if (effect.recipient == EffectTarget.Controller) context.controllerId
+            else context.resolvePlayerTarget(effect.recipient, state) ?: return EffectResult.success(state)
         val amount = amountEvaluator.evaluate(state, effect.amount, context)
         if (amount <= 0) return EffectResult.success(state)
 
@@ -122,7 +130,7 @@ class AddManaOfChoiceExecutor(
         val effectiveRestriction: ManaRestriction? = effect.restriction
             ?: if (effect.riders.isNotEmpty()) ManaRestriction.AnySpend else null
 
-        var newState = state.updateEntity(context.controllerId) { container ->
+        var newState = state.updateEntity(recipientId) { container ->
             val pool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
             val updated = if (effectiveRestriction != null) {
                 pool.addRestricted(color, amount, effectiveRestriction, effect.riders)
@@ -133,12 +141,12 @@ class AddManaOfChoiceExecutor(
         }
 
         if (effectiveRestriction == null) {
-            newState = ManaProvenanceTracker.tagAddedMana(newState, context.controllerId, context.sourceId, amount)
+            newState = ManaProvenanceTracker.tagAddedMana(newState, recipientId, context.sourceId, amount)
         }
 
         val sourceName = context.sourceId?.let { newState.getEntity(it)?.get<CardComponent>()?.name }
         val event = ManaAddedEvent(
-            playerId = context.controllerId,
+            playerId = recipientId,
             sourceId = context.sourceId,
             sourceName = sourceName,
             white = if (color == Color.WHITE) amount else 0,

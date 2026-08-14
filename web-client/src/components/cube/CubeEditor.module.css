@@ -1,0 +1,427 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 1400;
+}
+
+.dialog {
+  position: fixed;
+  inset: 3vh 3vw;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  z-index: 1401;
+  overflow: hidden;
+}
+
+/* ---------- header ---------- */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.fieldLabel {
+  font-size: var(--font-xs);
+  color: var(--text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.nameField {
+  flex: 1;
+  min-width: 180px;
+}
+
+.input,
+.select {
+  padding: 6px var(--space-3);
+  font-size: var(--font-sm);
+  background-color: var(--bg-surface-4);
+  color: var(--text-primary);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  outline: none;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.input:focus,
+.select:focus {
+  border-color: var(--color-accent-dark);
+}
+
+.numberInput {
+  width: 72px;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.primaryButton,
+.secondaryButton {
+  padding: 6px var(--space-4);
+  font-size: var(--font-sm);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.primaryButton {
+  color: #fff;
+  background-color: var(--color-accent-dark);
+  border: 1px solid var(--color-accent-dark);
+}
+
+.secondaryButton {
+  color: var(--text-primary);
+  background-color: var(--bg-surface-4);
+  border: 1px solid var(--border-medium);
+}
+
+.primaryButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.secondaryButton:not(:disabled):hover {
+  border-color: var(--color-accent-dark);
+}
+
+/* ---------- body ---------- */
+
+.body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(280px, 1.4fr);
+  min-height: 0;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+}
+
+.column + .column {
+  border-left: 1px solid var(--border-subtle);
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.columnHeaderTitle {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.searchRow {
+  padding: var(--space-2) var(--space-3);
+}
+
+.scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.hint {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-xs);
+  color: var(--text-disabled);
+  line-height: 1.4;
+}
+
+.error {
+  margin: var(--space-2) 0 0;
+  font-size: var(--font-xs);
+  color: var(--color-danger, #ef5350);
+}
+
+/* ---------- card rows ---------- */
+
+.rowList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.groupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-3);
+  padding-bottom: 3px;
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 3px 0;
+  font-size: var(--font-sm);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.rowButton {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 2px 4px;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.rowButton:hover {
+  background-color: var(--bg-surface-4);
+}
+
+.rowName {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rowMissing {
+  color: var(--color-danger, #ef5350);
+}
+
+.rowMeta {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-xs);
+  color: var(--text-disabled);
+  white-space: nowrap;
+}
+
+.rowSet {
+  width: 34px;
+  text-align: right;
+  font-size: var(--font-xs);
+  color: var(--text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.countControls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.stepButton {
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--text-muted);
+  background: var(--bg-surface-4);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.stepButton:hover {
+  color: var(--text-primary);
+  border-color: var(--color-accent-dark);
+}
+
+.count {
+  min-width: 18px;
+  text-align: center;
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+/* ---------- summary ---------- */
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--border-subtle);
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.summaryGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.summaryLabel {
+  color: var(--text-disabled);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.colorStat {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Multicolour has no printed mana symbol; the gold card frame is the convention it borrows. */
+.goldPip {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e8d18a, #c9a227);
+  border: 1px solid rgba(0, 0, 0, 0.45);
+}
+
+.curve {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 30px;
+}
+
+.curveBar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 16px;
+  height: 100%;
+}
+
+.curveFill {
+  width: 100%;
+  min-height: 1px;
+  background: var(--color-accent-dark);
+  border-radius: 2px 2px 0 0;
+}
+
+.curveLabel {
+  margin-top: 2px;
+  font-size: 9px;
+  color: var(--text-disabled);
+}
+
+.warning {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-xs);
+  color: #f0c4c4;
+  background: rgba(214, 90, 90, 0.14);
+  border-top: 1px solid rgba(214, 90, 90, 0.4);
+}
+
+/* ---------- import ---------- */
+
+/*
+ * Fixed height on purpose: letting the textarea flex-grow pushes the coverage readout ("N matched
+ * of M", the unimplemented list) below the fold, which is the one thing the paste flow exists to
+ * show. The pane scrolls instead.
+ */
+.importArea {
+  width: 100%;
+  height: 220px;
+  flex: 0 0 auto;
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-xs);
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-surface-4);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  outline: none;
+  resize: none;
+  box-sizing: border-box;
+}
+
+.importSummary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.badBadge {
+  padding: 1px 6px;
+  color: #f0c4c4;
+  background: rgba(214, 90, 90, 0.22);
+  border-radius: 999px;
+}
+
+.okBadge {
+  padding: 1px 6px;
+  color: #c8ebc9;
+  background: rgba(76, 175, 80, 0.2);
+  border-radius: 999px;
+}
+
+.importDetails {
+  margin-top: var(--space-2);
+  font-size: var(--font-xs);
+  color: var(--text-muted);
+}
+
+.importDetails ul {
+  margin: 4px 0 0;
+  padding-left: 18px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.importActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-2) 0 0;
+}

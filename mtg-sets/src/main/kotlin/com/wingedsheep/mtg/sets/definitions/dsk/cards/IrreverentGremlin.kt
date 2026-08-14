@@ -24,9 +24,10 @@ import com.wingedsheep.sdk.scripting.effects.MayEffect
  * If you do, draw a card. Do this only once each turn.
  *
  * The "rummage" is the standard MayEffect(IfYouDoEffect(discard, draw)) idiom — declining (or an
- * empty hand) skips the draw. "Do this only once each turn" is the trigger-level [oncePerTurn]
- * cap (CR 603.3b): the ability triggers at most once per turn even if several qualifying creatures
- * enter.
+ * empty hand) skips the draw. "Do this only once each turn" is `effectOncePerTurn` (CR 603.2h),
+ * the rider keyed to the *action*: every qualifying creature keeps offering the rummage until one
+ * is actually taken, so declining an early one to save the discard for a card you'd rather pitch
+ * costs nothing. The trigger-level `oncePerTurn` cap would burn the turn on the first decline.
  */
 val IrreverentGremlin = card("Irreverent Gremlin") {
     manaCost = "{1}{R}"
@@ -54,7 +55,7 @@ val IrreverentGremlin = card("Irreverent Gremlin") {
             ),
             descriptionOverride = "You may discard a card. If you do, draw a card."
         )
-        oncePerTurn = true
+        effectOncePerTurn = true
     }
 
     metadata {

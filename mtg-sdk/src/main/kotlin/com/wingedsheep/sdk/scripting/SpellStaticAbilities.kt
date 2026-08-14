@@ -21,18 +21,60 @@ import kotlinx.serialization.Serializable
  *
  * @property filter The filter that spells must match to gain flash
  * @property controllerOnly If true, only the permanent's controller benefits (default: false = any player)
+ * @property nthOfTypePerTurn When set, only the Nth matching spell a player casts each turn gains
+ *   flash (1-indexed; counts the spell being cast). `1` is "the **first** [type] spell you cast each
+ *   turn … can be cast as though it had flash" (Radagast of Rhosgobel). The timing half of the same
+ *   "first spell each turn" gate that [CostGating.NthOfTypePerTurn] applies to cost, and it counts
+ *   the same way — off the caster's spells-cast-this-turn record, so a matching spell already cast
+ *   this turn closes the window even if it was countered. `null` (default) grants flash to every
+ *   matching spell, the Quick Sliver / Raff Capashen shape.
  */
 @SerialName("GrantFlashToSpellType")
 @Serializable
 data class GrantFlashToSpellType(
     val filter: GameObjectFilter,
-    val controllerOnly: Boolean = false
+    val controllerOnly: Boolean = false,
+    val nthOfTypePerTurn: Int? = null
 ) : StaticAbility {
-    override val description: String = if (controllerOnly) {
-        "You may cast ${filter.description} spells as though they had flash"
-    } else {
-        "Any player may cast ${filter.description} spells as though they had flash"
+    init {
+        require(nthOfTypePerTurn == null || nthOfTypePerTurn >= 1) {
+            "nthOfTypePerTurn must be at least 1, was $nthOfTypePerTurn"
+        }
     }
+
+    override val description: String = buildDescription()
+
+    private fun buildDescription(): String {
+        val subject = if (controllerOnly) "you cast" else "any player casts"
+        return if (nthOfTypePerTurn != null) {
+            // The gate names a single spell, so the whole clause goes singular.
+            "The ${ordinal(nthOfTypePerTurn)} ${filter.description} spell $subject each turn " +
+                "can be cast as though it had flash"
+        } else if (controllerOnly) {
+            "You may cast ${filter.description} spells as though they had flash"
+        } else {
+            "Any player may cast ${filter.description} spells as though they had flash"
+        }
+    }
+
+    private fun ordinal(n: Int): String = when (n) {
+        1 -> "first"
+        2 -> "second"
+        3 -> "third"
+        4 -> "fourth"
+        5 -> "fifth"
+        else -> {
+            val suffix = when {
+                n % 100 in 11..13 -> "th"
+                n % 10 == 1 -> "st"
+                n % 10 == 2 -> "nd"
+                n % 10 == 3 -> "rd"
+                else -> "th"
+            }
+            "$n$suffix"
+        }
+    }
+
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
@@ -48,13 +90,21 @@ data class GrantFlashToSpellType(
  * attempt fails.
  *
  * @property filter The filter that spells must match to be uncounterable
+ * @property includesAbilities When true, activated/triggered abilities matching [filter] also can't
+ *   be countered (Spider-Punk: "Spells **and abilities** can't be countered"). Default false — a
+ *   plain "spells can't be countered" grant leaves abilities counterable.
  */
 @SerialName("GrantCantBeCountered")
 @Serializable
 data class GrantCantBeCountered(
-    val filter: GameObjectFilter
+    val filter: GameObjectFilter,
+    val includesAbilities: Boolean = false
 ) : StaticAbility {
-    override val description: String = "${filter.description} spells can't be countered"
+    override val description: String = buildString {
+        append("${filter.description} spells")
+        if (includesAbilities) append(" and abilities")
+        append(" can't be countered")
+    }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
@@ -216,6 +266,32 @@ data class GrantKeywordToOwnSpells(
 }
 
 /**
+ * Grants **web-slinging [cost]** (CR 702.188) to spells the controller casts that match
+ * [spellFilter]. Web-slinging carries a [ManaCost], which the generic [GrantKeywordToOwnSpells]
+ * (keyword + optional int) cannot express, so it gets its own static. Read by the web-slinging cast
+ * enumerator / handler via `WebSlinging.effectiveWebSlinging`, alongside printed web-slinging.
+ *
+ * Amazing Spider-Man: "Each legendary spell you cast that's one or more colors has web-slinging
+ * {G}{W}{U}" → `GrantWebSlingingToSpells({G}{W}{U}, GameObjectFilter.legendary + IsColored)`.
+ *
+ * @property cost The granted web-slinging cost.
+ * @property spellFilter Which spells you cast gain web-slinging (matched against the spell's card).
+ */
+@SerialName("GrantWebSlingingToSpells")
+@Serializable
+data class GrantWebSlingingToSpells(
+    val cost: ManaCost,
+    val spellFilter: GameObjectFilter
+) : StaticAbility {
+    override val description: String =
+        "${spellFilter.description.replaceFirstChar { it.uppercase() }} spells you cast have web-slinging $cost"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = spellFilter.applyTextReplacement(replacer)
+        return if (newFilter !== spellFilter) copy(spellFilter = newFilter) else this
+    }
+}
+
+/**
  * Grants warp (CR 702.185) to cards in the granter's controller's hand that match [filter].
  * Models oracle text like "Artifact cards and red creature cards in your hand have warp {2}{R}."
  *
@@ -277,6 +353,42 @@ data class GrantMiracleToCardsInHand(
 }
 
 /**
+ * Grants madness (CR 702.35) to cards the granter's controller **owns** that match [filter] and
+ * aren't on the battlefield, with the madness cost equal to each card's own mana cost. Models
+ * Falkenrath Gorger: "Each Vampire creature card you own that isn't on the battlefield has madness.
+ * The madness cost is equal to its mana cost."
+ *
+ * Cost-free by construction: "equal to its mana cost" is the only shape printed on a card, so the
+ * granted cost is derived per card rather than carried here. Should a grant with a fixed cost ever
+ * print, that's a second field, not a second static.
+ *
+ * Read by the discard path exactly where printed madness is read — `MadnessGrants` is consulted by
+ * the zone-change replacement that diverts a discard to exile, so a granted madness behaves
+ * identically to a printed one: same exile redirect, same CR 702.35a cast offer, same fixed
+ * alternative cost stamped on the exiled card. Because the exiled card carries the cost from that
+ * moment on, the grant leaving the battlefield mid-trigger doesn't revoke the offer.
+ *
+ * The "isn't on the battlefield" clause is the card's own wording; madness only ever *functions*
+ * from a hand (CR 702.35a replaces a discard), so in practice the grant is read for cards being
+ * discarded from their owner's hand.
+ *
+ * @property filter Which cards the controller owns gain madness (e.g. Vampire creature card).
+ */
+@SerialName("GrantMadnessToOwnedCards")
+@Serializable
+data class GrantMadnessToOwnedCards(
+    val filter: GameObjectFilter
+) : StaticAbility {
+    override val description: String =
+        "Each ${filter.description} you own that isn't on the battlefield has madness. " +
+            "The madness cost is equal to its mana cost."
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * You may cast spells matching [filter] from your graveyard, optionally by paying [lifeCost]
  * life in addition to their other costs. Only during your turn if [duringYourTurnOnly] is true.
  *
@@ -289,6 +401,9 @@ data class GrantMiracleToCardsInHand(
  *  - The Tomb of Aclazotz (Tarrian's Journal back): `MayCastFromGraveyard(Creature,
  *    entersWithCounter = CounterType.FINALITY, addedSubtypeOnEntry = "Vampire")` — a permanent cast
  *    from the graveyard under this grant enters with a finality counter and gains the subtype.
+ *  - Gisa and Geralf: `MayCastFromGraveyard(Creature.withSubtype("Zombie"),
+ *    duringYourTurnOnly = true, oncePerTurn = true)` — "Once during each of your turns, you may
+ *    cast a Zombie creature spell from your graveyard."
  *
  * [entersWithCounter] and [addedSubtypeOnEntry] are the **cast-this-way entry rider** (CR 614-style):
  * they apply only to a permanent cast from the graveyard *under this grant* — when it resolves onto
@@ -296,11 +411,18 @@ data class GrantMiracleToCardsInHand(
  * other types" (a persistent characteristic, for as long as it remains on the battlefield). Both
  * default to null (no rider), so existing graveyard-cast cards are unaffected.
  *
+ * [oncePerTurn] limits the grant to a single use per turn, tracked on the *granting permanent*
+ * (`MayCastFromGraveyardUsedThisTurnComponent`, cleared each cleanup step) rather than on the
+ * player — so a second copy of the granter brings a second use, and a use is only consumed when
+ * no unlimited grant could have authorized the same cast. Pair with [duringYourTurnOnly] for
+ * "once during each of your turns".
+ *
  * @property filter The filter that spells must match (e.g., instant/sorcery, or any nonland card)
  * @property lifeCost The life cost to pay in addition to other costs (0 = free)
  * @property duringYourTurnOnly If true, only castable during your turn
  * @property entersWithCounter If set, a permanent cast this way enters with one such counter
  * @property addedSubtypeOnEntry If set, a permanent cast this way gains this subtype on entry
+ * @property oncePerTurn If true, this grant authorizes at most one graveyard cast per turn
  */
 @SerialName("MayCastFromGraveyard")
 @Serializable
@@ -309,13 +431,19 @@ data class MayCastFromGraveyard(
     val lifeCost: Int = 0,
     val duringYourTurnOnly: Boolean = false,
     val entersWithCounter: com.wingedsheep.sdk.core.CounterType? = null,
-    val addedSubtypeOnEntry: String? = null
+    val addedSubtypeOnEntry: String? = null,
+    val oncePerTurn: Boolean = false
 ) : StaticAbility {
     /** True when this grant carries a cast-this-way entry rider (finality counter / added subtype). */
     val hasEntryRider: Boolean get() = entersWithCounter != null || addedSubtypeOnEntry != null
 
     override val description: String = buildString {
-        if (duringYourTurnOnly) append("During your turn, y") else append("Y")
+        when {
+            oncePerTurn && duringYourTurnOnly -> append("Once during each of your turns, y")
+            oncePerTurn -> append("Once each turn, y")
+            duringYourTurnOnly -> append("During your turn, y")
+            else -> append("Y")
+        }
         append("ou may cast ${filter.description} spells from your graveyard")
         if (lifeCost > 0) append(" by paying $lifeCost life in addition to their other costs")
         if (entersWithCounter != null || addedSubtypeOnEntry != null) {
@@ -367,6 +495,35 @@ data class GraveyardCardsHaveFlashback(
     override val description: String = buildString {
         if (duringYourTurnOnly) append("During your turn, e") else append("E")
         append("ach ${filter.description} card in your graveyard has flashback")
+        if (cost != null) append(" $cost")
+    }
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
+ * "Each [filter] card in your graveyard has mayhem [cost]." The Mayhem analogue of
+ * [GraveyardCardsHaveFlashback] — a whole-graveyard group grant of the Mayhem keyword ability
+ * (CR 702.187), read through `MayhemGrants.effectiveMayhem` alongside the discarded-this-turn gate.
+ * Green Goblin's "Goblin Formula — Each nonland card in your graveyard has mayhem. The mayhem cost
+ * is equal to its mana cost."
+ *
+ * @property filter Which graveyard cards gain mayhem (matched against the card's characteristics).
+ * @property cost The granted mayhem cost, or null for "equal to that card's mana cost".
+ * @property duringYourTurnOnly If true, the grant is active only during the controller's turn.
+ */
+@SerialName("GraveyardCardsHaveMayhem")
+@Serializable
+data class GraveyardCardsHaveMayhem(
+    val filter: GameObjectFilter,
+    val cost: ManaCost? = null,
+    val duringYourTurnOnly: Boolean = false
+) : StaticAbility {
+    override val description: String = buildString {
+        if (duringYourTurnOnly) append("During your turn, e") else append("E")
+        append("ach ${filter.description} card in your graveyard has mayhem")
         if (cost != null) append(" $cost")
     }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
@@ -654,5 +811,46 @@ data class PlayersCantActivateAbilities(
         val newCondition = condition?.applyTextReplacement(replacer)
         return if (newFilter === permanentFilter && newCondition === condition) this
         else copy(permanentFilter = newFilter, condition = newCondition)
+    }
+}
+
+/**
+ * The controller may activate exhaust abilities (CR 702.177) as though they hadn't been activated —
+ * i.e. the "activate only once" memory an exhaust ability carries
+ * ([com.wingedsheep.sdk.scripting.ActivationRestriction.Once]) is waived while this applies.
+ *
+ * The permission mirror of [PlayersCantActivateAbilities]: read at ability-activation-legality time
+ * on every battlefield permanent, scoped to the activating player being this permanent's controller
+ * (you can only activate abilities of permanents you control, so there is no separate "who" axis),
+ * and gated by [condition], evaluated in the controller's context — `null` = always.
+ *
+ * Elvish Refueler: "During your turn, as long as you haven't activated an exhaust ability this turn,
+ * you may activate exhaust abilities as though they haven't been activated." — the condition is
+ * `IsYourTurn AND NoExhaustAbilityActivatedThisTurn`, which makes the waiver evaporate the moment
+ * the first exhaust ability of the turn is activated. Non-exhaust abilities carrying a plain
+ * `Once`/`OncePerTurn` restriction are untouched.
+ *
+ * @property condition Optional timing/state gate, evaluated in the controller's context; null = always.
+ */
+@SerialName("IgnoreExhaustActivationLimit")
+@Serializable
+data class IgnoreExhaustActivationLimit(
+    val condition: Condition? = null
+) : StaticAbility {
+    override val description: String = buildString {
+        when (condition) {
+            is IsYourTurn -> append("During your turn, ")
+            is IsNotYourTurn -> append("During your opponents' turns, ")
+            else -> {}
+        }
+        append("you may activate exhaust abilities as though they haven't been activated")
+        when (condition) {
+            is IsYourTurn, is IsNotYourTurn, null -> {}
+            else -> append(" ${condition.description}")
+        }
+    }
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newCondition = condition?.applyTextReplacement(replacer)
+        return if (newCondition === condition) this else copy(condition = newCondition)
     }
 }

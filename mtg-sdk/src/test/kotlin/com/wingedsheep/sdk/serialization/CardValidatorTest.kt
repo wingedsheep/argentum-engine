@@ -325,6 +325,39 @@ class CardValidatorTest : DescribeSpec({
         }
     }
 
+    describe("Battle defense") {
+
+        it("flags a battle without startingDefense") {
+            // Without the printed defense number a battle enters with zero defense counters
+            // (CR 310.4b) and state-based actions bin it immediately (CR 704.5v).
+            val card = CardDefinition(
+                name = "Defense-Less Siege",
+                manaCost = ManaCost.parse("{2}{B}{B}"),
+                typeLine = TypeLine(
+                    cardTypes = setOf(CardType.BATTLE),
+                    subtypes = setOf(Subtype.SIEGE),
+                ),
+                // startingDefense intentionally null
+            )
+            val errors = CardValidator.validate(card)
+            errors shouldHaveSize 1
+            errors[0].shouldBeInstanceOf<CardValidationError.MissingBattleDefense>()
+        }
+
+        it("accepts a battle that declares its printed defense") {
+            val card = CardDefinition(
+                name = "Well-Defended Siege",
+                manaCost = ManaCost.parse("{2}{B}{B}"),
+                typeLine = TypeLine(
+                    cardTypes = setOf(CardType.BATTLE),
+                    subtypes = setOf(Subtype.SIEGE),
+                ),
+                startingDefense = 5,
+            )
+            CardValidator.validate(card) shouldHaveSize 0
+        }
+    }
+
     describe("MoveToZoneEffect target indexing") {
 
         it("validates effects with MoveToZone (destroy)") {

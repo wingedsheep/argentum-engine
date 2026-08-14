@@ -56,8 +56,14 @@ val UnitedBattlefront = card("United Battlefront") {
                     ),
                     storeSelected = "onto",
                     storeRemainder = "rest",
+                    prompt = "Put up to two noncreature, nonland permanent cards with mana value 3 or less " +
+                        "onto the battlefield",
                     selectedLabel = "Put onto the battlefield",
-                    remainderLabel = "Put on bottom"
+                    remainderLabel = "Put on bottom",
+                    // "Look at the top seven cards" is information the player is owed even when
+                    // nothing among them can be kept — show all seven, with the ineligible ones
+                    // greyed out, instead of silently skipping the prompt.
+                    showAllCards = true
                 ),
                 MoveCollectionEffect(
                     from = "onto",

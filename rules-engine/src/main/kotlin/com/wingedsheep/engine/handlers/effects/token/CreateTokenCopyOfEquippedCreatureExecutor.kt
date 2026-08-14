@@ -118,7 +118,36 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         newState = com.wingedsheep.engine.handlers.effects.EnterTappedReplacements
             .applyCreatedTokenEntryTap(newState, tokenId, controllerId)
 
-        val events = listOf(
+        // As-enters "enters with counters" (CR 614.1c): the copied creature's own EntersWithCounters
+        // (a copy of a creature that "enters with a +1/+1 counter") plus global grants from other
+        // permanents (Gev, Scaled Scorch). BattlefieldEntry.place skips this, so apply it here.
+        val (afterCounters, counterEvents) = com.wingedsheep.engine.handlers.effects.EntersWithReplacements
+            .applyOnEntry(newState, tokenId, controllerId, cardRegistry)
+        newState = afterCounters
+
+        // As-enters "choose X as this enters" (CR 614.12) + granted riot (CR 702.136): pause for the
+        // player's decision. Exactly one token is created, so there is no batch to resume; the entry
+        // ZoneChangeEvent is omitted on a pause (the choice resumer synthesizes it after the choice
+        // resolves so ETB triggers fire once). Counters ride along as carryEvents.
+        val choicePlan = com.wingedsheep.engine.handlers.effects.token.TokenEntryReplacements
+            .firstEntersWithChoice(newState, tokenId, cardRegistry)
+        if (choicePlan != null) {
+            val paused = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+                .pauseForEntersWithChoice(
+                    state = newState,
+                    entityId = tokenId,
+                    controllerId = controllerId,
+                    cardComponent = tokenCard,
+                    choice = choicePlan.choice,
+                    fromZone = null,
+                    carryEvents = counterEvents,
+                    syntheticRiot = choicePlan.syntheticRiot,
+                    syntheticRiotRemaining = choicePlan.syntheticRiotRemaining,
+                )
+            if (paused != null) return EffectResult.from(paused)
+        }
+
+        val events = counterEvents + listOf(
             ZoneChangeEvent(
                 entityId = tokenId,
                 entityName = tokenCard.name,
@@ -134,6 +163,13 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         val (sagaState, sagaEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
             .applySagaEntryIfNeeded(newState, tokenId)
 
-        return EffectResult.success(sagaState, events + sagaEvents)
+        // CR 306.5b: the equipped creature can be a planeswalker card animated by its own ability
+        // (Gideon Blackblade) — the copy keeps the printed planeswalker types and loyalty (copiable
+        // values, CR 707.2) but not the animation, so it needs its loyalty counters or state-based
+        // actions (CR 704.5i) bin it on arrival. No-op for non-planeswalkers.
+        val (loyaltyState, loyaltyEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+            .applyIntrinsicEntryCountersIfNeeded(sagaState, tokenId, controllerId, cardRegistry)
+
+        return EffectResult.success(loyaltyState, events + sagaEvents + loyaltyEvents)
     }
 }

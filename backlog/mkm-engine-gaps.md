@@ -27,7 +27,7 @@ So the bulk of the set is reachable once the five headline mechanics land. The m
 |---|---|---|
 | Investigate (create a Clue) | 38 | ❌ Clue token unregistered; no `Effects.Investigate` |
 | Disguise | 37 | ❌ no keyword (morph machinery exists, reusable) |
-| Collect evidence N | 22 | ❌ no cost/payment type |
+| Collect evidence N | 22 | ✅ **done** (`CostAtom.CollectEvidence`, `Effects.CollectEvidence`, CR 701.59) |
 | Cases (Enchantment — Case) | 12 | ❌ no Case subtype / solve framework |
 | Suspect | 19 | ✅ **done** (`Effects.Suspect`, CR 701.60) |
 | Surveil | 11 | ✅ **done** (`EffectPatterns.surveil`) |
@@ -97,6 +97,26 @@ this is turned face up" triggers already work through the morph path. The "face-
 → Aurelia's Vindicator, Nightdrinker Moroii, Fugitive Codebreaker, Cryptic Coat target, Riftburst
   Hellion, Unyielding Gatekeeper, Gadget Technician, … (37)
 
+### 3. Collect evidence N (22 cards) — ✅ **DONE**
+
+Built as one shared `CostAtom.CollectEvidence(n)` plus a resolution-time `Effects.CollectEvidence`,
+all routed through the engine's `CollectEvidenceResolver` so the cost and effect forms cannot drift.
+The optional *linked* cast cost (`card { collectEvidence(n) }`) rides the existing
+optional-additional-cost rail under `ChoiceSlot.EVIDENCE_COLLECTED`, read back by
+`Conditions.WasEvidenceCollected`; `Triggers.WheneverYouCollectEvidence` is the payoff. Selection is
+sum-gated (`minTotalManaValue` / `exileMinTotalManaValue`), and CR 701.59b fails closed everywhere.
+Six cards ship with it (Vitu-Ghazi Inspector, Crimestopper Sprite, Bite Down on Crime, Sample
+Collector, Forensic Researcher, Surveillance Monitor); the rest are unblocked but not yet written,
+and four need *separate* features first — see below.
+
+**Still blocked on other features:** Conspiracy Unraveler (collect evidence as an *alternative* cost
+"rather than pay the mana cost"), Axebane Ferox (`WardCost` has no collect-evidence variant), Urgent
+Necropsy and Incinerator of the Guilty (a *dynamic* N — "collect evidence X" where X is the targets'
+total mana value / a chosen X; the atom takes a fixed `Int`), Detective's Phoenix (a bestow cost with
+a non-mana component), Kylox's Voltstrider (needs "cards exiled with it" linkage).
+
+<details><summary>Original analysis</summary>
+
 ### 3. Collect evidence N (22 cards) — *new cost/payment type*
 
 "Collect evidence N. *(Exile cards with total mana value N or greater from your graveyard.)*" No cost,
@@ -116,6 +136,8 @@ the exiled set.
 
 → Extract a Confession, Deadly Cover-Up, Urgent Necropsy, Forensic Researcher, Conspiracy Unraveler,
   Izoni Center of the Web, Sample Collector, Incinerator of the Guilty, … (22)
+
+</details>
 
 ### 4. Cases — Enchantment — Case (12 cards) — *new subtype + solve framework*
 

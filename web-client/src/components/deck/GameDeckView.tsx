@@ -217,7 +217,12 @@ export function SeatDeckColumn({
   )
 }
 
-/** Both seats' decks side by side — the body of the recent-games / admin deck modal. */
+/**
+ * Every seat's deck side by side — the body of the recent-games / admin deck modal. Seat count is
+ * whatever the game had: two for a duel, three to six for a multiplayer pod. The grid keeps every
+ * column the same width, so a pod that doesn't divide evenly into the row wraps into aligned columns
+ * instead of stretching its last seat across the full width.
+ */
 export function GameDeckColumns({
   participants,
   renderActions,
@@ -236,9 +241,8 @@ export function GameDeckColumns({
 
 const styles: Record<string, React.CSSProperties> = {
   muted: { margin: '6px 0 0', color: '#888', fontSize: 13 },
-  columns: { display: 'flex', gap: 16, flexWrap: 'wrap' },
+  columns: { display: 'grid', gap: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))' },
   col: {
-    flex: '1 1 320px',
     minWidth: 0,
     backgroundColor: '#171723',
     border: '1px solid #2a2a3e',

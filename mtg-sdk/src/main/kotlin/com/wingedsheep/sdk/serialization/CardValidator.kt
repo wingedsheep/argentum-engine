@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.serialization
 
 import com.wingedsheep.sdk.model.CardDefinition
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.SuccessCriterion
 import kotlinx.serialization.json.JsonArray
@@ -28,7 +29,8 @@ object CardValidator {
         validateCreatureStats(card, errors)
         validateAuraConsistency(card, errors)
         validateEquipmentConsistency(card, errors)
-        validatePlaneswalkerLoyalty(card, errors)
+        validateEntryCounterNumbers(card, errors)
+        validateGiftKeyword(card, errors)
         validateSuccessCriteria(card, errors)
         errors.addAll(CardLinter.lint(card))
 
@@ -125,12 +127,48 @@ object CardValidator {
         }
     }
 
-    private fun validatePlaneswalkerLoyalty(card: CardDefinition, errors: MutableList<CardValidationError>) {
+    /**
+     * A planeswalker and a battle each have an intrinsic "enters with this many counters" ability
+     * keyed off a number printed on the card — loyalty (CR 306.5b) and defense (CR 310.4b). Omitting
+     * the number is silently fatal in the same way for both: the permanent enters with zero counters
+     * and state-based actions bin it immediately (CR 704.5i / 704.5v), so both are checked here.
+     */
+    private fun validateEntryCounterNumbers(card: CardDefinition, errors: MutableList<CardValidationError>) {
         if (card.isPlaneswalker && card.startingLoyalty == null) {
             errors.add(
                 CardValidationError.MissingPlaneswalkerLoyalty(
                     cardName = card.name,
                     message = "Planeswalker '${card.name}' is missing startingLoyalty"
+                )
+            )
+        }
+        if (card.isBattle && card.startingDefense == null) {
+            errors.add(
+                CardValidationError.MissingBattleDefense(
+                    cardName = card.name,
+                    message = "Battle '${card.name}' is missing startingDefense"
+                )
+            )
+        }
+    }
+
+    /**
+     * `KeywordAbility.Gift` only works on a permanent. On a permanent, gift's second ability is a
+     * triggered ability that functions on the battlefield (CR 702.174b), which is what the
+     * `gift(kind)` DSL derives and what stamps `ChoiceSlot.GIFT_PROMISED` durably. An instant or
+     * sorcery instead has "if this spell's gift cost was paid, [effect]" as part of its own
+     * resolution — there is no permanent to trigger off and nothing to stamp, so the keyword would
+     * offer a `CastWithGift` action whose promise is silently dropped and whose
+     * `Conditions.GiftWasPromised` reads false. Those cards use `Patterns.Mechanic.giftSpell`.
+     */
+    private fun validateGiftKeyword(card: CardDefinition, errors: MutableList<CardValidationError>) {
+        val hasGift = card.keywordAbilities.any { it is KeywordAbility.Gift }
+        if (hasGift && !card.typeLine.isPermanent) {
+            errors.add(
+                CardValidationError.GiftKeywordOnNonPermanent(
+                    cardName = card.name,
+                    message = "'${card.name}' is not a permanent, so KeywordAbility.Gift can never " +
+                        "trigger (CR 702.174b). Use Patterns.Mechanic.giftSpell for instants and sorceries."
                 )
             )
         }
@@ -184,6 +222,11 @@ sealed interface CardValidationError {
         override val message: String
     ) : CardValidationError
 
+    data class MissingBattleDefense(
+        override val cardName: String,
+        override val message: String
+    ) : CardValidationError
+
     data class UninferableSuccessCriterion(
         override val cardName: String,
         override val message: String
@@ -231,6 +274,12 @@ sealed interface CardValidationError {
         override val message: String
     ) : CardValidationError
 
+    /** `KeywordAbility.Gift` on an instant or sorcery, where it can never trigger (CR 702.174b). */
+    data class GiftKeywordOnNonPermanent(
+        override val cardName: String,
+        override val message: String
+    ) : CardValidationError
+
     /** A `SourceChosenModeIs` id that matches no declared `EntersWithChoice` mode option. */
     data class UnknownModeId(
         override val cardName: String,
@@ -265,6 +314,17 @@ sealed interface CardValidationError {
      * condition would be a silent constant — fail at card load instead.
      */
     data class UnsupportedEntityMatchesRole(
+        override val cardName: String,
+        override val message: String
+    ) : CardValidationError
+
+    /**
+     * A `GroupFilter` scoped to `Scope.AttachedTo` ("enchanted/equipped creature") on a card that
+     * can never be attached to anything. The engine resolves attach-scope only by walking the
+     * permanents attached to a host, so on a non-Aura/non-Equipment the filter matches nothing and
+     * whatever it gated is a silent no-op.
+     */
+    data class AttachedScopeGrantOnNonAttachment(
         override val cardName: String,
         override val message: String
     ) : CardValidationError

@@ -128,7 +128,7 @@ val AllFatesStalker = card("All-Fates Stalker") {
             "target",
             TargetCreature(
                 optional = true,
-                filter = TargetFilter(GameObjectFilter.Creature.notSubtype(Subtype("Assassin")))
+                filter = TargetFilter(GameObjectFilter.Creature.notSubtype(Subtype.ASSASSIN))
             )
         )
         effect = Effects.ExileUntilLeaves(t)

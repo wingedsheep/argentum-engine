@@ -21,8 +21,14 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * card without paying its mana cost. Do this only once each turn. (Look at the card
  * after you scry or surveil.)
  *
- * The scry-or-surveil payoff is gated to fire at most once per turn (`oncePerTurn = true`),
- * matching "Do this only once each turn." Its effect is an atomic pipeline:
+ * "Do this only once each turn" is `effectOncePerTurn = true` (CR 603.2h), and here the rider's
+ * "this" matters: the ruling ties the turn's single use to the *cast*, not to the look — "once you
+ * choose to cast the top card of your library, Planetarium of Wan Shi Tong's ability won't trigger
+ * again that turn." So every scry or surveil keeps showing you the top card until you actually
+ * cast one. The engine's lowering finds the consent gate at the tail of the composite below and
+ * puts the spending gate inside it, so looking and declining costs nothing.
+ *
+ * Its effect is an atomic pipeline:
  *   1. [GatherCardsEffect] from the top of the library (count 1) — defaults to a private
  *      controller look ("look at the top card of your library").
  *   2. [MayEffect] wrapping [CastFromCollectionWithoutPayingCostEffect] — the optional
@@ -44,7 +50,7 @@ val PlanetariumOfWanShiTong = card("Planetarium of Wan Shi Tong") {
 
     triggeredAbility {
         trigger = Triggers.WheneverYouScryOrSurveil
-        oncePerTurn = true
+        effectOncePerTurn = true
         effect = Effects.Composite(
             GatherCardsEffect(
                 source = CardSource.TopOfLibrary(

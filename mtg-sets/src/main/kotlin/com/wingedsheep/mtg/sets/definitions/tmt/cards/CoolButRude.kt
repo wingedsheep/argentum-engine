@@ -4,8 +4,10 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.FeasibilityCheck
 import com.wingedsheep.sdk.scripting.effects.MayEffect
 import com.wingedsheep.sdk.scripting.effects.SearchDestination
 import com.wingedsheep.sdk.scripting.references.Player
@@ -34,10 +36,17 @@ val CoolButRude = card("Cool but Rude") {
         "{1}{R}: Level 3\nWhen this Class becomes level 3, search your library for a card, put it into your hand, shuffle, then discard a card at random."
 
     // Level 1: Whenever you attack, you may discard a card. If you do, draw a card.
+    // The draw hangs off `IfYouDo`, not off the may-decision: discarding is moving a card from hand
+    // to graveyard (CR 701.9a), so an empty hand discards nothing and nothing is drawn.
+    // `feasibility` keeps the trigger from asking an unanswerable question on every single attack.
     triggeredAbility {
         trigger = Triggers.YouAttack
         effect = MayEffect(
-            Patterns.Hand.discardCards(1).then(Effects.DrawCards(1))
+            effect = Effects.IfYouDo(
+                action = Patterns.Hand.discardCards(1),
+                ifYouDo = Effects.DrawCards(1)
+            ),
+            feasibility = FeasibilityCheck.HasCardsInZone(Zone.HAND)
         )
     }
 

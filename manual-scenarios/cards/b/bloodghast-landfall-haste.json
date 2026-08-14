@@ -1,0 +1,26 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Swamp"],
+    "battlefield": [],
+    "graveyard": ["Bloodghast"],
+    "library": ["Forest", "Island"]
+  },
+  "player2": {
+    "lifeTotal": 10,
+    "hand": [],
+    "battlefield": [],
+    "graveyard": [],
+    "library": ["Mountain", "Plains"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["DECLARE_ATTACKERS"],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

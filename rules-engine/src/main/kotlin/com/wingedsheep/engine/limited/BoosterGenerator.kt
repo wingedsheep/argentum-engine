@@ -2,6 +2,7 @@ package com.wingedsheep.engine.limited
 
 import com.wingedsheep.sdk.limited.BoosterStrategy
 import com.wingedsheep.sdk.limited.StandardBooster
+import com.wingedsheep.sdk.model.BasicLandArt
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Printing
 import kotlin.random.Random
@@ -30,6 +31,16 @@ class BoosterGenerator(
 ) {
 
     /**
+     * Return an isolated generator containing this generator's catalogue plus [extra].
+     *
+     * The original generator and its map are left untouched. Entries in [extra] intentionally
+     * replace entries with the same set code, which lets a lobby install a scoped synthetic set
+     * without mutating the application-wide catalogue.
+     */
+    fun withSets(extra: Map<String, SetConfig>): BoosterGenerator =
+        BoosterGenerator(availableSets + extra)
+
+    /**
      * Configuration for a card set that can be used for sealed.
      */
     data class SetConfig(
@@ -37,6 +48,12 @@ class BoosterGenerator(
         val setName: String,
         val cards: List<CardDefinition>,
         val basicLands: List<CardDefinition>,
+        /**
+         * Implemented cards carrying this set code that were not in its paper booster product.
+         * Normal generation ignores them; a lobby may opt in by deriving a scoped config whose
+         * [cards] is the union. Kept separate so paper-accurate limited remains the default.
+         */
+        val extraCardsByProduct: Map<String, List<CardDefinition>> = emptyMap(),
         val incomplete: Boolean = false,
         /**
          * Whether this set is curated/validated for sealed & draft play. Sets that aren't
@@ -86,8 +103,6 @@ class BoosterGenerator(
 
     companion object {
 
-        private val BASIC_LAND_NAMES = setOf("Plains", "Island", "Swamp", "Mountain", "Forest")
-
         /**
          * Re-skin each generated card with one of its alternate-frame printings (showcase /
          * borderless) with probability [chance], leaving the card's oracle identity untouched.
@@ -117,66 +132,59 @@ class BoosterGenerator(
         }
 
         /**
-         * Distribute basic lands in a deck list across art variants for a nice mix.
+         * Pin every basic land in a deck list to the printing it was built with.
          *
-         * Replaces plain land names (e.g., "Plains" → 8) with variant identifiers
-         * (e.g., "Plains#331" → 2, "Plains#332" → 2, "Plains#333" → 2, "Plains#334" → 2).
+         * Replaces plain land names (e.g., "Plains" → 8) with the printing identifier of the
+         * matching entry in [basics] (e.g., "Plains#BLB-262" → 8). [basics] is the very map the
+         * player's deck builder was handed by [getBasicLands], so the art previewed while building
+         * is the art the deck is played with — one standard-art printing per type, not a mix.
          *
-         * The variant identifiers are `Name#SetCode-CollectorNumber` strings that resolve
-         * via [com.wingedsheep.engine.registry.CardRegistry]'s secondary index — predating
-         * the multi-printing system. This works correctly under multi-printing because the
-         * resolved [CardDefinition.metadata.imageUri] is stamped onto each entity's
-         * [com.wingedsheep.engine.state.components.identity.CardComponent.imageUri] at
-         * game-init, which then beats the canonical metadata via the precedence flip in
-         * `ClientStateTransformer`. The rich `cardEntries` channel (Phase 4 of the
-         * multi-printing plan) is not used here — switching is part of the Phase 6.5
-         * cleanup that retires the `Name#SET-CN` secondary index. See
-         * `backlog/multi-printing-system.md`.
+         * Without this the name would resolve to whichever printing the card registry considers
+         * canonical for "Plains" (some other set entirely), so the stamp is what keeps a limited
+         * deck's basics inside the set that was drafted.
          *
-         * @param deckList The original deck list with basic land names
-         * @param variants Map of land name to all art variants from the set
-         * @return Modified deck list with basic lands distributed across variants
+         * Names absent from [basics] pass through untouched — that covers every spell, and a basic
+         * land type the set doesn't print. Keying off [basics] rather than a hardcoded name list is
+         * also what lets a colorless-basic set (Final Fantasy's Wastes) get its art stamped.
+         *
+         * Counts are merged rather than replaced, so a deck list that already names the printing it
+         * gets stamped with (premade lists may carry `Name#SET-CN` entries) keeps all its copies.
+         *
+         * The identifiers are `Name#SetCode-CollectorNumber` strings. The server session converts them
+         * into rich `CardEntry` printing references at game start, so the printing registry can
+         * overlay the correct art without changing the card's canonical rules identity.
+         *
+         * @param deckList The submitted deck list, keyed by card name
+         * @param basics Land name to the printing that deck building offered, from [getBasicLands]
+         * @return The deck list with basic land names replaced by printing identifiers
          */
-        fun distributeBasicLandVariants(
+        fun withBasicLandArt(
             deckList: Map<String, Int>,
-            variants: Map<String, List<CardDefinition>>
+            basics: Map<String, CardDefinition>,
+        ): Map<String, Int> = withCardArt(deckList, basics.values)
+
+        /** Pin submitted cards to the exact set printing present in a Limited pool. */
+        fun withCardArt(
+            deckList: Map<String, Int>,
+            cards: Collection<CardDefinition>,
         ): Map<String, Int> {
+            val cardsByName = cards.associateBy { it.name }
             val result = mutableMapOf<String, Int>()
-
             for ((cardName, count) in deckList) {
-                if (cardName !in BASIC_LAND_NAMES || count <= 0) {
-                    result[cardName] = count
-                    continue
-                }
-
-                val landVariants = variants[cardName]
-                if (landVariants.isNullOrEmpty()) {
-                    result[cardName] = count
-                    continue
-                }
-
-                // Distribute evenly across variants with round-robin assignment
-                val variantCount = landVariants.size
-                val basePerVariant = count / variantCount
-                val remainder = count % variantCount
-
-                for ((i, variant) in landVariants.withIndex()) {
-                    val variantCopies = basePerVariant + if (i < remainder) 1 else 0
-                    if (variantCopies > 0) {
-                        val collectorNumber = variant.metadata.collectorNumber
-                        val identifier = if (collectorNumber != null && variant.setCode != null) {
-                            "$cardName#${variant.setCode}-$collectorNumber"
-                        } else if (collectorNumber != null) {
-                            "$cardName#$collectorNumber"
-                        } else {
-                            cardName
-                        }
-                        result[identifier] = (result[identifier] ?: 0) + variantCopies
-                    }
-                }
+                val identifier = cardsByName[cardName]?.let { printingIdentifier(cardName, it) } ?: cardName
+                result.merge(identifier, count, Int::plus)
             }
-
             return result
+        }
+
+        /**
+         * The `Name#SetCode-CollectorNumber` identifier for [land]. Both coordinates are required:
+         * a collector number without a set code cannot address a unique printing.
+         */
+        private fun printingIdentifier(cardName: String, land: CardDefinition): String {
+            val collectorNumber = land.metadata.collectorNumber ?: return cardName
+            val setCode = land.setCode ?: return cardName
+            return "$cardName#$setCode-$collectorNumber"
         }
     }
 
@@ -382,64 +390,43 @@ class BoosterGenerator(
     }
 
     /**
-     * Get basic lands available for deck building from a set.
+     * The basic lands a set offers for limited deck building: one printing per land type.
+     *
+     * A set prints several arts of each basic, but a limited deck gets exactly one of them — the
+     * set's **standard** art, i.e. the lowest-numbered variant that's actually in the draft/sealed
+     * product (see [BasicLandArt]). Special treatments (full-art, extended, borderless) stay
+     * defined for collection and display; they're simply not what a drafted deck is played with.
+     * The chosen printing is both what the deck builder previews and — via [withBasicLandArt] —
+     * what every copy in the submitted deck resolves to.
      *
      * @param setCode The set code
-     * @return Map of land name to CardDefinition (one variant per type)
+     * @return Map of land name to the set's standard printing of it
      */
     fun getBasicLands(setCode: String): Map<String, CardDefinition> {
         val setConfig = availableSets[setCode]
             ?: throw IllegalArgumentException("Unknown set code: $setCode")
 
-        // Return one variant of each basic land type (only those in the draft/sealed product)
         return setConfig.basicLands
             .filter { it.metadata.inBooster }
             .groupBy { it.name }
-            .mapValues { (_, variants) -> variants.first() }
+            .mapValues { (_, variants) -> variants.minWith(BasicLandArt.standardFirst) }
     }
 
     /**
-     * Get basic lands available for deck building from multiple sets.
-     * Uses the basic lands from the first set that has them.
+     * [getBasicLands] for a multi-set pool: the basics come from the first set that prints any, so
+     * a mixed pool still hands out one coherent set of lands rather than a blend.
      *
      * @param setCodes The set codes
-     * @return Map of land name to CardDefinition (one variant per type)
+     * @return Map of land name to the standard printing of it, empty if no set prints basics
      */
     fun getBasicLands(setCodes: List<String>): Map<String, CardDefinition> {
         if (setCodes.isEmpty()) {
             throw IllegalArgumentException("At least one set code is required")
         }
-        // Use basic lands from the first set
-        return getBasicLands(setCodes.first())
-    }
-
-    /**
-     * Get all basic land variants for deck building from a set.
-     *
-     * @param setCode The set code
-     * @return Map of land name to list of all art variants
-     */
-    fun getAllBasicLandVariants(setCode: String): Map<String, List<CardDefinition>> {
-        val setConfig = availableSets[setCode]
-            ?: throw IllegalArgumentException("Unknown set code: $setCode")
-
-        return setConfig.basicLands
-            .filter { it.metadata.inBooster }
-            .groupBy { it.name }
-    }
-
-    /**
-     * Get all basic land variants for deck building from multiple sets.
-     * Uses the basic lands from the first set that has them.
-     *
-     * @param setCodes The set codes
-     * @return Map of land name to list of all art variants
-     */
-    fun getAllBasicLandVariants(setCodes: List<String>): Map<String, List<CardDefinition>> {
-        if (setCodes.isEmpty()) {
-            throw IllegalArgumentException("At least one set code is required")
-        }
-        return getAllBasicLandVariants(setCodes.first())
+        return setCodes.asSequence()
+            .map { getBasicLands(it) }
+            .firstOrNull { it.isNotEmpty() }
+            ?: emptyMap()
     }
 
     /**
@@ -451,21 +438,27 @@ class BoosterGenerator(
         setConfigs.singleOrNull()?.boosterStrategy ?: StandardBooster()
 
     /**
-     * Strip basic lands and non-booster cards (Special Guests / The List / promos), plus any
-     * cards on the tournament host's [bannedCardNames] ban list; strategies operate on the
+     * Strip basic lands, meld results, and non-booster cards (Special Guests / The List / promos),
+     * plus any cards on the tournament host's [bannedCardNames] ban list; strategies operate on the
      * booster pool only. Banned names are matched case-insensitively so a host typo in casing
      * still excludes the card.
+     *
+     * Meld results ([CardDefinition.meldResult]) are dropped here rather than left to
+     * `metadata.inBooster`: Scryfall reports them as `booster: true` — the physical card *is* in
+     * the pack, as the meld parts' back halves — so the product-level flag can't tell a drafter
+     * they're unobtainable. Opening one hands a player a permanent they can never cast.
      */
     private fun boosterPool(
         allCards: List<CardDefinition>,
         bannedCardNames: Set<String> = emptySet(),
     ): List<CardDefinition> {
         if (bannedCardNames.isEmpty()) {
-            return allCards.filter { !it.typeLine.isBasicLand && it.metadata.inBooster }
+            return allCards.filter { it.isBoosterEligible }
         }
         val banned = bannedCardNames.mapTo(HashSet(bannedCardNames.size)) { it.trim().lowercase() }
-        return allCards.filter {
-            !it.typeLine.isBasicLand && it.metadata.inBooster && it.name.trim().lowercase() !in banned
-        }
+        return allCards.filter { it.isBoosterEligible && it.name.trim().lowercase() !in banned }
     }
+
+    private val CardDefinition.isBoosterEligible: Boolean
+        get() = !typeLine.isBasicLand && !meldResult && metadata.inBooster
 }

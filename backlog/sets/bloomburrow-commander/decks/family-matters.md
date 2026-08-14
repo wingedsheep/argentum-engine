@@ -56,7 +56,7 @@
 - [ ] 1 Path to Exile
 - [ ] 1 Pull from Tomorrow
 - [ ] 1 Rapid Hybridization
-- [ ] 1 Rowdy Research
+- [x] 1 Rowdy Research
 
 ## Sorceries (8)
 

@@ -31,6 +31,7 @@ val KravensCats = card("Kraven's Cats") {
         rarity = Rarity.COMMON
         collectorNumber = "104"
         artist = "Kevin Glint"
+        flavorText = "\"This time the hunter shall get his prey—with the aid of my two little pets!\"\n—Kraven the Hunter"
         imageUri = "https://cards.scryfall.io/normal/front/8/6/86c415d8-1d2d-4339-955b-0f2aebeb3c95.jpg?1757377449"
     }
 }

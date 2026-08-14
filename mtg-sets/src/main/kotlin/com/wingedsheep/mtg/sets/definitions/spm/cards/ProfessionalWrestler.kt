@@ -27,6 +27,7 @@ val ProfessionalWrestler = card("Professional Wrestler") {
         rarity = Rarity.COMMON
         collectorNumber = "110"
         artist = "Kevin Sidharta"
+        flavorText = "\"Any of you! One-on-one! No one can stay in the ring for three minutes with me!\"\n—Crusher Hogan"
         imageUri = "https://cards.scryfall.io/normal/front/8/a/8a5381e7-ddda-47e7-886d-812250ffb745.jpg?1757377496"
     }
 }

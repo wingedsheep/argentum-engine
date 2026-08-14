@@ -2,6 +2,7 @@ package com.wingedsheep.gameserver.scenario
 
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.registry.PrintingRegistry
+import com.wingedsheep.engine.registry.TokenArtRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.view.ClientStateTransformer
@@ -25,6 +26,7 @@ import java.util.UUID
 class ScenarioSessionFactory(
     private val cardRegistry: CardRegistry,
     private val printingRegistry: PrintingRegistry,
+    private val tokenArtRegistry: TokenArtRegistry,
     private val gameRepository: GameRepository,
     private val sessionRegistry: SessionRegistry,
     private val aiGameManager: AiGameManager,
@@ -58,6 +60,10 @@ class ScenarioSessionFactory(
             cardRegistry = cardRegistry,
             stateTransformer = stateTransformer,
             printingRegistry = printingRegistry,
+            // Without this a scenario mints every token with the engine-wide generic art for its
+            // creature type, so the one surface built for eyeballing a card is the one that shows
+            // the wrong picture. Same registry the lobby and tournament handlers pass.
+            tokenArtRegistry = tokenArtRegistry,
         )
         gameSession.injectStateForDevScenario(build.state)
 
@@ -180,6 +186,10 @@ class ScenarioSessionFactory(
             cardRegistry = cardRegistry,
             stateTransformer = stateTransformer,
             printingRegistry = printingRegistry,
+            // Without this a scenario mints every token with the engine-wide generic art for its
+            // creature type, so the one surface built for eyeballing a card is the one that shows
+            // the wrong picture. Same registry the lobby and tournament handlers pass.
+            tokenArtRegistry = tokenArtRegistry,
         )
         gameSession.injectStateForDevScenario(state)
         gameRepository.save(gameSession)

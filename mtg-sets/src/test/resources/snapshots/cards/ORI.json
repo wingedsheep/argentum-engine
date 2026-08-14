@@ -563,6 +563,99 @@
     ]
 }
 
+// Pyromancer's Goggles
+{
+    "name": "Pyromancer's Goggles",
+    "manaCost": "{5}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "{T}: Add {R}. When that mana is spent to cast a red instant or sorcery spell, copy that spell and you may choose new targets for the copy.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED",
+                    "riders": [
+                        {
+                            "type": "CopySpellWhenSpent",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    },
+                                    {
+                                        "type": "HasColor",
+                                        "color": "RED"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "MYTHIC",
+        "artist": "James Paick",
+        "flavorText": "\"I hope to meet Jaya Ballard someday. I think we'd get along.\"\n—Chandra Nalaar",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/1163ce9f-cf22-422e-a4b5-0240b88e2816.jpg?1783938309",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "The mana produced by Pyromancer's Goggles can be spent on anything, not just a red instant or sorcery spell."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "Any red instant or sorcery spell you spend the mana on will be copied, not just one that requires targets."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The delayed triggered ability will trigger whether Pyromancer's Goggles is still on the battlefield or not."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If more than one red mana produced by a Pyromancer's Goggles is spent to cast a single red instant or sorcery spell, the delayed triggered ability associated with each mana spent will trigger. That many copies will be created. It doesn't matter if this red mana was produced by one Pyromancer's Goggles or by multiple Pyromancer's Goggles."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "A copy is created even if the spell cast with the red mana produced by Pyromancer's Goggles has been countered or otherwise left the stack without resolving by the time that ability resolves. The copy resolves before the original spell."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The copy is created on the stack, so it's not \"cast.\" Abilities that trigger when a player casts a spell won't trigger."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "The copy will have the same targets as the spell it's copying unless you choose new ones. You may change any number of the targets, including all of them or none of them. The new targets must be legal."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If the copied spell is modal (that is, it says \"Choose one –\" or the like), the copy will have the same mode or modes. You can't choose a different one."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "If the copied spell has an X whose value was determined as it was cast, the copy has the same value of X."
+            },
+            {
+                "date": "2024-11-08",
+                "text": "You can't choose to pay any additional costs for the copy. However, effects based on any additional costs that were paid for the original spell are copied as though those same costs were paid for the copy too."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Skyraker Giant
 {
     "name": "Skyraker Giant",

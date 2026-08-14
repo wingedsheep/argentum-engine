@@ -641,7 +641,14 @@ sealed interface SelectionRestriction {
 enum class Chooser {
     /** The controller of the spell/ability decides */
     Controller,
-    /** An opponent decides */
+    /**
+     * An opponent decides — *one* opponent, chosen by the controller of the spell or ability.
+     * The engine asks the controller which opponent decides whenever there is more than one
+     * (CR 601.7a / 602.3a, and rulings like Curator of Destinies' "You decide which opponent
+     * chooses the pile"); with a sole opponent the choice is forced and nothing is prompted, so
+     * two-player games never see the extra step. Each "an opponent chooses" step in a resolution
+     * gets its own pick.
+     */
     Opponent,
     /** The target player decides (resolved from context.targets[0]) */
     TargetPlayer,
@@ -1314,8 +1321,24 @@ data class GrantMayPlayFromExileEffect(
      * "Exile target nonland permanent and the top card of your library. For each of those cards,
      * its owner may play it until the end of their next turn."). Defaults to controller-controls,
      * matching impulse-draw effects where you exile and play cards you own.
+     *
+     * Per-*card* routing, so it can't be expressed as a single [recipient]; when set it wins over
+     * [recipient].
      */
     val ownerControls: Boolean = false,
+    /**
+     * Which player gets the play permission, when it isn't the effect's controller. Resolved
+     * against the resolving context, so a trigger can hand the permission to a player named by
+     * the trigger rather than by the source — Gonti, Night Minister ("Whenever a creature deals
+     * combat damage to one of your opponents, **its controller** … may play that card") grants to
+     * [EffectTarget.ControllerOfTriggeringEntity], the controller of the damaging creature, which
+     * is a player Gonti's controller has no other handle on.
+     *
+     * Turn-keyed [expiry] windows still follow the *activating* player, matching the existing
+     * Memory Vessel rebinding: the grant's duration is a property of the effect, not of who may
+     * use it. For per-card owner routing use [ownerControls] instead — it takes precedence here.
+     */
+    val recipient: EffectTarget = EffectTarget.Controller,
     /**
      * When true, each granted card is stamped so that, if a spell cast from this permission would
      * be put into a graveyard (on resolution, when countered, or when it fizzles), it is exiled
@@ -1362,11 +1385,60 @@ data class GrantMayPlayFromExileEffect(
      * Usurper). The timing rider is honored by both the from-exile cast enumerator and the
      * authoritative cast handler; it does not waive any cost.
      */
-    val asThoughFlash: Boolean = false
+    val asThoughFlash: Boolean = false,
+    /**
+     * When true, the permission covers casting spells only — a land card among the granted
+     * cards can never be played through it. Models "you may **cast** that card" wording (Ragavan,
+     * Nimble Pilferer) as distinct from "you may **play** those cards" (Light Up the Stage):
+     * "cast" never applies to a land (CR 305.1 — playing a land is a special action, not a cast),
+     * so the granting effect exiles the card regardless of type but the permission itself excludes
+     * lands. Read by the from-exile enumerator, which otherwise offers a `PlayLand` action for any
+     * exiled land under an active permission.
+     */
+    val nonLandOnly: Boolean = false,
+    /**
+     * When set, the permission authorizes casting the card's **alternative face** at this index
+     * (`CardDefinition.cardFaces[castFaceIndex]`) rather than its primary characteristics — the
+     * face's mana cost, type line, timing, cast restrictions, target requirements, and spell
+     * script all apply, and the emitted `CastSpell` carries the same `faceIndex`.
+     *
+     * Models "you may cast it … as an Adventure" (CR 715.3, Mosswood Dreadknight: "When this
+     * creature dies, you may cast it from your graveyard as an Adventure until the end of your
+     * next turn") — index 0 is the Adventure face of an `ADVENTURE`-layout card. The permission
+     * grants *only* that face: the creature side stays uncastable from the graveyard, exactly as
+     * the oracle text says. The Adventure's own resolution then exiles the card and grants the
+     * usual cast-the-creature-from-exile permission (CR 715.3d), so the two halves chain without
+     * any card-specific wiring.
+     *
+     * Read by the from-exile/graveyard cast enumerator and enforced by the authoritative cast
+     * handler, which rejects a hand-constructed `faceIndex` no permission authorizes.
+     */
+    val castFaceIndex: Int? = null,
+    /**
+     * When set, the permission authorizes casting only spells of this **color**, checked against
+     * the face actually being cast rather than the card in exile. Models "You may cast red spells
+     * from among them this turn" (Chandra, Dressed to Kill's −7) as distinct from "if it's red,
+     * you may cast it" (her +1), which tests the *exiled card's* characteristics and is expressed
+     * upstream with a `FilterCollection(MatchesFilter(...withColor(RED)))` instead. Her ruling
+     * pins the difference: a modal double-faced card that is red in exile still can't have its
+     * blue back face cast through the −7.
+     */
+    val castColorRestriction: com.wingedsheep.sdk.core.Color? = null
 ) : Effect {
     override val description: String = buildString {
-        val who = if (ownerControls) "its owner" else "you"
-        append("${expiry.description.replaceFirstChar { it.uppercase() }}, $who may play those cards from exile")
+        val who = when {
+            ownerControls -> "its owner"
+            recipient != EffectTarget.Controller -> recipient.description
+            else -> "you"
+        }
+        val verb = if (nonLandOnly) "cast" else "play"
+        val what = when {
+            castColorRestriction != null -> "${castColorRestriction.name.lowercase()} spells among them"
+            nonLandOnly -> "that card"
+            else -> "those cards"
+        }
+        append("${expiry.description.replaceFirstChar { it.uppercase() }}, $who may $verb $what from exile")
+        if (castFaceIndex != null) append(" as its alternative face")
         if (fixedAlternativeCostIsManaValue) {
             append(if (waterbend) " by waterbending {X} rather than paying their mana cost, where X is their mana value"
                    else " for their mana value rather than their mana cost")
@@ -1713,6 +1785,62 @@ data class FilterCollectionEffect(
     val storeNonMatching: String? = null
 ) : Effect {
     override val description: String = "Filter those cards"
+}
+
+/**
+ * "…chooses a \<permanent of each category\> they control…" — each permanent's **controller** picks
+ * one member of [from] for every filter in [categories], and all the picks land in [storeAs].
+ *
+ * The choosers are the distinct controllers of the permanents in [from], asked in APNAP order
+ * (CR 101.4) so the active player picks first and each later player chooses knowing what came
+ * before. Per chooser, the categories are offered in list order over just the members of [from]
+ * they control: a category they control nothing of is skipped, a category with a single candidate
+ * resolves itself without a prompt, and **one permanent may be the pick for several categories** —
+ * an artifact creature can be spared as both the artifact and the creature, which is why this is a
+ * sequence of one-of-each choices rather than a single restricted selection
+ * ([SelectionRestriction.OnePerCardType] would let that permanent claim only one of its types).
+ *
+ * This step only *chooses*; it moves nothing. Pair it with
+ * [CollectionFilter.ExcludeOtherCollection] to get "the rest", then any move step to decide their
+ * fate — which is what makes the whole family authorable from atoms:
+ *
+ * ```kotlin
+ * // Liliana, Dreadhorde General −9: "…and sacrifices the rest"
+ * Effects.Pipeline {
+ *     val atRisk = gather(GameObjectFilter.Permanent.controlledByOpponent())
+ *     val kept = chooseOnePerCategory(atRisk, Filters.PermanentTypes)
+ *     sacrifice(exclude(atRisk, kept))
+ * }
+ * ```
+ *
+ * Swapping the last step gives Consuming Tide ("returns the rest to their hands"); swapping the
+ * category list gives Cataclysm and Divine Reckoning.
+ *
+ * @property from Collection to choose from — every candidate, across all affected players.
+ * @property categories One filter per choice each controller makes, in the order they are offered.
+ * @property storeAs Collection receiving every player's picks (deduplicated).
+ */
+@SerialName("ChooseOnePerCategory")
+@Serializable
+data class ChooseOnePerCategoryEffect(
+    val from: String,
+    val categories: List<GameObjectFilter>,
+    val storeAs: String
+) : Effect {
+    init {
+        require(categories.isNotEmpty()) {
+            "ChooseOnePerCategoryEffect needs at least one category; with none it chooses nothing."
+        }
+    }
+
+    override val description: String =
+        "each player chooses ${categories.joinToString(", ") { it.description }} they control"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newCategories = categories.map { it.applyTextReplacement(replacer) }
+        val changed = newCategories.indices.any { newCategories[it] !== categories[it] }
+        return if (changed) copy(categories = newCategories) else this
+    }
 }
 
 /**

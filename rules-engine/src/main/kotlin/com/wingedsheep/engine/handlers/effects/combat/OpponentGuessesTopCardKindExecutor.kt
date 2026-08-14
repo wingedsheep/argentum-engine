@@ -7,13 +7,10 @@ import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.DecisionRequestedEvent
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.ChooserResolution
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
-import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ControllerComponent
-import com.wingedsheep.sdk.model.EntityId
-import com.wingedsheep.sdk.scripting.effects.Chooser
 import com.wingedsheep.sdk.scripting.effects.OpponentGuessesTopCardKindEffect
 import java.util.UUID
 import kotlin.reflect.KClass
@@ -38,10 +35,26 @@ class OpponentGuessesTopCardKindExecutor : EffectExecutor<OpponentGuessesTopCard
         effect: OpponentGuessesTopCardKindEffect,
         context: EffectContext
     ): EffectResult {
-        val chooserId = resolveChooser(state, effect.chooser, context)
-            ?: return EffectResult.error(state, "No player for OpponentGuessesTopCardKind chooser")
-        val guesserId = resolveChooser(state, effect.guesser, context)
-            ?: return EffectResult.error(state, "No player for OpponentGuessesTopCardKind guesser")
+        // Both the framing choice and the guess may name "an opponent"; with several opponents the
+        // controller picks which one, and re-running this effect resolves both to that pick.
+        val chooserId = when (val outcome = ChooserResolution.resolve(state, effect.chooser, context)) {
+            is ChooserResolution.Outcome.Resolved -> outcome.playerId
+            is ChooserResolution.Outcome.NeedsOpponentPick -> return ChooserResolution.pauseForOpponentPick(
+                state, outcome.opponents, effect, context,
+                prompt = "Choose which opponent chooses land or nonland"
+            )
+            is ChooserResolution.Outcome.Unresolvable ->
+                return EffectResult.error(state, "OpponentGuessesTopCardKind chooser: ${outcome.reason}")
+        }
+        val guesserId = when (val outcome = ChooserResolution.resolve(state, effect.guesser, context)) {
+            is ChooserResolution.Outcome.Resolved -> outcome.playerId
+            is ChooserResolution.Outcome.NeedsOpponentPick -> return ChooserResolution.pauseForOpponentPick(
+                state, outcome.opponents, effect, context,
+                prompt = "Choose which opponent guesses"
+            )
+            is ChooserResolution.Outcome.Unresolvable ->
+                return EffectResult.error(state, "OpponentGuessesTopCardKind guesser: ${outcome.reason}")
+        }
 
         val sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name }
 
@@ -82,22 +95,5 @@ class OpponentGuessesTopCardKindExecutor : EffectExecutor<OpponentGuessesTopCard
                 )
             )
         )
-    }
-
-    private fun resolveChooser(
-        state: GameState,
-        chooser: Chooser,
-        context: EffectContext
-    ): EntityId? = when (chooser) {
-        Chooser.Controller -> context.controllerId
-        Chooser.Opponent -> state.getOpponents(context.controllerId).firstOrNull()
-        Chooser.TargetPlayer -> context.targets.firstOrNull()?.let {
-            TargetResolutionUtils.run { it.toEntityId() }
-        }
-        Chooser.TriggeringPlayer -> context.triggeringEntityId
-        Chooser.SourceController -> context.sourceId?.let { sourceId ->
-            state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-        }
-        else -> null
     }
 }

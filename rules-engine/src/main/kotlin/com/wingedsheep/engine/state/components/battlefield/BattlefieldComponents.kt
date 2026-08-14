@@ -1,10 +1,13 @@
 package com.wingedsheep.engine.state.components.battlefield
 
+import com.wingedsheep.engine.mechanics.layers.AffectsFilter
 import com.wingedsheep.engine.state.Component
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.sdk.scripting.ReplacementEffect
+import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import kotlinx.serialization.Serializable
 
@@ -84,6 +87,24 @@ data object CastFromLibraryComponent : Component
 data object EnteredFromGraveyardComponent : Component
 
 /**
+ * Marks a permanent as having been cast from exile — an impulse-draw permission, a plotted or
+ * foretold card, an adventurer's permanent half, a linked-exile grant. Added when a spell resolves
+ * with castFromZone == EXILE. The exile twin of [CastFromGraveyardComponent]; used by triggers that
+ * care whether an entering creature was cast from exile (Extraordinary Journey).
+ */
+@Serializable
+data object CastFromExileComponent : Component
+
+/**
+ * Marks a permanent that entered the battlefield directly from exile (not via casting) — a blink
+ * effect returning it, or any "put an exiled card onto the battlefield" effect. Added in the
+ * battlefield-entry path when the zone transition's fromZone is EXILE. The exile twin of
+ * [EnteredFromGraveyardComponent] (Extraordinary Journey).
+ */
+@Serializable
+data object EnteredFromExileComponent : Component
+
+/**
  * Marks a permanent as having been cast for its warp cost.
  * Added when a warped spell resolves from the stack.
  * At the beginning of the next end step, this permanent is exiled.
@@ -91,6 +112,20 @@ data object EnteredFromGraveyardComponent : Component
  */
 @Serializable
 data object WarpedComponent : Component
+
+/**
+ * Marks a permanent as having been cast for its dash cost (CR 702.109a).
+ * Added when a dashed spell resolves from the stack. While present: the permanent has haste
+ * (StateProjector grants it live off this marker — see the "Dash" seeding there — rather than
+ * via a stored floating effect, since a floating effect keyed to this entity id would risk
+ * outliving the marker if the same id is later reused for a fresh cast) and a delayed trigger
+ * returns it to its owner's hand at the beginning of the next end step. Stripped by
+ * ZoneMovementUtils whenever the permanent leaves the battlefield — CR 702.109a's haste and
+ * return-to-hand are each scoped to "while this permanent is on the battlefield" / "the
+ * permanent this spell becomes", so a card recast normally later starts marker-free.
+ */
+@Serializable
+data object DashedComponent : Component
 
 /**
  * Marks a permanent as having been cast for its evoke cost.
@@ -356,6 +391,44 @@ data class CountersComponent(
 }
 
 /**
+ * The player designated as this battle's protector (CR 310.8).
+ *
+ * A battle's protector — not its controller — is the defending player for every rule and effect
+ * that refers to one while the battle is being attacked (CR 310.8d), may never attack it, and is
+ * the only player who may block creatures attacking it (CR 310.8b/c).
+ *
+ * Assigned and repaired as a state-based action by
+ * [com.wingedsheep.engine.mechanics.sba.permanent.BattleProtectorCheck] (CR 704.5w/x), and read
+ * through [com.wingedsheep.engine.mechanics.battle.Battles.protectorOf]. Absent until that check
+ * runs, and on any non-battle permanent.
+ */
+@Serializable
+data class ProtectorComponent(
+    val playerId: EntityId
+) : Component
+
+/**
+ * A Siege whose last defense counter was just removed *outside* the stack — i.e. by damage
+ * (CR 310.6), the one path that empties a battle without a resolving spell or ability.
+ *
+ * This is the "has triggered but has not yet been put on the stack" window of CR 704.5v. Combat
+ * damage is applied and state-based actions run *within the same engine action*, before the turn's
+ * trigger-detection pass gets to see the damage events — so without this marker
+ * [com.wingedsheep.engine.mechanics.sba.permanent.BattleDefenseCheck] would bin a Siege killed in
+ * combat a moment before its own defeat trigger (CR 310.11b) could exile it, and the back face
+ * would never be cast. Damage dealt by a *resolving* spell needs no marker: triggers from that
+ * resolution are already detected before the next SBA pass.
+ *
+ * The marker buys exactly one SBA pass. `BattleDefenseCheck` clears it instead of binning the
+ * battle, so if the defeat trigger never materialises (it was countered, or the permanent stopped
+ * being a Siege) the very next check puts the battle into its owner's graveyard as normal. A Siege
+ * that never had a defense counter is never marked, which is what makes the "you won't exile it or
+ * cast the other face" ruling fall out.
+ */
+@Serializable
+data object DefeatTriggerArmedComponent : Component
+
+/**
  * Damage marked on a creature (cleared at cleanup).
  */
 @Serializable
@@ -427,6 +500,21 @@ data class LastKnownPermanentComponent(
  */
 @Serializable
 data object EnteredThisTurnComponent : Component
+
+/**
+ * Permanent was exerted (CR 701.43a) — it won't untap during its controller's next untap step.
+ *
+ * Unlike a stun counter (CR 122.1d), which is only consumed when it actually prevents an untap,
+ * this marker is unconditionally cleared the next time its controller's untap step is processed
+ * — whether or not the permanent was tapped at the time (2024-06-07 ruling: "If an exerted
+ * permanent is already untapped during your next untap step ... exert's effect ... expires
+ * without having done anything"). See [BeginningPhaseManager]'s untap-step handling, which both
+ * skips untapping an exerted permanent and clears this marker every untap step regardless.
+ * Exerting an already-exerted permanent again before the next untap step is a no-op (701.43b) —
+ * `with(ExertedComponent)` on an already-exerted entity doesn't create a second marker to track.
+ */
+@Serializable
+data object ExertedComponent : Component
 
 /**
  * Stores replacement effects on a permanent (e.g., Daunting Defender's damage prevention).
@@ -576,6 +664,27 @@ data class TriggeredAbilityFiredThisTurnComponent(
 }
 
 /**
+ * Tracks which triggered abilities have already **applied their effect** this turn, for the printed
+ * rider "Do this only once each turn" ([com.wingedsheep.sdk.scripting.TriggeredAbility.effectOncePerTurn]).
+ *
+ * Distinct from [TriggeredAbilityFiredThisTurnComponent] on purpose: that one records that an
+ * ability *triggered* (a trigger cap — the ability stops triggering), this one records that an
+ * ability's *effect* was applied (an effect cap — the ability keeps triggering, but at most one
+ * instance per turn does anything). Written by the `Gate.OnceEachTurn` branch of
+ * `GatedEffectExecutor`, atomically with the gate check, so two instances resolving back to back
+ * can never both pass. Cleared at end of turn by `CleanupPhaseManager`.
+ */
+@Serializable
+data class TriggeredAbilityEffectAppliedThisTurnComponent(
+    val abilityIds: Set<AbilityId> = emptySet()
+) : Component {
+    fun withApplied(abilityId: AbilityId): TriggeredAbilityEffectAppliedThisTurnComponent =
+        copy(abilityIds = abilityIds + abilityId)
+
+    fun hasApplied(abilityId: AbilityId): Boolean = abilityId in abilityIds
+}
+
+/**
  * Tracks which triggered abilities have fired over this permanent's lifetime on the battlefield,
  * for "This ability triggers only once" restrictions (e.g. Acrobatic Cheerleader).
  * Unlike [TriggeredAbilityFiredThisTurnComponent] this is NOT cleared at end of turn — it persists
@@ -662,9 +771,31 @@ data class TargetedByControllerThisTurnComponent(
  * triggers (e.g. Stalwart Successor). Set the first time any counter lands on the permanent
  * (see DamageUtils.markCounterPlacedOnCreature), read to compute the per-event "first this turn"
  * flag, and cleared at end of turn by CleanupPhaseManager.
+ *
+ * Mere *presence* answers "did anything land here this turn"; the two sets narrow that by the two
+ * axes printed cards actually use. Beast, Erudite Aerialist wants both — "as long as you've put one
+ * or more **+1/+1** counters on Beast this turn" is scoped to a counter kind *and* to a placer.
+ * Both are recorded at placement time, so they survive the counters later being removed.
  */
 @Serializable
-data object ReceivedCountersThisTurnComponent : Component
+data class ReceivedCountersThisTurnComponent(
+    /** Counter types placed here this turn, by anyone. Empty when the placer path knew no type. */
+    val counterTypes: Set<String> = emptySet(),
+    /**
+     * The subset of [counterTypes] placed by this permanent's own controller (as of the placement).
+     * "You've put …" reads this; "counters would be put …" reads [counterTypes].
+     */
+    val typesFromController: Set<String> = emptySet()
+) : Component {
+    fun with(counterType: String?, byController: Boolean): ReceivedCountersThisTurnComponent {
+        if (counterType == null) return this
+        return copy(
+            counterTypes = counterTypes + counterType,
+            typesFromController =
+                if (byController) typesFromController + counterType else typesFromController
+        )
+    }
+}
 
 /**
  * Tracks which creatures this entity dealt damage to this turn.
@@ -745,21 +876,65 @@ data class GraveyardPlayPermissionUsedComponent(
 }
 
 /**
+ * A marker component stamped on a permanent from one of its static abilities, carrying that
+ * ability's "as long as …" gate. Almost all of these hand a *player-level* effect to the
+ * permanent's controller — "you have shroud", "you can't lose the game", "opponents can't make you
+ * sacrifice"; [CantBeTargetedByOpponentAbilitiesComponent] is the self-scoped exception.
+ *
+ * These grants are deliberately outside the Rule 613 layer system: they are stamped **once**, by
+ * `StaticAbilityHandler` as the permanent enters, and readers later scan the battlefield for the
+ * marker rather than re-deriving it each projection pass.
+ *
+ * That stamp-once design is exactly why [condition] exists. A grant written behind an "as long as
+ * …" gate ([com.wingedsheep.sdk.scripting.ConditionalStaticAbility]) cannot be resolved at stamp
+ * time — the gate flips later in the game — so the condition rides along on the marker and is
+ * re-evaluated against current state on **every** read, via
+ * [com.wingedsheep.engine.mechanics.ControllerGrants]. `null` means an unconditional grant.
+ *
+ * Two rules for anything implementing this interface:
+ *  1. Stamp it through `StaticAbilityHandler.controllerGrant<A>()`, never a bare `any { it is A }`
+ *     — a bare type check misses a `ConditionalStaticAbility` wrapper, and the ability then does
+ *     nothing *at all* rather than switching on and off. That silent no-op is the bug this
+ *     interface exists to make unrepresentable.
+ *  2. Read it through [com.wingedsheep.engine.mechanics.ControllerGrants], never a bare
+ *     `container.has<M>()` — the latter ignores the gate and leaves the grant permanently on.
+ *
+ * `ConditionalControllerGrantsTest` holds every implementor to both rules.
+ */
+interface ControllerGrantMarker {
+    /** The "as long as …" gate this grant sits behind, or `null` when it is unconditional. */
+    val condition: Condition?
+}
+
+/**
  * Marks a permanent as granting shroud to its controller.
  * Used for True Believer: "You have shroud."
  * When the permanent leaves the battlefield, the component goes with it — no cleanup needed.
+ *
+ * See [ControllerGrantMarker] for why [condition] travels on the marker; read through
+ * [com.wingedsheep.engine.mechanics.targeting.ControllerShroud].
  */
 @Serializable
-data object GrantsControllerShroudComponent : Component
+data class GrantsControllerShroudComponent(
+    override val condition: Condition? = null
+) : Component, ControllerGrantMarker
 
 /**
  * Marks a permanent as granting hexproof to its controller.
  * Used for Shalai, Voice of Plenty: "You ... have hexproof."
  * Unlike shroud, the controller can still target themselves.
  * When the permanent leaves the battlefield, the component goes with it — no cleanup needed.
+ *
+ * [condition] is set when the grant is gated behind a
+ * [com.wingedsheep.sdk.scripting.ConditionalStaticAbility] ("As long as Captain America has a
+ * shield counter on him, you … have hexproof"). See [ControllerGrantMarker] for why it travels on
+ * the marker; every reader goes through
+ * [com.wingedsheep.engine.mechanics.targeting.ControllerHexproof].
  */
 @Serializable
-data object GrantsControllerHexproofComponent : Component
+data class GrantsControllerHexproofComponent(
+    override val condition: Condition? = null
+) : Component, ControllerGrantMarker
 
 /**
  * Marks a permanent as granting its controller player-level protection from one or more
@@ -770,19 +945,57 @@ data object GrantsControllerHexproofComponent : Component
  * read by [com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules], which scans the
  * battlefield for permanents carrying this component under the queried player's control. When the
  * permanent leaves the battlefield the component goes with it — no cleanup needed.
+ *
+ * The gate is **per scope**, not per component: one permanent can carry several
+ * `GrantProtectionToController` abilities and gate them independently ("you have protection from
+ * red" unconditionally, "and from blue as long as you control an Island"). That is why this is a
+ * list of [ProtectionGrant] rather than a [ControllerGrantMarker] with one condition — see that
+ * interface for the stamp-once reasoning the gate exists to work around.
  */
 @Serializable
 data class GrantsControllerProtectionComponent(
-    val scopes: List<com.wingedsheep.sdk.scripting.ProtectionScope>
+    val grants: List<ProtectionGrant>
 ) : Component
+
+/**
+ * One player-level protection scope, together with the "as long as …" gate it sits behind
+ * (`null` when unconditional). Evaluated on every read by
+ * [com.wingedsheep.engine.mechanics.targeting.PlayerProtectionRules].
+ */
+@Serializable
+data class ProtectionGrant(
+    val scope: ProtectionScope,
+    val condition: Condition? = null
+)
+
+/**
+ * Marks a permanent as granting "spells and abilities your opponents control can't cause you to
+ * sacrifice permanents" to its controller (Sigarda, Host of Herons).
+ *
+ * Stamped from [com.wingedsheep.sdk.scripting.OpponentsCantMakeYouSacrifice] and read by
+ * [com.wingedsheep.engine.mechanics.SacrificeImmunity], which every sacrifice site consults
+ * before moving a permanent to the graveyard. When the permanent leaves the battlefield the
+ * component goes with it — no cleanup needed.
+ *
+ * See [ControllerGrantMarker] for why [condition] travels on the marker.
+ */
+@Serializable
+data class GrantsSacrificeImmunityComponent(
+    override val condition: Condition? = null
+) : Component, ControllerGrantMarker
 
 /**
  * Marks a permanent as granting "can't lose the game" to its controller.
  * Used for Lich's Mastery: "You can't lose the game."
  * When the permanent leaves the battlefield, the component goes with it — no cleanup needed.
+ *
+ * See [ControllerGrantMarker] for why [condition] travels on the marker; read through
+ * `playerCantLoseGame`, which also applies the CR 810.8a team reach.
  */
 @Serializable
-data object GrantsCantLoseGameComponent : Component
+data class GrantsCantLoseGameComponent(
+    override val condition: Condition? = null
+) : Component, ControllerGrantMarker
 
 /**
  * Marks a permanent as granting "your opponents can't win the game" from its controller.
@@ -791,18 +1004,26 @@ data object GrantsCantLoseGameComponent : Component
  * [com.wingedsheep.engine.mechanics.sba.player.playerCantWinGame]): an effect that would make an
  * opponent of this permanent's controller win the game does nothing.
  * When the permanent leaves the battlefield, the component goes with it — no cleanup needed.
+ *
+ * See [ControllerGrantMarker] for why [condition] travels on the marker.
  */
 @Serializable
-data object GrantsOpponentsCantWinGameComponent : Component
+data class GrantsOpponentsCantWinGameComponent(
+    override val condition: Condition? = null
+) : Component, ControllerGrantMarker
 
 /**
  * Marks a permanent as granting "you don't lose the game for having 0 or less life" to its
  * controller — the narrow sibling of [GrantsCantLoseGameComponent]. Read only by the 704.5a
  * life-loss state-based action (Marina Vendrell's Grimoire); poison / empty-library / effect
  * losses are unaffected. Leaves with the permanent — no cleanup needed.
+ *
+ * See [ControllerGrantMarker] for why [condition] travels on the marker.
  */
 @Serializable
-data object GrantsCantLoseGameFromLifeComponent : Component
+data class GrantsCantLoseGameFromLifeComponent(
+    override val condition: Condition? = null
+) : Component, ControllerGrantMarker
 
 /**
  * Marks a permanent as granting the Station-using-toughness effect to creatures its
@@ -810,25 +1031,48 @@ data object GrantsCantLoseGameFromLifeComponent : Component
  * Station ability and its toughness > power, it contributes toughness instead of power.
  *
  * Created by [StaticAbilityHandler] from [StationUsingToughness] static abilities.
+ *
+ * See [ControllerGrantMarker] for why [condition] travels on the marker.
  */
 @Serializable
-data object GrantsStationUsingToughnessComponent : Component
+data class GrantsStationUsingToughnessComponent(
+    override val condition: Condition? = null
+) : Component, ControllerGrantMarker
 
 /**
  * Marks a permanent as unable to be targeted by abilities opponents control.
  * Unlike hexproof, spells can still target this permanent.
  * Used for Shanna, Sisay's Legacy: "Shanna can't be the target of abilities your opponents control."
+ *
+ * The self-scoped outlier among [ControllerGrantMarker]s — the effect lands on this permanent
+ * rather than on its controller. It implements the interface anyway because the hazard is
+ * identical: stamped once on entry, so a gated form has to carry its condition here and be read
+ * through [com.wingedsheep.engine.mechanics.ControllerGrants.isActive] rather than a bare
+ * `has<…>()`. Readers pass this permanent's own id, not its controller's.
  */
 @Serializable
-data object CantBeTargetedByOpponentAbilitiesComponent : Component
+data class CantBeTargetedByOpponentAbilitiesComponent(
+    override val condition: Condition? = null
+) : Component, ControllerGrantMarker
 
 /**
- * Marks a permanent as granting "can't be blocked" to creatures its controller
- * controls with power or toughness at most [maxValue].
- * Used for Tetsuko Umezawa, Fugitive.
+ * Marks a permanent as granting "can't be blocked" to the creatures [affects] resolves to, while
+ * their **projected** power (if [checkPower]) or toughness (if [checkToughness]) is at most
+ * [maxValue]. Tetsuko Umezawa, Fugitive grants it to its controller's creatures on either stat;
+ * Stature, Size Shifter grants it only to itself and only on power.
+ *
+ * Read by StateProjector's post-layer pass, which runs after every P/T layer so the gate sees final
+ * stats rather than printed ones. [affects] is the [AffectsFilter] that
+ * `StaticAbilityHandler.convertGroupFilter` produced from the ability's `GroupFilter`, so the pass
+ * can reuse the layer system's own resolver rather than hand-rolling a controller comparison.
  */
 @Serializable
-data class GrantCantBeBlockedToSmallCreaturesComponent(val maxValue: Int) : Component
+data class CantBeBlockedWhilePropertyAtMostComponent(
+    val maxValue: Int,
+    val checkPower: Boolean,
+    val checkToughness: Boolean,
+    val affects: AffectsFilter
+) : Component
 
 /**
  * Marks a permanent as suppressing hexproof for creatures matching any of [filters].
@@ -1001,3 +1245,24 @@ data object MayCastFromLinkedExileUsedThisTurnComponent : Component
  */
 @Serializable
 data object MayCastWithoutPayingCostUsedThisTurnComponent : Component
+
+/**
+ * Marks a permanent as having had its
+ * [com.wingedsheep.sdk.scripting.MayCastFromGraveyard] permission used this turn. Enforces the
+ * `oncePerTurn` flag on that static ability (Gisa and Geralf's "once during each of your turns,
+ * you may cast a Zombie creature spell from your graveyard"). Stored on the granting permanent, so
+ * a second copy of the granter carries its own allowance and a granter that leaves and returns
+ * comes back as a fresh object with an unused one. Cleared at end of turn by CleanupPhaseManager.
+ */
+@Serializable
+data object MayCastFromGraveyardUsedThisTurnComponent : Component
+
+/**
+ * Counts uses of a permanent's limited [com.wingedsheep.sdk.scripting.CastSpellTypesFromTopOfLibrary]
+ * permission during the current turn. The count is stored on the granting permanent so each object
+ * has its own allowance; leaving and returning creates a fresh object without this component.
+ */
+@Serializable
+data class CastFromTopOfLibraryUsesThisTurnComponent(
+    val uses: Int = 1
+) : Component

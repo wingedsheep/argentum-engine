@@ -15,6 +15,25 @@ import type {
 
 const BEHOLD_PULSE_FLOOR_MS = 2000
 
+/**
+ * Pointer movement over a card fires `mousemove` far faster than the screen refreshes — a
+ * single sweep across the battlefield used to push ~60 writes into the store, and *every*
+ * write runs every subscriber's selector (each battlefield card holds dozens) before the
+ * preview can repaint once. The preview only ever needs the cursor's latest position, so
+ * writes are coalesced to one per animation frame: intermediate positions are dropped
+ * rather than queued, which is both cheaper and exactly as correct.
+ */
+let pendingHoverPosition: { x: number; y: number } | null = null
+let hoverPositionFrame: number | null = null
+
+function cancelPendingHoverPosition(): void {
+  if (hoverPositionFrame !== null) {
+    cancelAnimationFrame(hoverPositionFrame)
+    hoverPositionFrame = null
+  }
+  pendingHoverPosition = null
+}
+
 export interface AnimationSliceState {
   selectedCardId: EntityId | null
   hoveredCardId: EntityId | null
@@ -113,11 +132,23 @@ export const createAnimationSlice: SliceCreator<AnimationSlice> = (set, get) => 
         }
       }
     }
+    // Entering (or leaving) a card is a real change of *what* is previewed — apply it now, and
+    // drop any coalesced move still queued for the card we just left so it can't land after.
+    cancelPendingHoverPosition()
     set({ hoveredCardId: cardId, hoverPosition: position ?? null, autoTapPreview })
   },
 
   updateHoverPosition: (position) => {
-    set({ hoverPosition: position })
+    pendingHoverPosition = position
+    if (hoverPositionFrame !== null) return
+    hoverPositionFrame = requestAnimationFrame(() => {
+      hoverPositionFrame = null
+      const next = pendingHoverPosition
+      pendingHoverPosition = null
+      // Only meaningful while something is still hovered — a mouseleave that landed in the
+      // same frame has already cleared the preview, and re-arming it would flash it back.
+      if (next && get().hoveredCardId !== null) set({ hoverPosition: next })
+    })
   },
 
   setAutoTapPreview: (preview) => {

@@ -30,6 +30,7 @@ class DamageTriggerDetector(
      */
     fun detectDamageReceivedTriggers(
         state: GameState,
+        statics: BattlefieldStaticsIndex,
         event: DamageDealtEvent,
         triggers: MutableList<PendingTrigger>
     ) {
@@ -47,7 +48,7 @@ class DamageTriggerDetector(
         // the creature died via SBAs before trigger detection runs.
         if (container.has<FaceDownComponent>() || event.targetWasFaceDown) return
 
-        val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state)
+        val abilities = abilityResolver.getTriggeredAbilities(entityId, cardComponent.cardDefinitionId, state, statics)
 
         for (ability in abilities) {
             val trigger = ability.trigger
@@ -74,6 +75,7 @@ class DamageTriggerDetector(
 
     fun detectDamageSourceTriggers(
         state: GameState,
+        statics: BattlefieldStaticsIndex,
         event: DamageDealtEvent,
         triggers: MutableList<PendingTrigger>,
         projected: ProjectedState
@@ -90,12 +92,14 @@ class DamageTriggerDetector(
         // Face-down creatures have no abilities (Rule 708.2)
         if (container.has<FaceDownComponent>()) return
 
-        val abilities = abilityResolver.getTriggeredAbilities(sourceId, cardComponent.cardDefinitionId, state)
+        val abilities = abilityResolver.getTriggeredAbilities(sourceId, cardComponent.cardDefinitionId, state, statics)
 
         for (ability in abilities) {
             val trigger = ability.trigger
             if (trigger is EventPattern.DealsDamageEvent && ability.binding == TriggerBinding.SELF) {
-                if (matcher.matchesDealsDamageTrigger(trigger, event, state)) {
+                // Pass the ability's controller so RecipientFilter.Matching can evaluate
+                // controller-relative recipient filters (e.g. "a creature an opponent controls").
+                if (matcher.matchesDealsDamageTrigger(trigger, event, state, controllerId)) {
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
@@ -127,6 +131,7 @@ class DamageTriggerDetector(
      */
     fun detectDamagedBySourceTriggers(
         state: GameState,
+        statics: BattlefieldStaticsIndex,
         event: DamageDealtEvent,
         triggers: MutableList<PendingTrigger>
     ) {
@@ -142,7 +147,7 @@ class DamageTriggerDetector(
         // Face-down creatures have no abilities (Rule 708.2)
         if (container.has<FaceDownComponent>() || event.targetWasFaceDown) return
 
-        val abilities = abilityResolver.getTriggeredAbilities(damagedEntityId, cardComponent.cardDefinitionId, state)
+        val abilities = abilityResolver.getTriggeredAbilities(damagedEntityId, cardComponent.cardDefinitionId, state, statics)
 
         // Determine source type
         val sourceContainer = state.getEntity(sourceId) ?: return
@@ -182,9 +187,15 @@ class DamageTriggerDetector(
     }
 
     /**
-     * Detect "whenever a creature deals damage to you" triggers on permanents
+     * Detect "whenever [a source matching X] deals damage to you" triggers on permanents
      * controlled by the damaged player. Uses pre-indexed damage-to-you observers
      * instead of scanning all battlefield permanents.
+     *
+     * *What* may deal the damage comes from the trigger's own `sourceFilter`, not from a hardcoded
+     * type check here: `GameObjectFilter.Creature` for Aurification's "whenever a creature deals
+     * damage to you", `Any.opponentControls()` for Farsight Mask's "a source an opponent controls",
+     * and null for Sun Droplet's source-blind "whenever you're dealt damage" — which must fire for
+     * a burn spell or an artifact just as it does for a creature.
      */
     fun detectDamageToControllerTriggers(
         state: GameState,
@@ -196,11 +207,6 @@ class DamageTriggerDetector(
         val damageSourceId = event.sourceId ?: return
         val damagedPlayerId = event.targetId
 
-        // Verify the damage source is a creature on the battlefield
-        val sourceContainer = state.getEntity(damageSourceId) ?: return
-        val sourceCard = sourceContainer.get<CardComponent>() ?: return
-        if (!sourceCard.typeLine.isCreature) return
-
         for (entry in index.damageToYouObservers) {
             // Only triggers on permanents controlled by the damaged player
             if (entry.controllerId != damagedPlayerId) continue
@@ -209,8 +215,11 @@ class DamageTriggerDetector(
                 val trigger = ability.trigger
                 if (trigger is EventPattern.DealsDamageEvent &&
                     trigger.recipient == RecipientFilter.You &&
-                    trigger.sourceFilter == null &&
-                    ability.binding == TriggerBinding.ANY) {
+                    ability.binding == TriggerBinding.ANY &&
+                    matchesDamageType(trigger.damageType, event) &&
+                    matcher.matchesDamageSourceFilter(
+                        trigger.sourceFilter, event, state, entry.controllerId
+                    )) {
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
@@ -227,6 +236,12 @@ class DamageTriggerDetector(
             }
         }
     }
+
+    /** Combat/noncombat gate for a [EventPattern.DealsDamageEvent]; [DamageType.Any] matches both. */
+    private fun matchesDamageType(damageType: DamageType, event: DamageDealtEvent): Boolean =
+        damageType == DamageType.Any ||
+            (damageType == DamageType.Combat && event.isCombatDamage) ||
+            (damageType == DamageType.NonCombat && !event.isCombatDamage)
 
     /**
      * Detect general damage observer triggers (DealsDamageEvent with ANY binding)

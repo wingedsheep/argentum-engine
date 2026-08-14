@@ -24,8 +24,11 @@ val PrimalMight = card("Primal Might") {
     typeLine = "Sorcery"
     oracleText = "Target creature you control gets +X/+X until end of turn. Then it fights up to one target creature you don't control. (Each deals damage equal to its power to the other.)"
     spell {
-        val t1 = target("t1", TargetCreature(filter = TargetFilter.Creature.youControl()))
-        val t2 = target("t2", TargetCreature(filter = TargetFilter.Creature.youControl(), optional = true))
+        val t1 = target("target creature you control", TargetCreature(filter = TargetFilter.Creature.youControl()))
+        val t2 = target(
+            "up to one target creature you don't control",
+            TargetCreature(filter = TargetFilter.CreatureOpponentControls, optional = true),
+        )
         effect = Effects.Composite(
             Effects.ModifyStats(DynamicAmount.XValue, DynamicAmount.XValue, t1),
             Effects.Fight(t1, t2)

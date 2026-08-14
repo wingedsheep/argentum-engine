@@ -61,18 +61,33 @@ data class GameObjectFilter(
 
     /**
      * The English indefinite article ("a" or "an") for this filter's type name.
-     * Derived from the card predicates' type word (e.g. "artifact", "equipment"),
+     * Derived from the card predicates' leading type word (e.g. "artifact", "equipment"),
      * not from the full [description] — which may include "you control" prefixes
      * that would give the wrong first letter.
+     *
+     * Reads the predicates in [orderedCardPredicates] order, the same order [description] renders
+     * them in, so the article always agrees with the word it precedes: "**an** Elf creature", not
+     * "a Elf creature". The only consumer pairs the two directly (`CostAtom`'s
+     * "from <article> <description> you control").
      */
     val indefiniteArticle: String
         get() {
-            val typeWord = cardPredicates.firstOrNull()?.description?.trim()
-                ?: if (anyOf.isNotEmpty()) anyOf.first().indefiniteArticle
+            val typeWord = orderedCardPredicates().firstOrNull()?.description?.trim()
+                ?: if (anyOf.isNotEmpty()) return anyOf.first().indefiniteArticle
                 else description.trim()
             val first = typeWord.firstOrNull()?.lowercaseChar() ?: return "a"
             return if (first in "aeiou") "an" else "a"
         }
+
+    /**
+     * Card predicates in rendering order: subtypes ahead of the card type, because Magic templates
+     * them that way — "Wolf creature", "Equipment artifact", never "creature Wolf". A stable
+     * partition, so every other pairing keeps its original insertion order.
+     */
+    private fun orderedCardPredicates(): List<CardPredicate> {
+        val (subtypes, rest) = cardPredicates.partition { it is CardPredicate.HasSubtype }
+        return subtypes + rest
+    }
 
     private fun buildDescription(): String = buildString {
         controllerPredicate?.let {
@@ -85,7 +100,7 @@ data class GameObjectFilter(
             append(predicate.description)
             append(" ")
         }
-        cardPredicates.forEach { predicate ->
+        orderedCardPredicates().forEach { predicate ->
             append(predicate.description)
             append(" ")
         }
@@ -165,6 +180,24 @@ data class GameObjectFilter(
                 CardPredicate.Or(listOf(CardPredicate.IsArtifact, CardPredicate.IsEnchantment))
             )
         )
+
+        /**
+         * Artifact, enchantment, or token — the permanents bargain lets you sacrifice
+         * (CR 702.166a). "Token" is not a card type, so it's an independent alternative here:
+         * a Food artifact token, an Aura, and a plain 1/1 creature token all qualify, while a
+         * nontoken creature does not.
+         */
+        val ArtifactEnchantmentOrToken = GameObjectFilter(
+            cardPredicates = listOf(
+                CardPredicate.Or(
+                    listOf(
+                        CardPredicate.IsArtifact,
+                        CardPredicate.IsEnchantment,
+                        CardPredicate.IsToken,
+                    )
+                )
+            )
+        )
         val CreatureOrArtifact = GameObjectFilter(
             cardPredicates = listOf(
                 CardPredicate.Or(listOf(CardPredicate.IsCreature, CardPredicate.IsArtifact))
@@ -180,6 +213,23 @@ data class GameObjectFilter(
         val ArtifactOrLand = GameObjectFilter(
             cardPredicates = listOf(
                 CardPredicate.Or(listOf(CardPredicate.IsArtifact, CardPredicate.IsLand))
+            )
+        )
+
+        /**
+         * Artifact, enchantment, or land — the "flexible Naturalize" target family
+         * (Creeping Mold, Fade from History). Sits alongside [ArtifactOrEnchantment]
+         * and [ArtifactOrLand] as the third member of the same union family.
+         */
+        val ArtifactEnchantmentOrLand = GameObjectFilter(
+            cardPredicates = listOf(
+                CardPredicate.Or(
+                    listOf(
+                        CardPredicate.IsArtifact,
+                        CardPredicate.IsEnchantment,
+                        CardPredicate.IsLand,
+                    )
+                )
             )
         )
         val ArtifactCreature = GameObjectFilter(
@@ -280,6 +330,16 @@ data class GameObjectFilter(
     )
 
     /**
+     * Restrict to activated/triggered abilities on the stack whose *source* (CR 113.7) matches
+     * [subfilter] — "from a creature source" (Echo, Perceptive Prodigy), "from an artifact source"
+     * (Scientist Supreme of A.I.M.). Read with last known information when the source has already
+     * left the battlefield. See [CardPredicate.AbilitySourceMatches].
+     */
+    fun abilitySourceMatches(subfilter: GameObjectFilter) = copy(
+        cardPredicates = cardPredicates + CardPredicate.AbilitySourceMatches(subfilter)
+    )
+
+    /**
      * Add an arbitrary [CardPredicate] requirement. General-purpose combinator for predicates that
      * don't have a dedicated helper — e.g. `GameObjectFilter.Nonland.withCardPredicate(
      * CardPredicate.HasActivatedAbility)` for The Enigma Jewel's craft materials.
@@ -322,6 +382,21 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.NameNotSharedWithControlledRoom
     )
 
+    /** Match permanents whose name isn't shared with a token the evaluating player controls. */
+    fun nameNotSharedWithControlledToken() = copy(
+        cardPredicates = cardPredicates + CardPredicate.NameNotSharedWithControlledToken
+    )
+
+    /**
+     * Match permanents whose name isn't shared with *another* permanent the evaluating player
+     * controls — "that doesn't have the same name as another permanent you control" (Yenna,
+     * Redtooth Regent). The candidate itself is excluded from the comparison; see
+     * [CardPredicate.NameNotSharedWithAnotherControlledPermanent].
+     */
+    fun nameNotSharedWithAnotherControlledPermanent() = copy(
+        cardPredicates = cardPredicates + CardPredicate.NameNotSharedWithAnotherControlledPermanent
+    )
+
     /**
      * Match cards whose name equals the name durably chosen by the *source permanent* as it
      * entered (its [com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent] under
@@ -330,6 +405,16 @@ data class GameObjectFilter(
      */
     fun namedFromChosenComponent(slot: com.wingedsheep.sdk.scripting.ChoiceSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.CARD_NAME) = copy(
         cardPredicates = cardPredicates + CardPredicate.NameEqualsChosenComponent(slot)
+    )
+
+    /**
+     * Match cards whose *card type* equals the card type durably chosen by the *source permanent*
+     * as it entered (its [com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent]
+     * under [slot]). Static-projection / cost-calculation safe — use this in cost-static filters
+     * (Arachne, Psionic Weaver's "spells of the chosen type cost {1} more").
+     */
+    fun ofChosenCardTypeComponent(slot: com.wingedsheep.sdk.scripting.ChoiceSlot = com.wingedsheep.sdk.scripting.ChoiceSlot.CARD_TYPE) = copy(
+        cardPredicates = cardPredicates + CardPredicate.CardTypeEqualsChosenComponent(slot)
     )
 
     /** Mana value equals */
@@ -410,6 +495,11 @@ data class GameObjectFilter(
     /** Power at least */
     fun powerAtLeast(min: Int) = copy(
         cardPredicates = cardPredicates + CardPredicate.PowerAtLeast(min)
+    )
+
+    /** Power at least the X chosen for the source spell/ability (Expel the Interlopers). */
+    fun powerAtLeastX() = copy(
+        cardPredicates = cardPredicates + CardPredicate.PowerAtLeastX
     )
 
     /** Power strictly greater than the projected power of a referenced entity (source, triggering, etc.) */
@@ -577,6 +667,15 @@ data class GameObjectFilter(
     )
 
     /**
+     * Must have the same name as at least one permanent the evaluating player controls matching
+     * [filter] (Key to the Side-Door: "a legendary card with the same name as a legendary permanent
+     * you control").
+     */
+    fun sharingNameWithPermanentYouControl(filter: GameObjectFilter) = copy(
+        cardPredicates = cardPredicates + CardPredicate.SharesNameWithPermanentYouControl(filter)
+    )
+
+    /**
      * Must share **no** creature type with any permanent the evaluating player controls matching
      * [filter] (Radagast the Brown: "a creature card that doesn't share a creature type with a
      * creature you control").
@@ -613,9 +712,32 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.HasLockedDoor
     )
 
+    /**
+     * Must be on the battlefield right now. Pair with a predicate that carries a last-known-info
+     * fallback to force a live reading — `onBattlefield().attacking()` is "is attacking", where a
+     * bare `attacking()` is "is or was attacking" for an object that has already left.
+     */
+    fun onBattlefield() = copy(
+        statePredicates = statePredicates + StatePredicate.IsOnBattlefield
+    )
+
     /** Must be attacking */
     fun attacking() = copy(
         statePredicates = statePredicates + StatePredicate.IsAttacking
+    )
+
+    /** Must be attacking, with no other creature attacking (CR 506.5). */
+    fun attackingAlone() = copy(
+        statePredicates = statePredicates + StatePredicate.IsAttackingAlone
+    )
+
+    /**
+     * Must be attacking one of *your* opponents — the player themselves, so an attacker pointed at
+     * an opponent's planeswalker or battle doesn't match. Narrower than [attacking]; "you" is the
+     * controller of whatever ability applies the filter.
+     */
+    fun attackingAnOpponent() = copy(
+        statePredicates = statePredicates + StatePredicate.IsAttackingAnOpponent
     )
 
     /**
@@ -819,9 +941,23 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn
     )
 
+    /**
+     * Must currently be in a graveyard *and* have been put there during the current turn,
+     * from any zone. The zone-agnostic sibling of [putIntoGraveyardFromBattlefieldThisTurn],
+     * used by FDN's Abyssal Harvester. See [StatePredicate.PutIntoGraveyardThisTurn].
+     */
+    fun putIntoGraveyardThisTurn() = copy(
+        statePredicates = statePredicates + StatePredicate.PutIntoGraveyardThisTurn
+    )
+
     /** Must be saddled (CR 702.171b) */
     fun saddled() = copy(
         statePredicates = statePredicates + StatePredicate.IsSaddled
+    )
+
+    /** Must be suspected (CR 701.60a) — see [StatePredicate.IsSuspected]. */
+    fun suspected() = copy(
+        statePredicates = statePredicates + StatePredicate.IsSuspected
     )
 
     /**
@@ -895,6 +1031,16 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.IsRingBearer
     )
 
+    /** Must be soulbond-paired with another creature (CR 702.95b). */
+    fun paired() = copy(
+        statePredicates = statePredicates + StatePredicate.IsPaired
+    )
+
+    /** Must **not** be soulbond-paired — the "unpaired creature" of CR 702.95b. */
+    fun unpaired() = copy(
+        statePredicates = statePredicates + StatePredicate.Not(StatePredicate.IsPaired)
+    )
+
     /** Must have blocked, or been blocked by, a legendary creature this turn (You Cannot Pass!). */
     fun blockedOrWasBlockedByLegendaryThisTurn() = copy(
         statePredicates = statePredicates + StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn
@@ -903,6 +1049,25 @@ data class GameObjectFilter(
     /** Must have at least one Equipment attached */
     fun equipped() = copy(
         statePredicates = statePredicates + StatePredicate.IsEquipped
+    )
+
+    /**
+     * Must have at least one Aura attached — "enchanted creature" as a group adjective. Compose with
+     * [youControl] for "enchanted creatures you control" (A Tale for the Ages); the Aura's own
+     * controller is irrelevant. See [StatePredicate.IsEnchanted].
+     */
+    fun enchanted() = copy(
+        statePredicates = statePredicates + StatePredicate.IsEnchanted
+    )
+
+    /**
+     * Must have at least one attached Aura controlled by [auraController] — the aura-control-scoped
+     * form of [enchanted] ("enchanted by Auras you control", Archon of the Wild Rose). Compose with
+     * [youControl] to constrain the enchanted permanent's controller too; the two bind to different
+     * objects. See [StatePredicate.IsEnchantedByAura].
+     */
+    fun enchantedByAura(auraController: ControllerPredicate = ControllerPredicate.ControlledByYou) = copy(
+        statePredicates = statePredicates + StatePredicate.IsEnchantedByAura(auraController)
     )
 
     /**

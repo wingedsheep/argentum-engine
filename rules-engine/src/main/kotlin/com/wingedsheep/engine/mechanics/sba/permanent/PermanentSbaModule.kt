@@ -10,12 +10,16 @@ class PermanentSbaModule(
     private val cardRegistry: CardRegistry
 ) : StateBasedActionModule {
     override fun checks(): List<StateBasedActionCheck> = listOf(
+        DayNightCheck(cardRegistry),
         EndedDurationExpiryCheck(),
         AttachedCopyExpiryCheck(),
         PlaneswalkerLoyaltyCheck(),
-        LegendRuleCheck(decisionHandler),
+        BattleDefenseCheck(),
+        BattleProtectorCheck(),
+        LegendRuleCheck(decisionHandler, cardRegistry),
         CounterAnnihilationCheck(),
         UnattachedAurasCheck(cardRegistry),
+        SoulbondPairingCheck(),
         SagaSacrificeCheck(cardRegistry),
         CommanderZoneChoiceCheck(decisionHandler),
     )

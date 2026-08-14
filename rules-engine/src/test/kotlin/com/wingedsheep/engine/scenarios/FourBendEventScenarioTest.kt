@@ -317,7 +317,7 @@ class FourBendEventScenarioTest : FunSpec({
             d.submit(
                 ActivateAbility(
                     playerId = me, sourceId = src, abilityId = abilityId,
-                    alternativePayment = AlternativePaymentChoice(waterbendPermanents = setOf(c1, c2))
+                    alternativePayment = AlternativePaymentChoice(tapForGenericPermanents = setOf(c1, c2))
                 )
             ).error shouldBe null
             d.resolveStack()

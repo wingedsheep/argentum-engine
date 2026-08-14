@@ -26,8 +26,11 @@ val BiteDown = card("Bite Down") {
     typeLine = "Instant"
     oracleText = "Target creature you control deals damage equal to its power to target creature or planeswalker you don't control."
     spell {
-        val t1 = target("t1", TargetCreature(filter = TargetFilter.Creature.youControl()))
-        val t2 = target("t2", TargetObject(filter = TargetFilter(GameObjectFilter.CreatureOrPlaneswalker.youControl())))
+        val t1 = target("target creature you control", TargetCreature(filter = TargetFilter.Creature.youControl()))
+        val t2 = target(
+            "target creature or planeswalker you don't control",
+            TargetObject(filter = TargetFilter(GameObjectFilter.CreatureOrPlaneswalker.opponentControls())),
+        )
         effect = DealDamageEffect(DynamicAmounts.targetPower(0), t2, damageSource = t1)
     }
     metadata {

@@ -23,7 +23,6 @@
   overflow-y: auto;
 }
 
-
 @media (max-width: 639px) {
   .connectionOverlay {
     gap: var(--space-4);
@@ -33,6 +32,15 @@
 
 .contentBackdrop {
   position: relative;
+  /* Shrinkable, so the glass card gives ground to the side rail before the two can collide. The
+     max is the old fixed width: 660px of tiers plus the horizontal padding either side. Sized by
+     width rather than flex-basis because the same rule has to survive the stacked column below
+     1120px, where a basis would be read as a height. */
+  flex: 0 1 auto;
+  width: 100%;
+  max-width: var(--screen-card-w);
+  min-width: 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -57,12 +65,96 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/*
+ * Landing top bar: the viewport controls (fullscreen, help) at the left, the account widget at the
+ * right, as one flow row above everything else.
+ *
+ * The account pills belong in the corner — that is where you look for who you are signed in as — but
+ * they are the widest thing on the screen's top edge (five of them on an admin account), and a
+ * `position: fixed` corner has no way to know where the glass card's edge is. That is the collision
+ * `.landingLayout` below was built to make inexpressible, so the row is in flow too:
+ * `space-between` seats both clusters without either being able to reach the card.
+ */
+.landingTopBar {
+  flex: none;
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.landingTopBarControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Under ~720px the two clusters can't share a line without shrinking each other — the pills start
+   breaking their own labels over two rows. Each takes a full line instead, account below controls,
+   still right-aligned. */
+@media (max-width: 720px) {
+  .landingTopBar {
+    flex-wrap: wrap;
+  }
+
+  .landingTopBar > * {
+    flex: 1 0 100%;
+  }
+}
+
+/*
+ * Landing layout: the glass card and the side rail (public lobbies, live games).
+ *
+ * The rail used to be `position: fixed` in the top-right corner while the card was centred in the
+ * *viewport*, so the two were laid out in ignorance of each other. They only missed on a wide
+ * monitor: at 1512px (a 14" MacBook Pro) the gap was 1px, and at 1440px the rail sat 35px *over*
+ * the card. Both are in flow now, so a collision is not expressible.
+ *
+ * Three bands, widest first:
+ *  - >= 1480px  a mirror gutter is rendered opposite the rail, so the card is back to being exactly
+ *               viewport-centred with the rail floating in the right margin.
+ *  - 1121px+    no gutter: card and rail are centred as a pair, and the card gives up width first.
+ *  - <= 1120px  stacked, rail below the card — a 500px-wide card is worse than a scroll.
+ */
 .landingLayout {
+  --landing-rail-w: 320px;
   margin: auto 0;
   width: 100%;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  gap: var(--space-5);
+}
+
+/* Reserves the same width as the rail on the opposite side. Empty on purpose — its only job is to
+   keep the card centred, and it is `display: none` in the bands where that isn't affordable. */
+.landingGutter {
+  display: none;
+  flex: none;
+  width: var(--landing-rail-w);
+}
+
+@media (min-width: 1480px) {
+  .landingGutter {
+    display: block;
+  }
+}
+
+/* Below this the padding is spending width the wizard needs more than the glass does. */
+@media (max-width: 1280px) {
+  .contentBackdrop {
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+}
+
+@media (max-width: 1120px) {
+  .landingLayout {
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+  }
 }
 
 @media (max-width: 639px) {
@@ -72,7 +164,6 @@
   }
 
   .landingLayout {
-    flex-direction: column;
     gap: var(--space-3);
   }
 }
@@ -157,9 +248,11 @@
   }
 }
 
+/* Same width as the landing card it replaces — see `--screen-card-w`. The two are consecutive
+   screens, so a different cap on each read as the page reflowing rather than as a new screen. */
 .lobbyContent {
   width: 100%;
-  max-width: 560px;
+  max-width: var(--screen-card-w);
   margin: auto 0;
   display: flex;
   flex-direction: column;
@@ -509,26 +602,6 @@
   color: var(--text-disabled);
 }
 
-.tournamentButton {
-  composes: primaryButton;
-  background: linear-gradient(180deg, #f59e0b 0%, #c2410c 100%);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.18) inset,
-    0 6px 16px rgba(245, 158, 11, 0.28);
-}
-
-.tournamentButton:hover:not(:disabled) {
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.22) inset,
-    0 10px 22px rgba(245, 158, 11, 0.38);
-}
-
-.aiButton {
-  composes: primaryButton;
-  background: linear-gradient(180deg, #8b5cf6 0%, #6d28d9 100%);
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
-}
-
 .joinButton {
   composes: primaryButton;
   background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
@@ -600,61 +673,6 @@
 }
 
 /* =========================================================================
- * Mode Toggle
- * ========================================================================= */
-.modeToggle {
-  display: flex;
-  background-color: var(--bg-surface-5);
-  border-radius: var(--radius-lg);
-  padding: var(--space-1);
-  gap: var(--space-1);
-}
-
-.modeButton {
-  background-color: transparent;
-  color: var(--text-muted);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-weight: var(--font-weight-normal);
-  transition: all var(--transition-fast);
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--font-md);
-}
-
-@media (max-width: 639px) {
-  .modeButton {
-    padding: var(--space-2) var(--space-3);
-  }
-}
-
-.modeButtonActive {
-  background-color: var(--color-accent);
-  color: #000;
-  font-weight: var(--font-weight-semibold);
-}
-
-/* =========================================================================
- * Divider
- * ========================================================================= */
-.divider {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  color: var(--text-disabled);
-}
-
-.dividerLine {
-  width: 40px;
-  height: 1px;
-  background-color: var(--text-disabled);
-}
-
-.dividerText {
-  font-size: var(--font-sm);
-}
-
-/* =========================================================================
  * Join Row
  * ========================================================================= */
 .joinRow {
@@ -672,22 +690,22 @@
 /* =========================================================================
  * Public Tournament List
  * ========================================================================= */
+/* In flow beside the glass card (see `.landingLayout`), not pinned to the viewport corner. Capped in
+   height so a busy server's lobby list scrolls inside the rail instead of stretching the row. */
 .sidePanelStack {
-  position: fixed;
-  top: var(--space-4);
-  right: var(--space-4);
-  width: min(360px, calc(100vw - 2 * var(--space-4)));
+  flex: none;
+  width: var(--landing-rail-w);
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  max-height: calc(100vh - 2 * var(--space-4));
+  max-height: calc(100vh - 2 * var(--space-6));
   overflow-y: auto;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1120px) {
   .sidePanelStack {
-    position: static;
-    width: min(480px, 100%);
+    width: min(var(--screen-card-w), 100%);
     max-height: none;
   }
 }
@@ -752,12 +770,14 @@
   box-shadow: 0 0 6px rgba(46, 204, 113, 0.7);
 }
 
+/* Sized for the 320px rail: the action button gets exactly the width its label needs and the rest
+   goes to the lobby description, which is the part that decides whether you click. */
 .publicTournamentRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3);
+  gap: var(--space-2);
+  padding: 9px var(--space-3);
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
@@ -773,8 +793,9 @@
 .publicTournamentInfo {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
+  flex: 1 1 auto;
 }
 
 .publicTournamentName {
@@ -789,7 +810,8 @@
 .publicTournamentMeta,
 .publicTournamentEmpty {
   color: var(--text-tertiary);
-  font-size: 12px;
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .publicTournamentEmpty {
@@ -797,13 +819,14 @@
 }
 
 .publicTournamentJoinButton {
+  flex: 0 0 auto;
   background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
   color: var(--text-primary);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--font-sm);
+  padding: 6px var(--space-3);
+  font-size: 12px;
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
 }
@@ -813,13 +836,14 @@
 }
 
 .spectateButton {
+  flex: 0 0 auto;
   background: linear-gradient(180deg, #6366f1 0%, #4338ca 100%);
   color: var(--text-primary);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  padding: var(--space-2) var(--space-4);
-  font-size: var(--font-sm);
+  padding: 6px var(--space-3);
+  font-size: 12px;
   font-weight: var(--font-weight-semibold);
   white-space: nowrap;
 }
@@ -857,34 +881,11 @@
 }
 
 /* =========================================================================
- * Create Button Row (Quick Game + Play vs AI side-by-side)
- * ========================================================================= */
-.createButtonRow {
-  display: flex;
-  gap: var(--space-3);
-  width: 100%;
-  justify-content: center;
-}
-
-.createButtonRow .primaryButton,
-.createButtonRow .aiButton {
-  max-width: none;
-  flex: 1 1 0;
-  min-width: 0;
-}
-
-@media (max-width: 639px) {
-  .createButtonRow {
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-}
-
-/* =========================================================================
  * Secondary Button Row (Deckbuilder + Replays side-by-side)
  * ========================================================================= */
 .secondaryButtonRow {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
   width: 100%;
   justify-content: center;
@@ -915,17 +916,6 @@
   .secondaryButtonRow {
     flex-direction: column;
   }
-}
-
-
-/* =========================================================================
- * Mode Description
- * ========================================================================= */
-.modeDescription {
-  color: var(--text-disabled);
-  font-size: var(--font-sm);
-  margin: 0;
-  text-align: center;
 }
 
 /* =========================================================================
@@ -995,6 +985,10 @@
   transition: all 0.2s;
   margin-bottom: var(--space-3);
   min-width: 0;
+  width: auto;
+  color: inherit;
+  font: inherit;
+  text-align: left;
 }
 
 @media (max-width: 639px) {
@@ -1036,6 +1030,62 @@
   color: var(--color-accent);
 }
 
+/* One role-aware answer to “what do I do now?”, placed between sharing the lobby and the controls
+   that fulfil it. The server snapshot remains authoritative; this only explains its current state. */
+.lobbyGuidance {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  background: var(--bg-panel-light);
+}
+
+.lobbyGuidanceAction {
+  border-color: rgba(79, 195, 247, 0.32);
+  background: rgba(79, 195, 247, 0.07);
+}
+
+.lobbyGuidanceWaiting {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.lobbyGuidanceReady {
+  border-color: rgba(76, 175, 80, 0.35);
+  background: rgba(76, 175, 80, 0.08);
+}
+
+.lobbyGuidanceIcon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 26px;
+  border-radius: 50%;
+  background: var(--bg-surface-4);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-bold);
+}
+
+.lobbyGuidanceBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lobbyGuidanceBody strong {
+  color: var(--text-primary);
+  font-size: var(--font-sm);
+}
+
+.lobbyGuidanceBody span {
+  color: var(--text-tertiary);
+  font-size: var(--font-xs, 0.75rem);
+  line-height: 1.4;
+}
+
 /* =========================================================================
  * Lobby Header
  * ========================================================================= */
@@ -1044,26 +1094,44 @@
   margin-bottom: var(--space-2);
 }
 
-.lobbyFormat {
-  font-size: 11px;
-  font-weight: var(--font-weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-bottom: var(--space-2);
-}
-
-.lobbyFormatSealed {
-  color: var(--color-warning-light);
-}
-
-.lobbyFormatDraft {
-  color: var(--color-accent-dark);
-}
-
 .lobbySubtitle {
   color: var(--text-faint);
   font-size: var(--font-sm);
   margin: 0;
+}
+
+/* Cards / Table / Event chips — the lobby's point in the three-axis space, shown to every player
+   (the settings panel below is host-only). */
+.axisSummary {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.axisChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px var(--space-2);
+  background-color: var(--bg-surface-4);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+}
+
+.axisChipName {
+  font-size: 9px;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-disabled);
+}
+
+.axisChipValue {
+  font-size: var(--font-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
 }
 
 /* =========================================================================
@@ -1076,16 +1144,99 @@
   background-color: var(--bg-panel-light);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-xl);
-  /* Stable height: the panel never grows past this — extra rows scroll inside it instead of
-     resizing (and re-centering) the whole lobby as sets/boosters are added. */
-  max-height: min(62vh, 640px);
-  overflow: hidden auto;
+  /* Deliberately *not* a scroll container. It used to cap at `min(62vh, 640px)` and scroll
+     internally, to keep the lobby from re-centering as sets/boosters were added — but that put a
+     second scrollbar on the screen for the half of the lobby above Players, and a third once a
+     row's own control scrolled (the booster-count steppers, the AI seat's deck picker). Wheeling
+     over the settings then hit whichever container the pointer happened to be inside.
+     `.lobbyOverlay` is the one scroll container now; the panel grows and the page absorbs it. */
 }
 
+/* =========================================================================
+ * Settings groups — five collapsibles instead of twenty stacked rows.
+ *
+ * A group is NOT a scroll container. That is the same rule `.settingsPanel` above records: one
+ * scroll container on this screen, `.lobbyOverlay`. A group collapses; it never scrolls.
+ * ========================================================================= */
+.settingsGroup {
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.settingsGroup:last-child {
+  border-bottom: none;
+}
+
+.settingsGroupBlocking {
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.settingsGroupHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+
+.settingsGroupLabel {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  min-width: 76px;
+  padding-top: 5px;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+}
+
+/* The axis strip and the live summary stack; the strip stays right-aligned with the button rows
+   inside the body so a group reads as one column rather than two. */
+.settingsGroupMain {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+
+.settingsGroupSummaryRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  max-width: 100%;
+}
+
+.settingsGroupSummary {
+  font-size: var(--font-xs, 0.75rem);
+  color: var(--text-tertiary);
+  text-align: right;
+}
+
+.settingsGroupBlockingNote {
+  font-size: var(--font-xs, 0.75rem);
+  color: var(--warning, #fbbf24);
+  text-align: right;
+}
+
+.settingsGroupBody {
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* Wraps on purpose. Without it the row is one unbreakable line, so an oversized control group
+   gets *shrunk* instead — and since `.settingsButtons` is right-aligned, its overflow lands alone
+   on a second line, reading as a layout bug. The Cards row does exactly that once all five values
+   are shown: it wants 441px beside a 46px label in 508px, and misses by 11. With wrap, flex breaks
+   lines on base sizes before shrinking, so the group keeps its natural width — and if it ever
+   genuinely outgrows the row (Cube adds a sixth Cards value) it drops to its own full-width line
+   rather than orphaning one button. */
 .settingsRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-subtle);
 }
@@ -1097,6 +1248,56 @@
 .settingsLabel {
   color: var(--text-muted);
   font-size: var(--font-sm);
+}
+
+/* The label plus its inline `?`. Without this the tip is a bare inline-flex button in a text run:
+   no gap, and baseline-aligned rather than centred on the label's cap height, so it reads as a
+   glyph that collided with the word. */
+.settingsLabelWithHelp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* The AI seat's deck picker, a sibling of the settings panel rather than a row inside it — the
+   panel scrolls and so does the picker, and one control should not sit under two scroll contexts.
+   Two visually identical pickers end up on screen (the AI's and your own), so the header is what
+   distinguishes them and is styled to be read first. */
+.aiDeckSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-self: stretch;
+}
+
+.aiDeckSectionHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.aiDeckSectionTitle {
+  color: var(--text-primary);
+  font-size: var(--font-sm);
+  font-weight: 600;
+}
+
+.aiDeckSectionHint {
+  color: var(--text-disabled);
+  font-size: var(--font-xs);
+}
+
+/* A sub-option of the row above it (Cards → Sealed/Draft shape, Cards → deck legality). Indented
+   and tinted so the hierarchy is visible: sub-options hang off one axis, never across axes. */
+.settingsRowSub {
+  padding-left: var(--space-6);
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.settingsRowSub .settingsLabel {
+  color: var(--text-disabled);
 }
 
 .formatRestrictionNotice {
@@ -1123,137 +1324,10 @@
   font-weight: 700;
 }
 
-/* =========================================================================
- * Custom formats (Momir Basic, …)
- * Elevated out of the constructed-format dropdown into their own section so a
- * non-deckbuilding game mode reads as something distinct from a deck-pool
- * restriction. Each mode is a selectable card with an icon + one-line pitch.
- * ========================================================================= */
-/* One either/or group: constructed dropdown on top, "or" divider, custom-mode cards below. */
-.formatSelector {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.formatSelector:last-child {
-  border-bottom: none;
-}
-
-.formatSelectorTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* While a custom format is active the constructed dropdown is inert — dim it so only one side reads as live. */
-.formatDropdownInactive {
-  opacity: 0.45;
-}
-
-/* "— or pick a custom format —": makes the constructed/custom choice read as mutually exclusive. */
-.formatOrDivider {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin: 2px 0;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  color: var(--text-disabled);
-}
-
-.formatOrDivider::before,
-.formatOrDivider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border-subtle);
-}
-
-.customFormatCards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
-.customFormatCard {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  flex: 1 1 240px;
-  min-width: 220px;
-  padding: var(--space-2) var(--space-3);
-  text-align: left;
-  background: linear-gradient(135deg, rgba(111, 211, 192, 0.06), transparent 72%);
-  border: 1px solid var(--border-medium);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s, transform 0.1s;
-}
-
-.customFormatCard:hover:not(:disabled) {
-  border-color: var(--accent-teal, #6fd3c0);
-  transform: translateY(-1px);
-}
-
-.customFormatCard:disabled {
-  cursor: default;
-}
-
-.customFormatCardActive {
-  border-color: var(--accent-teal, #6fd3c0);
-  background: linear-gradient(135deg, rgba(111, 211, 192, 0.2), rgba(111, 211, 192, 0.04));
-  box-shadow: 0 0 0 1px rgba(111, 211, 192, 0.4), 0 4px 16px rgba(111, 211, 192, 0.14);
-}
-
-.customFormatIcon {
-  width: 42px;
-  height: 42px;
-  flex-shrink: 0;
-  background-color: var(--accent-teal, #6fd3c0);
-  -webkit-mask-size: contain;
-  mask-size: contain;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  -webkit-mask-position: center;
-  mask-position: center;
-  opacity: 0.9;
-}
-
-.customFormatText {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.customFormatName {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--font-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-}
-
-.customFormatCheck {
-  font-size: var(--font-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.04em;
-  color: var(--accent-teal, #6fd3c0);
-}
-
-.customFormatDesc {
-  font-size: var(--font-xs);
-  line-height: 1.4;
-  color: var(--text-muted);
-}
-
 .settingsButtons {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--space-1);
 }
 
@@ -1268,14 +1342,145 @@
   font-weight: var(--font-weight-normal);
 }
 
+/* Unsupported axis values stay visible and disabled rather than being hidden — a combination you
+   can see but can't pick teaches the shape of the system; one that isn't rendered just looks like
+   nobody thought of it. Each carries a `title` with the reason. */
+.settingsButton:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .settingsButtonActive {
   background-color: var(--color-warning-light);
   color: var(--text-primary);
   font-weight: var(--font-weight-semibold);
 }
 
+.cardSourceControl {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-3);
+}
+
 .settingsButtonDraft {
   background-color: var(--color-accent-dark);
+}
+
+/* An axis value the *other* server lobby implementation is the one that can express, so picking it
+   recreates the lobby on that kind (and changes the invite code). Marked before the click rather
+   than only in the confirm dialog, so the cost is visible while you are deciding. */
+.settingsButtonRecreate {
+  border-style: dashed;
+}
+
+.settingsButtonRecreateMark {
+  font-size: 0.85em;
+  opacity: 0.75;
+}
+
+/* Confirm dialog for a recreate. Deliberately plain: it is a stop sign, not a screen. */
+.confirmBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background-color: rgba(2, 6, 23, 0.72);
+  backdrop-filter: blur(3px);
+}
+
+.confirmPanel {
+  width: min(440px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-surface-2);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+/* A deck picker is a temporary editor for one player seat, not part of the lobby's vertical flow. */
+.deckPickerModal {
+  width: min(1060px, 96vw);
+  max-height: calc(100vh - 2 * var(--space-4));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-surface-2);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.deckPickerModalHeader {
+  position: sticky;
+  top: calc(-1 * var(--space-5));
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: calc(-1 * var(--space-5)) calc(-1 * var(--space-5)) 0;
+  padding: var(--space-5);
+  background: var(--bg-surface-2);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.deckPickerModalHeader .confirmBody {
+  margin-bottom: 0;
+}
+
+.deckPickerModalClose {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.deckPickerModalClose:hover {
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+}
+
+.confirmTitle {
+  font-size: var(--font-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.confirmBody {
+  font-size: var(--font-sm);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.confirmCosts {
+  margin: 0;
+  padding-left: 1.1em;
+  font-size: var(--font-sm);
+  color: var(--text-disabled);
+  line-height: 1.5;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
 }
 
 .variantGroup {
@@ -1357,9 +1562,9 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  /* Cap the per-set stepper list so picking more sets scrolls here instead of growing the row. */
-  max-height: 216px;
-  overflow-y: auto;
+  /* Not capped: this list used to scroll at 216px so picking more sets wouldn't grow the row, but
+     the row sat inside the settings panel, which scrolled too. Now that the panel doesn't, the
+     list grows and the page absorbs it — one scrollbar for the whole lobby. */
 }
 
 .boosterDistributionRow {
@@ -1449,11 +1654,26 @@
   max-width: 380px;
 }
 
+/* Left-aligned variant: the settings rows hang their set strip off the right edge, but a set
+ * selector inside a panel (an AI seat, the deck picker's Random tab) reads with the text above it. */
+.setSelectionStart {
+  align-items: flex-start;
+  max-width: none;
+}
+
 .setChips {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 6px;
+}
+
+.setSelectionStart .setChips {
+  justify-content: flex-start;
+}
+
+.setSelectionStart .addSetsButton {
+  align-self: flex-start;
 }
 
 /* Selected-set chip. Orange = sealed-shape pools, blue = draft-shape (matches the format accent). */
@@ -1492,6 +1712,23 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.setChipExtras {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 15px;
+  height: 15px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  color: currentColor;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 50%;
+  cursor: help;
 }
 
 .setChipRemove {
@@ -1835,7 +2072,6 @@
   padding: var(--space-4) 0;
 }
 
-
 /* =========================================================================
  * Player List
  * ========================================================================= */
@@ -1853,7 +2089,10 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  /* Gap rather than `space-between`: the header gained a third child (+ Add AI, which pushes itself
+     right), and with `space-between` the title and the count were spread apart from each other and
+     jammed together respectively. */
+  gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
   border-bottom: 1px solid var(--border-medium);
   background-color: var(--bg-panel-light);
@@ -1944,6 +2183,29 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+}
+
+.playerDeckButton {
+  max-width: min(300px, 45vw);
+  padding: 4px 8px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.playerDeckButton:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: rgba(79, 195, 247, 0.08);
+}
+
+.playerDeckButton:disabled {
+  border-color: transparent;
+  background: transparent;
+  cursor: not-allowed;
 }
 
 .removeAiButton {
@@ -2065,10 +2327,82 @@
 /* =========================================================================
  * Actions Row
  * ========================================================================= */
-.actionsRow {
+/* The seat's position in the server's turn order — what "attack left"/"attack right" mean. */
+.seatNumber {
+  flex-shrink: 0;
+  width: 18px;
+  font-family: ui-monospace, monospace;
+  font-size: var(--font-xs, 0.75rem);
+  color: var(--text-disabled);
+  text-align: right;
+}
+
+/* Team header inside the player list. The count is the whole point: an unbalanced pod can't start,
+   and until now the only place that said so was a caption inside the settings panel. */
+.teamHeader {
   display: flex;
+  justify-content: space-between;
+  padding: var(--space-1) var(--space-4);
+  background: rgba(148, 163, 184, 0.06);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: var(--font-xs, 0.75rem);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+}
+
+.teamHeaderCount {
+  color: var(--success, #4ade80);
+}
+
+.teamHeaderCountOff {
+  color: var(--warning, #fbbf24);
+}
+
+.addAiInlineButton {
+  margin-left: auto;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm, 4px);
+  border: 1px solid var(--border-light);
+  background: none;
+  color: var(--text-secondary);
+  font-size: var(--font-xs, 0.75rem);
+  cursor: pointer;
+}
+
+.addAiInlineButton:hover {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+
+/* Sticks to the bottom of the viewport so Start is reachable at any scroll position — with five
+   groups expanded the panel can still be taller than the screen, and before this the button sat
+   below all of it.
+
+   `position: sticky` is not a scroll container, so the one-scroll-container rule above holds. And it
+   lives *inside* `.lobbyContent`, inside the centred glass card — it is not the persistent nav bar
+   the menu restructure deliberately ruled out. */
+.actionsRow {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
   gap: var(--space-2);
   margin-top: var(--space-1);
+  padding: var(--space-3) 0 var(--space-2);
+  /* Opaque under the buttons, fading only in the few pixels above them — a mostly-transparent bar
+     let the last settings row show through the Start button. */
+  background: linear-gradient(to top, rgba(6, 10, 20, 0.98) 0 78%, rgba(6, 10, 20, 0));
+}
+
+/* The reason Start is disabled, beside the button rather than only in its `title`. A tooltip on a
+   disabled control is the one place a hover hint is least likely to be found. */
+.actionsBlockReason {
+  flex-shrink: 1;
+  min-width: 0;
+  font-size: var(--font-xs, 0.75rem);
+  color: var(--warning, #fbbf24);
 }
 
 .startButton {
@@ -2304,16 +2638,6 @@
   border-top: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 11px;
   color: var(--color-highlight);
-}
-
-/* =========================================================================
- * Tournament Status Boxes
- * ========================================================================= */
-.statusBox {
-  padding: var(--space-4) var(--space-6);
-  border-radius: var(--radius-lg);
-  font-size: var(--font-md);
-  text-align: center;
 }
 
 .statusBoxBye {
@@ -2822,11 +3146,27 @@
 /* =========================================================================
  * Fullscreen Button
  * ========================================================================= */
-.fullscreenButton {
+/* Fixed top-left cluster: the lobby screen's fullscreen toggle. The landing screen's equivalent is
+   the left half of `.landingTopBar`, which is in flow because it shares its row with the account
+   pills. */
+.cornerControls {
   position: fixed;
   top: var(--space-3);
   left: var(--space-3);
   z-index: var(--z-controls);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+@media (max-width: 639px) {
+  .cornerControls {
+    top: var(--space-2);
+    left: var(--space-2);
+  }
+}
+
+.fullscreenButton {
   background-color: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -2843,8 +3183,6 @@
 
 @media (max-width: 639px) {
   .fullscreenButton {
-    top: var(--space-2);
-    left: var(--space-2);
     padding: var(--space-1) var(--space-2);
   }
 }
@@ -2979,11 +3317,13 @@
 /* =========================================================================
  * Attribution
  * ========================================================================= */
+/*
+ * In normal flow at the end of the scrolling overlay, not absolutely pinned. `.landingLayout`'s
+ * `margin: auto 0` still centres the card in whatever room is left above it, so on a roomy screen
+ * this reads as a pinned footer — but when the content is taller than the viewport the two scroll
+ * together instead of the footer sitting on top of the panel.
+ */
 .attribution {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -3000,6 +3340,57 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   pointer-events: auto;
   text-align: center;
+}
+
+/*
+ * Community row: Discord, GitHub + the contributor guide. Sits in the same glass panel as the credits
+ * rather than in a second one, divided off by a hairline — it is an invitation, not attribution,
+ * so it reads a step brighter than the lines below it. Chips rather than inline links: at 12px in a
+ * translucent panel a bare underline is easy to miss, and the icons need a box to sit in.
+ */
+.communityLinks {
+  align-self: stretch;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-bottom: 7px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.communityLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.communityLink:hover {
+  background: rgba(159, 213, 255, 0.14);
+  border-color: rgba(159, 213, 255, 0.5);
+  color: #eaf4ff;
+}
+
+.communityLink:focus-visible {
+  outline: 2px solid rgba(159, 213, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.communityIcon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
 }
 
 .attributionDisclaimer {
@@ -3019,16 +3410,9 @@
   text-decoration-color: rgba(207, 231, 255, 0.9);
 }
 
-/*
- * On narrow screens the overlay scrolls and the absolutely-pinned attribution
- * floats over the content (it overlapped the public-lobby panel). Drop it back
- * into normal flow so it sits below the content as a full-width footer.
- * Placed after the base rules so these overrides win at equal specificity.
- */
+/* Full-bleed footer once the overlay's own padding is all the margin there is to spare. */
 @media (max-width: 639px) {
   .attribution {
-    position: static;
-    transform: none;
     margin: var(--space-2) auto 0;
     width: 100%;
     max-width: 100%;
@@ -3042,7 +3426,683 @@
     border-color: rgba(255, 255, 255, 0.06);
   }
 
+  .communityLinks {
+    gap: 6px;
+    padding-bottom: 6px;
+    margin-bottom: 3px;
+  }
+
+  .communityLink {
+    padding: 3px 9px;
+    font-size: 10px;
+  }
+
+  .communityIcon {
+    width: 12px;
+    height: 12px;
+  }
+
   .attributionDisclaimer {
     font-size: 9px;
+  }
+}
+
+/* =========================================================================
+ * Landing tiers (PLAY / BUILD & BROWSE / LAB)
+ *
+ * The glass card stays a single centred panel; only its contents are tiered.
+ * ========================================================================= */
+/* Narrower than the six-preset grid needed (was 760px): the panel is the only thing standing between
+   the player and the artwork, so it gives back what the wizard doesn't use. The glass itself is
+   deliberately unchanged — reducing its footprint shows the painting without washing the panel out. */
+.homeTiers {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 660px;
+}
+
+.homeTier {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+.tierHeading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.tierHeadingLabel {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  font-size: var(--font-xs, 0.75rem);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.tierHeadingHint {
+  font-size: 10px;
+  font-weight: var(--font-weight-normal);
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--text-disabled);
+}
+
+.tierHeadingRule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
+}
+
+.tierCaption {
+  margin: 0;
+  font-size: var(--font-xs, 0.75rem);
+  color: var(--text-disabled);
+  line-height: 1.4;
+}
+
+/* =========================================================================
+ * Play wizard — the three questions in the PLAY tier.
+ *
+ * The option tiles are the `presetCard*` block below, which the six mode
+ * presets used before it; only the chrome around them is new.
+ * ========================================================================= */
+.wizardStepper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* All three questions, always visible and numbered, so the order is legible and an answer reads as
+   something you can go back to rather than as decoration. */
+.wizardStepperTrack {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 640px) {
+  .wizardStepperTrack {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.wizardStepSlot {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.02);
+  min-width: 0;
+}
+
+.wizardStepSlotCurrent {
+  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.wizardStepSlotDone {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.wizardStepNum {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  color: var(--text-tertiary);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.wizardStepSlotCurrent .wizardStepNum {
+  color: #ede9fe;
+  background: rgba(139, 92, 246, 0.55);
+}
+
+.wizardStepSlotDone .wizardStepNum {
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.wizardStepBody {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.wizardStepWord {
+  font-size: 9px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+}
+
+/* An answered step is a button with a pencil: the affordance *is* the answer. */
+.wizardStepChange {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.22);
+  align-self: flex-start;
+}
+
+.wizardStepChange:hover {
+  color: var(--text-primary);
+  border-bottom-color: rgba(255, 255, 255, 0.55);
+}
+
+.wizardStepPencil {
+  font-size: 10px;
+  color: var(--text-disabled);
+}
+
+.wizardStepChange:hover .wizardStepPencil {
+  color: #c4b5fd;
+}
+
+/* Decided because it was the only possibility — stated, not offered. */
+.wizardStepAuto {
+  font-size: var(--font-sm);
+  color: var(--text-tertiary);
+  cursor: help;
+}
+
+.wizardStepAutoMark {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-disabled);
+}
+
+/* The answer on the step you are standing on: stated, no pencil — the tiles below are the control. */
+.wizardStepCurrentValue {
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-medium);
+  color: #ede9fe;
+}
+
+.wizardStepPending {
+  font-size: var(--font-sm);
+  color: var(--text-disabled);
+  font-style: italic;
+}
+
+.wizardStepTitle {
+  margin: 0;
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+/* Why the alternatives to an auto-resolved answer aren't available. Skipping a one-answer step
+   otherwise hides the disabled tiles, and with them the only place the reason was stated. */
+.wizardAutoNote {
+  margin: 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid rgba(245, 158, 11, 0.35);
+  font-size: var(--font-xs, 0.75rem);
+  line-height: 1.45;
+  color: var(--text-tertiary);
+}
+
+/*
+ * The launch block: what happens, and the button.
+ *
+ * These used to share one wrapping flex row with `align-items: flex-end`, which put a six-chip seat
+ * picker and its two-line caption beside a large primary button — the caption wrapped under the
+ * chips, the button floated at an arbitrary height, and the group read as three unrelated things
+ * that happened to be adjacent. One column, and the call to action gets the full width it is worth.
+ */
+.wizardFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* What will actually happen, stage by stage: "Open boosters → Build a deck → Standings". The one
+   thing none of the names on the tiles can tell you, so it leads the launch block rather than
+   trailing the tiles as loose 10px text. Inline text on its own row, not a flex row: nested flex
+   boxes at this width broke every stage onto its own line. */
+.wizardFlow {
+  margin: 0;
+  font-size: var(--font-sm);
+  line-height: 1.6;
+}
+
+.wizardFlowStage {
+  color: var(--text-secondary);
+}
+
+.wizardFlowArrow {
+  color: var(--text-disabled);
+}
+
+/* Tile badge: is this one game, or an event with steps? */
+.presetCardBadge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  margin-top: 2px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 9px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.presetCardBadge_quick {
+  color: #9fd8c4;
+  border-color: rgba(111, 211, 192, 0.3);
+  background: rgba(111, 211, 192, 0.1);
+}
+
+.presetCardBadge_event {
+  color: #f0c479;
+  border-color: rgba(245, 158, 11, 0.32);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+/* Last completed selection, replayable in one click. */
+/* Save-this-lobby, in the header beside the axis chips. */
+.saveSetupButton {
+  align-self: center;
+  margin-top: var(--space-2);
+  padding: 4px var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: rgba(139, 92, 246, 0.1);
+  color: #c4b5fd;
+  font-size: var(--font-xs, 0.75rem);
+  cursor: pointer;
+}
+
+.saveSetupButton:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+  background: rgba(139, 92, 246, 0.16);
+}
+
+/* What a setup couldn't restore. Stated, because the server discards a whole settings message on a
+   field it can't resolve and the loss is otherwise completely silent. */
+.lobbyNotes {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  align-self: stretch;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.08);
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+}
+
+.lobbyNotesBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lobbyNotesDismiss {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-disabled);
+  font-size: var(--font-md);
+  cursor: pointer;
+}
+
+/* =========================================================================
+ * Setup rail — the games you play often, above the wizard.
+ *
+ * Replaces the single `playAgainChip`, which could only carry the three wizard answers because a
+ * bare `Selection` was all there was to store. A chip is a whole lobby now (see `lobbyRecipe.ts`),
+ * so it needs room for two lines and an overflow menu.
+ * ========================================================================= */
+.setupRail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-self: stretch;
+}
+
+.setupRailHeading {
+  font-size: var(--font-xs, 0.75rem);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-disabled);
+}
+
+.setupRailChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.setupChipWrap {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  background: rgba(139, 92, 246, 0.1);
+  max-width: 100%;
+}
+
+.setupChipWrap:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+  background: rgba(139, 92, 246, 0.16);
+}
+
+.setupChip {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  cursor: pointer;
+  text-align: left;
+  min-width: 0;
+}
+
+.setupChipName {
+  font-weight: var(--font-weight-semibold);
+  color: #c4b5fd;
+}
+
+/* Wraps rather than truncating. A chip's whole job is to say what it will launch — "A group ·
+   Booster Draft · Round-robin brac…" answers the wrong half of the question, hiding exactly the
+   sets and pack counts that make a setup worth one click. */
+.setupChipBody {
+  font-family: ui-monospace, monospace;
+  font-size: var(--font-xs, 0.75rem);
+  color: var(--text-tertiary);
+  max-width: 62ch;
+}
+
+.setupChipNote {
+  font-size: var(--font-xs, 0.75rem);
+  color: var(--warning, #fbbf24);
+}
+
+.setupChipMenuButton {
+  padding: 0 var(--space-2);
+  background: none;
+  border: none;
+  border-left: 1px solid rgba(139, 92, 246, 0.25);
+  color: var(--text-disabled);
+  cursor: pointer;
+  font-size: var(--font-sm);
+}
+
+.setupChipMenuButton:hover {
+  color: var(--text-secondary);
+}
+
+.setupChipMenu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.3));
+  background: var(--surface-raised, #1e293b);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.setupChipMenu button {
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: var(--font-sm);
+  text-align: left;
+  cursor: pointer;
+}
+
+.setupChipMenu button:hover {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.setupChipMenuDanger {
+  color: var(--danger, #f87171) !important;
+}
+
+/* =========================================================================
+ * Option tiles (the wizard's steps; previously the mode preset cards)
+ * ========================================================================= */
+.presetGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+/* Four options — the Table question. Three columns leave a single tile stranded on a second row,
+   reading as an afterthought rather than as a peer of the other three; 2×2 is the same two rows with
+   no orphan, and the extra width lets the taglines fit in fewer lines. */
+.presetGridPairs {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .presetGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .presetGrid,
+  .presetGridPairs {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.presetCard {
+  position: relative;
+  display: flex;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.015) 100%);
+  color: var(--text-primary);
+  overflow: hidden;
+  transition: transform var(--transition-fast), border-color var(--transition-fast),
+    background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.presetCardButton {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* Top-right `?`, outside the card's own click target. */
+.presetCardHelp {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 1;
+}
+
+/* The accent lives in a left edge stripe, so six cards stay distinguishable
+   without six competing button colours. */
+.presetCard::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--preset-accent, rgba(148, 163, 184, 0.6));
+}
+
+.presetCard:hover:not(:has(.presetCardButton:disabled)) {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.22);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.03) 100%);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+.presetCard:active:has(.presetCardButton:active) {
+  transform: translateY(0);
+}
+
+.presetCard:has(.presetCardButton:disabled) {
+  opacity: 0.45;
+}
+
+.presetCardButton:disabled {
+  cursor: not-allowed;
+}
+
+/* The tile whose sub-shape row is open (Sealed / Draft), or the shape picked
+   while the footer is showing. */
+.presetCardSelected {
+  --preset-accent: #8b5cf6;
+  border-color: rgba(139, 92, 246, 0.45);
+  background:
+    linear-gradient(180deg, rgba(139, 92, 246, 0.14) 0%, rgba(139, 92, 246, 0.04) 100%);
+}
+
+.presetCardTitle {
+  font-size: var(--font-md);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.01em;
+}
+
+.presetCardTagline {
+  font-size: var(--font-xs, 0.75rem);
+  line-height: 1.35;
+  color: var(--text-tertiary);
+}
+
+/* =========================================================================
+ * Continue chip (a lobby survived the page reload)
+ * ========================================================================= */
+.continueChip {
+  display: flex;
+  align-items: stretch;
+  gap: 1px;
+  align-self: flex-start;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.continueChipButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-3);
+  color: var(--color-success-light, #86efac);
+  font-size: var(--font-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.continueChipButton:hover {
+  background: rgba(34, 197, 94, 0.16);
+}
+
+.continueChipCode {
+  font-family: ui-monospace, monospace;
+  letter-spacing: 0.06em;
+}
+
+.continueChipDismiss {
+  background: none;
+  border: none;
+  border-left: 1px solid rgba(34, 197, 94, 0.25);
+  cursor: pointer;
+  padding: 0 var(--space-2);
+  color: var(--text-disabled);
+  font-size: var(--font-md);
+  line-height: 1;
+}
+
+.continueChipDismiss:hover {
+  color: var(--text-primary);
+}
+
+/* =========================================================================
+ * Compact landing — short viewports
+ *
+ * A laptop is a wide, *short* screen: a 14" MacBook gives about 800px of viewport once the browser
+ * has taken its share. The tallest landing state — all three questions answered, four Table tiles,
+ * the seat picker and the launch block — overran that on vertical rhythm alone, so the rhythm
+ * tightens and nothing is taken away.
+ *
+ * Last in the file on purpose: every rule below overrides a single-class rule declared earlier, and
+ * at equal specificity source order is what decides.
+ * ========================================================================= */
+@media (max-height: 900px) {
+  .connectionOverlay {
+    gap: var(--space-4);
+  }
+
+  .contentBackdrop {
+    gap: var(--space-4);
+    padding-top: var(--space-4);
+    padding-bottom: var(--space-4);
+  }
+
+  .title {
+    font-size: var(--font-2xl);
+  }
+
+  .homeTiers {
+    gap: var(--space-4);
   }
 }

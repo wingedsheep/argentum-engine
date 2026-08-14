@@ -177,6 +177,12 @@ sealed interface ClientMessage {
          * At start, if not every seat is a signed-in human the game still runs — just unranked.
          */
         val ranked: Boolean = true,
+        /**
+         * Rules axis: [com.wingedsheep.sdk.core.GameRules] name. Null (an older client, or a client
+         * that doesn't care) means the server derives it from [format] — a Commander pack shape
+         * defaults to Commander rules.
+         */
+        val rules: String? = null,
     ) : ClientMessage
 
     /**
@@ -217,7 +223,7 @@ sealed interface ClientMessage {
     data object WinstonSkipPile : ClientMessage
 
     /**
-     * Add an AI player to the current lobby (host only, sealed format only).
+     * Add an AI player to the current lobby (host only, waiting state only).
      */
     @Serializable
     @SerialName("addAiToLobby")
@@ -229,6 +235,23 @@ sealed interface ClientMessage {
     @Serializable
     @SerialName("removeAiFromLobby")
     data class RemoveAiFromLobby(val playerId: String) : ClientMessage
+
+    /**
+     * Host picks what one AI seat plays — the per-seat twin of [SetQuickGameAiDeck], which asks the
+     * same question of a lobby that only ever has one AI. A pod has several and no reason for them
+     * to bring the same thing, so the seat is named.
+     *
+     * Only meaningful where the AI has no pool to build from (premade decks); in a limited lobby it
+     * plays the cards it was dealt, and the server refuses rather than silently ignoring the choice.
+     * A [com.wingedsheep.gameserver.lobby.AiDeckSpec.Fixed] list is validated on arrival, so the
+     * host finds out here rather than at game start.
+     */
+    @Serializable
+    @SerialName("setLobbyAiDeck")
+    data class SetLobbyAiDeck(
+        val playerId: String,
+        val spec: com.wingedsheep.gameserver.lobby.AiDeckSpec,
+    ) : ClientMessage
 
     /**
      * Leave the current lobby.
@@ -273,6 +296,12 @@ sealed interface ClientMessage {
          * [com.wingedsheep.sdk.core.DeckFormat]; "" or "NONE" clears the restriction.
          */
         val deckFormat: String? = null,
+        /**
+         * Rules axis: [com.wingedsheep.sdk.core.GameRules] name. Null leaves it unchanged — except
+         * that a message which switches [format] to a Commander pack shape, or sets a
+         * commander-shaped [deckFormat], defaults it to "COMMANDER" (the host can then change it).
+         */
+        val rules: String? = null,
         /** Commander Draft/Sealed only — minimum deck size (default 60). */
         val deckSizeMin: Int? = null,
         /** Commander Draft/Sealed only — singleton toggle (default true = duplicates allowed). */
@@ -281,11 +310,26 @@ sealed interface ClientMessage {
         val commanderPreset: String? = null,
         /** Toggle Chaos boosters: each pack pulls from the union of selected sets. */
         val chaosBoosters: Boolean? = null,
+        /** Optional non-booster product ids selected per set code. */
+        val includedSetProducts: Map<String, List<String>>? = null,
         /**
          * Replace the host ban list — oracle card names excluded from generated boosters. The
          * full list is sent each time (not a delta); null leaves the current ban list unchanged.
          */
         val bannedCardNames: List<String>? = null,
+        /**
+         * Replace the cube card list. Each name is one physical cube card, so duplicates represent
+         * intentional duplicate entries. An empty list returns to normal set-based play.
+         */
+        val cubeCards: List<String>? = null,
+        val cubeName: String? = null,
+        val packSize: Int? = null,
+        val cubeBasicLandSetCode: String? = null,
+        /**
+         * Cube Pool Play: skip the draft entirely and let every player deckbuild from the whole cube
+         * with copies unlimited. Only honoured on a cube Sealed lobby. Null = unchanged.
+         */
+        val cubePoolPlay: Boolean? = null,
         /** Master switch for in-app AI assistance (Suggest Pick / Auto-build). Null = unchanged. */
         val aiAssistEnabled: Boolean? = null,
         /** Lobby mode axis: "TOURNAMENT" or "FREE_FOR_ALL". Null = unchanged. */
@@ -499,6 +543,31 @@ sealed interface ClientMessage {
         val ranked: Boolean = false,
     ) : ClientMessage
 
+    /**
+     * Choose what the AI opponent plays. Host-only, and only meaningful in a `vsAi` lobby.
+     *
+     * The spec is stored on the lobby and resolved into a decklist at game start, so re-sending it
+     * is cheap and changing the lobby format afterwards still applies. A
+     * [com.wingedsheep.gameserver.lobby.AiDeckSpec.Fixed] list is validated against the lobby's
+     * format on arrival and rejected outright if it doesn't pass — the host finds out here rather
+     * than at game start.
+     */
+    @Serializable
+    @SerialName("setQuickGameAiDeck")
+    data class SetQuickGameAiDeck(
+        val spec: com.wingedsheep.gameserver.lobby.AiDeckSpec,
+    ) : ClientMessage
+
+    /** Host fills the open opponent seat in a 1v1 quick lobby with the built-in AI. */
+    @Serializable
+    @SerialName("addQuickGameAi")
+    data object AddQuickGameAi : ClientMessage
+
+    /** Host removes the AI opponent, reopening the seat to a human player. */
+    @Serializable
+    @SerialName("removeQuickGameAi")
+    data object RemoveQuickGameAi : ClientMessage
+
     /** Join an existing quick-game lobby by its short code. */
     @Serializable
     @SerialName("joinQuickGameLobby")
@@ -535,13 +604,17 @@ sealed interface ClientMessage {
     data class SetQuickGameLobbyReady(val ready: Boolean) : ClientMessage
 
     /**
-     * Update the quick-game lobby's set code (used when a player has chosen the "Random" deck
-     * tab — picks a sealed pool from this set). Pass null to mean "any set, server picks one".
-     * Only the host (first non-AI player) is allowed to change this.
+     * Update the sets used for this player's "Random" deck. An empty list means the server chooses
+     * a set. [setCode] remains as a backwards-compatible input for older clients.
      */
     @Serializable
     @SerialName("setQuickGameLobbySetCode")
-    data class SetQuickGameLobbySetCode(val setCode: String?) : ClientMessage
+    data class SetQuickGameLobbySetCode(
+        /** Legacy single-set client field. */
+        val setCode: String? = null,
+        /** Sets used to build this player's random deck; empty means any set. */
+        val setCodes: List<String> = listOfNotNull(setCode),
+    ) : ClientMessage
 
     /**
      * Toggle whether the quick-game lobby is publicly listed so other players can find it

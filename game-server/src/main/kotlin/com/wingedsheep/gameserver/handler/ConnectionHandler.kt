@@ -77,7 +77,10 @@ class ConnectionHandler(
             extensionSet = config.extensionSet,
             block = config.block,
             implementedCount = config.distinctCardCount,
-            releaseDate = config.releaseDate
+            releaseDate = config.releaseDate,
+            products = config.extraCardsByProduct.map { (id, cards) ->
+                ServerMessage.SetProduct(id, cards.size)
+            },
         )
     }
 
@@ -269,10 +272,8 @@ class ConnectionHandler(
                 val gameSession = gameRepository.findById(gameSessionId!!)
                 logger.info("Reconnecting to game: found=${gameSession != null}, isStarted=${gameSession?.isStarted}, seats=${gameSession?.getPlayers()?.map { it.playerId.value }}")
                 if (gameSession != null) {
-                    // Remove old player session if exists, then associate new one
-                    if (gameSession.getPlayerSession(identity.playerId) != null) {
-                        gameSession.removePlayer(identity.playerId)
-                    }
+                    // Swap the live socket into the seat this player already has. Don't un-seat them
+                    // first — that would hand back their deck and sideboard mid-game.
                     gameSession.associatePlayer(playerSession)
 
                     // Re-sync the spectator-count badge for the reconnecting player.
@@ -718,7 +719,8 @@ class ConnectionHandler(
                 colorIdentity = card.colorIdentity.map { it.name },
                 setCode = card.setCode,
                 collectorNumber = card.metadata.collectorNumber,
-                layout = card.layout.name
+                layout = card.layout.name,
+                isLandscape = card.isLandscapePrint
             )
         }
     }

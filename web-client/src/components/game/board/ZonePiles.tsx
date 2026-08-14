@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useGameStore } from '@/store/gameStore.ts'
-import { useZoneCards, useStackCards, useZone, selectGameState } from '@/store/selectors.ts'
+import { useZoneCards, useStackCards, useZone, useCard, selectGameState } from '@/store/selectors.ts'
 import { graveyard, exile, library } from '@/types'
 import type { ClientCard, ClientDeckCard, ClientPlayer } from '@/types'
 import { CARD_BACK_IMAGE_URL } from '@/utils/cardImages.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
-import { useResponsiveContext, handleImageError } from './shared'
+import { useResponsiveContext, handleImageError, getStashCounters, getTimeCounters } from './shared'
 import { DeckBrowser } from './DeckBrowser'
+import { counterManaClass } from '@/assets/icons/keywords'
 import { styles } from './styles'
 
 /** Stable empty array so the `ownDeck` selector doesn't hand Zustand a new reference each render. */
@@ -15,13 +16,23 @@ const EMPTY_DECK: readonly ClientDeckCard[] = []
 
 const CARD_RATIO = 1.4
 const LABEL_HEIGHT = 14
-// Deck + Graveyard + Exile are always present; extra "Plotted" and "Paradigm" piles
-// appear only when the player has those cards in exile (see `pileCount` below).
+// Deck + Graveyard + Exile are always present; extra "Plotted", "Paradigm", and "Suspended"
+// piles appear only when the player has those cards in exile (see `pileCount` below).
 const BASE_PILE_COUNT = 3
 // Reserve room above the opponent's pile column for the absolutely-positioned
 // Concede button so the top pile doesn't render under it.
 const OPPONENT_TOP_RESERVED = 52
 const MIN_PILE_WIDTH = 28
+
+/**
+ * Native tooltip for the Deck pile. When the top card is face up, lead with its name — that's
+ * the reason the pile looks different, and it doubles as the accessible label for the image.
+ */
+function deckPileTitle(canBrowseDeck: boolean, isOwnDeck: boolean, topCard: ClientCard | null): string | undefined {
+  if (!canBrowseDeck) return topCard ? `Top card: ${topCard.name}` : undefined
+  const browse = isOwnDeck ? 'Your deck list and library (D)' : 'Library'
+  return topCard ? `Top card: ${topCard.name} · ${browse}` : browse
+}
 
 /**
  * Deck, graveyard, exile — and, when present, a dedicated Plotted pile — display.
@@ -41,8 +52,20 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
   // so both players can see the recurring threat without digging through the exile pile.
   const paradigmCards = exileCards.filter((c) => c.isParadigm)
   const topParadigmCard = paradigmCards[paradigmCards.length - 1]
+  // Suspended cards (CR 702.62) are another public subset of exile: face-up, counting down at their
+  // owner's upkeep toward a free cast. Surface them in their own pile so both players can see the
+  // countdown without digging through the exile pile.
+  const suspendedCards = exileCards.filter((c) => c.isSuspended)
+  const topSuspendedCard = suspendedCards[suspendedCards.length - 1]
   const libraryZone = useZone(library(player.playerId))
   const libraryEntityIds = libraryZone?.cardIds ?? []
+  // A library card only carries details when the server decided its identity is legitimately
+  // known to this viewer: a public "play with the top card revealed" (Future Sight, Goblin Spy),
+  // a private "you may look at the top card of your library any time" (Glarb, Lens of Clarity),
+  // or a scry/surveil the viewer just performed. Whenever that holds for the *top* card, show it
+  // face up on the pile rather than making the player open the browser to read it. Index 0 is the
+  // top of the library — the same ordering the Library-order tab renders.
+  const topLibraryCard = useCard(libraryEntityIds[0] ?? null)
   // The server sends `deck` only for the viewing player, so this is empty on every other seat's
   // pile — which is exactly what suppresses the deck-list tab there.
   const ownDeck = useGameStore((state) => {
@@ -56,12 +79,14 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
   const [browsingExile, setBrowsingExile] = useState(false)
   const [browsingPlotted, setBrowsingPlotted] = useState(false)
   const [browsingParadigm, setBrowsingParadigm] = useState(false)
+  const [browsingSuspended, setBrowsingSuspended] = useState(false)
   const [browsingLibrary, setBrowsingLibrary] = useState(false)
   const stackCards = useStackCards()
 
   const hasPlotted = plottedCards.length > 0
   const hasParadigm = paradigmCards.length > 0
-  const pileCount = BASE_PILE_COUNT + (hasPlotted ? 1 : 0) + (hasParadigm ? 1 : 0)
+  const hasSuspended = suspendedCards.length > 0
+  const pileCount = BASE_PILE_COUNT + (hasPlotted ? 1 : 0) + (hasParadigm ? 1 : 0) + (hasSuspended ? 1 : 0)
 
   // Browser titles carry the owner's name — "Opponent's Graveyard" is ambiguous at a
   // multiplayer table.
@@ -144,6 +169,7 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
   // The deck list is worth opening even on an empty library (you can still read what you played).
   const isOwnDeck = ownDeck.length > 0
   const canBrowseDeck = player.librarySize > 0 || isOwnDeck
+  const showsTopLibraryCard = player.librarySize > 0 && topLibraryCard !== null
 
   // `D` opens your own deck — the shortcut lives here rather than in a global handler because
   // exactly one ZonePile on the table is the viewer's, and `ownDeck` is how we know which.
@@ -167,19 +193,38 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
       <div style={styles.zoneStack}>
         <div
           data-zone={isOpponent ? 'opponent-library' : 'player-library'}
-          title={canBrowseDeck ? (isOwnDeck ? 'Your deck list and library (D)' : 'Library') : undefined}
-          style={{ ...styles.deckPile, ...pileStyle, cursor: canBrowseDeck ? 'pointer' : 'default' }}
+          title={deckPileTitle(canBrowseDeck, isOwnDeck, showsTopLibraryCard ? topLibraryCard : null)}
+          style={{
+            ...styles.deckPile,
+            ...pileStyle,
+            cursor: canBrowseDeck ? 'pointer' : 'default',
+            ...(showsTopLibraryCard ? styles.deckPileTopRevealed : null),
+          }}
           onClick={() => { if (canBrowseDeck) setBrowsingLibrary(true) }}
+          onMouseEnter={(e) => { if (showsTopLibraryCard) hoverCard(topLibraryCard.id, { x: e.clientX, y: e.clientY }) }}
+          onMouseLeave={() => hoverCard(null)}
         >
           {player.librarySize > 0 ? (
-            <img
-              src={CARD_BACK_IMAGE_URL}
-              alt="Library"
-              style={styles.pileImage}
-            />
+            showsTopLibraryCard ? (
+              <img
+                src={getCardImageUrl(topLibraryCard.name, topLibraryCard.imageUri, 'normal')}
+                alt={topLibraryCard.name}
+                style={styles.pileImage}
+                onError={(e) => handleImageError(e, topLibraryCard.name, 'normal')}
+              />
+            ) : (
+              <img
+                src={CARD_BACK_IMAGE_URL}
+                alt="Library"
+                style={styles.pileImage}
+              />
+            )
           ) : (
             <div style={styles.emptyPile} />
           )}
+          {/* Badge the face-up top card so it doesn't read as "the whole deck is public" — the
+              rest of the library is still a card back's worth of unknown. */}
+          {showsTopLibraryCard && <div style={styles.deckTopRevealedBadge}>👁</div>}
           <div style={{ ...styles.pileCount, fontSize: responsive.fontSize.small }}>{player.librarySize}</div>
         </div>
         <span style={{ ...styles.zoneLabel, fontSize: responsive.isMobile ? 8 : 10 }}>Deck</span>
@@ -327,6 +372,60 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
         </div>
       )}
 
+      {/* Suspended (CR 702.62) — only present when this player has actively-suspended cards in
+          exile (>=1 time counter). A first-class, always-visible zone (for both players) so the
+          countdown toward a free cast can be read without opening the exile pile. */}
+      {hasSuspended && (
+        <div style={styles.zoneStack}>
+          <div
+            data-suspended-id={player.playerId}
+            style={{ ...styles.suspendedPile, ...pileStyle, cursor: 'pointer' }}
+            onClick={() => setBrowsingSuspended(true)}
+            onMouseEnter={(e) => { if (topSuspendedCard) hoverCard(topSuspendedCard.id, { x: e.clientX, y: e.clientY }) }}
+            onMouseLeave={() => hoverCard(null)}
+          >
+            {topSuspendedCard && (
+              <img
+                src={getCardImageUrl(topSuspendedCard.name, topSuspendedCard.imageUri, 'normal')}
+                alt={topSuspendedCard.name}
+                style={styles.pileImage}
+                onError={(e) => handleImageError(e, topSuspendedCard.name, 'normal')}
+              />
+            )}
+            {/* Live time-counter countdown for the top card — same info Impending shows
+                continuously on the battlefield, kept visible here without opening the pile. */}
+            {topSuspendedCard && getTimeCounters(topSuspendedCard) > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: 2,
+                left: 2,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+                backgroundColor: 'rgba(40, 30, 70, 0.95)',
+                border: '1px solid rgba(170, 140, 230, 0.7)',
+                borderRadius: 4,
+                padding: '1px 3px',
+                color: '#cbb6f0',
+                fontWeight: 700,
+                fontSize: 10,
+                lineHeight: 1,
+                textShadow: '0 0 4px rgba(170, 140, 230, 0.8)',
+              }}>
+                <i className={`ms ms-${counterManaClass.TIME}`} style={{ fontSize: 9 }} />
+                {getTimeCounters(topSuspendedCard)}
+              </div>
+            )}
+            <div style={{ ...styles.pileCount, ...styles.suspendedPileCount, fontSize: responsive.fontSize.small }}>
+              {suspendedCards.length}
+            </div>
+          </div>
+          <span style={{ ...styles.zoneLabel, ...styles.suspendedZoneLabel, fontSize: responsive.isMobile ? 8 : 10 }}>
+            ⏳ Suspended
+          </span>
+        </div>
+      )}
+
       {/* The browsers are position:fixed full-screen overlays, but an opponent's
           ZonePile sits inside the multiplayer board strip whose translateX transform
           makes `fixed` resolve against the (overflow-hidden, possibly off-screen)
@@ -361,6 +460,14 @@ export function ZonePile({ player, isOpponent = false }: { player: ClientPlayer;
           cards={paradigmCards}
           ownerLabel={ownerLabel('Paradigm Cards')}
           onClose={() => setBrowsingParadigm(false)}
+        />,
+        document.body,
+      )}
+      {browsingSuspended && createPortal(
+        <SuspendedBrowser
+          cards={suspendedCards}
+          ownerLabel={ownerLabel('Suspended Cards')}
+          onClose={() => setBrowsingSuspended(false)}
         />,
         document.body,
       )}
@@ -589,6 +696,11 @@ function ExileBrowser({ cards, ownerLabel, onClose }: { cards: readonly ClientCa
                 onError={(e) => handleImageError(e, card.name, 'normal')}
               />
               {card.isPlotted && <div style={styles.plottedGridBadge}>Plotted</div>}
+              {getStashCounters(card) > 0 && (
+                <div style={styles.stashGridBadge}>
+                  <i className={`ms ms-${counterManaClass.STASH}`} /> {getStashCounters(card)}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -876,6 +988,157 @@ function ParadigmBrowser({
               fontSize: responsive.fontSize.normal,
               backgroundColor: '#15756d',
               color: '#e6fffb',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            View Battlefield
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+              fontSize: responsive.fontSize.normal,
+              backgroundColor: '#333',
+              color: '#aaa',
+              border: '1px solid #555',
+              borderRadius: 8,
+              cursor: 'pointer',
+            }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Full-screen overlay for browsing actively-suspended cards (CR 702.62).
+ *
+ * Suspended cards sit face-up in exile, counting down a time counter at their owner's upkeep
+ * until the last is removed and they may be cast for free. They're public knowledge, so both
+ * players can open this view.
+ */
+function SuspendedBrowser({
+  cards,
+  ownerLabel,
+  onClose,
+}: {
+  cards: readonly ClientCard[]
+  ownerLabel: string
+  onClose: () => void
+}) {
+  const hoverCard = useGameStore((state) => state.hoverCard)
+  const responsive = useResponsiveContext()
+  const [minimized, setMinimized] = useState(false)
+
+  const cardWidth = responsive.isMobile ? 120 : 160
+  const cardHeight = Math.round(cardWidth * 1.4)
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (minimized) {
+          setMinimized(false)
+        } else {
+          onClose()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose, minimized])
+
+  if (minimized) {
+    return (
+      <button
+        onClick={() => setMinimized(false)}
+        style={{
+          position: 'fixed',
+          bottom: 70,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: responsive.isMobile ? '10px 16px' : '12px 24px',
+          fontSize: responsive.fontSize.normal,
+          backgroundColor: '#5a4fb3',
+          color: '#e9e6ff',
+          border: 'none',
+          borderRadius: 8,
+          cursor: 'pointer',
+          fontWeight: 600,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+          zIndex: 100,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}
+      >
+        ↑ Return to Suspended
+      </button>
+    )
+  }
+
+  return (
+    <div style={styles.suspendedOverlay} onClick={onClose}>
+      <div style={styles.suspendedBrowserContent} onClick={(e) => e.stopPropagation()}>
+        <div style={styles.exileBrowserHeader}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <h2 style={styles.suspendedBrowserTitle}>⏳ {ownerLabel} ({cards.length})</h2>
+            <span style={{ color: '#a89aef', fontSize: 11, letterSpacing: 0.5 }}>
+              Removes a time counter each upkeep; cast for free when the last one is gone (Suspend)
+            </span>
+          </div>
+          <button style={styles.suspendedCloseButton} onClick={onClose}>✕</button>
+        </div>
+        <div style={styles.exileCardGrid}>
+          {cards.map((card) => (
+            <div
+              key={card.id}
+              style={{
+                width: cardWidth,
+                height: cardHeight,
+                borderRadius: 6,
+                overflow: 'hidden',
+                flexShrink: 0,
+                position: 'relative',
+                boxShadow: '0 0 0 2px #9a8cef, 0 0 14px rgba(154, 140, 239, 0.6)',
+              }}
+              onMouseEnter={(e) => hoverCard(card.id, { x: e.clientX, y: e.clientY })}
+              onMouseLeave={() => hoverCard(null)}
+            >
+              <img
+                src={getCardImageUrl(card.name, card.imageUri, 'normal')}
+                alt={card.name}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e) => handleImageError(e, card.name, 'normal')}
+              />
+              <div style={styles.suspendedGridBadge}>Suspended</div>
+              {/* Same time-counter badge Impending permanents show on the battlefield —
+                  icon + remaining count, so the countdown reads identically everywhere. */}
+              {getTimeCounters(card) > 0 && (
+                <div style={{
+                  ...styles.timeCounterBadge,
+                  fontSize: responsive.badges.counterTextFontSize,
+                  padding: responsive.badges.badgePadding,
+                }}>
+                  <i className={`ms ms-${counterManaClass.TIME}`} style={{ fontSize: responsive.badges.counterIconFontSize }} />
+                  <span style={{ fontWeight: 700 }}>{getTimeCounters(card)}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 16, marginTop: 16 }}>
+          <button
+            onClick={() => setMinimized(true)}
+            style={{
+              padding: responsive.isMobile ? '10px 20px' : '12px 28px',
+              fontSize: responsive.fontSize.normal,
+              backgroundColor: '#5a4fb3',
+              color: '#e9e6ff',
               border: 'none',
               borderRadius: 8,
               cursor: 'pointer',

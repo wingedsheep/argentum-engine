@@ -19,7 +19,7 @@ import io.kotest.matchers.shouldNotBe
 /**
  * Tests for Evershrike's Gift — graveyard-activated ability with a Blight cost.
  *
- * Regression for a bug where [GraveyardAbilityEnumerator] didn't surface Blight as
+ * Regression for a bug where [ZoneActivatedAbilityEnumerator] didn't surface Blight as
  * an additional cost, so the UI never prompted for a blight target and activation
  * silently failed with "No blight target chosen".
  */

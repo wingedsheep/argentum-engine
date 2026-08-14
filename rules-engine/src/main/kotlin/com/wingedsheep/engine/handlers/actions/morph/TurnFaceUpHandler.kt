@@ -26,7 +26,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.ManifestedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.TurnedPermanentFaceUpThisTurnComponent
@@ -93,10 +93,16 @@ class TurnFaceUpHandler(
         val morphData = container.get<MorphDataComponent>()
             ?: return "This creature cannot be turned face up (no morph cost)"
 
+        // Which turn-up procedure the player picked. Only a manifested/cloaked card that also
+        // prints morph or disguise offers more than one (CR 701.40c/d, 701.58c/d); the index is
+        // client-supplied, so bounds-check it here rather than trusting it.
+        val procedure = morphData.procedures.getOrNull(action.procedureIndex)
+            ?: return "No such turn-up procedure: ${action.procedureIndex}"
+
         // Validate cost payment based on morph cost type.
         // Apply morph cost increases from permanents like Exiled Doomsayer.
         val morphCostIncrease = costCalculator.calculateMorphCostIncrease(state)
-        val morphCost = morphData.morphCost
+        val morphCost = procedure.cost
         val manaMorph = (morphCost as? PayCost.Atom)?.atom as? CostAtom.Mana
         when {
             manaMorph != null -> {
@@ -173,6 +179,9 @@ class TurnFaceUpHandler(
         val morphData = container.get<MorphDataComponent>()
             ?: return ExecutionResult.error(state, "No morph data found")
 
+        val procedure = morphData.procedures.getOrNull(action.procedureIndex)
+            ?: return ExecutionResult.error(state, "No such turn-up procedure: ${action.procedureIndex}")
+
         val cardComponent = container.get<CardComponent>()
         val cardDef = cardRegistry.getCard(morphData.originalCardDefinitionId)
         val cardName = cardDef?.name ?: cardComponent?.name ?: "Unknown"
@@ -180,7 +189,11 @@ class TurnFaceUpHandler(
         // Pay the morph cost (including any morph cost increases)
         val morphCostIncrease = costCalculator.calculateMorphCostIncrease(currentState)
         val xValue = action.xValue ?: 0
-        val morphCost = morphData.morphCost
+        val morphCost = procedure.cost
+        // CR 702.37b ties megamorph's +1/+1 counter to the megamorph cost specifically, so the
+        // face-up effect rides the procedure: a cloaked megamorph creature turned face up for its
+        // mana cost instead gets no counter.
+        val faceUpEffect = procedure.faceUpEffect
         val manaMorph = (morphCost as? PayCost.Atom)?.atom as? CostAtom.Mana
         when {
             manaMorph != null -> {
@@ -354,7 +367,7 @@ class TurnFaceUpHandler(
             // face down — equivalent to never having taken the action.
             else -> {
                 val flip: com.wingedsheep.sdk.scripting.effects.Effect =
-                    morphData.faceUpEffect
+                    faceUpEffect
                         ?.let { Effects.Composite(TurnFaceUpEffect(EffectTarget.Self), it) }
                         ?: TurnFaceUpEffect(EffectTarget.Self)
                 return when (
@@ -377,22 +390,23 @@ class TurnFaceUpHandler(
             }
         }
 
-        // Turn the creature face up and add static ability components. A manifested permanent
-        // stops being manifested once it's face up (CR 701.40a), so drop the marker too.
+        // Turn the creature face up and add static ability components. The face-down mode marker
+        // goes with it: the characteristic-defining effect (and with it disguise's/cloak's ward
+        // {2}) ends when the permanent is turned face up — CR 701.40a / 701.58a / 702.168a.
         currentState = currentState.updateEntity(action.sourceId) { c ->
-            var updated = c.without<FaceDownComponent>().without<ManifestedComponent>()
+            var updated = c.without<FaceDownComponent>().without<FaceDownModeComponent>()
             updated = staticAbilityHandler.addContinuousEffectComponent(updated)
             updated = staticAbilityHandler.addReplacementEffectComponent(updated)
             updated
         }
 
         // Execute face-up replacement effect (e.g., "put five +1/+1 counters on it")
-        if (morphData.faceUpEffect != null) {
+        if (faceUpEffect != null) {
             val effectContext = com.wingedsheep.engine.handlers.EffectContext(
                 sourceId = action.sourceId,
                 controllerId = action.playerId,
             )
-            val effectResult = effectExecutorRegistry.execute(currentState, morphData.faceUpEffect, effectContext)
+            val effectResult = effectExecutorRegistry.execute(currentState, faceUpEffect, effectContext)
             if (effectResult.error == null) {
                 currentState = effectResult.state
                 events.addAll(effectResult.events)

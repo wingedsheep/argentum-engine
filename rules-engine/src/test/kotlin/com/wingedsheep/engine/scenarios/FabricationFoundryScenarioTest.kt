@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldBe
  * control with total mana value X: Return target artifact card with mana value X or less from your
  * graveyard to the battlefield. Activate only as a sorcery."
  *
- * Exercises the new `Costs.ExilePermanents` variable-count cost end to end: X is the total mana
+ * Exercises the new `Costs.VariablePermanents` variable-count cost end to end: X is the total mana
  * value of the exiled artifacts (CR 601.2b), and the graveyard target's "mana value X or less"
  * legality is measured against it at activation (CR 601.2c) and re-validated at resolution
  * (CR 608.2b). Drives the engine-direct path (a fully-formed action with the exile selection and
@@ -61,7 +61,7 @@ class FabricationFoundryScenarioTest : FunSpec({
                 sourceId = foundry,
                 abilityId = reanimateAbilityId(),
                 targets = listOf(ChosenTarget.Card(inGraveyard, p1, Zone.GRAVEYARD)),
-                costPayment = AdditionalCostPayment(exiledCards = listOf(toExile))
+                costPayment = AdditionalCostPayment(variableCostPermanents = listOf(toExile))
             )
         )
         driver.bothPass()
@@ -89,7 +89,7 @@ class FabricationFoundryScenarioTest : FunSpec({
                 sourceId = foundry,
                 abilityId = reanimateAbilityId(),
                 targets = listOf(ChosenTarget.Card(inGraveyard, p1, Zone.GRAVEYARD)),
-                costPayment = AdditionalCostPayment(exiledCards = listOf(exile1, exile2))
+                costPayment = AdditionalCostPayment(variableCostPermanents = listOf(exile1, exile2))
             )
         )
         driver.bothPass()
@@ -115,7 +115,7 @@ class FabricationFoundryScenarioTest : FunSpec({
                 sourceId = foundry,
                 abilityId = reanimateAbilityId(),
                 targets = listOf(ChosenTarget.Card(inGraveyard, p1, Zone.GRAVEYARD)),
-                costPayment = AdditionalCostPayment(exiledCards = listOf(toExile))
+                costPayment = AdditionalCostPayment(variableCostPermanents = listOf(toExile))
             )
         )
         result.isSuccess shouldBe false
@@ -142,7 +142,7 @@ class FabricationFoundryScenarioTest : FunSpec({
                 sourceId = foundry,
                 abilityId = reanimateAbilityId(),
                 targets = listOf(ChosenTarget.Card(inGraveyard, p1, Zone.GRAVEYARD)),
-                costPayment = AdditionalCostPayment(exiledCards = listOf(toExile))
+                costPayment = AdditionalCostPayment(variableCostPermanents = listOf(toExile))
             )
         )
         driver.bothPass()
@@ -166,7 +166,7 @@ class FabricationFoundryScenarioTest : FunSpec({
                 sourceId = foundry,
                 abilityId = reanimateAbilityId(),
                 targets = listOf(ChosenTarget.Card(inGraveyard, p1, Zone.GRAVEYARD)),
-                costPayment = AdditionalCostPayment(exiledCards = listOf(toExile))
+                costPayment = AdditionalCostPayment(variableCostPermanents = listOf(toExile))
             )
         )
         result.isSuccess shouldBe false
@@ -188,7 +188,7 @@ class FabricationFoundryScenarioTest : FunSpec({
                 sourceId = foundry,
                 abilityId = reanimateAbilityId(),
                 targets = listOf(ChosenTarget.Card(inGraveyard, p1, Zone.GRAVEYARD)),
-                costPayment = AdditionalCostPayment(exiledCards = listOf(foundry))
+                costPayment = AdditionalCostPayment(variableCostPermanents = listOf(foundry))
             )
         )
         result.isSuccess shouldBe false

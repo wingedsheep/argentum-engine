@@ -111,7 +111,8 @@ class GameWebSocketHandler(
                 is ClientMessage.StopLobby,
                 is ClientMessage.UpdateLobbySettings,
                 is ClientMessage.AddAiToLobby,
-                is ClientMessage.RemoveAiFromLobby -> lobbyHandler.handle(session, clientMessage)
+                is ClientMessage.RemoveAiFromLobby,
+                is ClientMessage.SetLobbyAiDeck -> lobbyHandler.handle(session, clientMessage)
 
                 is ClientMessage.ReadyForNextRound -> {
                     lobbyHandler.handleReadyForNextRound(session)
@@ -139,6 +140,9 @@ class GameWebSocketHandler(
                 is ClientMessage.SetQuickGameLobbySetCode,
                 is ClientMessage.SetQuickGameLobbyPublic,
                 is ClientMessage.SetQuickGameLobbyRanked,
+                is ClientMessage.SetQuickGameAiDeck,
+                is ClientMessage.AddQuickGameAi,
+                is ClientMessage.RemoveQuickGameAi,
                 is ClientMessage.SetQuickGameLobbyFormat -> quickGameLobbyHandler.handle(session, clientMessage)
             }
         } catch (e: Exception) {

@@ -63,9 +63,10 @@ class RandomDeckGenerator(
         // Step 1: Pick 1-2 colors randomly
         val colors = pickColors()
 
-        // Step 2: Filter card pool to matching colors (non-lands)
+        // Step 2: Filter card pool to matching colors (non-lands). Meld results are in the pool as
+        // corpus entries but are never cards a player owns, so they can't go in a deck.
         val availableSpells = cardPool.filter { card ->
-            !card.isLand && cardMatchesColors(card, colors)
+            !card.isLand && !card.meldResult && cardMatchesColors(card, colors)
         }
 
         // Step 3: Select spells with good mana curve
@@ -82,14 +83,28 @@ class RandomDeckGenerator(
     }
 
     /**
-     * Picks 1-2 colors randomly.
+     * Picks 1-2 colors randomly, **from the colours the pool actually contains**.
+     *
+     * Sampling all five would be wrong for any pool narrower than the whole card base: a mono-green
+     * pool asked for a White/Blue deck yields zero matching spells and [selectSpellsWithCurve]
+     * throws. That is not hypothetical — it is the normal case for
+     * [ConstructedDeckGenerator], whose pool is one format's legal cards, sometimes scoped to a
+     * single set on top of that.
+     *
+     * A pool of nothing but colorless cards returns the empty set; [cardMatchesColors] admits every
+     * colorless card, and [calculateLandCounts] has its own empty-colour branch.
      */
     private fun pickColors(): Set<Color> {
-        val allColors = Color.entries.toList()
-        val shuffled = allColors.shuffled(random)
+        val available = cardPool.asSequence()
+            .filter { !it.isLand }
+            .flatMap { it.colors.asSequence() }
+            .distinct()
+            .toList()
+        if (available.isEmpty()) return emptySet()
 
-        // 40% chance of mono-color, 60% chance of two colors
-        return if (random.nextFloat() < 0.4f) {
+        val shuffled = available.shuffled(random)
+        // 40% chance of mono-color, 60% chance of two colors — the second only if one exists.
+        return if (random.nextFloat() < 0.4f || shuffled.size < 2) {
             setOf(shuffled.first())
         } else {
             setOf(shuffled[0], shuffled[1])
@@ -201,6 +216,11 @@ class RandomDeckGenerator(
      * Returns a map of land type name to count needed.
      */
     private fun calculateLandCounts(spells: List<CardDefinition>, colors: Set<Color>): Map<String, Int> {
+        // An all-colorless pool (see `pickColors`) has no colour to weight by. Generic costs still
+        // need lands, so give it one basic type rather than dividing by zero.
+        if (colors.isEmpty()) {
+            return mapOf(COLOR_TO_LAND.getValue(Color.entries.random(random)) to LAND_COUNT)
+        }
         if (colors.size == 1) {
             // Mono-color: all lands of that color
             val landName = COLOR_TO_LAND[colors.first()]!!

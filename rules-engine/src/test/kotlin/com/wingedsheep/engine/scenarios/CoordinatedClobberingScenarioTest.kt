@@ -19,7 +19,7 @@ import io.kotest.matchers.shouldBe
  *
  * Verifies the 1-or-2 your-creature target group gets tapped and each deals damage equal to its
  * own power to the single opponent's creature; and the single-creature mode. Targets are supplied
- * at cast time in requirement order: the opponent's creature (declared first), then the clobberers.
+ * at cast time in requirement order: the opponent's creature, then the clobberers.
  */
 class CoordinatedClobberingScenarioTest : ScenarioTestBase() {
 
@@ -109,6 +109,43 @@ class CoordinatedClobberingScenarioTest : ScenarioTestBase() {
                 withClue("3 damage kills the 2/2 victim") {
                     val victimZone = game.state.getZone(com.wingedsheep.engine.state.ZoneKey(game.player2Id, Zone.GRAVEYARD))
                     (victim in victimZone) shouldBe true
+                }
+            }
+
+            test("uses power granted by an attached aura") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardInHand(1, "Coordinated Clobbering")
+                    .withLandsOnBattlefield(1, "Forest", 1)
+                    .withCardOnBattlefield(1, "Overgrown Zealot") // 0/4
+                    .withCardAttachedTo(1, "Sheltered by Ghosts", "Overgrown Zealot") // now 1/4
+                    .withCardOnBattlefield(2, "Veteran Survivor") // 2/1 victim
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val zealot = game.findPermanent("Overgrown Zealot")!!
+                val victim = game.findPermanent("Veteran Survivor")!!
+                val spell = game.state.getHand(game.player1Id).first {
+                    game.state.getEntity(it)?.get<CardComponent>()?.name == "Coordinated Clobbering"
+                }
+
+                val cast = game.execute(
+                    CastSpell(
+                        playerId = game.player1Id,
+                        cardId = spell,
+                        targets = listOf(
+                            ChosenTarget.Permanent(victim),
+                            ChosenTarget.Permanent(zealot),
+                        ),
+                    ),
+                )
+                cast.error shouldBe null
+                game.resolveStack()
+
+                withClue("The aura's +1/+0 makes the Zealot deal 1 damage and kill the 2/1") {
+                    game.isOnBattlefield("Veteran Survivor") shouldBe false
+                    game.isInGraveyard(2, "Veteran Survivor") shouldBe true
                 }
             }
         }

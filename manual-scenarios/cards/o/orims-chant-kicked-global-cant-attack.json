@@ -1,0 +1,34 @@
+{
+  "_description": "Orim's Chant (PLS, {W} instant, Kicker {W}): 'Target player can't cast spells this turn. If this spell was kicked, creatures can't attack this turn.' Alice (active player) casts Orim's Chant kicked, targeting Bob. Verify (1) Bob can't cast Shock from hand afterward — casting spells is restricted for the TARGETED player, (2) because the spell was kicked, the 'creatures can't attack' clause is GLOBAL rather than scoped to Bob's side: Alice's own Grizzly Bears (her turn, no summoning sickness, otherwise a legal attacker) also can't be declared as an attacker at DECLARE_ATTACKERS. Alice has two Plains untapped to pay {W} plus the {W} kicker.",
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": ["Orim's Chant"],
+    "battlefield": [
+      {"name": "Grizzly Bears", "summoningSickness": false},
+      {"name": "Plains"},
+      {"name": "Plains"}
+    ],
+    "graveyard": [],
+    "library": ["Plains", "Plains"]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": ["Shock"],
+    "battlefield": [
+      {"name": "Grizzly Bears", "summoningSickness": false},
+      {"name": "Mountain"}
+    ],
+    "graveyard": [],
+    "library": ["Mountain", "Mountain"]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": ["DECLARE_ATTACKERS"],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": ["DECLARE_ATTACKERS"]
+}

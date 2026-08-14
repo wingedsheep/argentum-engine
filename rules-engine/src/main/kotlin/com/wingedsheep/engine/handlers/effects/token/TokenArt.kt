@@ -1,12 +1,34 @@
 package com.wingedsheep.engine.handlers.effects.token
 
 /**
- * Scryfall token art keyed by creature type. Shared by token-creation executors to give a
- * created creature token a sensible image when its subtype maps to a known token printing.
- * (Formerly private to the now-removed CreateChosenTokenExecutor.)
+ * Engine-wide fallback token art keyed by creature type — the last layer of token art resolution,
+ * below an explicit `imageUri` on the effect and below the minting set's own
+ * [com.wingedsheep.engine.registry.TokenArtRegistry] entry.
+ *
+ * These are deliberately *generic*: one reasonable Scryfall printing per creature type, not the
+ * printing any particular card points at. A token whose art has to be exactly right belongs in its
+ * set's `MtgSet.tokenArt`. What this table guarantees is that a created token is never left
+ * without an image — without it the client falls back to guessing from the token's name via
+ * `api.scryfall.com/cards/named`, which silently returns an arbitrary set's art.
+ *
+ * `TokenArtCoverageTest` holds that guarantee across the whole card corpus: every creature type
+ * any registered card can mint has an entry here.
+ *
+ * URLs are Scryfall **`art_crop`**, matching the art box in the client's generated token frame.
  */
 object TokenArt {
+
+    /**
+     * Generic art for a token with these creature types, or null when none of them is known.
+     *
+     * Multi-type tokens ("Zombie Army", "Zombie Druid") take the first type that has art, so a
+     * token composed of a known type and a novel one still renders.
+     */
+    fun forCreatureTypes(creatureTypes: Collection<String>): String? =
+        creatureTypes.firstNotNullOfOrNull { IMAGES[it] }
+
     val IMAGES: Map<String, String> = mapOf(
+            "Ally" to "https://cards.scryfall.io/art_crop/front/0/1/01439983-8394-4a0c-9e9e-92a3f1927fe3.jpg?1783904746",
             "Angel" to "https://cards.scryfall.io/art_crop/front/c/7/c7f3264a-7b4a-4fef-af73-d4241742a4e8.jpg?1561758046",
             "Ape" to "https://cards.scryfall.io/art_crop/front/8/3/8343e00c-5fc6-46a0-a238-3759338dced4.jpg?1562542388",
             "Assassin" to "https://cards.scryfall.io/art_crop/front/8/9/89eb9f92-d189-4438-b6fe-cb253055d63e.jpg?1562539812",
@@ -41,10 +63,12 @@ object TokenArt {
             "Goat" to "https://cards.scryfall.io/art_crop/front/9/0/90f67615-8a09-4ab9-9927-899a15e72c03.jpg?1561757576",
             "Goblin" to "https://cards.scryfall.io/art_crop/front/f/b/fbd728ed-d5dc-44b3-9159-6c86cab3be0c.jpg?1761614931",
             "Golem" to "https://cards.scryfall.io/art_crop/front/4/0/406e2960-f560-48bb-b4a6-4bd35889a8f8.jpg?1712318018",
+            "Gremlin" to "https://cards.scryfall.io/art_crop/front/d/9/d948b503-890a-49d5-a3cf-cb6e604851b8.jpg?1783909269",
             "Griffin" to "https://cards.scryfall.io/art_crop/front/9/6/96c36884-df5e-435d-9473-65da550535fb.jpg?1561757626",
             "Harpy" to "https://cards.scryfall.io/art_crop/front/2/6/26b24bbe-f5bc-44d3-b716-6612d39b07bc.jpg?1562636770",
             "Hellion" to "https://cards.scryfall.io/art_crop/front/a/c/acabc3ce-a3c1-4c6c-8022-9a96ffba59c6.jpg?1561757810",
             "Hippo" to "https://cards.scryfall.io/art_crop/front/1/a/1aea5e0b-dc4e-4055-9e13-1dfbc25a2f00.jpg?1562844782",
+            "Homunculus" to "https://cards.scryfall.io/art_crop/front/e/2/e2020f53-d012-4d26-be13-87ed0f196c53.jpg?1783940883",
             "Horror" to "https://cards.scryfall.io/art_crop/front/5/a/5a4c5954-da2b-498a-9e86-eb4d6dc95cb8.jpg?1561757207",
             "Horse" to "https://cards.scryfall.io/art_crop/front/b/c/bc944579-b6d8-40f7-8c46-146513960d61.jpg?1761614913",
             "Human" to "https://cards.scryfall.io/art_crop/front/b/d/bd5cd362-34f9-445f-85e1-9f6694f0f90a.jpg?1561757948",
@@ -53,6 +77,7 @@ object TokenArt {
             "Imp" to "https://cards.scryfall.io/art_crop/front/4/7/47a1385b-2be2-49a8-8400-186cd5525dad.jpg?1706217208",
             "Insect" to "https://cards.scryfall.io/art_crop/front/a/a/aa47df37-f246-4f80-a944-008cdf347dad.jpg?1561757793",
             "Jellyfish" to "https://cards.scryfall.io/art_crop/front/1/9/19ac0a35-fae7-49f9-ae96-4406df992dc9.jpg?1562639696",
+            "Kavu" to "https://cards.scryfall.io/art_crop/front/e/5/e50f89a6-26bd-4144-8c4a-ee9f293bd9c4.jpg?1783921131",
             "Knight" to "https://cards.scryfall.io/art_crop/front/b/f/bf9acfe1-de7a-48fe-aed3-28a72db6d1c0.jpg?1561757975",
             "Kobold" to "https://cards.scryfall.io/art_crop/front/d/f/dfc03591-1114-4e36-a397-0bb3db8a153c.jpg?1562702392",
             "Kraken" to "https://cards.scryfall.io/art_crop/front/c/b/cb727dec-dd82-4072-b2ec-a4e31b58752f.jpg?1682206995",
@@ -65,11 +90,15 @@ object TokenArt {
             "Octopus" to "https://cards.scryfall.io/art_crop/front/1/9/19ac0a35-fae7-49f9-ae96-4406df992dc9.jpg?1562639696",
             "Ogre" to "https://cards.scryfall.io/art_crop/front/3/c/3ca43425-d007-4181-9182-18dc01ad7e90.jpg?1674337914",
             "Ooze" to "https://cards.scryfall.io/art_crop/front/c/2/c2fc764f-d5fe-452a-8474-5ad380048faf.jpg?1771590231",
+            "Otter" to "https://cards.scryfall.io/art_crop/front/e/6/e6b2c465-c446-4dee-9101-763105dcf813.jpg?1783909764",
             "Pegasus" to "https://cards.scryfall.io/art_crop/front/b/c/bc944579-b6d8-40f7-8c46-146513960d61.jpg?1761614913",
+            "Pest" to "https://cards.scryfall.io/art_crop/front/d/0/d0ddbe3e-4a66-494d-9304-7471232549bf.jpg?1783927190",
             "Pirate" to "https://cards.scryfall.io/art_crop/front/4/6/46bf5e2b-869f-480e-ac37-1bdb40a92f8c.jpg?1665776397",
             "Rabbit" to "https://cards.scryfall.io/art_crop/front/8/1/81de52ef-7515-4958-abea-fb8ebdcef93c.jpg?1721431122",
+            "Raccoon" to "https://cards.scryfall.io/art_crop/front/a/f/af257e8b-9bed-4c6b-9510-11fe950fa80e.jpg?1783909752",
             "Rat" to "https://cards.scryfall.io/art_crop/front/1/a/1a85fe9d-ef18-46c4-88b0-cf2e222e30e4.jpg?1562279130",
             "Rhino" to "https://cards.scryfall.io/art_crop/front/1/3/1331008a-ae86-4640-b823-a73be766ac16.jpg",
+            "Robot" to "https://cards.scryfall.io/art_crop/front/0/8/08497fc5-1c0e-4c3c-a356-bf4b34bd4c45.jpg?1783904001",
             "Rogue" to "https://cards.scryfall.io/art_crop/front/f/4/f44d5271-5d10-46b2-9ba2-5788d99de2e6.jpg?1562636888",
             "Samurai" to "https://cards.scryfall.io/art_crop/front/7/0/70750c90-3856-4d6d-923b-2ab91b1d7049.jpg?1675957554",
             "Saproling" to "https://cards.scryfall.io/art_crop/front/0/b/0bf3d41e-cd0a-46bd-8b89-8855906ea6b5.jpg?1702501311",
@@ -77,8 +106,8 @@ object TokenArt {
             "Scarecrow" to "https://cards.scryfall.io/art_crop/front/9/a/9ae02771-2917-4d6e-9608-1a592389439a.jpg?1767955222",
             "Serpent" to "https://cards.scryfall.io/art_crop/front/5/4/54a1c6a9-3531-4432-9157-e4400dbc89fd.jpg",
             "Shapeshifter" to "https://cards.scryfall.io/art_crop/front/1/a/1a7d89ca-8611-4bda-b5c8-0350ce091102.jpg",
-            "Skeleton" to "https://cards.scryfall.io/art_crop/front/6/8/6894192e-782b-49ef-b9fc-28b76e2268ab.jpg?1562636766",
             "Shark" to "https://cards.scryfall.io/art_crop/front/f/9/f9424ef2-d271-4929-83e0-12775420bac3.jpg?1721427369",
+            "Skeleton" to "https://cards.scryfall.io/art_crop/front/6/8/6894192e-782b-49ef-b9fc-28b76e2268ab.jpg?1562636766",
             "Sliver" to "https://cards.scryfall.io/art_crop/front/b/f/bf7501ee-783d-49c6-b381-1db056360b40.jpg?1752946465",
             "Snake" to "https://cards.scryfall.io/art_crop/front/8/3/83a6a142-f065-4a74-9a73-8105be29bc94.jpg?1562636831",
             "Soldier" to "https://cards.scryfall.io/art_crop/front/b/1/b159b57d-bc52-4cef-ac7a-e364e40c3d03.jpg?1761614919",

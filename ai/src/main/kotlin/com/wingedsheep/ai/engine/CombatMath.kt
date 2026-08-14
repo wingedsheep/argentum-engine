@@ -410,187 +410,6 @@ object CombatMath {
         return totalDamage
     }
 
-    // ── Race Clock ──────────────────────────────────────────────────────
-
-    /**
-     * Estimate how many turns until [attacker] can kill [defender] using damage through optimal blocking.
-     * Uses total expected damage (evasive + trample overflow + unblockable surplus) rather than
-     * only evasive damage, so the race clock is meaningful even with ground creatures.
-     */
-    fun turnsToKill(
-        state: GameState,
-        projected: ProjectedState,
-        attackerPlayer: EntityId,
-        defenderPlayer: EntityId,
-        opponentBlockers: List<EntityId>
-    ): Int {
-        val defenderLife = state.getEntity(defenderPlayer)
-            ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 20
-        val myCreatures = projected.getBattlefieldControlledBy(attackerPlayer)
-            .filter { projected.isCreature(it) && !state.getEntity(it)!!.has<TappedComponent>() }
-        val damageThrough = calculateDamageThroughOptimalBlocking(state, projected, myCreatures, opponentBlockers)
-        if (damageThrough <= 0) return Int.MAX_VALUE
-        return (defenderLife + damageThrough - 1) / damageThrough // ceiling division
-    }
-
-    // ── Aggression Analysis ───────────────────────────────────────────
-
-    /**
-     * Aggression level (0-5) inspired by Forge's combat AI.
-     * Compares how fast each player can kill the other using a life-to-damage ratio.
-     *
-     * - 5: All-out attack (attritional win or dominant race)
-     * - 4: Aggressive (winning the race, willing to trade)
-     * - 3: Moderate (slightly ahead or even, attack with expendable creatures)
-     * - 2: Cautious (slightly behind, only safe attacks)
-     * - 1: Defensive (only evasive/unblockable creatures)
-     * - 0: Full defense (hold everything back)
-     */
-    fun calculateAggressionLevel(
-        state: GameState,
-        projected: ProjectedState,
-        playerId: EntityId,
-        opponentId: EntityId,
-        myCreatures: List<EntityId>,
-        opponentBlockers: List<EntityId>
-    ): Int {
-        val myLife = state.getEntity(playerId)?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 20
-        val opponentLife = state.getEntity(opponentId)?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 20
-
-        val myDamageThrough = calculateDamageThroughOptimalBlocking(state, projected, myCreatures, opponentBlockers)
-        val opponentAttackers = getCreaturesThatCanAttack(state, projected, opponentId)
-        val myBlockers = myCreatures // all untapped creatures can block
-        val theirDamageThrough = calculateDamageThroughOptimalBlocking(state, projected, opponentAttackers, myBlockers)
-
-        // Evasive-only damage (guaranteed regardless of blocks)
-        val myEvasiveDamage = calculateEvasiveDamage(state, projected, myCreatures, opponentBlockers)
-
-        // Race ratio: how many turns until I kill them vs they kill me
-        // Higher ratio = safer for me
-        val myLifeToTheirDamage = if (theirDamageThrough > 0) myLife.toDouble() / theirDamageThrough else 99.0
-        val theirLifeToMyDamage = if (myDamageThrough > 0) opponentLife.toDouble() / myDamageThrough else 99.0
-        val ratioDiff = myLifeToTheirDamage - theirLifeToMyDamage
-
-        // Attritional analysis
-        val attritionalWin = simulateAttritionalAttack(state, projected, playerId, opponentId, opponentBlockers)
-
-        // Creature count advantage
-        val myCount = myCreatures.size
-        val theirCount = opponentBlockers.size
-        val outnumber = myCount - theirCount
-
-        return when {
-            // Level 5: we win the attrition war AND we're not losing the race
-            ratioDiff > 0 && attritionalWin -> 5
-            // Level 4: winning the race significantly, or opponent is very low
-            ratioDiff >= 1.0 || (opponentLife <= 8 && myEvasiveDamage > 0) -> 4
-            // Level 3: roughly even or slightly ahead, especially with more creatures
-            ratioDiff >= 0 || outnumber >= 2 -> 3
-            // Level 2: slightly behind but not desperate
-            ratioDiff >= -1.5 || outnumber >= 1 -> 2
-            // Level 1: behind on the race, only evasive attacks make sense
-            myEvasiveDamage > 0 -> 1
-            // Level 0: we're losing badly — hunker down
-            else -> 0
-        }
-    }
-
-    /**
-     * Simulate a war of attrition over multiple turns with **both sides** attacking
-     * and blocking alternately. Each round:
-     *   1. We attack → they block optimally → combat trades
-     *   2. They counterattack → we block optimally → combat trades
-     *
-     * Returns true if we win the attrition war (opponent dies first, or we end up
-     * in a stronger position after several rounds of mutual combat).
-     */
-    fun simulateAttritionalAttack(
-        state: GameState,
-        projected: ProjectedState,
-        playerId: EntityId,
-        opponentId: EntityId,
-        opponentBlockers: List<EntityId>
-    ): Boolean {
-        var myLife = state.getEntity(playerId)
-            ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 20
-        var opponentLife = state.getEntity(opponentId)
-            ?.get<com.wingedsheep.engine.state.components.identity.LifeTotalComponent>()?.life ?: 20
-
-        val myCreatures = projected.getBattlefieldControlledBy(playerId)
-            .filter { projected.isCreature(it) && state.getEntity(it)?.has<TappedComponent>() != true }
-            .sortedBy { creatureValue(state, projected, it) }
-            .toMutableList()
-        val theirCreatures = opponentBlockers.toMutableList()
-
-        val maxRounds = 6
-
-        for (round in 1..maxRounds) {
-            if (myCreatures.isEmpty() && theirCreatures.isEmpty()) break
-
-            // === Our attack phase ===
-            if (myCreatures.isNotEmpty()) {
-                val dmgThrough = calculateDamageThroughOptimalBlocking(state, projected, myCreatures, theirCreatures)
-                opponentLife -= dmgThrough
-                if (opponentLife <= 0) return true
-
-                simulateOneTrade(state, projected, myCreatures, theirCreatures)
-            }
-
-            // === Opponent's counterattack phase ===
-            if (theirCreatures.isNotEmpty()) {
-                val theirDmg = calculateDamageThroughOptimalBlocking(state, projected, theirCreatures, myCreatures)
-                myLife -= theirDmg
-                if (myLife <= 0) return false // we die first — attrition is bad
-
-                simulateOneTrade(state, projected, theirCreatures, myCreatures)
-            }
-        }
-
-        // After attrition rounds, compare remaining positions
-        if (opponentLife <= 0) return true
-        if (myLife <= 0) return false
-
-        // Check remaining damage potential for both sides
-        val myDmg = if (myCreatures.isNotEmpty())
-            calculateDamageThroughOptimalBlocking(state, projected, myCreatures, theirCreatures) else 0
-        val theirDmg = if (theirCreatures.isNotEmpty())
-            calculateDamageThroughOptimalBlocking(state, projected, theirCreatures, myCreatures) else 0
-
-        val turnsToKill = if (myDmg > 0) (opponentLife + myDmg - 1) / myDmg else Int.MAX_VALUE
-        val turnsToLose = if (theirDmg > 0) (myLife + theirDmg - 1) / theirDmg else Int.MAX_VALUE
-
-        // We win attrition if we kill them faster, or same speed but more creatures
-        return turnsToKill < turnsToLose ||
-            (turnsToKill == turnsToLose && myCreatures.size > theirCreatures.size)
-    }
-
-    /**
-     * Simulate one attritional trade: the weakest non-evasive attacker gets blocked
-     * and killed. If the attacker can also kill the blocker, it's a mutual trade.
-     */
-    private fun simulateOneTrade(
-        state: GameState,
-        projected: ProjectedState,
-        attackers: MutableList<EntityId>,
-        blockers: MutableList<EntityId>
-    ) {
-        val expendable = attackers.firstOrNull { !isEvasive(state, projected, it, blockers) } ?: return
-        val killer = blockers.firstOrNull {
-            canBeBlockedBy(state, projected, expendable, it) &&
-                wouldKillInCombat(state, projected, it, expendable)
-        }
-        if (killer != null) {
-            attackers.remove(expendable)
-            // Only a mutual kill if the attacker can actually deal damage to the blocker.
-            // If the blocker has first strike and kills the attacker first, attacker never
-            // deals regular damage — blocker survives.
-            val attackerDealsDamage = survivesFirstStrike(state, projected, killer, expendable)
-            if (attackerDealsDamage && wouldKillInCombat(state, projected, expendable, killer)) {
-                blockers.remove(killer) // mutual kill
-            }
-        }
-    }
-
     /**
      * Get creatures controlled by [playerId] that can actually attack
      * (not tapped, no summoning sickness unless haste, no defender).
@@ -753,5 +572,34 @@ object CombatMath {
         }
         if (opponentAttackers.isEmpty()) return 0
         return calculateDamageThroughOptimalBlocking(state, projected, opponentAttackers, myBlockers)
+    }
+
+    /**
+     * Would attacking with every creature be lethal even through the opponent's best blocks?
+     *
+     * Three tiers of certainty, cheapest first: total power below their life can never be lethal;
+     * guaranteed evasive damage alone can be; otherwise price the whole attack against optimal
+     * blocking. Pure combat math — no simulation — which is what lets both [CombatSeed] and a
+     * rollout playout ask the question.
+     */
+    fun isLethalAttack(
+        state: GameState,
+        projected: ProjectedState,
+        attackers: List<EntityId>,
+        opponentBlockers: List<EntityId>,
+        opponentLife: Int
+    ): Boolean {
+        val totalPower = attackers.sumOf { (projected.getPower(it) ?: 0).coerceAtLeast(0) }
+        if (totalPower < opponentLife) return false
+
+        // Guaranteed evasive damage
+        val evasiveDamage = calculateEvasiveDamage(state, projected, attackers, opponentBlockers)
+        if (evasiveDamage >= opponentLife) return true
+
+        // Full simulation of optimal blocking
+        val damageThrough = calculateDamageThroughOptimalBlocking(
+            state, projected, attackers, opponentBlockers
+        )
+        return damageThrough >= opponentLife
     }
 }

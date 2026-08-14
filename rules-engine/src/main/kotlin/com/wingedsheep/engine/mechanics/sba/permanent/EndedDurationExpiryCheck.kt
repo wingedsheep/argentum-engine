@@ -9,6 +9,7 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.sba.SbaOrder
 import com.wingedsheep.engine.mechanics.sba.StateBasedActionCheck
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -37,14 +38,21 @@ import com.wingedsheep.sdk.scripting.Duration
  *   ends when the source leaves the battlefield or untaps. The power variant additionally drops
  *   any affected creature whose projected power exceeds the source's projected power.
  * - [Duration.WhileSourceOnBattlefield]: ends when the source leaves the battlefield.
- * - [Duration.WhileAffectedTapped]: drops any affected object that is no longer tapped
- *   (also enforced for duration-keyed grants in `grantedActivatedAbilities` /
- *   `grantedStaticAbilities`, which have no floating-effect representation).
+ * - [Duration.WhileSourceAttachedToAffected]: keeps only affected objects the source Aura/Equipment
+ *   is still attached to — it leaving, detaching, or moving to another host all end it.
+ * - [Duration.WhileAffectedTapped]: drops any affected object that is no longer tapped.
+ * - [Duration.WhileAffectedHasCounter]: drops any affected object that no longer carries the counter.
  * - [Duration.WhileControlledByController]: drops any affected object the effect's controller no
  *   longer controls.
  * - [Duration.WhileYouControlSource]: ends when the source leaves the battlefield OR its
  *   projected controller is no longer the effect's controller. Drops the entire effect (not
  *   per-affected) — the source-controller half is binary, the source either is or isn't yours.
+ *
+ * The gates that depend only on the source or the affected object are additionally enforced for
+ * duration-keyed grants in `grantedActivatedAbilities` / `grantedStaticAbilities`, which have no
+ * floating-effect representation and so would otherwise never expire — Kitesail Larcenist's
+ * granted Treasure mana ability is the source-keyed case, Ultima's counter-keyed "{T}: Add {C}"
+ * and Braided Net's activation lock the affected-keyed ones.
  *
  * Affected entities no longer on the battlefield are left untouched: the effect as a whole is
  * reaped by the untap-step cleanup / zone-change handling, and we must not emit spurious
@@ -59,12 +67,13 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
     override val order = SbaOrder.DURATION_EXPIRY
 
     override fun check(state: GameState): ExecutionResult {
-        // An affected-object-keyed grant (Ultima's counter-keyed "{T}: Add {C}" in
-        // grantedActivatedAbilities; Braided Net's tapped-keyed activation lock in
-        // grantedStaticAbilities) must be pruned the moment its condition fails — otherwise a
-        // de-blighted land keeps the mana ability / an untapped permanent stays locked. This
-        // latch is one-way by nature: the grant is never re-added.
-        val prunedState = pruneAffectedKeyedGrants(state)
+        // A conditional grant (Ultima's counter-keyed "{T}: Add {C}" and Kitesail Larcenist's
+        // source-keyed Treasure mana ability in grantedActivatedAbilities; Braided Net's
+        // tapped-keyed activation lock in grantedStaticAbilities) must be pruned the moment its
+        // condition fails — otherwise a de-blighted land keeps the mana ability / an untapped
+        // permanent stays locked / a Treasured permanent keeps saccing for mana after its
+        // Larcenist died. This latch is one-way by nature: the grant is never re-added.
+        val prunedState = pruneEndedGrants(state)
 
         if (prunedState.floatingEffects.isEmpty()) {
             return if (prunedState === state) ExecutionResult.success(state)
@@ -116,8 +125,16 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
     ): Set<EntityId> {
         val all = floating.effect.affectedEntities
         return when (floating.duration) {
-            is Duration.WhileSourceTapped ->
-                if (sourceTapped(state, floating.sourceId)) all else emptySet()
+            // Source-keyed gates — the condition is a pure function of the source permanent (and,
+            // for the attachment gate, of which permanent it is attached to). Shared with the
+            // granted-ability path via [sourceGateHolds]; filtering per affected entity is
+            // equivalent to all-or-nothing for the two gates that ignore the affected object.
+            is Duration.WhileSourceTapped,
+            is Duration.WhileSourceOnBattlefield,
+            Duration.WhileSourceAttachedToAffected ->
+                all.filterTo(LinkedHashSet()) {
+                    sourceGateHolds(state, floating.duration, floating.sourceId, it)
+                }
 
             is Duration.WhileSourceTappedAndAffectedPowerAtMostSource -> {
                 if (!sourceTapped(state, floating.sourceId)) {
@@ -131,10 +148,6 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
                 }
             }
 
-            is Duration.WhileSourceOnBattlefield ->
-                if (floating.sourceId != null && state.getBattlefield().contains(floating.sourceId)) all
-                else emptySet()
-
             Duration.WhileControlledByController ->
                 all.filterTo(LinkedHashSet()) { id ->
                     !state.getBattlefield().contains(id) || projected.getController(id) == floating.controllerId
@@ -145,20 +158,6 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
                 if (sourceId == null || !state.getBattlefield().contains(sourceId)) emptySet()
                 else if (projected.getController(sourceId) != floating.controllerId) emptySet()
                 else all
-            }
-
-            Duration.WhileSourceAttachedToAffected -> {
-                // "for as long as [the source Aura/Equipment] remains attached to it" — keep only
-                // affected entities the source is still attached to (CR 611.2b). The source leaving
-                // the battlefield, becoming unattached, or moving to a different host all drop it.
-                val sourceId = floating.sourceId
-                if (sourceId == null || !state.getBattlefield().contains(sourceId)) emptySet()
-                else {
-                    val attachedTo = state.getEntity(sourceId)
-                        ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
-                        ?.targetId
-                    all.filterTo(LinkedHashSet()) { it == attachedTo }
-                }
             }
 
             is Duration.WhileAffectedHasCounter -> {
@@ -189,29 +188,44 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
     }
 
     /**
-     * Drop any affected-object-keyed grant whose "for as long as …" condition no longer holds
-     * (or whose entity has left the battlefield — a returning permanent is a new object):
-     *  - [Duration.WhileAffectedHasCounter] — the entity no longer carries the required counter
-     *    (Ultima's granted "{T}: Add {C}").
-     *  - [Duration.WhileAffectedTapped] — the entity is no longer tapped (Braided Net's granted
+     * Drop any grant whose "for as long as …" condition no longer holds. Two families:
+     *
+     *  - **Affected-object-keyed** (or whose entity has left the battlefield — a returning
+     *    permanent is a new object): [Duration.WhileAffectedHasCounter], the entity no longer
+     *    carries the required counter (Ultima's granted "{T}: Add {C}");
+     *    [Duration.WhileAffectedTapped], the entity is no longer tapped (Braided Net's granted
      *    activation lock).
-     * Covers both [GameState.grantedActivatedAbilities] and [GameState.grantedStaticAbilities].
+     *  - **Source-keyed** ([sourceGateHolds]): the granting permanent left the battlefield,
+     *    untapped, or stopped being attached. Kitesail Larcenist's "for as long as this creature
+     *    remains on the battlefield" Treasure mana ability lives here — the floating type/ability
+     *    effects revert through the per-effect loop in [check], but the granted ability has no
+     *    floating-effect representation, so without this it would outlive Kitesail.
+     *
+     * Covers [GameState.grantedActivatedAbilities] and [GameState.grantedStaticAbilities] — the two
+     * grant stores a "for as long as …" duration can reach today. [GameState.grantedTriggeredAbilities],
+     * [GameState.grantedReplacementEffects] and [GameState.globalGrantedTriggeredAbilities] are
+     * deliberately *not* pruned here: no card grants into them with a conditional duration, so they
+     * only ever need the `EndOfTurn` / `UntilYourNextTurn` filters in `CleanupPhaseManager`. Their
+     * executors do accept any [Duration] though, so the first card that grants a trigger or
+     * replacement effect "for as long as …" has to be added here (and carry a `sourceId` for a
+     * source-keyed gate) or it will leak exactly the way the activated-ability grant did.
+     *
      * The latch is one-way by nature: a pruned grant is never re-added. Returns the same
      * instance when nothing changed.
      */
-    private fun pruneAffectedKeyedGrants(state: GameState): GameState {
+    private fun pruneEndedGrants(state: GameState): GameState {
         var result = state
-        if (state.grantedActivatedAbilities.any { affectedGrantConditionFails(state, it.entityId, it.duration) }) {
+        if (state.grantedActivatedAbilities.any { grantConditionFails(state, it.entityId, it.sourceId, it.duration) }) {
             result = result.copy(
                 grantedActivatedAbilities = state.grantedActivatedAbilities.filterNot {
-                    affectedGrantConditionFails(state, it.entityId, it.duration)
+                    grantConditionFails(state, it.entityId, it.sourceId, it.duration)
                 }
             )
         }
-        if (state.grantedStaticAbilities.any { affectedGrantConditionFails(state, it.entityId, it.duration) }) {
+        if (state.grantedStaticAbilities.any { grantConditionFails(state, it.entityId, it.sourceId, it.duration) }) {
             result = result.copy(
                 grantedStaticAbilities = state.grantedStaticAbilities.filterNot {
-                    affectedGrantConditionFails(state, it.entityId, it.duration)
+                    grantConditionFails(state, it.entityId, it.sourceId, it.duration)
                 }
             )
         }
@@ -219,9 +233,60 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
     }
 
     /**
+     * True when [duration] is a conditional "for as long as …" duration whose condition no longer
+     * holds for the grant on [entityId] made by [sourceId]. False for every other duration
+     * (unconditional grants are never pruned here).
+     *
+     * The projection-dependent gates ([Duration.WhileSourceTappedAndAffectedPowerAtMostSource]) and
+     * the ones that need the *effect's* controller ([Duration.WhileControlledByController],
+     * [Duration.WhileYouControlSource]) are deliberately not handled: a grant record carries no
+     * controller, and both shapes only ever appear on floating control/pump effects, which the
+     * per-effect loop above already reaps.
+     */
+    private fun grantConditionFails(
+        state: GameState,
+        entityId: EntityId,
+        sourceId: EntityId?,
+        duration: Duration
+    ): Boolean =
+        !sourceGateHolds(state, duration, sourceId, entityId) ||
+            affectedGrantConditionFails(state, entityId, duration)
+
+    /**
+     * Whether a *source-keyed* "for as long as …" gate still holds for the grant/effect made by
+     * [sourceId] on [affectedId]. Returns `true` for every other duration, so callers can apply it
+     * unconditionally.
+     *
+     * Depends only on the source's zone, tapped state, and attachment — no projection — which is
+     * what lets the granted-ability path (which has no [ProjectedState] at hand) share it with
+     * [activeAffectedEntities]. A missing [sourceId] means there is no source on the battlefield,
+     * so the gate is closed.
+     */
+    private fun sourceGateHolds(
+        state: GameState,
+        duration: Duration,
+        sourceId: EntityId?,
+        affectedId: EntityId
+    ): Boolean = when (duration) {
+        // "for as long as this permanent remains on the battlefield" (Kitesail Larcenist).
+        is Duration.WhileSourceOnBattlefield ->
+            sourceId != null && state.getBattlefield().contains(sourceId)
+
+        // "for as long as this creature remains tapped" (Old Man of the Sea).
+        is Duration.WhileSourceTapped -> sourceTapped(state, sourceId)
+
+        // "for as long as [the source Aura/Equipment] remains attached to it" — the source leaving
+        // the battlefield, becoming unattached, or moving to a different host all end it.
+        Duration.WhileSourceAttachedToAffected ->
+            sourceId != null && state.getBattlefield().contains(sourceId) &&
+                state.getEntity(sourceId)?.get<AttachedToComponent>()?.targetId == affectedId
+
+        else -> true
+    }
+
+    /**
      * True when [duration] is an affected-object-keyed "for as long as …" duration whose
-     * condition no longer holds for [entityId]. False for every other duration (unconditional
-     * grants are never pruned here).
+     * condition no longer holds for [entityId]. False for every other duration.
      */
     private fun affectedGrantConditionFails(
         state: GameState,

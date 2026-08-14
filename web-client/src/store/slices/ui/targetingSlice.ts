@@ -105,10 +105,14 @@ export const createTargetingSlice: SliceCreator<TargetingSlice> = (set, get) => 
 
     const currentPhase = pipelineState.remainingPhases[0]
 
-    // Cost payment phase (sacrifice/discard/tap/bounce/exile/blight selection)
-    if (currentPhase?.type === 'costPayment') {
-      const costType =
-        pipelineState.actionInfo.additionalCostInfo?.costType ?? 'SacrificePermanent'
+    // Cost payment phase (sacrifice/discard/tap/bounce/exile/blight selection). Escalate pays a
+    // different cost from the same pickers, so it reads its costType off the modal enumeration.
+    if (currentPhase?.type === 'costPayment' || currentPhase?.type === 'escalateCost') {
+      const costInfo =
+        currentPhase.type === 'escalateCost'
+          ? pipelineState.actionInfo.modalEnumeration?.additionalCostPerExtraMode
+          : pipelineState.actionInfo.additionalCostInfo
+      const costType = costInfo?.costType ?? 'SacrificePermanent'
       set({ targetingState: null })
       get().advancePipeline({
         type: 'costPayment',

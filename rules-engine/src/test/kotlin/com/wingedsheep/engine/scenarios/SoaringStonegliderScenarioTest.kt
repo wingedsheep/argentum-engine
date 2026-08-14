@@ -21,7 +21,7 @@ import io.kotest.matchers.shouldBe
  *
  * "As an additional cost to cast this spell, exile two cards from your graveyard or pay {1}{W}."
  *
- * Exercises the new [com.wingedsheep.sdk.scripting.AdditionalCost.ExileFromGraveyardOrPay] cost:
+ * Exercises the exile-from-graveyard leg of [com.wingedsheep.sdk.scripting.AdditionalCost.OrPay]:
  *  - the enumerator offers both the exile path (base {2}{W}) and the pay path ({2}{W} + {1}{W});
  *  - paying via the exile path moves two graveyard cards to exile;
  *  - paying via the pay path leaves the graveyard untouched;

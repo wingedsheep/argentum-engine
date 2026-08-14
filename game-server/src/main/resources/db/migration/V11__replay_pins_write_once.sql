@@ -1,0 +1,22 @@
+-- Move the pinned card definitions out of the per-flush blob and into a write-once column.
+--
+-- `data` is re-encoded and rewritten in full on every in-progress flush (every few seconds, for the
+-- length of a game). The pinned definitions are ~80% of that payload on a modern set — ~30 KB of the
+-- ~46 KB — and they never change: they are captured once from the decklists, which are fixed at game
+-- start. So a 30-minute game was rewriting the same 30 KB a few hundred times, each UPDATE also
+-- re-TOASTing the value and leaving a dead tuple behind for autovacuum.
+--
+-- Here they get their own column, written when the row is first inserted and then left alone — the
+-- flush UPDATE (GameReplayRepository.updateRecording) does not name this column, which is what makes
+-- it write-once rather than merely idempotent: Postgres only preserves a TOAST pointer for a column
+-- an UPDATE doesn't touch, so re-assigning identical bytes would still cost a full rewrite.
+--
+-- They can't instead be deferred to game over: a restart onto a new build mid-game would then pin the
+-- *new* definitions for a game that started on the old ones, which is the exact failure pinning
+-- exists to prevent (and the corpus may no longer even contain a card the decks used).
+--
+-- Additive and back-compatible in both directions. Rows written before this migration keep their pins
+-- inside `data`, and the read path prefers this column only when it is populated — so old rows still
+-- reconstruct, and a record written by an older build mid-deploy is still readable.
+ALTER TABLE game_replays
+    ADD COLUMN pinned_cards TEXT;

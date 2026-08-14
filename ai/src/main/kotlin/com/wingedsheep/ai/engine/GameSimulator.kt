@@ -6,6 +6,8 @@ import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.legalactions.LegalActionEnumerator
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 
 /**
@@ -17,7 +19,27 @@ import com.wingedsheep.sdk.model.EntityId
 class GameSimulator(
     private val cardRegistry: CardRegistry,
     private val processor: ActionProcessor = ActionProcessor(EngineServices(cardRegistry), computeUndo = false),
-    private val enumerator: LegalActionEnumerator = LegalActionEnumerator.create(cardRegistry)
+    private val enumerator: LegalActionEnumerator = LegalActionEnumerator.create(cardRegistry),
+    /**
+     * Carry a simulation past the empty stack to the end of the combat damage step, when blockers
+     * are already declared.
+     *
+     * A quiet state is "the stack is empty", which inside combat is *before damage*. Three puzzles
+     * fail on exactly that gap — `instants-05` (Fog), `activate-05` (firebreathing) and their
+     * relatives all pay mana now for something that only materialises when damage is dealt, so the
+     * post-simulation board is strictly worse than passing and the AI passes. Phase 7 answers this
+     * with full playouts; this answers only the case where the answer is already determined, which
+     * is why it costs one step rather than two turns.
+     *
+     * **Scoped to blockers-already-declared on purpose.** From `DECLARE_ATTACKERS` the outcome
+     * still depends on how the defender blocks, and nothing here would declare those blocks — the
+     * simulation would either stall or silently score an unblocked alpha strike. Once blocks are
+     * in, the only thing between the current state and the damage is the damage.
+     *
+     * Off for [AiProfile.LEGACY_V0], which has to stay frozen, and off by default so a
+     * `GameSimulator` built anywhere else keeps its historical horizon.
+     */
+    private val resolveThroughCombatDamage: Boolean = false,
 ) {
     /**
      * Optional resolver for non-trivial decisions encountered during simulation.
@@ -142,7 +164,17 @@ class GameSimulator(
                 continue
             }
 
-            // Stack empty, no pending decision — we've reached a quiet state
+            // Stack empty, no pending decision — normally a quiet state. Inside combat with
+            // blockers already declared it is a *pre-damage* state, and the whole point of the
+            // candidate may be the damage; pass priority to advance the step and look again.
+            if (resolveThroughCombatDamage && isPreDamageCombatState(state)) {
+                if (priorityPlayerId == null || state.gameOver) break
+                current = processor.process(state, PassPriority(priorityPlayerId)).result
+                allEvents = allEvents + current.events
+                iterations++
+                continue
+            }
+
             break
         }
 
@@ -159,95 +191,31 @@ class GameSimulator(
 
     /**
      * Returns a trivial response if there's exactly one legal choice, null otherwise.
+     *
+     * The rules live in [TrivialDecisions] so a rollout playout answers a forced decision exactly
+     * as the simulator does — a playout that diverged here would make rollout scores incomparable
+     * with the static ones they replace, for no benefit.
      */
-    private fun trivialResponseFor(decision: PendingDecision): DecisionResponse? = when (decision) {
-        // Single target, single requirement → auto-select
-        is ChooseTargetsDecision -> {
-            val allSingle = decision.targetRequirements.all { req ->
-                val targets = decision.legalTargets[req.index] ?: emptyList()
-                targets.size == 1 && req.minTargets == 1 && req.maxTargets == 1
-            }
-            if (allSingle) {
-                TargetsResponse(
-                    decisionId = decision.id,
-                    selectedTargets = decision.targetRequirements.associate { req ->
-                        req.index to decision.legalTargets[req.index]!!
-                    }
-                )
-            } else null
-        }
+    private fun trivialResponseFor(decision: PendingDecision): DecisionResponse? =
+        TrivialDecisions.responseFor(decision)
 
-        // Forced card selection (min == max == options.size)
-        is SelectCardsDecision -> {
-            if (decision.minSelections == decision.options.size &&
-                decision.maxSelections == decision.options.size
-            ) {
-                CardsSelectedResponse(decision.id, decision.options)
-            } else null
+    /**
+     * True while combat damage is still ahead of us and nothing but priority stands in its way.
+     *
+     * `DECLARE_BLOCKERS` means blocks are in and the damage is next; `FIRST_STRIKE_COMBAT_DAMAGE`
+     * means the first-strike half has been dealt and the regular half has not. Reaching
+     * `COMBAT_DAMAGE` with an empty stack means the damage is already on the board — the turn-based
+     * action happens on entering the step, before anyone gets priority — so that is where we stop.
+     *
+     * The attacker check keeps an empty combat from costing anything: with nothing attacking there
+     * is no damage to wait for, and advancing would only move the evaluation further from the
+     * decision being scored.
+     */
+    private fun isPreDamageCombatState(state: GameState): Boolean {
+        if (state.step != Step.DECLARE_BLOCKERS && state.step != Step.FIRST_STRIKE_COMBAT_DAMAGE) {
+            return false
         }
-
-        // Damage assignment with defaults
-        is AssignDamageDecision -> {
-            if (decision.defaultAssignments.isNotEmpty()) {
-                DamageAssignmentResponse(decision.id, decision.defaultAssignments)
-            } else null
-        }
-
-        // Mana sources — auto-pay is trivial only when the solver actually found a
-        // solution. When autoPaySuggestion is empty (e.g. the only available mana
-        // requires sacrificing a Treasure), autoPay=true errors and the resumer
-        // would re-prompt the same decision; fall through so the pluggable
-        // resolver (DecisionResponder.respondManaSelection) handles it.
-        is SelectManaSourcesDecision -> {
-            if (decision.autoPaySuggestion.isNotEmpty()) {
-                ManaSourcesSelectedResponse(decision.id, autoPay = true)
-            } else null
-        }
-
-        // Single option
-        is ChooseOptionDecision -> {
-            if (decision.options.size == 1) {
-                OptionChosenResponse(decision.id, 0)
-            } else null
-        }
-
-        // Single color
-        is ChooseColorDecision -> {
-            if (decision.availableColors.size == 1) {
-                ColorChosenResponse(decision.id, decision.availableColors.first())
-            } else null
-        }
-
-        // Single mode, min==max==1
-        is ChooseModeDecision -> {
-            val available = decision.modes.filter { it.available }
-            if (available.size == 1 && decision.minModes == 1) {
-                ModesChosenResponse(decision.id, listOf(available.first().index))
-            } else null
-        }
-
-        // Number with single valid value
-        is ChooseNumberDecision -> {
-            if (decision.minValue == decision.maxValue) {
-                NumberChosenResponse(decision.id, decision.minValue)
-            } else null
-        }
-
-        // Single object ordering
-        is OrderObjectsDecision -> {
-            if (decision.objects.size <= 1) {
-                OrderedResponse(decision.id, decision.objects)
-            } else null
-        }
-
-        // Library reordering with single card
-        is ReorderLibraryDecision -> {
-            if (decision.cards.size <= 1) {
-                OrderedResponse(decision.id, decision.cards)
-            } else null
-        }
-
-        else -> null
+        return state.getBattlefield().any { state.getEntity(it)?.has<AttackingComponent>() == true }
     }
 }
 

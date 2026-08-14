@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.costs.manaCostOrNull
  *
  * The motivating case is the Momir Basic Vanguard avatar
  * ([com.wingedsheep.sdk.core.Format.MomirBasic]), which grants "{X}{X}{X}, Discard a card: …"
- * with `activateFromZone == Zone.COMMAND`. Modeled on [GraveyardAbilityEnumerator]: scan a
+ * with `activateFromZone == Zone.COMMAND`. Modeled on [ZoneActivatedAbilityEnumerator]: scan a
  * non-battlefield zone, filter abilities by `activateFromZone`, gate sorcery timing on
  * [EnumerationContext.canPlaySorcerySpeed], honour activation restrictions, and surface
  * mana/discard cost payability plus X-cost info. [com.wingedsheep.engine.handlers.actions.ability.ActivateAbilityHandler]
@@ -48,7 +48,7 @@ class CommandZoneAbilityEnumerator : ActionEnumerator {
 
                 // Activation restrictions (e.g. once each turn).
                 if (ability.restrictions.any {
-                        !context.castPermissionUtils.checkActivationRestriction(state, playerId, it, entityId, ability.id)
+                        !context.castPermissionUtils.checkActivationRestriction(state, playerId, it, entityId, ability.id, ability.isExhaust)
                     }
                 ) continue
 
@@ -111,7 +111,10 @@ class CommandZoneAbilityEnumerator : ActionEnumerator {
                 val maxAffordableX = if (hasXCost) {
                     context.costUtils.calculateMaxAffordableX(
                         state, playerId, ability.cost, abilityManaCost,
-                        precomputedSources = context.availableManaSources
+                        precomputedSources = context.availableManaSources,
+                        // Same source scoping the battlefield enumerator passes: cost filters
+                        // routinely resolve against the ability's own permanent.
+                        sourceId = entityId
                     )
                 } else null
 

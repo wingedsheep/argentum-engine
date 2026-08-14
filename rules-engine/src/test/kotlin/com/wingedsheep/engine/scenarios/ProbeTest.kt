@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.SelectCardsDecision
@@ -46,7 +47,7 @@ class ProbeTest : FunSpec({
         repeat(3) { driver.putLandOnBattlefield(player1, "Island") }
 
         driver.submit(
-            CastSpell(playerId = player1, cardId = probe, wasKicked = false, paymentStrategy = PaymentStrategy.AutoPay)
+            CastSpell(playerId = player1, cardId = probe, declaredCostSlot = null, paymentStrategy = PaymentStrategy.AutoPay)
         )
         driver.bothPass()
 
@@ -82,7 +83,7 @@ class ProbeTest : FunSpec({
                 playerId = player1,
                 cardId = probe,
                 targets = listOf(ChosenTarget.Player(player2)),
-                wasKicked = true,
+                declaredCostSlot = ChoiceSlot.KICKED,
                 paymentStrategy = PaymentStrategy.AutoPay
             )
         )

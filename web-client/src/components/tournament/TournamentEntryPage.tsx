@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useGameStore } from '@/store/gameStore.ts'
+import { useConnectName } from '@/store/useConnectName'
 
 /**
  * Entry point for the /tournament/:lobbyId route.
  *
  * Handles two cases:
- * 1. Player not yet connected: show name entry, connect, then auto-join lobby
- * 2. Player already connected: auto-join lobby immediately
+ * 1. No name yet: show name entry, connect, then auto-join lobby
+ * 2. A name already known (stored, or a signed-in account's display name): connect and auto-join
+ *    without asking
  *
  * Once lobby state is received, navigates to "/" where the normal lobby/tournament UI takes over.
  */
@@ -24,6 +26,7 @@ export function TournamentEntryPage() {
   const setPendingTournamentId = useGameStore((state) => state.setPendingTournamentId)
   const sessionReplaced = useGameStore((state) => state.sessionReplaced)
 
+  const { name: connectName, resolving: nameResolving } = useConnectName()
   const [playerName, setPlayerName] = useState(() => localStorage.getItem('argentum-player-name') || '')
   const [joining, setJoining] = useState(false)
   const [tournamentInfo, setTournamentInfo] = useState<{ exists: boolean; state: string; playerCount: number; format: string } | null>(null)
@@ -43,16 +46,15 @@ export function TournamentEntryPage() {
       .catch(() => setFetchError('Tournament not found or no longer active.'))
   }, [lobbyId])
 
-  // Auto-connect if we have a stored name (returning user). Never while another
-  // tab/device owns the session — reconnecting would steal it back.
+  // Auto-connect anyone who already has a name — stored, or a signed-in account's display name.
+  // Never while another tab/device owns the session — reconnecting would steal it back.
   useEffect(() => {
     if (sessionReplaced) return
-    const storedName = localStorage.getItem('argentum-player-name')
-    if (storedName && connectionStatus === 'disconnected' && !hasConnectedRef.current) {
+    if (connectName && connectionStatus === 'disconnected' && !hasConnectedRef.current) {
       hasConnectedRef.current = true
-      connect(storedName)
+      connect(connectName)
     }
-  }, [connectionStatus, connect, sessionReplaced])
+  }, [connectionStatus, connect, connectName, sessionReplaced])
 
   // Auto-join lobby once connected
   useEffect(() => {
@@ -81,6 +83,9 @@ export function TournamentEntryPage() {
   // Show error if lobby not found via REST or WebSocket error
   const errorMessage = fetchError || (lastError?.message?.toLowerCase().includes('lobby') || lastError?.message?.toLowerCase().includes('not found') ? lastError.message : null)
 
+  // Only a visitor with no name at all is asked for one; everyone else is mid-connect above.
+  const showNameEntry = !errorMessage && connectionStatus === 'disconnected' && !connectName && !nameResolving
+
   return (
     <div style={pageStyles.container}>
       <div style={pageStyles.card}>
@@ -107,7 +112,7 @@ export function TournamentEntryPage() {
           <p style={pageStyles.error}>{errorMessage}</p>
         )}
 
-        {!errorMessage && connectionStatus === 'disconnected' && (
+        {showNameEntry && (
           <div style={pageStyles.form}>
             <label style={pageStyles.label}>Enter your name to join</label>
             <input
@@ -133,11 +138,11 @@ export function TournamentEntryPage() {
           </div>
         )}
 
-        {(connectionStatus === 'connecting' || joining) && !errorMessage && (
+        {!showNameEntry && !errorMessage && (
           <div style={pageStyles.loading}>
             <div style={pageStyles.spinner} />
             <p style={pageStyles.loadingText}>
-              {connectionStatus === 'connecting' ? 'Connecting...' : 'Joining tournament...'}
+              {joining ? 'Joining tournament...' : 'Connecting...'}
             </p>
             <style>{`@keyframes tournament-spin { to { transform: rotate(360deg); } }`}</style>
           </div>

@@ -31,6 +31,13 @@ data class LegalActionTargetInfo(
      */
     val xConstrainsManaValue: Boolean = false,
     /**
+     * True when this target requirement filters by "mana value X" *exactly*
+     * (CardPredicate.ManaValueEqualsX). The equality sibling of [xConstrainsManaValue]: the client
+     * narrows [validTargets] to cards whose mana value equals the chosen X after X selection
+     * (Likeness Looter, Rydia, Summoner of Mist).
+     */
+    val xConstrainsManaValueExactly: Boolean = false,
+    /**
      * True when this target requirement filters by "power X" (CardPredicate.PowerEqualsX).
      * The client must re-filter [validTargets] to creatures whose power equals the chosen X
      * after X selection (Ent-Draught Basin) — the engine builds [validTargets] permissively
@@ -65,6 +72,13 @@ data class LegalActionInfo(
      */
     val xConstrainsTargetManaValue: Boolean = false,
     /**
+     * True when the (single) target requirement filters by "mana value X" *exactly*
+     * (CardPredicate.ManaValueEqualsX — Likeness Looter). For multi-requirement abilities the
+     * per-requirement flag on [LegalActionTargetInfo.xConstrainsManaValueExactly] is used instead.
+     * The client narrows [validTargets] to cards whose mana value equals the chosen X.
+     */
+    val xConstrainsTargetManaValueExactly: Boolean = false,
+    /**
      * True when the (single) target requirement filters by "power X" (CardPredicate.PowerEqualsX).
      * The client must re-filter [validTargets] to creatures whose power equals the chosen X
      * after X selection (Ent-Draught Basin). For multi-requirement abilities the per-requirement
@@ -89,21 +103,57 @@ data class LegalActionInfo(
     val additionalCostInfo: AdditionalCostInfo? = null,
     val hasConvoke: Boolean = false,
     val validConvokeCreatures: List<ConvokeCreatureInfo>? = null,
-    val hasWaterbend: Boolean = false,
-    val validWaterbendPermanents: List<WaterbendPermanentInfo>? = null,
-    /** Tap cap for a spell-level waterbend cost; null for ability waterbend or the {X} shape. */
-    val waterbendAmount: Int? = null,
+    /**
+     * Tap-for-generic payment (improvise CR 702.126, waterbend): tap untapped permanents you
+     * control, each paying {1} of the generic mana in the cost.
+     */
+    val hasTapForGeneric: Boolean = false,
+    val validTapForGenericPermanents: List<TapForGenericPermanentInfo>? = null,
+    /**
+     * Tap cap for a spell-level waterbend cost; null when the cap is just the generic in the cost
+     * (improvise, ability waterbend, the "waterbend {X}" shape).
+     */
+    val tapForGenericAmount: Int? = null,
+    /** Player-facing verb for the tap payment — `"improvise"` / `"waterbend"`. */
+    val tapForGenericLabel: String? = null,
     val hasDelve: Boolean = false,
     val validDelveCards: List<DelveCardInfo>? = null,
     val minDelveNeeded: Int? = null,
     val hasHarmonize: Boolean = false,
     val validHarmonizeCreatures: List<HarmonizeCreatureInfo>? = null,
     val manaCostString: String? = null,
+    /**
+     * The cheapest [manaCostString] can end up being once the alternative payments this action
+     * already offers are used to the maximum — convoke taps (CR 702.51a), delve exiles (CR 702.66a),
+     * waterbend taps, a harmonize tap. Null when nothing can move the cost.
+     *
+     * For those keywords [manaCostString] is the *pre-reduction* price: the enumerator folds the
+     * reduction into affordability but never into the cost it advertises, so a convoke spell shows
+     * the one number the player never actually pays. Carrying both lets the client render the real
+     * span ("{5}{G} → as low as {G}") instead of just its top end. [AdditionalCostInfo.costAfterSacrifice]
+     * does the same job for emerge, per candidate, where the reduction depends on *which* creature
+     * is sacrificed rather than on how many resources are spent.
+     *
+     * A display floor, not a promise: spending every resource is the player's choice, and whatever
+     * is left still has to be paid with mana.
+     */
+    val minimumManaCostString: String? = null,
     val requiresDamageDistribution: Boolean = false,
     val totalDamageToDistribute: Int? = null,
     val minDamagePerTarget: Int? = null,
     val autoTapPreview: List<EntityId>? = null,
     val availableManaSources: List<ManaSourceInfo>? = null,
+    /**
+     * The player's floating *restricted* ("spend this mana only to …") mana that is eligible to
+     * pay for **this** action, one entry per mana unit. Populated alongside
+     * [availableManaSources] — i.e. for the surfaces where the client does its own cost math
+     * (convoke / waterbend / harmonize / delve selectors, X-cost picker).
+     *
+     * The client can't judge eligibility itself: the pool payload only carries a human-readable
+     * restriction string. Without this, a convoke bar (say) would ignore Ashling, Rimebound's
+     * MV4+ mana and grey out a cast the server would happily accept.
+     */
+    val eligibleRestrictedMana: List<ClientRestrictedManaEntry>? = null,
     val requiresManaColorChoice: Boolean = false,
     /**
      * Restricted color names ("WHITE", "BLUE", ...) when the ability can only produce a
@@ -134,6 +184,10 @@ data class ModalLegalEnumerationInfo(
     val chooseCount: Int,
     val minChooseCount: Int,
     val allowRepeat: Boolean,
+    val additionalManaCostPerExtraMode: String? = null,
+    /** Non-mana escalate (CR 702.120a): the cost of one extra mode — see
+     *  [com.wingedsheep.engine.legalactions.ModalLegalEnumeration.additionalCostPerExtraMode]. */
+    val additionalCostPerExtraMode: AdditionalCostInfo? = null,
     val modes: List<ModalEnumerationModeInfo>,
     val unavailableIndices: List<Int>
 )
@@ -156,7 +210,7 @@ data class ConvokeCreatureInfo(
 )
 
 @Serializable
-data class WaterbendPermanentInfo(
+data class TapForGenericPermanentInfo(
     val entityId: EntityId,
     val name: String,
     val isCreature: Boolean
@@ -189,6 +243,9 @@ data class AdditionalCostInfo(
     val costType: String,
     val validSacrificeTargets: List<EntityId> = emptyList(),
     val sacrificeCount: Int = 1,
+    /** Emerge (CR 702.119): the mana cost left after sacrificing each candidate — see
+     *  [com.wingedsheep.engine.legalactions.AdditionalCostData.costAfterSacrifice]. Empty otherwise. */
+    val costAfterSacrifice: Map<EntityId, String> = emptyMap(),
     val validTapTargets: List<EntityId> = emptyList(),
     val tapCount: Int = 0,
     /** Station-style shortcut: when > 1, up to this many single-creature tap activations may be
@@ -222,7 +279,17 @@ data class AdditionalCostInfo(
     val validCraftMaterials: List<EntityId> = emptyList(),
     val craftMinCount: Int = 1,
     /** Cap on material count for exact-count crafts ("Craft with artifact"); null = unbounded. */
-    val craftMaxCount: Int? = null
+    val craftMaxCount: Int? = null,
+    /**
+     * Candidate creatures for a `TapForTotalPower` additional cost (Teamwork N, CR 702.194a) —
+     * "tap any number of creatures you control with total power N or more". The count is free;
+     * [tapForPowerRequired] is the constraint. Same payload shape as the crew/saddle
+     * [LegalActionInfo.tapForPowerCreatures]. Chosen ids go back as
+     * `additionalCostPayment.variableCostPermanents`.
+     */
+    val tapForPowerCreatures: List<TapForPowerCreatureInfo> = emptyList(),
+    /** Total projected power the [tapForPowerCreatures] selection must reach. 0 = no such cost. */
+    val tapForPowerRequired: Int = 0
 )
 
 @Serializable

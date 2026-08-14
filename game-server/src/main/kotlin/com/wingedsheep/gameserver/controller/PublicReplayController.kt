@@ -1,13 +1,11 @@
 package com.wingedsheep.gameserver.controller
 
-import com.wingedsheep.gameserver.handler.MessageSender
-import com.wingedsheep.gameserver.protocol.ServerMessage
-import com.wingedsheep.gameserver.persistence.persistenceJson
-import com.wingedsheep.gameserver.replay.ReplayService
-import com.wingedsheep.gameserver.replay.SpectatorReplayDelta
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.gameserver.handler.MessageSender
+import com.wingedsheep.gameserver.persistence.persistenceJson
+import com.wingedsheep.gameserver.replay.ReplayFidelity
+import com.wingedsheep.gameserver.replay.ReplayService
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.encodeToString
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -16,8 +14,11 @@ import org.springframework.web.bind.annotation.*
 /**
  * Public (unauthenticated) REST controller for viewing game replays via shareable links.
  * Anyone with the game ID can view the replay — replays only contain spectator-view data
- * (no hidden information like hands). The compact replay is re-simulated on demand into the
- * snapshot+delta stream the client expects; the unguessable game id is the share token.
+ * (no hidden information like hands). The unguessable game id is the share token.
+ *
+ * The body comes from [ReplayService.viewerPayload], which re-simulates the compact record when that
+ * still reproduces the game faithfully and falls back to the frames archived at record time when it
+ * doesn't. The metadata says which happened, so the viewer can be honest about it.
  */
 @RestController
 @RequestMapping("/api/public/replays")
@@ -28,18 +29,11 @@ class PublicReplayController(
 
     @GetMapping("/{gameId}", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getReplay(@PathVariable gameId: String): ResponseEntity<Any> {
-        val replay = replayService.find(gameId)
+        val stored = replayService.findStored(gameId)
             ?: return ResponseEntity.notFound().build()
-        val reconstructed = replayService.reconstruct(replay)
-
-        val initialSnapshotJson = messageSender.json.encodeToString(
-            ServerMessage.SpectatorStateUpdate.serializer(),
-            reconstructed.initialSnapshot
-        )
-        val deltasJson = messageSender.json.encodeToString(
-            ListSerializer(SpectatorReplayDelta.serializer()),
-            reconstructed.deltas
-        )
+        val payload = replayService.viewerPayload(stored)
+            ?: return ResponseEntity.notFound().build()
+        val replay = stored.replay
 
         val response = PublicReplayResponse(
             gameId = replay.gameId,
@@ -48,17 +42,18 @@ class PublicReplayController(
             winnerName = replay.winnerName,
             startedAt = replay.startedAt,
             endedAt = replay.endedAt,
-            snapshotCount = reconstructed.frameCount
+            snapshotCount = payload.frameCount,
+            fidelity = payload.fidelity.name,
+            degradedReason = payload.degradedReason,
+            stateReproducible = payload.stateReproducible,
         )
 
-        // Build combined JSON with metadata + initial snapshot + deltas
-        // We manually compose because snapshots use kotlinx.serialization
+        // Manually composed: the frames are already-serialized JSON (freshly rendered, or read
+        // straight out of the archive), so splicing beats decode-and-re-encode.
         val metadataJson = messageSender.json.encodeToString(response)
-        val combinedJson = """{"metadata":$metadataJson,"initialSnapshot":$initialSnapshotJson,"deltas":$deltasJson}"""
-
         return ResponseEntity.ok()
             .contentType(MediaType.APPLICATION_JSON)
-            .body(combinedJson)
+            .body("""{"metadata":$metadataJson,${payload.bodyFields()}}""")
     }
 
     /**
@@ -67,6 +62,9 @@ class PublicReplayController(
      * Re-simulated from the compact record up to [frame]. Served separately from [getReplay] so
      * normal (masked) replay viewing never receives hidden information — only an explicit share
      * does. The game is finished, so revealing the full state of a snapshot is intended.
+     *
+     * 404s when the record no longer re-simulates: a shared scenario has to be a real position, and
+     * archived frames are pictures of a game, not a game state.
      */
     @GetMapping("/{gameId}/frames/{frame}/full-state", produces = [MediaType.APPLICATION_JSON_VALUE])
     fun getFrameFullState(
@@ -89,5 +87,11 @@ data class PublicReplayResponse(
     val winnerName: String?,
     val startedAt: String,
     val endedAt: String,
-    val snapshotCount: Int
+    val snapshotCount: Int,
+    /** [ReplayFidelity] name — EXACT, UNVERIFIED, or DIVERGED. */
+    val fidelity: String = ReplayFidelity.UNVERIFIED.name,
+    /** Player-facing explanation, set when the replay isn't a faithful re-simulation. */
+    val degradedReason: String? = null,
+    /** Whether "share frame as scenario" can work for this replay. */
+    val stateReproducible: Boolean = true,
 )

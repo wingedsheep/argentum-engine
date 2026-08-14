@@ -57,7 +57,7 @@ class CreateTokenCopyOfChosenPermanentExecutor(
 
         if (candidates.size == 1) {
             // Auto-select the only option
-            return createTokenCopy(state, candidates.first(), controllerId)
+            return createTokenCopy(state, candidates.first(), controllerId, staticAbilityHandler, cardRegistry)
         }
 
         // Present choice to the player
@@ -100,7 +100,8 @@ class CreateTokenCopyOfChosenPermanentExecutor(
             state: GameState,
             chosenId: EntityId,
             controllerId: EntityId,
-            staticAbilityHandler: StaticAbilityHandler? = null
+            staticAbilityHandler: StaticAbilityHandler? = null,
+            cardRegistry: CardRegistry? = null
         ): EffectResult {
             val chosenContainer = state.getEntity(chosenId)
                 ?: return EffectResult.success(state)
@@ -147,6 +148,40 @@ class CreateTokenCopyOfChosenPermanentExecutor(
             newState = com.wingedsheep.engine.handlers.effects.EnterTappedReplacements
                 .applyCreatedTokenEntryTap(newState, tokenId, controllerId)
 
+            // As-enters "enters with counters" (CR 614.1c): the copied card's own EntersWithCounters
+            // (a copy of a creature that "enters with a +1/+1 counter") plus global grants from other
+            // permanents (Gev, Scaled Scorch). Fall back to the global-only path when no registry is
+            // available (the token's own definition can't be resolved without it).
+            val (stateWithCounters, counterEvents) = if (cardRegistry != null) {
+                EntersWithReplacements.applyOnEntry(newState, tokenId, controllerId, cardRegistry)
+            } else {
+                EntersWithReplacements.applyGlobal(newState, tokenId, controllerId)
+            }
+            newState = stateWithCounters
+
+            // As-enters "choose X as this enters" (CR 614.12) + granted riot (CR 702.136): pause for
+            // the player's decision. Exactly one token is created here, so there is no batch to
+            // resume; the entry ZoneChangeEvent is omitted on a pause (the choice resumer synthesizes
+            // it after the choice resolves so ETB triggers fire once). Counters ride along.
+            if (cardRegistry != null) {
+                val choicePlan = TokenEntryReplacements.firstEntersWithChoice(newState, tokenId, cardRegistry)
+                if (choicePlan != null) {
+                    val paused = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+                        .pauseForEntersWithChoice(
+                            state = newState,
+                            entityId = tokenId,
+                            controllerId = controllerId,
+                            cardComponent = tokenCard,
+                            choice = choicePlan.choice,
+                            fromZone = null,
+                            carryEvents = counterEvents,
+                            syntheticRiot = choicePlan.syntheticRiot,
+                            syntheticRiotRemaining = choicePlan.syntheticRiotRemaining,
+                        )
+                    if (paused != null) return EffectResult.from(paused)
+                }
+            }
+
             val event = ZoneChangeEvent(
                 entityId = tokenId,
                 entityName = tokenCard.name,
@@ -155,19 +190,23 @@ class CreateTokenCopyOfChosenPermanentExecutor(
                 ownerId = controllerId
             )
 
-            // Apply "enters with counters" replacement effects from other battlefield permanents
-            // (e.g., Gev, Scaled Scorch granting +1/+1 counters to token copies).
-            val (stateWithCounters, counterEvents) = EntersWithReplacements.applyGlobal(
-                newState, tokenId, controllerId
-            )
-
             // CR 714.2b/714.3a: a token copy of a Saga enters as a Saga with its on-enter lore
             // counter. BattlefieldEntry.place skips enters-with-counters setup, so apply the shared
             // Saga-entry helper (as the standard moveToZone pipeline does). No-op for non-Sagas.
             val (sagaState, sagaEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
-                .applySagaEntryIfNeeded(stateWithCounters, tokenId)
+                .applySagaEntryIfNeeded(newState, tokenId)
 
-            return EffectResult.success(sagaState, listOf(event) + counterEvents + sagaEvents)
+            // CR 306.5b: likewise a token copy of a planeswalker enters with the copied printed
+            // loyalty (a copiable value, CR 707.2), or state-based actions (CR 704.5i) bin it on
+            // arrival. No-op for non-planeswalkers.
+            val (loyaltyState, loyaltyEvents) = cardRegistry?.let { registry ->
+                com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
+                    .applyIntrinsicEntryCountersIfNeeded(sagaState, tokenId, controllerId, registry)
+            } ?: (sagaState to emptyList())
+
+            return EffectResult.success(
+                loyaltyState, listOf(event) + counterEvents + sagaEvents + loyaltyEvents
+            )
         }
     }
 }

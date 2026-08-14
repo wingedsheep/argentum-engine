@@ -1,0 +1,70 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Sun-Dappled Celebrant",
+      "Questing Druid",
+      "Murderous Cut",
+      "Tender Wildguide",
+      "Wretched Gryff"
+    ],
+    "battlefield": [
+      { "name": "Plains" },
+      { "name": "Plains" },
+      { "name": "Island" },
+      { "name": "Island" },
+      { "name": "Swamp" },
+      { "name": "Swamp" },
+      { "name": "Mountain" },
+      { "name": "Mountain" },
+      { "name": "Forest" },
+      { "name": "Forest" },
+      { "name": "Serra Angel" },
+      { "name": "Sun-Dappled Celebrant" },
+      { "name": "Grizzly Bears" },
+      { "name": "Hill Giant" }
+    ],
+    "graveyard": [
+      "Grizzly Bears",
+      "Hill Giant",
+      "Serra Angel",
+      "Grizzly Bears",
+      "Hill Giant"
+    ],
+    "library": [
+      "Plains",
+      "Island",
+      "Swamp",
+      "Mountain",
+      "Forest",
+      "Grizzly Bears",
+      "Hill Giant",
+      "Serra Angel"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      { "name": "Mountain" },
+      { "name": "Mountain" },
+      { "name": "Grizzly Bears" }
+    ],
+    "graveyard": [],
+    "library": [
+      "Mountain",
+      "Mountain",
+      "Grizzly Bears",
+      "Grizzly Bears"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

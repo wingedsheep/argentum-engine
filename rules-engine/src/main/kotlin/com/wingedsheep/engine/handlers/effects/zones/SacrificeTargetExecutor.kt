@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.mechanics.SacrificeImmunity
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -33,7 +34,10 @@ class SacrificeTargetExecutor : EffectExecutor<SacrificeTargetEffect> {
         effect: SacrificeTargetEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target)
+        // The state-taking overload — relational targets (the equipped creature, the host an
+        // attachment just came off) need the board to resolve at all; the no-state overload
+        // silently yields null for them and the sacrifice would quietly no-op.
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.success(state)
 
         // Find the zone the permanent is in
@@ -66,6 +70,14 @@ class SacrificeTargetExecutor : EffectExecutor<SacrificeTargetEffect> {
         // When sacrificedByItsController is set, the permanent's own controller sacrifices it
         // ("[that creature]'s controller sacrifices it"), so don't gate on the resolver's control.
         if (!effect.sacrificedByItsController && controllerId != context.controllerId) {
+            return EffectResult.success(state)
+        }
+
+        // Sigarda, Host of Herons — the permanent's controller can't be made to sacrifice it by an
+        // opponent's spell or ability. Killing Wave is the shape this guards: its per-creature
+        // "sacrifice it unless you pay" runs under a ForEachPlayer that rebinds the resolution
+        // controller to the creature's controller, so the caster is read off effectControllerId.
+        if (SacrificeImmunity.appliesTo(state, controllerId, context.effectControllerId ?: context.controllerId)) {
             return EffectResult.success(state)
         }
 

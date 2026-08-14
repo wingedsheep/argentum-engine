@@ -19,7 +19,7 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
     // Increase heap size for Spring Boot integration tests with WebSocket connections
-    maxHeapSize = "2g"
+    maxHeapSize = if (System.getProperty("eclCollect") == "true") "4g" else "2g"
 
     // Forward benchmark flags so benchmark tests can check them
     systemProperty("benchmark", System.getProperty("benchmark") ?: "false")
@@ -33,6 +33,19 @@ tasks.withType<Test>().configureEach {
         for (suffix in listOf("Type", "Model", "BaseUrl", "ApiKey", "DeckBuilder", "ReasoningEffort")) {
             System.getProperty("$prefix$suffix")?.let { systemProperty("$prefix$suffix", it) }
         }
+    }
+
+    // Forward the arena flags (see ai/src/test/kotlin/com/wingedsheep/ai/arena) so `just arena`
+    // and `just arena-gauntlet` reach the test JVM. Both recipes also pass -Dbenchmark=true, which
+    // is what relaxes TestHangGuard for a run that legitimately takes half an hour.
+    for (prop in listOf(
+        "arena", "arenaGauntlet", "arenaPod", "arenaBudgetScaling", "arenaTable", "arenaA", "arenaB",
+        "argentum.ai.apprentice.dir",
+        "eclCollect", "eclCollectGames", "eclCollectSeed", "eclCollectOutput", "eclCollectBaseDir",
+        "eclCollectRunId", "eclCollectStartIndex",
+        "arenaGames", "arenaSeed", "arenaSet", "arenaMaxTurns", "arenaThreads",
+    )) {
+        System.getProperty(prop)?.let { systemProperty(prop, it) }
     }
 
     // Forward the anti-hang guard tunables (see TestHangGuard) so they can be set from the CLI.

@@ -1,4 +1,7 @@
-const BASE_URL = 'http://localhost:8080/api/dev/scenarios'
+// Override when the game server under test isn't on the default port — e.g. a worktree running its
+// own server next to an already-running main checkout. The `E2E_BASE_URL` sibling in
+// playwright.config.ts does the same for the web client.
+const BASE_URL = `${process.env.E2E_SERVER_URL ?? 'http://localhost:8080'}/api/dev/scenarios`
 
 export interface BattlefieldCardConfig {
   name: string
@@ -14,6 +17,7 @@ export interface PlayerConfig {
   battlefield?: BattlefieldCardConfig[]
   graveyard?: string[]
   library?: string[]
+  exile?: string[]
 }
 
 export interface ScenarioRequest {

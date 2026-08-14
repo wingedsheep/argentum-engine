@@ -4,7 +4,8 @@ import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
-import com.wingedsheep.engine.state.components.identity.ManifestedComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
+import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Color
@@ -69,7 +70,7 @@ class UnderTheSkinScenarioTest : FunSpec({
 
         // Manifested creature is a face-down 2/2; the land was binned.
         driver.state.getEntity(creature)?.get<FaceDownComponent>() shouldBe FaceDownComponent
-        driver.state.getEntity(creature)?.get<ManifestedComponent>() shouldBe ManifestedComponent
+        driver.state.getEntity(creature)?.get<FaceDownModeComponent>()?.mode shouldBe FaceDownMode.MANIFEST
         driver.getGraveyard(me) shouldContain land
         // The permanent card was returned to hand.
         driver.getHand(me) shouldContain grizzly

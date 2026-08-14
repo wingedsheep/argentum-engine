@@ -79,7 +79,7 @@ class AIBenchmark : FunSpec({
 
     val benchmarkEnabled = System.getProperty("benchmark") == "true"
     val numGames = System.getProperty("benchmarkGames")?.toIntOrNull() ?: 10
-    val maxTurns = System.getProperty("benchmarkMaxTurns")?.toIntOrNull() ?: 50
+    val maxTurns = System.getProperty("benchmarkMaxTurns")?.toIntOrNull() ?: 100
 
     fun playerConfig(prefix: String): PlayerType {
         val type = System.getProperty("${prefix}Type") ?: "engine"

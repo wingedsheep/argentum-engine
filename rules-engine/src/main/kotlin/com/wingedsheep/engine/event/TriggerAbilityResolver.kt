@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.mechanics.battle.Battles
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -11,6 +12,7 @@ import com.wingedsheep.engine.state.components.battlefield.ParadigmComponent
 import com.wingedsheep.engine.state.components.battlefield.SuspendedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.engine.state.components.identity.RingBearerComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
@@ -23,7 +25,6 @@ import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantTriggeredAbility
-import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.sdk.scripting.GrantWard
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.TriggerBinding
@@ -51,7 +52,12 @@ class TriggerAbilityResolver(
      * If the entity has a TextReplacementComponent (from Artificial Evolution etc.),
      * creature type references in triggers and effects are transformed accordingly.
      */
-    fun getTriggeredAbilities(entityId: EntityId, cardDefinitionId: String, state: GameState): List<TriggeredAbility> {
+    fun getTriggeredAbilities(
+        entityId: EntityId,
+        cardDefinitionId: String,
+        state: GameState,
+        statics: BattlefieldStaticsIndex = BattlefieldStaticsIndex.build(state, cardRegistry),
+    ): List<TriggeredAbility> {
         // First check the AbilityRegistry (for manually registered abilities)
         val registryAbilities = abilityRegistry.getTriggeredAbilities(entityId, cardDefinitionId)
         val base = if (registryAbilities.isNotEmpty()) {
@@ -72,7 +78,7 @@ class TriggerAbilityResolver(
         // Merge in triggered abilities granted by static abilities on other permanents
         // (e.g., Hunter Sliver granting provoke to all Slivers)
         val staticGrantedAbilities = getStaticGrantedTriggeredAbilities(entityId, state)
-        val attachedGrantedAbilities = getAttachedGrantedTriggeredAbilities(entityId, state)
+        val attachedGrantedAbilities = getAttachedGrantedTriggeredAbilities(entityId, state, statics)
         // "This creature has '<triggered ability>' [as long as …]" — a Scope.Self GrantTriggeredAbility
         // on the permanent's own definition, optionally gated by a ConditionalStaticAbility.
         val selfGrantedAbilities =
@@ -80,7 +86,7 @@ class TriggerAbilityResolver(
             else getSelfGrantedTriggeredAbilities(entityId, state)
 
         // Generate ward triggered abilities from intrinsic keyword abilities and GrantWard
-        val wardAbilities = getWardTriggeredAbilities(entityId, cardDefinitionId, state)
+        val wardAbilities = getWardTriggeredAbilities(entityId, cardDefinitionId, state, statics)
 
         // Flanking (CR 702.25) is a keyword-derived triggered ability, synthesized for any
         // creature that has the keyword (intrinsic or granted).
@@ -94,9 +100,14 @@ class TriggerAbilityResolver(
         val suspendAbilities = getSuspendTriggeredAbilities(entityId, state)
         val paradigmAbilities = getParadigmTriggeredAbilities(entityId, state)
 
+        // Every Siege on the battlefield has the defeat trigger (CR 310.11b), printed on none of
+        // them. Derived from the projected subtypes, so a permanent that becomes a Siege gains it
+        // and one that stops being a Siege loses it.
+        val siegeAbilities = getSiegeDefeatAbilities(entityId, state)
+
         val allGranted = grantedAbilities + staticGrantedAbilities + attachedGrantedAbilities +
             selfGrantedAbilities + wardAbilities + flankingAbilities + ringBearerAbilities +
-            suspendAbilities + paradigmAbilities
+            suspendAbilities + paradigmAbilities + siegeAbilities
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
         // Apply text replacement if the entity has one
@@ -110,7 +121,7 @@ class TriggerAbilityResolver(
 
     /**
      * Grant [com.wingedsheep.sdk.scripting.Suspend.countdownAbility] to any card carrying the
-     * [SuspendedComponent] marker. The ability functions only in exile (`activeZone == EXILE`),
+     * [SuspendedComponent] marker. The ability functions only in exile (`activeZones == {EXILE}`),
      * so it is inert anywhere else and harmless to return universally.
      */
     private fun getSuspendTriggeredAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> =
@@ -121,8 +132,26 @@ class TriggerAbilityResolver(
         }
 
     /**
+     * Grant [com.wingedsheep.sdk.scripting.Sieges.defeatAbility] to every Siege on the battlefield
+     * (CR 310.11b) — the "when it's defeated, exile it, then you may cast it transformed" half of
+     * the reminder text, which no Siege actually prints.
+     *
+     * Keyed off [Battles.isSiege], i.e. the *projected* card types and subtypes, so it follows a
+     * type-changing effect in both directions. A permanent that has lost all abilities keeps it:
+     * the defeat trigger is an intrinsic ability of the battle type, not of the card, so a Siege
+     * turned into an ability-less permanent that is still a Siege is still defeated when its last
+     * defense counter comes off.
+     */
+    private fun getSiegeDefeatAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> =
+        if (Battles.isSiege(state, entityId)) {
+            listOf(com.wingedsheep.sdk.scripting.Sieges.defeatAbility)
+        } else {
+            emptyList()
+        }
+
+    /**
      * Grant [com.wingedsheep.sdk.scripting.Paradigm.recastAbility] to any card carrying the
-     * [ParadigmComponent] marker. The ability functions only in exile (`activeZone == EXILE`), so
+     * [ParadigmComponent] marker. The ability functions only in exile (`activeZones == {EXILE}`), so
      * it is inert anywhere else and harmless to return universally.
      */
     private fun getParadigmTriggeredAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> =
@@ -201,7 +230,8 @@ class TriggerAbilityResolver(
         entityId: EntityId,
         cardDefinitionId: String,
         state: GameState,
-        grantProviders: List<TriggerIndex.GrantProviderEntry>
+        grantProviders: List<TriggerIndex.GrantProviderEntry>,
+        statics: BattlefieldStaticsIndex = BattlefieldStaticsIndex.build(state, cardRegistry),
     ): List<TriggeredAbility> {
         // If the entity has lost all abilities (e.g., Deep Freeze), suppress its own triggered abilities
         val hasLostAbilities = state.projectedState.hasLostAllAbilities(entityId)
@@ -229,7 +259,7 @@ class TriggerAbilityResolver(
         } else {
             emptyList()
         }
-        val attachedGrantedAbilities = getAttachedGrantedTriggeredAbilities(entityId, state)
+        val attachedGrantedAbilities = getAttachedGrantedTriggeredAbilities(entityId, state, statics)
         // "This creature has '<triggered ability>' [as long as …]" — a Scope.Self
         // GrantTriggeredAbility on the permanent's own definition (Fire Nation Cadets installs
         // firebendingAttackTrigger(2) this way while a Lesson is in the graveyard).
@@ -238,7 +268,7 @@ class TriggerAbilityResolver(
 
         // Generate ward triggered abilities from intrinsic keyword abilities and GrantWard
         val wardAbilities = if (hasLostAbilities) emptyList()
-            else getWardTriggeredAbilities(entityId, cardDefinitionId, state)
+            else getWardTriggeredAbilities(entityId, cardDefinitionId, state, statics)
 
         // Flanking (CR 702.25) — keyword-derived triggered ability. Projected keyword check
         // already accounts for lost-all-abilities, but guard for symmetry with the other grants.
@@ -252,9 +282,14 @@ class TriggerAbilityResolver(
         val suspendAbilities = getSuspendTriggeredAbilities(entityId, state)
         val paradigmAbilities = getParadigmTriggeredAbilities(entityId, state)
 
+        // Every Siege on the battlefield has the defeat trigger (CR 310.11b), printed on none of
+        // them. Derived from the projected subtypes, so a permanent that becomes a Siege gains it
+        // and one that stops being a Siege loses it.
+        val siegeAbilities = getSiegeDefeatAbilities(entityId, state)
+
         val allGranted = grantedAbilities + staticGrantedAbilities + attachedGrantedAbilities +
             selfGrantedAbilities + wardAbilities + flankingAbilities + ringBearerAbilities +
-            suspendAbilities + paradigmAbilities
+            suspendAbilities + paradigmAbilities + siegeAbilities
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
         val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
@@ -368,13 +403,15 @@ class TriggerAbilityResolver(
         return granters
     }
 
-    private fun getAttachedGrantedTriggeredAbilities(entityId: EntityId, state: GameState): List<TriggeredAbility> {
+    private fun getAttachedGrantedTriggeredAbilities(
+        entityId: EntityId,
+        state: GameState,
+        statics: BattlefieldStaticsIndex
+    ): List<TriggeredAbility> {
         val result = mutableListOf<TriggeredAbility>()
 
-        for (permanentId in state.getBattlefield()) {
+        for (permanentId in statics.attachmentsOn(entityId)) {
             val container = state.getEntity(permanentId) ?: continue
-            val attachedTo = container.get<AttachedToComponent>()?.targetId ?: continue
-            if (attachedTo != entityId) continue
 
             val card = container.get<CardComponent>() ?: continue
             if (container.has<FaceDownComponent>()) continue
@@ -473,16 +510,26 @@ class TriggerAbilityResolver(
      * Generate ward triggered abilities for an entity.
      *
      * Checks two sources:
-     * 1. Intrinsic ward from the card's keywordAbilities (KeywordAbility.Ward)
-     * 2. Ward granted by GrantWard static abilities on other permanents
+     * 1. Intrinsic ward — normally from the card's keywordAbilities (KeywordAbility.Ward), but for
+     *    a *face-down* permanent from its [FaceDownModeComponent] instead: CR 708.2 says a
+     *    face-down permanent has no characteristics beyond those listed by the rules that made it
+     *    face down, so the printed card's ward is suppressed, and disguise (CR 702.168a) / cloak
+     *    (CR 701.58a) contribute ward {2} of their own.
+     * 2. Ward granted by GrantWard static abilities on other permanents — these are external
+     *    continuous effects rather than characteristics of the object, so they keep applying to a
+     *    face-down permanent.
      *
      * Each found ward produces a TriggeredAbility that fires on BecomesTargetEvent
      * by an opponent, with a WardCounterEffect for the appropriate cost.
+     *
+     * Public because [TriggerDetector] indexes face-down permanents through this method alone:
+     * ward is the only triggered-ability family a face-down permanent can have.
      */
-    private fun getWardTriggeredAbilities(
+    fun getWardTriggeredAbilities(
         entityId: EntityId,
         cardDefinitionId: String,
-        state: GameState
+        state: GameState,
+        statics: BattlefieldStaticsIndex = BattlefieldStaticsIndex.build(state, cardRegistry)
     ): List<TriggeredAbility> {
         val result = mutableListOf<TriggeredAbility>()
 
@@ -493,78 +540,72 @@ class TriggerAbilityResolver(
 
         // Check suppression before generating any ward triggers — suppresses both intrinsic
         // and granted ward (Nowhere to Run: "Ward abilities of those creatures don't trigger.")
-        if (isWardSuppressed(entityId, state, projected)) return result
+        if (isWardSuppressed(entityId, state, projected, statics)) return result
 
-        // 1. Intrinsic ward from card definition
-        val cardDef = cardRegistry.getCard(cardDefinitionId)
-        if (cardDef != null) {
-            for (ka in cardDef.keywordAbilities) {
-                if (ka is KeywordAbility.Ward) {
-                    result.add(createWardTriggeredAbility(ka.cost, "intrinsic"))
+        // 1. Intrinsic ward — from the face-down characteristic-defining effect while face down,
+        // from the card definition otherwise.
+        if (targetContainer.has<FaceDownComponent>()) {
+            targetContainer.get<FaceDownModeComponent>()?.mode?.faceDownWard?.let {
+                result.add(createWardTriggeredAbility(it, "facedown"))
+            }
+        } else {
+            val cardDef = cardRegistry.getCard(cardDefinitionId)
+            if (cardDef != null) {
+                for (ka in cardDef.keywordAbilities) {
+                    if (ka is KeywordAbility.Ward) {
+                        result.add(createWardTriggeredAbility(ka.cost, "intrinsic"))
+                    }
                 }
             }
         }
 
-        // 2. Ward granted by battlefield-scoped GrantWard static abilities
+        // 2. Ward granted by battlefield-scoped GrantWard static abilities. The grants themselves
+        // were collected in one battlefield walk (see BattlefieldStaticsIndex); all that is left
+        // per entity is matching it against each grant's filter.
+        for (provider in statics.wardGrantProviders) {
+            val ability = provider.grant
+            val permanentId = provider.sourceId
+            val sourceControllerId = provider.sourceControllerId
 
-        for (permanentId in state.getBattlefield()) {
-            val container = state.getEntity(permanentId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            if (container.has<FaceDownComponent>()) continue
-
-            val sourceControllerId = projected.getController(permanentId) ?: continue
-            val sourceDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-
-            // Check all static abilities including class-level ones
-            val classLevel = container.get<ClassLevelComponent>()?.currentLevel
-            val allStaticAbilities = sourceDef.script.effectiveStaticAbilities(classLevel)
-
-            for (ability in allStaticAbilities) {
-                if (ability !is GrantWard) continue
-                if (ability.filter.scope !is Scope.Battlefield) continue
-
-                // Use the generic filter resolver to check if entity matches
-                val filter = ability.filter.baseFilter
-                val matchesAll = filter.cardPredicates.all { predicate ->
-                    when (predicate) {
-                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                            projected.isCreature(entityId)
-                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent -> true // On battlefield = permanent
-                        is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                            targetCard.typeLine.hasSubtype(predicate.subtype)
-                        else -> true
-                    }
+            // Use the generic filter resolver to check if entity matches
+            val filter = ability.filter.baseFilter
+            val matchesAll = filter.cardPredicates.all { predicate ->
+                when (predicate) {
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
+                        projected.isCreature(entityId)
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsPermanent -> true // On battlefield = permanent
+                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
+                        targetCard.typeLine.hasSubtype(predicate.subtype)
+                    else -> true
                 }
-                if (!matchesAll) continue
-
-                // Check state predicates
-                val matchesState = filter.statePredicates.all { predicate ->
-                    predicateEvaluator.matchesStatePredicate(state, entityId, predicate)
-                }
-                if (!matchesState) continue
-
-                // Check controller predicate
-                val controllerMatch = filter.controllerPredicate?.evaluateWith { leaf ->
-                    when (leaf) {
-                        is ControllerPredicate.ControlledByYou -> targetControllerId == sourceControllerId
-                        is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != sourceControllerId
-                        else -> null // leaf kinds this fast path can't evaluate don't constrain
-                    }
-                } ?: true
-                if (!controllerMatch) continue
-
-                // Check excludeSelf
-                if (ability.filter.excludeSelf && entityId == permanentId) continue
-
-                result.add(createWardTriggeredAbility(ability.cost, "granted_${permanentId.value}"))
             }
+            if (!matchesAll) continue
+
+            // Check state predicates
+            val matchesState = filter.statePredicates.all { predicate ->
+                predicateEvaluator.matchesStatePredicate(state, entityId, predicate)
+            }
+            if (!matchesState) continue
+
+            // Check controller predicate
+            val controllerMatch = filter.controllerPredicate?.evaluateWith { leaf ->
+                when (leaf) {
+                    is ControllerPredicate.ControlledByYou -> targetControllerId == sourceControllerId
+                    is ControllerPredicate.ControlledByOpponent -> targetControllerId != null && targetControllerId != sourceControllerId
+                    else -> null // leaf kinds this fast path can't evaluate don't constrain
+                }
+            } ?: true
+            if (!controllerMatch) continue
+
+            // Check excludeSelf
+            if (ability.filter.excludeSelf && entityId == permanentId) continue
+
+            result.add(createWardTriggeredAbility(ability.cost, "granted_${permanentId.value}"))
         }
 
         // 3. Ward granted by attach-scoped GrantWard static abilities (Auras/Equipment)
-        for (permanentId in state.getBattlefield()) {
+        for (permanentId in statics.attachmentsOn(entityId)) {
             val container = state.getEntity(permanentId) ?: continue
-            val attachedTo = container.get<AttachedToComponent>()?.targetId ?: continue
-            if (attachedTo != entityId) continue
 
             val card = container.get<CardComponent>() ?: continue
             if (container.has<FaceDownComponent>()) continue
@@ -662,14 +703,13 @@ class TriggerAbilityResolver(
     private fun isWardSuppressed(
         entityId: EntityId,
         state: GameState,
-        projected: com.wingedsheep.engine.mechanics.layers.ProjectedState
+        projected: com.wingedsheep.engine.mechanics.layers.ProjectedState,
+        statics: BattlefieldStaticsIndex
     ): Boolean {
-        return state.getBattlefield().any { suppressorId ->
-            val suppressorController = projected.getController(suppressorId) ?: return@any false
-            val suppressComponent = state.getEntity(suppressorId)
-                ?.get<SuppressesWardForGroupComponent>() ?: return@any false
-            val ctx = PredicateContext(controllerId = suppressorController, sourceId = suppressorId)
-            suppressComponent.filters.any { groupFilter ->
+        return statics.wardSuppressors.any { suppressor ->
+            val suppressorId = suppressor.sourceId
+            val ctx = PredicateContext(controllerId = suppressor.sourceControllerId, sourceId = suppressorId)
+            suppressor.component.filters.any { groupFilter ->
                 when {
                     groupFilter.scope !is com.wingedsheep.sdk.scripting.filters.unified.Scope.Battlefield -> false
                     groupFilter.excludeSelf && entityId == suppressorId -> false

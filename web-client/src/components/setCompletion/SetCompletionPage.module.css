@@ -117,6 +117,10 @@
 .summaryMeta strong {
   color: var(--text-primary);
 }
+.summaryNote {
+  color: var(--text-muted);
+  font-size: var(--font-sm);
+}
 
 /* ---- controls --------------------------------------------------------- */
 .controls {
@@ -355,6 +359,16 @@
   color: var(--color-success-light);
   font-weight: var(--font-weight-semibold);
 }
+/* Cards we've decided never to implement: muted and dotted, so they read as "settled, not
+   outstanding" — neither a green done tag nor part of the work left. */
+.notPlannedTag {
+  color: var(--text-muted);
+  font-size: var(--font-xs);
+  border: 1px dotted var(--border-medium);
+  border-radius: 999px;
+  padding: 0 6px;
+  white-space: nowrap;
+}
 
 /* ---- detail overlay --------------------------------------------------- */
 .overlayBackdrop {
@@ -459,10 +473,79 @@
   padding: var(--space-3) var(--space-5);
 }
 
+/* The index is a sibling of the scroller, not inside it, so it stays visible for the whole list. */
+.overlayLayout {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  gap: var(--space-4);
+  padding: 0 var(--space-5) var(--space-5);
+}
+
 .overlayBody {
   flex: 1;
+  min-width: 0;
   overflow-y: auto;
-  padding: 0 var(--space-5) var(--space-5);
+}
+
+.sectionIndex {
+  flex: 0 0 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-3) 0 0;
+  border-right: 1px solid var(--border-light);
+}
+
+.indexItem,
+.indexItemActive {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: none;
+  font-family: inherit;
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+.indexItem:hover {
+  background: var(--bg-panel-hover);
+  color: var(--text-primary);
+}
+.indexItemActive {
+  background: var(--bg-panel-hover);
+  color: var(--text-primary);
+  border-left-color: var(--tier-color);
+  font-weight: var(--font-weight-semibold);
+}
+.indexLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.indexCount {
+  flex-shrink: 0;
+  font-size: var(--font-xs);
+  font-weight: var(--font-weight-normal);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Too narrow for a rail beside the grid — the sticky section headings carry the structure alone. */
+@media (max-width: 700px) {
+  .sectionIndex {
+    display: none;
+  }
 }
 
 .cardSection {
@@ -496,7 +579,8 @@
 }
 
 .tile,
-.tileMissing {
+.tileMissing,
+.tileNotPlanned {
   position: relative;
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -511,7 +595,8 @@
   contain-intrinsic-size: 150px 210px;
 }
 .tile:hover,
-.tileMissing:hover {
+.tileMissing:hover,
+.tileNotPlanned:hover {
   transform: translateY(-3px) scale(1.02);
   z-index: 2;
 }
@@ -527,6 +612,16 @@
 }
 .tileMissing .tileImage {
   filter: grayscale(1) brightness(0.45);
+}
+/* Not planned: dotted rather than dashed, and dimmer still — deliberately out of scope, not
+   waiting on us. Distinct from "missing" at a glance without needing the badge. */
+.tileNotPlanned {
+  border-style: dotted;
+  border-color: var(--border-medium);
+  opacity: 0.75;
+}
+.tileNotPlanned .tileImage {
+  filter: grayscale(1) brightness(0.3);
 }
 
 .tileBadge {
@@ -548,6 +643,13 @@
   color: var(--text-tertiary);
   border: 1px solid var(--border-medium);
 }
+.tileNotPlanned .tileBadge {
+  background: var(--bg-overlay-darker);
+  color: var(--text-muted);
+  border: 1px dotted var(--border-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
 .tileName {
   position: absolute;
@@ -563,7 +665,8 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.tileMissing .tileName {
+.tileMissing .tileName,
+.tileNotPlanned .tileName {
   color: var(--text-tertiary);
 }
 

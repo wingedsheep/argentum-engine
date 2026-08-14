@@ -1342,7 +1342,7 @@
                     "type": "AttachEquipment",
                     "target": {
                         "type": "BoundVariable",
-                        "name": "Halfling you control"
+                        "name": "Halfling creature you control"
                     }
                 },
                 "targetRequirements": [
@@ -1351,10 +1351,12 @@
                         "filter": {
                             "baseFilter": "creature Halfling ctrl:you"
                         },
-                        "id": "Halfling you control"
+                        "id": "Halfling creature you control"
                     }
                 ],
-                "timing": "SorcerySpeed"
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true,
+                "equipQuality": "Halfling"
             },
             {
                 "id": "ability_3",
@@ -2573,7 +2575,9 @@
                         }
                     }
                 },
-                "activeZone": "Graveyard",
+                "activeZones": [
+                    "Graveyard"
+                ],
                 "triggerCondition": {
                     "type": "Exists",
                     "player": "You",
@@ -3199,7 +3203,8 @@
                     }
                 ],
                 "timing": "SorcerySpeed",
-                "descriptionOverride": "Equip Human {1}"
+                "isEquipAbility": true,
+                "equipQuality": "Human"
             },
             {
                 "id": "ability_2",
@@ -9653,7 +9658,7 @@
                     "entity": "Self",
                     "filter": "tapped"
                 },
-                "oncePerTurn": true
+                "effectOncePerTurn": true
             },
             {
                 "id": "ability_2",
@@ -12904,21 +12909,20 @@
         ],
         "replacementEffects": [
             {
-                "type": "ModifyDrawAmount",
-                "modifier": 1,
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
                 "restrictions": [
                     {
-                        "type": "Compare",
-                        "left": {
-                            "type": "Count",
-                            "player": "You",
-                            "zone": "Hand"
-                        },
-                        "operator": "LTE",
-                        "right": {
-                            "type": "Fixed",
-                            "amount": 0
-                        }
+                        "type": "Exists",
+                        "player": "You",
+                        "zone": "Hand",
+                        "negate": true
                     }
                 ]
             },
@@ -14042,7 +14046,9 @@
                     "target": "Self",
                     "destination": "Hand"
                 },
-                "activeZone": "Graveyard"
+                "activeZones": [
+                    "Graveyard"
+                ]
             }
         ]
     },

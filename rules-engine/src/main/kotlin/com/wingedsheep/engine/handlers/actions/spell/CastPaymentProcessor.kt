@@ -21,16 +21,18 @@ import com.wingedsheep.sdk.scripting.effects.ManaSpellRider
 /**
  * Result of a mana payment attempt.
  *
- * @property consumedRiders Union of [ManaSpellRider]s carried by the mana actually
- *   spent on this payment (from both restricted floating mana and freshly-tapped
- *   sources). The caller applies each rider to the spell as it goes on the stack —
- *   e.g. [ManaSpellRider.MakesSpellUncounterable] stamps `CantBeCounteredComponent`.
+ * @property consumedRiders Every [ManaSpellRider] carried by the mana actually spent on this
+ *   payment (from both restricted floating mana and freshly-tapped sources). The caller applies
+ *   each rider to the spell as it goes on the stack — e.g.
+ *   [ManaSpellRider.MakesSpellUncounterable] stamps `CantBeCounteredComponent`. A **list**, not a
+ *   set: two rider-carrying mana spent on one spell must fire the rider twice (Pyromancer's
+ *   Goggles copies the spell once per {R} spent), so identical riders must not be deduplicated.
  */
 data class PaymentResult(
     val state: GameState,
     val events: List<GameEvent>,
     val error: String?,
-    val consumedRiders: Set<ManaSpellRider> = emptySet(),
+    val consumedRiders: List<ManaSpellRider> = emptyList(),
     /**
      * Provenance of the mana actually spent on this payment — which producing-source subtypes and
      * which producing sources contributed (see [SpentManaProvenance]). Combines mana pulled from the
@@ -379,7 +381,7 @@ class CastPaymentProcessor(
         }
 
         // Tap lands for remaining cost (using xRemainingToPay instead of full xValue)
-        var solutionConsumedRiders: Set<ManaSpellRider> = emptySet()
+        var solutionConsumedRiders: List<ManaSpellRider> = emptyList()
         if (!remainingCost.isEmpty() || xRemainingToPay > 0) {
             val solution = manaSolver.solve(currentState, playerId, remainingCost, xRemainingToPay, excludeSources = excludeSources, spellContext = spellContext, xManaRestriction = xManaRestriction)
                 ?: return PaymentResult(currentState, events, "Not enough mana to auto-pay")
@@ -519,17 +521,18 @@ class CastPaymentProcessor(
     }
 
     /**
-     * Union of [ManaSpellRider]s carried by restricted mana entries that disappeared
-     * during payment (present in [before], gone from [after] after multiset
-     * subtraction). Used to detect that e.g. Cavern of Souls' floating restricted
-     * mana was spent on the cast.
+     * Every [ManaSpellRider] carried by restricted mana entries that disappeared during payment
+     * (present in [before], gone from [after] after multiset subtraction). Used to detect that
+     * e.g. Cavern of Souls' floating restricted mana was spent on the cast. Multiplicity is
+     * preserved — two spent entries carrying the same rider yield it twice (Pyromancer's
+     * Goggles), so this returns a list rather than a set.
      */
     private fun ridersConsumedDuringPayment(
         before: List<RestrictedManaEntry>,
         after: List<RestrictedManaEntry>
-    ): Set<ManaSpellRider> {
+    ): List<ManaSpellRider> {
         val remaining = after.toMutableList()
-        val consumed = mutableSetOf<ManaSpellRider>()
+        val consumed = mutableListOf<ManaSpellRider>()
         for (entry in before) {
             val idx = remaining.indexOfFirst { it == entry }
             if (idx >= 0) {

@@ -75,7 +75,7 @@ class ResilientRoadrunnerScenarioTest : FunSpec({
     test("a creature with haste CAN block the Roadrunner after the ability resolves") {
         val driver = createDriver()
         val (roadrunner, blocker, opponent) =
-            driver.setupAttackWithAbilityActive("Ragavan, Nimble Pilferer")
+            driver.setupAttackWithAbilityActive("Test Hasty Prospector")
 
         driver.declareBlockers(opponent, mapOf(blocker to listOf(roadrunner)))
             .isSuccess shouldBe true

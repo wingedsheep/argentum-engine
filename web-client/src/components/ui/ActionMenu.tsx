@@ -2,379 +2,14 @@ import { useEffect, useCallback, useMemo, useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { useCardActions } from '@/hooks/useLegalActions.ts'
 import { useInteraction } from '@/hooks/useInteraction.ts'
-import type { LegalActionInfo, ClientCard } from '@/types'
+import type { LegalActionInfo } from '@/types'
 import { ManaCost, AbilityText } from './ManaSymbols'
 import { ManaCostProgress } from './ManaCostProgress'
 import { useViewingPlayer } from '@/store/selectors.ts'
 import { isManaPoolEmpty } from '@/types'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { buildActionOptions, type ActionOption } from '@/utils/actionOptions.ts'
 import styles from './ActionMenu.module.css'
-
-/**
- * Represents an action option in the modal (either available or unavailable).
- */
-interface ActionOption {
-  /** Unique key for React */
-  key: string
-  /** Display label */
-  label: string
-  /** Mana cost to display */
-  manaCost: string | null
-  /** Whether this action is available (affordable) */
-  isAvailable: boolean
-  /** The legal action info if available */
-  action: LegalActionInfo | null
-  /** Action type for coloring */
-  actionType: 'cast' | 'castFaceDown' | 'castWithKicker' | 'cycle' | 'plot' | 'playLand' | 'activate' | 'turnFaceUp'
-  /**
-   * Signed loyalty change for planeswalker loyalty abilities (+1, -2, -8, 0).
-   * When present, the button renders a mana-font loyalty icon instead of a text prefix.
-   */
-  loyaltyChange?: number
-  /**
-   * For the impending cast option (CR 702.176): the number of time counters the permanent enters
-   * with. When present, the button renders a time-counter glyph + count to mark the option as
-   * impending. Undefined for every other option.
-   */
-  impendingTime?: number
-}
-
-/**
- * Build all potential action options for a card from server-sent legal actions.
- * The server now sends ALL potential actions with isAffordable flags.
- */
-function buildActionOptions(
-  cardInfo: ClientCard | null,
-  legalActions: LegalActionInfo[]
-): ActionOption[] {
-  const options: ActionOption[] = []
-  if (!cardInfo) return options
-
-  // Debug: log all action types received
-  if (import.meta.env.DEV) {
-    console.log('buildActionOptions - legalActions:', legalActions.map(a => ({
-      actionType: a.actionType,
-      'action.type': a.action.type,
-      description: a.description,
-      isAffordable: a.isAffordable
-    })))
-  }
-
-  // Find each type of action - server sends all potential actions with isAffordable flag
-  const castActions = legalActions.filter(
-    (a) => a.action.type === 'CastSpell' && a.actionType !== 'CastFaceDown' && a.actionType !== 'CastWithKicker'
-  )
-  const castAction = castActions[0] ?? null
-  const kickerAction = legalActions.find((a) => a.actionType === 'CastWithKicker')
-  const morphAction = legalActions.find((a) => a.actionType === 'CastFaceDown')
-  const cycleAction = legalActions.find((a) => a.action.type === 'CycleCard')
-  const typecycleAction = legalActions.find((a) => a.action.type === 'TypecycleCard')
-  const plotAction = legalActions.find((a) => a.action.type === 'PlotCard')
-  const playLandAction = legalActions.find((a) => a.action.type === 'PlayLand')
-
-  // Debug: log found actions
-  if (import.meta.env.DEV) {
-    console.log('buildActionOptions - found:', { castAction: !!castAction, castActions: castActions.length, morphAction: !!morphAction, cycleAction: !!cycleAction, playLandAction: !!playLandAction })
-    // Extra debug for cycling
-    legalActions.forEach((a, i) => {
-      console.log(`  action[${i}]: action.type=${a.action.type}, actionType=${a.actionType}, isCycleCard=${a.action.type === 'CycleCard'}`)
-    })
-  }
-
-  // 1. Modal spell modes — show one button per mode instead of a single "Cast" button
-  const modeActions = legalActions.filter((a) => a.actionType === 'CastSpellMode')
-  // Sibling CastSpellModal actions (e.g., Pyrrhic Strike's blight path forces every mode)
-  // need to render alongside the per-mode buttons so the player can pick the
-  // alternative cost variant.
-  const modalCastActions = legalActions.filter((a) => a.actionType === 'CastSpellModal')
-  if (modeActions.length > 0) {
-    modeActions.forEach((modeAction, index) => {
-      options.push({
-        key: `mode-${index}`,
-        label: modeAction.description,
-        manaCost: modeAction.manaCostString || cardInfo.manaCost || null,
-        isAvailable: modeAction.isAffordable !== false,
-        action: modeAction,
-        actionType: 'cast',
-      })
-    })
-    modalCastActions.forEach((modalAction, index) => {
-      options.push({
-        key: `modal-${index}`,
-        label: modalAction.description,
-        manaCost: modalAction.manaCostString || cardInfo.manaCost || null,
-        isAvailable: modalAction.isAffordable !== false,
-        action: modalAction,
-        actionType: 'cast',
-      })
-    })
-  } else if (cardInfo.impending && castActions.length > 0) {
-    // 1a-bis. Impending (CR 702.176) — an alternative cost the player chooses, so always present
-    // BOTH the normal cast and the impending cast, graying out whichever can't be paid for. The
-    // impending option is marked with a time-counter glyph (the card enters with `time` time
-    // counters and isn't a creature until the last is removed). The server only emits the cast
-    // actions it can afford; we synthesize a disabled placeholder (action: null) for the other.
-    const impendingInfo = cardInfo.impending
-    const impendingCast = castActions.find(
-      (a) => (a.action as { alternativeCostType?: string }).alternativeCostType === 'IMPENDING'
-    ) ?? null
-    const normalCast = castActions.find((a) => a.actionType === 'CastSpell') ?? null
-
-    options.push(
-      normalCast
-        ? {
-            key: 'cast',
-            label: `Cast ${cardInfo.name}`,
-            manaCost: normalCast.manaCostString || cardInfo.manaCost || null,
-            isAvailable: normalCast.isAffordable !== false,
-            action: normalCast,
-            actionType: 'cast',
-          }
-        : {
-            key: 'cast',
-            label: `Cast ${cardInfo.name}`,
-            manaCost: cardInfo.manaCost || null,
-            isAvailable: false,
-            action: null,
-            actionType: 'cast',
-          }
-    )
-    options.push(
-      impendingCast
-        ? {
-            key: 'impending',
-            label: 'Cast for Impending',
-            manaCost: impendingCast.manaCostString || impendingInfo.cost || null,
-            isAvailable: impendingCast.isAffordable !== false,
-            action: impendingCast,
-            actionType: 'cast',
-            impendingTime: impendingInfo.time,
-          }
-        : {
-            key: 'impending',
-            label: 'Cast for Impending',
-            manaCost: impendingInfo.cost || null,
-            isAvailable: false,
-            action: null,
-            actionType: 'cast',
-            impendingTime: impendingInfo.time,
-          }
-    )
-  } else if (castActions.length > 1) {
-    // 1b. Multiple cast options (e.g., BlightOrPay — blight path vs pay path)
-    castActions.forEach((ca, index) => {
-      options.push({
-        key: `cast-${index}`,
-        label: ca.description,
-        manaCost: ca.manaCostString || cardInfo.manaCost || null,
-        isAvailable: ca.isAffordable !== false,
-        action: ca,
-        actionType: 'cast',
-      })
-    })
-  } else if (castAction) {
-    // 1c. Normal cast (for non-land, non-modal cards)
-    options.push({
-      key: 'cast',
-      label: `Cast ${cardInfo.name}`,
-      manaCost: castAction.manaCostString || cardInfo.manaCost || null,
-      isAvailable: castAction.isAffordable !== false, // default true if not set
-      action: castAction,
-      actionType: 'cast',
-    })
-  } else if ((cycleAction || typecycleAction || plotAction) && !cardInfo.cardTypes.includes('LAND')) {
-    // Non-land card with cycling/plot but no CastSpell action — show grayed-out cast option
-    // so the action menu always presents both choices
-    options.push({
-      key: 'cast',
-      label: `Cast ${cardInfo.name}`,
-      manaCost: cardInfo.manaCost || null,
-      isAvailable: false,
-      action: null,
-      actionType: 'cast',
-    })
-  }
-
-  // 2. Play land (for land cards)
-  if (playLandAction) {
-    options.push({
-      key: 'playLand',
-      label: `Play ${cardInfo.name}`,
-      manaCost: null,
-      isAvailable: playLandAction.isAffordable !== false,
-      action: playLandAction,
-      actionType: 'playLand',
-    })
-  } else if (cycleAction && cardInfo.cardTypes.includes('LAND')) {
-    // Land with cycling but no PlayLand action (already played a land this turn)
-    // Show grayed-out "Play land" so the action menu always has both options
-    options.push({
-      key: 'playLand',
-      label: `Play ${cardInfo.name}`,
-      manaCost: null,
-      isAvailable: false,
-      action: null,
-      actionType: 'playLand',
-    })
-  }
-
-  // 3. Cast face-down (morph)
-  if (morphAction) {
-    options.push({
-      key: 'castFaceDown',
-      label: 'Cast Face-Down',
-      manaCost: morphAction.manaCostString || '{3}',
-      isAvailable: morphAction.isAffordable !== false,
-      action: morphAction,
-      actionType: 'castFaceDown',
-    })
-  }
-
-  // 3b. Cast with kicker
-  if (kickerAction) {
-    options.push({
-      key: 'castWithKicker',
-      // Server picks the suffix — "(Kicked)", "(Offspring)", or "(with Flash)" for
-      // flash-timing kickers like Ghitu Fire / Molten Exhale. Fall back if absent.
-      label: kickerAction.description || `Cast ${cardInfo.name} (Kicked)`,
-      manaCost: kickerAction.manaCostString || null,
-      isAvailable: kickerAction.isAffordable !== false,
-      action: kickerAction,
-      actionType: 'castWithKicker',
-    })
-  }
-
-  // 4. Cycling
-  if (cycleAction) {
-    options.push({
-      key: 'cycle',
-      label: 'Cycle',
-      manaCost: cycleAction.manaCostString || null,
-      isAvailable: cycleAction.isAffordable !== false,
-      action: cycleAction,
-      actionType: 'cycle',
-    })
-  }
-
-  // 4b. Typecycling (e.g., Islandcycling, Swampcycling)
-  if (typecycleAction) {
-    options.push({
-      key: 'typecycle',
-      label: typecycleAction.description,
-      manaCost: typecycleAction.manaCostString || null,
-      isAvailable: typecycleAction.isAffordable !== false,
-      action: typecycleAction,
-      actionType: 'cycle',
-    })
-  }
-
-  // 4c. Plot (CR 718) — sorcery-speed special action; sits alongside the cast option.
-  if (plotAction) {
-    options.push({
-      key: 'plot',
-      label: 'Plot',
-      manaCost: plotAction.manaCostString || null,
-      isAvailable: plotAction.isAffordable !== false,
-      action: plotAction,
-      actionType: 'plot',
-    })
-  }
-
-  // 5. Activated abilities (for permanents on battlefield)
-  const activateActions = legalActions.filter((a) => a.action.type === 'ActivateAbility')
-
-  // 5a. Planeswalker: show the full loyalty ability menu, with unavailable abilities grayed
-  // out (not enough loyalty, sorcery-speed restriction, already activated this turn, etc.).
-  // This overrides the default "only show legal activate actions" rendering so the player
-  // sees all three abilities on the card every time they click it.
-  const pwAbilities = cardInfo.planeswalkerAbilities
-  const renderedActivateActions = new Set<LegalActionInfo>()
-  if (pwAbilities && pwAbilities.length > 0) {
-    pwAbilities.forEach((pw, index) => {
-      const match = activateActions.find(
-        (a) => (a.action as { abilityId?: string }).abilityId === pw.abilityId
-      )
-      if (match) renderedActivateActions.add(match)
-      options.push({
-        key: `pw-${pw.abilityId}-${index}`,
-        label: pw.description,
-        manaCost: null,
-        isAvailable: match !== undefined && match.isAffordable !== false,
-        action: match ?? null,
-        actionType: 'activate',
-        loyaltyChange: pw.loyaltyChange,
-      })
-    })
-  }
-
-  // 5b. Remaining (non-planeswalker) activated abilities — activated abilities on non-
-  // planeswalker permanents, or anything not already rendered above.
-  activateActions.forEach((activateAction, index) => {
-    if (renderedActivateActions.has(activateAction)) return
-    options.push({
-      key: `activate-${index}`,
-      label: activateAction.description,
-      manaCost: activateAction.manaCostString || null,
-      isAvailable: activateAction.isAffordable !== false,
-      action: activateAction,
-      actionType: 'activate',
-    })
-  })
-
-  // 6. Turn face-up (morph)
-  const turnFaceUpAction = legalActions.find((a) => a.action.type === 'TurnFaceUp')
-  if (turnFaceUpAction) {
-    options.push({
-      key: 'turnFaceUp',
-      label: 'Turn Face-Up',
-      manaCost: turnFaceUpAction.manaCostString || null,
-      isAvailable: turnFaceUpAction.isAffordable !== false,
-      action: turnFaceUpAction,
-      actionType: 'turnFaceUp',
-    })
-  }
-
-  // 7. Crew (for Vehicles) and Saddle (for Mounts) — both are tap-for-power keyword actions
-  const crewActions = legalActions.filter((a) => a.action.type === 'CrewVehicle')
-  crewActions.forEach((crewAction, index) => {
-    options.push({
-      key: `crew-${index}`,
-      label: crewAction.description,
-      manaCost: null,
-      isAvailable: crewAction.isAffordable !== false,
-      action: crewAction,
-      actionType: 'activate',
-    })
-  })
-
-  const saddleActions = legalActions.filter((a) => a.action.type === 'SaddleMount')
-  saddleActions.forEach((saddleAction, index) => {
-    options.push({
-      key: `saddle-${index}`,
-      label: saddleAction.description,
-      manaCost: null,
-      isAvailable: saddleAction.isAffordable !== false,
-      action: saddleAction,
-      actionType: 'activate',
-    })
-  })
-
-  // 8. Unlock Room door (CR 709.5e — sorcery-speed special action). Reuses 'activate'
-  // styling so it lives in the same visual cluster as activated abilities.
-  const unlockRoomActions = legalActions.filter((a) => a.action.type === 'UnlockRoomDoor')
-  unlockRoomActions.forEach((unlockAction, index) => {
-    options.push({
-      key: `unlock-room-${index}`,
-      label: unlockAction.description,
-      manaCost: unlockAction.manaCostString || null,
-      isAvailable: unlockAction.isAffordable !== false,
-      action: unlockAction,
-      actionType: 'activate',
-    })
-  })
-
-  return options
-}
 
 /**
  * Action menu displayed when a card with multiple actions is selected.
@@ -564,6 +199,8 @@ function getActionStyleClass(actionType: ActionOption['actionType'], isAvailable
       return styles.actionCycle ?? ''
     case 'plot':
       return styles.actionCycle ?? ''
+    case 'suspend':
+      return styles.actionCycle ?? ''
     case 'playLand':
       return styles.actionPlayLand ?? ''
     case 'activate':
@@ -595,6 +232,17 @@ function ActionOptionButton({
   const styleClass = getActionStyleClass(option.actionType, option.isAvailable)
   // Only show separate mana cost if label doesn't already contain mana symbols
   const showSeparateCost = option.manaCost && !option.label.includes('{')
+  // Mana pips for a cost, showing progress against floating mana when the player has any.
+  const renderCost = (cost: string | null) =>
+    hasFloatingMana && manaPool
+      ? <ManaCostProgress
+          cost={cost}
+          manaPool={manaPool}
+          eligibleRestrictedMana={option.action?.eligibleRestrictedMana ?? []}
+          size={16}
+          gap={2}
+        />
+      : <ManaCost cost={cost} size={16} gap={2} />
   // Show mana selection icon for actions that have mana sources available
   // Delve and Convoke spells handle mana selection after their selector, so don't show the icon
   const hasManaSelection = option.isAvailable && option.action?.availableManaSources != null && option.action.availableManaSources.length > 0 && !option.action.hasDelve && !option.action.hasConvoke
@@ -622,14 +270,30 @@ function ActionOptionButton({
           {option.impendingTime !== undefined && (
             <ImpendingTimeIcon time={option.impendingTime} />
           )}
-          <span className={styles.actionButtonLabel}>
-            <AbilityText text={option.label} size={14} />
+          <span className={styles.actionButtonLabelStack}>
+            <span className={styles.actionButtonLabel}>
+              <AbilityText text={option.label} size={14} />
+            </span>
+            {option.hint && (
+              <span className={styles.actionButtonHint}>{option.hint}</span>
+            )}
           </span>
         </span>
         {showSeparateCost && (
-          hasFloatingMana && manaPool
-            ? <ManaCostProgress cost={option.manaCost} manaPool={manaPool} size={16} gap={2} />
-            : <ManaCost cost={option.manaCost} size={16} gap={2} />
+          option.manaCostReducedTo
+            ? (
+              // The printed cost, dimmed, then what a best-case choice leaves. "As low as" keeps it
+              // honest: the reduction depends on which creature the player picks next.
+              <span className={styles.actionButtonCostReduction}>
+                <span className={styles.actionButtonCostBefore}>
+                  <ManaCost cost={option.manaCost} size={13} gap={1} />
+                </span>
+                <span aria-hidden className={styles.actionButtonCostArrow}>→</span>
+                <span className={styles.actionButtonCostNote}>as low as</span>
+                {renderCost(option.manaCostReducedTo)}
+              </span>
+            )
+            : renderCost(option.manaCost)
         )}
       </button>
       {hasManaSelection && option.action && (
@@ -695,6 +359,8 @@ function ActionButton({
         return styles.fallbackCycle
       case 'PlotCard':
         return styles.fallbackCycle
+      case 'SuspendCardFromHand':
+        return styles.fallbackCycle
       case 'ActivateAbility':
         return styles.fallbackActivate
       case 'TurnFaceUp':
@@ -712,7 +378,9 @@ function ActionButton({
       case 'CastFaceDown':
         return 'Cast Face-Down ({3})'
       case 'CastWithKicker':
-        return `Cast (Kicked) (${action.manaCostString ?? ''})`
+        // The server's description already names the mechanic ("… (Bargained)"); only fall back to
+        // a bare cast label when it's missing.
+        return action.description || `Cast (${action.manaCostString ?? ''})`
       case 'TurnFaceUp':
         return `Turn Face-Up (${action.manaCostString ?? ''})`
       default:

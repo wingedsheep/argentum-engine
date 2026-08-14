@@ -302,6 +302,95 @@ export function useSlotSizedResponsive(
 }
 
 /**
+ * Extra width GameCard's own wrapper reserves for a card lying sideways on the
+ * battlefield (see the `needsLandscapeContainer` branch in GameCard.tsx). Kept in
+ * sync with that constant so the stack reserves the same footprint GameCard uses.
+ */
+const LANDSCAPE_CONTAINER_PAD = 8
+
+/** Placement of one card inside an attachment stack, in container-local pixels. */
+export interface AttachmentStackBox {
+  left: number
+  top: number
+  /** Footprint GameCard reserves at this card's current orientation. */
+  width: number
+}
+
+export interface AttachmentStackLayout {
+  containerWidth: number
+  containerHeight: number
+  /** Peeking attachments in render order; index 0 peeks furthest out from behind the host. */
+  attachments: AttachmentStackBox[]
+  host: AttachmentStackBox
+  /** Left edge of the upright card column — the folder tab and click-catcher align to it. */
+  columnLeft: number
+}
+
+/**
+ * Geometry for a permanent rendered with its attachments peeking out from behind it.
+ *
+ * Every card is placed in its own box and rotates *itself* when tapped, so a card's
+ * orientation depends only on its own tap state. That matters for rules clarity: an
+ * Equipment and its equipped creature are independent permanents (CR 301.5d), so
+ * tapping the creature must not make the still-untapped Equipment look tapped — and
+ * a tapped Equipment must read as tapped even while its host is untapped.
+ *
+ * Boxes are horizontally centered on a shared axis, so a card's *visual* center is
+ * the same whichever way it faces. The host's box sits flush with the container
+ * bottom; rows are bottom-aligned (`alignItems: flex-end`), which keeps the host on
+ * the same baseline as an unattached permanent whether or not it's tapped.
+ *
+ * The two orientations peek from opposite ends. An *upright* attachment peeks above
+ * the host, where its title bar is what shows. A *sideways* one is already wider than
+ * the host, so it shows down both flanks on its own — it bottom-aligns instead, tucking
+ * under the host rather than riding above it, and claims no peek height of its own.
+ */
+export function attachmentStackLayout(input: {
+  cardWidth: number
+  cardHeight: number
+  /** How much of each attachment shows above the card in front of it. */
+  peek: number
+  hostTapped: boolean
+  /** Tap state per peeking attachment, in render order. */
+  attachmentsTapped: readonly boolean[]
+  /** Breathing room reserved beside a sideways card so it doesn't sit flush against neighbours. */
+  gutter: number
+}): AttachmentStackLayout {
+  const { cardWidth, cardHeight, peek, hostTapped, attachmentsTapped, gutter } = input
+  // A sideways card is as wide as an upright one is tall.
+  const boxWidth = (tapped: boolean) => (tapped ? cardHeight + LANDSCAPE_CONTAINER_PAD : cardWidth)
+
+  // Only upright attachments claim peek height above the host; sideways ones tuck under it.
+  const visiblePeek = attachmentsTapped.filter((tapped) => !tapped).length * peek
+  const anySideways = hostTapped || attachmentsTapped.some(Boolean)
+  const containerWidth = (anySideways ? cardHeight + LANDSCAPE_CONTAINER_PAD : cardWidth) +
+    (anySideways ? gutter : 0)
+  const containerHeight = cardHeight + visiblePeek
+  const centeredLeft = (tapped: boolean) => (containerWidth - boxWidth(tapped)) / 2
+  // GameCard drops a sideways card's visible band onto the bottom of its own box, so a box
+  // flush with the container bottom puts the band level with the host's lower edge — the
+  // same placement the host itself gets.
+  const bottomAlignedTop = containerHeight - cardHeight
+
+  let uprightRung = 0
+  return {
+    containerWidth,
+    containerHeight,
+    columnLeft: (containerWidth - cardWidth) / 2,
+    attachments: attachmentsTapped.map((tapped) => ({
+      left: centeredLeft(tapped),
+      top: tapped ? bottomAlignedTop : uprightRung++ * peek,
+      width: boxWidth(tapped),
+    })),
+    host: {
+      left: centeredLeft(hostTapped),
+      top: visiblePeek,
+      width: boxWidth(hostTapped),
+    },
+  }
+}
+
+/**
  * Check if a card has multiple potential casting options.
  * Returns true if the card has more than one way to be used.
  * The server now sends all potential actions (including unaffordable ones),
@@ -312,14 +401,19 @@ export function useSlotSizedResponsive(
 export function hasMultipleCastingOptions(cardLegalActions: LegalActionInfo[]): boolean {
   // Count distinct casting method types
   const hasNormalCast = cardLegalActions.some(
-    (a) => a.action.type === 'CastSpell' && a.actionType !== 'CastFaceDown' && a.actionType !== 'CastWithKicker' && a.actionType !== 'CastWithFlashback' && a.actionType !== 'CastWithWarp'
+    (a) => a.action.type === 'CastSpell' && a.actionType !== 'CastFaceDown' && a.actionType !== 'CastWithKicker' && a.actionType !== 'CastWithFlashback' && a.actionType !== 'CastWithWarp' && a.actionType !== 'CastWithDash' && a.actionType !== 'CastWithDisturb'
   )
   const hasMorphCast = cardLegalActions.some((a) => a.actionType === 'CastFaceDown')
   const hasKickerCast = cardLegalActions.some((a) => a.actionType === 'CastWithKicker')
   const hasFlashbackCast = cardLegalActions.some((a) => a.actionType === 'CastWithFlashback')
   const hasWarpCast = cardLegalActions.some((a) => a.actionType === 'CastWithWarp')
+  const hasDashCast = cardLegalActions.some((a) => a.actionType === 'CastWithDash')
+  // Disturb (CR 702.146) casts the card's back face from the graveyard, so it is a distinct
+  // casting option from any normal cast of the same card.
+  const hasDisturbCast = cardLegalActions.some((a) => a.actionType === 'CastWithDisturb')
   const hasCycling = cardLegalActions.some((a) => a.action.type === 'CycleCard')
   const hasPlot = cardLegalActions.some((a) => a.action.type === 'PlotCard')
+  const hasSuspend = cardLegalActions.some((a) => a.action.type === 'SuspendCardFromHand')
   const hasPlayLand = cardLegalActions.some((a) => a.action.type === 'PlayLand')
 
   let options = 0
@@ -328,8 +422,11 @@ export function hasMultipleCastingOptions(cardLegalActions: LegalActionInfo[]): 
   if (hasKickerCast) options++
   if (hasFlashbackCast) options++
   if (hasWarpCast) options++
+  if (hasDashCast) options++
+  if (hasDisturbCast) options++
   if (hasCycling) options++
   if (hasPlot) options++
+  if (hasSuspend) options++
   if (hasPlayLand) options++
 
   return options > 1
@@ -363,7 +460,8 @@ export function shouldShowCastModal(cardLegalActions: LegalActionInfo[]): boolea
     (a) =>
       a.action.type === 'CycleCard' ||
       a.action.type === 'TypecycleCard' ||
-      a.action.type === 'PlotCard'
+      a.action.type === 'PlotCard' ||
+      a.action.type === 'SuspendCardFromHand'
   )
 }
 
@@ -655,6 +753,31 @@ export function getDecayedCounters(card: ClientCard): number {
 }
 
 /**
+ * Get the number of shield counters on a card (CR 122.1c). One or more shield counters prevent the
+ * next damage dealt to the permanent, or replace the next destruction by an effect, consuming one
+ * counter each time.
+ */
+export function getShieldCounters(card: ClientCard): number {
+  return card.counters[CounterType.SHIELD] ?? 0
+}
+
+/**
+ * Get the number of haste counters on a card. Keyword counter (CR 122.1b) — the permanent has haste
+ * for as long as it has one.
+ */
+export function getHasteCounters(card: ClientCard): number {
+  return card.counters[CounterType.HASTE] ?? 0
+}
+
+/**
+ * Get the number of menace counters on a card. Keyword counter (CR 122.1b) — the permanent has
+ * menace for as long as it has one.
+ */
+export function getMenaceCounters(card: ClientCard): number {
+  return card.counters[CounterType.MENACE] ?? 0
+}
+
+/**
  * Get the number of counters of a given type on a card.
  */
 export function getCounterCount(card: ClientCard, type: CounterType): number {
@@ -689,6 +812,14 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.POINT,
   CounterType.WISH,
   CounterType.REVIVAL,
+  CounterType.INGENUITY,
+  CounterType.FILM,
+  CounterType.ICE,
+  CounterType.OMEN,
+  CounterType.HARNESS,
+  CounterType.PLAN,
+  CounterType.INVASION,
+  CounterType.HONE,
   CounterType.PLUS_ONE_PLUS_ZERO,
   CounterType.PLUS_ZERO_PLUS_ONE,
   CounterType.MINUS_ONE_MINUS_ZERO,
@@ -716,6 +847,8 @@ export function getEffectIcon(icon: string): string {
       return '⚔️'
     case 'prevent-damage':
       return '🛡️'
+    case 'double-damage':
+      return '🔥'
     case 'regeneration':
       return '♻️'
     case 'emblem':

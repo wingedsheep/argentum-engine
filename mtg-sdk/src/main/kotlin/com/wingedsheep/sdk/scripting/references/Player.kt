@@ -185,6 +185,48 @@ sealed interface Player {
     }
 
     /**
+     * The owner of the effect's **source** — the card the ability is printed on, not whoever
+     * currently controls it.
+     *
+     * [OwnerOf] reads the owner of the effect's first *chosen target*, so it is unusable for an
+     * ability that names its own source without targeting it. This is that missing case:
+     * *"[This creature]'s owner shuffles it into their library and draws three cards"*
+     * (Gandalf, Wandering Wizard). It matters exactly when control and ownership diverge — a stolen
+     * permanent's ability still acts on the *owner*, per the printed text.
+     */
+    @SerialName("OwnerOfSource")
+    @Serializable
+    data object OwnerOfSource : Player {
+        override val description: String = "its owner"
+    }
+
+    /**
+     * The controller of the effect's **source** — read off the source permanent rather than off
+     * the resolution context's `controllerId`.
+     *
+     * Ordinarily that is the same player [You] names, and [You] stays the right reference. This
+     * one exists for the case where the context's controller has been **rebound to some other
+     * player**, which is exactly what the per-player loops do:
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CountPlayersWith] and
+     * `ForEach`-over-players evaluate their inner condition once per candidate with
+     * `controllerId` set to that candidate, so `You` inside the loop means "the player being
+     * tested". A comparison against the ability's *own* controller then has no reference left to
+     * reach for — the shape of "for each opponent who has more cards in hand **than you**"
+     * (Wojek Investigator), which is `CountPlayersWith(EachOpponent, Compare(Count(You, HAND),
+     * GT, Count(ControllerOfSource, HAND)))`.
+     *
+     * Outside such a loop, prefer [You]. Note the pairing with [OwnerOfSource]: that one reads the
+     * source's *owner* (right when control and ownership diverge and the card says "its owner");
+     * this one follows control, so a stolen permanent's ability compares against whoever controls
+     * it now, as "you" always does.
+     */
+    @SerialName("ControllerOfSource")
+    @Serializable
+    data object ControllerOfSource : Player {
+        override val description: String = "you"
+    }
+
+    /**
      * The distinct owners of the cards currently in the effect source's *linked-exile pile*
      * (the source's [com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent],
      * populated by [com.wingedsheep.sdk.dsl.Effects.ExileUntilLeaves]). Resolves to one entry
@@ -226,6 +268,9 @@ sealed interface Player {
             EnchantedPlayer -> "enchanted player's"
             is ControllerOf -> "its controller's"
             is OwnerOf -> "its owner's"
+            OwnerOfSource -> "its owner's"
+            // Names the same player [You] does; the difference is only where it reads from.
+            ControllerOfSource -> "your"
             OwnersOfLinkedExile -> "the exiled card's owner's"
         }
 }

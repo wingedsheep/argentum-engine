@@ -2,7 +2,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { useGameStore, type WinstonDraftState } from '@/store/gameStore.ts'
 import type { SealedCardInfo, LobbySettings } from '@/types'
 import { useResponsive } from '@/hooks/useResponsive.ts'
-import { getCardImageUrl, splitImageRotateDeg } from '@/utils/cardImages.ts'
+import { getCardImageUrl, landscapeImageRotateDeg } from '@/utils/cardImages.ts'
 import { ManaCost } from '../ui/ManaSymbols'
 import { HoverCardPreview } from '../ui/HoverCardPreview'
 import { useDfcHoverFlip } from '../ui/useDfcHoverFlip'
@@ -717,7 +717,7 @@ function WinstonDrafter({ winstonState, settings }: { winstonState: WinstonDraft
           pos={hoverPos}
           rulings={hoveredCard.rulings}
           overlay={dfc.hint}
-          imageRotateDeg={splitImageRotateDeg(hoveredCard)}
+          imageRotateDeg={landscapeImageRotateDeg(hoveredCard)}
         />
       )}
 

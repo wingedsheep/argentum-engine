@@ -117,7 +117,7 @@
                     "type": "GainLife",
                     "amount": {
                         "type": "Fixed",
-                        "amount": 3
+                        "amount": 2
                     }
                 }
             ]

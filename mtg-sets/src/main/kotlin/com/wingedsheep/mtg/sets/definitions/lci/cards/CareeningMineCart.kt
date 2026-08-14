@@ -28,7 +28,7 @@ val CareeningMineCart = card("Careening Mine Cart") {
     toughness = 3
     triggeredAbility {
         trigger = Triggers.Attacks
-        effect = Effects.CreateTreasure(imageUri = LciTokenArt.TREASURE)
+        effect = Effects.CreateTreasure()
     }
     keywordAbility(KeywordAbility.crew(1))
     metadata {

@@ -1,9 +1,14 @@
 package com.wingedsheep.gameserver.handler
 
 import com.wingedsheep.ai.engine.SealedDeckGenerator
+import com.wingedsheep.ai.engine.deck.GeneratedDeck
 import com.wingedsheep.gameserver.ai.AiGameManager
+import com.wingedsheep.gameserver.ai.RandomDeckResolver
 import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.gameserver.deck.DeckValidator
+import com.wingedsheep.gameserver.deck.EasterEggDeckInjector
+import com.wingedsheep.gameserver.lobby.AiDeckSpec
+import com.wingedsheep.gameserver.lobby.AiDeckSpecView
 import com.wingedsheep.gameserver.lobby.MomirBasicSetup
 import com.wingedsheep.gameserver.lobby.QuickGameLobby
 import com.wingedsheep.gameserver.lobby.QuickGameLobbyPlayer
@@ -37,9 +42,8 @@ import org.springframework.web.socket.WebSocketSession
  *  - When all players in the lobby are ready, hand off to [GamePlayHandler.startQuickGameFromLobby]
  *    which builds the [GameSession], wires AI if needed, and sends `GameStarted`.
  *
- * AI lobbies (`vsAi = true`): the AI is added immediately at lobby creation and is auto-ready.
- * The host therefore only has to pick a deck (or stay on Random) and click Ready, giving the
- * fast UX we wanted while still routing through one consistent surface.
+ * An AI can fill or leave the ordinary 1v1 opponent seat and is auto-ready while present. The
+ * create-time `vsAi` shortcut uses that same state for the wizard's fast solo path.
  */
 @Component
 class QuickGameLobbyHandler(
@@ -50,10 +54,13 @@ class QuickGameLobbyHandler(
     private val sender: MessageSender,
     private val cardRegistry: CardRegistry,
     private val printingRegistry: com.wingedsheep.engine.registry.PrintingRegistry,
+    private val tokenArtRegistry: com.wingedsheep.engine.registry.TokenArtRegistry,
     private val deckValidator: DeckValidator,
     private val deckGenerator: SealedDeckGenerator,
     private val gameProperties: GameProperties,
     private val aiGameManager: AiGameManager,
+    private val randomDeckResolver: RandomDeckResolver,
+    private val boosterGenerator: com.wingedsheep.engine.limited.BoosterGenerator,
     private val gamePlayHandler: GamePlayHandler,
 ) {
     private val logger = LoggerFactory.getLogger(QuickGameLobbyHandler::class.java)
@@ -76,7 +83,123 @@ class QuickGameLobbyHandler(
             is ClientMessage.SetQuickGameLobbyPublic -> handleSetPublic(session, message)
             is ClientMessage.SetQuickGameLobbyRanked -> handleSetRanked(session, message)
             is ClientMessage.SetQuickGameLobbyFormat -> handleSetFormat(session, message)
+            is ClientMessage.SetQuickGameAiDeck -> handleSetAiDeck(session, message)
+            is ClientMessage.AddQuickGameAi -> handleAddAi(session)
+            is ClientMessage.RemoveQuickGameAi -> handleRemoveAi(session)
             else -> {}
+        }
+    }
+
+    private fun handleAddAi(session: WebSocketSession) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id) ?: run {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected"); return
+        }
+        val lobby = lobbyRepository.findContainingPlayer(playerSession.playerId) ?: run {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a lobby"); return
+        }
+        lobbyRepository.withLock(lobby.lobbyId) { current ->
+            if (current == null) return@withLock
+            val host = current.players.firstOrNull { !it.isAi }
+            if (host?.playerId != playerSession.playerId) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Only the host can add an AI player")
+                return@withLock
+            }
+            if (!aiGameManager.isEnabled) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "AI opponent is not enabled on this server")
+                return@withLock
+            }
+            if (current.twoHeadedGiant || current.players.size != 1) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "The opponent seat is not available")
+                return@withLock
+            }
+            current.players += QuickGameLobbyPlayer(
+                playerId = com.wingedsheep.sdk.model.EntityId("ai-pending-${current.lobbyId}"),
+                playerName = "AI Opponent",
+                isAi = true,
+                ready = true,
+            )
+            current.vsAi = true
+            current.isPublic = false
+            current.ranked = false
+            broadcastState(current)
+        }
+    }
+
+    private fun handleRemoveAi(session: WebSocketSession) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id) ?: run {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected"); return
+        }
+        val lobby = lobbyRepository.findContainingPlayer(playerSession.playerId) ?: run {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a lobby"); return
+        }
+        lobbyRepository.withLock(lobby.lobbyId) { current ->
+            if (current == null) return@withLock
+            val host = current.players.firstOrNull { !it.isAi }
+            if (host?.playerId != playerSession.playerId) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Only the host can remove the AI player")
+                return@withLock
+            }
+            if (!current.players.removeIf { it.isAi }) return@withLock
+            current.vsAi = false
+            broadcastState(current)
+        }
+    }
+
+    /**
+     * Host picks what the AI opponent plays (see [AiDeckSpec]).
+     *
+     * A [AiDeckSpec.Fixed] list is validated here, against the lobby's current format, so an
+     * illegal choice is refused at the point the host makes it rather than silently seating an
+     * illegal deck. [AiDeckSpec.Sets] only checks that the codes exist — whether the resulting pool
+     * can carry a deck is the resolver's problem at game start, and it falls back rather than fails.
+     */
+    private fun handleSetAiDeck(session: WebSocketSession, message: ClientMessage.SetQuickGameAiDeck) {
+        val playerSession = sessionRegistry.getPlayerSession(session.id) ?: run {
+            sender.sendError(session, ErrorCode.NOT_CONNECTED, "Not connected"); return
+        }
+        val lobby = lobbyRepository.findContainingPlayer(playerSession.playerId) ?: run {
+            sender.sendError(session, ErrorCode.GAME_NOT_FOUND, "Not in a lobby"); return
+        }
+        lobbyRepository.withLock(lobby.lobbyId) { current ->
+            if (current == null) return@withLock
+            if (!current.vsAi) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "This lobby has no AI opponent")
+                return@withLock
+            }
+            val host = current.players.firstOrNull { !it.isAi }
+            if (host?.playerId != playerSession.playerId) {
+                sender.sendError(session, ErrorCode.INVALID_ACTION, "Only the host can choose the AI's deck")
+                return@withLock
+            }
+            when (val spec = message.spec) {
+                is AiDeckSpec.Fixed -> {
+                    if (spec.deckList.isEmpty()) {
+                        sender.sendError(session, ErrorCode.INVALID_ACTION, "The AI's deck is empty")
+                        return@withLock
+                    }
+                    val result = validateAiDeck(spec, current.format)
+                    if (!result.valid) {
+                        val reason = result.errors.firstOrNull()?.message ?: "Deck is not legal"
+                        sender.sendError(session, ErrorCode.INVALID_ACTION, "AI deck rejected: $reason")
+                        return@withLock
+                    }
+                }
+                is AiDeckSpec.Sets -> {
+                    val unknown = spec.setCodes.filterNot { it in boosterGenerator.availableSets }
+                    if (unknown.isNotEmpty()) {
+                        sender.sendError(
+                            session,
+                            ErrorCode.INVALID_ACTION,
+                            "Unknown set${if (unknown.size > 1) "s" else ""}: ${unknown.joinToString(", ")}",
+                        )
+                        return@withLock
+                    }
+                }
+                is AiDeckSpec.Auto -> {}
+            }
+            if (current.aiDeckSpec == message.spec) return@withLock
+            current.aiDeckSpec = message.spec
+            broadcastState(current)
         }
     }
 
@@ -99,7 +222,9 @@ class QuickGameLobbyHandler(
             // lobby into the deckbuilding-free Vanguard mode (mutually exclusive with a deck-format
             // restriction). Any other choice clears Momir and applies the constructed format.
             current.momirBasic = message.momirBasic
-            current.format = if (message.momirBasic) null else message.format
+            // applyFormat re-derives the lobby's Rules axis from the new legality, so the two can't
+            // drift apart on this lobby kind (which has no separate Rules control).
+            current.applyFormat(if (message.momirBasic) null else message.format)
             // Re-validate every submitted deck under the new format. Submissions that no longer
             // pass un-ready the player so they have to update their deck or accept a new format.
             // Momir has no deckbuilding, so there is nothing to re-validate.
@@ -110,6 +235,19 @@ class QuickGameLobbyHandler(
                     if (deck.isEmpty()) continue // Random pool — format restriction doesn't apply.
                     val result = deckValidator.validate(deck, message.format)
                     if (!result.valid) player.ready = false
+                }
+                // Same rule for the AI's hand-picked deck, except the AI has no ready flag to
+                // clear: an illegal list is dropped back to Auto, which always builds something
+                // legal for the new format. The host sees the seat's label change.
+                val aiSpec = current.aiDeckSpec
+                if (aiSpec is AiDeckSpec.Fixed && !validateAiDeck(aiSpec, message.format).valid) {
+                    logger.info(
+                        "Lobby {}: AI deck '{}' is not legal in {}; reverting the AI to Auto",
+                        current.lobbyId,
+                        aiSpec.label,
+                        message.format?.displayName ?: "no format",
+                    )
+                    current.aiDeckSpec = AiDeckSpec.Auto
                 }
             }
             broadcastState(current)
@@ -171,8 +309,10 @@ class QuickGameLobbyHandler(
         lobbyRepository.withLock(lobby.lobbyId) { current ->
             if (current == null) return@withLock
             val player = current.findPlayer(playerSession.playerId) ?: return@withLock
-            if (player.setCode == message.setCode) return@withLock
-            player.setCode = message.setCode
+            val requested = message.setCodes.filter { it.isNotBlank() }.distinct()
+            if (player.setCodes == requested) return@withLock
+            player.setCodes = requested
+            player.setCode = requested.singleOrNull()
             broadcastState(current)
         }
     }
@@ -189,10 +329,15 @@ class QuickGameLobbyHandler(
             sender.sendError(session, ErrorCode.INVALID_ACTION, "AI opponent is not enabled on this server")
             return
         }
-        // Two-Headed Giant is four human seats; the built-in AI is not team-aware yet (Phase 8),
-        // and 2HG (a rules format) is orthogonal to Momir Basic.
+        // A quick lobby's `vsAi` seats exactly one AI, and 2HG needs three to fill its four seats.
+        // The AI itself is no obstacle — a Two-Headed Giant tournament lobby seats AI teammates and
+        // opponents — so this is about which lobby can hold them, not about what the AI can play.
         if (message.twoHeadedGiant && message.vsAi) {
-            sender.sendError(session, ErrorCode.INVALID_ACTION, "Two-Headed Giant does not support AI opponents yet")
+            sender.sendError(
+                session,
+                ErrorCode.INVALID_ACTION,
+                "A quick game seats only one AI — create a Two-Headed Giant lobby to play a full table against them",
+            )
             return
         }
         if (message.twoHeadedGiant && message.momirBasic) {
@@ -392,6 +537,19 @@ class QuickGameLobbyHandler(
                 sender.sendError(session, ErrorCode.INVALID_ACTION, "Pick a deck before readying up")
                 return@withLock
             }
+            // A host-supplied AI deck under Commander rules has to name its commander; the
+            // generated paths pick their own, so only a Fixed spec can be missing one.
+            val aiDeck = current.aiDeckSpec
+            if (message.ready && current.vsAi && current.usesCommanderRules &&
+                aiDeck is AiDeckSpec.Fixed && aiDeck.commander.isNullOrBlank()
+            ) {
+                sender.sendError(
+                    session,
+                    ErrorCode.INVALID_ACTION,
+                    "Pick a Commander deck for the AI before readying up",
+                )
+                return@withLock
+            }
             player.ready = message.ready
             broadcastState(current)
             if (current.allReady() && !current.started) {
@@ -402,20 +560,12 @@ class QuickGameLobbyHandler(
     }
 
     private fun startGame(lobby: QuickGameLobby) {
-        // Commander-shape lobby with a human player who never designated a commander would crash
-        // mid-init when GameInitializer requires `commanderCardName`. Surface the error early so
-        // the player can pick a different deck before everyone gets disconnected.
-        if (lobby.format?.isCommanderShape == true) {
-            val missing = lobby.players.firstOrNull { !it.isAi && it.deckList?.isNotEmpty() == true && it.commander.isNullOrBlank() }
-            if (missing != null) {
-                logger.warn("Lobby ${lobby.lobbyId}: human player ${missing.playerName} has no commander designated for ${lobby.format} game start")
-                broadcastClosed(
-                    lobby,
-                    "${missing.playerName}'s deck has no commander designated — pick a deck with a commander to play ${lobby.format!!.displayName}",
-                )
-                lobbyRepository.remove(lobby.lobbyId)
-                return
-            }
+        // The one Rules × Table conflict, read from the single statement of it.
+        lobby.rulesTableConflict?.let { conflict ->
+            logger.warn("Lobby ${lobby.lobbyId}: $conflict")
+            broadcastClosed(lobby, conflict)
+            lobbyRepository.remove(lobby.lobbyId)
+            return
         }
 
         // Ranked play only counts when every human seat is a signed-in account (no guests). A guest may
@@ -434,6 +584,7 @@ class QuickGameLobbyHandler(
             useHandSmoother = gameProperties.handSmoother.enabled,
             debugMode = gameProperties.debugMode,
             printingRegistry = printingRegistry,
+            tokenArtRegistry = tokenArtRegistry,
             // Four seats for Two-Headed Giant (CR 810), two otherwise.
             maxPlayers = lobby.maxPlayers,
         )
@@ -441,12 +592,12 @@ class QuickGameLobbyHandler(
         if (lobby.ranked) {
             gameSession.ranked = true
             gameSession.rankedMode = com.wingedsheep.gameserver.ranking.Ranked
-                .modeForQuickGame(lobby.format, lobby.momirBasic)
+                .modeForQuickGame(lobby.rules, lobby.format, lobby.momirBasic)
         }
-        // Commander-shape formats (Commander / Brawl / Standard Brawl) run on the engine's 1v1
-        // Commander rules. Other formats fall through to Standard. Brawl-specific tweaks
-        // (60 cards, alternative life total) are Phase 4 territory — Phase 1 covers Commander.
-        if (lobby.format?.isCommanderShape == true) {
+        // Commander rules run on the engine's Commander format; everything else falls through to
+        // Standard. Brawl-specific tweaks (60 cards, alternative life total) are Phase 4 territory —
+        // Phase 1 covers Commander.
+        if (lobby.usesCommanderRules) {
             gameSession.engineFormat = com.wingedsheep.sdk.core.Format.Commander()
         }
         // Two-Headed Giant: run under the team format and forward the seat→team partition. The
@@ -475,17 +626,63 @@ class QuickGameLobbyHandler(
         }
         gameSession.publicSpectate = lobby.isPublic && !lobby.vsAi
 
-        for (lobbyPlayer in humanPlayers) {
+        // Every seat's deck is resolved *before* anyone is seated. Under Commander rules a deck with
+        // no designated commander can't be seated at all — GameInitializer requires one — and
+        // discovering that halfway through the seating loop would leave the seats already wired
+        // pointing at a game that never starts.
+        //
+        // For Momir Basic every seat plays the same fixed 60 basics. Otherwise: a human's own
+        // submitted deck, or (for a Random pool, and for the AI seat's spec) whatever the resolver
+        // builds under the lobby's format — which for a commander shape now includes picking the
+        // commander.
+        val humanDecks = humanPlayers.associate { lobbyPlayer ->
+            // Momir Basic has no deckbuilding: the fixed 60 basics are substituted at seating time.
+            if (lobby.momirBasic) return@associate lobbyPlayer.playerId to GeneratedDeck(emptyMap())
             // In a vs-AI lobby, share the resolved set with the single human so a random pool draws
             // from the same set the AI got; multi-human lobbies keep each player's own set, rolling
             // an independent random when they didn't pick one.
-            // Momir Basic uses a fixed deck (resolved below), so skip the random sealed-pool roll.
-            val deckList = if (lobby.momirBasic) {
-                emptyMap()
-            } else {
-                val randomFallbackSet = if (lobby.vsAi) aiSetCode else deckGenerator.randomSetCode()
-                resolveDeck(lobbyPlayer, randomFallbackSet)
+            val randomFallbackSet = if (lobby.vsAi) aiSetCode else deckGenerator.randomSetCode()
+            val resolved = resolveDeck(lobbyPlayer, randomFallbackSet, lobby.format, lobby.usesCommanderRules)
+            lobbyPlayer.playerId to resolved.copy(
+                deckList = EasterEggDeckInjector.maybeInjectEasterEggs(
+                    lobbyPlayer.playerName,
+                    resolved.deckList,
+                    gameProperties.easterEggs.enabled,
+                ),
+                // A submitted deck names its own commander on the lobby seat; a generated one names
+                // it on the resolved deck. Either way the seat needs exactly one.
+                commander = lobbyPlayer.commander ?: resolved.commander,
+            )
+        }
+        val aiDeck = when {
+            !lobby.vsAi -> null
+            lobby.momirBasic -> GeneratedDeck(MomirBasicSetup.fixedBasicDeck)
+            else -> randomDeckResolver.resolve(lobby.aiDeckSpec, lobby.format, aiSetCode, lobby.usesCommanderRules)
+        }
+
+        if (lobby.usesCommanderRules && !lobby.momirBasic) {
+            val seatWithoutCommander = humanPlayers.firstOrNull { humanDecks[it.playerId]?.commander == null }
+            if (seatWithoutCommander != null) {
+                logger.warn(
+                    "Lobby ${lobby.lobbyId}: no commander for ${seatWithoutCommander.playerName} at ${lobby.format} game start",
+                )
+                broadcastClosed(
+                    lobby,
+                    "${seatWithoutCommander.playerName}'s deck has no commander designated — pick a deck with a commander to play ${lobby.format?.displayName ?: "Commander"}",
+                )
+                lobbyRepository.remove(lobby.lobbyId)
+                return
             }
+            if (aiDeck != null && aiDeck.commander == null) {
+                logger.error("Lobby ${lobby.lobbyId}: could not build a ${lobby.format?.displayName ?: "Commander"} deck for the AI seat")
+                broadcastClosed(lobby, "Could not build a Commander deck for the AI — pick one for it and try again")
+                lobbyRepository.remove(lobby.lobbyId)
+                return
+            }
+        }
+
+        for (lobbyPlayer in humanPlayers) {
+            val deckList = humanDecks.getValue(lobbyPlayer.playerId).deckList
             val playerSession = sessionRegistry
                 .getAllIdentities()
                 .firstOrNull { it.playerId == lobbyPlayer.playerId }
@@ -499,11 +696,12 @@ class QuickGameLobbyHandler(
                 lobbyRepository.remove(lobby.lobbyId)
                 return
             }
-            // Pass the commander only for commander-shape formats; clear it otherwise so a stale
+            // Pass the commander only under Commander rules; clear it otherwise so a stale
             // commander on a saved deck doesn't accidentally route into a Standard game. Strip
             // one copy of the commander out of the wire deck list so the engine sees `cards`
             // (= library) excluding the commander, matching `Deck.cards` convention.
-            val commander = if (lobby.format?.isCommanderShape == true) lobbyPlayer.commander else null
+            val commander = humanDecks.getValue(lobbyPlayer.playerId).commander
+                ?.takeIf { lobby.usesCommanderRules }
             // Momir Basic ignores any submitted deck: every seat plays the same fixed 60 basics.
             val engineDeckList = when {
                 lobby.momirBasic -> MomirBasicSetup.fixedBasicDeck
@@ -521,9 +719,9 @@ class QuickGameLobbyHandler(
 
         gameRepository.save(gameSession)
 
-        if (lobby.vsAi) {
-            // AI is added by AiGameManager. For Momir Basic it plays the same fixed 60-basic deck
-            // as the human; otherwise it generates its own random sealed deck for the chosen set.
+        if (aiDeck != null) {
+            // AI is added by AiGameManager, from the deck resolved above — the deck-source policy
+            // lives next to the lobby state that configures it, not inside AiGameManager.
             aiGameManager.createAiOpponent(
                 gameSession = gameSession,
                 setCode = aiSetCode,
@@ -531,7 +729,10 @@ class QuickGameLobbyHandler(
                 onMulliganKeep = { id -> gamePlayHandler.handleAiMulliganKeep(gameSession, id) },
                 onMulliganTake = { id -> gamePlayHandler.handleAiMulliganTake(gameSession, id) },
                 onBottomCards = { id, cardIds -> gamePlayHandler.handleAiBottomCards(gameSession, id, cardIds) },
-                deckOverride = if (lobby.momirBasic) MomirBasicSetup.fixedBasicDeck else null,
+                deckOverride = aiDeck.deckList,
+                // Cleared outside Commander rules so a commander on a host-picked deck can't route
+                // into a Standard game.
+                commanderCardName = aiDeck.commander?.takeIf { lobby.usesCommanderRules },
             )
         }
 
@@ -576,11 +777,13 @@ class QuickGameLobbyHandler(
             canStart = lobby.allReady(),
             isPublic = lobby.isPublic,
             format = lobby.format,
+            rules = lobby.rules.name,
             momirBasic = lobby.momirBasic,
             twoHeadedGiant = lobby.twoHeadedGiant,
             maxPlayers = lobby.maxPlayers,
             ranked = lobby.ranked,
             rankedEligible = lobby.rankedEligible,
+            aiDeck = if (lobby.vsAi) AiDeckSpecView.of(lobby.aiDeckSpec) else null,
         )
         sender.send(session, msg)
     }
@@ -589,15 +792,24 @@ class QuickGameLobbyHandler(
     private fun userIdOf(playerId: com.wingedsheep.sdk.model.EntityId): java.util.UUID? =
         sessionRegistry.getAllIdentities().firstOrNull { it.playerId == playerId }?.userId
 
-    private fun resolveDeck(player: QuickGameLobbyPlayer, randomFallbackSet: String): Map<String, Int> {
+    private fun resolveDeck(
+        player: QuickGameLobbyPlayer,
+        randomFallbackSet: String,
+        format: DeckFormat?,
+        commanderRules: Boolean,
+    ): GeneratedDeck {
         val submitted = player.deckList ?: emptyMap()
         if (submitted.isEmpty()) {
-            // Player chose Random — honor their per-player set choice; fall back to the caller's
-            // pre-resolved set (shared with the AI in a vs-AI lobby so both play the same set).
-            val setCode = player.setCode ?: randomFallbackSet
-            return deckGenerator.generate(setCode)
+            // Player chose Random. Under a constructed format that means a legal 60-card deck built
+            // from the format's pool — the same thing the AI seat's Auto gets — not a sealed pool
+            // that ignores the restriction their opponent's list was validated against. Under a
+            // commander shape it means a generated deck *and* its commander, so "Random" is a legal
+            // Commander seat rather than one the engine refuses at init. Without a format it stays a
+            // sealed pool from their own set choice, falling back to the caller's pre-resolved set
+            // (shared with the AI in a vs-AI lobby so both play the same set).
+            return randomDeckResolver.randomDeck(format, player.setCodes, randomFallbackSet, commanderRules)
         }
-        return submitted
+        return GeneratedDeck(submitted)
     }
 
     private fun broadcastState(lobby: QuickGameLobby) {
@@ -616,11 +828,13 @@ class QuickGameLobbyHandler(
                 canStart = lobby.allReady(),
                 isPublic = lobby.isPublic,
                 format = lobby.format,
+                rules = lobby.rules.name,
                 momirBasic = lobby.momirBasic,
                 twoHeadedGiant = lobby.twoHeadedGiant,
                 maxPlayers = lobby.maxPlayers,
                 ranked = lobby.ranked,
                 rankedEligible = lobby.rankedEligible,
+                aiDeck = if (lobby.vsAi) AiDeckSpecView.of(lobby.aiDeckSpec) else null,
             )
             sender.send(ws, msg)
         }
@@ -659,8 +873,11 @@ class QuickGameLobbyHandler(
         // as "deck selected" and shows a fixed label rather than the deck-picker states.
         val label = when {
             lobby.momirBasic -> "Momir Basic (${MomirBasicSetup.COPIES_PER_BASIC * MomirBasicSetup.BASIC_LAND_NAMES.size} lands)"
+            // The AI seat holds no deck list of its own — it plays whatever the host's
+            // `aiDeckSpec` resolves to at game start — so it labels from the spec instead.
+            isAi -> aiDeckLabel(lobby)
             deckList == null -> "Choosing…"
-            deckList!!.isEmpty() -> if (setCode != null) "Random Pool ($setCode)" else "Random Pool"
+            deckList!!.isEmpty() -> if (setCodes.isNotEmpty()) "Random Pool (${setCodes.joinToString(", ")})" else "Random Pool"
             else -> "Custom ($total)"
         }
         return ServerMessage.QuickGameLobbyPlayerView(
@@ -672,7 +889,41 @@ class QuickGameLobbyHandler(
             deckCardCount = if (lobby.momirBasic) MomirBasicSetup.COPIES_PER_BASIC * MomirBasicSetup.BASIC_LAND_NAMES.size else total,
             deckLabel = label,
             setCode = setCode,
+            setCodes = setCodes,
             teamIndex = lobby.teamIndexOf(seatIndex),
         )
+    }
+
+    /** Player-list label for the AI seat, describing what the host chose for it. */
+    private fun aiDeckLabel(lobby: QuickGameLobby): String = when (val spec = lobby.aiDeckSpec) {
+        is AiDeckSpec.Auto -> autoAiDeckLabel(lobby)
+        is AiDeckSpec.Sets ->
+            if (spec.setCodes.isEmpty()) autoAiDeckLabel(lobby) else "Built from ${spec.setCodes.joinToString(", ")}"
+        is AiDeckSpec.Fixed -> "${spec.label} (${spec.deckList.values.sum() + if (spec.commander != null) 1 else 0})"
+    }
+
+    /**
+     * What "let the server decide" resolves to, named by the axis that decides it. A lobby can run
+     * Commander with no deck-legality restriction at all, and "sealed" would be a lie there.
+     */
+    private fun autoAiDeckLabel(lobby: QuickGameLobby): String = when {
+        lobby.format != null -> "Auto (${lobby.format!!.displayName})"
+        lobby.usesCommanderRules -> "Auto (Commander)"
+        else -> "Auto (sealed)"
+    }
+
+    private fun validateAiDeck(
+        spec: AiDeckSpec.Fixed,
+        format: com.wingedsheep.sdk.core.DeckFormat?,
+    ) = if (format?.isCommanderShape == true) {
+        deckValidator.validate(
+            com.wingedsheep.sdk.model.Deck(
+                cards = spec.deckList.flatMap { (name, count) -> List(count) { name } },
+                commander = spec.commander?.takeIf { it.isNotBlank() },
+            ),
+            format,
+        )
+    } else {
+        deckValidator.validate(spec.deckList, format)
     }
 }
