@@ -917,6 +917,55 @@
     ]
 }
 
+// Sneaky Snacker
+{
+    "name": "Sneaky Snacker",
+    "manaCost": "{U}{B}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flying\nWhen you draw your third card in a turn, return this card from your graveyard to the battlefield tapped.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "NthCardDrawnEvent",
+                    "nthCard": 3
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Battlefield",
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard"
+                },
+                "activeZones": [
+                    "Battlefield",
+                    "Graveyard"
+                ],
+                "descriptionOverride": "When you draw your third card in a turn, return this card from your graveyard to the battlefield tapped."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "artist": "Irina Nordsol",
+        "flavorText": "Though the High Fae gave explicit instructions not to tarry, she stayed in Sweettooth Village for seconds, thirds, and then dessert.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e3aedae-e4bb-48e3-9f8b-bea0430df306.jpg?1783911245"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Thraben Charm
 {
     "name": "Thraben Charm",
