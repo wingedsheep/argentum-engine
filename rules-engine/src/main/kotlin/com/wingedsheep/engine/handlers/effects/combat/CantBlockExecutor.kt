@@ -27,9 +27,8 @@ class CantBlockExecutor : EffectExecutor<CantBlockEffect> {
         effect: CantBlockEffect,
         context: EffectContext
     ): EffectResult {
-        // State-aware overload, matching SetSuspectedExecutor and GrantKeywordExecutor — the three
-        // sub-effects of Effects.Suspect must resolve the *same* target, and the attachment-relative
-        // ones (EnchantedCreature) only resolve with state in hand.
+        // State-aware overload, matching SuspectExecutor and GrantKeywordExecutor — the
+        // attachment-relative targets (EnchantedCreature) only resolve with state in hand.
         val entityId = TargetResolutionUtils.resolveTarget(effect.target, context, state)
             ?: return EffectResult.success(state)
         val container = state.getEntity(entityId)

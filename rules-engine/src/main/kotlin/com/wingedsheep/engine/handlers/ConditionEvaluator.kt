@@ -1226,6 +1226,12 @@ class ConditionEvaluator(
         val playerId = resolvePlayer(state, condition.player, ctx) ?: return 0
         val records = state.spellsCastThisTurnByPlayer[playerId] ?: return 0
         val evaluator = PredicateEvaluator()
+        // Cast-history filters can reference a name captured earlier in this same resolution
+        // (`GameObjectFilter.namedFromVariable`), so the record matcher needs the pipeline's
+        // chosen values. Only a Resolution context has a pipeline; a static/projection evaluation
+        // passes null and those predicates match nothing, as before.
+        val predicateContext = (ctx as? Resolution)
+            ?.let { PredicateContext.fromEffectContext(it.effectContext) }
         var matches = 0
         for (record in records) {
             // The zone qualifier is checked independently of the filter: a face-down (morph) spell
@@ -1234,7 +1240,9 @@ class ConditionEvaluator(
             if (condition.fromZone != null && record.castFromZone != condition.fromZone) continue
             // "…from anywhere other than your hand" (Spider-Man 2099): exclude that one zone.
             if (condition.fromZoneOtherThan != null && record.castFromZone == condition.fromZoneOtherThan) continue
-            if (condition.filter != GameObjectFilter.Any && !evaluator.matchesFilter(record, condition.filter)) continue
+            if (condition.filter != GameObjectFilter.Any &&
+                !evaluator.matchesFilter(record, condition.filter, predicateContext)
+            ) continue
             matches++
             if (matches >= cap) return matches
         }

@@ -10,8 +10,10 @@ import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
+import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.references.Player
@@ -175,10 +177,19 @@ object TargetResolutionUtils {
                 ?: context.controllerId
             is Player.ControllerOf -> context.targets.firstOrNull()?.toEntityId()
                 ?.let { controllerOf(state, it) }
+            // The other end of a becomes-target trigger: whoever controls the spell or ability
+            // that did the targeting (Fractured Loyalty). The trigger context carries the
+            // targeting stack object; [stackObjectController] reads it while it is still on the
+            // stack, and [controllerOf] supplies last-known information once it has left.
+            Player.ControllerOfTargetingSource -> context.targetingSourceEntityId
+                ?.let { stackObjectController(state, it) ?: controllerOf(state, it) }
             // Multi-player / list-only references have no single resolution here.
-            // OwnersOfLinkedExile is resolved by ForEachExecutor.resolvePlayers (a player loop).
+            // OwnersOfLinkedExile is resolved by ForEachExecutor.resolvePlayers (a player loop);
+            // EachTargetedPlayer by DynamicAmountEvaluator.resolveUnifiedPlayerIds. Collapsing
+            // either to its first player is exactly the bug they exist to avoid, so neither gets a
+            // single-player arm.
             Player.Each, Player.EachOpponent, Player.ActivePlayerFirst,
-            Player.OwnersOfLinkedExile -> null
+            Player.EachTargetedPlayer, Player.OwnersOfLinkedExile -> null
         }
     }
 
@@ -252,6 +263,22 @@ object TargetResolutionUtils {
      * Map tokens." credits the controller-at-death, not the owner. Finally falls back to the
      * owner (cards that never were permanents, e.g. a discarded card).
      */
+    /**
+     * The controller of a **stack object** — the caster of a spell, or the controller of an
+     * activated or triggered ability. Returns `null` for anything that is not a stack object,
+     * so callers can fall through to a battlefield/last-known lookup.
+     *
+     * A stack object's own [ControllerComponent] is not authoritative: it still reflects the
+     * owner when a player casts a card they don't own, which is why each of the three stack
+     * components carries its own controller field.
+     */
+    fun stackObjectController(state: GameState, entityId: EntityId): EntityId? {
+        val container = state.getEntity(entityId) ?: return null
+        return container.get<SpellOnStackComponent>()?.casterId
+            ?: container.get<ActivatedAbilityOnStackComponent>()?.controllerId
+            ?: container.get<TriggeredAbilityOnStackComponent>()?.controllerId
+    }
+
     private fun controllerOf(state: GameState, entityId: EntityId): EntityId? {
         val entity = state.getEntity(entityId) ?: return null
         return entity.get<SpellOnStackComponent>()?.casterId
@@ -273,6 +300,15 @@ object TargetResolutionUtils {
 
         // Try stateless resolution first
         resolvePlayerTarget(effectTarget, context)?.let { return it }
+
+        // A player pinned by entity id. Used when an executor computes a set of players at
+        // resolution and lowers the choice between them into a sub-effect — there is no symbolic
+        // reference that could name the answer, so the id is carried directly (Loxodon
+        // Peacekeeper's tie-break). Guarded on turn order so a permanent's id can never be
+        // mistaken for a player.
+        if (effectTarget is EffectTarget.SpecificEntity) {
+            return effectTarget.entityId.takeIf { it in state.turnOrder }
+        }
 
         // Handle TargetController: resolve the first target, then look up its controller
         if (effectTarget is EffectTarget.TargetController) {
@@ -376,6 +412,9 @@ object TargetResolutionUtils {
                 context.pipeline.storedCollections[ref.collectionName]?.getOrNull(ref.index)
             is EntityReference.AmassedArmy ->
                 context.pipeline.storedCollections[EntityReference.AmassedArmy.STORAGE_KEY]?.firstOrNull()
+            is EntityReference.LinkedExiledCard ->
+                com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExileLookup
+                    .exiledCard(state, context.sourceId, ref.index)
         }
 
     /**

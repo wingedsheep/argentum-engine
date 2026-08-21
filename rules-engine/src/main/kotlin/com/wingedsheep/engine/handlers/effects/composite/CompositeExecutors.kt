@@ -41,6 +41,7 @@ class CompositeExecutors(
     private val conditionalOnCollectionExecutor by lazy { ConditionalOnCollectionExecutor(effectExecutor) }
     private val flipTwoCoinsExecutor by lazy { FlipTwoCoinsExecutor(cardRegistry, effectExecutor) }
     private val flipCoinsExecutor by lazy { FlipCoinsExecutor(cardRegistry) }
+    private val flipCoinsUntilLossExecutor by lazy { FlipCoinsUntilLossExecutor(cardRegistry, decisionHandler) }
     private val chooseActionEffectExecutor by lazy { ChooseActionEffectExecutor(effectExecutor) }
     private val repeatDynamicTimesExecutor by lazy { RepeatDynamicTimesExecutor(effectExecutor) }
     private val chooseNumberThenExecutor by lazy { ChooseNumberThenExecutor(decisionHandler) }
@@ -71,6 +72,7 @@ class CompositeExecutors(
         flipCoinExecutor,
         flipTwoCoinsExecutor,
         flipCoinsExecutor,
+        flipCoinsUntilLossExecutor,
         repeatWhileExecutor,
         repeatDynamicTimesExecutor,
         conditionalOnCollectionExecutor,

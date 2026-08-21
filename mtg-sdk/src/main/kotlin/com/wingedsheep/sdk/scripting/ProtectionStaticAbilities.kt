@@ -175,6 +175,36 @@ data class GrantProtectionFromControlledColors(
 }
 
 /**
+ * Grants protection from **each card type of the cards exiled with this permanent** — the Imprint
+ * payoff (CR 702.15) behind Mirror Golem ("Mirror Golem has protection from each of the exiled
+ * card's card types").
+ *
+ * The card-type sibling of [GrantProtectionFromControlledColors]: the *set* of qualities is derived
+ * at projection time rather than printed, here from the source's linked-exile pile
+ * (`LinkedExileComponent`) instead of the controller's board. Each card type found is projected as
+ * the usual `PROTECTION_FROM_CARDTYPE_<TYPE>` keyword, so every leg the engine already enforces for
+ * printed card-type protection — targeting, blocking, and damage — honors it unchanged.
+ *
+ * An empty pile grants nothing, which is exactly right for a declined imprint: a Mirror Golem that
+ * exiled no card has no protection.
+ *
+ * @property filter Which permanents gain the protection — defaults to the source itself, the only
+ *   shape Imprint uses.
+ */
+@SerialName("GrantProtectionFromLinkedExiledCardTypes")
+@Serializable
+data class GrantProtectionFromLinkedExiledCardTypes(
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String =
+        "${filter.description} has protection from each of the exiled card's card types"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * Prevents a permanent from having counters put on it.
  * Used for Auras like Blossombind.
  */

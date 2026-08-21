@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.effects.HijackScope
 import com.wingedsheep.sdk.scripting.effects.ManaExpiry
@@ -516,6 +517,20 @@ data class SkipUntapComponent(
 ) : Component
 
 /**
+ * The parts of the *current* turn this player skips every instance of — Fatespinner's "the player
+ * skips each instance of the chosen step or phase this turn".
+ *
+ * Unlike the one-shot [SkipCombatPhasesComponent] / [SkipDrawStepComponent] markers, this is not
+ * consumed by the first occurrence: it stands until end-of-turn cleanup removes it, so a second
+ * main phase or an additional combat phase created later in the turn is skipped too.
+ * `TurnManager.advanceStepFromEndedStep` reads it *before* emitting the step's `StepChangedEvent`,
+ * which is what makes the skip faithful to CR 500.11 — no priority, and no "at the beginning of"
+ * trigger for a step that never happened.
+ */
+@Serializable
+data class SkippedTurnPartsComponent(val parts: Set<TurnPart>) : Component
+
+/**
  * Marker component indicating that a player should skip their next draw step.
  * Applied by effects like Elfhame Sanctuary ("you skip your draw step this turn").
  *
@@ -916,6 +931,24 @@ data class CardsDrawnThisTurnComponent(
 ) : Component
 
 /**
+ * How many cards this player had in hand **at the beginning of the current turn** — a snapshot,
+ * not a running count. Written for every player in `BeginningPhaseManager.performUntapStep`, the
+ * first turn-based action of every turn (CR 502), and overwritten there each turn.
+ *
+ * The untap step is the honest place for it: no player receives priority during untap (CR 502.3),
+ * so this value is still exactly "at the beginning of this turn" when an upkeep ability reads it,
+ * and unlike `TurnManager.startTurn` the untap step also runs on the game's very first turn (the
+ * mulligan phase advances into it), so there is no turn where the snapshot is missing.
+ *
+ * Backs [com.wingedsheep.sdk.scripting.values.TurnTracker.CARDS_IN_HAND_AT_TURN_START] and, through
+ * it, Mindstorm Crown's "if you had no cards in hand at the beginning of this turn".
+ */
+@Serializable
+data class CardsInHandAtTurnStartComponent(
+    val count: Int = 0
+) : Component
+
+/**
  * Number of equip abilities this player has activated during the current turn. Reset to 0 at
  * turn start by TurnManager. Read by Forge Anew's [com.wingedsheep.sdk.scripting.FreeFirstEquipEachTurn]
  * to know whether the next equip is the "first equip this turn" (count == 0) that may be paid for
@@ -1006,6 +1039,20 @@ data class NonTokenCreaturesDiedThisTurnComponent(
  */
 @Serializable
 data class CreaturesDiedThisTurnComponent(
+    val count: Int = 0
+) : Component
+
+/**
+ * Tracks the number of artifacts (including tokens) put into a graveyard from the battlefield
+ * under this player's control during the current turn. Cleared at end of turn by
+ * CleanupPhaseManager alongside [CreaturesDiedThisTurnComponent].
+ *
+ * Summed across all players (`TurnTracking(Player.Each, TurnTracker.ARTIFACTS_DIED)`) this is the
+ * game-wide count Anzrag's Rampage asks for: "the number of artifacts that were put into
+ * graveyards from the battlefield this turn."
+ */
+@Serializable
+data class ArtifactsDiedThisTurnComponent(
     val count: Int = 0
 ) : Component
 

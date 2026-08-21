@@ -669,6 +669,12 @@ export interface TournamentState {
   nextOpponentName: string | null
   /** True if player has a BYE in the next round */
   nextRoundHasBye: boolean
+  /**
+   * True once every match in `currentRound` is finished. While false, we are an early finisher and
+   * the round is still being played at other tables — `lastRoundResults` being populated says only
+   * that *our* match ended, so it must never be read as "the round is over".
+   */
+  currentRoundComplete: boolean
 }
 
 /**

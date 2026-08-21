@@ -939,6 +939,29 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         }
     }
 
+    /**
+     * Matches objects that share a **card type** with the referenced entity — "that shares a card
+     * type with it" (Confusion in the Ranks). The card-type sibling of [SharesCreatureTypeWith]
+     * over the same [EntityReference] vocabulary: same shape, one axis up the type line.
+     *
+     * Both sides read *projected* types, so an animated artifact land shares "Creature" with an
+     * entering creature and a permanent that has lost a type through a type-changing effect stops
+     * sharing it. A reference that resolves to nothing matches nothing.
+     *
+     * Card types only — the supertypes (legendary, basic, snow) and the subtypes below them are
+     * deliberately not compared, because "card type" is the printed term for exactly the middle
+     * band of the type line (CR 205.2a). Reach for [SharesCreatureTypeWith] for the subtype axis.
+     */
+    @SerialName("SharesCardTypeWith")
+    @Serializable
+    data class SharesCardTypeWith(val entity: EntityReference) : CardPredicate {
+        override val description: String = when (entity) {
+            is EntityReference.Source -> "that shares a card type with this permanent"
+            is EntityReference.Triggering -> "that shares a card type with it"
+            else -> "that shares a card type with ${entity.description}"
+        }
+    }
+
     /** Matches objects that share a color with the referenced entity */
     @SerialName("SharesColorWith")
     @Serializable
@@ -947,6 +970,52 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
             is EntityReference.Source -> "that shares a color with this permanent"
             is EntityReference.Triggering -> "that shares a color with it"
             else -> "that shares a color with ${entity.description}"
+        }
+    }
+
+    /**
+     * Matches objects whose mana value **equals** the referenced entity's mana value — "that shares
+     * a mana value with the exiled card" (Thought Prison). The mana-value sibling of
+     * [SharesColorWith] over the same [EntityReference] vocabulary, so the two compose into the
+     * "shares a color or mana value with X" wording without either half knowing about the other.
+     *
+     * Both sides are read from base card data (mana value is not a projected characteristic — no
+     * layer changes it), so the reference may be a card in any zone. A reference that resolves to
+     * nothing matches nothing. Note that mana value 0 is a real value that matches: a colorless
+     * 0-cost artifact spell *does* share a mana value with an exiled land, exactly as printed.
+     */
+    @SerialName("SharesManaValueWith")
+    @Serializable
+    data class SharesManaValueWith(val entity: EntityReference) : CardPredicate {
+        override val description: String = when (entity) {
+            is EntityReference.Source -> "that shares a mana value with this permanent"
+            is EntityReference.Triggering -> "that shares a mana value with it"
+            else -> "that shares a mana value with ${entity.description}"
+        }
+    }
+
+    /**
+     * Matches objects whose name **equals** the referenced entity's name — "a land with the same
+     * name as the exiled card" (Extraplanar Lens). The name sibling of [SharesManaValueWith] over
+     * the same [EntityReference] vocabulary, and the entity-referencing counterpart of
+     * [SharesNameWithPermanentYouControl], which searches a filter over your battlefield instead
+     * of naming one object.
+     *
+     * Names are read from *projected* state with a fall back to base card data, so a permanent
+     * renamed by a text-changing effect (CR 613.1c) is compared under its new name while a
+     * reference outside the battlefield — an Imprint pile's exiled card, which has no projection
+     * entry — is compared under its printed one. A reference that resolves to nothing matches
+     * nothing, which is what keeps an un-imprinted Extraplanar Lens inert. A blank name never
+     * matches, so a nameless token is never "the same name as" anything.
+     */
+    @SerialName("SharesNameWith")
+    @Serializable
+    data class SharesNameWith(val entity: EntityReference) : CardPredicate {
+        override val description: String = when (entity) {
+            is EntityReference.Source -> "with the same name as this permanent"
+            is EntityReference.Triggering -> "with the same name as it"
+            is EntityReference.LinkedExiledCard -> "with the same name as the exiled card"
+            else -> "with the same name as ${entity.description}"
         }
     }
 

@@ -1881,6 +1881,68 @@
     ]
 }
 
+// Confusion in the Ranks
+{
+    "name": "Confusion in the Ranks",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever an artifact, creature, or enchantment enters, its controller chooses target permanent another player controls that shares a card type with it. Exchange control of those permanents.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "artifact|creature|enchantment",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ExchangeControl",
+                    "target1": "TriggeringEntity",
+                    "target2": {
+                        "type": "BoundVariable",
+                        "name": "permanent another player controls that shares a card type with it"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                {
+                                    "type": "SharesCardTypeWith",
+                                    "entity": "Triggering"
+                                }
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerNot",
+                                "predicate": {
+                                    "type": "ControlledByReferencedPlayer",
+                                    "target": "ControllerOfTriggeringEntity"
+                                }
+                            }
+                        }
+                    },
+                    "id": "permanent another player controls that shares a card type with it",
+                    "chooser": "ControllerOfTriggeringEntity"
+                },
+                "descriptionOverride": "Whenever an artifact, creature, or enchantment enters, its controller chooses target permanent another player controls that shares a card type with it. Exchange control of those permanents."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "RARE",
+        "artist": "Ron Spencer",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d46aca2-4714-4d2c-9466-5f1c043b8726.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Consume Spirit
 {
     "name": "Consume Spirit",
@@ -3056,6 +3118,68 @@
     "colorIdentityOverride": []
 }
 
+// Extraplanar Lens
+{
+    "name": "Extraplanar Lens",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Imprint — When this artifact enters, you may exile target land you control.\nWhenever a land with the same name as the exiled card is tapped for mana, its controller adds one mana of any type that land produced.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target land you control"
+                        },
+                        "destination": "Exile",
+                        "linkToSource": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land ctrl:you"
+                    },
+                    "id": "target land you control"
+                },
+                "descriptionOverride": "Imprint — When this artifact enters, you may exile target land you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnSourceTap",
+                "sourceFilter": {
+                    "cardPredicates": [
+                        "IsLand",
+                        {
+                            "type": "SharesNameWith",
+                            "entity": "LinkedExiledCard"
+                        }
+                    ],
+                    "controllerPredicate": "ControlledByAny"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "RARE",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/622a6523-3b12-4657-a656-00a57a3ae59c.jpg"
+    },
+    "colorIdentityOverride": []
+}
+
 // Fabricate
 {
     "name": "Fabricate",
@@ -3194,6 +3318,243 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Fatespinner
+{
+    "name": "Fatespinner",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "At the beginning of each opponent's upkeep, that player chooses draw step, main phase, or combat phase. The player skips each instance of the chosen step or phase this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "EachOpponent"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseAction",
+                    "choices": [
+                        {
+                            "label": "Draw step",
+                            "effect": {
+                                "type": "SkipStepOrPhaseThisTurn",
+                                "part": "DRAW_STEP",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            }
+                        },
+                        {
+                            "label": "Main phase",
+                            "effect": {
+                                "type": "SkipStepOrPhaseThisTurn",
+                                "part": "MAIN_PHASE",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            }
+                        },
+                        {
+                            "label": "Combat phase",
+                            "effect": {
+                                "type": "SkipStepOrPhaseThisTurn",
+                                "part": "COMBAT_PHASE",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "TriggeringPlayer"
+                                }
+                            }
+                        }
+                    ],
+                    "player": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "At the beginning of each opponent's upkeep, that player chooses draw step, main phase, or combat phase. The player skips each instance of the chosen step or phase this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "RARE",
+        "artist": "rk post",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/7/5780f4e0-dcfb-4d1f-8ae1-762b98970abb.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Fiery Gambit
+{
+    "name": "Fiery Gambit",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Flip a coin until you lose a flip or choose to stop flipping. If you lose a flip, Fiery Gambit has no effect. If you win one or more flips, Fiery Gambit deals 3 damage to target creature. If you win two or more flips, Fiery Gambit deals 6 damage to each opponent. If you win three or more flips, draw nine cards and untap all lands you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "FlipCoinsUntilLoss",
+                    "storeWinsAs": "fieryGambitWins"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "VariableReference",
+                                "variableName": "fieryGambitWins"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature"
+                        }
+                    },
+                    "descriptionOverride": "If you win one or more flips, Fiery Gambit deals 3 damage to target creature."
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "VariableReference",
+                                "variableName": "fieryGambitWins"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 6
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "EachOpponent"
+                        }
+                    },
+                    "descriptionOverride": "If you win two or more flips, Fiery Gambit deals 6 damage to each opponent."
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "VariableReference",
+                                "variableName": "fieryGambitWins"
+                            },
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 9
+                                }
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Group",
+                                    "filter": {
+                                        "baseFilter": "land ctrl:you"
+                                    }
+                                },
+                                "body": {
+                                    "type": "TapUntap",
+                                    "target": "Self",
+                                    "tap": false
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "If you win three or more flips, draw nine cards and untap all lands you control."
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target creature"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "Scott M. Fischer",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a91376ed-5868-4887-8389-5ef5b9471786.jpg?1783944541",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "You must choose a target creature when you cast Fiery Gambit. If that target isn't legal on resolution, Fiery Gambit has no effect and you don't even flip a coin."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "You can flip any number of coins (you can even flip more than three), but Fiery Gambit has no effect if you lose any of the flips. You can't continue flipping if you lose a flip."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "If you win three flips, Fiery Gambit deals 3 damage to the target creature and 6 damage to each opponent, and you draw nine cards and untap all lands you control."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "After each flip, you choose whether to continue flipping."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Fireshrieker
@@ -3395,6 +3756,57 @@
         "rarity": "UNCOMMON",
         "artist": "Tony Szczudlo",
         "imageUri": "https://cards.scryfall.io/normal/front/2/8/2873b6d5-af76-498c-bc2d-a26c36be3cbd.jpg?1783944541"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Fractured Loyalty
+{
+    "name": "Fractured Loyalty",
+    "manaCost": "{1}{R}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nWhenever enchanted creature becomes the target of a spell or ability, that spell or ability's controller gains control of that creature. (This effect lasts indefinitely.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "IsAttachedToBySource"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GiveControlToTargetPlayer",
+                    "permanent": "TriggeringEntity",
+                    "newController": {
+                        "type": "PlayerRef",
+                        "player": "ControllerOfTargetingSource"
+                    }
+                },
+                "descriptionOverride": "Whenever enchanted creature becomes the target of a spell or ability, that spell or ability's controller gains control of that creature."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c7ce5d5-e51a-4dbc-82f2-b79c88769a7b.jpg?1783944541"
     },
     "colorIdentityOverride": [
         "RED"
@@ -4402,6 +4814,131 @@
         "imageUri": "https://cards.scryfall.io/normal/front/c/4/c4ab6c59-cd0f-4c29-8e26-6882dca61fb7.jpg?1783944518"
     },
     "colorIdentityOverride": []
+}
+
+// Grim Reminder
+{
+    "name": "Grim Reminder",
+    "manaCost": "{2}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Search your library for a nonland card and reveal it. Each opponent who cast a spell this turn with the same name as that card loses 6 life. Then shuffle.\n{B}{B}: Return this card from your graveyard to your hand. Activate only during your upkeep.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "nonland"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search your library for a nonland card"
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "selected1",
+                    "revealToSelf": false
+                },
+                {
+                    "type": "StoreCardName",
+                    "from": "selected1",
+                    "storeAs": "grimName"
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "EachOpponent"
+                    },
+                    "body": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "PlayerCastSpellsThisTurn",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "NameEqualsChosen",
+                                            "variableName": "grimName"
+                                        }
+                                    ]
+                                },
+                                "atLeast": 1
+                            }
+                        },
+                        "then": {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 6
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "You"
+                            }
+                        }
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        },
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                },
+                "restrictions": [
+                    {
+                        "type": "ActivationAll",
+                        "restrictions": [
+                            "OnlyDuringYourTurn",
+                            {
+                                "type": "DuringStep",
+                                "step": "UPKEEP"
+                            }
+                        ]
+                    }
+                ],
+                "activateFromZone": "Graveyard",
+                "descriptionOverride": "Return this card from your graveyard to your hand. Activate only during your upkeep."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Wayne England",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/5/35baa726-8c2f-4a0b-93d1-d7ecfae69fe4.jpg?1783944547"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Groffskithur
@@ -5714,6 +6251,137 @@
     "colorIdentityOverride": []
 }
 
+// Liar's Pendulum
+{
+    "name": "Liar's Pendulum",
+    "manaCost": "{1}",
+    "typeLine": "Artifact",
+    "oracleText": "{2}, {T}: Choose a card name. Target opponent guesses whether a card with that name is in your hand. You may reveal your hand. If you do and your opponent guessed wrong, draw a card.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ChooseOption",
+                            "optionType": "CARD_NAME",
+                            "storeAs": "pendulumName",
+                            "prompt": "Choose a card name"
+                        },
+                        {
+                            "type": "PlayerGuessesConditionEffect",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Hand",
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "NameEqualsChosen",
+                                            "variableName": "pendulumName"
+                                        }
+                                    ]
+                                }
+                            },
+                            "prompt": "Is a card named \"{name}\" in your opponent's hand?",
+                            "storeGuessedRightAs": "pendulumGuessedRight",
+                            "guesser": "TargetPlayer",
+                            "promptNameVariable": "pendulumName"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": "Gate.MayDecide",
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "RevealHand",
+                                        "target": "Controller"
+                                    },
+                                    {
+                                        "type": "Gated",
+                                        "gate": {
+                                            "type": "Gate.WhenCondition",
+                                            "condition": {
+                                                "type": "Compare",
+                                                "left": {
+                                                    "type": "VariableReference",
+                                                    "variableName": "pendulumGuessedRight"
+                                                },
+                                                "operator": "EQ",
+                                                "right": {
+                                                    "type": "Fixed",
+                                                    "amount": 0
+                                                }
+                                            }
+                                        },
+                                        "then": {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "descriptionOverride": "If your opponent guessed wrong, draw a card."
+                                    }
+                                ]
+                            },
+                            "descriptionOverride": "reveal your hand"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "target opponent"
+                    }
+                ],
+                "descriptionOverride": "Choose a card name. Target opponent guesses whether a card with that name is in your hand. You may reveal your hand. If you do and your opponent guessed wrong, draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "196",
+        "rarity": "RARE",
+        "artist": "Christopher Moeller",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66372597-c182-4850-a630-231737b1482b.jpg?1783944515",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "First you name a card. Then the targeted opponent guesses whether the card is in your hand."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "After the opponent has guessed, you may reveal your hand. If your opponent was wrong, you draw a card. If your opponent was right, you don't draw a card."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "You reveal your hand only if you choose to, regardless of whether your opponent guessed right or wrong."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "You can't draw a card if you don't reveal your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Lifespark Spellbomb
 {
     "name": "Lifespark Spellbomb",
@@ -6167,6 +6835,46 @@
         "artist": "Heather Hudson",
         "flavorText": "The Auriok believe that in the hands of a loxodon, no weapon can be broken.",
         "imageUri": "https://cards.scryfall.io/normal/front/c/1/c17ac7c1-6d53-40b4-921f-4e23e4026041.jpg?1783944561"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Loxodon Peacekeeper
+{
+    "name": "Loxodon Peacekeeper",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Elephant Soldier",
+    "oracleText": "At the beginning of your upkeep, the player with the lowest life total gains control of this creature. If two or more players are tied for lowest life total, you choose one of them, and that player gains control of this creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainControlByRank",
+                    "metric": "LifeTotal",
+                    "direction": "LEAST",
+                    "tieBreak": "CONTROLLER_CHOOSES"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, the player with the lowest life total gains control of this creature. If two or more players are tied for lowest life total, you choose one of them, and that player gains control of this creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "rarity": "RARE",
+        "artist": "Michael Sutfin",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c9e7029-bea3-4a33-bd05-774e802616d4.jpg?1783944561"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -7014,6 +7722,126 @@
     "colorIdentityOverride": []
 }
 
+// Mindstorm Crown
+{
+    "name": "Mindstorm Crown",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of your upkeep, draw a card if you had no cards in hand at the beginning of this turn. If you had a card in hand, this artifact deals 1 damage to you.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "TurnTracking",
+                                "player": "You",
+                                "tracker": "CARDS_IN_HAND_AT_TURN_START"
+                            },
+                            "operator": "EQ",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 0
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "otherwise": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "You"
+                        }
+                    }
+                },
+                "descriptionOverride": "At the beginning of your upkeep, draw a card if you had no cards in hand at the beginning of this turn. If you had a card in hand, this artifact deals 1 damage to you."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Ben Thompson",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/347c1442-036b-43e7-9f86-b81a54d6bc41.jpg?1783944513"
+    },
+    "colorIdentityOverride": []
+}
+
+// Mirror Golem
+{
+    "name": "Mirror Golem",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Golem",
+    "oracleText": "Imprint — When this creature enters, you may exile target card from a graveyard.\nThis creature has protection from each of the exiled card's card types. (Artifact, battle, creature, enchantment, instant, kindred, land, planeswalker, and sorcery are card types.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target card from a graveyard"
+                        },
+                        "destination": "Exile",
+                        "linkToSource": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "target card from a graveyard"
+                },
+                "descriptionOverride": "Imprint — When this creature enters, you may exile target card from a graveyard."
+            }
+        ],
+        "staticAbilities": [
+            "GrantProtectionFromLinkedExiledCardTypes"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "rarity": "UNCOMMON",
+        "artist": "Franz Vohwinkel",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d9467839-b2a2-4cfe-a60e-12766e2ba983.jpg?1783944513"
+    },
+    "colorIdentityOverride": []
+}
+
 // Molder Slug
 {
     "name": "Molder Slug",
@@ -7185,6 +8013,88 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Mourner's Shield
+{
+    "name": "Mourner's Shield",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Imprint — When this artifact enters, you may exile target card from a graveyard.\n{2}, {T}: Prevent all damage that would be dealt this turn by a source of your choice that shares a color with the exiled card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target card from a graveyard"
+                        },
+                        "destination": "Exile",
+                        "linkToSource": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "target card from a graveyard"
+                },
+                "descriptionOverride": "Imprint — When this artifact enters, you may exile target card from a graveyard."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "direction": "FromTarget",
+                    "sourceFilter": {
+                        "type": "ChosenSourceMatching",
+                        "filter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "SharesColorWith",
+                                    "entity": "LinkedExiledCard"
+                                }
+                            ]
+                        }
+                    }
+                },
+                "descriptionOverride": "{2}, {T}: Prevent all damage that would be dealt this turn by a source of your choice that shares a color with the exiled card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "209",
+        "rarity": "UNCOMMON",
+        "artist": "Carl Critchlow",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/783fe67f-59f7-46f0-bfa4-fa4a65c9c33c.jpg?1783944512"
+    },
+    "colorIdentityOverride": []
 }
 
 // Myr Adapter
@@ -9245,6 +10155,48 @@
     ]
 }
 
+// Psychogenic Probe
+{
+    "name": "Psychogenic Probe",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever a spell or ability causes a player to shuffle their library, this artifact deals 2 damage to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "ShuffleLibraryEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "RARE",
+        "artist": "Jeremy Jarvis",
+        "flavorText": "The same devices sold as surgeons' tools in Lumengrid are sold as implements of torture in Mephidross.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e83d1ed5-3a49-4cfa-bad2-e342ef28649e.jpg?1783944507",
+        "rulings": [
+            {
+                "date": "2009-02-01",
+                "text": "This ability will trigger even if the player's library is empty at the time they are supposed to shuffle it."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Pyrite Spellbomb
 {
     "name": "Pyrite Spellbomb",
@@ -9320,6 +10272,113 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Quicksilver Fountain
+{
+    "name": "Quicksilver Fountain",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of each player's upkeep, that player puts a flood counter on target non-Island land they control of their choice. That land is an Island for as long as it has a flood counter on it.\nAt the beginning of each end step, if all lands on the battlefield are Islands, remove all flood counters from them.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "flood",
+                    "count": 1,
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "non-Island land they control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsLand",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Island"
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByTriggeringPlayer"
+                        }
+                    },
+                    "id": "non-Island land they control",
+                    "chooser": "TriggeringPlayer"
+                },
+                "descriptionOverride": "At the beginning of each player's upkeep, that player puts a flood counter on target non-Island land they control of their choice."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "land"
+                        }
+                    },
+                    "body": {
+                        "type": "RemoveAllCountersOfType",
+                        "counterType": "flood",
+                        "target": "Self"
+                    }
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsLand",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Island"
+                                }
+                            ]
+                        }
+                    },
+                    "operator": "EQ",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                },
+                "descriptionOverride": "At the beginning of each end step, if all lands on the battlefield are Islands, remove all flood counters from them."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "AddLandTypeByCounter",
+                "landType": "Island",
+                "counterType": "flood"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "RARE",
+        "artist": "Trevor Hairsine",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b4f2bf63-e3cf-4a58-86b7-f3bab3b90712.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Raise the Alarm
@@ -10049,6 +11108,99 @@
         "artist": "Heather Hudson",
         "flavorText": "An artificer once dropped one in a vault full of coins. She has yet to find it.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/a/3aac5f6f-97c1-4546-94ed-016292e98c9d.jpg?1783944505"
+    },
+    "colorIdentityOverride": []
+}
+
+// Scythe of the Wretched
+{
+    "name": "Scythe of the Wretched",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+2.\nWhenever a creature dealt damage by equipped creature this turn dies, return that card to the battlefield under your control. Attach this Equipment to that creature.\nEquip {4}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "CreatureDealtDamageBySourceDiesEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": "TriggeringEntity",
+                            "destination": "Battlefield",
+                            "controllerOverride": "Controller",
+                            "fromZone": "Graveyard"
+                        },
+                        {
+                            "type": "AttachEquipment",
+                            "target": "TriggeringEntity"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a creature dealt damage by equipped creature this turn dies, return that card to the battlefield under your control. Attach this Equipment to that creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            }
+        ]
+    },
+    "equipCost": "{4}",
+    "metadata": {
+        "collectorNumber": "239",
+        "rarity": "RARE",
+        "artist": "Matt Cavotta",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/143e7a81-fb3d-4bad-854a-b24138ca7415.jpg?1783944505",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "The Scythe's ability triggers even if something other than the damage dealt by the equipped creature causes the creature to be put into a graveyard that turn."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "Scythe of the Wretched needs to equip your creature when the other creature goes to the graveyard for the ability to trigger, but it doesn't matter whether the Scythe equipped your creature when the damage was actually dealt."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "If the card isn't a creature when it comes back onto the battlefield, then Scythe of the Wretched won't move onto it."
+            }
+        ]
     },
     "colorIdentityOverride": []
 }
@@ -12695,6 +13847,129 @@
     ]
 }
 
+// Thought Prison
+{
+    "name": "Thought Prison",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "Imprint — When this artifact enters, you may have target player reveal their hand. If you do, choose a nonland card from it and exile that card.\nWhenever a player casts a spell that shares a color or mana value with the exiled card, this artifact deals 2 damage to that player.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "RevealHand",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target player"
+                                }
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "ContextPlayer",
+                                        "index": 0
+                                    },
+                                    "filter": "nonland"
+                                },
+                                "storeAs": "thoughtPrisonImprintCandidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "thoughtPrisonImprintCandidates",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "thoughtPrisonImprint",
+                                "prompt": "Choose a nonland card to exile with Thought Prison"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "thoughtPrisonImprint",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "ContextPlayer",
+                                        "index": 0
+                                    }
+                                },
+                                "linkToSource": true
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "target player"
+                },
+                "descriptionOverride": "Imprint — When this artifact enters, you may have target player reveal their hand. If you do, choose a nonland card from it and exile that card."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "SharesColorWith",
+                                        "entity": "LinkedExiledCard"
+                                    },
+                                    {
+                                        "type": "SharesManaValueWith",
+                                        "entity": "LinkedExiledCard"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever a player casts a spell that shares a color or mana value with the exiled card, this artifact deals 2 damage to that player."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "261",
+        "rarity": "UNCOMMON",
+        "artist": "Glen Angus",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/409087ef-8232-489c-8b98-b601bb0a47a4.jpg?1783944499"
+    },
+    "colorIdentityOverride": []
+}
+
 // Thoughtcast
 {
     "name": "Thoughtcast",
@@ -12728,6 +14003,71 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Timesifter
+{
+    "name": "Timesifter",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of each upkeep, each player exiles the top card of their library. The player who exiled the card with the greatest mana value takes an extra turn after this one. If two or more players' cards are tied for greatest, the tied players repeat this process until the tie is broken.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ExileTopCardContest",
+                            "storeWinnerAs": "timesifterWinner"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "DistinctEntitiesInCollections",
+                                        "collections": [
+                                            "timesifterWinner"
+                                        ]
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "TakeExtraTurn",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "timesifterWinner"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "At the beginning of each upkeep, each player exiles the top card of their library. The player who exiled the card with the greatest mana value takes an extra turn after this one. If two or more players' cards are tied for greatest, the tied players repeat this process until the tie is broken."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "262",
+        "rarity": "RARE",
+        "artist": "Dany Orizio",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/6/561cab0e-8874-4534-bf79-0c1488a9f0a5.jpg"
+    },
+    "colorIdentityOverride": []
 }
 
 // Titanium Golem

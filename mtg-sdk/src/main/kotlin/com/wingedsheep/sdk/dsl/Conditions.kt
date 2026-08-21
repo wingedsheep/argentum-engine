@@ -1369,6 +1369,24 @@ object Conditions {
         )
 
     /**
+     * If you had **no cards in hand at the beginning of this turn** (Mindstorm Crown).
+     *
+     * Not the same question as [EmptyHand], which reads your hand *now*. This one reads the
+     * snapshot taken in the untap step, so it stays answerable — and stays the same answer — after
+     * you have drawn, discarded or cast anything. Any upkeep ability phrased "if you had … at the
+     * beginning of this turn" wants this one; "if you have no cards in hand" wants [EmptyHand].
+     */
+    val YouHadNoCardsInHandAtTurnStart: ConditionInterface =
+        Compare(
+            DynamicAmount.TurnTracking(
+                Player.You,
+                com.wingedsheep.sdk.scripting.values.TurnTracker.CARDS_IN_HAND_AT_TURN_START
+            ),
+            ComparisonOperator.EQ,
+            DynamicAmount.Fixed(0)
+        )
+
+    /**
      * If you gained life this turn.
      * Used for Lunar Convocation.
      */

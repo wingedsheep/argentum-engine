@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.state.components.identity
 
 import com.wingedsheep.engine.state.Component
+import com.wingedsheep.sdk.scripting.CostReductionSource
+import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.costs.PayCost
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
@@ -32,7 +34,18 @@ data class TurnUpProcedure(
      */
     val mechanic: FaceDownMode,
     /** Effect applied as the permanent is turned face up this way (megamorph's +1/+1 counter). */
-    val faceUpEffect: Effect? = null
+    val faceUpEffect: Effect? = null,
+    /**
+     * Self-scoped generic reduction on [cost] — Fugitive Codebreaker's "this cost is reduced by
+     * {1} for each instant and sorcery card in your graveyard"
+     * ([KeywordAbility.Disguise.costReduction]).
+     *
+     * It rides the *procedure* rather than the component for the same reason [faceUpEffect] does:
+     * a cloaked card that also prints disguise offers both turn-up routes, and the reduction
+     * belongs only to the disguise one. Re-evaluated at every read, so a card milled between
+     * enumeration and payment moves the price.
+     */
+    val costReduction: CostReductionSource? = null
 ) {
     /** Player-facing mechanic name, e.g. "Disguise". */
     val label: String get() = mechanic.name.lowercase().replaceFirstChar { it.uppercase() }

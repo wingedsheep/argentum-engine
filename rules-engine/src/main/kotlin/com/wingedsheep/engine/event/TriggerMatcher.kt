@@ -141,11 +141,22 @@ class TriggerMatcher(
             is EventPattern.CreaturesAttackYouEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
                 // Only count attackers declared against the player themself, not against
-                // a planeswalker they control (per CR 509.1b / Orim's Prayer ruling).
+                // a planeswalker they control (per CR 509.1b / Orim's Prayer ruling) — unless the
+                // card spells out "you and/or planeswalkers you control" (Tomik, Wielder of Law),
+                // which is what `includePlaneswalkersYouControl` opts into.
                 val attackingThisPlayer = event.attackers.count { attackerId ->
-                    val attackingComponent = state.getEntity(attackerId)
+                    val defenderId = state.getEntity(attackerId)
                         ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>()
-                    attackingComponent?.defenderId == controllerId
+                        ?.defenderId
+                    when {
+                        defenderId == null -> false
+                        defenderId == controllerId -> true
+                        !trigger.includePlaneswalkersYouControl -> false
+                        else -> state.getEntity(defenderId)
+                            ?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()
+                            ?.playerId == controllerId &&
+                            state.projectedState.isPlaneswalker(defenderId)
+                    }
                 }
                 attackingThisPlayer >= trigger.minAttackers
             }
@@ -734,6 +745,13 @@ class TriggerMatcher(
             }
             is EventPattern.SearchLibraryEvent -> {
                 event is com.wingedsheep.engine.core.LibrarySearchedEvent &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId)
+            }
+            is EventPattern.ShuffleLibraryEvent -> {
+                // "a *spell or ability* causes a player to shuffle" — the game-rules shuffles
+                // (game setup, mulligan) carry their own cause and must never fire this.
+                event is com.wingedsheep.engine.core.LibraryShuffledEvent &&
+                    event.cause == com.wingedsheep.engine.core.ShuffleCause.SPELL_OR_ABILITY &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
             // ExtraTurnEvent is only used as a replacement effect filter, not a trigger
@@ -2053,6 +2071,19 @@ class TriggerMatcher(
                 isModified(state, event.entityId)
             }
         }
+        // Face down (CR 708) on a permanent that has left the battlefield reads last-known
+        // information: a card put into a graveyard is turned face up (CR 708.4) and the
+        // battlefield entity is gone by gating time, so the live `FaceDownComponent` the
+        // projected path would read no longer exists. "Whenever a face-down creature you control
+        // dies" (Yarus, Roar of the Old Gods) is only answerable from the snapshot (CR 608.2h).
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceDown -> {
+            if (event.fromZone == Zone.BATTLEFIELD) event.lastKnown?.wasFaceDown == true
+            else matchesStatePredicateForTrigger(predicate, state, event.entityId)
+        }
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceUp -> {
+            if (event.fromZone == Zone.BATTLEFIELD) event.lastKnown?.wasFaceDown == false
+            else matchesStatePredicateForTrigger(predicate, state, event.entityId)
+        }
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEquipped -> {
             if (event.fromZone == Zone.BATTLEFIELD) event.lastKnown?.wasEquipped == true
             else hasAttachmentOfKind(state, event.entityId, equipment = true)
@@ -2151,6 +2182,7 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttacking,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingAlone,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingAnOpponent,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingYouOrYourPlaneswalkers,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlocking,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlocked,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsUnblocked,

@@ -80,7 +80,11 @@ class PreventDamageExecutor(
         // (via base-state fallback) stack spells.
         val matchFilter = (effect.sourceFilter as? PreventionSourceFilter.ChosenSourceMatching)?.filter
         val predicateEvaluator = if (matchFilter != null) PredicateEvaluator() else null
-        val predicateContext = PredicateContext(controllerId = controllerId)
+        // The eligibility filter is evaluated *relative to the ability's source*, so it can name the
+        // source itself or something hanging off it — "a source that shares a color with the card
+        // exiled with this artifact" (Mourner's Shield). Without `sourceId` every such predicate
+        // silently matched nothing and the player was offered every source on the board.
+        val predicateContext = PredicateContext(controllerId = controllerId, sourceId = context.sourceId)
         fun matchesEligibility(entityId: EntityId): Boolean =
             matchFilter == null ||
                 predicateEvaluator!!.matches(state, state.projectedState, entityId, matchFilter, predicateContext)
@@ -134,8 +138,20 @@ class PreventDamageExecutor(
             return EffectResult.paused(newState, decision)
         } else {
             // Prevention-only path: prevent N damage (or all, when amount is null) from chosen source
-            val targetId = context.resolveTarget(effect.target)
-                ?: return EffectResult.error(state, "Could not resolve target for PreventDamageEffect with ChosenSource")
+            //
+            // `direction = FromTarget` with no amount means the prevention has no recipient clause at
+            // all — "prevent all damage that would be dealt this turn by a source of your choice"
+            // (Mourner's Shield) rather than "…dealt to you by a source of your choice" (Samite
+            // Ministration). The shield then keys on the chosen source, so there is no recipient to
+            // resolve and `effect.target` is irrelevant.
+            val silenceChosenSource =
+                effect.direction == PreventionDirection.FromTarget && effect.amount == null
+            val targetId = if (silenceChosenSource) {
+                controllerId
+            } else {
+                context.resolveTarget(effect.target)
+                    ?: return EffectResult.error(state, "Could not resolve target for PreventDamageEffect with ChosenSource")
+            }
             val amount = effect.amount?.let { amountEvaluator.evaluate(state, it, context) }
             if (amount != null && amount <= 0) return EffectResult.success(state)
 
@@ -143,6 +159,7 @@ class PreventDamageExecutor(
                 decisionId = decisionId,
                 controllerId = controllerId,
                 targetId = targetId,
+                silenceChosenSource = silenceChosenSource,
                 amount = amount,
                 gainLifeFromColors = effect.gainLifeFromColors.map { it.name }.toSet(),
                 sourceId = context.sourceId,

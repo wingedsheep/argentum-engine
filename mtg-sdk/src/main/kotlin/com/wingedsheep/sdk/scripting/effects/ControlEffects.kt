@@ -49,9 +49,9 @@ data class GainControlByActivePlayerEffect(
 
 /**
  * A per-player quantity used to rank players for "the player with the most X gains
- * control" effects. The player with strictly more than every other player wins; a tie
- * for the highest value means no control change. Add a variant here when a new card
- * ranks players by a different quantity (cards in hand, poison counters, etc.).
+ * control" effects. Which end of the rank wins, and what a tie means, are separate axes — see
+ * [PlayerRankDirection] and [RankTieBreak]. Add a variant here when a new card ranks players by a
+ * different quantity (cards in hand, poison counters, etc.).
  */
 @Serializable
 sealed interface PlayerRankMetric {
@@ -67,30 +67,84 @@ sealed interface PlayerRankMetric {
 }
 
 /**
- * Gain control of a permanent based on which player has the most of a [PlayerRankMetric].
- * The player with strictly more than every other player gains control of the target;
- * on a tie for the highest value, nothing happens.
+ * Which end of a [PlayerRankMetric] wins the permanent.
  *
- * Used by Thoughtbound Primoc (most Wizards): "At the beginning of your upkeep, if a
- * player controls more Wizards than each other player, that player gains control of
- * Thoughtbound Primoc." and Ghazbán Ogre (most life): "At the beginning of your upkeep,
- * if a player has more life than each other player, the player with the most life gains
- * control of this creature."
+ * A separate axis from the metric, because the same quantity is ranked both ways by different
+ * cards: life total decides Ghazbán Ogre ([MOST]) and Loxodon Peacekeeper ([LEAST]).
  */
-@SerialName("GainControlByMost")
 @Serializable
-data class GainControlByMostEffect(
+enum class PlayerRankDirection {
+    /** The player with the highest value takes it (Ghazbán Ogre, Thoughtbound Primoc). */
+    MOST,
+
+    /** The player with the lowest value takes it (Loxodon Peacekeeper). */
+    LEAST
+}
+
+/**
+ * What happens when two or more players tie at the winning end of the rank.
+ *
+ * A field rather than a fixed policy because the printed cards genuinely differ — and because a
+ * tie is the *common* case, not an exotic one, when two players rank by life total.
+ */
+@Serializable
+enum class RankTieBreak {
+    /**
+     * Nothing happens. This is the "more than each other player" wording: Ghazbán Ogre and
+     * Thoughtbound Primoc carry an intervening-if clause that a tie simply fails.
+     */
+    NONE,
+
+    /**
+     * The ability's controller picks one of the tied players, and that player gains control
+     * (Loxodon Peacekeeper: "If two or more players are tied for lowest life total, you choose one
+     * of them"). Not targeting — the choice is made on resolution, over the set the rank produced.
+     */
+    CONTROLLER_CHOOSES
+}
+
+/**
+ * Gain control of a permanent based on which player sits at one end of a [PlayerRankMetric].
+ *
+ * Three independent axes: *what* is ranked ([metric]), *which end* wins ([direction]), and what a
+ * tie means ([tieBreak]). Every printed card in this family is one point in that product, so a new
+ * one usually needs no new effect — Ghazbán Ogre is `LifeTotal` + `MOST` + `NONE`, Thoughtbound
+ * Primoc is `CreaturesOfSubtype(Wizard)` + `MOST` + `NONE`, Loxodon Peacekeeper is `LifeTotal` +
+ * `LEAST` + `CONTROLLER_CHOOSES`.
+ *
+ * Used by Thoughtbound Primoc: "At the beginning of your upkeep, if a player controls more Wizards
+ * than each other player, that player gains control of Thoughtbound Primoc."; Ghazbán Ogre: "At the
+ * beginning of your upkeep, if a player has more life than each other player, the player with the
+ * most life gains control of this creature."; and Loxodon Peacekeeper: "At the beginning of your
+ * upkeep, the player with the lowest life total gains control of this creature."
+ */
+@SerialName("GainControlByRank")
+@Serializable
+data class GainControlByRankEffect(
     val metric: PlayerRankMetric,
-    val target: EffectTarget = EffectTarget.Self
+    val target: EffectTarget = EffectTarget.Self,
+    val direction: PlayerRankDirection = PlayerRankDirection.MOST,
+    val tieBreak: RankTieBreak = RankTieBreak.NONE
 ) : Effect {
     override val description: String = buildString {
         append(
             when (metric) {
-                is PlayerRankMetric.LifeTotal -> "the player with the most life"
-                is PlayerRankMetric.CreaturesOfSubtype -> "the player who controls the most ${metric.subtype.value}s"
+                is PlayerRankMetric.LifeTotal -> when (direction) {
+                    PlayerRankDirection.MOST -> "the player with the most life"
+                    PlayerRankDirection.LEAST -> "the player with the lowest life total"
+                }
+                is PlayerRankMetric.CreaturesOfSubtype -> when (direction) {
+                    PlayerRankDirection.MOST ->
+                        "the player who controls the most ${metric.subtype.value}s"
+                    PlayerRankDirection.LEAST ->
+                        "the player who controls the fewest ${metric.subtype.value}s"
+                }
             }
         )
         append(" gains control of ${target.description}")
+        if (tieBreak == RankTieBreak.CONTROLLER_CHOOSES) {
+            append(". If two or more players are tied, you choose one of them")
+        }
     }
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {

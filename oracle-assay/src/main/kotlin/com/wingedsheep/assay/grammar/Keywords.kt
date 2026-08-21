@@ -318,7 +318,10 @@ object Keywords {
 
     private val affinityForType: Phrase<KeywordAbility> = oneOf(
         "affinity for a card type",
-        listOf(CardType.ARTIFACT, CardType.CREATURE, CardType.ENCHANTMENT, CardType.LAND, CardType.INSTANT)
+        listOf(
+            CardType.ARTIFACT, CardType.CREATURE, CardType.ENCHANTMENT, CardType.LAND,
+            CardType.INSTANT, CardType.PLANESWALKER,
+        )
             .map { type -> constant("affinity for ${type.displayName.lowercase()}s", KeywordAbility.Affinity(type)) },
     )
 

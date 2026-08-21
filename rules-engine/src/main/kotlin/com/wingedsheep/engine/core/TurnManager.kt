@@ -32,6 +32,7 @@ import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponent
 import com.wingedsheep.engine.state.components.player.PlayerTurnsTakenComponent
 import com.wingedsheep.engine.state.components.player.SkipCombatPhasesComponent
+import com.wingedsheep.engine.state.components.player.SkippedTurnPartsComponent
 import com.wingedsheep.engine.state.components.player.SkipNextTurnComponent
 import com.wingedsheep.engine.state.components.player.EndTheTurnRequestedComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
@@ -234,43 +235,63 @@ class TurnManager(
      * player gets priority in the new phase.
      */
     private fun drainAdditionalPhase(state: GameState, activePlayer: EntityId): ExecutionResult? {
-        val component = state.getEntity(activePlayer)?.get<AdditionalPhasesComponent>() ?: return null
-        val next = component.phases.firstOrNull() ?: return null
-        val remaining = component.phases.drop(1)
+        var current = state
+        // True once an entry has been drained *and skipped*: the queue has been mutated, so the
+        // caller's own `state` is stale and returning null (its "nothing drained" signal) would
+        // silently lose the consumption.
+        var skippedAnEntry = false
 
-        var redirectedState = if (remaining.isEmpty()) {
-            state.updateEntity(activePlayer) { it.without<AdditionalPhasesComponent>() }
-        } else {
-            state.updateEntity(activePlayer) { it.with(AdditionalPhasesComponent(remaining)) }
-        }
+        while (true) {
+            val queued = current.getEntity(activePlayer)
+                ?.get<AdditionalPhasesComponent>()?.phases.orEmpty()
+            val next = queued.firstOrNull()
+                ?: return if (skippedAnEntry) advanceStepFromEndedStep(current) else null
+            val remaining = queued.drop(1)
 
-        val (step, phase) = when (next.kind) {
-            ExtraPhaseKind.COMBAT -> {
+            var redirectedState = if (remaining.isEmpty()) {
+                current.updateEntity(activePlayer) { it.without<AdditionalPhasesComponent>() }
+            } else {
+                current.updateEntity(activePlayer) { it.with(AdditionalPhasesComponent(remaining)) }
+            }
+
+            val (step, phase) = when (next.kind) {
+                ExtraPhaseKind.COMBAT -> Step.BEGIN_COMBAT to Phase.COMBAT
+                ExtraPhaseKind.MAIN -> Step.POSTCOMBAT_MAIN to Phase.POSTCOMBAT_MAIN
+            }
+
+            // CR 500.11 — an inserted phase whose kind the active player is skipping every
+            // instance of this turn (Fatespinner) is proceeded past as though it didn't exist.
+            // The queue entry is still consumed: the phase *was* created, it just never happens,
+            // and the next queued entry takes its place. Without this the natural combat phase
+            // would be skipped while an Aggravated Assault combat phase sailed through.
+            if (skipsTurnPart(current, step, activePlayer)) {
+                current = redirectedState
+                skippedAnEntry = true
+                continue
+            }
+
+            redirectedState = when (next.kind) {
                 // Copy the entry's attacker restriction onto the marker so the declare-attackers
                 // legality check (AdditionalCombatPhaseAttackerRule) can enforce it for the
                 // duration of this inserted phase. `null` yields an ordinary unrestricted combat.
-                redirectedState = redirectedState
-                    .updateEntity(activePlayer) {
-                        it.with(InAdditionalCombatPhaseComponent(next.attackerRestriction))
-                    }
-                Step.BEGIN_COMBAT to Phase.COMBAT
+                ExtraPhaseKind.COMBAT -> redirectedState.updateEntity(activePlayer) {
+                    it.with(InAdditionalCombatPhaseComponent(next.attackerRestriction))
+                }
+                ExtraPhaseKind.MAIN -> redirectedState.updateEntity(activePlayer) {
+                    it.without<InAdditionalCombatPhaseComponent>()
+                }
             }
-            ExtraPhaseKind.MAIN -> {
-                redirectedState = redirectedState
-                    .updateEntity(activePlayer) { it.without<InAdditionalCombatPhaseComponent>() }
-                Step.POSTCOMBAT_MAIN to Phase.POSTCOMBAT_MAIN
-            }
+
+            redirectedState = redirectedState
+                .copy(step = step, phase = phase, priorityPassedBy = emptySet())
+                .withPriority(activePlayer)
+
+            val events = mutableListOf<GameEvent>(
+                PhaseChangedEvent(phase),
+                StepChangedEvent(step)
+            )
+            return ExecutionResult.success(redirectedState, events)
         }
-
-        redirectedState = redirectedState
-            .copy(step = step, phase = phase, priorityPassedBy = emptySet())
-            .withPriority(activePlayer)
-
-        val events = mutableListOf<GameEvent>(
-            PhaseChangedEvent(phase),
-            StepChangedEvent(step)
-        )
-        return ExecutionResult.success(redirectedState, events)
     }
 
     /**
@@ -283,6 +304,19 @@ class TurnManager(
         // end-of-turn cleanup performs — applying the Upwelling / Ozai / Last Agni Kai statics.
         // Firebending (END_OF_COMBAT) mana is preserved and handled by CombatManager.endCombat.
         advanceStepFromEndedStep(cleanupPhaseManager.emptyManaPools(state))
+
+    /**
+     * True when [step] belongs to a part of the turn [playerId] is skipping every instance of this
+     * turn (`SkippedTurnPartsComponent`, written by `SkipStepOrPhaseThisTurnEffect`).
+     *
+     * One [com.wingedsheep.sdk.core.TurnPart] can cover several steps, which is the point: naming
+     * `COMBAT_PHASE` skips all five combat steps one after another as this is consulted per step,
+     * and `MAIN_PHASE` skips both main phases (CR 505.1).
+     */
+    private fun skipsTurnPart(state: GameState, step: Step, playerId: EntityId): Boolean {
+        val parts = state.getEntity(playerId)?.get<SkippedTurnPartsComponent>()?.parts ?: return false
+        return parts.any { it.covers(step) }
+    }
 
     private fun advanceStepFromEndedStep(incomingState: GameState): ExecutionResult {
         val currentStep = incomingState.step
@@ -441,6 +475,34 @@ class TurnManager(
         }
 
         val nextStep = currentStep.next()
+
+        // CR 500.11 / 614.10 — to skip a step or phase is to proceed past it as though it didn't
+        // exist. That has to happen *here*, before the StepChangedEvent below is built: that event
+        // is what `PassPriorityHandler` feeds to `detectPhaseStepTriggers`, so emitting it for a
+        // skipped step would fire "at the beginning of ..." abilities for a step that never
+        // happened, and the withPriority calls in the `when` would open a priority window in it.
+        // The marker is turn-scoped (Fatespinner skips *each* instance this turn), so it is not
+        // consumed here — end-of-turn cleanup drops it.
+        if (skipsTurnPart(state, nextStep, activePlayer)) {
+            var skipped = state.copy(
+                step = nextStep,
+                phase = nextStep.phase,
+                priorityPassedBy = emptySet()
+            )
+            val skipEvents = mutableListOf<GameEvent>()
+            // The postcombat main phase owns the deferred end-of-combat bookkeeping (see the
+            // POSTCOMBAT_MAIN branch below), so skipping the phase must still run it or creatures
+            // stay in combat for the rest of the turn.
+            if (nextStep == Step.POSTCOMBAT_MAIN) {
+                val endCombatResult = combatManager.endCombat(skipped)
+                if (!endCombatResult.isSuccess) return endCombatResult
+                skipped = endCombatResult.newState
+                skipEvents.addAll(endCombatResult.events)
+            }
+            val onward = advanceStep(skipped)
+            return onward.copy(events = skipEvents + onward.events)
+        }
+
         val nextPhase = nextStep.phase
 
         var newState = state.copy(

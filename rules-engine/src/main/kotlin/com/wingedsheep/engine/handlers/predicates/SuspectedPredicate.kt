@@ -9,7 +9,7 @@ import com.wingedsheep.sdk.model.EntityId
  *
  * The designation is a Layer-ability floating effect rather than a component, so the normal
  * read is `ProjectedState.isSuspected`. This raw-state form exists for the callers that have no
- * projection in hand — trigger gating, and `SetSuspectedExecutor`'s CR 701.60d "can't become
+ * projection in hand — trigger gating, and `SuspectExecutor`'s CR 701.60d "can't become
  * suspected again" check, which has to answer the question *while* building the next state.
  *
  * Both readings agree: the projection's `isSuspected` is set from exactly these floating

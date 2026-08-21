@@ -13,7 +13,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.model.Deck
-import com.wingedsheep.sdk.scripting.effects.GainControlByMostEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlByRankEffect
 import com.wingedsheep.sdk.scripting.effects.PlayerRankMetric
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
@@ -65,7 +65,7 @@ class GuardianBeastScenarioTest : FunSpec({
         manaCost = ManaCost.parse("{1}"),
         oracleText = "The player with the most life gains control of target artifact.",
         script = CardScript.spell(
-            GainControlByMostEffect(PlayerRankMetric.LifeTotal, EffectTarget.ContextTarget(0)),
+            GainControlByRankEffect(PlayerRankMetric.LifeTotal, EffectTarget.ContextTarget(0)),
             Targets.Artifact,
         ),
     )

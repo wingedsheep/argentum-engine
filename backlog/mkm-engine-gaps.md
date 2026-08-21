@@ -109,11 +109,17 @@ Six cards ship with it (Vitu-Ghazi Inspector, Crimestopper Sprite, Bite Down on 
 Collector, Forensic Researcher, Surveillance Monitor); the rest are unblocked but not yet written,
 and four need *separate* features first — see below.
 
-**Still blocked on other features:** Conspiracy Unraveler (collect evidence as an *alternative* cost
-"rather than pay the mana cost"), Axebane Ferox (`WardCost` has no collect-evidence variant), Urgent
-Necropsy and Incinerator of the Guilty (a *dynamic* N — "collect evidence X" where X is the targets'
-total mana value / a chosen X; the atom takes a fixed `Int`), Detective's Phoenix (a bestow cost with
-a non-mana component), Kylox's Voltstrider (needs "cards exiled with it" linkage).
+**Also shipped since:** the *alternative* cost form — `GrantAlternativeCastingCost` now carries a
+non-mana half (a `{0}` mana cost plus an `AdditionalCost` list, the same two halves
+`SelfAlternativeCost` has), so **Conspiracy Unraveler** works and any future "you may <non-mana cost>
+rather than pay the mana cost for spells you cast" composes. Axebane Ferox is likewise done —
+`KeywordAbility.wardCollectEvidence(4)` exists.
+
+**Still blocked on other features:** Urgent Necropsy and Incinerator of the Guilty (a *dynamic* N —
+"collect evidence X" where X is the targets' total mana value / a chosen X; the atom takes a fixed
+`Int`, and the client's cast pipeline runs its cost-payment phase *before* targeting, so a
+target-derived X has nothing to gate the picker on), Detective's Phoenix (a bestow cost with a
+non-mana component), Kylox's Voltstrider (needs "cards exiled with it" linkage).
 
 <details><summary>Original analysis</summary>
 

@@ -921,3 +921,40 @@
         "BLACK"
     ]
 }
+
+// Zuran Orb
+{
+    "name": "Zuran Orb",
+    "manaCost": "{0}",
+    "typeLine": "Artifact",
+    "oracleText": "Sacrifice a land: You gain 2 life.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "land"
+                    }
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "350",
+        "rarity": "UNCOMMON",
+        "artist": "Sandra Everingham",
+        "flavorText": "\"I will go to any length to achieve my goal. Eternal life is worth any sacrifice.\"\n—Zur the Enchanter",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/a/3a9d1082-a862-45d4-9e5e-392e879fead6.jpg?1783947454"
+    },
+    "colorIdentityOverride": []
+}

@@ -236,6 +236,43 @@ data class ExileFromTopRepeatingEffect(
 }
 
 /**
+ * Each player in [players] exiles the top card of their library face up; the one who exiled the
+ * card with the **greatest mana value** wins, and their player entity id is published as the only
+ * member of the pipeline collection [storeWinnerAs]. Ties repeat: the tied players — and only they
+ * — exile another card each, until one of them is alone at the top (Timesifter).
+ *
+ * Deliberately *open* rather than owning the payoff. The effect answers "who won" and stops; the
+ * card composes the reward itself off [storeWinnerAs] through
+ * [com.wingedsheep.sdk.scripting.targets.EffectTarget.PipelineTarget], which keeps "take an extra
+ * turn", "draws a card", or anything else out of a library primitive.
+ *
+ * **There may be no winner**, and the collection is then empty: a player whose library is empty
+ * exiles nothing and so can never have exiled the greatest mana value, and if no contender can
+ * exile at all the contest ends undecided. Guard the payoff on the collection being non-empty
+ * (`Conditions.Compare(DynamicAmount.DistinctEntitiesInCollections(listOf(name)), GTE, Fixed(1))`)
+ * — an unguarded `PipelineTarget` falls back to the ability's controller.
+ *
+ * Every card exiled by the contest — losers' and winner's alike, from every round — stays in exile
+ * and is published under [storeExiledAs] for a card that wants to name them.
+ *
+ * Terminates: a round that exiles nothing ends the contest, so every further round shrinks at least
+ * one library.
+ */
+@SerialName("ExileTopCardContest")
+@Serializable
+data class ExileTopCardContestEffect(
+    val players: Player = Player.Each,
+    val storeWinnerAs: String,
+    val storeExiledAs: String = "contestExiledCards"
+) : Effect {
+    override val description: String =
+        "${players.description.replaceFirstChar { it.uppercase() }} exiles the top card of their " +
+            "library. The player who exiled the card with the greatest mana value wins; if two or " +
+            "more players' cards are tied for greatest, the tied players repeat this process until " +
+            "the tie is broken"
+}
+
+/**
  * For each matching player, exile cards from the top of their library until
  * the total mana value of cards exiled this way for that player reaches at
  * least [threshold]. All exiled card entity IDs (across every matched player)
@@ -318,6 +355,20 @@ data class ExileLibraryUntilManaValueEffect(
  * .CollectionNonEmpty(storeCastTo))` for "you may cast … . If you do, [then]" — the follow-up is
  * skipped when the player declines or the cast can't be paid for (Kaervek's "If you do, you lose
  * 2 life"). The collection is left empty when nothing was cast.
+ *
+ * **Where the spell goes afterwards.** [insteadOfGraveyard] is the cast-this-way rider: the card
+ * is stamped so that when the spell would leave the stack for its owner's graveyard it goes to
+ * that destination instead. `EXILE` is the common "exile it instead" clause (Jetsam);
+ * `BOTTOM_OF_LIBRARY` is Kylox's Voltstrider's "put it on the bottom of its owner's library
+ * instead". The stamp is applied only to the card actually being cast, and only when the cast
+ * initiates — a declined or impossible cast leaves nothing behind on cards still in the
+ * collection.
+ *
+ * **Who casts it.** [caster] answers the one question a per-player iteration raises: inside
+ * `ForEachPlayerEffect` the context's controller is rebound to the iterated player, so a spell
+ * cast from *each opponent's* graveyard by *you* (Jetsam) needs [Chooser.SourceController] to
+ * name the spell's own controller instead. The default [Chooser.Controller] is the ordinary case
+ * and is what every non-iterated card wants.
  */
 @SerialName("CastFromCollectionWithoutPayingCost")
 @Serializable
@@ -337,11 +388,28 @@ data class CastFromCollectionWithoutPayingCostEffect(
      * hold single-faced cards.
      */
     val castTransformed: Boolean = false,
+    /**
+     * Where the spell goes instead of its owner's graveyard when it leaves the stack, or null
+     * (the default) to leave the ordinary destination alone.
+     */
+    val insteadOfGraveyard: AfterResolveDestination? = null,
+    /** Who casts the card. Only matters inside a per-player iteration — see the class KDoc. */
+    val caster: Chooser = Chooser.Controller,
 ) : Effect {
     override val description: String = buildString {
         append("Cast that card")
         if (castTransformed) append(" transformed")
         if (!payManaCost) append(" without paying its mana cost")
+        when (insteadOfGraveyard) {
+            AfterResolveDestination.EXILE ->
+                append(". If that spell would be put into a graveyard, exile it instead")
+            AfterResolveDestination.BOTTOM_OF_LIBRARY ->
+                append(
+                    ". If that spell would be put into a graveyard, put it on the bottom of " +
+                        "its owner's library instead"
+                )
+            null -> Unit
+        }
     }
 }
 

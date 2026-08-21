@@ -440,6 +440,15 @@ object DynamicAmounts {
     fun creaturesDiedThisTurn(player: Player = Player.You): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.CREATURES_DIED)
 
+    /**
+     * Artifacts put into a graveyard from the battlefield this turn. Defaults to [Player.Each] —
+     * the **game-wide** count, which is the only reading printed so far ("the number of artifacts
+     * that were put into graveyards from the battlefield this turn", Anzrag's Rampage). Pass
+     * [Player.You] for the controller-scoped slice.
+     */
+    fun artifactsDiedThisTurn(player: Player = Player.Each): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.ARTIFACTS_DIED)
+
     fun opponentsWhoLostLifeThisTurn(): DynamicAmount =
         DynamicAmount.TurnTracking(Player.You, TurnTracker.OPPONENTS_WHO_LOST_LIFE)
 
@@ -708,6 +717,16 @@ object DynamicAmounts {
      */
     fun permanentsSacrificedThisWay(): DynamicAmount =
         DynamicAmount.PermanentsSacrificedThisWay
+
+    /**
+     * Total power of the permanents sacrificed by the current resolving effect ("their total
+     * power"), read from the same `sacrificedPermanents` snapshots as
+     * [permanentsSacrificedThisWay]. See [DynamicAmount.TotalPowerSacrificedThisWay]. Used by
+     * "exile the top X cards of your library, where X is their total power" (Kylox, Visionary
+     * Inventor).
+     */
+    fun totalPowerSacrificedThisWay(): DynamicAmount =
+        DynamicAmount.TotalPowerSacrificedThisWay
 
     /**
      * "That many" — the number of repetitions a

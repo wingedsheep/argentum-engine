@@ -2662,6 +2662,15 @@ class TriggerDetector(
      * Detect "whenever one or more [creatures] you control deal combat damage to a player"
      * batching triggers. Groups all combat damage-to-player events and fires matching
      * triggers at most once per observer, regardless of how many creatures connected.
+     *
+     * A **face-down** attacker counts. It is a creature (a 2/2 with no name, no subtypes, no
+     * colors and mana value 0 — CR 708.2), so it satisfies an unfiltered "creatures you control"
+     * batch trigger, and the filtered variants are decided by [predicateEvaluator] alone: that
+     * evaluator masks every printed characteristic behind `isFaceDown`, name included, so a
+     * "Bird you control"-style filter still excludes it without a separate guard here. This used
+     * to carry a blanket `FaceDownComponent` skip, which pre-dated the masking and silently made
+     * unfiltered batch triggers (Kastral, the Windcrested; Yarus, Roar of the Old Gods) miss
+     * whenever a morphed, manifested, disguised or cloaked creature connected.
      */
     private fun detectCombatDamageBatchTriggers(
         state: GameState,
@@ -2700,7 +2709,6 @@ class TriggerDetector(
                         val sourceContainer = state.getEntity(info.sourceId) ?: return@firstOrNull false
                         sourceContainer.get<CardComponent>() ?: return@firstOrNull false
                         if (!projected.isCreature(info.sourceId)) return@firstOrNull false
-                        if (sourceContainer.has<FaceDownComponent>()) return@firstOrNull false
                         predicateEvaluator.matches(
                             state, projected, info.sourceId, trigger.sourceFilter,
                             PredicateContext(controllerId = controllerId, sourceId = entry.entityId)
@@ -2734,7 +2742,6 @@ class TriggerDetector(
                     val sourceContainer = state.getEntity(info.sourceId) ?: return@filter false
                     sourceContainer.get<CardComponent>() ?: return@filter false
                     if (!projected.isCreature(info.sourceId)) return@filter false
-                    if (sourceContainer.has<FaceDownComponent>()) return@filter false
 
                     predicateEvaluator.matches(
                         state,

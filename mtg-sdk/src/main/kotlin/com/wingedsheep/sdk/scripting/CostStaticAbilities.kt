@@ -62,6 +62,8 @@ data class ModifySpellCost(
             is CostModification.IncreaseGenericBy ->
                 "cost {X} more to cast, where X is ${fromCasterPerspective(modification.source.description)}"
             is CostModification.IncreaseColored -> "cost ${modification.symbols} more to cast"
+            is CostModification.IncreaseColoredPerUnit ->
+                "cost ${modification.symbols} more to cast for each ${modification.countSource.description}"
             is CostModification.IncreaseGenericPerOtherSpellThisTurn ->
                 "cost {${modification.amountPerSpell}} more to cast for each other spell that player has cast this turn"
             is CostModification.IncreaseGenericIfAnyTargetMatches ->
@@ -361,6 +363,24 @@ sealed interface CostModification {
     data class IncreaseColored(val symbols: String) : CostModification
 
     /**
+     * Add [symbols] to the cost once per unit of [countSource] — the tax mirror of
+     * [ReduceColoredPerUnit], reading the same [CostReductionSource] vocabulary.
+     *
+     * Used for Officious Interrogation ("This spell costs {W}{U} more to cast for each target
+     * beyond the first") as
+     * `IncreaseColoredPerUnit("{W}{U}", CostReductionSource.ChosenTargetsBeyondTheFirst)`.
+     *
+     * Unlike the reduction side there is no overflow question: added symbols always land, so a
+     * count of N simply appends N copies of [symbols].
+     */
+    @SerialName("IncreaseColoredPerUnit")
+    @Serializable
+    data class IncreaseColoredPerUnit(
+        val symbols: String,
+        val countSource: CostReductionSource,
+    ) : CostModification
+
+    /**
      * Damping-Sphere-style scaling tax: increase by `amountPerSpell` for each spell
      * the casting player has already cast this turn.
      */
@@ -584,6 +604,25 @@ sealed interface CostReductionSource {
         val filter: GameObjectFilter
     ) : CostReductionSource {
         override val description: String = "$amount if it targets ${filter.description}"
+    }
+
+    /**
+     * The number of targets the spell has beyond the first — "for each target beyond the first"
+     * (Officious Interrogation, and the classic Phyrexian Purge / Fireball wording). Counts the
+     * spell's chosen targets, so it is 0 for a single-target cast and never negative.
+     *
+     * Only meaningful on a **self**-cast modifier ([SpellCostTarget.SelfCast]): "beyond the first"
+     * is a property of the spell being cast, and only the self path is priced with the caster's own
+     * chosen targets. Before targets are chosen (affordability enumeration) it reads 0, which is
+     * correct — one target is the cheapest legal cast, so the base cost is the true minimum.
+     *
+     * Pair with [CostModification.IncreaseColoredPerUnit] for a colored per-target tax and with
+     * [CostModification.IncreaseGenericBy] for a generic one.
+     */
+    @SerialName("ChosenTargetsBeyondTheFirst")
+    @Serializable
+    data object ChosenTargetsBeyondTheFirst : CostReductionSource {
+        override val description: String = "each target beyond the first"
     }
 
     /**

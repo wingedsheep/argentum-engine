@@ -412,6 +412,25 @@ internal class AffectsFilterResolver {
             sourceController != null && defenderId != null &&
                 defenderId in state.getOpponents(sourceController)
         }
+        // The defender-side mirror: attacking the static's controller themself, or a planeswalker
+        // that player controls. Reads the *base* controller of the defender rather than a
+        // projection — this resolver runs while the projection is being built, and a planeswalker's
+        // controller is the fact being asked about, not a layered characteristic.
+        StatePredicate.IsAttackingYouOrYourPlaneswalkers -> {
+            val defenderId = container.get<AttackingComponent>()?.defenderId
+            sourceController != null && defenderId != null && (
+                defenderId == sourceController ||
+                    (
+                        state.getEntity(defenderId)
+                            ?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()
+                            ?.playerId == sourceController &&
+                            state.getEntity(defenderId)
+                                ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+                                ?.typeLine?.cardTypes
+                                ?.contains(com.wingedsheep.sdk.core.CardType.PLANESWALKER) == true
+                        )
+                )
+        }
         StatePredicate.IsBlocking -> container.has<BlockingComponent>()
         StatePredicate.IsBlocked -> {
             container.has<AttackingComponent>() && state.getBattlefield().any { blockerId ->
@@ -828,7 +847,10 @@ internal class AffectsFilterResolver {
         CardPredicate.SharesChosenColorWithSource,
         CardPredicate.SharesColorWithRecipient,
         is CardPredicate.SharesCreatureTypeWith,
+        is CardPredicate.SharesCardTypeWith,
         is CardPredicate.SharesColorWith,
+        is CardPredicate.SharesManaValueWith,
+        is CardPredicate.SharesNameWith,
         is CardPredicate.SharesColorWithPermanentYouControl,
         is CardPredicate.SharesNameWithPermanentYouControl,
         is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl,

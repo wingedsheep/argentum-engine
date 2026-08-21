@@ -582,6 +582,7 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
     // sources to also cover xValue * (number of {X} symbols).
     const action = actionInfo.action as {
       xValue?: number
+      targets?: readonly unknown[]
       alternativePayment?: { harmonizeCreature?: EntityId | null }
       additionalCostPayment?: { sacrificedPermanents?: readonly EntityId[] }
     }
@@ -594,7 +595,17 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
     const emergeCost = emergeSacrifice
       ? actionInfo.additionalCostInfo?.costAfterSacrifice?.[emergeSacrifice]
       : undefined
-    const manaCost = emergeCost ?? actionInfo.manaCostString ?? ''
+    // "This spell costs {W}{U} more to cast for each target beyond the first" (Officious
+    // Interrogation): the server advertises the one-target minimum, because it prices the cost
+    // before any target exists. `computePhases` puts targeting ahead of this step precisely so the
+    // tax is knowable here — append one copy of the increment per target beyond the first. Same
+    // shape as the emerge/harmonize adjustments around it: the server owns the rule, the client
+    // only applies the choice the player has since made.
+    const perExtraTarget = actionInfo.manaCostPerExtraTarget
+    const extraTargets = Math.max(0, (action.targets?.length ?? 0) - 1)
+    const targetTax =
+      perExtraTarget && extraTargets > 0 ? perExtraTarget.repeat(extraTargets) : ''
+    const manaCost = (emergeCost ?? actionInfo.manaCostString ?? '') + targetTax
     const xSymbolCount = Math.max(1, (manaCost.match(/\{X\}/g)?.length ?? 0))
 
     // Harmonize creature-tap (chosen in the prior `harmonize` phase) reduces the

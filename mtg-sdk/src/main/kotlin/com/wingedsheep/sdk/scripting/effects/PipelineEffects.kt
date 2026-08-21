@@ -1407,7 +1407,7 @@ data class GrantMayPlayFromExileEffect(
      * be put into a graveyard (on resolution, when countered, or when it fizzles), it is exiled
      * instead. Models the "If that spell would be put into a graveyard, exile it instead" rider on
      * cards that let you cast a card you don't own out of exile (Nita, Forum Conciliator) — the
-     * same `ExileAfterResolveComponent` mechanism behind [GrantFreeCastTargetFromExileEffect.exileAfterResolve],
+     * same `AfterResolveDestinationComponent` mechanism behind [GrantFreeCastTargetFromExileEffect.exileAfterResolve],
      * but for a *paid* cast rather than a free one. Defaults to off (impulse-draw cards leave the
      * card to go to its owner's graveyard normally).
      */
@@ -1670,7 +1670,7 @@ data class GrantPlayWithCostIncreaseEffect(
  * Grant a single target entity in exile permission to be cast without paying
  * its mana cost. The engine registers a MayPlayPermission and stamps
  * PlayWithoutPayingCostComponent on the target. Optionally marks the spell
- * with ExileAfterResolveComponent so it goes to exile instead of graveyard
+ * with AfterResolveDestinationComponent so it goes to exile instead of graveyard
  * after resolving or being countered.
  *
  * Unlike the collection-based [GrantMayPlayFromExileEffect] + [GrantPlayWithoutPayingCostEffect],

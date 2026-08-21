@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.costs
 
 import com.wingedsheep.engine.core.EvidenceCollectedEvent
 import com.wingedsheep.engine.core.GameEvent
+import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.model.EntityId
@@ -152,6 +153,14 @@ object CollectEvidenceResolver {
      *
      * Returns [Result.Failure] — and changes nothing — when the graveyard cannot reach [amount].
      * Callers that gated on [canCollect] never see this; it is defense in depth for CR 701.59b.
+     *
+     * [linkToSourceId] tethers the exiled cards to that entity's linked-exile pile
+     * ([com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent]), which is what
+     * makes a later "cards exiled **with it**" ability on
+     * the same permanent able to find them (Kylox's Voltstrider). Null — the default — is the
+     * ordinary collection, which exiles the cards and forgets them. Only the cost-payment paths
+     * pass it, and only when the paid atom asked for it: the keyword itself never links, so a
+     * resolution-time `Effects.CollectEvidence` can't accidentally start a pile.
      */
     fun collect(
         state: GameState,
@@ -160,6 +169,7 @@ object CollectEvidenceResolver {
         chosenCards: List<EntityId> = emptyList(),
         sourceName: String = "Collect evidence",
         excludeCardId: EntityId? = null,
+        linkToSourceId: EntityId? = null,
     ): Result {
         val candidates = candidates(state, playerId, excludeCardId)
         if (!candidates.canReach(amount)) {
@@ -170,13 +180,26 @@ object CollectEvidenceResolver {
 
         val toExile = GraveyardTotalExileResolver
             .resolveSelection(candidates.shared, amount, chosenCards)
-        if (toExile.isEmpty()) {
+        // Collecting evidence 0 exiles nothing and is legal — "any number of cards" includes none,
+        // and their total mana value of 0 meets a threshold of 0 (CR 701.59a). Per the 2024-02-02
+        // Incinerator of the Guilty ruling it still *counts* as collecting evidence, so the event
+        // below must fire for "whenever you collect evidence" payoffs. Only reachable from
+        // `CollectEvidenceChosenAmountEffect`, the one shape whose X the player picks; every fixed
+        // threshold in the corpus is at least 1.
+        if (toExile.isEmpty() && amount > 0) {
             return Result.Failure("Cannot collect evidence $amount: no legal selection")
         }
 
         val totalManaValue = toExile.sumOf { candidates.manaValueById[it] ?: 0 }
 
-        val (newState, events) = GraveyardTotalExileResolver.exile(state, toExile)
+        val (exiledState, events) = GraveyardTotalExileResolver.exile(state, toExile)
+        // The link is applied after the exile, not during it: ZoneMovementUtils.linkExiledToSource
+        // writes the pile onto the *source*, and only cards that actually reached exile belong in
+        // it. Linking a card the move failed on would leave a dangling id the lookup has to filter
+        // out on every read.
+        val newState = if (linkToSourceId == null) exiledState else toExile.fold(exiledState) { acc, cardId ->
+            ZoneMovementUtils.linkExiledToSource(acc, cardId, linkToSourceId)
+        }
         val allEvents = events +
             EvidenceCollectedEvent(playerId, amount, toExile, totalManaValue, sourceName)
 

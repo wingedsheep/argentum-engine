@@ -1653,7 +1653,7 @@
                 },
                 "binding": "ANY",
                 "effect": {
-                    "type": "GainControlByMost",
+                    "type": "GainControlByRank",
                     "metric": "LifeTotal"
                 }
             }

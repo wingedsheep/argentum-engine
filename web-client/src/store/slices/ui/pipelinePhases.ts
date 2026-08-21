@@ -195,10 +195,16 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
     (p) => p.type === 'delve' || p.type === 'convoke',
   )
   const hasPhyrexianMana = (actionInfo.manaCostString ?? '').includes('/P}')
-  if (
+  //    A spell that taxes itself per target ("costs {W}{U} more for each target beyond the first")
+  //    advertises only its one-target minimum, so picking sources before targeting would always
+  //    under-tap and the server would reject the cast. Defer the manaSource step past targeting,
+  //    exactly as an X cost puts `xSelection` before it. Under auto-tap neither phase runs and the
+  //    server prices the submitted targets itself, so this only bites manual tappers.
+  const manaAfterTargeting = actionInfo.manaCostPerExtraTarget != null
+  const needsManaSource =
     ((actionInfo.availableManaSources?.length ?? 0) > 0 || hasPhyrexianMana) &&
     (hasAlternativePaymentPhase || hasPhyrexianMana || !options?.autoTapEnabled)
-  ) {
+  if (needsManaSource && !manaAfterTargeting) {
     phases.push({ type: 'manaSource' })
   }
 
@@ -247,6 +253,12 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
   // 6. Targeting
   if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
     phases.push({ type: 'targeting' })
+  }
+
+  // 6b. The deferred manaSource step for a per-target-taxed spell (see phase 4): now that the
+  //     targets are chosen, the price the player taps for is the real one.
+  if (needsManaSource && manaAfterTargeting) {
+    phases.push({ type: 'manaSource' })
   }
 
   // 7. Mana color choice (abilities only, after cost)

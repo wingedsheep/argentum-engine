@@ -186,6 +186,57 @@
     ]
 }
 
+// Greed
+{
+    "name": "Greed",
+    "manaCost": "{3}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "{B}, Pay 2 life: Draw a card.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "rarity": "RARE",
+        "artist": "Phil Foglio",
+        "flavorText": "\"There is no calamity greater than lavish desires./ There is no greater guilt than discontentment./ And there is no greater disaster than greed.\" —*Tao Tê Ching 46*",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/111a16a2-e875-4756-80db-290f9e8606db.jpg?1783948066"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Headless Horseman
 {
     "name": "Headless Horseman",

@@ -73,6 +73,7 @@ class LibraryExecutors(
         RevealCollectionExecutor(),
         ExileFromTopRepeatingExecutor(),
         ExileLibraryUntilManaValueExecutor(),
+        ExileTopCardContestExecutor(),
         CascadeExecutor(),
         DiscoverExecutor(recursion),
         CastFromCollectionWithoutPayingCostExecutor(

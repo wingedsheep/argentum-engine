@@ -1,3 +1,36 @@
+// Angelic Curator
+{
+    "name": "Angelic Curator",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Angel Spirit",
+    "oracleText": "Flying, protection from artifacts",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.CardType",
+                "cardType": "Artifact"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "1",
+        "artist": "Greg Staples",
+        "flavorText": "\"Do not treat your people as you treat your artifacts. Let them go, and they will live; seal them here, and they will die.\"\n—Urza, to Radiant",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c63ba2da-6dea-44ac-8439-527222da565b.jpg?1783946254"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Archivist
 {
     "name": "Archivist",

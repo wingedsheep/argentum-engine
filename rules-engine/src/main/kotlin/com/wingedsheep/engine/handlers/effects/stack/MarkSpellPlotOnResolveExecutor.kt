@@ -4,14 +4,14 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.identity.ExileAfterResolveComponent
+import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.sdk.scripting.effects.MarkSpellPlotOnResolveEffect
 import kotlin.reflect.KClass
 
 /**
  * Executor for [MarkSpellPlotOnResolveEffect].
  *
- * Tags the target spell on the stack with [ExileAfterResolveComponent] carrying `makePlotted = true`
+ * Tags the target spell on the stack with [AfterResolveDestinationComponent] carrying `makePlotted = true`
  * and the `onlyIfResolved` flag. When the spell actually resolves,
  * [com.wingedsheep.engine.mechanics.stack.StackResolver] sees the component, sends the card to exile
  * instead of the graveyard, and makes it plotted for its owner. If the spell is countered or fizzles,
@@ -30,9 +30,9 @@ class MarkSpellPlotOnResolveExecutor : EffectExecutor<MarkSpellPlotOnResolveEffe
     ): EffectResult {
         val targetId = context.resolveTarget(effect.target) ?: return EffectResult.success(state)
         val newState = state.updateEntity(targetId) { container ->
-            val existing = container.get<ExileAfterResolveComponent>()
+            val existing = container.get<AfterResolveDestinationComponent>()
             val merged = existing?.copy(onlyIfResolved = true, makePlotted = true)
-                ?: ExileAfterResolveComponent(onlyIfResolved = true, makePlotted = true)
+                ?: AfterResolveDestinationComponent(onlyIfResolved = true, makePlotted = true)
             container.with(merged)
         }
         return EffectResult.success(newState)

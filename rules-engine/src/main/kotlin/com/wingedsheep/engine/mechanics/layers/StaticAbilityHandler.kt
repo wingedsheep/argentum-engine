@@ -57,6 +57,7 @@ import com.wingedsheep.sdk.scripting.GrantSupertype
 import com.wingedsheep.sdk.scripting.GrantProtectionFromChosenColorToGroup
 import com.wingedsheep.sdk.scripting.GrantProtectionFromCardType
 import com.wingedsheep.sdk.scripting.GrantProtectionFromControlledColors
+import com.wingedsheep.sdk.scripting.GrantProtectionFromLinkedExiledCardTypes
 import com.wingedsheep.sdk.scripting.GrantHexproofFromOwnColorsToGroup
 import com.wingedsheep.sdk.scripting.GrantHexproofFromMonocoloredToGroup
 import com.wingedsheep.sdk.scripting.GrantHexproofFromMulticoloredToGroup
@@ -638,6 +639,12 @@ class StaticAbilityHandler(
             is GrantProtectionFromControlledColors -> {
                 ContinuousEffectData(
                     modification = Modification.GrantProtectionFromControlledColors,
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
+            is GrantProtectionFromLinkedExiledCardTypes -> {
+                ContinuousEffectData(
+                    modification = Modification.GrantProtectionFromLinkedExiledCardTypes,
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }

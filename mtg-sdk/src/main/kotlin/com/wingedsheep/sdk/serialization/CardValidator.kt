@@ -297,10 +297,11 @@ sealed interface CardValidationError {
     ) : CardValidationError
 
     /**
-     * A `TargetChooser.Opponent` ("… of an opponent's choice") target requirement in a context
-     * that doesn't route the selection to an opponent. Only activated abilities honor the chooser
-     * today; anywhere else (a spell, a triggered ability, a kicker target) the controller would
-     * silently pick the target instead. Fail at card load rather than mis-resolve.
+     * A `TargetChooser` target requirement in a context that doesn't route the selection to the
+     * named player. Each chooser is honored by exactly one announcement path — `Opponent` by
+     * activated abilities, `TriggeringPlayer` and `ControllerOfTriggeringEntity` by triggered ones
+     * — and anywhere else (a spell, a kicker target, a saga chapter) the controller would silently
+     * pick the target instead. Fail at card load rather than mis-resolve.
      */
     data class UnsupportedOpponentChooser(
         override val cardName: String,

@@ -1401,10 +1401,23 @@ WAITING_FOR_PLAYERS → DECK_BUILDING → TOURNAMENT_ACTIVE → TOURNAMENT_COMPL
 rounds for N players), then matches start dynamically as players become ready — no waiting for
 the entire round to finish. This "eager match starting" pattern means:
 
-1. A player sends `ReadyForNextRound`
-2. The server checks if their next opponent is also ready
-3. If both are ready, the match starts immediately via a new `GameSession`
+1. A player sends `ReadyForNextRound` — refused while their own match is still running, since a ready
+   click means "I dismissed the game-over overlay"
+2. The server marks them ready and sweeps the *whole* ready set for launchable pairs
+   (`TournamentManager.startableMatches`)
+3. Each pair whose seats are both ready starts immediately via a new `GameSession`
 4. Other players continue waiting or playing their own matches
+
+A ready flag is state, not an event: it is set by a ready click (or the AI auto-ready pass) and
+consumed only when a match actually starts — a round ending does not clear it. Because it doesn't, the
+round-complete path opens the next round explicitly rather than as a side effect of the AI-ready pass;
+`currentRound` is what `isRoundComplete` reads, so leaving it on a finished round makes that path fire
+again on the next result. For the same reason, only a result from the current round can close it —
+later-round matches run concurrently with it and answer for their own round. That matters because a
+pair can be refused for a reason that has nothing to do with readiness: `hasIncompleteMatchBefore`
+holds a later-round match back while either seat still owes an earlier-round game, so a pair goes from
+blocked to launchable when a *third* pair's game finishes, with no change to the ready set at all.
+Every result therefore re-runs the sweep; looking only at ready *transitions* stalls the bracket.
 
 BYE handling (odd player counts), reconnection across matches, and spectating between rounds are
 all managed at this layer. The tournament system reuses the same `GameSession` and `ActionProcessor`

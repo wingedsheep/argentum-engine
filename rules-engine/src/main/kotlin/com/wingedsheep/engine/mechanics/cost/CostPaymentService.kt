@@ -341,7 +341,8 @@ class CostPaymentService(private val services: EngineServices) {
                 when (
                     val result = com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver.collect(
                         state, payerId, atom.amount, selected.keys.toList(),
-                        state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Collect evidence"
+                        state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Collect evidence",
+                        linkToSourceId = sourceId.takeIf { atom.linkToSource },
                     )
                 ) {
                     is com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver.Result.Success ->

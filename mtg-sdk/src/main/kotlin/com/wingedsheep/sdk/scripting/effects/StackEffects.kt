@@ -1174,7 +1174,7 @@ data class ReduceSpellCostsThisTurnEffect(
  *
  * Per the ruling, if the spell is countered or otherwise fails to resolve, the
  * exile-with-counter does not happen — so this effect sets the
- * `onlyIfResolved` flag on the underlying ExileAfterResolveComponent.
+ * `onlyIfResolved` flag on the underlying AfterResolveDestinationComponent.
  *
  * @property target The spell on the stack to mark (typically the triggering entity).
  * @property counterType Counter type string (see [com.wingedsheep.sdk.core.Counters]).

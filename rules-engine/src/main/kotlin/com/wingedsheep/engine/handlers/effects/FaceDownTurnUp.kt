@@ -72,5 +72,7 @@ object FaceDownTurnUp {
 
     private fun disguiseProcedure(cardDef: CardDefinition?): TurnUpProcedure? =
         cardDef?.keywordAbilities?.filterIsInstance<KeywordAbility.Disguise>()?.firstOrNull()
-            ?.let { TurnUpProcedure(it.disguiseCost, FaceDownMode.DISGUISE, it.faceUpEffect) }
+            ?.let {
+                TurnUpProcedure(it.disguiseCost, FaceDownMode.DISGUISE, it.faceUpEffect, it.costReduction)
+            }
 }

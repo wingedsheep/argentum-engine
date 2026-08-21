@@ -99,6 +99,23 @@ sealed interface Player {
         override val description: String = "target player"
     }
 
+    /**
+     * **Every** player among the spell or ability's chosen targets — "those players" after
+     * "choose any number of target players" (Officious Interrogation). The plural sibling of
+     * [TargetPlayer], which resolves to a single targeted player and so silently reads only the
+     * first when a spell targets several.
+     *
+     * Counting primitives sum over the resolved list, which is what makes "the total number of
+     * creatures those players control" one [DynamicAmount] instead of a per-target loop. A target
+     * that has become illegal by resolution is already gone from the context's target list, so it
+     * contributes nothing — exactly what Officious Interrogation's 2024-02-02 ruling requires.
+     */
+    @SerialName("EachTargetedPlayer")
+    @Serializable
+    data object EachTargetedPlayer : Player {
+        override val description: String = "those players"
+    }
+
     /** A targeted opponent (resolved at effect execution) */
     @SerialName("TargetOpponent")
     @Serializable
@@ -245,6 +262,30 @@ sealed interface Player {
         override val description: String = "the exiled card's owner"
     }
 
+    /**
+     * The controller of the spell or ability that **targeted** the source — the other end of a
+     * "becomes the target of a spell or ability" trigger.
+     *
+     * [TriggeringPlayer] cannot name it: a becomes-target trigger binds the *targeted object* as
+     * the triggering entity, and its trigger context deliberately leaves the triggering player
+     * null unless the thing targeted was itself a player. What the context does carry is the
+     * targeting stack object, and this reference reads that object's controller — the caster of a
+     * spell, or the controller of an activated/triggered ability.
+     *
+     * Used by Fractured Loyalty: *"Whenever enchanted creature becomes the target of a spell or
+     * ability, that spell or ability's controller gains control of that creature."*
+     *
+     * The trigger goes on the stack above the spell that caused it, so ordinarily the targeting
+     * object is still on the stack when this resolves. If it left in the meantime (it was
+     * countered in response), resolution falls back to that object's last-known controller and
+     * finally its owner, per CR 608.2h.
+     */
+    @SerialName("ControllerOfTargetingSource")
+    @Serializable
+    data object ControllerOfTargetingSource : Player {
+        override val description: String = "that spell or ability's controller"
+    }
+
     // =============================================================================
     // Possessive Forms (for descriptions)
     // =============================================================================
@@ -257,6 +298,7 @@ sealed interface Player {
             DefendingPlayer -> "defending player's"
             TargetOpponent -> "target opponent's"
             TargetPlayer -> "target player's"
+            EachTargetedPlayer -> "those players'"
             Each -> "each player's"
             ActivePlayerFirst -> "each player's"
             EachOpponent -> "each opponent's"
@@ -272,5 +314,6 @@ sealed interface Player {
             // Names the same player [You] does; the difference is only where it reads from.
             ControllerOfSource -> "your"
             OwnersOfLinkedExile -> "the exiled card's owner's"
+            ControllerOfTargetingSource -> "that spell or ability's controller's"
         }
 }

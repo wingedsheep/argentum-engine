@@ -149,6 +149,19 @@ class ProjectedState(
     fun canReceiveCounters(entityId: EntityId): Boolean =
         !hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.CANT_RECEIVE_COUNTERS)
 
+    /**
+     * Whether this permanent can become suspected, per "can't become suspected" effects (Airtight
+     * Alibi). Read by the one shared suspect implementation (`SuspectExecutor`), so it gates the
+     * whole designation — status, menace and can't-block together — from every source that could
+     * suspect: a spell, a triggered ability, or a creature's own attack trigger.
+     *
+     * Not the same question as [isSuspected]: a creature already suspected when the prohibition
+     * arrives stays suspected (the flag stops it *becoming* suspected, it doesn't un-suspect —
+     * that's `RemoveSuspectedEffect`, which Airtight Alibi's own enters trigger also does).
+     */
+    fun canBecomeSuspected(entityId: EntityId): Boolean =
+        !hasKeyword(entityId, com.wingedsheep.sdk.core.AbilityFlag.CANT_BECOME_SUSPECTED)
+
     fun getColors(entityId: EntityId): Set<String> = projectedValues[entityId]?.colors ?: emptySet()
 
     fun hasColor(entityId: EntityId, color: Color): Boolean =

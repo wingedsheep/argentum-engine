@@ -86,6 +86,18 @@ data class LegalAction(
 
     // Costs
     val manaCostString: String? = null,
+    /**
+     * The mana this spell adds to its own cost for each target beyond the first — "This spell
+     * costs {W}{U} more to cast for each target beyond the first" (Officious Interrogation) sends
+     * `"{W}{U}"`. Null for every spell that does not tax itself per target.
+     *
+     * When set, [manaCostString] is the *one-target minimum*, not the final price: the real cost
+     * is settled by targeting. The client must therefore run its targeting phase **before** any
+     * manual mana-source phase (the same way an X cost forces `xSelection` first) and scale the
+     * cost it charges there by the number of targets picked. Under auto-tap none of this shows —
+     * the server prices the submitted targets itself and solves.
+     */
+    val manaCostPerExtraTarget: String? = null,
     val hasXCost: Boolean = false,
     val maxAffordableX: Int? = null,
     val minX: Int = 0,

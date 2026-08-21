@@ -10,16 +10,19 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.TargetRequirementInfo
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.TargetFinder
+import com.wingedsheep.engine.handlers.effects.ChooserResolution
 import com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.permissions.MayPlayPermission
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermission
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.effects.AfterResolveDestination
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
 import java.util.UUID
@@ -69,7 +72,16 @@ class CastFromCollectionWithoutPayingCostExecutor(
         val cards: List<EntityId> = context.pipeline.storedCollections[effect.from].orEmpty()
         if (cards.isEmpty()) return EffectResult.success(state)
         val cardId = cards.first()
-        val controllerId = context.controllerId
+        // `Chooser.Controller` (the default) is `context.controllerId`; the only other value a
+        // printed card needs is `SourceController`, which survives the per-iteration controller
+        // swap `ForEachPlayerEffect` performs (Jetsam casts from each opponent's graveyard, but
+        // *you* are the caster). Anything that can't be resolved — no opponent, several opponents
+        // to pick between — falls back to the iterating controller rather than pausing: this
+        // executor casts inside another effect's resolution and has no window to ask.
+        val controllerId = (
+            ChooserResolution.resolve(state, effect.caster, context, cards)
+                as? ChooserResolution.Outcome.Resolved
+            )?.playerId ?: context.controllerId
 
         // "Cast it transformed" needs a face to turn over to. A card with no back face — a token,
         // or a single-faced card that became a copy of a transforming one — simply isn't cast, and
@@ -101,6 +113,7 @@ class CastFromCollectionWithoutPayingCostExecutor(
             sourceId = context.sourceId,
             withoutPayingCost = !effect.payManaCost,
             castTransformed = effect.castTransformed,
+            insteadOfGraveyard = effect.insteadOfGraveyard,
         )
 
         if (prep is TargetPrep.NeedsTargets) {
@@ -200,9 +213,19 @@ class CastFromCollectionWithoutPayingCostExecutor(
             sourceId: EntityId?,
             withoutPayingCost: Boolean = true,
             castTransformed: Boolean = false,
+            insteadOfGraveyard: AfterResolveDestination? = null,
         ): Pair<EntityId, GameState> {
-            val stamped = if (!withoutPayingCost) state else state.updateEntity(cardId) { container ->
+            var stamped = if (!withoutPayingCost) state else state.updateEntity(cardId) { container ->
                 container.with(PlayWithoutPayingCostComponent(controllerId = controllerId))
+            }
+            // The cast-this-way rider rides the card, not the permission, so it survives the move
+            // onto the stack and is still there when StackResolver picks the spell's destination.
+            // Stamped here rather than by the caller so every entry point that grants a
+            // synthesized cast — inline, post-target-pause, the any-number loop — carries it.
+            if (insteadOfGraveyard != null) {
+                stamped = stamped.updateEntity(cardId) { container ->
+                    container.with(AfterResolveDestinationComponent(destination = insteadOfGraveyard))
+                }
             }
             val (permId, stateWithPerm) = stamped.newEntity()
             val granted = stateWithPerm.addMayPlayPermission(
@@ -223,6 +246,10 @@ class CastFromCollectionWithoutPayingCostExecutor(
             val withoutPermission = permissionId?.let { state.removeMayPlayPermission(it) } ?: state
             return withoutPermission.updateEntity(cardId) { container ->
                 container.without<PlayWithoutPayingCostComponent>()
+                    // A cast that never initiated must not leave its destination rider behind on
+                    // a card still sitting in exile or a graveyard: the next time that card was
+                    // cast by any means it would silently skip the graveyard.
+                    .without<AfterResolveDestinationComponent>()
             }
         }
 

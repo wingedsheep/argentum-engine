@@ -68,6 +68,7 @@ import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageByLege
 import com.wingedsheep.engine.state.components.player.CombatDamageReceivedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentLeftBattlefieldThisTurnComponent
@@ -83,6 +84,7 @@ import com.wingedsheep.engine.state.components.player.PlayerHexproofComponent
 import com.wingedsheep.engine.state.components.player.PlayerShroudComponent
 import com.wingedsheep.engine.state.components.player.SpellsCantBeCounteredComponent
 import com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponent
+import com.wingedsheep.engine.state.components.player.SkippedTurnPartsComponent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -627,6 +629,12 @@ class CleanupPhaseManager(
                 if (result.has<InAdditionalEndStepComponent>()) {
                     result = result.without<InAdditionalEndStepComponent>()
                 }
+                // "Skips each instance of the chosen step or phase this turn" (Fatespinner) is
+                // turn-scoped, so the marker is dropped here rather than being consumed by the
+                // first occurrence it skips.
+                if (result.has<SkippedTurnPartsComponent>()) {
+                    result = result.without<SkippedTurnPartsComponent>()
+                }
                 // Drop a Mindslaver-style hijack at end of the controlled turn (ACTIVE state).
                 // Scheduled hijacks (SCHEDULED) survive cleanup so they fire on the player's
                 // actual next turn, even if intervening turns are skipped.
@@ -699,6 +707,9 @@ class CleanupPhaseManager(
                 }
                 if (result.has<CreaturesDiedThisTurnComponent>()) {
                     result = result.without<CreaturesDiedThisTurnComponent>()
+                }
+                if (result.has<ArtifactsDiedThisTurnComponent>()) {
+                    result = result.without<ArtifactsDiedThisTurnComponent>()
                 }
                 if (result.has<CreatureSubtypesDiedThisTurnComponent>()) {
                     result = result.without<CreatureSubtypesDiedThisTurnComponent>()

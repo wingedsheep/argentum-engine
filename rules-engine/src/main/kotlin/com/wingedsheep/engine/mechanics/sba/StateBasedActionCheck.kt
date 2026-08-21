@@ -18,6 +18,17 @@ interface StateBasedActionCheck {
 
     /** Check and apply this SBA. Returns success with events if changes were made. */
     fun check(state: GameState): ExecutionResult
+
+    /**
+     * Check and apply this SBA, told what the game looked like when the pass began.
+     *
+     * CR 704.3 performs every applicable state-based action *simultaneously as a single event*,
+     * but the checks here run in [SbaOrder] sequence and each moves permanents one at a time.
+     * A check that needs to see the battlefield as it stood before any of that batch left —
+     * a "would die → exile it instead" shield that is itself dying, say — overrides this and
+     * reads [passStartState]. Everything else keeps the single-argument form.
+     */
+    fun check(state: GameState, passStartState: GameState): ExecutionResult = check(state)
 }
 
 /**

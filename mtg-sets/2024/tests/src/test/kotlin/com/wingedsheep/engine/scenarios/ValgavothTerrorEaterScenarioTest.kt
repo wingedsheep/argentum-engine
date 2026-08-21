@@ -70,6 +70,41 @@ class ValgavothTerrorEaterScenarioTest : FunSpec({
         linkedExileOf(driver, valgavoth) shouldContain victim
     }
 
+    test("a creature that trades with Valgavoth is still exiled, but is not linked to the dead Valgavoth") {
+        // CR 704.3 performs every applicable state-based action simultaneously as a single event,
+        // and a replacement applies as that event is about to happen (CR 614.1) — so Valgavoth
+        // still shields a creature dying alongside it. A deathtouch attacker that Valgavoth blocks
+        // is the cheap way to kill a 9/9 in the same combat-damage check that kills the attacker
+        // (it has to block rather than be blocked: Valgavoth flies, so a ground Rat can't block it).
+        //
+        // The *link* is a separate question. A permanent that has left the battlefield has had its
+        // LinkedExileComponent stripped, and re-attaching one would strand a stale exile list on a
+        // card in the graveyard that nothing cleans up — `removeFromLinkedExiles` only walks the
+        // battlefield. Coming back is a new object with no memory of its previous existence
+        // (CR 400.7), so the exile must not stay castable off a Valgavoth that died with it.
+        val driver = createDriver()
+        driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val attacker = driver.activePlayer!!
+        val defender = driver.getOpponent(attacker)
+
+        val valgavoth = driver.putCreatureOnBattlefield(defender, "Valgavoth, Terror Eater")
+        val rat = driver.putCreatureOnBattlefield(attacker, "Deathtouch Rat") // 1/1 deathtouch
+        driver.removeSummoningSickness(rat)
+
+        driver.passPriorityUntil(Step.DECLARE_ATTACKERS)
+        driver.declareAttackers(attacker, listOf(rat), defender).isSuccess shouldBe true
+        driver.passPriorityUntil(Step.DECLARE_BLOCKERS)
+        driver.declareBlockers(defender, mapOf(valgavoth to listOf(rat))).isSuccess shouldBe true
+        driver.passPriorityUntil(Step.END_COMBAT)
+
+        // Deathtouch kills the 9/9 (CR 704.5h) while its 9 damage kills the 1/1 (CR 704.5g).
+        driver.getGraveyard(defender) shouldContain valgavoth
+        driver.getGraveyard(attacker) shouldNotContain rat
+        driver.getExile(attacker) shouldContain rat
+        linkedExileOf(driver, valgavoth) shouldNotContain rat
+    }
+
     test("your own creature dying is unaffected (only an opponent's graveyard)") {
         val driver = createDriver()
         driver.initMirrorMatch(deck = Deck.of("Mountain" to 40), startingLife = 20)

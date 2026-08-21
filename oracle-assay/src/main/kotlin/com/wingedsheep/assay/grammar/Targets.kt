@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlaneswalker
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetOpponent
@@ -15,6 +16,7 @@ import com.wingedsheep.sdk.scripting.targets.TargetPermanent
 import com.wingedsheep.sdk.scripting.targets.TargetPlayer
 import com.wingedsheep.sdk.scripting.targets.TargetPlayerOrPlaneswalker
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Targeting, as the SDK splits it: a spell declares a [TargetRequirement] and its effect refers to
@@ -104,10 +106,19 @@ object Targets {
      * with the same defaults, so the choice between them is a naming one and the model is identical
      * either way; the filter is what carries the meaning. Cards written by hand reach for whichever
      * reads better at the call site, and this has to equal both.
+     *
+     * [optional] is the whole of "**up to** one target creature": CR 601.2c lets a spell whose
+     * requirement is optional be cast choosing no target at all, which the SDK spells as
+     * `optional = true` leaving the count at one. It is a parameter here rather than a second
+     * function because the two wordings denote the same requirement with one field flipped — see
+     * [quantifiers], which is the table that flips it.
      */
-    fun permanent(filter: GameObjectFilter): TargetRequirement =
-        if (filter == GameObjectFilter.CreatureOrPlaneswalker) TargetCreatureOrPlaneswalker(id = SLOT)
-        else TargetPermanent(filter = TargetFilter(filter), id = SLOT)
+    fun permanent(filter: GameObjectFilter, optional: Boolean = false): TargetRequirement =
+        if (filter == GameObjectFilter.CreatureOrPlaneswalker) {
+            TargetCreatureOrPlaneswalker(optional = optional, id = SLOT)
+        } else {
+            TargetPermanent(optional = optional, filter = TargetFilter(filter), id = SLOT)
+        }
 
     /**
      * **"Target creature or planeswalker" has a requirement type of its own, and it is the one the
@@ -135,13 +146,212 @@ object Targets {
      * "target creature" does not, and confirming it would claim a reading nobody performed. The
      * final equality check is what makes that exhaustive rather than a list of fields to remember.
      */
-    fun permanentFilter(requirement: TargetRequirement): GameObjectFilter? {
-        if (requirement is TargetCreatureOrPlaneswalker) {
-            return creatureOrPlaneswalker.takeIf { requirement == permanent(it) }
-        }
-        val base = (requirement as? TargetObject)?.filter?.baseFilter ?: return null
-        return base.takeIf { requirement == permanent(it) }
+    fun permanentFilter(requirement: TargetRequirement): GameObjectFilter? =
+        targetedFilter(requirement)?.takeIf { requirement == permanent(it) }
+
+    /**
+     * The filter [requirement] restricts to, read off **whatever else it carries** — the count, the
+     * `optional` flag, a `dynamicMaxCount`.
+     *
+     * [permanentFilter]'s fail-closed reconstruct-and-compare is the right check for a rule that
+     * spells exactly one requirement shape, and the wrong one for [quantifiers], whose rows spell one
+     * shape each. So the two halves are separated: this reads the noun, and the rule that used it
+     * compares the whole script it would have built. Nothing is lost — a requirement carrying a
+     * field the sentence does not say still fails that comparison, one level up.
+     */
+    fun targetedFilter(requirement: TargetRequirement): GameObjectFilter? = when (requirement) {
+        is TargetCreatureOrPlaneswalker -> creatureOrPlaneswalker
+        is TargetObject -> requirement.filter.baseFilter
+        else -> null
     }
+
+    /**
+     * "two target lands", "up to three target creatures" — one requirement admitting several
+     * targets, and the shape [quantifiers]' plural rows are built on.
+     *
+     * `TargetCreature` rather than [permanent] for the reason that function's KDoc gives — the two
+     * factories produce the same [TargetObject] — and without its `CreatureOrPlaneswalker` branch,
+     * because that branch cannot arise here: [Filters] deliberately carries no plural for a compound
+     * type phrase ("creatures **and** planeswalkers" swaps the conjunction), so no plural rule can
+     * ever hand this that filter.
+     */
+    fun several(count: Int, filter: GameObjectFilter, optional: Boolean): TargetRequirement =
+        TargetCreature(count = count, optional = optional, filter = TargetFilter(filter), id = SLOT)
+
+    /**
+     * "up to X target creatures" — the count is not a number in the text but the X the spell was
+     * cast for, which the SDK spells as [TargetObject.dynamicMaxCount] rather than as a large
+     * `count`.
+     *
+     * `optional = true` is not redundant beside `dynamicMaxCount`: the cap says nothing about the
+     * minimum, so without it an X of zero would fizzle the cast.
+     *
+     * ### [DynamicAmount.XValue] and `CastX` are a *position*, not two spellings
+     *
+     * They are not a two-spellings-for-one-meaning pair to pick a majority from — the SDK draws a
+     * semantic line between them and calls it load-bearing. [DynamicAmount.XValue] resolves from the
+     * transient resolution context (`EffectContext.xValue`) and is populated only while the object
+     * carrying it is resolving; `CastX` is the durable, object-scoped reading that rides onto the
+     * permanent a spell leaves behind. So the right one follows from where the requirement sits:
+     *
+     *  - a **spell effect** — Doppelgang, Rot-Curse Rakshasa's renew, Icy Blast — resolves with that
+     *    context live, so `XValue`.
+     *  - a **triggered ability whose trigger carries the announced X** — cycling, "when you cast
+     *    this spell" — also `XValue`, because `TriggerDetector` deliberately routes the announced
+     *    `{X}` into the trigger's context for exactly this (Valor's Flagship reads it that way, and
+     *    Rampaging War Mammoth is the line this rule wins).
+     *  - a **trigger reading the X off the permanent afterwards** — Lost in the Maze's "When ~
+     *    enters, tap X target creatures" — must be `CastX`, and `XValue` there is silently zero.
+     *
+     * This rule only ever lands in the first two: it is reached as a spell clause, and `Triggers`
+     * lifts that clause's requirement into a trigger that carries the X. A row that could reach the
+     * third would have to translate at the lift — the one place the position is known — and there is
+     * no `DynamicAmount` at all for "the X of an arbitrary activated ability", so a rule wanting that
+     * position needs new SDK vocabulary before it needs a template.
+     *
+     * ### Only the *bare* wording maps
+     *
+     * "…, where X is the number of verse counters on ~" defines X from the board rather than from the
+     * cost, which is a different `DynamicAmount` behind a trailing clause [Amounts] owns.
+     *
+     * "Tap **X** target creatures" — no "up to" — is the other one, and it declines for a stronger
+     * reason than a missing template: it means *exactly* X where this row means at most X. The corpus
+     * has 40 such lines (Gridlock, Malicious Advice, Rats' Feast, Aether Tide) and models them with
+     * this very requirement, because [TargetObject.minCount] is a plain `Int` that cannot take a
+     * [DynamicAmount] — Icy Blast's KDoc records the approximation. Reading that wording here would
+     * be a lossy normalization rather than a variant, and adding a rule for it would make two printed
+     * forms denote one model, which is the redundant-reading class the gate holds at zero. It stays
+     * declined until the SDK can tell the two requirements apart.
+     */
+    fun upToX(filter: GameObjectFilter): TargetRequirement = TargetCreature(
+        optional = true,
+        filter = TargetFilter(filter),
+        id = SLOT,
+        dynamicMaxCount = DynamicAmount.XValue,
+    )
+
+    /**
+     * "any number of target creatures you control" — no upper bound at all, which the SDK spells as
+     * a flag rather than as a large [several] count.
+     *
+     * `unlimited` implies a minimum of nothing and leaves `count` ignored, so this row carries
+     * neither a number word nor an `optional`: "any number of" already says both halves of what
+     * "up to two" needs two fields for. `Morph`'s face-down sweep is the requirement this equals,
+     * built the same way before there was a table to put it in.
+     */
+    fun anyNumber(filter: GameObjectFilter): TargetRequirement =
+        TargetCreature(unlimited = true, filter = TargetFilter(filter), id = SLOT)
+
+    /** The marker a [Quantifier.prefix] spells a count with, and the slot name the rule binds. */
+    const val COUNT_SLOT = "n"
+
+    private const val COUNT_PLACEHOLDER = "{$COUNT_SLOT}"
+
+    /**
+     * A **target quantifier** — the words English prints in front of "target", and what they say
+     * about the requirement that follows.
+     *
+     * ### Why this is a table and not a slot
+     *
+     * Every other prefix this grammar has factored became a *value* in a slot — the trigger join's
+     * `Prefix`, the fronted duration, the step-trigger's `Phases`. This one cannot, and the reason
+     * is the noun behind it: "up to one target **creature**" and "up to two target **creatures**"
+     * disagree in number, [Filters] keeps its singular and plural as two separately-instantiated
+     * cascades because English pluralization is a column and not a suffix rule, and a `{filter}`
+     * slot is one phrase fixed at declaration time. A quantifier that could be slotted would have to
+     * leave the noun's number undetermined, which is exactly the thing the round trip forbids.
+     *
+     * So the quantifier is a row and a rule using it is a **family** of rules, one per row. What
+     * that buys is the same thing a slot would have: a verb cannot have one quantifier and lack
+     * another, which is precisely the state the grammar was in — "tap up to three target creatures"
+     * was written and "destroy up to three target creatures" was not, because each was a hand-copied
+     * template rather than a row.
+     *
+     * ### The one axis
+     *
+     * [plural] carries two consequences, and they are the same fact stated twice: a plural
+     * quantifier is exactly one that admits more than one target, so it draws its noun from
+     * [Filters.plural] *and* its effect is written once per chosen target
+     * (`ForEachTargetEffect` over `ContextTarget(0)`) rather than once against the requirement. A
+     * singular quantifier — bare "target creature", or "up to one target creature", which caps at
+     * one and merely permits none — keeps the [bound] reference every single-target rule uses. There
+     * is no row where the two come apart, which is why it is one column.
+     *
+     * @param name how a rule built from this row identifies itself in a decline diagnostic.
+     * @param prefix the words before "target", ending in the space that separates them from it, with
+     *   [COUNT_PLACEHOLDER] where a number word is spelled. Empty for the bare noun phrase.
+     * @param requirement the requirement the row denotes over a filter, for a count of `n`. Rows
+     *   that spell no count ignore `n`, which is what makes a script carrying a count they cannot
+     *   express fail the caller's reconstruct-and-compare instead of printing as if it had none.
+     */
+    class Quantifier internal constructor(
+        val name: String,
+        val prefix: String,
+        val plural: Boolean,
+        val requirement: (n: Int, filter: GameObjectFilter) -> TargetRequirement,
+    ) {
+        /** True when [prefix] spells a count, and a rule using this row therefore needs an `n` slot. */
+        val counted: Boolean = COUNT_PLACEHOLDER in prefix
+
+        /** [template] with the quantifier spliced in, for a rule declaring itself from this row. */
+        fun splice(template: String): String = template.replace(QUANTIFIER_PLACEHOLDER, prefix)
+
+        override fun toString(): String = name
+    }
+
+    /** The marker a quantified template reserves for the quantifier. Not a slot — a substitution. */
+    const val QUANTIFIER_PLACEHOLDER = "{q}"
+
+    /**
+     * Every quantifier English prints in front of "target", as six rows.
+     *
+     * They are exhaustive over the *printed* forms, not over the SDK's fields: "one or two target
+     * creatures" is a `minCount` below its `count` and is a seventh row nobody has needed
+     * (`Combat.returnOneOrTwoTargets` still spells it whole), and "target creature an opponent
+     * controls" is a filter rather than a quantifier. Anything else a requirement can carry — a
+     * `sameController`, a `totalManaValueAtMost` — is a rider on the noun phrase and belongs to a
+     * layer above this list, exactly as [Filters]' controller clause does.
+     */
+    val quantifiers: List<Quantifier> = listOf(
+        Quantifier("target", prefix = "", plural = false) { _, filter -> permanent(filter) },
+        Quantifier("up to one target", prefix = "up to one ", plural = false) { _, filter ->
+            permanent(filter, optional = true)
+        },
+        Quantifier("several targets", prefix = "$COUNT_PLACEHOLDER ", plural = true) { n, filter ->
+            several(n, filter, optional = false)
+        },
+        Quantifier("up to several targets", prefix = "up to $COUNT_PLACEHOLDER ", plural = true) { n, filter ->
+            several(n, filter, optional = true)
+        },
+        Quantifier("up to X targets", prefix = "up to X ", plural = true) { _, filter -> upToX(filter) },
+        Quantifier("any number of targets", prefix = "any number of ", plural = true) { _, filter ->
+            anyNumber(filter)
+        },
+    )
+
+    /**
+     * The rows whose noun stays singular — bare "target creature" and "up to one target creature".
+     *
+     * **A family takes this list when its plural is a different sentence rather than a plural noun.**
+     * Two sentences in [Steps] are like that, and both would print something English does not write if
+     * they took the whole table:
+     *
+     *  - damage. "~ deals 3 damage to up to one target creature" is printed 11 times; "deals 3 damage
+     *    to up to two target creatures" is printed never, because a damage verb over several targets
+     *    is spelled "divided as you choose among …" and is a *different requirement*
+     *    (`DivideDamage`), not this one with a plural noun.
+     *  - counters. "Put a +1/+1 counter on up to one target creature" is printed 19 times; the plural
+     *    is "put a +1/+1 counter on **each of** up to two target creatures" (7 lines), which is the
+     *    distribute sentence and its own family.
+     *
+     * Handing those two the plural rows would not merely fail to win cards — it would read a
+     * distribute model as a sentence that means something else, the reversible-but-wrong class this
+     * module's fail-closed matching exists to catch. So the row set is part of what a family declares,
+     * and the *reason* a family declares a subset is always that English changes the sentence rather
+     * than the noun. Where it changes only the noun ([Steps.quantifiedPermanentSteps], the pump, the
+     * grants), the family takes all six.
+     */
+    val singularQuantifiers: List<Quantifier> = quantifiers.filterNot { it.plural }
 
     /**
      * "Enchant creature" — an Aura's attachment restriction, and the whole of its printed line.

@@ -25,6 +25,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.scripting.AdditionalCost
 import com.wingedsheep.sdk.scripting.CostGating
 import com.wingedsheep.sdk.scripting.CostModification
 import com.wingedsheep.sdk.scripting.CostReductionSource
@@ -403,6 +404,13 @@ class CostCalculator(
                     .filterIsInstance<ManaSymbol.Colored>()
                     .forEach(addColoredIncrease)
             }
+            is CostModification.IncreaseColoredPerUnit -> {
+                val units =
+                    evaluateReduction(state, modification.countSource, casterId, chosenTargets, abilitySourceId)
+                val coloredSymbols = ManaCost.parse(modification.symbols).symbols
+                    .filterIsInstance<ManaSymbol.Colored>()
+                repeat(units) { coloredSymbols.forEach(addColoredIncrease) }
+            }
             is CostModification.IncreaseGenericPerOtherSpellThisTurn -> {
                 val spellsCast = state.playerSpellsCastThisTurn[casterId] ?: 0
                 addGenericIncrease(spellsCast * modification.amountPerSpell)
@@ -468,6 +476,11 @@ class CostCalculator(
                 else if (anyTargetMatchesFilter(state, playerId, chosenTargets, source.filter)) source.amount
                 else 0
             }
+            // "for each target beyond the first" — 0 while targets are still unchosen, which is
+            // also the right answer for affordability enumeration (one target is the cheapest
+            // legal cast, so the unmodified cost is the true minimum).
+            CostReductionSource.ChosenTargetsBeyondTheFirst ->
+                (chosenTargets.size - 1).coerceAtLeast(0)
             is CostReductionSource.FixedIfCreatureAttackingYou -> {
                 if (isAnyCreatureAttacking(state, playerId)) source.amount else 0
             }
@@ -802,6 +815,47 @@ class CostCalculator(
     private fun sourceFromModification(modification: CostModification): CostReductionSource? = when (modification) {
         is CostModification.ReduceGenericBy -> modification.source
         is CostModification.ReduceColoredPerUnit -> modification.countSource
+        else -> null
+    }
+
+    /**
+     * The per-target tax this card levies on its own cast — the mana owed for
+     * [chosenTargets] beyond the first by every self-cast [ModifySpellCost] whose count source is
+     * [CostReductionSource.ChosenTargetsBeyondTheFirst]. [ManaCost.ZERO] for cards that have none.
+     *
+     * Split out from [calculateEffectiveCost] because it must be charged **even on a free cast**:
+     * "without paying its mana cost" waives the mana cost, not the increases applied to the total
+     * cost (CR 601.2f), and Officious Interrogation's 2024-02-02 ruling says so in as many words —
+     * "you must still pay the additional cost for any targets beyond the first". The free-cast
+     * branches never reach [calculateEffectiveCost] at all, so the cast pipeline adds this on top.
+     */
+    fun selfPerTargetTax(cardDef: CardDefinition, chosenTargets: List<EntityId>): ManaCost {
+        val extraTargets = (chosenTargets.size - 1).coerceAtLeast(0)
+        if (extraTargets == 0) return ManaCost.ZERO
+        var tax = ManaCost.ZERO
+        for (ability in cardDef.script.staticAbilities) {
+            if (ability !is ModifySpellCost) continue
+            if (ability.target != SpellCostTarget.SelfCast) continue
+            val perTarget = perExtraTargetCost(ability.modification) ?: continue
+            repeat(extraTargets) { tax = tax + ManaCost.parse(perTarget) }
+        }
+        return tax
+    }
+
+    /**
+     * The mana [modification] adds for each target the spell has beyond the first, as a cost
+     * string (`"{W}{U}"`, `"{1}"`), or null if it does not price the spell's own chosen targets.
+     *
+     * The enumerator sends this to the client so the mana-source picker can charge the real price
+     * once targets are chosen — the advertised `manaCostString` is priced with no targets and is
+     * therefore only the one-target minimum.
+     */
+    fun perExtraTargetCost(modification: CostModification): String? = when {
+        modification is CostModification.IncreaseColoredPerUnit &&
+            modification.countSource == CostReductionSource.ChosenTargetsBeyondTheFirst ->
+            modification.symbols
+        modification is CostModification.IncreaseGenericBy &&
+            modification.source == CostReductionSource.ChosenTargetsBeyondTheFirst -> "{1}"
         else -> null
     }
 
@@ -1285,7 +1339,10 @@ class CostCalculator(
                         chosenType in Subtype.ALL_CREATURE_TYPES)
             }
             is CardPredicate.SharesCreatureTypeWith -> true
+            is CardPredicate.SharesCardTypeWith -> true
             is CardPredicate.SharesColorWith -> true
+            is CardPredicate.SharesManaValueWith -> true
+            is CardPredicate.SharesNameWith -> true
             is CardPredicate.SharesColorWithPermanentYouControl -> true
             is CardPredicate.SharesNameWithPermanentYouControl -> true
             is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl -> true
@@ -1381,6 +1438,42 @@ class CostCalculator(
     }
 
     /**
+     * The mana a player actually pays to turn a face-down permanent face up: the procedure's
+     * printed cost, plus every global [SpellCostTarget.MorphActivation] increase
+     * ([calculateMorphCostIncrease] — Exiled Doomsayer), minus the procedure's own self-scoped
+     * reduction (Fugitive Codebreaker's "reduced by {1} for each instant and sorcery card in your
+     * graveyard").
+     *
+     * Increases before reductions, per CR 601.2f, which the special action follows the same way a
+     * spell does. Both adjustments are generic-only, so the colored pips of a disguise cost always
+     * survive.
+     *
+     * The three sites that price a turn-up — enumeration, action validation, and payment — all go
+     * through here, so an enumerated price can never disagree with the one charged.
+     *
+     * @param printedCost the procedure's mana cost as printed
+     * @param reduction the procedure's [TurnUpProcedure.costReduction], or null for the ordinary
+     *   morph/disguise/manifest shape
+     * @param controllerId the player taking the special action — whose graveyard, permanents, and
+     *   speed the reduction reads
+     * @param permanentId the face-down permanent, passed as the reduction's ability source
+     */
+    fun calculateTurnFaceUpCost(
+        state: GameState,
+        printedCost: ManaCost,
+        reduction: CostReductionSource?,
+        controllerId: EntityId,
+        permanentId: EntityId
+    ): ManaCost {
+        val increased = increaseGenericCost(printedCost, calculateMorphCostIncrease(state))
+        if (reduction == null) return increased
+        return reduceGenericCost(
+            increased,
+            evaluateReduction(state, reduction, controllerId, abilitySourceId = permanentId)
+        )
+    }
+
+    /**
      * Apply a generic mana increase to an existing ManaCost.
      * Used to increase morph costs by adding generic mana.
      */
@@ -1401,13 +1494,26 @@ class CostCalculator(
     }
 
     /**
+     * One battlefield-granted alternative casting cost, both halves.
+     *
+     * [manaCost] is what replaces the spell's mana cost (Jodah's `{W}{U}{B}{R}{G}`); it is `{0}`
+     * when the substituted cost is entirely non-mana. [additionalCosts] is the non-mana half
+     * (Conspiracy Unraveler's "collect evidence 10") and is paid alongside it — the two halves are
+     * one cost, so a caller must never take the mana half without the additional half.
+     */
+    data class AlternativeCastingCostGrant(
+        val manaCost: ManaCost,
+        val additionalCosts: List<AdditionalCost> = emptyList()
+    )
+
+    /**
      * Find alternative casting costs available to the caster from battlefield permanents.
      * Scans permanents controlled by the caster for GrantAlternativeCastingCost abilities.
      *
-     * @return List of alternative ManaCosts available (may be empty)
+     * @return List of alternative cost grants available (may be empty)
      */
-    fun findAlternativeCastingCosts(state: GameState, casterId: EntityId): List<ManaCost> {
-        val costs = mutableListOf<ManaCost>()
+    fun findAlternativeCastingCosts(state: GameState, casterId: EntityId): List<AlternativeCastingCostGrant> {
+        val costs = mutableListOf<AlternativeCastingCostGrant>()
         for (entityId in state.getBattlefield(casterId)) {
             val container = state.getEntity(entityId) ?: continue
             val card = container.get<CardComponent>() ?: continue
@@ -1416,7 +1522,12 @@ class CostCalculator(
 
             for (ability in permanentDef.script.effectiveStaticAbilities(classLevel)) {
                 if (ability is GrantAlternativeCastingCost) {
-                    costs.add(ManaCost.parse(ability.cost))
+                    costs.add(
+                        AlternativeCastingCostGrant(
+                            manaCost = ManaCost.parse(ability.cost),
+                            additionalCosts = ability.additionalCosts
+                        )
+                    )
                 }
             }
         }

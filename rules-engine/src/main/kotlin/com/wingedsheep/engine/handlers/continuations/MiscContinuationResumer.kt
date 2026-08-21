@@ -25,6 +25,7 @@ class MiscContinuationResumer(
     override fun resumers(): List<ContinuationResumer<*>> = listOf(
         resumer(DrawUpToContinuation::class, ::resumeDrawUpTo),
         resumer(RepeatWhileContinuation::class, ::resumeRepeatWhile),
+        resumer(FlipCoinsUntilLossContinuation::class, ::resumeFlipCoinsUntilLoss),
         resumer(StormCopyTargetContinuation::class, ::resumeStormCopyTarget),
         resumer(StormCopyModalTargetContinuation::class, ::resumeStormCopyModalTarget),
         resumer(CopyEachSpellContinuation::class, ::resumeCopyEachSpell),
@@ -322,6 +323,59 @@ class MiscContinuationResumer(
                 return checkForMore(result.state, result.events.toList())
             }
         }
+    }
+
+    /**
+     * Resume a "flip a coin until you lose a flip or choose to stop flipping" run after the flipper
+     * answers whether to keep going (Fiery Gambit).
+     *
+     * "Stop" ends the run and publishes the tally the frame has been carrying; "continue" hands the
+     * tally back to [FlipCoinsUntilLossExecutor.flipOnce], which flips exactly one more coin and
+     * either finishes or pauses again.
+     *
+     * The tally is published with [exposeCollectionsToNextFrame], not with the resumer's own return
+     * value: the consumer is the sibling effect beneath this one in the same composite (the payoff
+     * tiers gating on "if you win N or more flips"), and that frame is where a pipeline number has to
+     * land to be read after the stack round-trip.
+     */
+    private fun resumeFlipCoinsUntilLoss(
+        state: GameState,
+        continuation: FlipCoinsUntilLossContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for flip-until-loss")
+        }
+
+        if (!response.choice) {
+            val published = exposeCollectionsToNextFrame(
+                state,
+                collections = emptyMap(),
+                numbers = mapOf(continuation.storeWinsAs to continuation.winsSoFar)
+            )
+            return checkForMore(published, emptyList())
+        }
+
+        val result = com.wingedsheep.engine.handlers.effects.composite.FlipCoinsUntilLossExecutor.flipOnce(
+            state = state,
+            flipperId = continuation.flipperId,
+            storeWinsAs = continuation.storeWinsAs,
+            winsSoFar = continuation.winsSoFar,
+            sourceId = continuation.sourceId,
+            cardRegistry = services.cardRegistry,
+            decisionHandler = com.wingedsheep.engine.handlers.DecisionHandler(),
+            priorEvents = emptyList()
+        )
+
+        if (result.isPaused) return result.toExecutionResult()
+
+        val published = exposeCollectionsToNextFrame(
+            result.state,
+            collections = emptyMap(),
+            numbers = result.updatedStoredNumbers
+        )
+        return checkForMore(published, result.events.toList())
     }
 
     private fun resumeCopyEachSpell(

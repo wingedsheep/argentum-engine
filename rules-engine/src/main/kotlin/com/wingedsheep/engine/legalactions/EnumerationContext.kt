@@ -168,8 +168,9 @@ class EnumerationContext(
         return costCalculator.hasFreeCastPermission(state, playerId, cardDef, castFromZone)
     }
 
-    // Alternative casting costs from battlefield permanents (e.g., Jodah's WUBRG).
-    val alternativeCastingCosts: List<ManaCost> by lazy {
+    // Alternative casting costs from battlefield permanents (e.g., Jodah's WUBRG, or Conspiracy
+    // Unraveler's "collect evidence 10" in the grant's non-mana half).
+    val alternativeCastingCosts: List<CostCalculator.AlternativeCastingCostGrant> by lazy {
         costCalculator.findAlternativeCastingCosts(state, playerId)
     }
 

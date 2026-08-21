@@ -514,6 +514,13 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent>()
                             ?.count ?: 0
                     }
+                    // Player.Each sums every seat, which is the game-wide "artifacts that were put
+                    // into graveyards from the battlefield this turn" (Anzrag's Rampage).
+                    TurnTracker.ARTIFACTS_DIED -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent>()
+                            ?.count ?: 0
+                    }
                     TurnTracker.NONTOKEN_CREATURES_DIED -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent>()
@@ -627,6 +634,17 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.CardsDrawnThisTurnComponent>()
                             ?.count ?: 0
                     }
+                    // A snapshot, written for every player in the untap step. Missing only before
+                    // the game's first untap step has run, where a live hand read is the same
+                    // answer — no card can have moved yet.
+                    TurnTracker.CARDS_IN_HAND_AT_TURN_START -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.CardsInHandAtTurnStartComponent>()
+                            ?.count
+                            ?: state.getZone(
+                                com.wingedsheep.engine.state.ZoneKey(playerId, Zone.HAND)
+                            ).size
+                    }
                     TurnTracker.CARDS_DISCARDED -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComponent>()
@@ -668,11 +686,14 @@ class DynamicAmountEvaluator(
                 // excludeSelf drops the resolving spell's own record, matched by the spell's
                 // stack entity id (CastSpellRecord.sourceEntityId == context.sourceId).
                 val selfId = if (amount.excludeSelf) context.sourceId else null
+                // Same reason as the condition form: a cast-history filter may name a value
+                // captured into the pipeline earlier in this resolution.
+                val predicateContext = PredicateContext.fromEffectContext(context)
                 fun matches(record: com.wingedsheep.engine.state.CastSpellRecord) =
                     (selfId == null || record.sourceEntityId != selfId) &&
                         // Zone qualifier is checked independently of the filter (see condition note).
                         (amount.fromZone == null || record.castFromZone == amount.fromZone) &&
-                        predicateEvaluator.matchesFilter(record, amount.filter)
+                        predicateEvaluator.matchesFilter(record, amount.filter, predicateContext)
                 // beforeTriggeringSpell truncates each player's history at the triggering spell's own
                 // cast record ("each other spell you've cast BEFORE IT this turn"), so neither the
                 // triggering spell nor anything cast in response to the trigger is counted. A history
@@ -766,6 +787,14 @@ class DynamicAmountEvaluator(
             }
 
             is DynamicAmount.PermanentsSacrificedThisWay -> context.sacrificedPermanents.size
+
+            // "Their total power" over the same snapshots — last-known power as each permanent was
+            // sacrificed (Rule 608.2h), because they are all in the graveyard by the time a later
+            // sibling effect asks. A snapshot with no power at all (a sacrificed noncreature) adds
+            // nothing rather than being an error: "sacrifice any number of other creatures" is the
+            // only shape that reaches here today, but the amount is defined over permanents.
+            is DynamicAmount.TotalPowerSacrificedThisWay ->
+                context.sacrificedPermanents.sumOf { it.power ?: 0 }
 
             // "The greatest number of creatures you control that have a creature type in common"
             // (White Lotus Tile). For every creature type present among the player's creatures,
@@ -1133,6 +1162,13 @@ class DynamicAmountEvaluator(
             is Player.TargetOpponent, is Player.TargetPlayer -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )
+            // "those players" — every player among the chosen targets, so counting primitives sum
+            // across all of them ("the total number of creatures those players control"). Targets
+            // that became illegal are already absent from `context.targets`, so they drop out.
+            is Player.EachTargetedPlayer -> context.targets
+                .filterIsInstance<com.wingedsheep.engine.state.components.stack.ChosenTarget.Player>()
+                .map { it.playerId }
+                .distinct()
             is Player.Each -> state.activePlayers
             is Player.Any -> state.activePlayers
             is Player.ContextPlayer -> {
@@ -1147,7 +1183,7 @@ class DynamicAmountEvaluator(
             // controller controls" work (Skulking Killer's "if that opponent controls no other
             // creatures" = AggregateBattlefield(ControllerOf("target"), Creature) == 1).
             is Player.ControllerOf, is Player.OwnerOf, is Player.OwnerOfSource,
-            is Player.ControllerOfSource -> listOfNotNull(
+            is Player.ControllerOfSource, is Player.ControllerOfTargetingSource -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )
             is Player.TriggeringPlayer -> {

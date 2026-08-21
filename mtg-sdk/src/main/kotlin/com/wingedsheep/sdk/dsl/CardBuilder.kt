@@ -309,6 +309,13 @@ class CardBuilder(private val name: String) {
     var disguiseFaceUpEffect: Effect? = null
 
     /**
+     * "This cost is reduced by {1} for each …" on the card's own disguise cost — Fugitive
+     * Codebreaker's "reduced by {1} for each instant and sorcery card in your graveyard".
+     * See [KeywordAbility.Disguise.costReduction]; applies to both [disguise] and [disguiseCost].
+     */
+    var disguiseCostReduction: CostReductionSource? = null
+
+    /**
      * Warp cost as a mana cost string (e.g., "{1}{R}").
      * When set, the card gains the Warp keyword ability.
      * Warp allows casting for an alternative cost; the permanent is exiled at end of turn
@@ -963,10 +970,13 @@ class CardBuilder(private val name: String) {
                 disguise != null -> add(
                     KeywordAbility.Disguise(
                         PayCost.Atom(CostAtom.Mana(ManaCost.parse(disguise!!))),
-                        disguiseFaceUpEffect
+                        disguiseFaceUpEffect,
+                        disguiseCostReduction
                     )
                 )
-                disguiseCost != null -> add(KeywordAbility.Disguise(disguiseCost!!, disguiseFaceUpEffect))
+                disguiseCost != null -> add(
+                    KeywordAbility.Disguise(disguiseCost!!, disguiseFaceUpEffect, disguiseCostReduction)
+                )
             }
             if (warp != null) add(KeywordAbility.Warp(ManaCost.parse(warp!!)))
             if (dash != null) add(KeywordAbility.Dash(ManaCost.parse(dash!!)))

@@ -3327,6 +3327,50 @@
     ]
 }
 
+// Millikin
+{
+    "name": "Millikin",
+    "manaCost": "{2}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "{T}, Mill a card: Add {C}. (Activate only as an instant. To mill a card, put the top card of your library into your graveyard.)",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomMill"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "302",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Horley-Orlandelli",
+        "flavorText": "The toymaker frowned in bewilderment. None of his creations had ever sneezed before.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/5/0550133b-22cf-4ecd-b89a-8c2f0beeaa22.jpg?1783945203"
+    },
+    "colorIdentityOverride": []
+}
+
 // Minotaur Explorer
 {
     "name": "Minotaur Explorer",

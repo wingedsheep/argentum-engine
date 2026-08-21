@@ -103,7 +103,7 @@ rule per printed phrase. Five habits keep off it.
 
 **Write the rule *shape*, not the rule.** A family is a private function returning a `Phrase`, and
 the members are rows in a list: `Keywords.costKeyword`, `numericKeyword`, `simple`,
-`Steps.targetedPermanentStep`, `Filters.controlledBy`, `Keywords.qualityRun`. Seventeen numeric
+`Steps.quantifiedPermanentSteps`, `Filters.controlledBy`, `Keywords.qualityRun`. Seventeen numeric
 keywords and twenty-odd cost keywords are two shapes, not thirty-seven rules. Don't pre-abstract —
 write it inline the first time, and factor when the *second* member of the shape appears.
 
@@ -425,7 +425,7 @@ grammar cannot yet produce is a field nothing is checking.
 ## Fail-closed matching — the rule that catches the dangerous bug class
 
 **A `match` half reconstructs what `build` would have produced and compares the whole model.** Not a
-walk over the fields it cares about. See `Steps.targetedPermanentStep`, `Triggers.triggerRule`,
+walk over the fields it cares about. See `Steps.quantifiedPermanentSteps`, `Triggers.triggerRule`,
 `Targets.permanentFilter`: each rebuilds and tests equality, so a script carrying an
 intervening-if, an `elseEffect`, an `excludeSelf`, a non-battlefield zone or a once-per-turn cap
 *refuses to print* rather than printing a sentence that quietly drops it.
@@ -635,6 +635,17 @@ ranking got wrong there was not the probe but the *card count*: an opening claus
 unreadable sentence dies, so 265 cards "blocked" and 189 "sole-blocked" were mostly cards whose
 payload the grammar cannot read either. When the family sits at the *front* of its line, read the
 sole-blocked number as an upper bound with no lower bound in it, and let the probe say the rest.
+
+**A family that dies at offset 0 may be an artifact of your own templates, not of the corpus.** A
+`TemplatePhrase` fails at the start of the *literal* it could not match, so a template that swallows a
+whole clause into one literal — `"when ~ enters, {effect}"`, where the prefix and its comma are one
+run — reports every near-miss at offset 0. `TAIL` then keys all of them on the opening words, and the
+result is a family named after a construct the grammar has read since Phase 1. The trigger join found
+the top row of the whole table that way: 177 cards and 88 sole-blocked on "When ~ enters …", which
+dissolved into a hundred-odd per-payload rows of 15 the moment the prefix became a slot. So when a
+ranked family names something you are sure is implemented, **check the template before believing the
+number** — and note that the fix is the same edit reuse wants anyway: a clause that is a slot is a
+clause another sentence can borrow. See [the trigger join](README.md#the-trigger-join).
 
 **Three keyings, three biases, and knowing which to read.** `DeclineKey` holds all of them and the
 gate computes all three in the one sweep, so the CLI and the explorer cannot disagree about a family.

@@ -211,9 +211,6 @@ class LobbyHandler(
     fun startTournament(lobby: TournamentLobby) =
         tournamentMatchHandler.startTournament(lobby)
 
-    fun startNextTournamentRound(lobbyId: String) =
-        tournamentMatchHandler.startNextTournamentRound(lobbyId)
-
     fun handleRoundComplete(lobbyId: String) =
         tournamentMatchHandler.handleRoundComplete(lobbyId)
 
@@ -1061,7 +1058,10 @@ class LobbyHandler(
                         standings = tournament.getStandingsInfo(connectedIds),
                         nextOpponentName = nextOpponentName,
                         nextRoundHasBye = nm.isBye,
-                        isTournamentComplete = false
+                        isTournamentComplete = false,
+                        // Describes `round` above — the round this player's next match sits in, which
+                        // by definition still has that match to play.
+                        roundComplete = false
                     ))
                 }
                 // Send active matches so player can watch live games while waiting
@@ -1069,10 +1069,9 @@ class LobbyHandler(
                 // Send ready status
                 val readyPlayerIds = lobby.getReadyPlayerIds()
                 if (readyPlayerIds.isNotEmpty()) {
+                    // A snapshot for the reconnecting player, not news about them — hence no playerId.
                     sender.send(session, ServerMessage.PlayerReadyForRound(
                         lobbyId = lobby.lobbyId,
-                        playerId = identity.playerId.value,
-                        playerName = identity.playerName,
                         readyPlayerIds = readyPlayerIds.map { it.value },
                         totalConnectedPlayers = connectedIds.size
                     ))
@@ -1096,7 +1095,10 @@ class LobbyHandler(
                         standings = tournament.getStandingsInfo(connectedIds),
                         nextOpponentName = nextOpponentName,
                         nextRoundHasBye = nm.isBye,
-                        isTournamentComplete = false
+                        isTournamentComplete = false,
+                        // Without this the reconnecting player is told their finished round is still
+                        // running, and the overlay names the round they already played.
+                        roundComplete = currentRound.isComplete
                     ))
                     // Send active matches so player can watch live games while waiting
                     val spectatingGameId = identity.currentSpectatingGameId
@@ -1127,10 +1129,9 @@ class LobbyHandler(
                 // Send ready status
                 val readyPlayerIds = lobby.getReadyPlayerIds()
                 if (readyPlayerIds.isNotEmpty()) {
+                    // A snapshot for the reconnecting player, not news about them — hence no playerId.
                     sender.send(session, ServerMessage.PlayerReadyForRound(
                         lobbyId = lobby.lobbyId,
-                        playerId = identity.playerId.value,
-                        playerName = identity.playerName,
                         readyPlayerIds = readyPlayerIds.map { it.value },
                         totalConnectedPlayers = connectedIds.size
                     ))

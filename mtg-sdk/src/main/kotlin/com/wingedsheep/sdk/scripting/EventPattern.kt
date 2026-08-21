@@ -735,6 +735,31 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         override val description: String = "${player.description} searches their library"
     }
 
+    /**
+     * Whenever a spell or ability causes [player] to shuffle their library (CR 701.24). The
+     * search twin of [SearchLibraryEvent], and the shape Psychogenic Probe keys on.
+     *
+     * Deliberately restricted to spell- and ability-caused shuffles, matching the only printed
+     * wording: the game rules also shuffle each library while setting up (CR 103.2) and when a
+     * player mulligans (CR 103.5), and neither may fire an ability. The engine tags those two
+     * emission sites, so nothing here has to know about them.
+     *
+     * Every shuffle primitive emits it — `Effects.ShuffleLibrary`, the shuffle leg of every
+     * search pipeline, `ZonePlacement.Shuffled` moves, and the shuffle-into-library replacement
+     * effects (Darksteel Colossus). Three consequences of CR 701.24 come free from being one
+     * event per shuffle: a search-then-shuffle still fires it even though the found cards are
+     * held out of the randomization (701.24b), a library holding zero or one cards still fires
+     * it (701.24e), and two effects shuffling one library simultaneously fire it twice (701.24f).
+     */
+    @SerialName("ShuffleLibraryEvent")
+    @Serializable
+    data class ShuffleLibraryEvent(
+        val player: Player = Player.Any
+    ) : EventPattern {
+        override val description: String =
+            "a spell or ability causes ${player.description} to shuffle their library"
+    }
+
     // =========================================================================
     // Trigger-Only Events (below here — used only as trigger filters)
     // =========================================================================
@@ -817,17 +842,24 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      *
      * Per CR 509.1b and the Orim's Prayer ruling, creatures attacking a planeswalker controlled
      * by the trigger's controller do **not** count toward this trigger — only attackers
-     * declared against the player themself.
+     * declared against the player themself. That is the default, and it is what "creatures attack
+     * you" prints.
+     *
+     * [includePlaneswalkersYouControl] opts into the wider reading for the cards that spell it
+     * out — Tomik, Wielder of Law: "two or more of those creatures are attacking you **and/or
+     * planeswalkers you control**". It widens only which attackers *count*; the trigger is still
+     * the defending player's. Battles are never included: "planeswalkers you control" is literal,
+     * and a battle you protect is controlled by its caster, not by you.
      */
     @SerialName("CreaturesAttackYouEvent")
     @Serializable
     data class CreaturesAttackYouEvent(
-        val minAttackers: Int = 1
+        val minAttackers: Int = 1,
+        val includePlaneswalkersYouControl: Boolean = false
     ) : EventPattern {
-        override val description: String = if (minAttackers <= 1) {
-            "one or more creatures attack you"
-        } else {
-            "$minAttackers or more creatures attack you"
+        override val description: String = buildString {
+            append(if (minAttackers <= 1) "one or more creatures attack" else "$minAttackers or more creatures attack")
+            append(if (includePlaneswalkersYouControl) " you and/or planeswalkers you control" else " you")
         }
     }
 
@@ -1093,6 +1125,11 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * - [sourceFilter] == null → the Soul Collector shape, bound SELF: "whenever a creature dealt
      *   damage by this creature this turn dies". Detection uses the
      *   DamageDealtToCreaturesThisTurnComponent on the source (this) entity.
+     * - [sourceFilter] == null, bound ATTACHED → the Scythe of the Wretched shape: "whenever a creature
+     *   dealt damage by *equipped* creature this turn dies". Same tracker, read off the attachment
+     *   target instead of off the permanent bearing the trigger. The attachment is resolved when the
+     *   creature dies, so the Equipment may have moved since the damage was dealt (its own ruling), and
+     *   an unattached Equipment never fires.
      * - [sourceFilter] != null → an observer shape (binding ANY): "whenever a creature dealt damage
      *   this turn by [a source matching the filter] dies" (Shelob, Child of Ungoliant: "by a Spider
      *   you controlled"). The damaging sources are evaluated against the filter using last-known

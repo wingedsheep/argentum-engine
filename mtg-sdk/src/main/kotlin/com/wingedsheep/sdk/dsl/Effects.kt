@@ -67,7 +67,7 @@ import com.wingedsheep.sdk.scripting.effects.GoadEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustAttackThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.MarkMustBlockThisTurnEffect
 import com.wingedsheep.sdk.scripting.effects.RemoveSuspectedEffect
-import com.wingedsheep.sdk.scripting.effects.SetSuspectedEffect
+import com.wingedsheep.sdk.scripting.effects.SuspectEffect
 import com.wingedsheep.sdk.scripting.effects.CantBlockGroupEffect
 import com.wingedsheep.sdk.scripting.effects.CantActivateLoyaltyAbilitiesEffect
 import com.wingedsheep.sdk.scripting.effects.CantCastSpellsEffect
@@ -82,6 +82,7 @@ import com.wingedsheep.sdk.scripting.effects.ForEachInGroupEffect
 import com.wingedsheep.sdk.scripting.effects.ForEachPlayerEffect
 import com.wingedsheep.sdk.scripting.effects.CopyCardIntoCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.CopyCollectionIntoCollectionEffect
+import com.wingedsheep.sdk.scripting.effects.AfterResolveDestination
 import com.wingedsheep.sdk.scripting.effects.CastFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.PlayFromCollectionWithoutPayingCostEffect
 import com.wingedsheep.sdk.scripting.effects.CastAnyNumberFromCollectionWithoutPayingCostEffect
@@ -112,8 +113,10 @@ import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
 import com.wingedsheep.sdk.scripting.effects.ExchangeControlEffect
 import com.wingedsheep.sdk.scripting.effects.CreatureStat
 import com.wingedsheep.sdk.scripting.effects.ExchangeLifeAndStatEffect
-import com.wingedsheep.sdk.scripting.effects.GainControlByMostEffect
+import com.wingedsheep.sdk.scripting.effects.GainControlByRankEffect
+import com.wingedsheep.sdk.scripting.effects.PlayerRankDirection
 import com.wingedsheep.sdk.scripting.effects.PlayerRankMetric
+import com.wingedsheep.sdk.scripting.effects.RankTieBreak
 import com.wingedsheep.sdk.scripting.effects.GiftGivenEffect
 import com.wingedsheep.sdk.scripting.effects.GrantSpellKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFlashToSpellsEffect
@@ -1438,9 +1441,23 @@ object Effects {
      * card has left the graveyard by resolution. 92 hand-written cards spell that guard by hand and
      * 3 omit it; naming it here is what stops the next card having to choose. Argentum Assay builds
      * this for the sentence, so a card that omits the guard shows up in the differential.
+     *
+     * [underYourControl] adds the "*under your control*" half — the card enters under the effect's
+     * controller rather than under its owner (Scythe of the Wretched: "return that card to the
+     * battlefield under your control"). It sets the same `controllerOverride` that
+     * [PutOntoBattlefieldUnderYourControl] does; the two axes are independent, so a card wanting both
+     * the graveyard guard and the control override says so here rather than reaching past the facade
+     * for a raw `MoveToZoneEffect`.
      */
-    fun PutOntoBattlefieldFromGraveyard(target: EffectTarget): Effect =
-        MoveToZoneEffect(target, Zone.BATTLEFIELD, fromZone = Zone.GRAVEYARD)
+    fun PutOntoBattlefieldFromGraveyard(
+        target: EffectTarget,
+        underYourControl: Boolean = false
+    ): Effect = MoveToZoneEffect(
+        target,
+        Zone.BATTLEFIELD,
+        fromZone = Zone.GRAVEYARD,
+        controllerOverride = if (underYourControl) EffectTarget.Controller else null
+    )
 
     /**
      * Put onto the battlefield under your control (the effect controller's control).
@@ -1887,6 +1904,18 @@ object Effects {
      */
     fun CollectEvidence(amount: Int, player: Player = Player.You): Effect =
         com.wingedsheep.sdk.scripting.effects.CollectEvidenceEffect(amount, player)
+
+    /**
+     * Collect evidence **X**, where X is chosen by [player] as this resolves (0 through the total
+     * mana value of cards in their graveyard) and republished under [storeAmountAs] for later
+     * effects to read via `DynamicAmount.VariableReference(storeAmountAs)`.
+     *
+     * "You may collect evidence X. When you do, this creature deals X damage to …" (Incinerator of
+     * the Guilty) is this as the `action` half of a `ReflexiveTriggerEffect`. Choosing 0 is always
+     * legal, so the enclosing "may" is always offered.
+     */
+    fun CollectEvidenceChosenAmount(storeAmountAs: String, player: Player = Player.You): Effect =
+        com.wingedsheep.sdk.scripting.effects.CollectEvidenceChosenAmountEffect(player, storeAmountAs)
 
     /**
      * Move one counter of each kind on [source] that [destination] does not already have,
@@ -3193,14 +3222,32 @@ object Effects {
      * The player who controls the most creatures of the given subtype gains control of the target.
      */
     fun GainControlByMostOfSubtype(subtype: Subtype, target: EffectTarget = EffectTarget.Self): Effect =
-        GainControlByMostEffect(PlayerRankMetric.CreaturesOfSubtype(subtype), target)
+        GainControlByRankEffect(PlayerRankMetric.CreaturesOfSubtype(subtype), target)
 
     /**
      * The player with strictly more life than every other player gains control of the
      * target. On a tie for highest life, nothing happens. (Ghazbán Ogre.)
      */
     fun GainControlByMostLife(target: EffectTarget = EffectTarget.Self): Effect =
-        GainControlByMostEffect(PlayerRankMetric.LifeTotal, target)
+        GainControlByRankEffect(PlayerRankMetric.LifeTotal, target)
+
+    /**
+     * The player with the lowest life total gains control of the target. The mirror of
+     * [GainControlByMostLife] — and, unlike it, a tie is the ordinary case rather than an edge one
+     * (two players both on 20), so [tieBreak] defaults to letting the ability's controller pick
+     * from the tied players. That is Loxodon Peacekeeper's printed wording: "If two or more players
+     * are tied for lowest life total, you choose one of them, and that player gains control of this
+     * creature." Pass [RankTieBreak.NONE] for a card that instead does nothing on a tie.
+     */
+    fun GainControlByLowestLife(
+        target: EffectTarget = EffectTarget.Self,
+        tieBreak: RankTieBreak = RankTieBreak.CONTROLLER_CHOOSES
+    ): Effect = GainControlByRankEffect(
+        metric = PlayerRankMetric.LifeTotal,
+        target = target,
+        direction = PlayerRankDirection.LEAST,
+        tieBreak = tieBreak
+    )
 
     /**
      * Choose a creature type. If you control more creatures of that type than each
@@ -3352,8 +3399,18 @@ object Effects {
      * so an enclosing [IfYouDo] with [SuccessCriterion.CollectionNonEmpty] can gate the
      * "if you don't, …" branch (Kellan, the Kid).
      */
-    fun CastFromCollectionWithoutPayingCost(from: String, storeCastTo: String? = null): Effect =
-        CastFromCollectionWithoutPayingCostEffect(from = from, storeCastTo = storeCastTo)
+    fun CastFromCollectionWithoutPayingCost(
+        from: String,
+        storeCastTo: String? = null,
+        insteadOfGraveyard: AfterResolveDestination? = null,
+        caster: com.wingedsheep.sdk.scripting.effects.Chooser =
+            com.wingedsheep.sdk.scripting.effects.Chooser.Controller,
+    ): Effect = CastFromCollectionWithoutPayingCostEffect(
+        from = from,
+        storeCastTo = storeCastTo,
+        insteadOfGraveyard = insteadOfGraveyard,
+        caster = caster,
+    )
 
     /**
      * Play the (0..1) card stored under [from] immediately during resolution without paying its
@@ -3372,8 +3429,19 @@ object Effects {
      * [com.wingedsheep.sdk.scripting.effects.SuccessCriterion.CollectionNonEmpty] can gate a
      * follow-up ("If you do, …").
      */
-    fun CastFromCollection(from: String, storeCastTo: String? = null): Effect =
-        CastFromCollectionWithoutPayingCostEffect(from = from, payManaCost = true, storeCastTo = storeCastTo)
+    fun CastFromCollection(
+        from: String,
+        storeCastTo: String? = null,
+        insteadOfGraveyard: AfterResolveDestination? = null,
+        caster: com.wingedsheep.sdk.scripting.effects.Chooser =
+            com.wingedsheep.sdk.scripting.effects.Chooser.Controller,
+    ): Effect = CastFromCollectionWithoutPayingCostEffect(
+        from = from,
+        payManaCost = true,
+        storeCastTo = storeCastTo,
+        insteadOfGraveyard = insteadOfGraveyard,
+        caster = caster,
+    )
 
     /**
      * Suspend an already-exiled [target] with [timeCounters] time counters (CR 702.62) — a
@@ -3884,10 +3952,19 @@ object Effects {
      * permanents matching [filter] to sacrifice. The sacrificed permanents are recorded in the
      * effect context, so a later step in the same composite can read the count via
      * [com.wingedsheep.sdk.dsl.DynamicAmounts.permanentsSacrificedThisWay] (e.g. "where X is the
-     * number of lands sacrificed this way" — Hew the Entwood, Scapeshift).
+     * number of lands sacrificed this way" — Hew the Entwood, Scapeshift) or their total power via
+     * [com.wingedsheep.sdk.dsl.DynamicAmounts.totalPowerSacrificedThisWay].
+     *
+     * @param excludeSource keeps the ability's own source off the list — "sacrifice any number of
+     *   **other** creatures" (Kylox, Visionary Inventor), which an attack trigger needs so the
+     *   attacker can't eat itself.
      */
-    fun SacrificeAnyNumber(filter: GameObjectFilter): Effect =
-        com.wingedsheep.sdk.scripting.effects.SacrificeEffect(filter = filter, any = true)
+    fun SacrificeAnyNumber(filter: GameObjectFilter, excludeSource: Boolean = false): Effect =
+        com.wingedsheep.sdk.scripting.effects.SacrificeEffect(
+            filter = filter,
+            any = true,
+            excludeSource = excludeSource
+        )
 
     /**
      * Sacrifice a specific permanent identified by target.
@@ -4078,23 +4155,19 @@ object Effects {
         MarkMustBlockThisTurnEffect(target)
 
     /**
-     * Target creature becomes suspected (CR 701.60): atomic composite of the
-     * named "suspected" status, granted menace, and "can't block".
+     * Target creature becomes suspected (CR 701.60) — the named "suspected" designation together
+     * with the menace and "can't block" it carries while it stays suspected.
      *
-     * Sub-effects share a timestamp because [CompositeEffect] doesn't tick
-     * `state.timestamp` between children, so Rule 613 layer ordering treats them
-     * as one application. The named status is carried by [SetSuspectedEffect] so
-     * future cards can still query or react to "becomes suspected" specifically.
+     * One effect, not a composite of three: every gate on becoming suspected — CR 701.60d's
+     * "already suspected" no-op and "can't become suspected"
+     * ([com.wingedsheep.sdk.core.AbilityFlag.CANT_BECOME_SUSPECTED], Airtight Alibi) — has to stop
+     * all three halves or none, and only a single effect gives the engine one place to ask. See
+     * [SuspectEffect] for the full argument; the engine still applies the three layer modifications
+     * under one timestamp, so Rule 613 treats them as a single application and
+     * [NoLongerSuspected] still lifts them as one bundle.
      */
     fun Suspect(target: EffectTarget = EffectTarget.ContextTarget(0), duration: Duration = Duration.Permanent): Effect =
-        CompositeEffect(
-            effects = listOf(
-                SetSuspectedEffect(target, duration),
-                GrantKeywordEffect(Keyword.MENACE, target, duration),
-                CantBlockEffect(target, duration)
-            ),
-            descriptionOverride = "${target.description} becomes suspected"
-        )
+        SuspectEffect(target, duration)
 
     /**
      * Target is no longer suspected (CR 701.60c) — the exact inverse of [Suspect], removing the
@@ -4180,11 +4253,50 @@ object Effects {
         com.wingedsheep.sdk.scripting.effects.FlipCoinsEffect(count, storeHeadsAs)
 
     /**
+     * Flip coins one at a time until you lose a flip or choose to stop, storing the number of flips
+     * won under [storeWinsAs] (Fiery Gambit). [FlipCoins]'s open-ended sibling: the run length is
+     * discovered rather than given, and a lost flip ends it before the "flip again?" choice is
+     * offered. Losing the first flip stores 0, which makes every `GTE 1` payoff gate fall away on its
+     * own — no separate "has no effect" branch needed.
+     */
+    fun FlipCoinsUntilLoss(storeWinsAs: String = "wins"): Effect =
+        com.wingedsheep.sdk.scripting.effects.FlipCoinsUntilLossEffect(storeWinsAs)
+
+    /**
      * Target player skips their next draw step.
      * Used for cards like Elfhame Sanctuary ("you skip your draw step this turn").
      */
     fun SkipNextDrawStep(target: EffectTarget = EffectTarget.Controller): Effect =
         SkipNextDrawStepEffect(target)
+
+    /**
+     * The target player skips **every** instance of [part] for the rest of this turn — the
+     * until-end-of-turn sibling of the one-shot [SkipNextDrawStep] / `SkipCombatPhases` markers.
+     * A skipped step or phase is proceeded past as though it didn't exist (CR 500.11 / 614.10): no
+     * priority in it, and no "at the beginning of ..." trigger for it. Used by Fatespinner.
+     */
+    fun SkipStepOrPhaseThisTurn(
+        part: com.wingedsheep.sdk.core.TurnPart,
+        target: EffectTarget = EffectTarget.PlayerRef(com.wingedsheep.sdk.scripting.references.Player.TargetPlayer)
+    ): Effect = com.wingedsheep.sdk.scripting.effects.SkipStepOrPhaseThisTurnEffect(part, target)
+
+    /**
+     * Each player exiles the top card of their library; the player who exiled the greatest mana
+     * value is published as the single entry of the pipeline collection [storeWinnerAs], with ties
+     * repeating among the tied players only. Open by design — compose the payoff off
+     * `EffectTarget.PipelineTarget(storeWinnerAs)`, and gate it on the collection being non-empty
+     * because the contest can end with no winner. Used by Timesifter.
+     */
+    fun ExileTopCardContest(
+        storeWinnerAs: String,
+        players: com.wingedsheep.sdk.scripting.references.Player =
+            com.wingedsheep.sdk.scripting.references.Player.Each,
+        storeExiledAs: String = "contestExiledCards"
+    ): Effect = com.wingedsheep.sdk.scripting.effects.ExileTopCardContestEffect(
+        players = players,
+        storeWinnerAs = storeWinnerAs,
+        storeExiledAs = storeExiledAs
+    )
 
     /**
      * Controller controls the target player during that player's next **turn**
@@ -4552,6 +4664,24 @@ object Effects {
         )
 
     /**
+     * Prevent **all** damage that a source of your choice matching [filter] would deal this turn —
+     * to anything, with no recipient clause (Mourner's Shield: "Prevent all damage that would be
+     * dealt this turn by a source of your choice that shares a color with the exiled card").
+     *
+     * The recipient-free sibling of [PreventAllDamageFromChosenSource], which shields one recipient
+     * against the chosen source. `PreventionDirection.FromTarget` is what distinguishes them: it
+     * already means "damage dealt *by*" for a targeted source, and reads the same way for a chosen
+     * one. [filter] is evaluated relative to the ability's source, so it may reference the source or
+     * its linked exile.
+     */
+    fun PreventAllDamageFromChosenSourceMatching(filter: GameObjectFilter): Effect =
+        PreventDamageEffect(
+            amount = null,
+            direction = PreventionDirection.FromTarget,
+            sourceFilter = PreventionSourceFilter.ChosenSourceMatching(filter)
+        )
+
+    /**
      * The next time an artifact source of your choice would deal damage to [target] this turn,
      * prevent that damage (Circle of Protection: Artifacts). Single-instance shield: only artifact
      * sources are eligible for the choice, and the whole next instance from the chosen source is
@@ -4613,6 +4743,34 @@ object Effects {
         onGuessedWrong = onGuessedWrong,
         chooser = chooser,
         guesser = guesser,
+    )
+
+    /**
+     * "[guesser] guesses whether [condition] is true", storing 1 (right) or 0 (wrong) under
+     * [storeGuessedRightAs] instead of branching (Liar's Pendulum).
+     *
+     * [OpponentGuessesTopCardKind]'s open sibling: the proposition is any resolution-time condition
+     * and the outcome is a pipeline number, so the card composes what happens next — including steps
+     * that sit *between* the guess and the payoff, which a branch-carrying guess can't express. The
+     * condition is evaluated only after the answer is in, and nothing is revealed unless the card
+     * says so.
+     *
+     * `{name}` in [prompt] is replaced by the card name stored under [promptNameVariable], so a guess
+     * about a named card can name it in the question.
+     */
+    fun PlayerGuessesCondition(
+        condition: com.wingedsheep.sdk.scripting.conditions.Condition,
+        prompt: String,
+        storeGuessedRightAs: String = "guessedRight",
+        guesser: com.wingedsheep.sdk.scripting.effects.Chooser =
+            com.wingedsheep.sdk.scripting.effects.Chooser.Opponent,
+        promptNameVariable: String? = null,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.PlayerGuessesConditionEffect(
+        condition = condition,
+        prompt = prompt,
+        storeGuessedRightAs = storeGuessedRightAs,
+        guesser = guesser,
+        promptNameVariable = promptNameVariable,
     )
 
     /**

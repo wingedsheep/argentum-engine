@@ -1075,6 +1075,40 @@ data class FlipCoinsEffect(
     override val description: String = "Flip $count coins"
 }
 
+/**
+ * Flip coins one at a time until the flipper *loses* a flip or chooses to stop, then store how many
+ * flips they won under [storeWinsAs] in pipeline `storedNumbers`.
+ *
+ * The open-ended sibling of [FlipCoinsEffect]: there the count is known up front and every coin is
+ * flipped, here the count is discovered as you go and a lost flip ends the run immediately. That
+ * asymmetry is the whole reason this is its own primitive rather than a `RepeatWhileEffect` over
+ * [FlipCoinEffect] — a repeat condition is asked unconditionally after each body, so it cannot express
+ * "stop *because* the flip was lost", and the repeat loop deliberately restarts each iteration from the
+ * pristine pre-loop context, so a running tally could not survive the prompt between flips.
+ *
+ * The order within one iteration is flip → check → ask, which is what "after each flip, you choose
+ * whether to continue flipping" means: the choice is only ever offered after a *won* flip, because a
+ * lost flip has already ended the run.
+ *
+ * Losing the very first flip stores 0. Because an unread [storeWinsAs] resolves to 0
+ * (`DynamicAmount.VariableReference` reads a missing key as zero), a card that gates its payoffs on
+ * "if you win one or more flips" needs no separate "if you lose a flip, this has no effect" branch —
+ * that sentence is the absence of every payoff.
+ *
+ * Used by Fiery Gambit ("Flip a coin until you lose a flip or choose to stop flipping"), whose three
+ * payoff tiers are then plain `Compare(VariableReference(storeWinsAs), GTE, Fixed(n))` gates over the
+ * one tally.
+ *
+ * @property storeWinsAs Pipeline `storedNumbers` key the won-flip tally is written to.
+ */
+@SerialName("FlipCoinsUntilLoss")
+@Serializable
+data class FlipCoinsUntilLossEffect(
+    val storeWinsAs: String = "wins"
+) : Effect {
+    override val description: String = "Flip a coin until you lose a flip or choose to stop flipping"
+}
+
 // =============================================================================
 // Budget Modal (Pawprint / Season Cycle)
 // =============================================================================

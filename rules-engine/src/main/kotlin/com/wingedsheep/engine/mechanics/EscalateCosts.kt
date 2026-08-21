@@ -60,7 +60,9 @@ object EscalateCosts {
         val candidates = SelectionCostPresentation.candidates(
             state, playerId, castCardId, cost, costUtils, predicateEvaluator
         )
-        val costData = SelectionCostPresentation.costData(cost, candidates)?.second
+        val costData = SelectionCostPresentation.costData(
+            state, playerId, castCardId, cost, candidates
+        )?.second
         val perModeSelection = SelectionCostPresentation.selectionCount(cost)
         val maxExtraModes = when {
             costData == null -> 0

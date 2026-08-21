@@ -77,6 +77,11 @@ import com.wingedsheep.sdk.scripting.predicates.evaluateWith
  * @param additionalEffect An optional effect to execute when the redirect applies
  *        (e.g., TakeExtraTurnEffect from Ugin's Nexus)
  * @param effectControllerId The controller of the replacement effect source
+ * @param effectSourceId The permanent that hosts the replacement effect. Passed to
+ *        [ZoneMovementUtils.applyReplacementAdditionalEffect] as the rider's source so a created
+ *        token resolves the minting set's art (Head of the Hunt's Wolf), exactly as it would if
+ *        the rider had resolved as an ability. May already be off the battlefield by then — the
+ *        replacement applied while it was still there (CR 704.3).
  * @param linkSourceId When non-null (and [destinationZone] is [Zone.EXILE]), the redirected
  *        card should be linked to this source permanent's `LinkedExileComponent` after the move
  *        — set by a [RedirectZoneChange] with `linkToSource = true` (Valgavoth, Terror Eater).
@@ -91,6 +96,7 @@ data class ZoneChangeRedirectResult(
     val destinationZone: Zone,
     val additionalEffect: com.wingedsheep.sdk.scripting.effects.Effect? = null,
     val effectControllerId: EntityId? = null,
+    val effectSourceId: EntityId? = null,
     val linkSourceId: EntityId? = null,
     val shuffleIntoLibrary: Boolean = false,
     val reveal: Boolean = false
@@ -106,6 +112,19 @@ data class ZoneChangeRedirectResult(
 object ZoneMovementUtils {
 
     private val predicateEvaluator = PredicateEvaluator()
+
+    /**
+     * Token executor used by [applyReplacementAdditionalEffect] for a replacement's
+     * "…instead. When you do, create a token" rider (Head of the Hunt).
+     *
+     * Wired by [com.wingedsheep.engine.core.EngineServices] so the rider mints through the same
+     * executor an ability would, with the card and token-art registries attached — mirroring
+     * `ZoneTransitionService.cardRegistry`. The default stand-in keeps this object usable
+     * unwired (unit tests, gym rollouts); tokens then fall back to the engine-wide generic art
+     * for their creature type.
+     */
+    var tokenExecutor: com.wingedsheep.engine.handlers.effects.token.CreateTokenExecutor =
+        com.wingedsheep.engine.handlers.effects.token.CreateTokenExecutor()
 
     /**
      * Destinations that the commander zone-change replacement can intercept (CR 903.9).
@@ -658,11 +677,27 @@ object ZoneMovementUtils {
             null
         }
 
+    /**
+     * Resolve the destination of a zone change after replacement effects.
+     *
+     * @param battlefieldSourceState The state whose battlefield is scanned for permanents that
+     *        host a zone-change replacement ([ReplacementEffectSourceComponent]). Defaults to
+     *        [state] and should stay that way for every event that happens on its own. It differs
+     *        only for state-based actions: CR 704.3 performs all applicable SBAs *simultaneously
+     *        as a single event*, so a shield permanent that is itself being destroyed in that same
+     *        batch still shields the others (CR 614.1 — replacement effects apply as the event
+     *        happens, and it hasn't happened yet). SBA callers therefore pass the state as it
+     *        stood when the check pass began; without it, whichever creature the battlefield
+     *        happened to iterate first would silently decide the outcome. The moving object's own
+     *        replacements (finality counter, madness, commander, self-redirect) are still read off
+     *        [state] — those travel with the card, not with a battlefield source.
+     */
     fun checkZoneChangeRedirect(
         state: GameState,
         entityId: EntityId,
         fromZone: Zone?,
-        toZone: Zone
+        toZone: Zone,
+        battlefieldSourceState: GameState = state
     ): ZoneChangeRedirectResult {
         val container = state.getEntity(entityId) ?: return ZoneChangeRedirectResult(toZone)
 
@@ -734,8 +769,8 @@ object ZoneMovementUtils {
             }
         }
 
-        for (permanentId in state.getBattlefield()) {
-            val permContainer = state.getEntity(permanentId) ?: continue
+        for (permanentId in battlefieldSourceState.getBattlefield()) {
+            val permContainer = battlefieldSourceState.getEntity(permanentId) ?: continue
             val replacementComponent = permContainer.get<ReplacementEffectSourceComponent>() ?: continue
             val sourceControllerId = permContainer.get<ControllerComponent>()?.playerId ?: continue
 
@@ -788,6 +823,7 @@ object ZoneMovementUtils {
                             effect.newDestination,
                             effect.additionalEffect,
                             sourceControllerId,
+                            effectSourceId = permanentId,
                             linkSourceId = linkSource
                         )
                     }
@@ -890,11 +926,23 @@ object ZoneMovementUtils {
      *
      * @param entityId The entity that was redirected (for effects that target it, like adding counters)
      */
+    /**
+     * Execute the rider a zone-change replacement carries — the "When you do, …" half of
+     * "…exile it instead. When you do, create a 2/2 green Wolf creature token".
+     *
+     * @param controllerId Controller of the replacement's source; the rider's "you".
+     * @param entityId The card that was redirected, for riders that act on it (Darigaaz's egg
+     *   counters).
+     * @param sourceId The permanent hosting the replacement, used as the rider's source. Only
+     *   token art reads it today; it may already have left the battlefield (CR 704.3), which is
+     *   fine — nothing here requires the source to still be there.
+     */
     fun applyReplacementAdditionalEffect(
         state: GameState,
         effect: com.wingedsheep.sdk.scripting.effects.Effect,
         controllerId: EntityId?,
-        entityId: EntityId? = null
+        entityId: EntityId? = null,
+        sourceId: EntityId? = null
     ): Pair<GameState, List<EngineGameEvent>> {
         if (effect is com.wingedsheep.sdk.scripting.effects.TakeExtraTurnEffect) {
             // Check if extra turns are prevented by any permanent on the battlefield
@@ -935,6 +983,21 @@ object ZoneMovementUtils {
                 ?: return state to emptyList()
             val (newState, event) = DamageUtils.gainLife(state, cid, amount)
             return newState to listOfNotNull(event)
+        }
+        if (effect is com.wingedsheep.sdk.scripting.effects.CreateTokenEffect) {
+            // Head of the Hunt. Delegated to the real executor rather than open-coded: that is
+            // what gives the token the minting set's art, its keywords and static abilities, and
+            // the enters-the-battlefield events that ETB triggers read. Its controller is the
+            // replacement's controller — the rider's "you" — so a token minted while an opponent's
+            // creature is redirected still lands on the shield controller's side.
+            val cid = controllerId ?: return state to emptyList()
+            val result = tokenExecutor.execute(
+                state,
+                effect,
+                com.wingedsheep.engine.handlers.EffectContext(sourceId = sourceId, controllerId = cid)
+            )
+            if (result.error != null) return state to emptyList()
+            return result.state to result.events
         }
         return state to emptyList()
     }

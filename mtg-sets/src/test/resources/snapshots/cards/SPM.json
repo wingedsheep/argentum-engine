@@ -3865,34 +3865,11 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "SetSuspected",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one target creature"
-                            }
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "MENACE",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one target creature"
-                            },
-                            "duration": "Permanent"
-                        },
-                        {
-                            "type": "CantBlockTargetCreatures",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one target creature"
-                            },
-                            "duration": "Permanent"
-                        }
-                    ],
-                    "descriptionOverride": "target becomes suspected"
+                    "type": "Suspect",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "up to one target creature"
+                    }
                 },
                 "targetRequirement": {
                     "type": "TargetObject",

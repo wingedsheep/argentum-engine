@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting.effects
 
 import com.wingedsheep.sdk.core.Keyword
+import com.wingedsheep.sdk.core.TurnPart
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.events.SourceFilter
@@ -66,6 +67,34 @@ data class SkipNextDrawStepEffect(
     override val description: String = when (target) {
         EffectTarget.Controller -> "You skip your next draw step"
         else -> "${target.description.replaceFirstChar { it.uppercase() }} skips their next draw step"
+    }
+}
+
+/**
+ * The target player skips **every** instance of [part] for the rest of this turn — Fatespinner's
+ * "the player skips each instance of the chosen step or phase this turn".
+ *
+ * The duration is what separates this from the "skip your *next* X" family
+ * ([SkipNextDrawStepEffect], [SkipCombatPhasesEffect]): those are one-shot markers consumed by the
+ * first occurrence, this one stands until end of turn, so a second main phase or an additional
+ * combat phase created later in the turn is skipped too. [TurnPart] is the granularity printed
+ * cards use, so "main phase" is one value covering both main phases (CR 505.1) and "combat phase"
+ * is one value covering all five combat steps.
+ *
+ * Skipping is faithful to CR 500.11 / 614.10 — the engine proceeds past the step or phase as though
+ * it didn't exist, so no player receives priority in it and no "at the beginning of ..." ability
+ * triggers for it. Per CR 614.10 a step already under way can no longer be skipped; applying this
+ * during a player's upkeep (Fatespinner's trigger) reaches everything after the upkeep.
+ */
+@SerialName("SkipStepOrPhaseThisTurn")
+@Serializable
+data class SkipStepOrPhaseThisTurnEffect(
+    val part: TurnPart,
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
+) : Effect {
+    override val description: String = when (target) {
+        EffectTarget.Controller -> "You skip each ${part.displayName} this turn"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} skips each ${part.displayName} this turn"
     }
 }
 

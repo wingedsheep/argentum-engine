@@ -726,22 +726,26 @@ data class RedirectCombatDamageToControllerEffect(
 }
 
 /**
- * Atomic: mark the target as carrying the "suspected" status (CR 701.60).
+ * Suspect the target (CR 701.60) — the whole mechanic in one effect: the named "suspected"
+ * designation, plus the menace and "this creature can't block" it carries for as long as it stays
+ * suspected.
  *
- * This is the named-status layer modification only — it does NOT grant menace or
- * apply the "can't block" restriction. Suspect's full mechanical effect is composed
- * by [com.wingedsheep.sdk.dsl.Effects.Suspect] which pairs this with
- * [GrantKeywordEffect] (MENACE) and [CantBlockEffect].
+ * **Why one effect and not a composite of three.** All three halves exist *because* the creature is
+ * suspected, so anything that can stop a creature from becoming suspected has to stop all three at
+ * once — "can't become suspected" ([com.wingedsheep.sdk.core.AbilityFlag.CANT_BECOME_SUSPECTED],
+ * Airtight Alibi) and the CR 701.60d "already suspected" no-op alike. Split across three effects
+ * there is no single place to ask the question: gating the designation alone would leave a creature
+ * that isn't suspected but still has menace and can't block, and gating the riders separately would
+ * wrongly suppress menace or can't-block arriving from an unrelated source. The engine's executor
+ * applies the three layer modifications under one shared timestamp, so Rule 613 still sees them as
+ * a single application and [RemoveSuspectedEffect] can still lift them as one bundle.
  *
- * Other status-flag mechanics (e.g. a future "investigated" tag) can reuse this
- * primitive with their own keyword/restriction composition.
- *
- * Duration defaults to Permanent because suspect status in MTG lasts until
- * explicitly removed.
+ * Duration defaults to Permanent: a suspected creature stays suspected until it changes zones or an
+ * effect un-suspects it (CR 701.60a). Suspect is not a copiable value.
  */
-@SerialName("SetSuspected")
+@SerialName("Suspect")
 @Serializable
-data class SetSuspectedEffect(
+data class SuspectEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
     val duration: Duration = Duration.Permanent
 ) : Effect {
@@ -751,10 +755,10 @@ data class SetSuspectedEffect(
 /**
  * "It's no longer suspected" (CR 701.60c) — the inverse of the whole suspect bundle.
  *
- * Undoes an [SetSuspectedEffect] *application*, not just its named status: the menace grant and the
- * "can't block" restriction that [com.wingedsheep.sdk.dsl.Effects.Suspect] applies alongside it go
- * away too, because they exist only for as long as the creature is suspected. Menace or can't-block
- * from any *other* source is untouched — un-suspecting is not "lose menace".
+ * Undoes a [SuspectEffect] *application* in full: the named designation, the menace grant and the
+ * "can't block" restriction all go away together, because all three exist only for as long as the
+ * creature is suspected. Menace or can't-block from any *other* source is untouched —
+ * un-suspecting is not "lose menace".
  *
  * A no-op on a creature that isn't suspected. Suspect is not a copiable value and has no duration,
  * so this is the only way the designation ever comes off a permanent that stays on the battlefield.

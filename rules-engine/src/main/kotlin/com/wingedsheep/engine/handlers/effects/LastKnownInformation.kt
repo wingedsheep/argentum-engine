@@ -43,6 +43,11 @@ fun lkiPolicyFor(reference: EntityReference): LkiPolicy = when (reference) {
     EntityReference.AmassedArmy,
     is EntityReference.Target,
     is EntityReference.RingBearer,
+    // An Imprint pile's card is *never* on the battlefield — it is a card in exile, and its
+    // characteristics are the printed ones. There is nothing to snapshot, and asking for a snapshot
+    // would be wrong: the read must fall through to base characteristics, which is what LIVE_ONLY
+    // does. The reference itself already resolves to null once the card leaves exile.
+    is EntityReference.LinkedExiledCard,
     -> LkiPolicy.LIVE_ONLY
 }
 

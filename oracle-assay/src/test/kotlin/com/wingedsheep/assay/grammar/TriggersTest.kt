@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.AbilityId
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TriggeredAbility
 import com.wingedsheep.sdk.scripting.effects.MayEffect
@@ -343,5 +344,67 @@ class TriggersTest : StringSpec({
             "When ~ enters or leaves the battlefield, draw a card.",
             "When ~ enters or is turned face up, draw a card.",
         ).forEach { line -> Grammar.abilityLine.printLine(fragment(line)) shouldBe line }
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // The join — "When ~ enters and whenever …", two `when` clauses over one payoff
+    // ---------------------------------------------------------------------------------------
+
+    // Up the Beanstalk, and the assertion that the rule is the *product* the paired table is not:
+    // neither half is spelled here, both come out of the one prefix vocabulary.
+    "a join reads both halves out of the trigger vocabulary" {
+        val abilities = fragment(
+            "When ~ enters and whenever you cast a spell with mana value 5 or greater, draw a card."
+        ).script.triggeredAbilities
+
+        abilities.map { it.trigger }.first() shouldBe SdkTriggers.EntersBattlefield.event
+        abilities.map { it.trigger }.last().shouldBeInstanceOf<EventPattern.SpellCastEvent>()
+        abilities.map { it.effect } shouldBe listOf(Effects.DrawCards(1), Effects.DrawCards(1))
+        roundTrips(
+            "When ~ enters and whenever you cast a spell with mana value 5 or greater, draw a card."
+        )
+    }
+
+    // The vocabulary is slotted on *both* sides, so the join is not an enters-trigger rule with a
+    // rider — a step trigger, a cast trigger or a cycling trigger opens one just as well. Every
+    // line here is a printed card: Crack in Time, Frenzied Fugue, Titans' Vanguard, Esper
+    // Sojourners.
+    "either half of a join is any trigger the grammar reads" {
+        listOf(
+            "When ~ enters and at the beginning of your upkeep, draw a card.",
+            "When ~ enters and whenever you cast a creature spell, draw a card.",
+            "When you cast this spell and whenever ~ attacks, draw a card.",
+            "When you cycle ~ and when ~ dies, draw a card.",
+            "At the beginning of your upkeep and whenever you cast a creature spell, draw a card.",
+        ).forEach { roundTrips(it) }
+    }
+
+    // The payoff is the *source* anaphor even where a half's event names an object of its own:
+    // Hoarder's Overflow's "put a stash counter on it" is the source under both of its events, and
+    // an "it" resolved to a triggering object would mean two different things.
+    "a joined payoff reads its anaphor as the source, once, for both halves" {
+        val abilities = fragment(
+            "When ~ enters and whenever you cast a creature spell, put a +1/+1 counter on it."
+        ).script.triggeredAbilities
+
+        // The same effect under both halves, and the same one the single-trigger line denotes —
+        // which is the assertion that the join slots the *source* cascade rather than the
+        // triggering-object one a lone cast trigger would take.
+        abilities.map { it.effect }.distinct() shouldBe
+            listOf(ability("When ~ enters, put a +1/+1 counter on it.").effect)
+    }
+
+    // One printed form per model, decided by the model. `[enters, dies]` is a pair Oracle contracts
+    // into one trigger word, so it prints through the paired table and the join refuses it — in both
+    // directions, which is why the guard is on the pair and not on the alternation's order.
+    "a pair Oracle contracts into one trigger word never prints as a join" {
+        Grammar.abilityLine.printLine(fragment("When ~ enters or dies, draw a card.")) shouldBe
+            "When ~ enters or dies, draw a card."
+        declines("When ~ enters and when ~ dies, draw a card.")
+    }
+
+    // Two identical abilities is not a sentence: it is one trigger line written twice.
+    "a join of an event with itself declines" {
+        declines("When ~ enters and when ~ enters, draw a card.")
     }
 })

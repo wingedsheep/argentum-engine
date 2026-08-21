@@ -74,6 +74,20 @@ enum class AbilityFlag(val displayName: String) {
      */
     CANT_TRANSFORM("Can't transform"),
 
+    // ── Designation restriction flags ───────────────────────────
+    /**
+     * "This creature can't become suspected" (CR 701.60 — Airtight Alibi). Enforced in the single
+     * shared suspect implementation (`SuspectExecutor`), which is why suspect is **one** effect
+     * rather than a composite of status + menace + can't-block: gating only the status half would
+     * still land the menace and can't-block riders, leaving a creature that is not suspected but
+     * carries suspect's downsides.
+     *
+     * Distinct from being un-suspected ([com.wingedsheep.sdk.scripting.effects.RemoveSuspectedEffect]):
+     * this prevents the designation from ever attaching, so no "becomes suspected" trigger fires
+     * either, where un-suspecting takes an existing designation away after the fact.
+     */
+    CANT_BECOME_SUSPECTED("Can't become suspected"),
+
     // ── Combat damage assignment flags ──────────────────────────
     ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS("Assigns combat damage equal to its toughness rather than its power"),
 

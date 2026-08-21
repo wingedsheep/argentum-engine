@@ -455,54 +455,90 @@ object CardLinter {
     }
 
     /**
-     * Flag a [com.wingedsheep.sdk.scripting.targets.TargetChooser.Opponent] requirement
-     * ("… of an opponent's choice") in a context the engine doesn't route to an opponent. Only
-     * activated abilities (including loyalty and granted activated abilities) honor the chooser at
-     * announcement; on a spell, triggered ability, kicker target, or saga chapter the controller
-     * would silently choose the target instead. Catch it at card load rather than mis-resolve.
+     * Flag a [com.wingedsheep.sdk.scripting.targets.TargetChooser] requirement in a context the
+     * engine doesn't route to that chooser. Each chooser is honored by exactly one announcement
+     * path, and in the wrong context the controller would silently choose the target instead — so
+     * catch it at card load rather than mis-resolve:
      *
-     * Walks the JSON tree carrying whether we're inside an `"activatedAbilities"` subtree, so the
-     * check covers every container structurally (granted abilities, class levels, token abilities)
-     * regardless of which field name holds the requirement (`targetRequirement`,
-     * `targetRequirements`, `additionalTargetRequirements`, …). The match is anchored on the
-     * `AnyTarget` type discriminator: it's the only [TargetRequirement] that carries a
-     * `TargetChooser`, so this can't collide with the unrelated `chooser` field on pipeline
-     * selection steps (`Chooser`, which has its own honored `Opponent` value).
+     * - `Opponent` ("… of an opponent's choice") — activated abilities only, because routing it
+     *   needs the controller to first pick *which* opponent decides.
+     * - `TriggeringPlayer` / `ControllerOfTriggeringEntity` — triggered abilities only, because
+     *   both are read off a trigger context that nothing else has.
+     *
+     * Walks the JSON tree carrying which ability subtree we're inside, so the check covers every
+     * container structurally (granted abilities, class levels, token abilities) regardless of which
+     * field name holds the requirement (`targetRequirement`, `targetRequirements`,
+     * `additionalTargetRequirements`, …). The match is anchored on the type discriminator of the
+     * [TargetRequirement]s that carry a `TargetChooser`, so this can't collide with the unrelated
+     * `chooser` field on pipeline selection steps (`Chooser`, which has its own honored `Opponent`
+     * value).
      */
     private fun checkOpponentChoosers(
         cardName: String,
         element: JsonElement,
         withinActivatedAbility: Boolean,
-        findings: MutableList<CardValidationError>
+        findings: MutableList<CardValidationError>,
+        withinTriggeredAbility: Boolean = false
     ) {
         when (element) {
             is JsonObject -> {
                 val type = (element["type"] as? JsonPrimitive)?.contentOrNull
                 val chooser = (element["chooser"] as? JsonPrimitive)?.contentOrNull
-                if (!withinActivatedAbility && type == "AnyTarget" && chooser == "Opponent") {
-                    findings.add(
-                        CardValidationError.UnsupportedOpponentChooser(
-                            cardName = cardName,
-                            message = "'$cardName' uses a TargetChooser.Opponent (\"… of an " +
-                                "opponent's choice\") target outside an activated ability. Only " +
-                                "activated abilities route the selection to an opponent; here the " +
-                                "controller would silently choose it. Move it to an activated " +
-                                "ability or drop the chooser."
+                if (type in CHOOSER_BEARING_TARGET_TYPES) {
+                    val misplaced = when (chooser) {
+                        "Opponent" -> !withinActivatedAbility
+                        "TriggeringPlayer", "ControllerOfTriggeringEntity" -> !withinTriggeredAbility
+                        else -> false
+                    }
+                    if (misplaced) {
+                        val expected =
+                            if (chooser == "Opponent") "an activated ability" else "a triggered ability"
+                        // Name the printed wording, not just the enum: that is what lets an author
+                        // recognise the clause they were modelling.
+                        val wording = when (chooser) {
+                            "Opponent" -> "… of an opponent's choice"
+                            "TriggeringPlayer" -> "that player … of their choice"
+                            else -> "its controller chooses target …"
+                        }
+                        findings.add(
+                            CardValidationError.UnsupportedOpponentChooser(
+                                cardName = cardName,
+                                message = "'$cardName' uses a TargetChooser.$chooser " +
+                                    "(\"$wording\") target outside $expected. Only $expected " +
+                                    "routes that selection to the named player; here the " +
+                                    "controller would silently choose the target instead. Move it " +
+                                    "there or drop the chooser."
+                            )
                         )
-                    )
+                    }
                 }
                 for ((key, value) in element) {
                     checkOpponentChoosers(
-                        cardName, value, withinActivatedAbility || key == "activatedAbilities", findings
+                        cardName,
+                        value,
+                        withinActivatedAbility || key == "activatedAbilities",
+                        findings,
+                        withinTriggeredAbility ||
+                            key == "triggeredAbilities" ||
+                            key == "stateTriggeredAbilities"
                     )
                 }
             }
             is JsonArray -> element.forEach {
-                checkOpponentChoosers(cardName, it, withinActivatedAbility, findings)
+                checkOpponentChoosers(
+                    cardName, it, withinActivatedAbility, findings, withinTriggeredAbility
+                )
             }
             else -> {}
         }
     }
+
+    /**
+     * The [com.wingedsheep.sdk.scripting.targets.TargetRequirement] type discriminators that carry
+     * a `chooser` field. Keep in step with the SDK: a requirement that gains a `chooser` and is
+     * missing here is silently exempt from [checkOpponentChoosers].
+     */
+    private val CHOOSER_BEARING_TARGET_TYPES = setOf("AnyTarget", "TargetObject")
 
     // =========================================================================================
     // Namespaces and registries
@@ -547,6 +583,10 @@ object CardLinter {
         put("FilterCollection" to "storeMatching", write(Space.COLLECTION))
         put("FilterCollection" to "storeNonMatching", write(Space.COLLECTION))
         put("ExileLibraryUntilManaValue" to "storeAs", write(Space.COLLECTION))
+        // The contest publishes the winning *player* as a one-entry collection and every card it
+        // exiled, in every round, as another.
+        put("ExileTopCardContest" to "storeWinnerAs", write(Space.COLLECTION))
+        put("ExileTopCardContest" to "storeExiledAs", write(Space.COLLECTION))
         put("Discover" to "storeDiscoveredAs", write(Space.COLLECTION))
         put("CopyCardIntoCollection" to "storeAs", write(Space.COLLECTION))
         put("CopyCollectionIntoCollection" to "storeAs", write(Space.COLLECTION))
@@ -557,10 +597,13 @@ object CardLinter {
         put("ChooseOnePerCategory" to "storeAs", write(Space.COLLECTION))
         put("StoreNumber" to "name", write(Space.NUMBER))
         put("FlipCoins" to "storeHeadsAs", write(Space.NUMBER))
+        put("FlipCoinsUntilLoss" to "storeWinsAs", write(Space.NUMBER))
+        put("PlayerGuessesConditionEffect" to "storeGuessedRightAs", write(Space.NUMBER))
         put("ForEachCapturedController" to "countVariable", write(Space.NUMBER))
         put("DrawUpTo" to "storeNotDrawnAs", write(Space.NUMBER))
         put("Fight" to "excessDamageVariable", write(Space.NUMBER))
         put("PayCounters" to "storeAmountAs", write(Space.NUMBER))
+        put("CollectEvidenceChosenAmount" to "storeAmountAs", write(Space.NUMBER))
         put("PayManaCostRepeatedly" to "storeCountAs", write(Space.NUMBER))
         put("ChooseOption" to "storeAs", write(Space.CHOSEN))
         put("NoteCreatureType" to "storeAs", write(Space.CHOSEN))

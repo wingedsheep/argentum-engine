@@ -164,6 +164,17 @@ data class EntitySnapshot(
     val damageSources: Set<DamageSourceLki> = emptySet(),
     /** The cast-time {X} carried by `CastChoicesComponent`, so dies/leaves triggers read `DynamicAmount.CastX`. */
     val castX: Int? = null,
+    /**
+     * True if this permanent was face down (CR 708) when it left the battlefield.
+     *
+     * Frozen because a card put into a graveyard is always turned face up (CR 708.4), so by the
+     * time a dies trigger is gated the `FaceDownComponent` is gone along with the battlefield
+     * entity — "whenever a face-down creature you control dies" (Yarus, Roar of the Old Gods) can
+     * only be answered from last-known information (CR 608.2h). Backs the last-known leg of
+     * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceDown] / `IsFaceUp`, the same
+     * way [wasSuspected] does for the suspected designation.
+     */
+    val wasFaceDown: Boolean = false,
 ) : EntityView {
     companion object {
         /**

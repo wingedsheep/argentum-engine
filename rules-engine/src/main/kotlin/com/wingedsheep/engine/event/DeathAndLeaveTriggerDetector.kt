@@ -3,6 +3,7 @@ package com.wingedsheep.engine.event
 import com.wingedsheep.engine.core.ZoneChangeEvent
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -264,7 +265,18 @@ class DeathAndLeaveTriggerDetector(
                 val fires = if (sourceFilter == null) {
                     // SELF shape (Soul Collector): the permanent bearing the trigger must itself have
                     // dealt damage to the dying creature this turn.
-                    val container = state.getEntity(entry.entityId) ?: continue
+                    //
+                    // ATTACHED shape (Scythe of the Wretched): the *equipped* creature is the damaging
+                    // source, so the tracker to read hangs off the attachment target rather than off the
+                    // Equipment. Resolved here, at detection time — which is when the creature dies, and
+                    // the Scythe's own ruling says the Equipment must be attached *then*, not when the
+                    // damage was dealt. An unattached Equipment simply never fires.
+                    val damagingSourceId = if (ability.binding == TriggerBinding.ATTACHED) {
+                        state.getEntity(entry.entityId)?.get<AttachedToComponent>()?.targetId ?: continue
+                    } else {
+                        entry.entityId
+                    }
+                    val container = state.getEntity(damagingSourceId) ?: continue
                     val damageTracking = container.get<DamageDealtToCreaturesThisTurnComponent>() ?: continue
                     dyingEntityId in damageTracking.creatureIds
                 } else {

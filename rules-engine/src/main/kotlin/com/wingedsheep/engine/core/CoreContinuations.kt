@@ -448,6 +448,31 @@ data class RepeatWhileContinuation(
 ) : ContinuationFrame
 
 /**
+ * Resume after the flipper answers "flip another coin?" during a
+ * [com.wingedsheep.sdk.scripting.effects.FlipCoinsUntilLossEffect] (Fiery Gambit).
+ *
+ * [winsSoFar] is the whole reason this frame exists. The tally cannot ride the pipeline between
+ * flips: pipeline `storedNumbers` only reach a consumer on the result that publishes them, so a
+ * per-flip tally would be dropped at each pause and the card would pay out differently depending on
+ * whether a prompt was raised — the "pipeline numbers lost across pause" shape. Carrying it in the
+ * frame, and publishing once when the run ends, is the same idiom as
+ * [PayManaCostRepeatedlyContinuation]'s count.
+ *
+ * @property flipperId The player flipping — resolved once, so the run stays with them.
+ * @property storeWinsAs Pipeline variable the final tally is published under.
+ * @property winsSoFar Flips won *before* the next flip; the answer "stop" publishes exactly this.
+ * @property sourceId The spell or ability doing the flipping, for the coin-flip events' source.
+ */
+@Serializable
+data class FlipCoinsUntilLossContinuation(
+    override val decisionId: String,
+    val flipperId: EntityId,
+    val storeWinsAs: String,
+    val winsSoFar: Int,
+    val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
  * Phase discriminator for RepeatWhileContinuation.
  */
 @Serializable

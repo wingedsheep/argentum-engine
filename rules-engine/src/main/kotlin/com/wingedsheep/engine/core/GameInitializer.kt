@@ -367,7 +367,7 @@ class GameInitializer(
         // 4. Shuffle libraries
         for (playerId in playerIds) {
             state = shuffleLibrary(state, playerId)
-            events.add(LibraryShuffledEvent(playerId))
+            events.add(LibraryShuffledEvent(playerId, ShuffleCause.GAME_SETUP))
         }
 
         // 5. Draw initial hands

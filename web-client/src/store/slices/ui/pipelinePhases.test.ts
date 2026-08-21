@@ -277,3 +277,40 @@ describe('enterPhase — sum-gated graveyard exile costs', () => {
     })
   })
 })
+
+describe('computePhases — per-target mana tax (Officious Interrogation)', () => {
+  /**
+   * `manaCostString` on a per-target-taxed spell is only the one-target minimum, so picking mana
+   * sources before targeting would always under-tap and the server would reject the cast. The
+   * targeting phase therefore has to come first, exactly as an X cost puts `xSelection` first.
+   */
+  function interrogation(over: Record<string, unknown> = {}): LegalActionInfo {
+    return castAction({
+      actionType: 'CastSpell',
+      manaCostString: '{W}{U}',
+      requiresTargets: true,
+      validTargets: ['p1', 'p2'],
+      availableManaSources: [{ entityId: 'plains1' }, { entityId: 'island1' }],
+      ...over,
+    })
+  }
+
+  it('defers the manaSource phase past targeting when the cost scales with targets', () => {
+    const phases = computePhases(interrogation({ manaCostPerExtraTarget: '{W}{U}' }), {
+      autoTapEnabled: false,
+    })
+    expect(phases).toEqual([{ type: 'targeting' }, { type: 'manaSource' }])
+  })
+
+  it('keeps manaSource before targeting for an ordinary spell', () => {
+    const phases = computePhases(interrogation(), { autoTapEnabled: false })
+    expect(phases).toEqual([{ type: 'manaSource' }, { type: 'targeting' }])
+  })
+
+  it('runs no manaSource phase at all under auto-tap — the server prices the targets', () => {
+    const phases = computePhases(interrogation({ manaCostPerExtraTarget: '{W}{U}' }), {
+      autoTapEnabled: true,
+    })
+    expect(phases).toEqual([{ type: 'targeting' }])
+  })
+})

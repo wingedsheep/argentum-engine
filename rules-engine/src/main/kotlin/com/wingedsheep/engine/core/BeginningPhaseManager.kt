@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.battlefield.PhasedOutComponent
 import com.wingedsheep.engine.state.components.battlefield.SummoningSicknessComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.player.CardsInHandAtTurnStartComponent
 import com.wingedsheep.engine.state.components.player.SkipUntapComponent
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.sdk.core.AbilityFlag
@@ -56,6 +57,18 @@ class BeginningPhaseManager(
 
         val events = mutableListOf<GameEvent>()
         var newState = state
+
+        // CR 502 — snapshot every player's hand size before anything else happens this turn.
+        // "At the beginning of this turn" has to be captured here rather than read later: by the
+        // upkeep, the very cards a card like Mindstorm Crown is measuring may already have moved.
+        // Recorded for every player, not just the active one, so an opponent-scoped reading of the
+        // same tracker is available for free.
+        for (pid in newState.turnOrder) {
+            val handSize = newState.getZone(ZoneKey(pid, Zone.HAND)).size
+            newState = newState.updateEntity(pid) { container ->
+                container.with(CardsInHandAtTurnStartComponent(count = handSize))
+            }
+        }
 
         // Phase in permanents that phased out under each active-team member's control. In a shared
         // team turn both teammates phase in together (CR 805.4); for a non-team game the active
@@ -528,6 +541,7 @@ class BeginningPhaseManager(
         StatePredicate.IsAttacking,
         StatePredicate.IsAttackingAlone,
         StatePredicate.IsAttackingAnOpponent,
+        StatePredicate.IsAttackingYouOrYourPlaneswalkers,
         StatePredicate.IsBlocking,
         StatePredicate.IsBlocked,
         StatePredicate.IsUnblocked,

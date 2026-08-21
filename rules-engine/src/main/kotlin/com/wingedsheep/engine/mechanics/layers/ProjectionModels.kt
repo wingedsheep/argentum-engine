@@ -536,6 +536,20 @@ sealed interface Modification {
         override val layer get() = Layer.ABILITY
     }
 
+    /**
+     * Grants each affected entity "protection from each of the card types of the cards exiled with
+     * the source" — the Imprint payoff (CR 702.15) behind Mirror Golem. Read at apply-time: walks
+     * the source's `LinkedExileComponent`, keeps the ids still in their owner's exile zone, and
+     * adds `PROTECTION_FROM_CARDTYPE_<TYPE>` for every card type on each of those cards' type
+     * lines. The card-type sibling of [GrantProtectionFromControlledColors]; an empty (or fully
+     * departed) exile pile grants nothing, so the imprint declined at ETB leaves the permanent
+     * with no protection at all.
+     */
+    @Serializable
+    data object GrantProtectionFromLinkedExiledCardTypes : Modification {
+        override val layer get() = Layer.ABILITY
+    }
+
     @Serializable
     data object SetCantAttack : Modification {
         override val layer get() = Layer.ABILITY

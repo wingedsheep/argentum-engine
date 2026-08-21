@@ -714,7 +714,10 @@ class CostHandler {
             when (
                 val result = com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver.collect(
                     state, controllerId, atom.amount, choices.exileChoices,
-                    state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Collect evidence"
+                    state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Collect evidence",
+                    // "Cards exiled with it": an atom that asked to link hands the payment the
+                    // permanent whose ability is being activated, so the exiles land in its pile.
+                    linkToSourceId = sourceId.takeIf { atom.linkToSource },
                 )
             ) {
                 is com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver.Result.Success ->

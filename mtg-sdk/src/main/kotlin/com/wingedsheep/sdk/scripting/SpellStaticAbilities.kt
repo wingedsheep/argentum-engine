@@ -123,14 +123,48 @@ data class GrantCantBeCountered(
  * Per Rule 118.9a, additional costs, cost increases, and cost reductions still apply
  * to the alternative cost.
  *
- * @property cost The alternative mana cost string (e.g., "{W}{U}{B}{R}{G}")
+ * The granted cost has the same two halves as a card's own [SelfAlternativeCost] — a mana half
+ * and a list of non-mana [AdditionalCost]s — because "rather than pay the mana cost" says nothing
+ * about the substituted cost being mana. Conspiracy Unraveler's "You may collect evidence 10
+ * rather than pay the mana cost for spells you cast" is the whole cost in the non-mana half, with
+ * `cost = "{0}"` standing in for the absent mana half (the same `{0}` idiom Fireblast and Force of
+ * Vigor use for their own alternative costs).
+ *
+ * @property cost The alternative mana cost string (e.g., "{W}{U}{B}{R}{G}"), `"{0}"` when the
+ *   substituted cost is entirely non-mana.
+ * @property additionalCosts The non-mana half, paid alongside [cost] whenever this grant is the
+ *   alternative cost the caster chose. Gated on `AlternativeCostType.GRANTED` at payment time so a
+ *   different alternative cost never drags these in.
  */
 @SerialName("GrantAlternativeCastingCost")
 @Serializable
 data class GrantAlternativeCastingCost(
-    val cost: String
+    val cost: String,
+    val additionalCosts: List<AdditionalCost> = emptyList()
 ) : StaticAbility {
-    override val description: String = "You may pay $cost rather than pay the mana cost for spells you cast"
+    override val description: String =
+        "You may ${describePayment()} rather than pay the mana cost for spells you cast"
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        if (additionalCosts.isEmpty()) return this
+        val newCosts = additionalCosts.map { it.applyTextReplacement(replacer) }
+        return if (newCosts == additionalCosts) this else copy(additionalCosts = newCosts)
+    }
+
+    /**
+     * "pay {W}{U}{B}{R}{G}" / "collect evidence 10" / "pay {2} and sacrifice a creature".
+     *
+     * The mana half is dropped from the wording when it is `{0}`, so a purely non-mana grant reads
+     * as its oracle text does rather than as "pay {0} and …". A grant with neither half is
+     * degenerate; it falls back to naming the mana cost so the description is never blank.
+     */
+    private fun describePayment(): String {
+        val parts = buildList {
+            if (cost != "{0}" || additionalCosts.isEmpty()) add("pay $cost")
+            additionalCosts.forEach { add(it.description.replaceFirstChar { c -> c.lowercaseChar() }) }
+        }
+        return parts.joinToString(" and ")
+    }
 }
 
 /**

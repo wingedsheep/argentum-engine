@@ -4958,45 +4958,62 @@
                             }
                         },
                         {
-                            "type": "GatherCards",
-                            "source": {
-                                "type": "FromZone",
-                                "zone": "Hand",
-                                "player": {
-                                    "type": "ContextPlayer",
-                                    "index": 0
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "SourceInZone",
+                                    "zones": [
+                                        "Battlefield"
+                                    ]
                                 }
                             },
-                            "storeAs": "opponentHand"
-                        },
-                        {
-                            "type": "SelectFromCollection",
-                            "from": "opponentHand",
-                            "selection": {
-                                "type": "ChooseUpTo",
-                                "count": {
-                                    "type": "Fixed",
-                                    "amount": 1
-                                }
-                            },
-                            "filter": "nonland",
-                            "storeSelected": "exiledCard",
-                            "prompt": "You may exile a nonland card from target opponent's hand",
-                            "showAllCards": true,
-                            "alwaysPrompt": true
-                        },
-                        {
-                            "type": "MoveCollection",
-                            "from": "exiledCard",
-                            "destination": {
-                                "type": "ToZone",
-                                "zone": "Exile",
-                                "player": {
-                                    "type": "ContextPlayer",
-                                    "index": 0
-                                }
-                            },
-                            "linkToSource": true
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Hand",
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            }
+                                        },
+                                        "storeAs": "opponentHand"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "opponentHand",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "filter": "nonland",
+                                        "storeSelected": "exiledCard",
+                                        "prompt": "You may exile a nonland card from target opponent's hand",
+                                        "showAllCards": true,
+                                        "alwaysPrompt": true
+                                    },
+                                    {
+                                        "type": "MoveCollection",
+                                        "from": "exiledCard",
+                                        "destination": {
+                                            "type": "ToZone",
+                                            "zone": "Exile",
+                                            "player": {
+                                                "type": "ContextPlayer",
+                                                "index": 0
+                                            }
+                                        },
+                                        "linkToSource": true
+                                    }
+                                ]
+                            }
                         }
                     ]
                 },

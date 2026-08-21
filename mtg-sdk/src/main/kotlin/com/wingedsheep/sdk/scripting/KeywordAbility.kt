@@ -428,7 +428,19 @@ sealed interface KeywordAbility {
          * exact sibling of [Morph.faceUpEffect] — it does *not* use the stack and can't be
          * responded to, which is what separates it from a `Triggers.TurnedFaceUp` ability.
          */
-        val faceUpEffect: com.wingedsheep.sdk.scripting.effects.Effect? = null
+        val faceUpEffect: com.wingedsheep.sdk.scripting.effects.Effect? = null,
+        /**
+         * "This cost is reduced by {1} for each …" (Fugitive Codebreaker). A *self*-scoped generic
+         * reduction on this card's own disguise cost, distinct from
+         * [com.wingedsheep.sdk.scripting.SpellCostTarget.MorphActivation], which is the global
+         * battlefield-scanned modifier every player's turn-up procedure pays (Exiled Doomsayer).
+         *
+         * Applied after that increase and generic-only (CR 601.2f, 202.2a): a disguise cost's
+         * colored pips survive however large the reduction gets, so Fugitive Codebreaker never
+         * flips for less than {R}. Null — the shape every other disguise card has — means the
+         * printed cost is the cost.
+         */
+        val costReduction: CostReductionSource? = null
     ) : KeywordAbility {
         /** Convenience constructor for mana-based disguise costs. */
         constructor(cost: ManaCost) : this(PayCost.Atom(CostAtom.Mana(cost)))

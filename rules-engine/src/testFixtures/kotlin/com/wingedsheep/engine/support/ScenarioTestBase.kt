@@ -704,6 +704,55 @@ abstract class ScenarioTestBase : FunSpec() {
         }
 
         /**
+         * Cast a spell using a **battlefield-granted** alternative cost whose non-mana half is
+         * collect evidence (CR 701.59) — Conspiracy Unraveler's "You may collect evidence 10 rather
+         * than pay the mana cost for spells you cast".
+         *
+         * Distinct from [castSpellCollectingEvidence]: that declares the *spell's own* optional
+         * additional cost and stamps `ChoiceSlot.EVIDENCE_COLLECTED`, so the spell's linked "if
+         * evidence was collected" clause reads true. This is an *alternative* cost belonging to
+         * another permanent, so it stamps [AlternativeCostType.GRANTED] and no choice slot — which
+         * is exactly why it does not satisfy such a clause.
+         *
+         * [evidenceNames] must total mana value 10 or greater; passing less is how a test pins the
+         * engine's rejection of an under-total payment.
+         */
+        fun castSpellWithGrantedAlternativeCost(
+            playerNumber: Int,
+            spellName: String,
+            evidenceNames: List<String>,
+            targetIds: List<EntityId> = emptyList(),
+        ): ExecutionResult {
+            val playerId = if (playerNumber == 1) player1Id else player2Id
+            val cardId = state.getHand(playerId).find { entityId ->
+                state.getEntity(entityId)?.get<CardComponent>()?.name == spellName
+            } ?: error("Card '$spellName' not found in player $playerNumber's hand")
+
+            val graveyard = state.getZone(ZoneKey(playerId, Zone.GRAVEYARD)).toMutableList()
+            val evidenceIds = evidenceNames.map { name ->
+                val found = graveyard.find { entityId ->
+                    state.getEntity(entityId)?.get<CardComponent>()?.name == name
+                } ?: error("Card '$name' not found in player $playerNumber's graveyard")
+                // Remove so repeating a name picks distinct copies rather than the same card twice.
+                graveyard.remove(found)
+                found
+            }
+
+            return execute(
+                CastSpell(
+                    playerId = playerId,
+                    cardId = cardId,
+                    targets = targetIds.map { ChosenTarget.Permanent(it) },
+                    useAlternativeCost = true,
+                    alternativeCostType = AlternativeCostType.GRANTED,
+                    additionalCostPayment = com.wingedsheep.sdk.scripting.AdditionalCostPayment(
+                        exiledCards = evidenceIds
+                    ),
+                )
+            )
+        }
+
+        /**
          * Cast a spell for its emerge cost (CR 702.119), sacrificing [sacrificeCreatureName].
          *
          * Emerge is an alternative cost whose non-mana portion — sacrificing a creature you

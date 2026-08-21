@@ -3,11 +3,15 @@ package com.wingedsheep.assay.grammar
 import com.wingedsheep.assay.syntax.ParseOutcome
 import com.wingedsheep.assay.syntax.parseLine
 import com.wingedsheep.assay.syntax.printLine
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
+import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetPermanent
+import com.wingedsheep.sdk.scripting.targets.TargetRequirement
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -120,6 +124,105 @@ class StepsTest : StringSpec({
         ).forEach { roundTrips(it) }
     }
 
+    // The quantifier table: "target", "up to one target", "N target", "up to N target", "up to X
+    // target". Every verb of the family gets every row, which is the property the table exists for —
+    // before it, "tap up to three target creatures" was written and "destroy up to three" was not.
+    "every quantifier reaches every verb of the family" {
+        listOf("Destroy", "Exile", "Tap", "Untap").forEach { verb ->
+            roundTrips("$verb target creature.")
+            roundTrips("$verb up to one target creature.")
+            roundTrips("$verb two target creatures.")
+            roundTrips("$verb up to three target creatures.")
+            roundTrips("$verb up to X target creatures.")
+            roundTrips("$verb any number of target creatures.")
+        }
+    }
+
+    // "Up to one" is one field on the requirement and one clause in the sentence: the count stays at
+    // one and `optional` is what lets the spell be cast choosing nothing (CR 601.2c).
+    "up to one is the singular requirement with optional set" {
+        fragment("Destroy up to one target creature.") shouldBe CardFragment(
+            script = CardScript(
+                spellEffect = Effects.Destroy(Targets.bound()),
+                targetRequirements = listOf(Targets.permanent(GameObjectFilter.Creature, optional = true)),
+            )
+        )
+        roundTrips("Destroy up to one target creature.")
+    }
+
+    // …and a plural quantifier is exactly one that admits several targets, so the effect is written
+    // once per chosen target rather than once against the requirement.
+    "a plural quantifier iterates the effect over the chosen targets" {
+        fragment("Exile up to two target creatures.") shouldBe CardFragment(
+            script = CardScript(
+                spellEffect = ForEachTargetEffect(listOf(Effects.Exile(EffectTarget.ContextTarget(0)))),
+                targetRequirements = listOf(
+                    Targets.several(2, GameObjectFilter.Creature, optional = true)
+                ),
+            )
+        )
+        fragment("Exile two target creatures.").script.targetRequirements shouldBe
+            listOf(Targets.several(2, GameObjectFilter.Creature, optional = false))
+        fragment("Exile up to X target creatures.").script.targetRequirements shouldBe
+            listOf(Targets.upToX(GameObjectFilter.Creature))
+        fragment("Exile any number of target creatures.").script.targetRequirements shouldBe
+            listOf(Targets.anyNumber(GameObjectFilter.Creature))
+    }
+
+    // Oracle prints the plural possessive both ways, 110 lines to 55. One rule, two spellings, and
+    // the minority never prints — so Scapegoat's line survives as a variant rather than a decline.
+    "the older plural possessive parses and never prints" {
+        fragment("Return any number of target creatures you control to their owner's hand.") shouldBe
+            fragment("Return any number of target creatures you control to their owners' hands.")
+        Grammar.abilityLine.printLine(
+            fragment("Return any number of target creatures you control to their owner's hand.")
+        ) shouldBe "Return any number of target creatures you control to their owners' hands."
+    }
+
+    // The agreement reaches past the noun phrase, which is why the shape takes two templates: the
+    // possessive after the target is singular for one creature and plural for several.
+    "a possessive past the noun agrees with the quantifier" {
+        listOf(
+            "Return target creature to its owner's hand.",
+            "Return up to one target creature to its owner's hand.",
+            "Return up to two target creatures to their owners' hands.",
+            "Put target creature on top of its owner's library.",
+            "Put two target lands on top of their owners' libraries.",
+        ).forEach { roundTrips(it) }
+    }
+
+    // Singular and plural must not overlap, or every quantified card in the corpus reports
+    // AMBIGUOUS — the same property `Draw one cards.` proves for the counting rules. "Up to one" is
+    // the singular row's, so the plural rows still refuse one.
+    "the quantifier rows take disjoint counts and disjoint nouns" {
+        listOf(
+            "Destroy up to one target creatures.",
+            "Destroy up to two target creature.",
+            // Digits are Oracle's convention for damage and life, never for a target count.
+            "Destroy up to 1 target creature.",
+        ).forEach { Grammar.abilityLine.parseLine(it).shouldBeInstanceOf<ParseOutcome.Declined>() }
+    }
+
+    // Fail-closed, and here it is also what tells the rows apart: a count no row can spell, and an
+    // `optional` flag the bare row does not say, must refuse to print rather than print a sentence
+    // that drops the difference.
+    "a requirement carrying more than its row spells refuses to print" {
+        fun printed(requirement: TargetRequirement) =
+            Grammar.abilityLine.printLine(
+                CardFragment(
+                    script = CardScript(
+                        spellEffect = ForEachTargetEffect(listOf(Effects.Destroy(EffectTarget.ContextTarget(0)))),
+                        targetRequirements = listOf(requirement),
+                    )
+                )
+            )
+
+        printed(Targets.several(2, GameObjectFilter.Creature, optional = true)) shouldBe
+            "Destroy up to two target creatures."
+        // Twenty is past the number vocabulary, which stops where Oracle's own convention does.
+        printed(Targets.several(20, GameObjectFilter.Creature, optional = true)) shouldBe null
+    }
+
     "the controller clause is a suffix on the model as well as on the sentence" {
         fragment("Destroy target creature you control.") shouldBe CardFragment(
             script = CardScript(
@@ -171,6 +274,108 @@ class StepsTest : StringSpec({
             "Target creature you control gets +1/+1 until end of turn.",
             "Target artifact creature gets +2/-1 until end of turn.",
         ).forEach { roundTrips(it) }
+    }
+
+    // The pump sentence is the second family to slot the quantifier table, and its verb agrees in
+    // number: one creature "gets", several "each get". Second Breakfast prints the plural.
+    "the pump sentence takes every quantifier, and its verb agrees in number" {
+        fragment("Up to two target creatures each get +2/+1 until end of turn.") shouldBe CardFragment(
+            script = CardScript(
+                spellEffect = ForEachTargetEffect(
+                    listOf(Effects.ModifyStats(2, 1, EffectTarget.ContextTarget(0)))
+                ),
+                targetRequirements = listOf(Targets.several(2, GameObjectFilter.Creature, optional = true)),
+            )
+        )
+        listOf(
+            "Up to one target creature gets +2/+0 until end of turn.",
+            "Up to two target creatures each get +2/+1 until end of turn.",
+            "Up to three target creatures each get -1/-1 until end of turn.",
+            "Up to X target creatures each get +1/+1 until end of turn.",
+            "Two target creatures each get +1/+0 until end of turn.",
+        ).forEach { roundTrips(it) }
+        // The fronted spelling comes along, because it is the same rule with one word moved.
+        fragment("Until end of turn, up to one target creature gets +2/+0.") shouldBe
+            fragment("Up to one target creature gets +2/+0 until end of turn.")
+    }
+
+    // The keyword-grant sibling takes the same rows, and its verb agrees the same way: "gains" for
+    // one, "each gain" for several. Phalanx Formation prints the plural.
+    "the keyword grant takes every quantifier" {
+        fragment("Any number of target creatures each gain double strike until end of turn.") shouldBe
+            CardFragment(
+                script = CardScript(
+                    spellEffect = ForEachTargetEffect(
+                        listOf(Effects.GrantKeyword(Keyword.DOUBLE_STRIKE, EffectTarget.ContextTarget(0)))
+                    ),
+                    targetRequirements = listOf(Targets.anyNumber(GameObjectFilter.Creature)),
+                )
+            )
+        listOf(
+            "Target creature gains flying until end of turn.",
+            "Up to one target creature gains first strike and vigilance until end of turn.",
+            "Two target creatures each gain flying until end of turn.",
+            "Up to two target creatures each gain trample until end of turn.",
+            "Up to X target creatures each gain haste until end of turn.",
+            "Any number of target creatures each gain double strike until end of turn.",
+        ).forEach { roundTrips(it) }
+    }
+
+    // The compound sentence is where the plural rows actually pay — every quantified line the corpus
+    // prints for it is plural. Both halves are per-target, so the whole composite goes *inside* the
+    // iteration rather than the iteration being split in two.
+    "the pump-and-grant sentence puts the whole compound inside one iteration" {
+        fragment("Up to two target creatures each get +1/+1 and gain lifelink until end of turn.") shouldBe
+            CardFragment(
+                script = CardScript(
+                    spellEffect = ForEachTargetEffect(
+                        listOf(
+                            Effects.Composite(
+                                listOf(
+                                    Effects.ModifyStats(1, 1, EffectTarget.ContextTarget(0)),
+                                    Effects.GrantKeyword(Keyword.LIFELINK, EffectTarget.ContextTarget(0)),
+                                )
+                            )
+                        )
+                    ),
+                    targetRequirements = listOf(Targets.several(2, GameObjectFilter.Creature, optional = true)),
+                )
+            )
+        listOf(
+            "Target creature gets +4/+0 and gains trample until end of turn.",
+            "Up to one target creature gets +1/+1 and gains lifelink until end of turn.",
+            // Windborne Charge, Coordinated Assault, Rouse the Mob.
+            "Two target creatures you control each get +2/+2 and gain flying until end of turn.",
+            "Up to two target creatures each get +1/+0 and gain first strike until end of turn.",
+            "Any number of target creatures each get +2/+0 and gain trample until end of turn.",
+        ).forEach { roundTrips(it) }
+        // The second verb takes no "each" of its own — the adverb attaches once to the pair — so the
+        // doubled spelling is not a variant, it is not this sentence.
+        Grammar.abilityLine
+            .parseLine("Up to two target creatures each get +1/+1 and each gain lifelink until end of turn.")
+            .shouldBeInstanceOf<ParseOutcome.Declined>()
+    }
+
+    // Damage and counters take the *singular* rows only. Their plural is a different sentence —
+    // "divided as you choose among …" and "on each of up to two target creatures" — so a plural row
+    // here would read a distribute model as a sentence that means something else.
+    "damage and counters take the singular quantifier rows and refuse the plural ones" {
+        listOf(
+            "~ deals 3 damage to up to one target creature.",
+            "~ deals 5 damage to up to one target creature or planeswalker.",
+            "Put a +1/+1 counter on up to one target creature.",
+            "Put a -1/-1 counter on up to one target creature.",
+            "Put two +1/+1 counters on up to one target creature you control.",
+        ).forEach { roundTrips(it) }
+
+        listOf(
+            // Never printed: damage over several targets is "divided as you choose among …".
+            "~ deals 3 damage to up to two target creatures.",
+            "~ deals 3 damage to any number of target creatures.",
+            // Never printed: the distribute sentence says "on each of up to two target creatures".
+            "Put a +1/+1 counter on up to two target creatures.",
+            "Put a +1/+1 counter on any number of target creatures.",
+        ).forEach { Grammar.abilityLine.parseLine(it).shouldBeInstanceOf<ParseOutcome.Declined>() }
     }
 
     // The sign of a zero modifier is not in the model — `Fixed(0)` is `Fixed(0)` — so the printer

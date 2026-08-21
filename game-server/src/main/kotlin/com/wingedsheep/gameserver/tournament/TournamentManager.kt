@@ -618,6 +618,34 @@ class TournamentManager(
     }
 
     /**
+     * Every match that could be launched right now, given the set of players who are ready.
+     *
+     * A match qualifies when it has two seats (no BYE), hasn't been started or decided, both seats
+     * are ready, and neither seat still owes a game from an earlier round — see
+     * [hasIncompleteMatchBefore]. That last guard is why this query exists rather than a per-player
+     * lookup: a pair can become startable purely because somebody *else's* earlier-round match
+     * finished, with no change to the ready set, so the whole set has to be re-examined whenever a
+     * result lands.
+     *
+     * A player appears in at most one returned pair: their earliest unplayed match blocks every
+     * later one through the same guard, so the caller can start all of them in one sweep.
+     */
+    fun startableMatches(readyPlayerIds: Set<EntityId>): List<Pair<TournamentRound, TournamentMatch>> {
+        val startable = mutableListOf<Pair<TournamentRound, TournamentMatch>>()
+        for (round in rounds) {
+            for (match in round.matches) {
+                if (match.isBye || match.isComplete || match.gameSessionId != null) continue
+                val player2Id = match.player2Id ?: continue
+                if (match.player1Id !in readyPlayerIds || player2Id !in readyPlayerIds) continue
+                if (hasIncompleteMatchBefore(match.player1Id, round.roundNumber)) continue
+                if (hasIncompleteMatchBefore(player2Id, round.roundNumber)) continue
+                startable.add(round to match)
+            }
+        }
+        return startable
+    }
+
+    /**
      * Get the round containing a specific match (by gameSessionId).
      */
     fun getRoundForMatch(gameSessionId: String): TournamentRound? {

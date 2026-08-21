@@ -40,6 +40,7 @@ class PlayerExecutors(
     override fun executors(): List<EffectExecutor<*>> = listOf(
         AmassExecutor(effectExecutor),
         CollectEvidenceExecutor(decisionHandler),
+        CollectEvidenceChosenAmountExecutor(),
         AddAdditionalUpkeepStepsExecutor(),
         AddAdditionalEndStepsExecutor(),
         AddCombatPhaseExecutor(),
@@ -80,6 +81,7 @@ class PlayerExecutors(
         SetDayNightExecutor(cardRegistry),
         SkipCombatPhasesExecutor(),
         SkipNextDrawStepExecutor(),
+        SkipStepOrPhaseThisTurnExecutor(),
         SkipNextTurnExecutor(),
         SkipUntapExecutor(),
         TakeExtraTurnExecutor(),

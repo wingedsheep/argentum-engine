@@ -8,6 +8,8 @@ import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
+import com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExileLookup
+import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -265,6 +267,20 @@ internal class EffectApplicator(
                             for (colorName in other.colors) {
                                 values.keywords.add("PROTECTION_FROM_$colorName")
                             }
+                        }
+                    }
+                }
+                is Modification.GrantProtectionFromLinkedExiledCardTypes -> {
+                    // Protection from each card type of the cards exiled with the source (Imprint,
+                    // CR 702.15 — Mirror Golem). The card-type twin of the controlled-colors branch
+                    // above: the *set* of qualities comes from game state rather than the card text.
+                    // Card types are read off the exiled card's own type line — an exiled card is
+                    // never on the battlefield, so there is no projection entry to consult, and no
+                    // layer rewrites a card's types in exile.
+                    for (exiledId in LinkedExileLookup.exiledCards(state, effect.sourceId)) {
+                        val typeLine = state.getEntity(exiledId)?.get<CardComponent>()?.typeLine ?: continue
+                        for (cardType in typeLine.cardTypes) {
+                            values.keywords.add("PROTECTION_FROM_CARDTYPE_${cardType.name}")
                         }
                     }
                 }

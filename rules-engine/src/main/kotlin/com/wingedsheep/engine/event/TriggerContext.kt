@@ -331,7 +331,12 @@ data class TriggerContext(
                     triggeringEntityId = event.permanentId,
                     triggeringPlayerId = event.controllerId
                 )
-                is AttackersDeclaredEvent -> TriggerContext()
+                // The attacking player is the triggering player, so "that opponent loses 3 life"
+                // (Tomik, Wielder of Law) resolves off a declare-attackers trigger. Before this the
+                // context was empty and `Player.TriggeringPlayer` silently evaluated to null here.
+                is AttackersDeclaredEvent -> TriggerContext(
+                    triggeringPlayerId = event.attackingPlayerId
+                )
                 is BlockersDeclaredEvent -> TriggerContext()
                 is TappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is UntappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
@@ -381,6 +386,10 @@ data class TriggerContext(
                     // object targets, exactly as before.
                     triggeringPlayerId = event.targetEntityId.takeIf { event.targetIsPlayer },
                     targetingSourceEntityId = event.sourceEntityId
+                )
+                is com.wingedsheep.engine.core.LibraryShuffledEvent -> TriggerContext(
+                    // "…deals 2 damage to that player" — the shuffler is the triggering player.
+                    triggeringPlayerId = event.playerId
                 )
                 is com.wingedsheep.engine.core.TargetsChosenEvent -> TriggerContext(
                     triggeringEntityId = event.stackObjectId,

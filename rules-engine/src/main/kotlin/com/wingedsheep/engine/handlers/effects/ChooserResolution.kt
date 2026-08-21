@@ -97,8 +97,15 @@ object ChooserResolution {
             ?: Outcome.Unresolvable("No triggering player to make the choice")
 
         Chooser.SourceController -> {
+            // [EffectContext.effectControllerId] is the authoritative answer whenever a
+            // per-player iteration is running — it is captured for exactly this purpose and is
+            // the *only* one that works for a resolving spell, whose stack entity carries a
+            // caster but no ControllerComponent. Outside an iteration it is null and the
+            // permanent lookup below (an activated/triggered ability's source) answers instead.
+            val iterationSafe = context.effectControllerId
             val sourceId = context.sourceId
-            val controller = sourceId?.let { state.getEntity(it)?.get<ControllerComponent>()?.playerId }
+            val controller = iterationSafe
+                ?: sourceId?.let { state.getEntity(it)?.get<ControllerComponent>()?.playerId }
             controller?.let { Outcome.Resolved(it) }
                 ?: Outcome.Unresolvable("Source has no controller to make the choice")
         }

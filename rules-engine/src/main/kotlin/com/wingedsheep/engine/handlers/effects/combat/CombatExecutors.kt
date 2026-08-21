@@ -25,6 +25,7 @@ class CombatExecutors(
         CantBlockExecutor(),
         RemoveFromCombatExecutor(),
         OpponentGuessesTopCardKindExecutor(),
+        PlayerGuessesConditionExecutor(),
         MarkMustAttackThisTurnExecutor(),
         MarkMustBlockThisTurnExecutor(),
         GoadExecutor(),
@@ -33,7 +34,7 @@ class CombatExecutors(
         RedirectCombatDamageToControllerExecutor(),
         GrantAttackBlockTaxPerCreatureTypeExecutor(),
         GrantKeywordToAttackersBlockedByExecutor(),
-        SetSuspectedExecutor(),
+        SuspectExecutor(),
         RemoveSuspectedExecutor()
     )
 }

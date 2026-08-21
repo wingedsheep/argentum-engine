@@ -250,6 +250,13 @@ class ForEachExecutor(
             Player.TargetOpponent, Player.TargetPlayer -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
             )
+            // "those players" — iterate every player among the chosen targets. Needs its own arm:
+            // the `else` below routes through the single-player resolver, which deliberately
+            // returns null for plural references, so a ForEach over them would silently do nothing.
+            Player.EachTargetedPlayer -> context.targets
+                .filterIsInstance<com.wingedsheep.engine.state.components.stack.ChosenTarget.Player>()
+                .map { it.playerId }
+                .distinct()
             // Single-player references (e.g. ControllerOf a targeted permanent — Unwanted
             // Remake's "its controller manifests dread") resolve to exactly that player. An
             // unresolved reference means there is nobody to iterate, not "every player": that

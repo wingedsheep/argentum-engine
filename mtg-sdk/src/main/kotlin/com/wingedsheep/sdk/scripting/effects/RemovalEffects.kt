@@ -120,7 +120,11 @@ data class SacrificeEffect(
     override val description: String = buildString {
         append("sacrifice ")
         when {
-            any -> append("any number of ${filter.description}s")
+            any -> {
+                append("any number of ")
+                if (excludeSource) append("other ")
+                append("${filter.description}s")
+            }
             count == 1 -> {
                 if (excludeSource) append("another ") else append("a ")
                 append(filter.description)

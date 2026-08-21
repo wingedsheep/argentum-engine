@@ -8,7 +8,7 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
-import com.wingedsheep.engine.state.components.identity.ExileAfterResolveComponent
+import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
@@ -90,11 +90,11 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
 
         // "If a spell cast this way would be put into a graveyard, exile it instead" (Nita,
         // Forum Conciliator). Stamp the granted cards now; StackResolver honors
-        // ExileAfterResolveComponent on resolution / counter / fizzle, redirecting to exile.
+        // AfterResolveDestinationComponent on resolution / counter / fizzle, redirecting to exile.
         if (effect.exileAfterResolve) {
             for (cardId in collection) {
                 newState = newState.updateEntity(cardId) { container ->
-                    container.with(ExileAfterResolveComponent())
+                    container.with(AfterResolveDestinationComponent())
                 }
             }
         }

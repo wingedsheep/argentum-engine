@@ -41,3 +41,39 @@ data class CollectEvidenceEffect(
 ) : Effect {
     override val description: String = "collect evidence $amount"
 }
+
+/**
+ * Collect evidence **X**, where X is a number [player] chooses as this resolves — "you may collect
+ * evidence X. When you do, this creature deals X damage to each creature and planeswalker that
+ * player controls" (Incinerator of the Guilty).
+ *
+ * The sibling of [CollectEvidenceEffect] for the one printed shape whose threshold isn't fixed.
+ * Kept as its own effect rather than widening [CollectEvidenceEffect.amount] to a
+ * `DynamicAmount`: every other collect-evidence card in the corpus names a literal N, and a
+ * *player-chosen* number isn't a `DynamicAmount` at all — it's a decision, and it has to be
+ * bounded by what the graveyard can actually pay before it is asked.
+ *
+ * The choice is a single `ChooseNumberDecision` over `0 .. <total mana value in the graveyard>`.
+ * That upper bound is CR 701.59b applied to the *choice* rather than to the payment: a player
+ * can't choose an X they couldn't then reach, so the prompt never offers one. The lower bound is 0
+ * because collecting evidence 0 is legal and exiles nothing — per the 2024-02-02 ruling it still
+ * counts as having collected evidence, so "whenever you collect evidence" payoffs (Surveillance
+ * Monitor, Evidence Examiner) trigger off it. That also makes this effect *always* feasible, which
+ * is why an enclosing "may" is always offered.
+ *
+ * X is republished under [storeAmountAs] and read downstream via
+ * `DynamicAmount.VariableReference(storeAmountAs)` — the same convention [PayFixedCountersEffect]'s
+ * "pay any amount" sibling and `DrawUpToEffect.storeAs` use. Stored numbers survive the reflexive
+ * trigger's stack round-trip (CR 603.12), so the "when you do" half can spend X.
+ *
+ * @property player Whose graveyard is spent, and who chooses X. Defaults to the effect's controller.
+ * @property storeAmountAs Pipeline variable name the chosen X is stored under.
+ */
+@SerialName("CollectEvidenceChosenAmount")
+@Serializable
+data class CollectEvidenceChosenAmountEffect(
+    val player: Player = Player.You,
+    val storeAmountAs: String,
+) : Effect {
+    override val description: String = "collect evidence X"
+}

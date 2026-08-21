@@ -100,8 +100,6 @@ class TurnFaceUpHandler(
             ?: return "No such turn-up procedure: ${action.procedureIndex}"
 
         // Validate cost payment based on morph cost type.
-        // Apply morph cost increases from permanents like Exiled Doomsayer.
-        val morphCostIncrease = costCalculator.calculateMorphCostIncrease(state)
         val morphCost = procedure.cost
         val manaMorph = (morphCost as? PayCost.Atom)?.atom as? CostAtom.Mana
         when {
@@ -109,7 +107,11 @@ class TurnFaceUpHandler(
                 // Mana morph payment stays in this handler: it carries the rich up-front UX
                 // (explicit mana-source selection, X, auto-tap preview) that the shared
                 // CostPaymentService's yes/no mana path deliberately doesn't model.
-                val manaCost = costCalculator.increaseGenericCost(manaMorph.cost, morphCostIncrease)
+                // Increases (Exiled Doomsayer) then the procedure's own reduction (Fugitive
+                // Codebreaker) — the same pricing the enumerator quoted.
+                val manaCost = costCalculator.calculateTurnFaceUpCost(
+                    state, manaMorph.cost, procedure.costReduction, action.playerId, action.sourceId
+                )
                 val xValue = action.xValue ?: 0
                 when (action.paymentStrategy) {
                     is PaymentStrategy.AutoPay -> {
@@ -186,8 +188,7 @@ class TurnFaceUpHandler(
         val cardDef = cardRegistry.getCard(morphData.originalCardDefinitionId)
         val cardName = cardDef?.name ?: cardComponent?.name ?: "Unknown"
 
-        // Pay the morph cost (including any morph cost increases)
-        val morphCostIncrease = costCalculator.calculateMorphCostIncrease(currentState)
+        // Pay the morph cost (including any morph cost increases and self-scoped reductions)
         val xValue = action.xValue ?: 0
         val morphCost = procedure.cost
         // CR 702.37b ties megamorph's +1/+1 counter to the megamorph cost specifically, so the
@@ -197,7 +198,9 @@ class TurnFaceUpHandler(
         val manaMorph = (morphCost as? PayCost.Atom)?.atom as? CostAtom.Mana
         when {
             manaMorph != null -> {
-                val manaCost = costCalculator.increaseGenericCost(manaMorph.cost, morphCostIncrease)
+                val manaCost = costCalculator.calculateTurnFaceUpCost(
+                    currentState, manaMorph.cost, procedure.costReduction, action.playerId, action.sourceId
+                )
                 when (action.paymentStrategy) {
                     is PaymentStrategy.FromPool -> {
                         val poolComponent = currentState.getEntity(action.playerId)?.get<ManaPoolComponent>()

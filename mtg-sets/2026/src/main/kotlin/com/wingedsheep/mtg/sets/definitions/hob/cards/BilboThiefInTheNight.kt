@@ -33,7 +33,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *  - **"cast this way … exile it instead"** is the `exileInsteadOfGraveyard` rider on that grant.
  *    `CastSpellHandler` captures the *specific* grant authorizing each graveyard cast, so the rider
  *    can't leak onto a spell cast under some other permission the player happens to have active.
- *    It stamps `ExileAfterResolveComponent(onlyIfResolved = false)`, which also catches a countered
+ *    It stamps `AfterResolveDestinationComponent(onlyIfResolved = false)`, which also catches a countered
  *    or fizzled spell — the behaviour the Adventure ruling below requires.
  *
  * Three deliberate approximations, all from modelling a resolve-time offer as a turn-long grant:

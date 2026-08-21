@@ -24,6 +24,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
 import com.wingedsheep.engine.handlers.effects.BattlefieldFilterUtils
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.mechanics.SacrificeImmunity
 import com.wingedsheep.engine.mechanics.mana.CostCalculator
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
@@ -36,9 +37,6 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
-import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
-import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
-import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.WardCost
@@ -96,9 +94,7 @@ class WardCounterEffectExecutor(
         val container = state.getEntity(spellEntityId)
             ?: return EffectResult.success(state)
 
-        val payingPlayerId = container.get<SpellOnStackComponent>()?.casterId
-            ?: container.get<ActivatedAbilityOnStackComponent>()?.controllerId
-            ?: container.get<TriggeredAbilityOnStackComponent>()?.controllerId
+        val payingPlayerId = TargetResolutionUtils.stackObjectController(state, spellEntityId)
             ?: return EffectResult.success(state)
 
         // Resolve any DynamicLife component to a fixed Life amount at ward-resolution time

@@ -809,6 +809,15 @@ sealed interface ServerMessage {
         val nextRoundHasBye: Boolean = false,
         /** True if the tournament is complete (no more rounds) */
         val isTournamentComplete: Boolean = false,
+        /**
+         * True when every match in [round] is finished. False means this player finished early and
+         * [round] is still running — the client must keep showing it as in progress instead of
+         * advertising the next one, and a `RoundComplete` for it is still to come.
+         *
+         * Named for [round], not for the tournament's current round: eager starting means a later
+         * round's match can finish while an earlier round is still the current one.
+         */
+        val roundComplete: Boolean = false,
     ) : ServerMessage
 
     /**
@@ -819,8 +828,11 @@ sealed interface ServerMessage {
     @SerialName("playerReadyForRound")
     data class PlayerReadyForRound(
         val lobbyId: String,
-        val playerId: String,
-        val playerName: String,
+        /** The player whose ready flag just went up; null when this is a plain snapshot re-broadcast. */
+        val playerId: String? = null,
+        /** Name of [playerId]; null on a snapshot re-broadcast. */
+        val playerName: String? = null,
+        /** The authoritative ready set — clients replace their own copy with this, they don't merge. */
         val readyPlayerIds: List<String>,
         val totalConnectedPlayers: Int
     ) : ServerMessage

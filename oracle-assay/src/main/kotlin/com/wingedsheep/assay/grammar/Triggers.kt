@@ -64,7 +64,21 @@ object Triggers {
     private val ID = AbilityId("trigger")
 
     /**
-     * "when ~ enters, {effect}" — a whole triggered ability.
+     * A trigger's *when* clause, plus the effect vocabulary its payoff clause takes.
+     *
+     * The two halves of a trigger sentence, held apart because only one of them is reusable. A
+     * `when` clause is a [TriggerSpec] and nothing else, so it can be slotted anywhere a sentence
+     * names an event — once by [sentence], **twice** by [joinedRule], which is the whole reason this
+     * type exists. What cannot travel inside it is which effect cascade the payoff takes: a trigger
+     * whose event names an object of its own reads "it" as that object ([Steps.triggeredStep]) and
+     * every other trigger reads it as the source ([Steps.step]), and that is a property of the event
+     * rather than of the clause after the comma. So the cascade rides beside the prefix and
+     * [sentence] is the one place the two meet.
+     */
+    private data class Prefix(val phrase: Phrase<TriggerSpec>, val effect: Phrase<CardScript>)
+
+    /**
+     * "when ~ enters, {effect}" — a whole triggered ability, from a prefix and its effect cascade.
      *
      * The `match` half is fail-closed the same way the step rules are: it reconstructs what `build`
      * would have produced from the ability's own effect and target and compares the whole thing, so
@@ -72,22 +86,42 @@ object Triggers {
      * `elseEffect`, a graveyard `activeZones`, "you may", a once-per-turn cap — refuses to print
      * rather than printing a sentence that quietly drops it. Only the id is exempt, because the id
      * is not in the text.
+     *
+     * The event itself is read straight off the ability rather than compared against a constant,
+     * and nothing is lost by that: `TriggerSpec` is exactly `(event, binding)`, so the spec a
+     * printed ability denotes is total, and whether *this* prefix can spell it is the prefix's own
+     * question — its `match` is what refuses. That split is what lets one reconstruction serve every
+     * prefix in the file instead of one per family.
      */
+    private fun sentence(prefix: Prefix): Phrase<TriggeredAbility> =
+        phrase("{trigger}, {effect}", name = prefix.phrase.name) {
+            slot("trigger", prefix.phrase)
+            slot("effect", prefix.effect)
+            build { abilityFor(it.value("trigger"), it.value("effect")) }
+            match { ability ->
+                val spec = specOf(ability)
+                val script = scriptFor(ability)
+                if (abilityFor(spec, script)?.copy(id = ability.id) != ability) return@match null
+                bind("trigger" to spec, "effect" to script)
+            }
+        }
+
+    /** A prefix whose event is a constant — "when ~ enters", "whenever ~ attacks". */
     private fun triggerRule(
         surface: String,
         spec: TriggerSpec,
         effect: Phrase<CardScript> = Steps.step,
-    ): Phrase<TriggeredAbility> {
-        return phrase("$surface, {effect}", name = surface) {
-            slot("effect", effect)
-            build { abilityFor(spec, it.value("effect")) }
-            match { ability ->
-                val script = scriptFor(ability)
-                if (abilityFor(spec, script)?.copy(id = ability.id) != ability) return@match null
-                bind("effect" to script)
-            }
-        }
-    }
+    ): Prefix = Prefix(
+        phrase(surface, name = surface) {
+            build { spec }
+            match { if (it == spec) bind() else null }
+        },
+        effect,
+    )
+
+    /** The spec a printed ability's `when` clause denotes. Total: a `TriggerSpec` is these two fields. */
+    private fun specOf(ability: TriggeredAbility): TriggerSpec =
+        TriggerSpec(ability.trigger, ability.binding)
 
     /**
      * Build the ability a trigger's effect clause denotes.
@@ -212,7 +246,7 @@ object Triggers {
             }
             match { ability ->
                 if (ability.activeZones != setOf(zone)) return@match null
-                val spec = specOf(ability) ?: return@match null
+                val spec = stepSpec(specOf(ability)) ?: return@match null
                 val script = scriptFor(ability)
                 val rebuilt = abilityFor(spec, script)?.copy(id = ability.id, activeZones = setOf(zone))
                 if (rebuilt != ability) return@match null
@@ -221,27 +255,22 @@ object Triggers {
         }
 
     /**
-     * The spec a step trigger's prefix denotes, read back off the ability.
+     * A spec narrowed to the step-trigger family, or null when the event is not a step.
      *
-     * Only a *candidate*, in [slottedTriggerRule]'s sense: the reconstruction there compares the
-     * whole ability, and [Phases.phase] refuses to print a spec it cannot spell, so nothing here has
-     * to decide whether the event is one this family covers.
+     * Only a *candidate*, in [slottedTriggerRule]'s sense: the reconstruction in [sentence]
+     * compares the whole ability, and [Phases.phase] refuses to print a spec it cannot spell, so
+     * nothing here has to decide whether the event is one this family covers.
      */
-    private fun specOf(ability: TriggeredAbility): TriggerSpec? =
-        if (ability.trigger is EventPattern.StepEvent) {
-            TriggerSpec(ability.trigger, ability.binding)
-        } else {
-            null
-        }
+    private fun stepSpec(spec: TriggerSpec): TriggerSpec? =
+        spec.takeIf { it.event is EventPattern.StepEvent }
 
-    private val phaseRules: List<Phrase<TriggeredAbility>> = listOf(
-        zonedTriggerRule("if ${Normalizer.SELF} is in your graveyard", Zone.GRAVEYARD),
+    private val phasePrefixes: List<Prefix> = listOf(
         slottedTriggerRule(
             surface = "at the beginning of {when}",
             name = "a step trigger",
             noun = Phases.phase,
             effect = Steps.step,
-            valueOf = ::specOf,
+            valueOf = ::stepSpec,
             spec = { it },
             slotName = "when",
         ),
@@ -273,12 +302,12 @@ object Triggers {
         name: String,
         noun: Phrase<GameObjectFilter>,
         spec: (GameObjectFilter) -> TriggerSpec,
-    ): Phrase<TriggeredAbility> =
+    ): Prefix =
         // [Steps.triggeredStep], not [Steps.step]: this trigger's event mentions an object of its
         // own, so "it" in the effect clause is that object rather than the source. See the
         // third-anaphor section on [SelfSteps]; the differential caught Tattered Ratter reading
         // "Whenever a Rat you control becomes blocked, it gets +2/+0" as pumping the *Ratter*.
-        slottedTriggerRule(surface, name, noun, Steps.triggeredStep, ::triggeredFilter, spec)
+        slottedTriggerRule(surface, name, noun, Steps.triggeredStep, { triggeredFilter(it.event) }, spec)
 
     /**
      * [filteredTriggerRule]'s shape, with the slot's *type* and the event's reader as parameters.
@@ -301,34 +330,37 @@ object Triggers {
         name: String,
         noun: Phrase<T>,
         effect: Phrase<CardScript>,
-        valueOf: (TriggeredAbility) -> T?,
+        valueOf: (TriggerSpec) -> T?,
         spec: (T) -> TriggerSpec,
         // The slot's name is part of the *surface*, so it is a parameter rather than a constant: the
         // step triggers slot a `TriggerSpec` under `{when}`, and calling that "filter" would leave
         // every template in the file lying about what it holds.
         slotName: String = "filter",
-    ): Phrase<TriggeredAbility> =
-        phrase("$surface, {effect}", name = name) {
+    ): Prefix = Prefix(
+        phrase(surface, name = name) {
             slot(slotName, noun)
-            slot("effect", effect)
-            build { abilityFor(spec(it.value(slotName)), it.value("effect")) }
-            match { ability ->
-                val value = valueOf(ability) ?: return@match null
-                val script = scriptFor(ability)
-                if (abilityFor(spec(value), script)?.copy(id = ability.id) != ability) return@match null
-                bind(slotName to value, "effect" to script)
+            build { spec(it.value(slotName)) }
+            match { triggerSpec ->
+                val value = valueOf(triggerSpec) ?: return@match null
+                // The row's own fail-closed step: an event carrying a field the surface does not
+                // spell rebuilds to something else and refuses, rather than printing a sentence
+                // that drops it. [sentence] then does the same over the rest of the ability.
+                if (spec(value) != triggerSpec) return@match null
+                bind(slotName to value)
             }
-        }
+        },
+        effect,
+    )
 
     /**
      * The filter an event names, read back off the two event shapes the filtered rules produce.
      *
-     * Only a *candidate*: the reconstruction in [filteredTriggerRule]'s `match` is what decides
-     * whether the whole ability is this sentence, so nothing here has to check the event's other
-     * fields.
+     * Only a *candidate*: the reconstructions in [slottedTriggerRule] and [sentence] are what
+     * decide whether the whole ability is this sentence, so nothing here has to check the event's
+     * other fields.
      */
-    private fun triggeredFilter(ability: TriggeredAbility): GameObjectFilter? =
-        when (val event = ability.trigger) {
+    private fun triggeredFilter(event: EventPattern): GameObjectFilter? =
+        when (event) {
             is EventPattern.ZoneChangeEvent -> event.filter
             is EventPattern.BecomesBlockedEvent -> event.filter
             is EventPattern.SpellCastEvent -> event.spellFilter
@@ -358,7 +390,7 @@ object Triggers {
      * ordinary self-anaphor and reading it as the triggering entity would be a second spelling of
      * one object.
      */
-    private val castRules: List<Phrase<TriggeredAbility>> = listOf(
+    private val castPrefixes: List<Prefix> = listOf(
         filteredTriggerRule(
             "whenever you cast {filter}", "whenever you cast a spell", Spells.indefinite,
         ) { SdkTriggers.youCastSpell(it) },
@@ -399,41 +431,35 @@ object Triggers {
      * fail-closed answer, since that value would be a second spelling of the same fact and nothing
      * in the text chooses between them.
      */
-    private fun nthCastRule(prefix: String, name: String, player: Player): Phrase<TriggeredAbility> =
-        phrase("$prefix {ordinal} {filter} each turn, {effect}", name = name) {
+    private fun nthCastRule(prefix: String, name: String, player: Player): Prefix = Prefix(
+        phrase("$prefix {ordinal} {filter} each turn", name = name) {
             slot("ordinal", Cardinals.ordinal)
             slot("filter", Spells.spell)
-            slot("effect", Steps.triggeredStep)
             build { bindings ->
                 val filter = bindings.value<GameObjectFilter>("filter")
-                abilityFor(
-                    SdkTriggers.NthSpellCast(
-                        n = bindings.int("ordinal"),
-                        player = player,
-                        spellFilter = filter.takeIf { it != GameObjectFilter.Any },
-                    ),
-                    bindings.value("effect"),
+                SdkTriggers.NthSpellCast(
+                    n = bindings.int("ordinal"),
+                    player = player,
+                    spellFilter = filter.takeIf { it != GameObjectFilter.Any },
                 )
             }
-            match { ability ->
-                val event = ability.trigger as? EventPattern.NthSpellCastEvent ?: return@match null
+            match { spec ->
+                val event = spec.event as? EventPattern.NthSpellCastEvent ?: return@match null
                 val filter = event.spellFilter ?: GameObjectFilter.Any
-                val script = scriptFor(ability)
                 // Rebuilt through the *build* half's mapping, not through `event.spellFilter`:
                 // that is what makes an event carrying `Any` refuse to print rather than printing
                 // the bare noun that means `null`.
-                val rebuilt = abilityFor(
-                    SdkTriggers.NthSpellCast(
-                        event.nthSpell,
-                        player,
-                        filter.takeIf { it != GameObjectFilter.Any },
-                    ),
-                    script,
+                val rebuilt = SdkTriggers.NthSpellCast(
+                    event.nthSpell,
+                    player,
+                    filter.takeIf { it != GameObjectFilter.Any },
                 )
-                if (rebuilt?.copy(id = ability.id) != ability) return@match null
-                bind("ordinal" to event.nthSpell, "filter" to filter, "effect" to script)
+                if (rebuilt != spec) return@match null
+                bind("ordinal" to event.nthSpell, "filter" to filter)
             }
-        }
+        },
+        Steps.triggeredStep,
+    )
 
     // ---------------------------------------------------------------------------------------
     // Batch triggers — CR 603.2c's "one or more …"
@@ -526,7 +552,7 @@ object Triggers {
         noun: String,
         reader: (EventPattern) -> Pair<GameObjectFilter, Boolean>?,
         spec: (GameObjectFilter, Boolean) -> TriggerSpec,
-    ): List<Phrase<TriggeredAbility>> = SCOPES.flatMap { scope ->
+    ): List<Prefix> = SCOPES.flatMap { scope ->
         listOf(false, true).map { other ->
             val another = if (other) "other " else ""
             slottedTriggerRule(
@@ -534,8 +560,8 @@ object Triggers {
                 name = "whenever one or more $another$noun${scope.words} $verb",
                 noun = Filters.pluralSubject,
                 effect = Steps.step,
-                valueOf = { ability ->
-                    reader(ability.trigger)
+                valueOf = { spec ->
+                    reader(spec.event)
                         ?.takeIf { (_, excluded) -> excluded == other }
                         ?.let { (filter, _) -> scope.subjectOf(filter) }
                 },
@@ -551,8 +577,8 @@ object Triggers {
         noun: Phrase<GameObjectFilter>,
         reader: (EventPattern) -> GameObjectFilter?,
         spec: (GameObjectFilter) -> TriggerSpec,
-    ): Phrase<TriggeredAbility> =
-        slottedTriggerRule(surface, name, noun, Steps.step, { reader(it.trigger) }, spec)
+    ): Prefix =
+        slottedTriggerRule(surface, name, noun, Steps.step, { reader(it.event) }, spec)
 
     /**
      * "Whenever one or more +1/+1 counters are put on ~, …" — the counter-placement batch.
@@ -572,7 +598,7 @@ object Triggers {
         name: String,
         recipient: Phrase<GameObjectFilter>?,
         placedBy: Player?,
-    ): Phrase<TriggeredAbility> {
+    ): Prefix {
         fun spec(kind: String, filter: GameObjectFilter) = SdkTriggers.countersPlacedOn(
             filter = filter,
             counterType = kind,
@@ -580,25 +606,25 @@ object Triggers {
             binding = if (recipient == null) TriggerBinding.SELF else TriggerBinding.ANY,
             placedBy = placedBy,
         )
-        return phrase("$surface, {effect}", name = name) {
-            slot("kind", Primitives.counterKind)
-            if (recipient != null) slot("recipient", recipient)
-            slot("effect", Steps.step)
-            build { bindings ->
-                val filter = if (recipient == null) GameObjectFilter.Any else bindings.value("recipient")
-                abilityFor(spec(bindings.value("kind"), filter), bindings.value("effect"))
-            }
-            match { ability ->
-                val event = ability.trigger as? EventPattern.CountersPlacedEvent ?: return@match null
-                val script = scriptFor(ability)
-                val rebuilt = abilityFor(spec(event.counterType, event.filter), script)
-                if (rebuilt?.copy(id = ability.id) != ability) return@match null
-                bind("kind" to event.counterType, "recipient" to event.filter, "effect" to script)
-            }
-        }
+        return Prefix(
+            phrase(surface, name = name) {
+                slot("kind", Primitives.counterKind)
+                if (recipient != null) slot("recipient", recipient)
+                build { bindings ->
+                    val filter = if (recipient == null) GameObjectFilter.Any else bindings.value("recipient")
+                    spec(bindings.value("kind"), filter)
+                }
+                match { triggerSpec ->
+                    val event = triggerSpec.event as? EventPattern.CountersPlacedEvent ?: return@match null
+                    if (spec(event.counterType, event.filter) != triggerSpec) return@match null
+                    bind("kind" to event.counterType, "recipient" to event.filter)
+                }
+            },
+            Steps.step,
+        )
     }
 
-    private val batchRules: List<Phrase<TriggeredAbility>> =
+    private val batchPrefixes: List<Prefix> =
         batchProduct(
             verb = "enter",
             noun = "permanents",
@@ -694,7 +720,7 @@ object Triggers {
             ) { SdkTriggers.OneOrMoreLeaveWithoutDying(it, excludeSelf = other) }
         }
 
-    private val rules: List<Phrase<TriggeredAbility>> = listOf(
+    private val eventPrefixes: List<Prefix> = listOf(
         triggerRule("when ${Normalizer.SELF} enters", SdkTriggers.EntersBattlefield),
         triggerRule("when ${Normalizer.SELF} dies", SdkTriggers.Dies),
         triggerRule("when ${Normalizer.SELF} leaves the battlefield", SdkTriggers.LeavesBattlefield),
@@ -765,10 +791,31 @@ object Triggers {
             "whenever the source or another permanent dies",
             Filters.filter,
         ) { SdkTriggers.leavesBattlefield(filter = it, to = Zone.GRAVEYARD, binding = TriggerBinding.ANY) },
-    ) + castRules + phaseRules + batchRules
+    )
+
+    /**
+     * Every `when` clause the grammar reads, as the event it denotes.
+     *
+     * The vocabulary [joinedRule] slots on both sides of its "and", and the reason the prefix is a
+     * value in this file rather than a string baked into forty templates: a rule that spelled the
+     * prefixes a second time would agree with these until someone edited one of them, which is the
+     * drift the kernel's [com.wingedsheep.assay.syntax.PhraseBuilder.alsoSpelled] exists to make
+     * impossible one rule at a time and this list makes impossible across a whole family.
+     */
+    private val prefixes: List<Prefix> = eventPrefixes + castPrefixes + phasePrefixes + batchPrefixes
+
+    /** The `when` clause vocabulary as one alternation, for the contexts that slot it. */
+    private val event: Phrase<TriggerSpec> = oneOf("a trigger event", prefixes.map { it.phrase })
 
     /** Every trigger sentence without the cap [onceEachTurn] can put on one. */
-    private val uncapped: Phrase<TriggeredAbility> = oneOf("a triggered ability", rules)
+    private val uncapped: Phrase<TriggeredAbility> = oneOf(
+        "a triggered ability",
+        prefixes.map(::sentence) +
+            // The one trigger sentence that is not a prefix plus a payoff: its zone rider lands on
+            // the *ability* rather than on the event, so it cannot be a [Prefix] and cannot be
+            // joined. See [zonedTriggerRule].
+            zonedTriggerRule("if ${Normalizer.SELF} is in your graveyard", Zone.GRAVEYARD),
+    )
 
     /**
      * "…, draw a card. **This ability triggers only once each turn.**" — the printed trigger cap.
@@ -850,7 +897,7 @@ object Triggers {
             match { abilities ->
                 if (abilities.size != 2) return@match null
                 val script = scriptFor(abilities.first())
-                val filter = if (filtered) triggeredFilter(abilities[1]) ?: return@match null else null
+                val filter = if (filtered) triggeredFilter(abilities[1].trigger) ?: return@match null else null
                 val rebuilt = specs(filter).map { abilityFor(it, script) }
                 if (rebuilt.size != abilities.size) return@match null
                 val matches = rebuilt.zip(abilities).all { (built, ability) ->
@@ -860,6 +907,14 @@ object Triggers {
                 bind("filter" to filter, "effect" to script)
             }
         }
+
+    /** One row of [contractions]: the pair, the sentence that contracts it, and its older spellings. */
+    private data class Contraction(
+        val surface: String,
+        val name: String,
+        val specs: List<TriggerSpec>,
+        val alsoSpelled: List<String> = emptyList(),
+    )
 
     /**
      * The pairs Oracle joins with "or", one row each.
@@ -880,57 +935,130 @@ object Triggers {
      * events with no `TriggerSpec`; "or transforms into <name>" (7) names one per card; and
      * "blocks or becomes blocked by …" (39) is not a pair of self-events but a filtered second
      * event, so it belongs to a rule that can slot the filter rather than to this list.
+     *
+     * The list is *read* as well as printed from: [joinedRule] is the general form of the same
+     * model, and it declines exactly the pairs listed here, so which of the two sentences prints is
+     * decided by the pair rather than by an alternation's order. That is why the pairs live in a data
+     * list and not inside the rule that spells them.
      */
-    private val pairedRules: List<Phrase<List<TriggeredAbility>>> = listOf(
-        pairedTriggerRule(
+    private val contractions: List<Contraction> = listOf(
+        Contraction(
             "whenever ${Normalizer.SELF} enters or attacks",
             "whenever the source enters or attacks",
-            specs = { listOf(SdkTriggers.EntersBattlefield, SdkTriggers.Attacks) },
-            filtered = false,
+            listOf(SdkTriggers.EntersBattlefield, SdkTriggers.Attacks),
         ),
-        pairedTriggerRule(
+        Contraction(
             "whenever ${Normalizer.SELF} attacks or blocks",
             "whenever the source attacks or blocks",
-            specs = { listOf(SdkTriggers.Attacks, SdkTriggers.Blocks) },
-            filtered = false,
+            listOf(SdkTriggers.Attacks, SdkTriggers.Blocks),
             // Fourteen older cards spell the same two events with "When" — Mardu Blazebringer,
             // Windscouter, Ceremonial Guard. One model, so one of the two prints.
-            alternateSurfaces = listOf("when ${Normalizer.SELF} attacks or blocks"),
+            alsoSpelled = listOf("when ${Normalizer.SELF} attacks or blocks"),
         ),
-        pairedTriggerRule(
+        Contraction(
             "when ${Normalizer.SELF} enters or dies",
             "when the source enters or dies",
-            specs = { listOf(SdkTriggers.EntersBattlefield, SdkTriggers.Dies) },
-            filtered = false,
+            listOf(SdkTriggers.EntersBattlefield, SdkTriggers.Dies),
             // CR 700.4 defines "dies" as exactly this, and the artifact cycle that predates the
             // word spells it out — Ichor Wellspring, Mycosynth Wellspring, Prized Statue.
-            alternateSurfaces = listOf(
+            alsoSpelled = listOf(
                 "when ${Normalizer.SELF} enters or is put into a graveyard from the battlefield",
             ),
         ),
-        pairedTriggerRule(
+        Contraction(
             "when ${Normalizer.SELF} enters or leaves the battlefield",
             "when the source enters or leaves the battlefield",
-            specs = { listOf(SdkTriggers.EntersBattlefield, SdkTriggers.LeavesBattlefield) },
-            filtered = false,
+            listOf(SdkTriggers.EntersBattlefield, SdkTriggers.LeavesBattlefield),
         ),
-        pairedTriggerRule(
+        Contraction(
             "when ${Normalizer.SELF} enters or is turned face up",
             "when the source enters or is turned face up",
-            specs = { listOf(SdkTriggers.EntersBattlefield, SdkTriggers.TurnedFaceUp) },
-            filtered = false,
+            listOf(SdkTriggers.EntersBattlefield, SdkTriggers.TurnedFaceUp),
         ),
     )
+
+    private val pairedRules: List<Phrase<List<TriggeredAbility>>> = contractions.map { contraction ->
+        pairedTriggerRule(
+            contraction.surface,
+            contraction.name,
+            specs = { contraction.specs },
+            filtered = false,
+            alternateSurfaces = contraction.alsoSpelled,
+        )
+    }
+
+    /**
+     * "When ~ enters **and** whenever you cast a spell with mana value 5 or greater, draw a card."
+     * — the general join: two `when` clauses, one payoff, two abilities.
+     *
+     * The same model [pairedTriggerRule] produces and the opposite way of getting there. That rule
+     * is a *counted table* — Oracle contracts five pairs of self-events into one trigger word, and a
+     * cross product of the vocabulary would have been forty-odd rules for five sentences. This one
+     * is the product, and it is the product because the printed sentence *is* one: each half repeats
+     * its own trigger word ("and whenever …", "and at the beginning of …", "and when …"), so the two
+     * halves are complete clauses drawn from the same vocabulary rather than one clause with a word
+     * added. Slotting [event] twice is therefore the whole rule, and every trigger family the
+     * grammar learns to read becomes a legal half of it without being told — 112 corpus lines today,
+     * 31 of them opening with "When ~ enters".
+     *
+     * **The payoff is [Steps.step], and for a join that is the only sound reading.** The filtered
+     * rules slot [Steps.triggeredStep] because their one event names one object, so "it" is that
+     * object; here two different events share one effect, and an "it" resolved to a triggering
+     * object would mean a different thing under each of them. The source anaphor is the one that
+     * stays true for both — "When ~ enters and whenever you expend 4, put a stash counter on **it**"
+     * is Hoarder's Overflow, and it means the source.
+     *
+     * **A pair [contractions] owns is declined in both directions**, by [contracted] rather than by
+     * this alternation's position, because "one printed form per model" is a property of the model:
+     * `[EntersBattlefield, Dies]` prints "when ~ enters or dies" and must not also be printable as
+     * "when ~ enters and when ~ dies". No corpus line writes a contracted pair the long way, so the
+     * guard costs nothing and is what keeps the printed form out of `oneOf`'s hands.
+     *
+     * A join of an event with *itself* is declined for the same reason and a simpler one: it denotes
+     * two identical abilities, which is a shape no card prints and one that any single-trigger line
+     * appearing twice on a card already denotes.
+     */
+    private val joinedRule: Phrase<List<TriggeredAbility>> =
+        phrase("{first} and {second}, {effect}", name = "two trigger events with one payoff") {
+            slot("first", event)
+            slot("second", event)
+            slot("effect", Steps.step)
+            build { bindings ->
+                val specs = listOf<TriggerSpec>(bindings.value("first"), bindings.value("second"))
+                if (!joinable(specs)) return@build null
+                val script = bindings.value<CardScript>("effect")
+                val built = specs.map { abilityFor(it, script) }
+                if (built.any { it == null }) null else built.filterNotNull()
+            }
+            match { abilities ->
+                if (abilities.size != 2) return@match null
+                val specs = abilities.map(::specOf)
+                if (!joinable(specs)) return@match null
+                val script = scriptFor(abilities.first())
+                val rebuilt = specs.map { abilityFor(it, script) }
+                val holds = rebuilt.zip(abilities).all { (built, ability) ->
+                    built?.copy(id = ability.id) == ability
+                }
+                if (!holds) return@match null
+                bind("first" to specs[0], "second" to specs[1], "effect" to script)
+            }
+        }
+
+    /** Whether a pair of events is one this sentence may spell; see [joinedRule]. */
+    private fun joinable(specs: List<TriggerSpec>): Boolean =
+        specs[0] != specs[1] && contractions.none { it.specs == specs }
 
     /**
      * Every trigger line, as the list of abilities it denotes.
      *
-     * The alternatives take disjoint list sizes — [single] is exactly one and the paired rules are
-     * exactly two — so printing is decided by the model rather than by the alternation's order, the
-     * property every `oneOf` in this grammar is written to have.
+     * [single] is exactly one ability and both two-ability rules are exactly two, so the sizes
+     * separate the one-ability case from the rest. Between [pairedRules] and [joinedRule] the model
+     * decides too: a pair [contractions] lists prints only through the paired rule, and every other
+     * pair only through the join. So printing is determined by the model rather than by the
+     * alternation's order, the property every `oneOf` in this grammar is written to have.
      */
     val line: Phrase<List<TriggeredAbility>> = oneOf(
         "a triggered ability line",
-        pairedRules + single,
+        pairedRules + joinedRule + single,
     )
 }

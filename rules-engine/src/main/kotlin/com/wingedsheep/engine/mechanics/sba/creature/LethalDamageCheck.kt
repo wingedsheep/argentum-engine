@@ -20,7 +20,9 @@ class LethalDamageCheck : StateBasedActionCheck {
     override val name = "704.5g/h Lethal Damage"
     override val order = SbaOrder.LETHAL_DAMAGE
 
-    override fun check(state: GameState): ExecutionResult {
+    override fun check(state: GameState): ExecutionResult = check(state, state)
+
+    override fun check(state: GameState, passStartState: GameState): ExecutionResult {
         var newState = state
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
         // CR 704.3: state-based actions are checked, then all applicable ones are performed
@@ -75,8 +77,14 @@ class LethalDamageCheck : StateBasedActionCheck {
                     continue
                 }
 
+                // `passStartState` — not `newState` — decides which battlefield permanents can
+                // replace this death. Everything this SBA pass performs is one simultaneous event
+                // (CR 704.3), so a "would die → exile it instead" shield dying in the same batch
+                // still shields the rest (CR 614.1). Reading the mutated state instead would let
+                // battlefield iteration order decide it: a Head of the Hunt that traded with the
+                // creatures it was meant to exile happened to be moved first, so they died.
                 val result = SbaZoneMovementHelper.putCreatureInGraveyard(
-                    newState, entityId, cardComponent, "lethal damage"
+                    newState, entityId, cardComponent, "lethal damage", passStartState
                 )
                 newState = result.newState
                 events.addAll(result.events)

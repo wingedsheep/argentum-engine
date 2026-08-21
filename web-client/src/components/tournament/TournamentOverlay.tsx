@@ -7,6 +7,7 @@ import { ReplayViewer, type GameSummary } from '../admin/ReplayViewer'
 import type { ReplayData } from '@/replay/reconstructSnapshots.ts'
 import { useDeckLibrary, buildDraftedDeckSave, type SavedDeckEntry } from '@/store/deckLibrary'
 import { useSaveDeck } from '@/store/useSaveDeck'
+import { deriveRoundPhase } from './roundPhase'
 import styles from '../ui/GameUI.module.css'
 
 /**
@@ -103,13 +104,9 @@ export function TournamentOverlay({
   // Spectators are not in the standings list
   const isSpectator = !playerId || !tournamentState.standings.some(s => s.playerId === playerId)
 
-  // Check if we're waiting for players to ready up (before first game OR between rounds)
-  const isWaitingForReady = (
-    // Before first round (round 0)
-    tournamentState.currentRound === 0 ||
-    // Between rounds (has results, no active match)
-    (tournamentState.lastRoundResults !== null && !tournamentState.currentMatchGameSessionId)
-  ) && !tournamentState.isComplete
+  // Waiting for ready (before the first game or between matches), and — the distinction that keeps an
+  // early finisher honest — whether the round they just finished is still being played elsewhere.
+  const { isWaitingForReady, roundStillRunning, roundNumber, readyLabel } = deriveRoundPhase(tournamentState)
 
   // Check if current player is ready
   const isPlayerReady = playerId ? tournamentState.readyPlayerIds.includes(playerId) : false
@@ -155,9 +152,7 @@ export function TournamentOverlay({
   }
 
   const roundLabel = !tournamentState.isComplete
-    ? isWaitingForReady
-      ? `Round ${tournamentState.currentRound + 1} of ${tournamentState.totalRounds}`
-      : `Round ${tournamentState.currentRound} of ${tournamentState.totalRounds}`
+    ? `Round ${roundNumber} of ${tournamentState.totalRounds}`
     : null
 
   return (
@@ -233,7 +228,7 @@ export function TournamentOverlay({
                 disabled={isPlayerReady}
                 className={styles.readyButton}
               >
-                {isPlayerReady ? '✓ Ready' : 'Ready for Next Round'}
+                {isPlayerReady ? '✓ Ready' : readyLabel}
               </button>
               {tournamentState.currentRound === 0 && !isPlayerReady && (
                 <button onClick={unsubmitDeck} className={styles.editDeckButton}>
@@ -246,10 +241,15 @@ export function TournamentOverlay({
             </div>
           )}
 
-          {/* Waiting for others */}
-          {!isWaitingForReady && !tournamentState.isBye && !tournamentState.currentMatchGameSessionId && (
+          {/* Waiting for others — including the early finisher who may already be ready: the round
+              they just played is still running, so the notice belongs next to the Ready button. */}
+          {(roundStillRunning || !isWaitingForReady) && !tournamentState.isBye && !tournamentState.currentMatchGameSessionId && (
             <div className={styles.statusBoxWaiting}>
-              Waiting for other matches to complete...
+              {roundStillRunning
+                ? isPlayerReady
+                  ? `Round ${roundNumber} is still being played — your next match starts as soon as it can.`
+                  : `Round ${roundNumber} is still being played at other tables.`
+                : 'Waiting for other matches to complete...'}
             </div>
           )}
         </div>

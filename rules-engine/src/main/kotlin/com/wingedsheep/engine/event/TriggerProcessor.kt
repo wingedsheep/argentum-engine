@@ -34,6 +34,7 @@ import com.wingedsheep.sdk.scripting.effects.SelectionMode
 import com.wingedsheep.sdk.scripting.effects.StoreNumberEffect
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.components.player.PlayerLostComponent
+import com.wingedsheep.sdk.scripting.targets.TargetChooser
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetOther
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
@@ -764,7 +765,7 @@ class TriggerProcessor(
 
         val decisionResult = decisionHandler.createTargetDecision(
             state = state,
-            playerId = trigger.controllerId,
+            playerId = resolveTargetChooser(state, trigger, allRequirements),
             sourceId = trigger.sourceId,
             sourceName = trigger.sourceName,
             requirements = requirementInfos,
@@ -1392,6 +1393,47 @@ class TriggerProcessor(
         is StoreNumberEffect -> if (effect.name == name) effect.amount else null
         is CompositeEffect -> effect.effects.firstNotNullOfOrNull { findStoreNumberAmount(it, name) }
         else -> LibraryPatterns.expandMacro(effect)?.let { findStoreNumberAmount(it, name) }
+    }
+
+    /**
+     * Which player is asked to pick this trigger's targets.
+     *
+     * The ability's controller, unless a requirement carries a [TargetChooser] naming somebody
+     * else — "that player … of their choice" (Quicksilver Fountain), "its controller chooses target
+     * permanent …" (Confusion in the Ranks). Per [TargetChooser] the chooser is orthogonal to
+     * legality: the legal-target sets above were built relative to `trigger.controllerId` and stay
+     * that way, because these are still the controller's targets (CR 115). Only who answers the
+     * decision changes.
+     *
+     * A chooser that resolves to nobody falls back to the controller rather than dropping the
+     * trigger: a target was already found legal, so somebody has to pick it.
+     *
+     * Choosers are read from the *whole* requirement list and must agree — no printed card splits
+     * one trigger's targets between two deciders, and honoring only the first requirement's chooser
+     * would silently hand the rest to the wrong player. [TargetChooser.Opponent] is deliberately
+     * not handled here: it needs the controller to first pick *which* opponent decides, which is
+     * the activated-ability path's `pauseForOpponentTargetChooser`, and `CardLinter` already
+     * refuses it on a triggered ability.
+     */
+    private fun resolveTargetChooser(
+        state: GameState,
+        trigger: PendingTrigger,
+        requirements: List<TargetRequirement>
+    ): EntityId {
+        val controller = trigger.controllerId
+        val choosers = requirements.map { it.chooser }.distinct()
+        val chooser = choosers.singleOrNull() ?: return controller
+        return when (chooser) {
+            TargetChooser.Controller, TargetChooser.Opponent -> controller
+            TargetChooser.TriggeringPlayer ->
+                trigger.triggerContext.triggeringPlayerId
+                    ?: trigger.triggerContext.triggeringEntityId
+                    ?: controller
+            TargetChooser.ControllerOfTriggeringEntity ->
+                trigger.triggerContext.triggeringEntityId
+                    ?.let { state.projectedState.getController(it) }
+                    ?: controller
+        }
     }
 
     /**

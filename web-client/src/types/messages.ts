@@ -920,6 +920,17 @@ export interface LegalActionInfo {
    * and waterbend are generic-only, harmonize taps one creature.
    */
   readonly minimumManaCostString?: string
+  /**
+   * Mana this spell adds to its own cost per target beyond the first — Officious Interrogation
+   * ("This spell costs {W}{U} more to cast for each target beyond the first") sends `'{W}{U}'`.
+   * Absent for every spell that doesn't tax itself per target.
+   *
+   * When set, `manaCostString` is only the one-target minimum, so targeting has to be settled
+   * before the player can sensibly pick mana sources by hand: `computePhases` orders `targeting`
+   * ahead of `manaSource`, and `startManaSelection` scales the cost it charges by the targets
+   * actually picked.
+   */
+  readonly manaCostPerExtraTarget?: string
   /** Whether this spell requires damage distribution at cast time (for DividedDamageEffect) */
   readonly requiresDamageDistribution?: boolean
   /** Total damage to distribute for DividedDamageEffect spells */
@@ -1676,13 +1687,23 @@ export interface MatchCompleteMessage {
   readonly nextRoundHasBye?: boolean
   /** True if the tournament is complete (no more rounds) */
   readonly isTournamentComplete?: boolean
+  /**
+   * True when every match in `round` is finished. False means we finished early and `round` is still
+   * running, so the overlay must keep naming it instead of advertising the next one; a `roundComplete`
+   * message for the same round still follows. Named for `round`, not for the tournament's current
+   * round — eager starting lets a later round's match finish while an earlier one is still current.
+   */
+  readonly roundComplete?: boolean
 }
 
 export interface PlayerReadyForRoundMessage {
   readonly type: 'playerReadyForRound'
   readonly lobbyId: string
-  readonly playerId: string
-  readonly playerName: string
+  /** The player whose ready flag just went up; absent when this is a plain snapshot re-broadcast. */
+  readonly playerId?: string | null
+  /** Name of `playerId`; absent on a snapshot re-broadcast. */
+  readonly playerName?: string | null
+  /** The authoritative ready set — replace the local copy with this, never merge into it. */
   readonly readyPlayerIds: readonly string[]
   readonly totalConnectedPlayers: number
 }

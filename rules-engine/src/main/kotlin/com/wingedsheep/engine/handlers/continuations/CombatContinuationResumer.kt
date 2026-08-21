@@ -296,6 +296,22 @@ class CombatContinuationResumer(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
         )
+        // "Prevent all damage that would be dealt this turn by a source of your choice", with no
+        // recipient clause (Mourner's Shield): the shield belongs on the *source*, not on a
+        // protected recipient, so it reuses the same `PreventAllDamageDealtBy` silence shield that a
+        // targeted `PreventionDirection.FromTarget` installs — and is honored for combat and
+        // noncombat damage alike by the same two read sites.
+        if (continuation.silenceChosenSource && continuation.amount == null) {
+            val silenced = state.addFloatingEffect(
+                layer = Layer.ABILITY,
+                modification = SerializableModification.PreventAllDamageDealtBy,
+                affectedEntities = setOf(chosenSourceId),
+                duration = com.wingedsheep.sdk.scripting.Duration.EndOfTurn,
+                context = context
+            )
+            return checkForMore(silenced, emptyList())
+        }
+
         val modification = if (continuation.amount == null && continuation.nextInstanceOnly) {
             // "The next time that source would deal damage to you this turn, prevent that damage"
             // (Circle of Protection family) — single instance, then consumed.

@@ -34,6 +34,7 @@ import com.wingedsheep.engine.state.components.player.CardsDiscardedThisTurnComp
 import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CardsPutIntoExileThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.OpponentCreaturesExiledThisTurnComponent
@@ -191,6 +192,7 @@ object ZoneTransitionService {
         // CastChoicesComponent is stripped so dies/leaves triggers reading CastX still see it
         // as last-known information (CR 603.10a).
         var lastKnownCastX: Int? = null
+        var lastKnownWasFaceDown = false
 
         if (leavingBattlefield) {
             val countersComponent = container.get<CountersComponent>()
@@ -238,6 +240,12 @@ object ZoneTransitionService {
                     ?.sources ?: emptySet()
             lastKnownCastX = container
                 .get<com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent>()?.x
+            // A card is turned face up as it leaves the battlefield for a graveyard (CR 708.4), and
+            // the battlefield entity is gone by trigger-gating time either way, so "whenever a
+            // face-down creature you control dies" (Yarus, Roar of the Old Gods) has to read this
+            // as last-known information (CR 608.2h).
+            lastKnownWasFaceDown = container
+                .has<com.wingedsheep.engine.state.components.identity.FaceDownComponent>()
         }
 
         // 3. Check zone change redirect (unless skipped)
@@ -325,6 +333,7 @@ object ZoneTransitionService {
                 wasToken = lastKnownWasToken,
                 damageDealtByPlayers = lastKnownDamageDealtByPlayers,
                 damageSources = lastKnownDamageSources,
+                wasFaceDown = lastKnownWasFaceDown,
             )
         } else null
 
@@ -743,6 +752,22 @@ object ZoneTransitionService {
             }
         }
 
+        // 8b1. Track artifacts put into a graveyard from the battlefield (Anzrag's Rampage).
+        // The artifact-typed sibling of 8b, credited to the same last-known controller. Reads the
+        // last-known *projected* type line (like 8a3, unlike 8b's base read) so an artifact that
+        // was only an artifact through a continuous effect still counts, and an animated artifact
+        // creature counts as both. Summed over Player.Each this is the game-wide "artifacts that
+        // were put into graveyards from the battlefield this turn".
+        if (leavingBattlefield && actualDestZone == Zone.GRAVEYARD &&
+            (lastKnownTypeLine ?: cardComponent.typeLine).isArtifact
+        ) {
+            newState = newState.updateEntity(controllerId) { playerContainer ->
+                val existing = playerContainer.get<ArtifactsDiedThisTurnComponent>()
+                    ?: ArtifactsDiedThisTurnComponent()
+                playerContainer.with(ArtifactsDiedThisTurnComponent(existing.count + 1))
+            }
+        }
+
         // 8b2. Track creatures exiled from battlefield for opponent's tracking
         // Used by Vren, the Relentless: "creatures exiled under your opponents' control this turn"
         if (leavingBattlefield && actualDestZone == Zone.EXILE && cardComponent.typeLine.isCreature) {
@@ -858,7 +883,8 @@ object ZoneTransitionService {
         // 9. Apply redirect additional effects if any
         if (redirectResult.additionalEffect != null) {
             val (updatedState, extraEvents) = ZoneMovementUtils.applyReplacementAdditionalEffect(
-                newState, redirectResult.additionalEffect, redirectResult.effectControllerId, entityId
+                newState, redirectResult.additionalEffect, redirectResult.effectControllerId, entityId,
+                sourceId = redirectResult.effectSourceId
             )
             newState = updatedState
             events.addAll(extraEvents)

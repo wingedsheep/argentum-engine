@@ -23,6 +23,14 @@ import kotlinx.serialization.Serializable
  * after the controller's own choices (CR 601.6b / 602.3b: the controller goes first, then the other
  * player).
  *
+ * [TriggeringPlayer] and [ControllerOfTriggeringEntity] are the triggered-ability cases: a trigger
+ * whose printed text hands the choice to somebody other than the ability's controller. They are two
+ * cases rather than one because a trigger names its player in two different ways, exactly as
+ * [com.wingedsheep.sdk.scripting.targets.EffectTarget] already splits `TriggeringEntity` from
+ * `ControllerOfTriggeringEntity`: a step trigger's "that player" *is* the triggering entity, while
+ * an enters trigger's "its controller" has to be read off the permanent that entered. Collapsing
+ * them would make the right answer depend on the trigger's event shape rather than on the card.
+ *
  * The chooser is orthogonal to legality: target-finding and validation ignore it (they always run
  * relative to the controller). Only the announcement layer reads it, to route the selection
  * decision to the right player.
@@ -30,7 +38,22 @@ import kotlinx.serialization.Serializable
 @Serializable
 enum class TargetChooser {
     Controller,
-    Opponent
+    Opponent,
+
+    /**
+     * The player the trigger names decides — "that player … of their choice" (Quicksilver
+     * Fountain). Resolves the way every other reader of the triggering player does
+     * (`triggeringPlayerId ?: triggeringEntityId`), so a step trigger's active player and a
+     * trigger that names a distinct player both land on the same case.
+     */
+    TriggeringPlayer,
+
+    /**
+     * The controller of the permanent that caused the trigger decides — "its controller chooses
+     * target permanent …" (Confusion in the Ranks). Distinct from [TriggeringPlayer], which treats
+     * the triggering entity itself as the deciding player.
+     */
+    ControllerOfTriggeringEntity
 }
 
 /**
@@ -474,7 +497,16 @@ data class TargetObject(
      * and the interactive `DecisionValidators`, grouping by each target's *projected* card name; a
      * no-op for single-target requirements. Defaults to false.
      */
-    val differentNames: Boolean = false
+    val differentNames: Boolean = false,
+    /**
+     * Who picks which legal object this requirement lands on. See [TargetChooser] — the target
+     * stays the *controller's* target either way (legality, respondability and CR 115 all still
+     * run relative to the controller); only the selection decision is routed elsewhere.
+     * [TargetChooser.TriggeringPlayer] and [TargetChooser.ControllerOfTriggeringEntity] are honored
+     * on triggered abilities, [TargetChooser.Opponent] on activated ones; `CardLinter` fails a card
+     * that puts one in a context the engine doesn't route.
+     */
+    override val chooser: TargetChooser = TargetChooser.Controller
 ) : TargetRequirement {
     override val description: String = run {
         val base = if (id != null) {

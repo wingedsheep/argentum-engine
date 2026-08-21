@@ -109,6 +109,29 @@ sealed interface StatePredicate {
         override val description: String = "attacking one of your opponents"
     }
 
+    /**
+     * The defender-side mirror of [IsAttackingAnOpponent]: attacking *you* or a planeswalker
+     * *you* control (Tomik, Wielder of Law: "if two or more of those creatures are attacking you
+     * and/or planeswalkers you control"). "You" is the controller of the ability doing the asking,
+     * so this matches regardless of who controls the attacker.
+     *
+     * Deliberately wider than the player-only scoping of
+     * [com.wingedsheep.sdk.scripting.EventPattern.CreaturesAttackYouEvent]'s default: that trigger
+     * implements CR 509.1b for Orim's Prayer, where an attacker pointed at your planeswalker does
+     * *not* count. Cards that print "you and/or planeswalkers you control" want both, and this is
+     * the predicate that says so. A creature attacking a *battle* you protect is not included —
+     * "planeswalkers you control" is literal.
+     *
+     * No last-known fallback: like [IsAttackingAnOpponent], the frozen snapshot records only *that*
+     * the permanent was attacking, never whom. Fails closed when there's no controller context to
+     * scope "you" against.
+     */
+    @SerialName("IsAttackingYouOrYourPlaneswalkers")
+    @Serializable
+    data object IsAttackingYouOrYourPlaneswalkers : Entity {
+        override val description: String = "attacking you or a planeswalker you control"
+    }
+
     @SerialName("IsBlocking")
     @Serializable
     data object IsBlocking : Entity {

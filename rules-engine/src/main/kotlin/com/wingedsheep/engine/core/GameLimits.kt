@@ -63,6 +63,15 @@ object GameLimits {
     const val MAX_REPEAT_ITERATIONS: Int = 10_000
 
     /**
+     * Maximum flips a single open-ended "flip until you lose" run may win before it is stopped for
+     * the flipper (`FlipCoinsUntilLossEffect`, Fiery Gambit). That run is bounded only by a lost
+     * flip or by the flipper answering "stop", so a forced-win replacement (Edgar's coin) combined
+     * with an automated "continue" answer has no natural end. Far above any real run — the card
+     * that motivates the effect has paid out everything it can by three.
+     */
+    const val MAX_COIN_FLIPS_PER_EFFECT: Int = 100
+
+    /**
      * Clamp a requested token-creation count to [MAX_TOKENS_PER_EFFECT], `System.err`-logging when
      * the cap actually bites so a runaway doubler combo is debuggable. Shared by every token
      * executor's allocation loop ([what] names the call site for the log line).

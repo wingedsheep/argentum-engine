@@ -2187,6 +2187,19 @@ class ClientStateTransformer(
             )
         }
 
+        // Turn-scoped step/phase skips (Fatespinner). One badge per chosen part, so a player who
+        // has been hit by two of them sees both.
+        container.get<SkippedTurnPartsComponent>()?.parts?.forEach { part ->
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "skip_turn_part_${part.name.lowercase()}",
+                    name = "Skip ${part.displayName.replaceFirstChar { it.uppercase() }}",
+                    description = "You skip each ${part.displayName} this turn",
+                    icon = "shield-off"
+                )
+            )
+        }
+
         // Check for SkipUntapComponent (Exhaustion effect)
         val skipUntap = container.get<SkipUntapComponent>()
         if (skipUntap != null) {

@@ -40,7 +40,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
-import com.wingedsheep.engine.state.components.identity.ExileAfterResolveComponent
+import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.identity.PlottedComponent
@@ -398,7 +398,7 @@ class StackResolver(
             .copy(priorityPassedBy = emptySet())
 
         // Consume one-shot free-cast permissions used to play this spell. If the
-        // spell is later countered or fizzles and ExileAfterResolveComponent sends
+        // spell is later countered or fizzles and AfterResolveDestinationComponent sends
         // it back to exile, the permission must already be gone — otherwise the
         // controller could re-cast the same card repeatedly (e.g. Daring Waverider's
         // free cast resurfacing every time the granted spell is countered).
@@ -2189,8 +2189,7 @@ class StackResolver(
                         state, spellId, pausedCardDef, spellComponent.casterId, cardRegistry, predicateEvaluator
                     ) != null ||
                         HarmonizeGrants.effectiveHarmonize(state, spellId, pausedCardDef) != null)
-                val pausedExileAfterResolveComp = effectResult.state.getEntity(spellId)?.get<ExileAfterResolveComponent>()
-                val pausedExileAfterResolve = pausedExileAfterResolveComp != null
+                val pausedExileAfterResolveComp = effectResult.state.getEntity(spellId)?.get<AfterResolveDestinationComponent>()
                 val pausedAdventureFaceExile = pausedCardDef?.layout == com.wingedsheep.sdk.model.CardLayout.ADVENTURE &&
                     spellComponent.faceIndex != null
                 val pausedOmenFaceShuffle = pausedCardDef?.layout == com.wingedsheep.sdk.model.CardLayout.OMEN &&
@@ -2198,7 +2197,11 @@ class StackResolver(
                 val pausedReboundExile = spellComponent.castFromZone == Zone.HAND &&
                     spellHasRebound(effectResult.state, spellId, pausedCardDef)
                 val pausedIntended = when {
-                    pausedSelfExile || pausedFlashbackExile || pausedExileAfterResolve || pausedAdventureFaceExile || pausedReboundExile -> Zone.EXILE
+                    // The cast-this-way rider is the most specific instruction on this one spell,
+                    // so it outranks the card-intrinsic exile reasons below rather than being
+                    // OR'd into them — it is the only one that can name a zone other than exile.
+                    pausedExileAfterResolveComp != null -> pausedExileAfterResolveComp.zone
+                    pausedSelfExile || pausedFlashbackExile || pausedAdventureFaceExile || pausedReboundExile -> Zone.EXILE
                     pausedOmenFaceShuffle -> Zone.LIBRARY
                     else -> Zone.GRAVEYARD
                 }
@@ -2264,7 +2267,8 @@ class StackResolver(
 
                 pausedRedirect.additionalEffect?.let { extra ->
                     val (updatedState, extraEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
-                        pausedState, extra, pausedRedirect.effectControllerId, spellId
+                        pausedState, extra, pausedRedirect.effectControllerId, spellId,
+                        sourceId = pausedRedirect.effectSourceId
                     )
                     pausedState = updatedState
                     pausedCounterEvents.addAll(extraEvents)
@@ -2302,7 +2306,7 @@ class StackResolver(
             return ExecutionResult.success(newState, events)
         }
 
-        // Move to graveyard (or exile if selfExileOnResolve, flashback, or ExileAfterResolveComponent)
+        // Move to graveyard (or exile if selfExileOnResolve, flashback, or AfterResolveDestinationComponent)
         val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
         val cardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
         // For a cast face (Adventure / modal DFC), "Exile <name>." lives on the face's script.
@@ -2332,8 +2336,7 @@ class StackResolver(
                 state, spellId, cardDef, spellComponent.casterId, cardRegistry, predicateEvaluator
             ) != null ||
                 HarmonizeGrants.effectiveHarmonize(state, spellId, cardDef) != null)
-        val exileAfterResolveComp = newState.getEntity(spellId)?.get<ExileAfterResolveComponent>()
-        val exileAfterResolve = exileAfterResolveComp != null
+        val exileAfterResolveComp = newState.getEntity(spellId)?.get<AfterResolveDestinationComponent>()
         // Adventure face (CR 715.3d): when an Adventure resolves, exile it instead of putting
         // it in its owner's graveyard, and grant the caster permission to cast it as the
         // creature spell while it remains exiled.
@@ -2348,7 +2351,11 @@ class StackResolver(
         val reboundExile = spellComponent.castFromZone == Zone.HAND &&
             spellHasRebound(newState, spellId, cardDef)
         val intendedDestination = when {
-            selfExile || flashbackExile || exileAfterResolve || adventureFaceExile || reboundExile -> Zone.EXILE
+            // See the paused-resolve twin above: the rider wins over the intrinsic exile reasons
+            // because it is the only one that can send the card somewhere other than exile
+            // (Kylox's Voltstrider — "put it on the bottom of its owner's library instead").
+            exileAfterResolveComp != null -> exileAfterResolveComp.zone
+            selfExile || flashbackExile || adventureFaceExile || reboundExile -> Zone.EXILE
             omenFaceShuffle -> Zone.LIBRARY
             else -> Zone.GRAVEYARD
         }
@@ -2367,7 +2374,7 @@ class StackResolver(
                 .without<com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent>()
-                .without<ExileAfterResolveComponent>()
+                .without<AfterResolveDestinationComponent>()
         }
         newState = newState.removeMayPlayPermissionsForCard(spellId)
         newState = newState.addToZone(destZoneKey, spellId)
@@ -2412,7 +2419,7 @@ class StackResolver(
             events.add(LibraryShuffledEvent(ownerId))
         }
 
-        // Add counters granted by ExileAfterResolveComponent (e.g., Goliath Daydreamer's dream counter).
+        // Add counters granted by AfterResolveDestinationComponent (e.g., Goliath Daydreamer's dream counter).
         if (destinationZone == Zone.EXILE && exileAfterResolveComp != null && exileAfterResolveComp.withCounters.isNotEmpty()) {
             newState = applyExileCounters(newState, spellId, exileAfterResolveComp.withCounters, events)
         }
@@ -2446,7 +2453,8 @@ class StackResolver(
 
         redirect.additionalEffect?.let { extra ->
             val (updatedState, extraEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
-                newState, extra, redirect.effectControllerId, spellId
+                newState, extra, redirect.effectControllerId, spellId,
+                sourceId = redirect.effectSourceId
             )
             newState = updatedState
             events.addAll(extraEvents)
@@ -2517,7 +2525,7 @@ class StackResolver(
                 .without<PlayWithoutPayingCostComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.PlayWithCostIncreaseComponent>()
                 .without<com.wingedsheep.engine.state.components.identity.PlayWithFixedAlternativeManaCostComponent>()
-                .without<ExileAfterResolveComponent>()
+                .without<AfterResolveDestinationComponent>()
         }
         working = working.removeMayPlayPermissionsForCard(spellId)
 
@@ -2552,7 +2560,7 @@ class StackResolver(
     }
 
     /**
-     * Add counters to a card that was just exiled because of ExileAfterResolveComponent.
+     * Add counters to a card that was just exiled because of AfterResolveDestinationComponent.
      * Used by Goliath Daydreamer to put a dream counter on cast spells as they're exiled.
      */
     private fun applyExileCounters(
@@ -2605,14 +2613,16 @@ class StackResolver(
                 state, spellId, cardDef, spellComponent.casterId, cardRegistry, predicateEvaluator
             ) != null ||
                 HarmonizeGrants.effectiveHarmonize(state, spellId, cardDef) != null)
-        val exileAfterResolveComp = state.getEntity(spellId)?.get<ExileAfterResolveComponent>()
-        // Goliath Daydreamer-style components only exile on actual resolution; if the spell
+        val exileAfterResolveComp = state.getEntity(spellId)?.get<AfterResolveDestinationComponent>()
+        // Goliath Daydreamer-style components only redirect on actual resolution; if the spell
         // fizzles or is countered they go to graveyard normally.
-        val exileAfterResolve = exileAfterResolveComp != null && !exileAfterResolveComp.onlyIfResolved
+        val riderOnFizzle = exileAfterResolveComp?.takeIf { !it.onlyIfResolved }
         // A fizzled spell heading to its owner's graveyard is a card put into a graveyard
         // "from anywhere" — honor RedirectZoneChange replacements (Valgavoth, Leyline).
-        val fizzleRedirect = if (flashbackExile || exileAfterResolve) {
-            com.wingedsheep.engine.handlers.effects.ZoneChangeRedirectResult(Zone.EXILE)
+        val fizzleRedirect = if (flashbackExile || riderOnFizzle != null) {
+            com.wingedsheep.engine.handlers.effects.ZoneChangeRedirectResult(
+                riderOnFizzle?.zone ?: Zone.EXILE
+            )
         } else {
             com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
                 .checkZoneChangeRedirect(state, spellId, Zone.STACK, Zone.GRAVEYARD)
@@ -2962,15 +2972,15 @@ class StackResolver(
         // Remove from stack
         var newState = state.removeFromStack(spellId)
 
-        // Put in graveyard (or exile if ExileAfterResolveComponent is present)
+        // Put in graveyard (or exile if AfterResolveDestinationComponent is present)
         // Goliath Daydreamer-style components only exile on actual resolution; if the spell
         // is countered they go to graveyard normally.
-        val exileComp = container.get<ExileAfterResolveComponent>()
-        val exileAfterResolve = exileComp != null && !exileComp.onlyIfResolved
+        val riderOnCounter = container.get<AfterResolveDestinationComponent>()
+            ?.takeIf { !it.onlyIfResolved }
         // A countered spell heading to its owner's graveyard is still a card being put into a
         // graveyard "from anywhere" — honor RedirectZoneChange replacements (Valgavoth, Leyline).
-        val counterRedirect = if (exileAfterResolve) {
-            com.wingedsheep.engine.handlers.effects.ZoneChangeRedirectResult(Zone.EXILE)
+        val counterRedirect = if (riderOnCounter != null) {
+            com.wingedsheep.engine.handlers.effects.ZoneChangeRedirectResult(riderOnCounter.zone)
         } else {
             com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
                 .checkZoneChangeRedirect(state, spellId, Zone.STACK, Zone.GRAVEYARD)
@@ -3193,7 +3203,7 @@ class StackResolver(
      * [PlottedComponent] + [PlayWithoutPayingCostComponent], grant a permanent may-play
      * permission gated on [SourcePlottedOnPriorTurn] (a plotted card can't be cast the turn it
      * was plotted), and emit [CardPlottedEvent]. Shared by [ExileTargetSpellEffect]'s
-     * `makePlotted` path and the [ExileAfterResolveComponent].`makePlotted` self-cast path
+     * `makePlotted` path and the [AfterResolveDestinationComponent].`makePlotted` self-cast path
      * (Lilah, Undefeated Slickshot).
      */
     private fun applyPlottedToExiledCard(
@@ -3539,15 +3549,25 @@ class StackResolver(
         cardId: EntityId,
         playerId: EntityId
     ): GameState {
+        // Every zone below is owner-keyed, and the caster is not always the owner: Jetsam casts a
+        // spell out of *each opponent's* graveyard, Sen Triplets out of an opponent's hand. Look in
+        // the caster's own copy of the zone first (the overwhelmingly common case, and the one whose
+        // semantics the special handling below was written for), then in every other player's. A
+        // card left behind here would be on the stack and in a graveyard at the same time.
+        fun ownerOf(zone: Zone): ZoneKey? =
+            listOf(playerId).plus(state.turnOrder.filter { it != playerId })
+                .map { ZoneKey(it, zone) }
+                .firstOrNull { cardId in state.getZone(it) }
+
         // Try removing from hand first
-        val handZone = ZoneKey(playerId, Zone.HAND)
-        if (cardId in state.getZone(handZone)) {
+        val handZone = ownerOf(Zone.HAND)
+        if (handZone != null) {
             return state.removeFromZone(handZone, cardId)
         }
 
         // Also check graveyard (for flashback etc.)
-        val graveyardZone = ZoneKey(playerId, Zone.GRAVEYARD)
-        if (cardId in state.getZone(graveyardZone)) {
+        val graveyardZone = ownerOf(Zone.GRAVEYARD)
+        if (graveyardZone != null) {
             // A static ability granted to the *card while it sat in the graveyard* — Case of the
             // Uneaten Feast's "creature cards in your graveyard gain 'You may cast this card from
             // your graveyard'" — ends the moment the card leaves that zone (CR 400.7: the spell,
@@ -3586,14 +3606,14 @@ class StackResolver(
         }
 
         // Check library (for Future Sight / play from top of library)
-        val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
-        if (cardId in state.getZone(libraryZone)) {
+        val libraryZone = ownerOf(Zone.LIBRARY)
+        if (libraryZone != null) {
             return state.removeFromZone(libraryZone, cardId)
         }
 
         // Check the command zone (Commander format casts).
-        val commandZone = ZoneKey(playerId, Zone.COMMAND)
-        if (cardId in state.getZone(commandZone)) {
+        val commandZone = ownerOf(Zone.COMMAND)
+        if (commandZone != null) {
             return state.removeFromZone(commandZone, cardId)
         }
 

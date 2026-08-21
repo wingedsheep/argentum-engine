@@ -147,5 +147,13 @@ data class PreventDamageFromChosenSourceContinuation(
      * would deal damage" shield (Circle of Protection family) rather than the all-damage-from-source
      * shield. Ignored when [amount] is non-null.
      */
-    val nextInstanceOnly: Boolean = false
+    val nextInstanceOnly: Boolean = false,
+    /**
+     * When true and [amount] is null, prevent all damage the chosen source would deal **to
+     * anything** for the rest of the turn, rather than shielding a single recipient. This is the
+     * `PreventionDirection.FromTarget` reading of a chosen source — "prevent all damage that would
+     * be dealt this turn by a source of your choice" with no recipient clause (Mourner's Shield).
+     * [targetId] is unused in that case, since the shield is keyed to the source instead.
+     */
+    val silenceChosenSource: Boolean = false
 ) : ContinuationFrame

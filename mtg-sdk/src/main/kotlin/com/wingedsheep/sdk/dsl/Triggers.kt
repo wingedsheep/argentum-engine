@@ -524,6 +524,22 @@ object Triggers {
     )
 
     /**
+     * Whenever a creature dealt damage by the *attached* permanent this turn dies — the Soul Collector
+     * shape read one object further out, for an Equipment or Aura whose text says "equipped creature" /
+     * "enchanted creature" (Scythe of the Wretched). Binding ATTACHED, which is the only difference from
+     * [CreatureDealtDamageByThisDies]: the damage tracker is read off the attachment target instead of
+     * off the permanent bearing the trigger.
+     *
+     * The attachment is resolved when the creature *dies*, not when the damage was dealt — so the
+     * Equipment can move between the two moments and still fire (Scythe of the Wretched's ruling), and
+     * an unattached Equipment never fires.
+     */
+    val CreatureDealtDamageByAttachedDies: TriggerSpec = TriggerSpec(
+        event = CreatureDealtDamageBySourceDiesEvent(),
+        binding = TriggerBinding.ATTACHED
+    )
+
+    /**
      * Whenever a creature dealt damage this turn by a source matching [sourceFilter] dies
      * (Shelob, Child of Ungoliant: "by a Spider you controlled"). Binding ANY — any creature on the
      * battlefield can be the dying creature; the damaging source is matched against [sourceFilter]
@@ -2546,6 +2562,28 @@ object Triggers {
      */
     val WheneverAnOpponentSearchesTheirLibrary: TriggerSpec = TriggerSpec(
         event = SearchLibraryEvent(Player.EachOpponent),
+        binding = TriggerBinding.ANY
+    )
+
+    // =========================================================================
+    // Library Shuffle Triggers (CR 701.24)
+    // =========================================================================
+
+    /**
+     * Whenever a spell or ability causes a player to shuffle their library (CR 701.24) — the
+     * shuffle twin of [WheneverYouSearchYourLibrary], used by Psychogenic Probe. Emitted by every
+     * shuffle the engine performs on behalf of an effect, so tutors, fetches, "shuffle it into its
+     * owner's library" replacement effects, and bare `Effects.ShuffleLibrary` all drive it.
+     *
+     * Scope it with [Player.You] / [Player.EachOpponent]; the default [Player.Any] is the printed
+     * "a player", which includes the ability's own controller. `Player.TriggeringPlayer` inside the
+     * effect resolves to the player who shuffled, so "that player" is reachable.
+     *
+     * The game-rules shuffles — setting up the game (CR 103.2) and mulliganing (CR 103.5) — are
+     * caused by neither a spell nor an ability and never fire this.
+     */
+    val WheneverAPlayerShufflesTheirLibrary: TriggerSpec = TriggerSpec(
+        event = ShuffleLibraryEvent(Player.Any),
         binding = TriggerBinding.ANY
     )
 

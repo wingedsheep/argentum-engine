@@ -412,10 +412,21 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      * closed on "sum of available mana values < [amount]".
      *
      * @property amount The mana-value floor N — the total the exiled cards must meet or exceed.
+     * @property linkToSource When true, the cards exiled to pay this cost join the *source
+     *   permanent's* linked-exile pile
+     *   ([com.wingedsheep.engine.state.components.battlefield.LinkedExileComponent]), so a later
+     *   ability on that same permanent can say "cards exiled **with it**"
+     *   ([com.wingedsheep.sdk.scripting.effects.CardSource.FromLinkedExile]). Kylox's Voltstrider's
+     *   "Collect evidence 6" feeds the pile its attack trigger casts from. Off by default: an
+     *   ordinary collect evidence exiles the cards and forgets them, and an unread pile is state
+     *   the UI would otherwise tether to the permanent for no reason.
      */
     @SerialName("AtomCollectEvidence")
     @Serializable
-    data class CollectEvidence(val amount: Int) : CostAtom {
+    data class CollectEvidence(
+        val amount: Int,
+        val linkToSource: Boolean = false,
+    ) : CostAtom {
         // Variable count: at least one card must be exiled, but the binding constraint is the
         // total mana value, carried separately to the picker.
         override val selectionCount: Int get() = 1

@@ -249,6 +249,12 @@ class ReflexiveTriggerEffectExecutor(
             playerId != null && com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
                 .canCollect(state, playerId, action.amount)
         }
+        // "You may collect evidence X" (Incinerator of the Guilty) — always feasible, unlike its
+        // fixed-N sibling above. The player picks X themself and X = 0 is a legal collection that
+        // exiles nothing (2024-02-02 ruling), so there is no graveyard too thin to pay. Listed
+        // explicitly rather than left to `else -> true` so the difference from the fixed-N branch
+        // is a stated decision, not an accident of fall-through.
+        is com.wingedsheep.sdk.scripting.effects.CollectEvidenceChosenAmountEffect -> true
         else -> true
     }
 

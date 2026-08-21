@@ -115,7 +115,7 @@ class MulliganHandler(
             .clearLibraryReveals(newState, playerId)
         val (shuffledLibrary, shuffledState) = newState.nextRandom { shuffle(newState.getZone(libraryKey)) }
         newState = shuffledState.copy(zones = shuffledState.zones + (libraryKey to shuffledLibrary))
-        events.add(LibraryShuffledEvent(playerId))
+        events.add(LibraryShuffledEvent(playerId, ShuffleCause.MULLIGAN))
 
         // 3. Update mulligan count
         val newMullState = mullState.takeMulligan()

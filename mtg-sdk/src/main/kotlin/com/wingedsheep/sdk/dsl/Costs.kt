@@ -274,9 +274,14 @@ object Costs {
      * For the *linked* cast-time shape ("you may collect evidence N" + "if evidence was collected")
      * use the `collectEvidence()` DSL helper on [CardBuilder] instead — it rides the
      * optional-additional-cost rail so the declaration is observable.
+     *
+     * Set [linkToSource] when a later ability on the same permanent reads the cards this payment
+     * exiled — "cards exiled with it" (Kylox's Voltstrider). They then land in the source's
+     * linked-exile pile, which [com.wingedsheep.sdk.scripting.effects.CardSource.FromLinkedExile]
+     * gathers back.
      */
-    fun CollectEvidence(amount: Int): AbilityCost =
-        AbilityCost.Atom(CostAtom.CollectEvidence(amount))
+    fun CollectEvidence(amount: Int, linkToSource: Boolean = false): AbilityCost =
+        AbilityCost.Atom(CostAtom.CollectEvidence(amount, linkToSource))
 
     /**
      * Exile any number of cards matching [filter] from your graveyard whose summed [measure]

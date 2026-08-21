@@ -40,9 +40,11 @@ import com.wingedsheep.sdk.scripting.effects.GrantTriggeredAbilityEffect
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectionMode
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetChooser
+import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -347,6 +349,49 @@ class CardLinterTest : DescribeSpec({
             )
             CardLinter.lint(card).filterIsInstance<CardValidationError.UnsupportedOpponentChooser>()
                 .shouldBeEmpty()
+        }
+
+        // The trigger-side choosers are the mirror image: honored on a *triggered* ability and
+        // nowhere else. A `TargetObject` carries a chooser too, so the guard can't be anchored on
+        // `AnyTarget` alone.
+        it("accepts the trigger-side choosers on a triggered ability (Quicksilver Fountain)") {
+            val card = instant(
+                "Rightly Trigger-Chosen",
+                CardScript(
+                    triggeredAbilities = listOf(
+                        TriggeredAbility(
+                            id = AbilityId.generate(),
+                            trigger = EventPattern.CastThisSpellEvent,
+                            effect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
+                            targetRequirement = TargetObject(
+                                filter = TargetFilter.Creature,
+                                chooser = TargetChooser.TriggeringPlayer,
+                            ),
+                        )
+                    ),
+                ),
+            )
+            CardLinter.lint(card).filterIsInstance<CardValidationError.UnsupportedOpponentChooser>()
+                .shouldBeEmpty()
+        }
+
+        it("flags a trigger-side chooser on a spell — nothing would route it") {
+            val card = instant(
+                "Wrongly Trigger-Chosen",
+                CardScript(
+                    spellEffect = DealDamageEffect(DynamicAmount.Fixed(1), EffectTarget.ContextTarget(0)),
+                    targetRequirements = listOf(
+                        TargetObject(
+                            filter = TargetFilter.Creature,
+                            chooser = TargetChooser.ControllerOfTriggeringEntity,
+                        )
+                    ),
+                ),
+            )
+            val findings = CardLinter.lint(card)
+                .filterIsInstance<CardValidationError.UnsupportedOpponentChooser>()
+            findings.shouldHaveSize(1)
+            findings[0].message shouldContain "a triggered ability"
         }
     }
 
