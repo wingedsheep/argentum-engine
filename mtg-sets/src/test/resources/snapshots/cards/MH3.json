@@ -943,7 +943,8 @@
                     "type": "MoveToZone",
                     "target": "Self",
                     "destination": "Battlefield",
-                    "placement": "Tapped"
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard"
                 },
                 "activeZones": [
                     "Battlefield",
