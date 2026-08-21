@@ -1,0 +1,56 @@
+{
+  "player1Name": "Player 1",
+  "player2Name": "Player 2",
+  "player1": {
+    "lifeTotal": 20,
+    "battlefield": [
+      {
+        "name": "Head of the Hunt"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "battlefield": [
+      {
+        "name": "Castle Ardenvale"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Llanowar Elves"
+      },
+      {
+        "name": "Llanowar Elves"
+      },
+      {
+        "name": "Llanowar Elves"
+      }
+    ],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "mode": "SELF"
+}

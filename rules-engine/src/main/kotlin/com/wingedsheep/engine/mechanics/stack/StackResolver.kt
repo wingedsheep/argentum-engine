@@ -2264,7 +2264,8 @@ class StackResolver(
 
                 pausedRedirect.additionalEffect?.let { extra ->
                     val (updatedState, extraEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
-                        pausedState, extra, pausedRedirect.effectControllerId, spellId
+                        pausedState, extra, pausedRedirect.effectControllerId, spellId,
+                        sourceId = pausedRedirect.effectSourceId
                     )
                     pausedState = updatedState
                     pausedCounterEvents.addAll(extraEvents)
@@ -2446,7 +2447,8 @@ class StackResolver(
 
         redirect.additionalEffect?.let { extra ->
             val (updatedState, extraEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
-                newState, extra, redirect.effectControllerId, spellId
+                newState, extra, redirect.effectControllerId, spellId,
+                sourceId = redirect.effectSourceId
             )
             newState = updatedState
             events.addAll(extraEvents)

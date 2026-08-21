@@ -14,7 +14,9 @@ class ZeroToughnessCheck : StateBasedActionCheck {
     override val name = "704.5f Zero Toughness"
     override val order = SbaOrder.ZERO_TOUGHNESS
 
-    override fun check(state: GameState): ExecutionResult {
+    override fun check(state: GameState): ExecutionResult = check(state, state)
+
+    override fun check(state: GameState, passStartState: GameState): ExecutionResult {
         var newState = state
         val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
         val projected = state.projectedState
@@ -28,8 +30,10 @@ class ZeroToughnessCheck : StateBasedActionCheck {
             val effectiveToughness = projected.getToughness(entityId) ?: 0
 
             if (effectiveToughness <= 0) {
+                // Same simultaneity rule as LethalDamageCheck: battlefield-sourced death
+                // replacements are read off the pass-start state (CR 704.3 / 614.1).
                 val result = SbaZoneMovementHelper.putCreatureInGraveyard(
-                    newState, entityId, cardComponent, "zero toughness"
+                    newState, entityId, cardComponent, "zero toughness", passStartState
                 )
                 newState = result.newState
                 events.addAll(result.events)

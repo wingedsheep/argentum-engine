@@ -10417,8 +10417,12 @@ The priority groups are (CR 616.1a–f):
   appliesTo)` — like `RedirectZoneChange` but also runs `additionalEffect` when the replacement fires.
   The additional effect is applied through a small executor whitelist (not the full pipeline) —
   `TakeExtraTurnEffect` (Ugin's Nexus), `AddCountersEffect` on the redirected card (Darigaaz
-  Reincarnated), and `GainLifeEffect` (fixed amount, gained by the replacement source's controller;
-  emits `LifeChangedEvent` so life-gain triggers fire). `selfOnly = true` restricts it to the source
+  Reincarnated), `GainLifeEffect` (fixed amount, gained by the replacement source's controller;
+  emits `LifeChangedEvent` so life-gain triggers fire), and `CreateTokenEffect` (Head of the Hunt's
+  "When you do, create a 2/2 green Wolf creature token" — minted for the replacement source's
+  controller through the real `CreateTokenExecutor`, so the token gets the minting set's art, its
+  keywords and static abilities, and the enters-the-battlefield events ETB triggers read).
+  `selfOnly = true` restricts it to the source
   permanent itself; `linkToSource = true` (exile destination only) adds the redirected card to the
   source's `LinkedExileComponent` exactly like `RedirectZoneChange.linkToSource`. The Darkness Crystal's
   "If a nontoken creature an opponent controls would die, instead exile it and you gain 2 life" is

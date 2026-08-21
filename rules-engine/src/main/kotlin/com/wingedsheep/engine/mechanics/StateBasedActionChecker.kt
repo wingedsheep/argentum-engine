@@ -95,7 +95,10 @@ class StateBasedActionChecker(
         val events = mutableListOf<GameEvent>()
 
         for (check in registry.allChecks()) {
-            val result = check.check(newState)
+            // `state` is the pass-start snapshot: everything this pass performs is one
+            // simultaneous event (CR 704.3), so a check that must see the battlefield as it
+            // stood before the batch started gets it rather than reconstructing it.
+            val result = check.check(newState, state)
 
             if (result.isPaused) {
                 // Return paused with events accumulated so far + this check's events

@@ -58,6 +58,15 @@ class EngineServices(
         // does. The handler is stateless beyond the registry, so a singleton is sufficient.
         ZoneTransitionService.staticAbilityHandler = StaticAbilityHandler(cardRegistry)
         ZoneTransitionService.cardRegistry = cardRegistry
+        // A zone-change replacement's "…instead. When you do, create a token" rider (Head of the
+        // Hunt) mints through the same executor an ability would, so the token gets the minting
+        // set's art and its static abilities rather than the bare generic fallback.
+        com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.tokenExecutor =
+            com.wingedsheep.engine.handlers.effects.token.CreateTokenExecutor(
+                staticAbilityHandler = StaticAbilityHandler(cardRegistry),
+                cardRegistry = cardRegistry,
+                tokenArtRegistry = tokenArtRegistry
+            )
     }
     /**
      * The one replacement-effect processor for this game. Declared before anything that
