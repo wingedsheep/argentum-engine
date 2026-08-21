@@ -15754,7 +15754,7 @@
                         }
                     },
                     "then": {
-                        "type": "GainControlByRank",
+                        "type": "GainControlByMost",
                         "metric": {
                             "type": "CreaturesOfSubtype",
                             "subtype": "Wizard"
