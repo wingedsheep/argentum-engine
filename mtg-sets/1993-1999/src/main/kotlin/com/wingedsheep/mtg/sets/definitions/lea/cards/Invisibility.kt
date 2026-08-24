@@ -28,7 +28,7 @@ val Invisibility = card("Invisibility") {
     auraTarget = Targets.Creature
     staticAbility {
         ability = CantBeBlockedExceptBy(
-            blockerFilter = GameObjectFilter.Creature.withSubtype(Subtype.WALL),
+            blockerFilter = GameObjectFilter.Permanent.withSubtype(Subtype.WALL),
             filter = GroupFilter.attachedCreature()
         )
     }

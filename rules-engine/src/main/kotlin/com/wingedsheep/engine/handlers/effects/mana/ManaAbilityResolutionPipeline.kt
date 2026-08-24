@@ -261,18 +261,34 @@ class ManaAbilityResolutionPipeline(
         var currentState = state
         val events = existingEvents.toMutableList()
 
-        for (entityId in currentState.getBattlefield()) {
-            val container = currentState.getEntity(entityId) ?: continue
-            val card = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
+        // Printed statics on the battlefield, plus statics granted at runtime. The grant channel is
+        // what lets a *spell* create one of these at all — High Tide has no permanent to print it
+        // on and grants it to its controller for the turn.
+        val holders: List<Pair<EntityId, AdditionalManaOnSourceTap>> =
+            currentState.getBattlefield().flatMap { entityId ->
+                val container = currentState.getEntity(entityId)
+                val card = container?.get<CardComponent>()
+                val cardDef = card?.let { cardRegistry.getCard(it.cardDefinitionId) }
+                cardDef?.script?.staticAbilities.orEmpty()
+                    .filterIsInstance<AdditionalManaOnSourceTap>()
+                    .map { entityId to it }
+            } + currentState.grantedStaticAbilities.mapNotNull { granted ->
+                (granted.ability as? AdditionalManaOnSourceTap)?.let { granted.entityId to it }
+            }
 
-            for (staticAbility in cardDef.script.staticAbilities) {
-                val onSourceTap = staticAbility as? AdditionalManaOnSourceTap ?: continue
+        for ((entityId, onSourceTap) in holders) {
+            val container = currentState.getEntity(entityId)
+            val card = container?.get<CardComponent>()
+            run {
 
                 // Gate on the produced-mana type ("tap a land for {C}" only fires on a colorless tap).
                 if (!producedManaMatches(onSourceTap.whenProducing, producedColor, producedColorless)) continue
 
-                val staticController = currentState.projectedState.getController(entityId) ?: continue
+                // A grant held by a player entity has no controller of its own; the holder *is*
+                // the player, which is the right "you" for any controller predicate in the filter.
+                val staticController = currentState.projectedState.getController(entityId)
+                    ?: entityId.takeIf { currentState.turnOrder.contains(it) }
+                    ?: continue
 
                 // Filter is evaluated from the static-ability controller's perspective so
                 // `youControl` on the source filter means "controlled by you, the static
@@ -312,7 +328,7 @@ class ManaAbilityResolutionPipeline(
                     events.add(ManaAddedEvent(
                         playerId = tappingPlayerId,
                         sourceId = entityId,
-                        sourceName = card.name,
+                        sourceName = card?.name ?: "",
                         white = if (bonusColor == Color.WHITE) bonusAmount else 0,
                         blue = if (bonusColor == Color.BLUE) bonusAmount else 0,
                         black = if (bonusColor == Color.BLACK) bonusAmount else 0,

@@ -50,6 +50,20 @@ data class ActivatedAbility(
      */
     val equipQuality: String? = null,
     val activateFromZone: Zone = Zone.BATTLEFIELD,
+    /**
+     * Count this ability's activations for the turn even though no [restrictions] entry needs the
+     * tally. The engine only bookkeeps activations for abilities gated by `OncePerTurn` /
+     * `MaxPerTurn`, because that is all anything used to read; Fallen Empires' burnout mana
+     * creatures (Farrelite Priest, Initiates of the Ebon Hand) read the count *without* being
+     * limited by it — "{1}: Add {W}. If this ability has been activated four or more times this
+     * turn, sacrifice this creature at the beginning of the next end step." (the Initiates add
+     * {B} rather than {W}; the burnout clause is identical).
+     *
+     * Opt-in rather than always-on so the per-activation bookkeeping stays off the hot path for
+     * the overwhelming majority of abilities that never look at it. Pair with
+     * `Conditions.ThisAbilityActivatedThisTurnAtLeast`.
+     */
+    val trackActivations: Boolean = false,
     val descriptionOverride: String? = null,
     val hasConvoke: Boolean = false,
     /**
@@ -139,6 +153,34 @@ data class ActivatedAbility(
      * bound to this value.
      */
     val minimumXValue: Int = 0,
+    /**
+     * The value of the `{X}` in this ability's activation cost, **defined by the ability's own
+     * text** (CR 107.3c) instead of chosen by its controller (CR 107.3a).
+     *
+     * Soul Foundry's "{X}, {T}: Create a token that's a copy of the exiled card. X is the mana
+     * value of that card." is the shape: the cost is printed as `{X}`, but the player never picks
+     * a number — the imprinted card decides it. Elite Arcanist, Prototype Portal and Caller of the
+     * Untamed are the same template, and any "X is …" clause attached to an activation cost fits.
+     *
+     * Mechanically this is a *substitution*, not a cost reduction and not a new mana atom: the
+     * amount is evaluated against the source permanent and folded into the cost's `{X}` symbols
+     * with [com.wingedsheep.sdk.core.ManaCost.withXAs] before affordability, the X-choice pause,
+     * or payment ever look at it. Three consequences fall out of that and are the contract here:
+     *  - the ability is offered at its *resolved* price (`{3}, {T}` for an imprinted three-drop),
+     *    while its oracle text keeps saying `{X}`;
+     *  - there is no "choose X" prompt, and [minimumXValue] does not apply — a defined X is not a
+     *    choice to clamp;
+     *  - the same number is bound as the activation's X value, so every other X-linked cost
+     *    ([AbilityCost.PayXLife], [AbilityCost.ExileXFromGraveyard],
+     *    `CostAtom.RemoveCounters(count = XValue)`) and any `DynamicAmount.XValue` read in the
+     *    effect see it too (CR 107.3i, 107.3k).
+     *
+     * X is fixed as the ability is activated, which is when it is paid; an amount that resolves to
+     * nothing (Soul Foundry with no imprint, because the controller declined or the card left
+     * exile) evaluates to 0, leaving a `{0}, {T}` ability that is legal to activate and simply
+     * does nothing — the printed behaviour.
+     */
+    val xDefinedAs: DynamicAmount? = null,
     /**
      * When true, this activated ability can't be copied by effects that copy abilities (CR 707.10e).
      * The engine tags the ability instance on the stack with a can't-be-copied marker so a
@@ -530,6 +572,21 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
             }
             return if (changed) copy(costs = newCosts) else this
         }
+    }
+
+    /**
+     * Pay the mana cost of the permanent this Aura/Equipment is attached to — Merseine's
+     * "Pay enchanted creature's mana cost: Remove a net counter from this Aura."
+     *
+     * Lowered to a plain [Atom] mana cost against the attached permanent's printed cost before
+     * anything prices or pays it, the same way `PayCost.OwnManaCost` is lowered against its source,
+     * so every downstream path sees a uniform shape. An unattached source, or one attached to a
+     * permanent with no mana cost, prices as {0}.
+     */
+    @SerialName("AttachedPermanentManaCost")
+    @Serializable
+    data object AttachedPermanentManaCost : AbilityCost {
+        override val description: String = "Pay enchanted permanent's mana cost"
     }
 
     /** Tap the creature this aura is attached to ({T} enchanted creature) */

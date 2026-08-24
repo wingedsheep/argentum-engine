@@ -10,6 +10,7 @@ import kotlinx.serialization.Serializable
  * Used by [GrantMayPlayFromExileEffect] to express durations like:
  *  - "until end of turn" → [EndOfTurn]
  *  - "for as long as it remains exiled" → [Permanent]
+ *  - "for as long as the granting permanent is on the battlefield" → [WhileSourceOnBattlefield]
  *  - "until your next end step" → `UntilControllerStep(Step.END, includeCurrentTurn = true)`
  *  - "until end of your next turn" → `UntilControllerStep(Step.CLEANUP, includeCurrentTurn = false)`
  *  - "until your next upkeep" → `UntilControllerStep(Step.UPKEEP, includeCurrentTurn = false)`
@@ -103,6 +104,38 @@ sealed interface MayPlayExpiry {
         val sourceDescription: String = "this permanent"
     ) : MayPlayExpiry {
         override val description = "for as long as you control $sourceDescription"
+    }
+
+    /**
+     * Permission lasts for as long as the **granting permanent stays on the battlefield** —
+     * regardless of who controls it, and regardless of who holds the permission.
+     *
+     * The controller-blind sibling of [WhileYouControlSource]. It exists because a card can hand
+     * this permission to a player who does *not* control the source: Shared Fate ("Each player may
+     * look at cards they exiled with this enchantment, and they may play lands and cast spells
+     * from among those cards") grants to every player, including the opponents its controller
+     * never shares a permanent with. Keying that window off "you control the source" would revoke
+     * every opponent's grant on the first state-based check.
+     *
+     * The window closes on the source's *zone*, so a Threaten-style steal of the source leaves the
+     * permission intact — which is right for a static-ability-shaped grant: the second sentence of
+     * Shared Fate keeps functioning under a new controller, and only stops when the enchantment
+     * itself is gone. That is the difference the ruling turns on ("If the Shared Fate which was
+     * responsible for a card being exiled leaves the battlefield, putting another Shared Fate onto
+     * the battlefield will not allow you to play that card again").
+     *
+     * One-way, per CR 611.2b, on the same terms as [WhileYouControlSource]: no permission is
+     * created at all if the source has already left when the grant would apply, and once the
+     * window closes the permission is physically removed rather than gated, so the source
+     * returning does not revive it. Requires a source id; without one the window can never be
+     * evaluated and the permission is not created.
+     */
+    @SerialName("WhileSourceOnBattlefield")
+    @Serializable
+    data class WhileSourceOnBattlefield(
+        val sourceDescription: String = "this permanent"
+    ) : MayPlayExpiry {
+        override val description = "for as long as $sourceDescription remains on the battlefield"
     }
 
     companion object {

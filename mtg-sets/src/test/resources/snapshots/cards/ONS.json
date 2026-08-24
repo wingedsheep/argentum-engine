@@ -149,7 +149,7 @@
             "count": {
                 "type": "AggregateBattlefield",
                 "player": "Each",
-                "filter": "creature Bird"
+                "filter": "permanent Bird"
             }
         }
     },
@@ -6885,13 +6885,14 @@
                     "atom": {
                         "type": "AtomTapPermanents",
                         "count": 3,
-                        "filter": "creature Cleric"
+                        "filter": "permanent Cleric"
                     }
                 },
                 "effect": {
                     "type": "MoveToZone",
                     "target": "Self",
-                    "destination": "Hand"
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
                 },
                 "activateFromZone": "Graveyard"
             }
@@ -16439,7 +16440,8 @@
                 "effect": {
                     "type": "MoveToZone",
                     "target": "Self",
-                    "destination": "Hand"
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
                 },
                 "restrictions": [
                     {

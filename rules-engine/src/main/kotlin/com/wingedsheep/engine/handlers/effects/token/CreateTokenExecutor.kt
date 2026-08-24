@@ -285,7 +285,7 @@ class CreateTokenExecutor(
         val counterEvents = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
         for (tokenId in createdTokens) {
             val (nextState, events) = EntersWithReplacements.applyGlobal(
-                newState, tokenId, tokenControllerId
+                newState, tokenId, tokenControllerId, cardRegistry
             )
             newState = nextState
             counterEvents.addAll(events)

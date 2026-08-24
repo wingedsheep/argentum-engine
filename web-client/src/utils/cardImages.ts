@@ -1,3 +1,7 @@
+// The three face-down helper cards below mirror `FaceDownMode.helperCardImageUri` in `mtg-sdk`: the
+// server sends the same URL as a masked face-down card's `imageUri`, and these constants cover the
+// surfaces the client draws from the mode alone. Keep the two lists in sync.
+
 /**
  * Standard MTG morph face-down card art from Scryfall.
  * This is the official morph token from Commander 2019 (TC19 #27) showing the distinctive helmet artwork.

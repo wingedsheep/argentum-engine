@@ -370,6 +370,21 @@ data class GameState(
      * would be independently checked against the processor.
      */
     val activeReplacementChain: Set<ReplacementEffectIdentity>? = null,
+
+    /**
+     * Answers to the "**you may** have that damage dealt to you instead" prompts of an optional
+     * damage-redirection shield (Blood of the Martyr), for the damage event currently being applied.
+     *
+     * Keyed by shield + damage source + recipient (see
+     * [com.wingedsheep.engine.handlers.effects.damage.OptionalDamageRedirect.choiceKey]) so each
+     * damage instance in a simultaneous batch is answered on its own. Entries are written by the
+     * choice pre-pass that runs *before* any of that damage is dealt, consumed by
+     * [com.wingedsheep.engine.handlers.effects.DamageUtils.checkDamageRedirection] as each instance
+     * is applied, and pruned when the next pre-pass finds them stale (the recipient died first, a
+     * shield counter ate the damage). A missing entry means "declined" — the shield never redirects
+     * on its controller's behalf without having asked.
+     */
+    val optionalDamageRedirectChoices: Map<String, Boolean> = emptyMap(),
 ) {
     /**
      * Cached projection of the game state with all continuous effects (Rule 613) applied.

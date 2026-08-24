@@ -2,7 +2,7 @@
 
 **Set Size:** 78 cards
 **Release Date:** December 17, 1993
-**Implemented:** 74 / 78
+**Implemented:** 75 / 78
 | Color | Count |
 |-------|-------|
 | White | 11 |
@@ -82,7 +82,7 @@
 - [x] Jandor's Saddlebags
 - [ ] Jeweled Bird
 - [x] Pyramids
-- [ ] Ring of Ma'rûf
+- [x] Ring of Ma'rûf
 - [x] Sandals of Abdallah
 - [x] Bazaar of Baghdad
 - [x] City of Brass

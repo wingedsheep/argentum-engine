@@ -646,6 +646,27 @@ running without one. In-progress recordings are flushed to the store every few s
 `ReplayCheckpointFlusher` and picked back up on restart, which is what lets the Redis session blob
 carry no replay data at all.
 
+#### Bounded recordings
+
+A recording stops after `ReplayRecordingPolicy.MAX_RECORDED_ACTIONS` (25,000) actions and the record
+is flagged `truncated`. Storage isn't the reason — the input log is ~7 stored bytes per action — the
+cost of *recording* is: the live log is a copy-on-write list, so a game's recording is O(n²) element
+copies in its own length, and the flusher re-encodes the whole log every few seconds until the game
+ends. Both are free at the few hundred actions a real game takes and ruinous at six figures.
+
+Past the cap the log is frozen: an undo may still shorten it (leaving a valid shorter prefix) but
+nothing may extend it again, or the record would have a hole in the middle and reconstruct a game
+nobody played. The result is the same "keep the honest shorter prefix" outcome a lost flush already
+produces, and `viewerPayload` reports it — the frames are an exact re-simulation and
+`stateReproducible` stays true, so the scenario buttons keep working; only the ending is missing, and
+the viewer shows a **Partial recording** badge (as against **From archive**, which means `DIVERGED`).
+
+The cap sits deliberately *below* the game-level runaway backstop
+(`GameStallGuard.MAX_ACTIONS`, 50,000 — see
+[engine-server-interface.md](engine-server-interface.md) → *The server's own game over*): if a game
+gets that long we would rather truncate the record than end a game somebody is playing, so the
+recording gives up first and the game carries on.
+
 The flush is on a timer, not per action, so a crash can lose the tail of a recording. Splicing the
 rest of the game onto that short prefix would produce a record of a game nobody played, so each
 flush also writes a `resume_fingerprint` of the live position; on restore, `GameSession` compares it

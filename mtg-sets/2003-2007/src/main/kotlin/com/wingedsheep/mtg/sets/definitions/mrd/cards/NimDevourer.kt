@@ -32,12 +32,19 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * **effect**, not the cost: the {B}{B} is all you pay to put it on the stack. That ordering
  * matters — the Devourer is back on the battlefield by the time the edict resolves, so it is a
  * legal (and, with an otherwise empty board, the only) sacrifice, which is exactly how the
- * printed card behaves. The sacrifice is `Player.You` choosing, not a targeted permanent, so it
- * follows the "sacrifice a creature" template rather than "sacrifice this creature".
+ * printed card behaves. The sacrifice is the bare imperative — [Effects.SacrificeOwn], the
+ * controller choosing with no player named — rather than "sacrifice this creature" or the
+ * `ForceSacrifice` form that names a player.
  *
  * "Activate only during your upkeep" composes the two timing gates the engine already has:
- * `DuringStep(UPKEEP)` bounds the step and `OnlyDuringYourTurn` bounds whose upkeep it is —
- * either alone would let it fire on an opponent's upkeep or during your own later steps.
+ * `DuringStep(UPKEEP)` bounds the step and `OnlyDuringYourTurn` bounds whose upkeep it is — either
+ * alone would let it fire on an opponent's upkeep or during your own later steps. They go inside one
+ * [ActivationRestriction.All] because the printed clause is one phrase: six cards spell "only during
+ * your upkeep" that way, and Argentum Assay reads it as one row of its restriction vocabulary.
+ *
+ * The return carries the graveyard guard ([Effects.PutOntoBattlefieldFromGraveyard]) — nothing
+ * re-checks `activateFromZone` on resolution, so without it a Devourer exiled from the graveyard in
+ * response would come back from exile.
  */
 val NimDevourer = card("Nim Devourer") {
     manaCost = "{3}{B}{B}"
@@ -61,18 +68,16 @@ val NimDevourer = card("Nim Devourer") {
         cost = Costs.Mana("{B}{B}")
         effect = Effects.Composite(
             listOf(
-                Effects.PutOntoBattlefield(EffectTarget.Self),
-                Effects.Sacrifice(
-                    filter = GameObjectFilter.Creature,
-                    count = 1,
-                    target = EffectTarget.PlayerRef(Player.You)
-                )
+                Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.Self),
+                Effects.SacrificeOwn(GameObjectFilter.Creature)
             )
         )
         activateFromZone = Zone.GRAVEYARD
         restrictions = listOf(
-            ActivationRestriction.DuringStep(Step.UPKEEP),
-            ActivationRestriction.OnlyDuringYourTurn
+            ActivationRestriction.All(
+                ActivationRestriction.OnlyDuringYourTurn,
+                ActivationRestriction.DuringStep(Step.UPKEEP)
+            )
         )
     }
 

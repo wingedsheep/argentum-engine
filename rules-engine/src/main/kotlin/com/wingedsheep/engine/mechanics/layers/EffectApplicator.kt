@@ -189,6 +189,43 @@ internal class EffectApplicator(
                     values.subtypes.addAll(mod.subtypes)
                     values.types.addAll(mod.subtypes)
                 }
+                is Modification.SetCreatureSubtypesFrom -> {
+                    // "Has the creature types of [that object]" (Duplicant). Same replace-only-the-
+                    // creature-types semantics as SetCreatureSubtypes above (CR 205.1b — non-creature
+                    // subtypes are untouched), but the set is read from the referenced object on every
+                    // projection pass instead of being baked in at conversion time.
+                    //
+                    // The reference is resolved against a bare EffectContext rooted at the *effect's*
+                    // source, which is all LinkedExiledCard needs — see ProjectionScopedAmounts for
+                    // why the context-scoped references can't be used here. The referenced card is in
+                    // exile and has no projection entry, so its printed creature types are the right
+                    // (and only) read.
+                    val creatureTypes = com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES.toSet()
+                    val controllerId = projectedValues[effect.sourceId]?.controllerId
+                        ?: state.getEntity(effect.sourceId)?.get<ControllerComponent>()?.playerId
+                        ?: effect.controllerId
+                    val donorId = controllerId?.let {
+                        com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveEntityReference(
+                            mod.source,
+                            EffectContext(
+                                sourceId = effect.sourceId,
+                                controllerId = it,
+                                affectedEntityId = entityId
+                            ),
+                            state
+                        )
+                    }
+                    val donorTypes = donorId
+                        ?.let { state.getEntity(it)?.get<CardComponent>() }
+                        ?.typeLine?.subtypes.orEmpty()
+                        .map { it.value }
+                        .filter { it in creatureTypes }
+                    val newTypes = donorTypes.toSet() + mod.retainedTypes
+                    values.subtypes.removeAll { it in creatureTypes }
+                    values.types.removeAll { it in creatureTypes }
+                    values.subtypes.addAll(newTypes)
+                    values.types.addAll(newTypes)
+                }
                 is Modification.SetBasicLandTypes -> {
                     val basicLandTypes = com.wingedsheep.sdk.core.Subtype.ALL_BASIC_LAND_TYPES
                     values.subtypes.removeAll { it in basicLandTypes }
@@ -358,9 +395,22 @@ internal class EffectApplicator(
             val plusZeroPlusOne = counters.getCount(CounterType.PLUS_ZERO_PLUS_ONE)
             val minusOneMinusZero = counters.getCount(CounterType.MINUS_ONE_MINUS_ZERO)
             val minusZeroMinusOne = counters.getCount(CounterType.MINUS_ZERO_MINUS_ONE)
+            // Frankenstein's Monster's +2/+0 and +0/+2 — a distinct counter kind, not two +1/+0s.
+            val plusTwoPlusZero = counters.getCount(CounterType.PLUS_TWO_PLUS_ZERO)
+            val plusZeroPlusTwo = counters.getCount(CounterType.PLUS_ZERO_PLUS_TWO)
 
-            val powerMod = (plusOneCounters - minusOneCounters) + plusOnePlusZero - minusOneMinusZero
-            val toughnessMod = (plusOneCounters - minusOneCounters) + plusZeroPlusOne - minusZeroMinusOne
+            // The Fallen Empires sizes — +1/+2 (Armor Thrull), +2/+2 (Soul Exchange),
+            // -2/-2 (Ebon Praetor). Same rule (CR 122.1a), different X and Y.
+            val plusOnePlusTwo = counters.getCount(CounterType.PLUS_ONE_PLUS_TWO)
+            val plusTwoPlusTwo = counters.getCount(CounterType.PLUS_TWO_PLUS_TWO)
+            val minusTwoMinusTwo = counters.getCount(CounterType.MINUS_TWO_MINUS_TWO)
+
+            val powerMod = (plusOneCounters - minusOneCounters) +
+                plusOnePlusZero - minusOneMinusZero + (2 * plusTwoPlusZero) +
+                plusOnePlusTwo + (2 * plusTwoPlusTwo) - (2 * minusTwoMinusTwo)
+            val toughnessMod = (plusOneCounters - minusOneCounters) +
+                plusZeroPlusOne - minusZeroMinusOne + (2 * plusZeroPlusTwo) +
+                (2 * plusOnePlusTwo) + (2 * plusTwoPlusTwo) - (2 * minusTwoMinusTwo)
 
             if (powerMod != 0) {
                 values.power = (values.power ?: 0) + powerMod

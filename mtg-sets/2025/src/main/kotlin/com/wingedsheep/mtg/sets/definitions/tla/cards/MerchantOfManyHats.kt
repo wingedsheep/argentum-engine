@@ -24,7 +24,7 @@ val MerchantOfManyHats = card("Merchant of Many Hats") {
 
     activatedAbility {
         cost = Costs.Mana("{2}{B}")
-        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
+        effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self)
         activateFromZone = Zone.GRAVEYARD
     }
 

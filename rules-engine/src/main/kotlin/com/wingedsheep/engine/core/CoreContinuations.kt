@@ -108,6 +108,13 @@ data class TriggeredAbilityContinuation(
     /** Pipeline state carried from a `ReflexiveTriggerEffect`'s action half, preserved across target
      *  selection so the stack object built on resume carries it (CR 603.12). Null otherwise. */
     val carriedPipeline: com.wingedsheep.engine.handlers.PipelineState? = null,
+    /** The objects a batch trigger captured as "the ones that caused it" (CR 603.2c), preserved
+     *  across target selection so the stack object built on resume still exposes them to the
+     *  payoff under `PipelineState.TRIGGER_CAPTURED_COLLECTION`. Without this a batch trigger that
+     *  *also* targets — "…are put into exile, you may choose a creature card from among them.
+     *  Until end of turn, **target** token you control becomes a copy of it" (Kaya, Spirits'
+     *  Justice) — resolves with an empty "them". Empty for non-batch triggers. */
+    val capturedEntityIds: List<EntityId> = emptyList(),
     /** The ability's intervening-"if" (CR 603.4), preserved across target selection so the stack
      *  object built on resume can re-check it as it resolves. See
      *  [com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent.interveningIf]. */
@@ -161,6 +168,9 @@ data class TriggerDamageDistributionContinuation(
     val totalDamage: Int,
     val lastKnownPower: Int? = null,
     val lastKnownToughness: Int? = null,
+    /** The objects a batch trigger captured (CR 603.2c), carried on through this second pause so
+     *  they reach the stack object alongside the distribution. Empty for non-batch triggers. */
+    val capturedEntityIds: List<EntityId> = emptyList(),
     /** The ability's intervening-"if" (CR 603.4), preserved across the distribution decision so the
      *  stack object built on resume can re-check it as it resolves. */
     val interveningIf: com.wingedsheep.sdk.scripting.conditions.Condition? = null
@@ -470,6 +480,38 @@ data class FlipCoinsUntilLossContinuation(
     val storeWinsAs: String,
     val winsSoFar: Int,
     val sourceId: EntityId?
+) : ContinuationFrame
+
+/**
+ * Resume a coin flip after the flipper says which of the coins to keep — the pause a
+ * [com.wingedsheep.sdk.scripting.FlipAdditionalCoins] replacement (Krark's Thumb) introduces into
+ * every coin-flip executor.
+ *
+ * One frame serves all four flip effects because the *only* thing the pause interrupts is producing
+ * the results; what each effect does with them afterwards is decided from [effect] on resume. That
+ * is why [effect] and [effectContext] are carried whole rather than the four executors each getting
+ * a frame of their own: the sub-effect a [com.wingedsheep.sdk.scripting.effects.FlipCoinEffect]
+ * runs on a win needs the original context's targets, and re-deriving them field by field is how
+ * continuations lose them.
+ *
+ * A batch can owe several answers (one per coin whose replacement came up mixed), so resuming may
+ * push this same frame again — [pending] carries how far the batch got.
+ *
+ * @property effect The flip effect that was executing; decides what happens once the coins settle.
+ * @property effectContext The context that effect was running under, restored verbatim on resume.
+ * @property pending The batch part-way through being resolved (see
+ *   [com.wingedsheep.engine.handlers.effects.CoinFlipService.PendingCoinFlipChoice]).
+ * @property winsSoFar Only meaningful for
+ *   [com.wingedsheep.sdk.scripting.effects.FlipCoinsUntilLossEffect]: flips won before this one, so
+ *   the run's tally survives the extra pause exactly as it survives the "flip again?" one.
+ */
+@Serializable
+data class CoinFlipChoiceContinuation(
+    override val decisionId: String,
+    val effect: Effect,
+    val effectContext: EffectContext,
+    val pending: com.wingedsheep.engine.handlers.effects.CoinFlipService.PendingCoinFlipChoice,
+    val winsSoFar: Int = 0
 ) : ContinuationFrame
 
 /**

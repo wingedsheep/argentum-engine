@@ -35,13 +35,17 @@ class RedirectNextDamageExecutor : EffectExecutor<RedirectNextDamageEffect> {
             context.resolveTarget(target)
         }.toSet()
 
-        if (protectedIds.isEmpty()) {
+        // A creatures-only shield protects a *class*, not a list, so it carries no protected ids
+        // and must not be rejected for having none (Blood of the Martyr).
+        if (protectedIds.isEmpty() && !effect.creaturesOnly) {
             return EffectResult.error(state, "Could not resolve any protected targets for RedirectNextDamageEffect")
         }
 
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
-            modification = SerializableModification.RedirectNextDamage(redirectToId, effect.amount, effect.scope),
+            modification = SerializableModification.RedirectNextDamage(
+                redirectToId, effect.amount, effect.scope, effect.creaturesOnly, effect.optional
+            ),
             affectedEntities = protectedIds,
             duration = Duration.EndOfTurn,
             context = context

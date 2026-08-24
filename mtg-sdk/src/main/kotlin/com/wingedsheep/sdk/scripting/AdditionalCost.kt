@@ -144,7 +144,7 @@ sealed interface AdditionalCost : TextReplaceable<AdditionalCost> {
      * non-mana costs*. Options where one branch instead pays *additional mana* ("… or pay {2}") are
      * [OrPay] (and [BlightOrPay], the one shape it can't wrap) — those fold the alternative into the
      * spell's mana cost, which [Choice] never does.
-     * [Forage] (CR 701.61) is the named keyword shortcut for a fixed two-option cost-vs-cost (exile
+     * [Forage] (CR 701.59a) is the named keyword shortcut for a fixed two-option cost-vs-cost (exile
      * three from your graveyard / sacrifice a Food); [Choice] is its open, parameterized generalization.
      *
      * Each option surfaces as its own cast-time legal action (the same multi-action pattern the OrPay

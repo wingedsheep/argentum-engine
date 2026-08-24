@@ -189,7 +189,14 @@ class ReplayService(
                 body = presentation.compose(reconstructed),
                 frameCount = reconstructed.frameCount,
                 fidelity = reconstructed.fidelity,
-                degradedReason = null,
+                // A truncated record re-simulates perfectly — it is simply not the whole game, and
+                // the one thing it must not do is look like it is. Note this says nothing about
+                // fidelity: these frames are exact, there are just fewer of them than were played.
+                degradedReason = if (stored.replay.truncated) {
+                    "Only the first ${stored.replay.frameCount} frames of this game were recorded — " +
+                        "it ran long enough that recording had to stop, and it continued past the end " +
+                        "of what you can watch here."
+                } else null,
                 stateReproducible = true,
             )
         }

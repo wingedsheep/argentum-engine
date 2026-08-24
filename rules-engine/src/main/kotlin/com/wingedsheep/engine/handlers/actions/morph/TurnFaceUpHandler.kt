@@ -31,6 +31,8 @@ import com.wingedsheep.engine.state.components.identity.MorphDataComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.TurnedPermanentFaceUpThisTurnComponent
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
@@ -63,6 +65,23 @@ class TurnFaceUpHandler(
     // Lets restricted mana tagged "spend only to turn permanents face up" (Overgrown Zealot,
     // Creeping Peeper) be recognized when paying a turn-face-up cost from the pool.
     private val faceUpContext = SpellPaymentContext(isTurnFaceUpAction = true)
+
+    /**
+     * The turn-up cost as a *concrete* amount of mana, with the chosen X folded in.
+     *
+     * A `{X}` symbol has no mana of its own (CR 107.3 — X is 0 until a value is announced), so a
+     * cost like Aurelia's Vindicator's `Disguise {X}{3}{W}` reads as `{3}{W}` to anything that just
+     * pays a [ManaCost]. The [ManaSolver] paths take `xValue` as a separate argument and charge it
+     * themselves; [ManaPool.pay] has no such argument, so the pool paths must resolve X into
+     * generic mana up front or the player flips for free. `xCount` is the number of `{X}` symbols
+     * (`{X}{X}{R}` charges X twice).
+     */
+    private fun withXResolved(cost: ManaCost, xValue: Int): ManaCost {
+        if (!cost.hasX) return cost
+        val xMana = xValue * cost.xCount.coerceAtLeast(1)
+        val withoutX = ManaCost(cost.symbols.filterNot { it is ManaSymbol.X })
+        return if (xMana > 0) withoutX + ManaCost(listOf(ManaSymbol.generic(xMana))) else withoutX
+    }
 
     override fun validate(state: GameState, action: TurnFaceUp): String? {
         if (state.priorityPlayerId != action.playerId) {
@@ -131,7 +150,7 @@ class TurnFaceUpHandler(
                             colorless = poolComponent.colorless,
                             restrictedMana = poolComponent.restrictedMana
                         )
-                        if (!costHandler.canPayManaCost(pool, manaCost, faceUpContext)) {
+                        if (!costHandler.canPayManaCost(pool, withXResolved(manaCost, xValue), faceUpContext)) {
                             return "Insufficient mana in pool to turn this creature face up"
                         }
                     }
@@ -215,7 +234,7 @@ class TurnFaceUpHandler(
                             restrictedMana = poolComponent.restrictedMana
                         )
 
-                        val newPool = costHandler.payManaCost(pool, manaCost, faceUpContext)
+                        val newPool = costHandler.payManaCost(pool, withXResolved(manaCost, xValue), faceUpContext)
                             ?: return ExecutionResult.error(currentState, "Insufficient mana in pool")
 
                         currentState = currentState.updateEntity(action.playerId) { c ->

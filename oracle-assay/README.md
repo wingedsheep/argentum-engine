@@ -20,7 +20,145 @@ and those are the two sentences on it. The **aura band** followed: `Enchant <fil
 attached-permanent statics, which opened `staticAbilities` — the largest `CardScript` slot the
 differential could not see into, and the one every later static family lands in.
 
-The most recent work is the **target quantifier** — "Destroy **up to one** target creature.", "Exile
+The most recent work is **the mana spend restriction** — "Spend this mana only to cast creature
+spells.", the tail ranking's top family at **116 cards, 64 of them solely, over 118 lines**
+(**+58 whole cards**, 8,748 → 8,806) — and it is the band whose construct turns out **not to be a
+sentence at all**. Every printed instance is a second sentence after an "add …" clause, and what it
+denotes is the `restriction` field on that clause's effect, so it has nowhere to go in a `Steps` run:
+a run member is a `CompositeEffect` element, and this is not an effect. The rule therefore spans both
+sentences, on the *clause* rather than on the activated ability — which is what made it cheap, because
+the five positions that print those two sentences (an ability's colon, a trigger's comma, a loyalty
+`+1:`, a bare spell, a granted ability's quotation marks) all slot `Steps.step` and inherited it
+without being told. The axis it reads **cannot be a `Filters` slot**, and that is a fact about the SDK
+rather than a gap: `ManaRestriction` is a closed vocabulary of *spend contexts*, and a spend context is
+not a set of objects — so the grammar becomes the same product the SDK is, over the card type, the
+subtype, the mana-value floor and eleven parameterless atoms, with `AnyOf` as the join. Its
+**declared empty cell** is where the touchstone earned its keep: `CreatureSpellsOnly` owns "cast
+creature spells" (15 hand-written cards to 0), and the first gate run reported exactly one ambiguity
+because that atom also stands in for the creature cell *inside the join* — a declared hole has to be
+declared everywhere its value can appear, not only in the rule that owns it. And the probe pulled in
+two neighbouring families, one of which was a defect rather than missing work: the plural any-colour
+clause was spelled "add {n} mana of any color" where Oracle prints "of any **one** color" 63 times to
+3, so the rule had been reading the three oddities and declining the sixty-three cards. See
+[the mana spend restriction](#the-mana-spend-restriction).
+
+Before it came **the combat restriction** — "can't be blocked", the tail ranking's top
+family at **122 cards, 79 of them solely, over 122 lines** (**+93 whole cards**, 8,653 → 8,746) — and
+it is the band where the ranked construct turned out to be one the grammar had *already read three
+times*, each time frozen into a whole sentence. `Grammar.flagLine` read "~ can't be blocked." as a
+line with no subject; `Statics` read "~ can't be blocked by black creatures." about the source only;
+`Steps` read "target creature can't be blocked this turn" as one requirement shape. Three rules
+covering three of the twenty-odd combinations Oracle prints, and the three that existed were the
+three somebody's card had needed. `mtg-sdk` had already factored it correctly — every `CantBeBlocked*`
+static carries the affected set as one `GroupFilter` and differs only in what it forbids — so the fix
+is that the grammar becomes the same **product**: a subject (the source, the attached permanent, a
+plural noun phrase) crossed with a restriction, in both slots the SDK gives it. Its own findings are
+two. The **one hole in the product is deliberate**: the source's bare form is an `AbilityFlag` in 19
+hand-written cards against 6 that write the static, so a source-scoped bare row would be a second
+rule for one text — and that hole is exactly what had put a silently inert evasion on three
+attachments, because `flags(AbilityFlag.CANT_BE_BLOCKED)` lands on the *Aura*. And the family's
+biggest remaining sub-band **is not this family's work**: 31 lines carry an "as long as …" clause and
+look like 19 cards, but substituting a readable conditional finishes **2 of 29** — the payload is the
+condition vocabulary, and saying so is the product. See
+[the combat restriction](#the-combat-restriction).
+
+Before it came **the card's mana value** — "search your library for a creature card **with
+mana value 3 or less**", and the construct the tail ranking named was not what was blocking it. The
+grammar had read "creature with mana value 3 or less" since the counting band; what it could not read
+was the same clause **one word to the right**, because every card-position rule spelled the head noun
+in its *own* template — "return target `{filter}` **card** from your graveyard" — which puts "card" in
+the sentence and freezes the noun phrase at its type. A suffix clause attaches behind a head noun, and
+in card position there was no head noun inside the phrase to attach behind. So `card` became a
+**layer**, and its place in the cascade is the finding: the layers above it are modifiers English
+writes in front of a head noun and the layers below it are clauses English writes behind one, which
+means a position that prints a head noun splits the cascade in exactly one place and every suffix
+layer — keyword, power, mana value — reaches card position without being told. The qualifier itself is
+a 3×3 table with two *declared* empty cells, whose word order is decided by the value beside it:
+English postfixes a comparison to a numeral ("3 or less") and prefixes it to a clause ("less than or
+equal to the number of lands you control"), and equality's postfix form is the **empty string**. Then
+the residue named a defect one layer over and paid again — `controlledBy` had been the cascade's
+*outermost* layer, printing "creature with mana value 3 or less an opponent controls" where Oracle
+writes the controller clause first by a wide margin, so the grammar was reading the rare order and
+declining the common one. Its differential half found card bugs in both directions, most of them one
+misreading: **"mana value N or less" implemented as "fetch N cards"**.
+See [the card's mana value](#the-cards-mana-value).
+
+Before it came **Bloomburrow's second pass** — the set read again after the
+[Bloomburrow band](#the-bloomburrow-band) left it at 60 of 280, and the first band aimed at a set
+that already has one. It is **rows in six existing families and no new machinery**, which is what a
+second pass on a set is supposed to cost: `Triggers.Expend(n)` as the first trigger prefix whose
+event carries a *number*, the two life-change trigger specs, the five life-state conditions
+Bloomburrow's Bats check, and the two "each opponent" clauses that pay them off. The set went
+**69 → 83 cards** and the corpus **8,364 → 8,516** — the disproportion is the point: "each opponent
+loses 2 life" and "~ deals 2 damage to each opponent" are Bloomburrow sentences and 600-odd cards'
+sentences, so a set-shaped pick paid corpus-wide. It found **four card bugs**, three of them one
+shape (a bare tribal noun typed as `IsCreature`), and it declined the set's largest family on
+purpose: gift's printed line means two different models depending on whether the card is a permanent
+or a spell, and the line grammar cannot see a type line. It also closed the two **forage** findings
+the same section had been carrying — a missing `ForagedEvent` (now `Triggers.WheneverYouForage`,
+emitted from the cost resolver *and* from a marker inside the effect form) and a genuine rules bug
+in Treetop Sentries, which spelled its printed "If you do" as CR 603.12's reflexive trigger. See
+[Bloomburrow's second pass](#bloomburrows-second-pass).
+
+Before it came **the chosen count** — "sacrifice **any number of** creatures", the tail
+ranking's fourth family at **123 cards, 83 of them solely, over 123 lines**, and the first band
+picked off that ranking whose probe came back *empty*: substitute a known-good cardinal for the
+family's own span and **three of 123 lines get further, and no whole card does**. That is the
+product. A family that is a *position* measures its payload, and the payload here is one construct
+printed in every line the substitution failed on — "then draw **that many** cards", "for each
+creature sacrificed **this way**", "~ deals **that much** damage", **1,118 declined lines** of it
+corpus-wide. So what shipped is the count itself, in each position the SDK has a distinct value for
+it — never a slot in the counted rules, because it is `TargetRequirement.unlimited` in one,
+`CostAtom.VariablePermanents` in another and `SacrificeEffect.any` in a third — and the family fell
+to **77 cards / 52 sole / 77 lines** and off the top of the table, because 46 lines stopped dying on
+the count and started dying on what is actually blocking them. Its own finding is one line long:
+"Remove any number of charge counters from ~" is the *same* cost value as "Remove X charge counters
+from ~", so it is a second surface on one rule rather than a second rule, and that `alsoSpelled`
+moved seventeen lands onto a single remaining sentence. See [the chosen count](#the-chosen-count).
+
+Before it came **the dynamic counter count** — "~ enters with **X** +1/+1 counters on it.",
+the tail ranking's third family at **125 cards, 58 of them solely, over 125 lines** (**+19 whole
+cards**, 8,344 → 8,363), and the band where the finding was which generator a family had never been
+through. `Steps.countedStepPair` gives a quantity its `equal to …` sibling from one call site, and
+every counted verb in the grammar had been through it except the three counter positions — because
+`AddCountersEffect.count` is an `Int`, while `Effects.AddDynamicCounters` sat in the SDK with no caller
+here. So the count became two rows over three surfaces, the two clause spellings are one rule under
+`alsoSpelled`, and the bare `X` is offered to the **enters** position only: a replacement resolves
+inside its own spell so the context is live, while a step is lifted by `Triggers` and cannot know. The
+differential then found the same shape one level down — a dies trigger reading the source's *live*
+counter tally, which is zero by the time it resolves — and it got the same fail-closed answer. See
+[the dynamic counter count](#the-dynamic-counter-count).
+
+Before it came **the functional zone** — "Return ~ from your graveyard to your hand.", the
+tail ranking's biggest family by the column that decides work — **131 cards, 74 of them solely, over
+131 lines** (**+94 whole cards**, 8,250 → 8,344), and the band where a printed phrase turned out to fill two SDK fields at
+once. "From your graveyard" is a resolution guard on the effect *and* the zone the ability functions
+in, and it was the second one that blocked every line: an ability whose activation zone was not the
+battlefield could not print, whatever its effect clause said. Carrying the zone up from the clause
+does not work — the trigger members print the move inside a gate — so **CR 113.6m** derives it
+instead, off the cost and the effect, with its "unless the trigger condition put it there" clause
+implemented because that clause is the Ojer cycle. The rest is one SDK type's product: a move table
+whose rows spell the whole verb-to-destination span (English agrees on the *pair*), a placement rider
+and a counter rider, each with a genuinely empty row. Its differential half is the sharper half —
+eighteen shipped cards were missing the guard, and five of them could not have written it: the facade
+that exists to carry it had a frozen `tapped` parameter, so "…to the battlefield **tapped**" had to
+reach past it. See [the functional zone](#the-functional-zone).
+
+Before it came **the final period** — the top family of the tail ranking, and the one that
+turned out not to be a construct at all. Keyed on the parse's tail, `.` blocked **179 cards, 87 of
+them solely, over 181 lines**: complete Oracle sentences that died on their own full stop because a
+rule had written something *omissible* into its template as required text. Three different causes,
+three fixes, **+48 whole cards** (8,186 → 8,234), and the family fell to **99 cards / 41 sole / 101
+lines** — from first on the ranking to eleventh. The three: a **rider** written into four rules'
+templates, so "Sacrifice ~." was only ever readable as the front of "sacrifice ~ unless you pay {2}";
+a **layer with no empty row**, where five families each froze a different row of the same
+where-clause ("for each artifact **you control**" against "for each creature **on the battlefield**"
+against the bare "for each attacking creature"); and a **fail-closed fold whose write-off had
+expired**, refusing every line whose two clauses each declared a target because the grammar minted one
+slot name — with the generator that fixes it sitting unused in `Targets` since the Legions band.
+See [the final period](#the-final-period).
+
+Before it came the **target quantifier** — "Destroy **up to one** target creature.", "Exile
 **up to three** target creatures.", "Destroy **up to X** target artifacts." (**+75 whole cards**), the
 family the ranking had been naming from five directions at once. Everything English prints in front
 of the word "target" is now a **six-row table** rather than a word inside each verb's template, and
@@ -286,21 +424,21 @@ non-zero on. Declines are not failures.
 Cards assayed                    34882
 Ability lines                    64753  (37998 unique)
 
-Round-trips byte-exact           26264   405.6‰ (40.6%)
-Alternate spelling normalized    1436
-Declined                         37053
+Round-trips byte-exact           27214   420.3‰ (42.0%)
+Alternate spelling normalized    1639
+Declined                         35900
 Ambiguous — distinct readings    0
 Print mismatch                   0
 Normalization not invertible     0
 Full inverse not reproduced      0
 Redundant readings (same model)  0
 
-Cards fully covered              8102 / 34882   232.3‰ (23.2%)
-Vanilla + keyword-only cards     1444 / 1712   843.5‰ (84.3%)   <- Phase 1 target
+Cards fully covered              8746 / 34882   250.7‰ (25.1%)
+Vanilla + keyword-only cards     1445 / 1713   843.5‰ (84.4%)   <- Phase 1 target
 Portal (set POR)                 200 / 200     1000.0‰ (100%)   <- the Portal band's target
 Legions (set LGN)                145 / 145     1000.0‰ (100%)   <- the Legions band's target
-Bloomburrow (set BLB)            60 / 280      214.3‰ (21.4%)   <- the Bloomburrow band, in progress
-Reminder-text glosses            2870 matched · 114 differed · 965 unglossed
+Bloomburrow (set BLB)            88 / 280      314.3‰ (31.4%)   <- two passes; gift is what is left
+Reminder-text glosses            3005 matched · 114 differed · 965 unglossed
 ```
 
 Fineness is **parts per thousand**, per the assay the module is named for — 841.1‰ is 84.1%.
@@ -611,6 +749,115 @@ the pre-band measurement and can only have risen, since a card blocked by two fa
 sole-blocked by neither.) A flat tail is the shape the equipment band's residue had, and it is the
 signal that the next target is a *set* rather than a family.
 
+## Bloomburrow's second pass
+
+The [Bloomburrow band](#the-bloomburrow-band) left the set at 60 of 280 and named what was next.
+This is that list, worked from the top down, and it is the first band aimed at a set that already
+has one — which makes it the cleanest measurement of what a *second* pass costs. The answer is
+**rows in six existing families and no new machinery**: the set went 69 → **83 cards** and the
+corpus 8,364 → **8,516**, against 27 added lines in `Triggers`, 17 in `Conditions` and 36 in
+`Steps`.
+
+**A trigger event with a number in it.** Expend is Bloomburrow's own keyword action — "you spend
+your Nth total mana to cast spells this turn" — and `dsl.Triggers.Expend(n)` is the whole spec, with
+the watched player frozen at `Player.You` because that is the only subject Oracle prints. So it is
+the first prefix in [`Triggers`](src/main/kotlin/com/wingedsheep/assay/grammar/Triggers.kt) that is a
+`slottedTriggerRule` over a **number** rather than over a noun phrase, and the leaf is
+[`Primitives.cardinal`](src/main/kotlin/com/wingedsheep/assay/grammar/Primitives.kt) rather than
+`Cardinals.word`: Oracle writes "expend **4**" where it writes "draw **two** cards". Ten cards print
+the family, at two thresholds, and nothing in the sentence says those are the only two — which is
+the whole reason the threshold is a slot and not ten rules. Because the prefix slots `Steps.step`
+whole, every one of those cards' payoffs arrived for free, and the two that did not (Byway Barterer's
+"discard your hand. If you do, draw two cards", Muerra's play-from-exile) are ordinary step gaps
+rather than expend gaps.
+
+**The Bats' condition vocabulary.** Bloomburrow's white-black half checks the turn's life history
+five different ways, and `Conditions` names all five, so all five are `constant` rows beside
+`WasBargained` and `WasKicked` — the same durable-fact reads. The one worth stating is
+`YouLostLifeThisTurn`: it is printed in the *present perfect* — "As long as **you've** lost life this
+turn" (Essence Channeler) — where the other four are past simple, and the only other card in the
+corpus whose text contains "you lost life this turn" is Ludevic, Necro-Alchemist, whose clause is
+about a player *other* than you and is therefore a different model. So the perfect is not a second
+spelling to choose between under the one-printed-form-per-model invariant; it is this condition's
+only one, and the check was a corpus grep rather than a guess.
+
+**The set-shaped pick that paid corpus-wide.** Two of the rows are the reason the corpus number moved
+eleven times as far as the set number. "Each opponent loses 2 life" is a `countedStep` beside
+"target player loses 2 life" and "~ deals 2 damage to each opponent" is a `countedStepPair` beside
+"…to target opponent" — one verb over a recipient the model *names* instead of one it targets, which
+is why they are rows rather than a player slot inside the targeted rules: a slot spanning both would
+let the grammar print a targeted clause without its target requirement. Bloomburrow prints them on
+five cards. The corpus prints them on six hundred.
+
+**What it found.** Four hand-written cards, and three of them are one shape — the bare tribal noun
+typed as `IsCreature` where the printed noun names only a subtype, the same class the 103-card
+migration fixed everywhere the grammar could already see. Brambleguard Veteran's "Raccoons you
+control", Obyra, Dreaming Duelist's "another Faerie you control" and Stromkirk Bloodthief's "target
+Vampire you control" were all invisible before, because nothing had read a bare tribal noun in those
+three positions. The fourth is Silverquill Charm holding the counter type as the string `"+1+1"`
+rather than `"+1/+1"`, which `CounterTypeFilter.Named` fails *open* on — so it works today and would
+stop working the moment anything compared the name. A fifth, Corpseberry Cultivator, is fixed only
+half way and named below.
+
+**Gift is what is left, and it is declined on purpose.** It is the set's largest family by a wide
+margin — 22 cards, over the `Gift a card` keyword line and the `If the gift was promised, …` rider —
+and the reason it is not here is a *shape* rather than an amount of work. The printed line denotes
+two different models depending on the card's type. On a permanent it is
+`KeywordAbility.Gift(kind)` plus the enters ability `giftEnterTrigger` lowers from it, which a line
+rule can build by calling that lowering exactly as `equipLine` calls `ActivatedAbility.equip`. On an
+instant or a sorcery there is no permanent to trigger off, so the promise is folded into the spell's
+own resolution as `Patterns.Mechanic.giftSpell`'s two modes — with per-mode targets, per-mode prose
+labels and a `ChooseOpponentForSourceEffect` spliced in — and `CardValidator` *rejects* the keyword
+on a non-permanent. A line rule cannot tell those apart, because the fact that separates them is the
+type line and the line grammar is deliberately type-line-blind (`Reminders` and `CardCompiler` are
+the only things here that read one). Worse, the spell form is not a line construct at all: its model
+has no keyword and no trigger, so line one's contribution depends on line two, and `CardFragment` is
+a per-line value by design.
+
+Both halves were written and both were reverted, and the differential is what settled it: with the
+keyword line and the two gift conditions in, Nocturnal Hunger and Valley Rally started being read
+*whole* — as an instant carrying a gift keyword the validator forbids, plus a resolution-time
+condition the SDK's own KDoc says is permanents-only. That is the reversible-but-wrong class in a new
+position, so gift stays declined and counted. It needs one of two things, neither of them Assay work:
+a `KeywordAbility.Gift` the SDK admits on a spell (so both card types share one shape), or a
+face-level rule that may read the type line.
+
+**Two forage findings, both closed in the same change.** They were reported as standing findings
+first and then fixed, and they are worth reading together because one was an SDK gap and the other
+was a fold.
+
+The gap: Corpseberry Cultivator prints "Whenever you forage, put a +1/+1 counter on this creature."
+and the card folded that counter into its *own* forage's `afterEffect`, so a forage from any other
+source did not grow it — there was no forage event in `EventPattern` to trigger off. There is now
+(`Triggers.WheneverYouForage`), and the shape it took is the transferable part: a keyword action that
+is sometimes a **cost** and sometimes an **effect** cannot be observed from one place. The three cost
+contexts share `ForageCostResolver.pay`, so the event is emitted there — as one wrapper over that
+function's four exits rather than a line in each, so a mode added later cannot forget it. The effect
+form lowers to generic gather/select/move and sacrifice effects with nothing forage-shaped to emit
+from, so it carries a marker (`Effects.Foraged()`) *inside each of `Patterns.Mechanic.forage`'s two
+modes* — which is also what gives the "only if it actually happened" property for free, since forage
+has no "even if you can't" clause and a declined forage runs no mode. Waterbend is split the same
+way; collect evidence gets away with one site only because its effect form delegates to its cost
+resolver. Wiring a new event into the trigger path means **two** `when` branches in `TriggerIndex`
+(the SDK pattern *and* the engine event), both of which fall through to `emptyList()`, plus
+`TriggerMatcher` and `TriggerContext` — miss any one and the trigger compiles, ships and never fires.
+
+The fold: the two cards printing "you may forage. If you do, …" held it two different ways — Bushy
+Bodyguard as `MayEffect(forage(afterEffect = …))`, Treetop Sentries as
+`ReflexiveTriggerEffect(forage(), optional = true, …)`. The printed text settles it and the corpus
+agrees without being asked: **"If you do" is one resolution and "When you do" is CR 603.12's
+reflexive trigger**, a second stack object with its own priority window. Across 87
+`ReflexiveTriggerEffect` cards and 312 `MayEffect` cards, *zero* `MayEffect` card prints "When you
+do" — so Treetop Sentries was not a style divergence but a rules bug, giving opponents a response
+window the printed card does not create, and rendering its own prompt as "… When you do, draw a
+card". It is a `MayEffect` now, leaving Curious Forager ("**When** you do, return target permanent
+card…") as the set's sole and correct reflexive trigger. Two cards elsewhere in the corpus carry the
+same contradiction and are named in the PR rather than fixed here.
+
+With one canonical form to print, a forage band in the grammar is now writable — "you may forage.",
+"you may forage. If you do, …" and "Whenever you forage, …" over four BLB cards. It is deliberately
+not in this change: the band is Assay work and these two were card and engine work.
+
 ## The Bloomburrow band
 
 Bloomburrow is 280 cards, every one of them implemented by hand here, which makes it the first set
@@ -677,6 +924,10 @@ differential on the day a line stopped declining:
 keyword line and the `If the gift was promised, …` rider, the second of which needs its base clause
 to read first. After it: the Class levels (`{3}{U}: Level 2`, 10 cards), modal spells (8), and
 "Spend this mana only to cast …" (6).
+
+That list is what [Bloomburrow's second pass](#bloomburrows-second-pass) worked, and gift is the one
+row on it that came back with an answer other than a rule — see that section for why the printed
+line means two models and the grammar declines it on purpose.
 
 ## The cost band
 
@@ -1336,8 +1587,10 @@ The report is two documents at once, and the second one is about `mtg-sdk`:
   `Reminders.gloss` takes the noun as a parameter for exactly that reason.
 - **~40 keyword abilities have no `Keyword` enum constant at all** — Exalted, Infect, Echo,
   Soulshift, Bloodthirst, Scavenge, Backup, Megamorph, Unleash, Extort, Evolve, Myriad, Unearth,
-  Mentor, Afterlife, Enlist, Champion, Eternalize, Skulk, Melee, Battle cry, Reinforce, Devoid,
+  Mentor, Afterlife, Enlist, Champion, Eternalize, Skulk, Melee, Battle cry, Reinforce,
   Dethrone, Phasing, Cumulative upkeep, … — ranked by cards blocked in the report's bottom table.
+  Devoid was one of them until `Keyword.DEVOID` landed; it is now a plain `simple(…)` row in
+  `Keywords.SIMPLE_KEYWORDS`, which is what closing any of these costs.
 
 ## The prevention band
 
@@ -2149,6 +2402,1108 @@ One structural gap worth stating rather than discovering twice: the trigger cap 
 see [the batch-trigger band](#the-batch-trigger-band) — so a two-ability line cannot carry it. Three
 corpus joins print it, all of them blocked on their event as well, so it costs nothing today; the fix
 is to move the rider up to the line, where it would reach the contracted pairs too.
+
+## The final period
+
+`.` — the tail ranking's number-one family, **179 cards, 87 sole-blocked, 181 lines**, and the only
+one on that table that names no construct. Under `--rank tail` the key is the text from the decline
+onward, so a family called `.` is every line where the grammar read the whole sentence and then
+refused the full stop: it wanted *more*, and English had stopped.
+
+That makes it a ranking of one defect shape rather than of one piece of work. A rule whose template
+spells an **omissible** modifier as required text can only read the decorated sentence, and Oracle
+prints the bare one just as often:
+
+```
+At the beginning of the end step, sacrifice ~.        ^ expected " unless you pay "
+~ gets +1/+0 for each artifact you control.           ^ expected " on the battlefield."
+Put a +1/+1 counter on up to one target creature.
+  Target player gains 2 life.                         ^ expected ". " | ", then " | several clauses
+```
+
+Whole-corpus coverage 8,186 → **8,234 cards** (+48); the baked ledger 7,969 → **8,015 whole**, with
+**none lost**; 50 more lines round-trip and 83 fewer decline. MISMATCH, AMBIGUOUS, non-invertible
+normalization and redundant readings all stay at **0**. The differential compares 22 more cards
+(3,790 → 3,812) and its divergence list is the same 43 rows by name once five card bugs it caught on
+the way are fixed — so nothing here changed what an already-readable card means. The family itself
+falls to **99 cards / 41 sole / 101 lines**, eleventh on the ranking.
+
+Three causes, and they are worth keeping apart, because only one of them is what "an optional clause"
+sounds like.
+
+### A rider is not part of the sentence
+
+`SelfSteps` had four rules for "sacrifice the source **unless** …" — pay a cost, discard a card,
+sacrifice N of something, discard at random — and none for "Sacrifice ~." The bare sentence is the
+one 20 lines print (Ball Lightning, Spark Elemental, Hell's Thunder, and the artifacts that eat
+themselves for a mana cost), and it is not a special case of any of the four: `SacrificeSelfEffect`
+alone is a different value from the `PayOrSufferEffect` a rider builds, so the two spellings cannot
+collide and one row closes it. **+6 whole cards**, and the diagnosis is the general one — an "unless"
+clause is something English *adds* to this sentence, so a template that contains it can only read the
+sentence that has it.
+
+### A layer with no empty row
+
+`Amounts.scopes` is new and it is the band's real content. **Where a battlefield tally counts** is
+one layer with three rows, and *five* families each froze a different subset of it:
+
+| Family | ` on the battlefield` | ` you control` | (absent) |
+|---|---|---|---|
+| `Amounts.battlefieldCount` — "the number of Elves …" | ✓ | ✓ | — |
+| `Amounts.drawForEach` — "Draw a card for each …" | — | ✓ | — |
+| `Statics.selfPumpPerCount` — "~ gets +1/+1 for each …" | ✓ | — | — |
+| `Steps.gainLifeForEach` — "You gain 1 life for each …" | ✓ | — | — |
+| `SpellCosts.perUnitSource` — "…costs {1} less for each …" | ✓ | ✓ | — |
+
+Every one of them is the same clause behind a different head, so the layer is published once and each
+family maps over it. Nim Lasher is what a frozen row costs: "~ gets +1/+0 for each artifact you
+control." is that family's sentence with the *other* row on the end, and it died on the full stop
+where the literal " on the battlefield." was expected.
+
+**The empty row is a row.** English omits the clause — "you gain 1 life for each attacking creature"
+— and means the whole battlefield, so the bare form is a second *spelling* of the "on the battlefield"
+model rather than a model of its own: it parses and never prints, and a card printing it comes back as
+a variant. Making the bare form canonical instead would trade the same number the other way and turn
+every card that spells the clause out into a variant.
+
+**A counted noun phrase says where it counts exactly once**, and that is what keeps three rows
+unambiguous. The clause and the noun phrase's own controller layer are the same layer: "for each
+creature you control" could be read as the ` you control` row over a scope-free filter *or* as the
+empty row over a filter that already carries the controller, and two readings with two models is the
+ambiguity this grammar never resolves by ordering an alternation. So a row with a surface of its own
+refuses a filter that carries a controller, and the empty row refuses only the *you-control* one —
+which leaves "for each creature an opponent controls" reaching the model through the noun phrase,
+where the layer has no row and the model says exactly that.
+
+One frozen constant came off the same rule while it was open. `Statics.selfPumpPerCount` required the
+printed modifier's two halves to be equal, on the reasoning that "the printed pair can only spell one
+multiplier" — but "+1/+0" spells two, and eleven of the family's twenty-one lines are asymmetric. The
+pair is now two numbers, each lowered the way the corpus lowers it: `Fixed(0)` for zero, the bare
+tally for one, a `Multiply` above that. That is Nim Lasher's own golden, and getting it wrong would
+have reported a divergence on every card the rule reads.
+
+### A fail-closed fold whose write-off had expired
+
+"Destroy target land. ~ deals 13 damage to target creature." — two clauses, each parsing on its own,
+each calling its slot `target`, because that is the only name any rule in this grammar mints. Folding
+them unchanged gives one script two requirements with one name and two effects reading it: a model in
+which the second target cannot be referred to. `Steps.merge` refused, and its KDoc named the fix —
+"the gap it names is a slot-name **generator** in `Targets`". [`Targets.slot`](src/main/kotlin/com/wingedsheep/assay/grammar/Targets.kt)
+has been there since [the Legions band](#the-legions-band) and had no caller.
+
+It has one now. The numbering is positional, requirement `k` gets `Targets.slot(k)`, and **the first
+declarer keeps the bare name** — so every line the grammar read before this folds through exactly the
+code it did, and the change is reachable only where the fold used to return null. `match` inverts it
+by trying each way the requirements could have been introduced: a distribution is a strictly
+increasing list of clause indices, because a target is declared at its first mention and no rule
+declares two, and the split is decided by printability and full reconstruction exactly as the
+one-requirement version was.
+
+The rename itself goes through the serialized form
+([`Slots`](src/main/kotlin/com/wingedsheep/assay/grammar/Slots.kt)) because an `Effect` is a deep
+sealed tree with no visitor — the same reason `Differential.normalizeSlotNames` does, aimed the other
+way. Two things keep it from being an approximation: the keys are **named**, not guessed (an `id`
+field, and the `name` of an object whose discriminator is `BoundVariable`), and **every rename is
+verified by undoing it**, so a lossy encode fails closed to a decline instead of quietly changing a
+model.
+
+What still refuses is narrower and genuinely undetermined. A clause that declares nothing and reads
+the slot anyway is a `Continuations` clause — "… **Untap that creature**." — which this grammar reads
+as the *first* target while English resolves it to the most recent mention. With one declared target
+those agree; with two they do not, and nothing in the printed line chooses. And
+`runEndingInScopedClause` keeps the one-declarer guard outright: a scoped clause takes the rest of the
+sentence as its consequence, so whether a target on the far side of the join is inside that scope is
+not in the text either.
+
+**+15 whole cards** — Into the Maw of Hell, Lost in the Mist, Aether Helix, Essence Capture,
+Suffocating Blast, Trap Essence, Explosive Entry, Vibrant Outburst, Manticore of the Gauntlet, Gurmag
+Rakshasa, Combat Tutorial, Crawl from the Cellar, Lorehold Command, and Gollum's Adventure half — and
+every future rule that wants a second target now has somewhere to put it.
+
+### Five card bugs on the way out
+
+Every one of the differential's new rows was the card, and all five are the classes this gate exists
+to find:
+
+- **Nim Shambler** and **Guidelight Synergist** wrote the battlefield tally as
+  `Count(You, Battlefield, …)` where the corpus writes `AggregateBattlefield(You, …)` 603 times
+  against that spelling's 49 — the minority spelling `Amounts` already declared non-canonical. Guidelight Synergist also spelled "+1/+0"'s zero half as a multiply by zero.
+- **Airborne Aid** ("Draw a card for each **Bird** on the battlefield") and **Crawl from the Cellar**
+  ("up to one target **Zombie** you control") read the bare tribal noun as *creatures*. Oracle's bare
+  noun is every permanent of that type, which is the migration
+  [`DynamicAmounts.permanentsWithSubtype`](../mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/dsl/DynamicAmounts.kt)
+  exists for.
+- **Orim's Prayer** narrowed "each attacking creature" to `EachOpponent`. The two agree in every
+  reachable position — a player is never attacking while being attacked — but the printed noun phrase
+  has no controller clause and the literal reading is what the text says.
+
+Guidelight Synergist is a generated card, so the **emitter** was fixed rather than only its output:
+`mtgish-tooling`'s self-buff renderer now emits the aggregate and `Fixed(0)`, and its committed golden
+moved with it. Fixing the card alone would have left the next render wrong.
+
+### What is left in the family
+
+101 lines, and unlike the 181 they are mostly *not* the same shape. In descending order:
+
+| Lines | Family | What it needs |
+|---|---|---|
+| 32 | "Exile ~." / "Mill three cards." | the effect that shares its spelling with a **cost** — the grammar reads "Exile ~" only as a cost atom, so the line dies expecting `", "` or `": "` |
+| 19 | "Destroy target **Aura**.", "…if you control a **Desert**." | the non-creature subtypes as bare nouns — Aura, Equipment, Vehicle, Gate, Desert, Attraction, Spacecraft, Powerstone. The bare-tribal-noun vocabulary reached creature types and stopped |
+| 14 | "Prevent all damage that would be dealt to ~." | a prevention shield with **no duration**, which is a static rather than a one-shot — a different `CardScript` slot, not a missing word |
+| 9 | "~ deals X damage to each creature with flying." | the group recipient's controller layer, which is a required choice with no third row |
+| 6 | "Destroy target creature **and** target land." | two targets in **one** clause. The fold above numbers two clauses; this is one sentence with two, and no rule declares two |
+| 4 | "Destroy all artifacts **and** enchantments." | the plural filter's own join |
+| 3 | "…exile a creature you control." as an additional cost | a sacrifice-shaped exile cost; only the graveyard one exists |
+| 2 | "…a permanent with mana value 1." | the comparator layer with no *exactly* row |
+| 3 | "{0}: ~ gains flying." | a keyword grant with no duration — permanent, so again a different value rather than a missing clause |
+| 9 | singletons | Ensoul Ring's "Enchant nonland permanent.", Namor's CDA, Skulduggery's two targets in one clause, Soulcipher Board's "and the other" |
+
+The two worth taking next are the top two, and they are opposites: "Exile ~." is 32 lines of one
+missing rule, and the bare subtypes are 19 lines of a vocabulary migration that has already been done
+once for a different noun.
+
+## The functional zone
+
+`~ from your …` — **131 cards, 74 sole-blocked, 131 lines**. Second on the tail ranking by cards
+blocked and first by `sole`, which is the column that decides work: the row above it was `Devoid` at
+134 cards and 16 sole, and that one closed on `main` while this was in flight. The sentence behind
+almost all of them is one of three:
+
+```
+{2}{B}: Return ~ from your graveyard to your hand.                       63 lines
+{1}{B}: Return ~ from your graveyard to the battlefield.                 19
+{1}{B}: Return ~ from your graveyard to the battlefield tapped.          19
+```
+
+The decline sits on `~`, immediately after `Return`, which reads like a missing verb and is not one.
+The grammar has moved the source to a named zone since the first `SelfSteps` rules ("exile it",
+"return it to its owner's hand", "put it on top of its owner's library"). What it had never read is a
+sentence that **prints where the card is coming from** — and that phrase is the family, because of
+where the second half of it lands in the model.
+
+Whole-corpus coverage 8,250 → **8,344 cards** (+94); the baked ledger 8,030 → **8,124 whole**, with
+**none lost**. MISMATCH, AMBIGUOUS, non-invertible normalization and redundant readings all stay at
+**0**. The family falls to **10 cards / 0 sole / 10 lines** — every one of them "Remove ~ from your
+deck before playing if you're not playing for ante", which is a different construct wearing the same
+first three words.
+
+### One printed phrase, two SDK fields, and CR 113.6m decides which is derived
+
+"From your graveyard" says two things:
+
+- **at resolution**, that the move happens only if the card is still there — `MoveToZoneEffect.fromZone`,
+  the guard whose absence [the graveyard rules](src/main/kotlin/com/wingedsheep/assay/grammar/Graveyard.kt)
+  already record as tried-and-kept;
+- **at activation**, that the ability can be used while the card sits in the graveyard —
+  `ActivatedAbility.activateFromZone`, `TriggeredAbility.activeZones`.
+
+Only the second was blocking. `Activated.abilityFor` reconstructs the whole ability and compares it,
+so an activation zone the sentence could not spell made *every* one of these lines refuse to print,
+whatever its effect clause said. That is what 74 sole-blocked cards were waiting on, and it is why the
+family's headline is a verb and its content is a field.
+
+The obvious fix is to carry the zone up from the clause to the ability — a value threaded through
+`Steps`. It does not survive contact with the corpus: the trigger members of this family print the
+move **inside a gate** ("Whenever a land you control enters, you may return ~ from your graveyard to
+the battlefield." — Bloodghast; "…you may pay {B}. If you do, return ~ from your graveyard to your
+hand." — Lingering Phantom, Shambling Cie'th, Killian's Confidence), so the carrier would have to
+thread through every wrapper in the cascade and change the type of the slot ten rules take.
+
+The rules text says not to carry it at all:
+
+> **CR 113.6m** An ability whose cost or effect specifies that it moves the object it's on out of a
+> particular zone functions only in that zone, unless its trigger condition or a previous part of its
+> cost or effect specifies that the object is put into that zone…
+
+So `Recursion.functionsIn` **derives** it, exactly as `Activated.producesMana` derives mana-ability-ness
+from CR 605.1a — this module's "a value the SDK carries twice is derived, not spelled" with the
+derivation written down in the Comprehensive Rules. One function, called from both `abilityFor`s, and
+the trigger half came free with the activated one because a derivation walks *down* into the gate
+instead of asking the gate to hand something up.
+
+Two properties worth naming. It **cannot change an existing reading**: no rule the grammar had ever
+built a `fromZone`, so before this band the derivation returns `BATTLEFIELD` on every line in the
+corpus. And its "unless" clause is load-bearing rather than decorative — it is the Ojer cycle. "When
+Ojer Taq dies, return it to the battlefield transformed" carries the same graveyard source and
+functions on the **battlefield**, because the dies trigger is what put the card in the graveyard; a
+derivation that read only the effect would make the ability wait in a zone it can only reach by having
+already fired. Both halves of the exception are implemented — the trigger event, and a cost that
+sacrifices or exiles the source.
+
+### The product: one SDK type, reached through two frozen constants
+
+`MoveToZoneEffect` is a destination, a `ZonePlacement`, a library position, a counter to land with and
+the guard. [`Recursion`](src/main/kotlin/com/wingedsheep/assay/grammar/Recursion.kt) is its product
+with the printed source zone: a **move table** and two riders.
+
+The table's rows spell the whole span from the verb to the destination noun, and the verb is part of
+the row rather than a word in front of a destination slot — English agrees on the *pair*. A card comes
+back "from your graveyard **to** the battlefield" and goes "from your hand **onto** the battlefield",
+and the same destination takes both spellings depending on which verb opens the clause, so a slotted
+destination would leave the verb and its preposition undetermined by the model. That is [the target
+quantifier](#the-target-quantifier)'s argument one axis over. Where two spellings do denote one model
+— "Put ~ from your graveyard onto the battlefield" against "Return ~ from your graveyard to the
+battlefield", 1 printed line against 48 — the minority is an `alternate`: it parses and never prints.
+
+The riders are rows with a genuinely **empty** surface, which is the whole point of making them rows:
+`ZonePlacement.Default` is what Oracle says by saying nothing, and a rule that had spelled " tapped"
+as required template text is precisely the shape that put 19 bare "…to the battlefield." lines in
+[the final period](#the-final-period). The counter rider is the corpus's spelling and not the SDK's
+shorter one — eight cards write `Composite(move, AddCounters(…, Self))` and none writes
+`MoveToZoneEffect.addCounterType`, which holds one counter where the sentence can print several.
+
+And a row **declares which riders it takes**. "To your hand" is never printed tapped and never lands
+with counters, so it is offered neither; the library row fixes its own `ZonePlacement.Top` instead.
+Offering every rider to every row would print sentences Oracle does not have.
+
+### The restriction sentence the family ends on, and the join it does not
+
+The probe is what said to write this second half. Substituting a known-good clause for the move
+measured **66 of 131 lines and 36 whole cards**; extending the substitution to swallow the trailing
+`Activate only …` sentence measured **92 lines and 59 cards**. `Restrictions.oneActivation` had four
+rows, and two were missing:
+
+- **"during your upkeep"** — one printed phrase and *two* model restrictions, so it is an
+  `ActivationRestriction.All` rather than two rows of the comma-joined run. Spelling it as two rows
+  would print "Activate only during your turn, during your upkeep."; the corpus is 6–2 for the `All`,
+  and the two are fixed here.
+- **"if {cond}"** — which is the whole `Conditions` vocabulary, reached the way the casting line's
+  twin already reaches it.
+
+What is deliberately **not** in is the `" and only "` join — "Activate only if there are four or more
+card types among cards in your graveyard **and only** as a sorcery." It is not a missing row. The
+sentence joins its restrictions two ways, `", "` and `" and only "`, and nothing in a two-element
+restriction list says which one to print: "Activate only during your turn, before attackers are
+declared." and "Activate only during your upkeep and only if X." are both lists of two. That is a hard
+ambiguity, and this grammar does not resolve one by ordering an alternation. It needs the separator to
+become a property of something in the model, which is a piece of design rather than a row.
+
+### What the differential found: 18 cards missing a guard, and four other bugs
+
+Divergences went 43 → 63 the moment these lines became comparable, and every new row was the same
+thing: a golden with `activateFromZone = Graveyard` and **no `fromZone` on its effect**. Six cards
+write the guard, eighteen did not, and the eighteen have a live bug rather than a shorter model —
+`ActivateAbilityHandler` checks the activation zone when the ability is *activated* and nothing
+re-checks it on resolution, so a Reassembling Skeleton exiled from the graveyard in response to its
+own ability came back anyway. From exile.
+
+Two of them could not have written it: `Effects.PutOntoBattlefieldFromGraveyard` — the facade that
+exists to carry this guard, and whose own KDoc says so — had no `tapped` parameter. So the five cards
+printing "return this card from your graveyard to the battlefield **tapped**" reached past it, four
+for plain `PutOntoBattlefield` and one for a raw `Effects.Move`, and lost the guard on the way. A frozen facade parameter is a card's missing
+word, the same finding [the top-of-library band](#the-top-of-library-band) made about a different one.
+`Effects.ReturnToHandFromGraveyard` is new beside it, for the destination that had no guarded facade
+at all.
+
+Four card bugs came with them, each of a class the module has seen before:
+
+| card | what the golden said | what the text says |
+|---|---|---|
+| Nim Devourer | `ForceSacrifice(PlayerRef(You))` | the bare imperative is `SacrificeEffect` — `Effects.SacrificeOwn`, whose KDoc already records this split |
+| Nim Devourer | `[DuringStep(UPKEEP), OnlyDuringYourTurn]` | the flat pair against the corpus's 6–2 `All` |
+| Gangrenous Goliath | `Creature.withSubtype("Cleric")` | "three untapped **Clerics** you control" is any permanent — the bare-tribal-noun reading again |
+| Mox Jasper | `ControlCreatureOfType(DRAGON)` | "if you control a **Dragon**" is any permanent; `ControlPermanentOfType` is the facade |
+| Killian's Confidence | `sourceFilter = Creature.youControl()` | `OneOrMoreDealCombatDamageToPlayerEvent` reads "…**you control** deal combat damage", so the predicate said it twice |
+
+The list ends at **44**: the standing 43, unchanged by name, plus one.
+
+### The one divergence left, and why it stays
+
+**Urban Retreat** prints "Put this card from your hand onto the battlefield." and its golden carries
+`ZonePlacement.Tapped`. Not a card bug: the land's own "This land enters tapped." is an `EntersTapped`
+self-replacement, and the engine's *effect-based* entry path does not re-apply a permanent's own
+self-replacement — removing the explicit placement fails `UrbanRetreatScenarioTest:148`, which is how
+that was checked rather than assumed. So the card compensates, the grammar reads what the line says,
+and the two disagree for a reason that lives in the engine's replacement path.
+
+That is worth its own change and not this one: making an effect-based battlefield entry apply the
+card's self-replacements touches every `MoveToZone(→ BATTLEFIELD)` in the engine, and the
+replacements that would then double-apply are not all idempotent the way "tapped" is.
+
+### What is left, and what it names
+
+52 of the family's 131 cards are read whole — against 74 sole-blocked, the 1.4× overstatement the ranking notes predict — and the residue is almost all one thing:
+
+| lines | example | what it needs |
+|---|---|---|
+| 13 | "Activate only if you attacked this turn.", "…and only as a sorcery." | the restriction separator above, plus four `Conditions` rows (attacked this turn, gained life this turn, an opponent lost life this turn, you control a legendary creature) |
+| 9 | "Remove ~ from your deck before playing if you're not playing for ante." | the ante rules, which the engine does not model |
+| 3 | "Put ~ from your graveyard into your library third from the top." | an ordinal leaf for `positionFromTop`; the table's row is written and its number is not spellable |
+| 3 | "…to the battlefield attached to target creature you control." | the aura return — a second effect type, and a target declared inside the move |
+| 2 | "…tapped. It gains "If ~ would leave the battlefield, exile it instead…"" | a quoted grant after the move, and a cost reduction on the ability |
+
+And the cheapest thing this band named is not in the family at all. CR 113.6m reads the **cost** as
+well as the effect, and `from your graveyard: …` still sits on the ranking at **64 cards / 50 sole-blocked**: "Exile ~ from your graveyard: Create two 1/1 red Elemental creature tokens."
+(Seasoned Pyromancer). The derivation is already written for it; what is missing is one word in the
+SDK — `AbilityCost.ExileSelf` is a `data object` with no zone on it, so a rule cannot yet say *which*
+zone the source is exiled from. That makes it the rare band whose grammar half is a single `Costs` row
+behind a one-field SDK change.
+
+## The dynamic counter count
+
+`X +#/+# counters …` — **125 cards, 58 sole-blocked, 125 lines**, third on the tail ranking. The
+decline sits on the `X`, which means the grammar had read everything in front of it: "~ enters with ",
+"put ", "{X}, {T}: put up to ". What it could not read was the count itself.
+
+```
+~ enters with X <kind> counters on it.                                        70 lines
+put X <kind> counters on <something>…                                         47   (32 with a where-clause)
+~ enters with X <kind> counters on it, where X is <amount>.                    16
+~ enters with a number of <kind> counters on it equal to <amount>.             15
+```
+
+### The finding: the counter count never got its "equal to" sibling
+
+`Steps.countedStepPair` is this module's own generator for a quantity English writes two ways — a
+numeral template and an `equal to …` sibling from one call site, disjoint by domain so printing stays
+decided by the model. Every counted verb in the grammar has been through it. The three counter
+positions never were:
+
+| position | rule |
+|---|---|
+| a chosen target | `Steps.putCountersOnTargetPermanent` |
+| the source or an anaphor | `SelfSteps.putCounters` |
+| as it enters | `Replacements.entersWithCounters` |
+
+All three took `Cardinals.word` and nothing else, and the reason was the SDK type rather than the
+grammar: `AddCountersEffect.count` and `EntersWithCounters.count` are both plain `Int`. The dynamic
+siblings were already there — `EntersWithDynamicCounters(count: DynamicAmount)`, and
+`AddDynamicCountersEffect` behind `Effects.AddDynamicCounters`, which had **zero callers here**. So
+this is the frozen-facade shape the module keeps finding: the difference between "put two +1/+1
+counters" and "put X +1/+1 counters" was never a rule, only an argument the facade already took.
+
+### Two rows, three surfaces
+
+The two clause spellings are *one rule*, not two, because they are one model with a word in a
+different place — which is exactly what `alsoSpelled` is for, and why the reader and the fail-closed
+reconstruction cannot drift apart between them. `Amounts.equalTo` owns the derivation the way
+`Durations.fronted` owns fronting, and *requires* both markers, so a template it does not apply to
+fails during object initialization rather than quietly registering a spelling no card prints:
+
+```
+{self} enters with X {kind} counters on it, where X is {amount}.     <- canonical
+{self} enters with a number of {kind} counters on it equal to {amount}.   <- parses, never prints
+```
+
+Which of the two prints is a corpus count and nothing deeper — 48 printed lines put the clause behind
+a comma against roughly half that many behind the noun — so a card printing the other comes back as a
+**variant** rather than a decline. `Undergrowth Scavenger` and `Rhizome Lurcher` are what that looks
+like.
+
+The kind stays a slot, which is why the band reached four tail families rather than the one it was
+named for: 18 of the 70 printed "enters with X … counters" lines name a kind other than +1/+1, and
+`charge`, `fire`, `gem` and `ice` sat in their own rows.
+
+### The bare `X` is a position, and only one of the three has it
+
+"~ enters with X +1/+1 counters on it." names no count at all — the X is the one announced for the
+spell. `Targets.upToXTargets` had already written down when that reading is legal (`XValue` needs the
+resolution context live; `CastX` is the durable object-scoped one), and this band adds a fourth case
+to the same rule rather than a new rule:
+
+- **the enters-with replacement, self** — `EntersWithReplacements` builds
+  `EffectContext(xValue = spellComponent.xValue)` during the permanent spell's own resolution, so the
+  context *is* live. `XValue`, and the ten hand-written cards with scenario tests asserting the counts
+  agree.
+- **the same effect's `otherOnly` branch** — builds a context with **no** `xValue` and gates on
+  `if (!effect.otherOnly) continue`. `XValue` there is silently zero; that sentence needs `CastX`.
+- **a step** — `Triggers` and `Activated` lift these clauses, and "whenever ~ attacks, put X +1/+1
+  counters on ~" carries no announced X. There is no `DynamicAmount` at all for the X of an arbitrary
+  activated ability.
+
+So the bare row is the enters position's alone and the two step positions take only the defined
+clauses, whose amount is a board tally and means the same wherever the clause is lifted to. A
+declaration with a criterion, the way `Targets.singularQuantifiers` is — and the tests pin it, because
+the cheap thing to do later is widen it.
+
+### The differential found the same shape one level down
+
+Reading the step clause made **Servant of the Scale** comparable for the first time, and it diverged:
+
+```
+When ~ dies, put X +1/+1 counters on target creature you control,
+where X is the number of +1/+1 counters on ~.
+```
+
+`Amounts.counterCount` reads `EntityProperty(Source, CounterCount)`, and `DynamicAmountEvaluator`
+resolves that from **live** state — `counterCountOf` looks the entity up and answers 0 when it is not
+there. In the position Oracle usually prints this clause the source is already dead, so the grammar's
+model evaluates to nothing. The card knows: it writes `Effects.MoveAllLastKnownCounters` and its own
+KDoc argues the equivalence.
+
+That is the bare-`X` problem again with a different value in it, so it gets the same answer.
+`Amounts.namesX` refuses the live tally rather than emitting a model that reads zero, and the
+translation belongs at the lift in `Triggers`, the one place the position is known — the SDK already
+has `DynamicAmount.LastKnownSourceCounters` waiting for it. The refusal is narrow: every other row of
+`Amounts.count` reads the board or a zone and means the same wherever it lands.
+
+### Results
+
+**+19 whole cards** (8,344 → 8,363), 76 lines, and the family fell from **125 cards / 58 sole / rank
+3** to **4 cards / 0 sole / rank ~1,861** — the four left are `Put up to X +1/+0 counters on ~`, a
+player-chosen number rather than an amount, which is a different SDK shape. Byte-exact readings rose
+73 and normalized variants 19, which is the `equal to` spelling arriving. Ambiguity, redundant
+readings and invertibility all stayed at zero.
+
+The probe had said 33 whole cards for the named family, against 19 delivered — the usual direction,
+and this time the gap has a name: two thirds of the where-clause amounts ("the amount of life you've
+gained this turn", "the total toughness of other creatures you control", "the greatest number of cards
+an opponent has drawn this turn") are rows `Amounts.count` does not have yet. The surface is written,
+so each row added there now reaches all three counter positions without being told.
+
+One fix outside the grammar, in the SDK. `CounterType.fromName` special-cased `+1/+1` and `-1/-1` and
+fell through to `valueOf` for everything else, so the other four stat kinds answered null — `"+1/+0"`
+uppercases to `"+1/+0"`, which is not an enum constant. All six exist in the enum *and* in `Counters`
+*and* in `CounterTypeFilter`; only two were reachable by name. The map is now derived from `Counters`
+so a seventh cannot be added to one and missed in the other. Both engine callers treated null as
+fail-closed (`RemoveAllCountersOfTypeExecutor` no-ops, `StateProjector` empties the affected set), so
+the fix only widens what already worked.
+
+**What it named next.** Six of those 18 non-+1/+1 lines still decline, and on nothing this band owns:
+`oil`, `study`, `echo`, `void`, `scream` and `isolation` are counter kinds `CounterType` does not name,
+so `Primitives.counterKind`'s gate rejects the word. That gate is the right place for it —
+`CounterTypeFilter.Named` fails open to +1/+1 — so the fix is SDK vocabulary, one justified enum entry
+per kind, and six cards behind it.
+
+## The chosen count
+
+`any number of …` — **123 cards, 83 sole-blocked, 123 lines** at the head of this work, fourth on
+the tail ranking. It is the first band picked off that ranking whose probe came back *empty*, and
+that is the finding rather than a reason not to write it.
+
+### The measurement: the count finishes nothing on its own
+
+Substitute a known-good cardinal for the family's own span — "any number of" → "three" — and re-parse
+every declined line behind it. Three of 123 lines get further. **Zero whole cards.**
+
+```
+Look at the top five cards of your library. Put any number of permanent cards from among them …
+Look at the top five cards of your library. Put three         permanent cards from among them …   still declines
+When ~ dies, discard any number of cards, then draw that many cards plus one.
+When ~ dies, discard three         cards, then draw that many cards plus one.                      still declines
+```
+
+This is [the fronted duration](#the-fronted-duration)'s lesson on a *word* rather than on a clause:
+a family that is a **position** measures its payload, not itself. And the payload here is not a
+scattering of unrelated sentences — it is one construct, printed in every line the substitution
+failed on. "…then draw **that many** cards", "for each creature sacrificed **this way**", "~ deals
+**that much** damage". Whatever verb chose the set, the next clause counts it. **1,118 declined lines
+in the corpus carry "this way" and 644 carry "that many" or "that much"** — the collection
+vocabulary [the batch-trigger band](#the-batch-trigger-band) named and did not write, reached from a
+fourth direction.
+
+So what this band ships is the **count**, in every position the SDK has a value for it, and what it
+delivers is not whole cards. It is the ranking: the family fell to **77 cards / 52 sole / 77 lines**
+and off the top of the table, because 46 lines stopped dying on the count and started dying on the
+clause that is actually blocking them. Whole-corpus coverage moves 8,363 → **8,364** (+1), which is
+the number this band is honest about rather than the one it claims.
+
+### "any number of" is never a slot — it is a different value in every position
+
+The word looks like it should slot wherever a number word slots. It is the one thing it must never
+be. `Cardinals.word` is a `Phrase<Int>` over numbers a card *fixes*; a count the player chooses is a
+different SDK **value** each time, and reading the phrase into the counted rules would have printed
+one model out of two rules:
+
+| position | SDK value | before |
+|---|---|---|
+| target | `TargetRequirement.unlimited` | already a [target quantifier](#the-target-quantifier) row |
+| activation / additional / payable cost | `CostAtom.VariablePermanents(minCount = 0, …)` | **the type was referenced nowhere in the grammar** |
+| a counter cost | `CostAtom.RemoveCounters(count = XValue, self = true)` | reachable — see the finding below |
+| an effect | `SacrificeEffect(any = true)` | not written |
+| a pipeline selection | `SelectionMode.ChooseAnyNumber` | not written |
+
+The cost row is [the cost band](#the-cost-band)'s frozen-facade finding a sixth time and in its
+strongest form. `CostAtom.VariablePermanents`' own KDoc calls `action`, `xMeasure` and `minMeasure`
+"three orthogonal axes [that] cover the printed shapes"; the grammar had never called it at all, so
+"sacrifice one or more creatures" was a sentence nobody had written rather than a *word* nobody had
+slotted. [`VariableCosts`](src/main/kotlin/com/wingedsheep/assay/grammar/VariableCosts.kt) is the
+type's product, and `Costs` lifts it into all three contexts `CostAtom` names — which is how
+Phyrexian Dreadnought's "sacrifice it unless you sacrifice any number of creatures with total power
+12 or greater" costs one `PayCost` lift rather than a rule.
+
+Which axis is a row and which is a slot is decided the way [the entry band](#the-entry-band) states
+— by how Oracle spells it:
+
+- **The verb is a row**, because it is not one word. A sacrifice names no controller (CR 701.17a
+  lets you sacrifice only what you control, so the clause would be redundant); an exile and a tap
+  both name one; only a tap says "untapped" (CR 701.26a). Three frames, not one template with a
+  verb in it.
+- **The count is a slot**, because it *is* one word position and the noun beside it does not move:
+  "any number of creatures" and "one or more creatures" agree in number. That is exactly the test
+  the target quantifier's six-row table *fails*, and it is why that one is a table and this one is
+  not.
+- **The measure is a layer**, one row per printed clause, each owning `xMeasure` and `minMeasure`
+  together. Not two axes: the value space is not their product. An absent clause is `COUNT` with no
+  floor, and a floor is only ever printed by a measure that names itself — splitting them would make
+  `TOTAL_POWER`-with-no-floor spellable, and that rule would then print bare, a second printer for
+  the bare form.
+
+And `excludeSelf` is spelled in **two places** — "one or more **other** artifacts you control" in
+front of the noun, "untapped creatures you control **other than ~**" behind the controller clause —
+decided by the verb. So it belongs to the frame rather than to a layer of its own; a shared "other"
+layer would have printed the wrong one for one of the two.
+
+### The finding: two printed forms of one cost value
+
+"Remove **any number of** charge counters from ~" (the mana batteries, the storage lands, Geistflame
+Reservoir) is the *same* `CostAtom.RemoveCounters(count = XValue, self = true)` the grammar already
+prints as "Remove **X** charge counters from ~". Both are CR 601.2b counts announced by the payer as
+the ability is activated, and the SDK has one value for them.
+
+What differs is only how the *rest of the ability* refers back to the number — "Add X mana …"
+against "…for each charge counter removed this way" — and that is a property of the effect, a
+different slot of the script. So it is one rule with a second surface (`alsoSpelled`), not a sibling
+that could print it: registering two printers for one model is what invariant 2 forbids and what the
+ambiguity gate catches. "Remove X" stays canonical because it is the majority *and* because it is
+the form whose payoff sentence the grammar can already read.
+
+That one line is worth more than the rest of the band put together in ranking terms. It moved
+**17 lands** — eleven storage lands and six mana batteries — from "blocked on the cost" to blocked on
+exactly one sentence:
+
+```
+{T}, Remove any number of storage counters from ~: Add {W} for each storage counter removed this way.
+{T}, Remove any number of charge counters from ~: Add {B}, then add an additional {B} for each charge counter removed this way.
+```
+
+**18 lines, and they are the cheapest cards left in the whole family** — see below for why they are
+not in this band.
+
+### What declines, and why each one is the honest answer
+
+Four variable-count costs the corpus prints that no SDK field can hold, reported rather than
+approximated into the nearest one:
+
+| lines | printed | what it would need |
+|---|---|---|
+| ~24 | "exile any number of cards from your graveyard" | `CostAtom.ExileFrom.count` is an `Int`; `CollectEvidence` is this sentence with a total-mana-value floor but carries **no filter**, so The Capitoline Triad's "historic cards … with total mana value 30 or greater" has nowhere to go either |
+| 6 | "exile any number of red cards from your hand" (the Adversary cycle) | the same shape one zone further; there is no variable-count hand cost at all |
+| ~10 | "discard any number of cards" | `CostAtom.Discard.count` is an `Int` |
+| 6 | "you may pay {1}{G} **any number of times**" (the Adversary cycle again) | a repeated cost, which is not a count of objects and has no value anywhere |
+
+### What is left, and the band it names
+
+77 cards, and the residue is one thing wearing five verbs:
+
+| what blocks it | example |
+|---|---|
+| the "…this way" / "that many" collection | "Tap any number of untapped creatures you control. You gain 4 life for each creature tapped this way." |
+| the counted mana add (18 lines) | "Add {W} for each storage counter removed this way." |
+| the plural library search | "Search your library for any number of Goblin cards, reveal them, then shuffle and put those cards on top in any order." |
+| `SearchDestination` has no exile | "Search your library for any number of land cards, exile them, then shuffle." |
+| phasing, which the grammar has no verb for | "…any number of other target creatures you control phase out." |
+
+The first two are one band and it has a **name and a shape**: X is *announced*, not spelled. CR
+601.2b makes a variable cost's chosen number the ability's X, so "for each storage counter removed
+this way" is `DynamicAmount.XValue` — but only inside an ability whose cost announced one. Coalition
+Relic prints the identical clause after an *effect* ("At the beginning of your first main phase,
+remove all charge counters from ~. Add one mana of any color for each charge counter removed this
+way."), where the same words mean a collection count instead. Registering the spelling unscoped would
+read one as the other, silently, in the class of bug this module exists to make impossible — so it is
+**deliberately not in this band**. What it needs is a fail-closed guard where an ability is
+assembled: a script that reads `XValue` and a cost that declares none refuses to build. That is one
+capability, three guard sites, and it is what turns those 17 lands and the 6 batteries into whole
+cards.
+
+The third is the other cheap one and it is the frozen-facade lesson again:
+`Patterns.Library.searchLibrary` builds `SelectionMode.ChooseUpTo(count)` with no way to reach
+`ChooseAnyNumber`, and the *plural* search sentence is unwritten at any count — "search your library
+for three creature cards, put them onto the battlefield, then shuffle" declines exactly where "any
+number of" does. Seven sole-blocked cards sit behind it (both Recruiters, Iname, Scouting Trek and
+the three "cards named ~" tutors), and the band is the count slot plus five destination rows. Note
+that Scouting Trek is *implemented* and does not use the recipe, so writing it will produce a
+differential divergence to classify before it produces a card.
+
+## The combat restriction
+
+"Can't be blocked" led the tail ranking by every column — **122 cards, 79 sole-blocked, 122 lines**
+— and it is the first band whose ranked construct the grammar could already read. Three times, in
+three places, each frozen into a whole sentence:
+
+| where | what it read | what it could not |
+|---|---|---|
+| `Grammar.flagLine` | `~ can't be blocked.` | any other subject, any condition, any clause position |
+| `Statics.blockerRestriction` | `~ can't be blocked by {blockers}.` | the attached permanent, a group, `except by` |
+| `Statics.groupCantBeBlockedExceptBy` | `{filter} can't be blocked except by {blockers}.` | the source, the attached permanent |
+| `Steps.targetCantBeBlocked` | `target {filter} can't be blocked this turn` | every other quantifier, the source, the anaphor, a group |
+
+Five rules for three of the combinations Oracle prints. The SDK had never been the problem: every
+`CantBlock`, `CantBeBlocked`, `CantBeBlockedBy`, `CantBeBlockedExceptBy`, `CantBeBlockedByMoreThan`,
+`CantBeBlockedByFewerThan` and `CanOnlyBlockCreaturesWith` carries the affected set as one
+`GroupFilter` field and differs only in what it forbids, and `CantBeBlockedByFewerThan` — menace
+generalized past two — had a caller in three hand-written cards and none in the grammar. So the band
+is the product, in both slots the type list spans.
+
+### The subject is one axis, and it is the SDK's own field
+
+Three spellings, three **disjoint** `GroupFilter` values, so printing is decided by the model and not
+by an alternation's order — the property every `oneOf` here is written to have:
+
+| printed | value | printed lines with "can't be blocked" |
+|---|---|---|
+| `~` | `GroupFilter.source()` — `Scope.Self` | 279 |
+| `enchanted creature` | `GroupFilter.attachedCreature()` — `Scope.AttachedTo` | 25 |
+| `{filter}` (a plural noun phrase) | `GroupFilter(f)` — a battlefield scan | 10 |
+
+Crossed with seven restriction rows (bare, `by {blockers}`, `except by {blockers}`, `by more than one
+creature`, `by more than {n} creatures`, `except by {n} or more creatures`, `can't block`, `can block
+only {blockers}`), that is one shape and a table where there were five rules. The subject's
+fail-closed half is worth naming because it is done **once for the whole value** rather than per
+field: the candidate slot bindings are fed back through the subject's own builder and the result
+compared, so an `excludeSelf`, an `excludeTarget`, a `chosenSubtypeKey` or a `Scope.SoulbondPair` —
+every field a printed subject says nothing about — refuses to print instead of being dropped.
+
+### The hole in the product is deliberate, and it is what the card bugs were hiding in
+
+The source's bare "~ can't be blocked." is **not** offered as a static, and the reason is the
+two-spellings rule: 19 hand-written cards spell that sentence as `flags(AbilityFlag.CANT_BE_BLOCKED)`
+against 6 that write `CantBeBlocked()`, so registering a source-scoped bare row beside
+`Grammar.flagLine` would be two rules for one text — `AMBIGUOUS` by construction.
+
+The attached and group subjects have no such competitor, and that asymmetry is the whole finding. A
+card-level flag lands on the permanent **the card is**, so on an Aura or an Equipment it grants the
+evasion to the enchantment or artifact — which never blocks and is never blocked. Three shipped cards
+were carrying that no-op: **Cloak of Mists**, **Whispersilk Cloak** and **My Precious**. All three
+now write `CantBeBlocked(GroupFilter.attachedCreature())`, and each has a scenario test that fails on
+the old reading.
+
+A fourth card had the same bug by a different route. Every ability in
+`mtg-sdk`'s `BlockingStaticAbilities.kt` defaults its `filter` to `GroupFilter.source()`, while
+`GrantKeyword` and `ModifyStats` — the statics an attachment is otherwise made of — default to
+`GroupFilter.attachedCreature()`. **Air Bladder** took the default for "Enchanted creature can block
+only creatures with flying." and restricted the Aura; the line beside it, "Enchanted creature has
+flying.", took the opposite default and was right. Two neighbouring families with opposite defaults
+for the same omitted field is not something a card author can be expected to remember, so the
+warning now lives in the SDK KDoc next to the types.
+
+### The durational half is a row of the grant family whose surface is irregular
+
+"Target creature can't be blocked this turn." is `GrantKeywordEffect` — the *same* effect "gains
+flying until end of turn" builds — over `AbilityFlag.CANT_BE_BLOCKED` instead of a `Keyword`. Only
+the surface differs, and the reason is a fact about the SDK's two keyword vocabularies rather than
+about this sentence: a CR 702.x keyword is a **noun** a creature can be said to gain, while an
+`AbilityFlag` names a whole sentence and has no noun, so Oracle prints the flag as its own predicate
+with the duration spelled "this turn". That makes it a row, not a second grant vocabulary — and once
+it is a row, the four restrictions beside it (`can't block this turn`, `can't attack this turn`,
+`can't attack or block this turn`, `can't be blocked this turn except by …`) are rows of the same
+table, each one SDK effect.
+
+The table is instantiated in the three positions the module already keeps apart, exactly as
+`Prevention.clausesFor` and `SelfSteps.retargetable` are: every quantifier English prints in front of
+"target", the source-and-pronoun subject (which is also what lets "~ gets +1/+0 until end of turn and
+can't be blocked this turn." read as the two clauses it is), and the "that creature" anaphor. The
+pronoun is **deliberately absent** from the anaphor position: nine printed lines say "It can't be
+blocked this turn." about a permanent the same clause animated ("{1}{U}{B}: Until end of turn, ~
+becomes a 3/2 blue and black Elemental creature. It's still a land. It can't be blocked this turn."
+— Creeping Tar Pit), and reading those as the target would be byte-perfect and about the wrong
+creature.
+
+Moving `effectOver`/`memberOf` out of `Steps` and onto `Targets.Quantifier` is what let a second
+family take the whole table without a second copy of the iteration-space decision. It is the same
+knowledge `Quantifier.requirement` already is: what one quantifier *denotes*.
+
+### The measurement, and the four times the probe overstated
+
+The band's honest sub-band table, each row measured with the transformation that row's rule actually
+performs:
+
+| sub-band | lines | readable after the substitution | whole cards |
+|---|---|---|---|
+| `except by {blockers}` | 20 | 12 | 7 |
+| `except by {n} or more creatures` | 8 | 8 | 6 |
+| the durational table | 52 | 22 | 12 |
+| the other subject positions | 10 | 2 | 1 |
+| conditioned (`as long as` / `if` / `unless`) | 31 | **2** | **1** |
+
+The first probe run substituted a known-good stand-in (`can't be blocked by Walls`) for the whole
+`except by …` span and reported **18** cards; the exact one, which changes only the two words the rule
+changes and keeps the printed filter, reports **7**. Fifth time, same direction, same cause — *a probe
+that performs the family's own transformation has no gap to be wrong in; one that stands in for it
+does.*
+
+The band delivered **+93 whole cards** (8,653 → 8,746) against a table summing to ~28, and the
+difference is the durational rows for the *other* three restrictions: "can't block this turn" alone is
+59 printed lines across its own decline families, which this family's ranking never counted.
+
+### What the differential found
+
+21 more cards became comparable (3,851 → 3,872) and every one of the five new divergences was a card
+bug:
+
+| card | bug | class |
+|---|---|---|
+| Cloak of Mists | the evasion was a card flag on the Aura | attachment scope |
+| Air Bladder | `CanOnlyBlockCreaturesWith` took the `source()` default | attachment scope |
+| Invisibility | `Creature.withSubtype(Wall)` where a bare tribal noun is `Permanent` | the bare-tribal-noun migration |
+| Rocksteady, Crash Courser | the same, in the subject noun phrase | the bare-tribal-noun migration |
+| Relentless X-ATM092 | "Return this card **from your graveyard**" with no `fromZone` guard | the functional-zone band's class, card 19 |
+
+Whispersilk Cloak and My Precious carry the same attachment-scope bug and are *not* comparable —
+their line is "Equipped creature can't be blocked **and has** shroud", a static clause run the grammar
+does not read — so those two were found by grepping the flag rather than by the gate. That is worth
+recording: a family's own findings are not bounded by what the gate can currently compare.
+
+After the fixes the differential is back to its baseline **44** divergences at **988.6‰** agreement,
+with none of them new.
+
+### What is left, and the band it names
+
+The family fell to **63 cards / 44 sole / 63 lines**. Its largest remaining sub-band is the
+conditioned form, and the honest reading of it is the band's second finding: 31 lines, an upper bound
+of 19 cards, and **2 of 29 conditions readable**. "As long as defending player controls an untapped
+land", "as long as you've drawn two or more cards this turn", "if you've cast two or more spells this
+turn", "as long as there are eight or more permanent cards in your graveyard" — the payload is
+`Conditions`, and `CantBeBlockedIfDefenderControls`, `CantBeBlockedIfCastSpellType`,
+`CantBeBlockedUnlessDefenderSharesCreatureType` and `CantBeBlockedWhilePropertyAtMost` are sitting in
+the SDK waiting for it. Writing the conditional wrapper here would have bought one card; naming the
+condition vocabulary is what the 31 lines are actually for.
+
+Two smaller residues, both `Filters`:
+
+- the blocker slot's missing noun phrases — "creatures with flying **or reach**" (3 cards, a keyword
+  disjunction beside the colour and subtype ones `Filters` already layers), "artifact creatures
+  **and/or** white creatures" (3, a join of noun phrases), `legendary` (the known 416-line supertype
+  layer), and `Vehicles`;
+- "**Each** creature you control can't be blocked by more than one creature." (3 lines) — "each" as a
+  plural subject quantifier, which `Filters.plural` does not spell.
+
+And one static clause run: "Enchanted creature **can't be blocked and has** shroud", "Enchanted
+creature **gets +2/+0 and** can't be blocked" — the `Statics.pumpAndKeyword` shape generalized to a
+run of restriction clauses, about 10 lines. That one is a `Statics.line` question rather than a
+member of this family.
+
+## The card's mana value
+
+`card with mana …` — high on the tail ranking when it was picked, and its shape is the one worth
+carrying forward, because the construct the ranking named is not what was blocking it.
+
+### The diagnosis is a word, and `assay parse` states it
+
+```
+Search your library for a creature card with mana value 3 or less, put it onto the battlefield, then shuffle.
+                                  ^ expected " with mana value " | " with " | " you control" | " card, put it onto the battlefield, then shuffle" | …
+```
+
+The grammar has read "creature **with mana value 3 or less**" since the counting band. What it could
+not read is the same clause one word to the right, because every card-position rule spelled the head
+noun in **its own template** — `"return target {filter} card from your graveyard to your hand"`,
+`"search your library for {filter} card, …"`. That puts "card" in the *sentence* and freezes the noun
+phrase at its type: a suffix clause attaches behind the head noun, and in card position there was no
+head noun inside the phrase for it to attach behind. One printed word, and a family near the top of
+the ranking.
+
+So the change is two pieces, and the second is the one that pays.
+
+### The mana-value qualifier is a 3×3 table with two empty cells
+
+| | equal | at most | at least |
+|---|---|---|---|
+| a numeral | `mana value 3` | `mana value 3 or less` | `mana value 3 or greater` |
+| the announced `X` | `mana value X` | `mana value X or less` | — |
+| a clause | `mana value equal to …` | `mana value less than or equal to …` | — |
+
+English **postfixes** the comparison to a number and **prefixes** it to a phrase: "3 or less"
+against "less than or equal to the number of lands you control". Nothing in the model chooses between
+them — `ManaValueAtMost(3)` has one printed form and `ManaValueAtMostDynamic(…)` has another — so the
+comparison cannot be a slot over one template. A slot would make "mana value less than or equal to 3"
+a second spelling of the first row, which is printing left undetermined. It is three generators over
+one comparison list instead, each taking only the comparisons its value shape has a spelling for.
+
+The equality row is that observation at its limit: **equality's postfix form is the empty string.**
+"Mana value 3" is not an abbreviation of a comparison Oracle left out — the bare numeral *is* how the
+equality is written, which is why `""` is a row of the table rather than a case above it. Both empty
+cells are the SDK's and both are visible in the corpus: one card prints "mana value X or greater" and
+there is no `ManaValueAtLeastX` for it to be, and no card at all prints a clause with "or greater".
+Across the whole Oracle bulk the seven filled cells cover all but a handful of the places a
+mana-value qualifier appears, and the handful is "mana value 4 or 5" (Transit Mage and three
+siblings) — a *disjunction* of two equalities rather than a comparison, which declines as the
+different construct it is.
+
+Its SDK finding is one missing call. `CardPredicate.ManaValueEqualsDynamic` exists, the engine
+evaluates it, and `manaValueAtMostDynamic` has a fluent builder — the equality sibling did not, so
+Talion, the Kindly Lord reaches past the facade to the raw constructor. Naming an existing
+composition is the one kind of `mtg-sdk` change this module may make on its own, and this is one.
+
+### `card` is a layer, and where it sits is the finding
+
+[`Filters.cardNoun`](src/main/kotlin/com/wingedsheep/assay/grammar/Filters.kt) is a fourth
+instantiation of the noun cascade, beside `plural`, `pluralSubject` and `spellQuality`, with the head
+noun *inside* it. Its place in the layer list is the whole point:
+
+> the layers above it are modifiers English writes **in front** of a head noun; the layers below it
+> are clauses English writes **behind** one.
+
+A position that prints a head noun therefore splits the cascade in exactly one place, and every
+suffix layer reaches card position without being told — keyword, power, and mana value all at once.
+Three details follow from the split rather than being chosen: the type phrase stays **singular in
+both numbers** because Oracle inflects only the head ("creature cards", never "creatures cards" —
+which the noun-in-the-template shape *could* print, and the counted library search did); the article
+derives from the printed form of the whole card noun, so "**a** creature card" and "**a** card" come
+from one function; and the **controller layer is absent**, because an object in a library or a
+graveyard is owned rather than controlled and every sentence here says which zone in its own words.
+
+The migration is what made it a refactor rather than an addition: every template across `Library`,
+`Graveyard`, `Costs`, `SpellCosts`, `TopOfLibrary`, `Amounts` and `Conditions` that spelled the noun
+itself gave the word back to the noun phrase, and **three rules were deleted** because they became
+rows of it.
+`Graveyard.returnAnyCardToHand` was exactly the general rule with `Any`; `Costs.discardCard` and
+`exileAnyFromGraveyard` were `constant`s for models that are *definitionally* `Discard(Any, 1)` and
+`ExileFromGraveyard(1, Any)`. Each had a KDoc paragraph explaining that `Filters` had no noun for
+`Any` — true when written, and the kind of write-off [the conditional-tapped-entry
+band](#the-conditional-tapped-entry-band) says has an expiry date.
+
+### The residue named a defect one layer over, and paid again
+
+With the mana-value clause readable, the family re-keyed onto `with mana value …` — and its top
+example was not a new construct:
+
+```
+When ~ enters, exile target creature an opponent controls with mana value 3 or less.
+```
+
+The cascade had `controlledBy` as its **outermost** layer, so it printed "creature with mana value 3
+or less an opponent controls". Oracle puts the controller clause in *front* of the quality clause on
+all but fourteen cards in the corpus — so the grammar had been reading the fourteen and declining the
+rest. The two layers commute in the model (`controllerPredicate` is its own field, not a member of
+`cardPredicates`), so only English was ever at stake, and swapping them paid a second time over with
+the divergence set unchanged. The rare order stays readable as an `alternate` over a quality
+vocabulary that excludes the bare pass-through — which is what keeps "creature you control" at
+exactly one reading and the redundancy count at zero.
+
+That is the general lesson: **a band that makes one layer reachable will measure the layer next to
+it.** The residue is not a smaller version of the family; it is whatever the family was hiding.
+
+### What the gate found: card bugs, most of them one misreading
+
+Every new divergence the band produced was a bug in a shipped card. Most share a single misreading,
+and it is the sharpest thing here: **"mana value N or less" implemented as "fetch N cards".**
+
+| Card | Printed | Shipped |
+|---|---|---|
+| Bog Glider | a Mercenary permanent card with mana value **2 or less** | up to **2** Mercenaries, any mana value |
+| Rathi Intimidator | a Mercenary permanent card with mana value **2 or less** | up to **2** Mercenaries, any mana value |
+| Defiant Falcon | a Rebel permanent card with mana value **3 or less** | up to **3** Rebels, any mana value |
+| Zur the Enchanter | an enchantment card with mana value **3 or less** | up to **3** cards, **no filter at all** |
+
+All four are mtgish-generated, and the emitter has since grown the guard that would have refused
+them — `"ManaValueIs" in blob` declines the whole search to SCAFFOLD — so these are stale output
+rather than a live generator defect. The mechanism is worth knowing anyway: the emitter reads a
+search's count with `findInteger(args)`, which walks the *whole* args subtree for the first integer,
+and on these cards the only integer in the IR is the mana-value threshold sitting in the filter.
+
+The rest are one each of shapes this module has already named. Unearth and Disembowel simply dropped
+the cap (Unearth returned any creature card from your graveyard; Disembowel destroyed any creature
+whatever X was paid) — the class [the top-of-library band](#the-top-of-library-band) records, where
+**a field the grammar cannot produce is a field nothing is checking**. Teshar, Ancestor's Apostle was
+missing the `fromZone = GRAVEYARD` guard, one more instance of [the functional
+zone](#the-functional-zone)'s finding, visible only now that the clause in front of it parses. And
+Star Charter restated `Patterns.Library.lookAtTopRevealMatchingToHand` — the recipe whose own KDoc
+names that card — by hand instead of calling it, and lost the `revealed = true` on the move to hand
+doing so, so a card the text says to *reveal* went to hand unseen. All are fixed here and the
+divergence set is back to the entries that predate this change.
+
+### What is left in the family
+
+The family is off the tail ranking entirely. What still declines with a readable mana-value clause is
+the sentence around it, and three positions account for most of it:
+
+- **the spell position** — "Counter target spell with mana value 4 or greater." The frozen-facade
+  lesson once more: `Filters.spellQuality` carries the table already, and `Stack`'s counter rules
+  simply do not slot it. The caret lands at the end of "Counter target spell".
+- **the clause values `Amounts.count` cannot spell** — "less than or equal to **~'s power**" (Carmen
+  and Winter Soldier), "your devotion to black", "1 plus the sacrificed creature's mana value" (the
+  Birthing Pod cycle). Each is a row in the count vocabulary, not a row here.
+- **the destinations** — "from your hand onto the battlefield", "from among them onto the
+  battlefield", "from your graveyard rather than pay this spell's mana cost". `Patterns.Library`
+  parameters nobody has slotted yet, exactly as [the top-of-library
+  band](#the-top-of-library-band) found them.
+
+One kernel primitive came out of this band and belongs to the next family that needs it.
+[`deferred`](src/main/kotlin/com/wingedsheep/assay/syntax/Phrase.kt) resolves a slot on first use
+rather than at construction, because a qualifier can be measured by a count and a count is taken over
+a noun phrase — `Filters` → `ManaValues` → `Amounts` → `Filters` is a genuine cycle in English, and
+the JVM answers an initialization cycle by handing back a half-built object whose slot reads `null`.
+Duplicating either vocabulary to break it is the one thing this module exists to prevent, so the
+indirection is in the kernel and knows nothing about mana values.
+## The mana spend restriction
+
+"Spend this mana only to cast creature spells." — the tail ranking's **top family by every column**:
+**116 cards, 64 of them solely, over 118 lines**, and a probe that agreed at **62**. Whole-corpus
+coverage went 8,748 → **8,806** (+58); the baked verdict ledger 8,519 → **8,576 whole**, with 57 cards
+gained and **none lost**. No new SDK type and no SDK change at all: one new grammar file, one new
+clause in `Mana`, and two spellings that were frozen in the rule beside it.
+
+### It is not a sentence. It is a field on the sentence before it
+
+Every printed instance is a *second* sentence following an "add …" clause, and what it denotes is the
+`restriction` field on that clause's effect — one field on each of `AddManaEffect`,
+`AddColorlessManaEffect`, `AddManaOfChoiceEffect` and `AddDynamicManaEffect`. That is why it could not
+be a clause in `Steps`' run: a run member is a `CompositeEffect` element, and this is not an effect.
+The rule spans **both sentences** (`"{add}. {spend}"`), which is `Grammar.amplifyLine`'s shape one
+slot in — the fragment is the only place a line's two contributions can meet, and the clause is the
+only place a sentence *pair's* can.
+
+Putting it on the clause rather than in `Activated` is what made the family cheap. The same two
+sentences are printed after an activated ability's colon, after a trigger's comma, after a loyalty
+ability's `+1:`, as a bare spell effect, and inside a granted ability's quotation marks. All five slot
+`Steps.step`, so all five inherited the rule without being told — and the choice form
+("Add {U} or {R}. Spend this mana only to cast a noncreature spell." — The Emperor of Palamecia) needed
+one extra rule, because that line is two abilities sharing both a cost and a restriction.
+
+The strip is what keeps the fail-closed property. `Mana.production`'s leaf re-reads what it writes, so
+a restricted effect prints "{G}", reads back bare, compares unequal and refuses; the any-colour and
+combination rules refuse one by reconstructing the whole script. That behaviour was already there as a
+guard, and this band made it load-bearing in the other direction: the wrapper hands the inner clause an
+effect with the restriction removed, so a rider or a non-default expiry still refuses rather than
+printing a bare sentence and dropping it.
+
+### The axis cannot be a filter, and that is a fact about the SDK
+
+Every other "what does this apply to" family in this grammar slots `Filters`. This one cannot:
+`ManaRestriction` is a **closed vocabulary of spend contexts**, not a `GameObjectFilter`, so a filter
+slot would have nowhere to put its value. That is not a gap. A spend context is not a set of objects —
+"turn permanents face up", "unlock a door" and "activate equip abilities" name special actions and cost
+payments no object filter describes — and the two contexts that *are* about a card's characteristics
+are exactly the two the SDK parameterizes.
+
+So the grammar becomes the same product the SDK is:
+
+| axis | printed | SDK |
+|---|---|---|
+| card type × {spells, abilities, both} × negated | "artifact spells or activate abilities of artifacts", "noncreature spells" | `CardTypeSpellsOrAbilitiesOnly` |
+| subtype list | "Dragon spells", "Mount or Vehicle spells", "a Dragon spell or an Omen spell" | `SubtypeSpellsOnly` |
+| one subtype, spells *and* abilities | "Dragon spells or activate abilities of Dragons" | `SubtypeSpellsOrAbilitiesOnly` |
+| mana-value floor × `{X}` clause × creature-only | "spells with mana value 5 or greater or spells with {X} in their mana costs" | `SpellsWithManaValueAtLeast` |
+| eleven parameterless contexts | "creature spells", "activate abilities", "unlock a door" | the atoms |
+| the join | "cast an enchantment spell, unlock a door, or turn a permanent face up" | `AnyOf` |
+| the one negative sentence | "This mana can't be spent to cast a nonartifact spell." | `CannotCastSpellsOtherThan` |
+
+**The negative is a different sentence, not a negated spelling of the positive one**, and the SDK is
+emphatic about why: every "spend only to …" clause is a whitelist that blocks each spend it does not
+name, while "can't be spent to cast a nonartifact spell" blocks exactly one thing and leaves activating
+an ability, paying a ward cost and turning a permanent face up legal. Both wordings exist over the same
+card types — "Spend this mana only to cast a **noncreature** spell" (The Emperor of Palamecia) against
+"This mana can't be spent to cast a **nonartifact** spell" (every Powerstone) — so the two sentences
+carry a distinction the words are the only record of.
+
+### The declared empty cell, and the guard it puts on the join
+
+`CardTypeSpellsOrAbilitiesOnly(CREATURE, allowSpells = true, allowAbilities = false)` and
+`CreatureSpellsOnly` mean the same thing and would print the same words. All 15 hand-written cards that
+print "cast a creature spell" use the second and none uses the first, so the card-type row **declares
+that cell empty**: the product covers every type but creature in its spells-only column, and the atom
+covers creature. Same treatment `Mana` gives `ManaColorSet.Specific` and `Filters` gives the bare
+subtype — one text, one model, resolved by measuring the corpus rather than by preference.
+
+The consequence is the interesting half, and the gate found it. "Cast artifact spells or activate
+abilities of artifacts" is *one* atom with both booleans set, so an `AnyOf` of the row's two halves
+would print those same words — a guard the join needs anyway. But **the empty cell means the atom
+stands in for the creature cell inside the join too**, and the first run of the touchstone reported
+exactly one ambiguity: Gwenna, Eyes of Gaea's "cast creature spells or activate abilities of creature
+sources" read both as the combined row and as `AnyOf(CreatureSpellsOnly, abilities of creatures)`. A
+declared hole has to be declared everywhere the value can appear, not only where the rule that owns it
+lives.
+
+### Number is not in the model, so half the family is an alternate
+
+Oracle writes both "cast **a** creature spell" and "cast creature spell**s**" for the same value: the
+printed number tracks how much mana the clause added, which the restriction does not carry. Exactly one
+prints, and the plural is canonical — it needs no article agreement, it is the spelling the SDK's own
+`description` strings use, and the bare contexts ("activate abilities") have no singular at all. The
+same argument runs through the whole file: four spellings of one card type's abilities ("abilities of
+artifacts", "abilities of artifact sources", "an ability of an artifact", "an ability of an artifact
+source") are one value, because a source *is* any object with that card type in any zone by Mishra's
+Workshop's own printed ruling; and "or **to** activate", "**and** activate" and "and/or" are joins the
+model has no room for. 1,640 → **1,706** lines now normalize from an alternate spelling.
+
+### The neighbours the probe found, and the frozen word in one of them
+
+The family's probe said 62 whole cards. Two *other* decline families turned out to be the same job,
+because a card whose add clause cannot be read never reaches its restriction sentence and is keyed
+somewhere else entirely:
+
+| family | cards | sole | probe |
+|---|---|---|---|
+| `Spend this mana …` | 116 | 64 | 62 |
+| `mana of any …` — "Add **three mana of any one color**." | 39 | 21 | 16 |
+| `colors. Spend this …` — "Add two mana **in any combination of colors**." | 14 | 8 | 8 |
+
+The second row is a defect, not missing work. `Mana.addAnyColour` spelled its plural template
+`add {n} mana of any color` — and Oracle prints "add two mana of any **one** color" **63** times in the
+corpus against "add two mana of any color" **3** times. The rule was reading the three oddities and
+declining the sixty-three cards. It is the same shape as `Filters`' controller layer sitting outside
+the mana-value qualifier: a modifier frozen at whichever spelling the first card to need it happened to
+use. The fix is one `alsoSpelled` with the two templates swapped — and the *singular* takes the pair the
+other way round, because "add one mana of any color" is what 625 cards print and "of any one color" is
+the lone oddity. **Which spelling is canonical is a per-count measurement, not a rule about the word.**
+
+The third row is a row: "in any combination of colors" is `AddManaInAnyCombination`'s own default colour
+set, all five, where the existing rule read only the enumerated form ("in any combination of {R} and/or
+{G}").
+
+### What the differential found
+
+26 more cards became comparable (4,156 → **4,182**) and the gate reported **two** new divergences, both
+of them card bugs and both of them in a *different* line of the card the mana sentence had just
+finished:
+
+| card | bug | class |
+|---|---|---|
+| Fabrication Foundry | "Return target artifact card **from your graveyard**" with no `fromZone` guard | the functional-zone band's class, card 20 |
+| Interdimensional Web Watch | restated `Patterns.Exile.impulse` by hand and named its pipeline collection something else | the restate-a-recipe class |
+
+Both are the pattern the band before last named: *a band that finishes a card's last line inherits its
+other clauses' unnormalized fields.* Neither card was comparable before, because one declining line is
+enough to keep a whole card out of the differential. After the fixes the count is back to its baseline
+**46**.
+
+### The finding that is not this band's to fix
+
+Widening the subtype join by two spellings — "cast a Dragon spell or an Omen spell" and "or **to**
+activate an ability of a Hero source" — added two more cards and **two more divergences**, and they are
+one parser bug with seven cards already in the baseline behind it. The grammar reads a bare subtype in
+**card** position as `Permanent.withSubtype`, inherited from the battlefield reading the
+[bare-tribal-noun migration](../docs/oracle-assay.md) settled over 104 cards. In card position that
+predicate is wrong, and the corpus says so out loud: **Boggart Birth Rite is a Kindred Sorcery with the
+Goblin creature type**, so it is "a Goblin card" that is not a permanent, and Boggart Harbinger's
+"search your library for a Goblin card" must be able to find it. Five Goblin, six Elf, four Giant, four
+Merfolk, three Faerie and four Elemental cards in the corpus are non-permanents carrying a creature
+type — which is exactly the Harbinger cycle's tribe list.
+
+`Filters` already contains the correct reading and the argument for it: `spellSubtype` exists because
+"a spell on the stack is not a permanent", and a card in a library is not a permanent either. So the
+fix is that instantiation repeated for the card position — and it is **a flip plus a migration**, not a
+row: 28 hand-written cards spell the card-position filter with `Permanent.withSubtype` against 22 with
+`Any.withSubtype`, so flipping the grammar first would trade seven divergences for twenty-eight. That is
+the trap the bare-tribal-noun migration recorded ("flipping first would have left 103 unexplained
+divergences"), and the honest thing is to name the band rather than half-do it inside this one.
+
+### What is left
+
+The family fell to **3 cards / 2 sole / 3 lines**, and the restriction *vocabulary* now reads **129 of
+the corpus's 205 restriction sentences**. What blocks the rest is mostly not this sentence:
+
+- **the add clause above it** — "Add {G}{U}." (a run of *different* symbols, which `Mana` declines on
+  purpose as a `CompositeEffect` it does not build; 7 cards, 5 sole), "Add X mana of any one color,
+  where X is ~'s power" (a where-clause), "Add one mana of any color in your commander's color
+  identity" (8 cards, 6 sole);
+- **`ManaSpellRider`** — "When you spend this mana to cast a Dragon creature spell, you gain 2 life"
+  (9 cards, 7 sole) and the two "…, and that spell can't be countered" riders. The SDK models these
+  and the grammar has no rule for them; this is the nearest adjacent band;
+- **contexts with no SDK atom** — "on costs that contain {X}" (4 lines, and Rosheen Meanderer is a
+  card people play), "a multicolored spell" (4 cards), "a colorless spell", "spells from your
+  graveyard", "your commander";
+- **the chosen type** (5 lines) — a different *effect*, `AddAnyColorManaSpendOnChosenTypeEffect`, which
+  mints its restriction at resolution from the source's `CastChoicesComponent`, so the whole two-sentence
+  span is one rule rather than a restriction slot;
+- **`creatureOnly` on a printed subtype** — "cast Dragon creature spells", "an Elf creature spell". The
+  field exists on `SubtypeSpellsOrAbilitiesOnly`, but every hand-written user of it is a chosen-type
+  card whose printed wording is "a creature spell of the chosen type", so reading a *named* subtype onto
+  it is a model the corpus does not vouch for. Declined on purpose.
+- **an invariant plural** — "activate abilities of **Myr**". `Primitives.pluralSubtype`'s pattern
+  requires a trailing "s", and widening it would give every bare singular subtype in the grammar a
+  second reading as a plural. One line, and not worth that.
 
 ## The differential gate
 

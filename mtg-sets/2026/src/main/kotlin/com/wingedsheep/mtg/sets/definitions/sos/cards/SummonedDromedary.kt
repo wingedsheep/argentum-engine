@@ -32,7 +32,7 @@ val SummonedDromedary = card("Summoned Dromedary") {
     keywords(Keyword.VIGILANCE)
     activatedAbility {
         cost = Costs.Mana("{1}{W}")
-        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
+        effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self)
         timing = TimingRule.SorcerySpeed
         activateFromZone = Zone.GRAVEYARD
     }

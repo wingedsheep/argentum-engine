@@ -1667,7 +1667,7 @@
                     "space": {
                         "type": "IterationSpace.Group",
                         "filter": {
-                            "baseFilter": "creature Raccoon ctrl:you"
+                            "baseFilter": "permanent Raccoon ctrl:you"
                         }
                     },
                     "body": {
@@ -2268,6 +2268,7 @@
                                                 "zone": "Exile"
                                             }
                                         },
+                                        "Foraged",
                                         {
                                             "type": "AddCounters",
                                             "counterType": "+1/+1",
@@ -2291,6 +2292,7 @@
                                             "type": "Sacrifice",
                                             "filter": "Food"
                                         },
+                                        "Foraged",
                                         {
                                             "type": "AddCounters",
                                             "counterType": "+1/+1",
@@ -3719,12 +3721,7 @@
                                                 "zone": "Exile"
                                             }
                                         },
-                                        {
-                                            "type": "AddCounters",
-                                            "counterType": "PLUS_ONE_PLUS_ONE",
-                                            "count": 1,
-                                            "target": "Self"
-                                        }
+                                        "Foraged"
                                     ]
                                 },
                                 "feasibilityCheck": {
@@ -3742,12 +3739,7 @@
                                             "type": "Sacrifice",
                                             "filter": "Food"
                                         },
-                                        {
-                                            "type": "AddCounters",
-                                            "counterType": "PLUS_ONE_PLUS_ONE",
-                                            "count": 1,
-                                            "target": "Self"
-                                        }
+                                        "Foraged"
                                     ]
                                 },
                                 "feasibilityCheck": {
@@ -3758,6 +3750,17 @@
                         ]
                     },
                     "descriptionOverride": "You may forage"
+                }
+            },
+            {
+                "id": "ability_2",
+                "trigger": "ForagedEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
                 }
             }
         ]
@@ -4190,7 +4193,8 @@
                                                 "type": "ToZone",
                                                 "zone": "Exile"
                                             }
-                                        }
+                                        },
+                                        "Foraged"
                                     ]
                                 },
                                 "feasibilityCheck": {
@@ -4202,8 +4206,14 @@
                             {
                                 "label": "Sacrifice a Food",
                                 "effect": {
-                                    "type": "Sacrifice",
-                                    "filter": "Food"
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "Sacrifice",
+                                            "filter": "Food"
+                                        },
+                                        "Foraged"
+                                    ]
                                 },
                                 "feasibilityCheck": {
                                     "type": "ControlsPermanentMatching",
@@ -17442,7 +17452,7 @@
                             "filter": "creature pow<=3",
                             "storeSelected": "kept",
                             "storeRemainder": "rest",
-                            "prompt": "You may reveal a creature card with power 3 or less and put it into your hand",
+                            "prompt": "You may reveal a creature card with power 3 or less from among them and put it into your hand",
                             "showAllCards": true
                         },
                         {
@@ -17451,7 +17461,8 @@
                             "destination": {
                                 "type": "ToZone",
                                 "zone": "Hand"
-                            }
+                            },
+                            "revealed": true
                         },
                         {
                             "type": "MoveCollection",
@@ -20301,8 +20312,12 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "ReflexiveTrigger",
-                    "action": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "hint": "Exile three cards from your graveyard or sacrifice a Food"
+                    },
+                    "then": {
                         "type": "ChooseAction",
                         "choices": [
                             {
@@ -20338,6 +20353,14 @@
                                                 "type": "ToZone",
                                                 "zone": "Exile"
                                             }
+                                        },
+                                        "Foraged",
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
                                         }
                                     ]
                                 },
@@ -20350,8 +20373,21 @@
                             {
                                 "label": "Sacrifice a Food",
                                 "effect": {
-                                    "type": "Sacrifice",
-                                    "filter": "Food"
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "Sacrifice",
+                                            "filter": "Food"
+                                        },
+                                        "Foraged",
+                                        {
+                                            "type": "DrawCards",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        }
+                                    ]
                                 },
                                 "feasibilityCheck": {
                                     "type": "ControlsPermanentMatching",
@@ -20360,13 +20396,7 @@
                             }
                         ]
                     },
-                    "reflexiveEffect": {
-                        "type": "DrawCards",
-                        "count": {
-                            "type": "Fixed",
-                            "amount": 1
-                        }
-                    }
+                    "descriptionOverride": "You may forage"
                 }
             }
         ]

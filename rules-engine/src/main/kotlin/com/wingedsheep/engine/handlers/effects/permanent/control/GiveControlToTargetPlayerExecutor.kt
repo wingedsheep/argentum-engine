@@ -35,6 +35,14 @@ class GiveControlToTargetPlayerExecutor : EffectExecutor<GiveControlToTargetPlay
         val targetContainer = state.getEntity(targetId)
             ?: return EffectResult.error(state, "Target permanent no longer exists")
 
+        // CR 110.2a — only a permanent has a controller, so a target that has left the battlefield
+        // between targeting and resolution simply isn't affected (CR 608.2b). Silently, and with no
+        // ControlChangedEvent: `SuccessCriterion.ControlChanged` riders ("...gains control of target
+        // permanent you control. If they do, you draw a card") read that event to decide whether the
+        // control change really happened, so emitting one here would pay out for a permanent that is
+        // sitting in a graveyard.
+        if (targetId !in state.getBattlefield()) return EffectResult.success(state)
+
         val cardComponent = targetContainer.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
 

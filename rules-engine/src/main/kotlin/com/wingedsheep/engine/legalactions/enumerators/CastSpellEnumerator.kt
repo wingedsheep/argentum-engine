@@ -215,6 +215,7 @@ class CastSpellEnumerator : ActionEnumerator {
             var variableSacrificeReduction = 0
             var exileTargets = emptyList<EntityId>()
             var exileMinCount = 0
+            var collectEvidenceCost: CostAtom.CollectEvidence? = null
             var discardTargets = emptyList<EntityId>()
             var discardCount = 0
             var bounceTargets = emptyList<EntityId>()
@@ -247,12 +248,39 @@ class CastSpellEnumerator : ActionEnumerator {
                             sacrificeTargets.addAll(validSacTargets)
                         }
                         is CostAtom.ExileFrom -> {
-                            val validExileTargets = context.costUtils.findExileTargets(state, playerId, atom.filter, atom.zone)
+                            val validExileTargets = context.costUtils.findExileTargets(
+                                state, playerId, atom.filter, atom.zone,
+                                atom.anyPlayersZone, atom.singleZone, atom.count,
+                            )
                             if (validExileTargets.size < atom.count) {
                                 canPayAdditionalCosts = false
                             }
                             exileTargets = validExileTargets
                             exileMinCount = atom.count
+                        }
+                        // Collect evidence N as a *mandatory* cast cost (CR 701.59a) — Urgent
+                        // Necropsy. The optional linked form rides the kicker rail further down;
+                        // this is the plain `Costs.additional.CollectEvidence(...)` shape.
+                        is CostAtom.CollectEvidence -> {
+                            collectEvidenceCost = atom
+                            // CR 701.59b fails closed on a threshold that is already known: a
+                            // graveyard that can't reach it means the spell can't be cast at all.
+                            // A *target-derived* threshold isn't known yet — targets are announced
+                            // at CR 601.2c and the cost isn't determined until 601.2f — so the cast
+                            // is offered and an unreachable choice of targets is rejected at
+                            // validation, which is the 601.2e rewind the printed ruling describes.
+                            if (!com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                                    .dependsOnTargets(atom.amount) &&
+                                !com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
+                                    .canCollect(
+                                        state, playerId,
+                                        com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                                            .evaluate(state, atom.amount),
+                                        excludeCardId = cardId,
+                                    )
+                            ) {
+                                canPayAdditionalCosts = false
+                            }
                         }
                         is CostAtom.Discard -> {
                             val handZone = ZoneKey(playerId, Zone.HAND)
@@ -654,6 +682,23 @@ class CastSpellEnumerator : ActionEnumerator {
                 cardDef.script.auraTarget?.let { add(it) }
             }
 
+            // What each legal target would add to a target-derived collect-evidence threshold
+            // ("collect evidence X, where X is the total mana value of the permanents this spell
+            // targets"). Built only for the one cost shape that needs it — enumerating targets is
+            // the expensive part of this loop, and every other spell would pay for a map nothing
+            // reads. `mustDifferFromEarlier` and per-requirement caps don't matter here: the client
+            // prices whatever set the targeting step let it choose.
+            val evidenceTargetWeights: Map<EntityId, Int> =
+                if (collectEvidenceCost != null &&
+                    com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                        .dependsOnTargets(collectEvidenceCost.amount)
+                ) {
+                    context.targetUtils.buildTargetInfos(state, playerId, targetReqs, cardId)
+                        .flatMap { it.validTargets }
+                        .distinct()
+                        .associateWith { state.getEntity(it)?.get<CardComponent>()?.manaValue ?: 0 }
+                } else emptyMap()
+
             // Build additional cost info for the client
             val costInfo = buildAdditionalCostData(
                 additionalCosts, sacrificeTargets, variableSacrificeTargets,
@@ -662,7 +707,9 @@ class CastSpellEnumerator : ActionEnumerator {
                 tapTargets, tapCount,
                 beholdTargets, beholdCount,
                 blightVariableCost, blightVariableCreatures, blightVariableMaxX,
-                payXLifeCost, payXLifeMaxX
+                payXLifeCost, payXLifeMaxX,
+                collectEvidenceCost, evidenceTargetWeights,
+                state, playerId, cardId
             )
 
             // Compute the "… or pay {N}" cast paths — one extra legal action each, carrying the
@@ -2141,10 +2188,9 @@ class CastSpellEnumerator : ActionEnumerator {
                 val manaKicker = kickers.firstOrNull { it.manaCost != null && it.keyword != Keyword.OFFSPRING }
                 val additionalCostKicker = kickers.firstOrNull { it.additionalCost != null }
                 val offspringAbility = kickers.firstOrNull { it.keyword == Keyword.OFFSPRING }
-                val collectEvidenceAmount = (
+                val collectEvidenceAtom = (
                     (additionalCostKicker?.additionalCost as? AdditionalCost.Atom)?.atom
-                        as? CostAtom.CollectEvidence
-                    )?.amount
+                    ) as? CostAtom.CollectEvidence
 
                 // Re-check timing per slot: the flash unlock belongs to the mechanic that prints it
                 // (Ghitu Fire's pay-{2}-more clause), so a bargain variant on the same card must not
@@ -2205,8 +2251,17 @@ class CastSpellEnumerator : ActionEnumerator {
                             // the picker payload, whose candidate pool is the whole graveyard and
                             // whose real constraint is the mana-value floor, not a card count.
                             is CostAtom.CollectEvidence -> {
+                                // The optional rail is enumerated before targets exist, so only a
+                                // statically-priced threshold can be gated here; nothing prints a
+                                // target-derived one as an optional cost (Urgent Necropsy's is
+                                // mandatory — see the mandatory branch above).
                                 val info = com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
-                                    .costInfo(state, playerId, atom.amount, excludeCardId = cardId)
+                                    .costInfo(
+                                        state, playerId,
+                                        com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                                            .evaluate(state, atom.amount),
+                                        excludeCardId = cardId,
+                                    )
                                 if (info == null) canPayKickerAdditionalCost = false
                                 else kickerCostInfo = info
                             }
@@ -2285,7 +2340,9 @@ class CastSpellEnumerator : ActionEnumerator {
                     // "Collect evidence 6" reads the way the card is printed, where a bare
                     // "Evidence" would not (CR 701.59).
                     declaredSlot == ChoiceSlot.EVIDENCE_COLLECTED ->
-                        collectEvidenceAmount?.let { "Collect evidence $it" } ?: "Collect evidence"
+                        collectEvidenceAtom
+                            ?.description?.replaceFirstChar { it.uppercase() }
+                            ?: "Collect evidence"
                     // Teamwork prints its N, so the variant reads "Cast X (Teamwork 2)".
                     declaredSlot == ChoiceSlot.TEAMWORK ->
                         additionalCostKicker?.displayPrefix ?: "Teamwork"
@@ -2649,8 +2706,35 @@ class CastSpellEnumerator : ActionEnumerator {
         blightVariableCreatures: List<EntityId> = emptyList(),
         blightVariableMaxX: Int = 0,
         payXLifeCost: AdditionalCost.PayXLife? = null,
-        payXLifeMaxX: Int = 0
+        payXLifeMaxX: Int = 0,
+        collectEvidenceCost: CostAtom.CollectEvidence? = null,
+        evidenceTargetWeights: Map<EntityId, Int> = emptyMap(),
+        state: GameState? = null,
+        payerId: EntityId? = null,
+        castCardId: EntityId? = null
     ): AdditionalCostData? {
+        // Collect evidence N as a *mandatory* cast cost. Priced through the same resolver every
+        // other collect-evidence context uses, so the picker, the reachability gate and the exile
+        // can't drift. What is specific here is that the threshold may not be known yet: a
+        // target-derived one is published as 0 plus `exileWeightPerTarget`, and the client adds up
+        // whichever targets the caster actually chooses (CR 601.2c → 601.2f).
+        if (collectEvidenceCost != null && state != null && payerId != null) {
+            val dependsOnTargets = com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                .dependsOnTargets(collectEvidenceCost.amount)
+            val known = com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                .evaluate(state, collectEvidenceCost.amount)
+            val candidates = com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
+                .candidates(state, payerId, excludeCardId = castCardId)
+            return com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
+                .costInfo(candidates, known)
+                ?.let { info ->
+                    if (!dependsOnTargets) info else info.copy(
+                        description = "Collect evidence X — exile cards from your graveyard with " +
+                            "total mana value equal to the total mana value of this spell's targets",
+                        exileWeightPerTarget = evidenceTargetWeights,
+                    )
+                }
+        }
         if (blightVariableCost != null) {
             return AdditionalCostData(
                 description = blightVariableCost.description,
@@ -2884,7 +2968,10 @@ class CastSpellEnumerator : ActionEnumerator {
                             modeSacrificeTargets.addAll(validSacTargets)
                         }
                         is CostAtom.ExileFrom -> {
-                            val validExileTargets = context.costUtils.findExileTargets(state, playerId, atom.filter, atom.zone)
+                            val validExileTargets = context.costUtils.findExileTargets(
+                                state, playerId, atom.filter, atom.zone,
+                                atom.anyPlayersZone, atom.singleZone, atom.count,
+                            )
                             if (validExileTargets.size < atom.count) canPayAdditionalCosts = false
                             modeExileTargets = validExileTargets
                             modeExileMinCount = atom.count

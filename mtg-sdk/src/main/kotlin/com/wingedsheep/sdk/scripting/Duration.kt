@@ -232,6 +232,31 @@ sealed interface Duration {
     }
 
     /**
+     * Effect lasts for as long as its controller controls the source **and** the source remains
+     * tapped — the conjunction of [WhileYouControlSource] and [WhileSourceTapped].
+     *
+     * Seasinger (Fallen Empires) is the card that prints both halves in one clause: "Gain control
+     * of target creature whose controller controls an Island for as long as you control this
+     * creature and this creature remains tapped." Neither half alone is the printed duration: an
+     * opponent stealing Seasinger returns the borrowed creature even though Seasinger is still
+     * tapped, and untapping Seasinger returns it even though you still control it.
+     *
+     * Gated per-frame by `StateProjector` — the battlefield and tapped halves when the floating
+     * effect is collected, the source-controller half after Layer 2 alongside
+     * [WhileYouControlSource] — and one-way per CR 611.2b: `EndedDurationExpiryCheck` physically
+     * removes the effect once either half fails, so re-tapping or regaining control does not
+     * re-steal the creature.
+     */
+    @SerialName("WhileYouControlSourceAndSourceTapped")
+    @Serializable
+    data class WhileYouControlSourceAndSourceTapped(
+        val sourceDescription: String = "this creature"
+    ) : Duration {
+        override val description =
+            "for as long as you control $sourceDescription and $sourceDescription remains tapped"
+    }
+
+    /**
      * Effect lasts for as long as each *affected* permanent remains tapped (CR 611.2b
      * "for as long as it remains tapped") — the affected-object mirror of
      * [WhileSourceTapped]: the gate watches the permanent the effect is modifying, not the

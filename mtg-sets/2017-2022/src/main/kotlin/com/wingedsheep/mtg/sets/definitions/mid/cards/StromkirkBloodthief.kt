@@ -7,8 +7,9 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
-import com.wingedsheep.sdk.scripting.targets.TargetCreature
+import com.wingedsheep.sdk.scripting.targets.TargetObject
 
 /**
  * Stromkirk Bloodthief
@@ -36,7 +37,9 @@ val StromkirkBloodthief = card("Stromkirk Bloodthief") {
         interveningIf = Conditions.OpponentLostLifeThisTurn
         val vampire = target(
             "target Vampire you control",
-            TargetCreature(filter = TargetFilter.CreatureYouControl.withSubtype(Subtype.VAMPIRE))
+            // A bare tribal noun names *permanents* of that tribe, not creatures of it — the
+            // reading the Assay differential settled across the corpus.
+            TargetObject(filter = TargetFilter(GameObjectFilter.Permanent.withSubtype(Subtype.VAMPIRE).youControl()))
         )
         effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, vampire)
     }

@@ -454,6 +454,53 @@
     ]
 }
 
+// Jade Mage
+{
+    "name": "Jade Mage",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{2}{G}: Create a 1/1 green Saproling creature token.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Saproling"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "UNCOMMON",
+        "artist": "Izzy",
+        "flavorText": "\"We are one with the wild things. Life blooms from our fingertips and nature responds to our summons.\"\n—Jade creed",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32d6c8d3-04a1-4b35-b7d1-18bed82beaf4.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Rune-Scarred Demon
 {
     "name": "Rune-Scarred Demon",

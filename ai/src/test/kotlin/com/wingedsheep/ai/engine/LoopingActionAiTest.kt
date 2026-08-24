@@ -11,10 +11,15 @@ import com.wingedsheep.engine.core.PassPriority
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
+import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.mtg.sets.definitions.hob.cards.DwarvenMauler
+import com.wingedsheep.mtg.sets.definitions.hob.cards.WellWornSpatula
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
@@ -170,6 +175,64 @@ class LoopingActionAiTest : FunSpec({
         // the whole cycle. The only other option, untapping itself, changes nothing at all.
         val reply = chooseFor(strategist, registry, afterOpening, ai)
         reply.actionType shouldBe "PassPriority"
+    }
+
+    test("the AI stops re-equipping the creature the Equipment is already attached to") {
+        // Reported from an AI-vs-AI draft tournament: Well-Worn Spatula activated its Equip over
+        // and over while already attached to Dwarven Mauler. Equip may legally target the creature
+        // the Equipment is on (CR 702.6a names no exception) and re-attaching it there does nothing
+        // (CR 701.3b) — and the Mauler's own "equip abilities you activate that target this
+        // creature cost {2} less" takes the Spatula's Equip {1} down to {0}, so the no-op is free
+        // as well as inert. The only trace it left was the per-turn equip tally, which the digest
+        // used to read raw; every repetition therefore hashed as a fresh position.
+        val cards = TestCards.all + WellWornSpatula + DwarvenMauler
+        val registry = CardRegistry().apply { register(cards) }
+        val driver = GameTestDriver()
+        driver.registerCards(cards)
+        driver.initMirrorMatch(deck = Deck.of("Forest" to 40), skipMulligans = true, startingPlayer = 0)
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+        val ai = driver.activePlayer!!
+
+        // Equip is sorcery-speed, so unlike the Alchemist cases this has to be the AI's own main
+        // phase. Both hands are emptied so pass and the equip are the only things on offer —
+        // otherwise `stepPreferring` is just as happy playing a land, and the assertion below
+        // would pass for the wrong reason.
+        driver.replaceState(
+            driver.state.copy(
+                zones = driver.state.zones.mapValues { (key, contents) ->
+                    if (key.zoneType == Zone.HAND) emptyList() else contents
+                }
+            )
+        )
+        val mauler = driver.putCreatureOnBattlefield(ai, "Dwarven Mauler")
+        val spatula = driver.putPermanentOnBattlefield(ai, "Well-Worn Spatula")
+        val equipId = WellWornSpatula.activatedAbilities.first().id
+        fun equip() = ActivateAbility(ai, spatula, equipId, targets = listOf(ChosenTarget.Permanent(mauler)))
+
+        // Attaching it the first time is real progress, and free — which is the whole setup.
+        driver.submitSuccess(equip())
+        driver.bothPass()
+        driver.state.getEntity(spatula)?.get<AttachedToComponent>()?.targetId shouldBe mauler
+        driver.state.step shouldBe Step.PRECOMBAT_MAIN
+
+        val simulator = GameSimulator(registry)
+        val here = StateProgress.digest(driver.state)
+
+        withClue("the redundant equip is still offered — this fixes the AI, not the rules") {
+            simulator.getLegalActions(driver.state, ai)
+                .any { (it.action as? ActivateAbility)?.sourceId == spatula } shouldBe true
+        }
+        val again = simulator.simulate(driver.state, equip()).state
+        withClue("and activating it lands back on the position it started from") {
+            StateProgress.digest(again) shouldBe here
+        }
+        withClue("the engine still counts it — Forge Anew's free-first-equip depends on that") {
+            again.getEntity(ai)?.get<EquipActivationsThisTurnComponent>()?.count shouldBe 2
+        }
+
+        // So the AI passes, even though the evaluator would rather stay in this step forever.
+        val strategist = strategistFor(registry, Step.PRECOMBAT_MAIN)
+        chooseFor(strategist, registry, driver.state, ai).actionType shouldBe "PassPriority"
     }
 })
 

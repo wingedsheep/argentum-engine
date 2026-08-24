@@ -253,14 +253,17 @@ export function ReplayPlayer({
             )}
           </div>
           {/*
-            Archived replay: the recorded inputs no longer re-simulate on this build, so the server
-            served the frames it stored when the game was played. Everything on screen is the real
-            game — but there is no live game state behind it, so the scenario buttons are gone
-            rather than merely failing when clicked.
+            Something about these frames isn't the plain case, and the badge says which. DIVERGED:
+            the recorded inputs no longer re-simulate on this build, so the server served the frames
+            it stored when the game was played — everything on screen is the real game, but there is
+            no live game state behind it, so the scenario buttons are gone rather than merely
+            failing when clicked. Otherwise the frames are an exact re-simulation of a recording
+            that stops before the game did (a game long enough that recording had to give up), so
+            the scenario buttons keep working and only the ending is missing.
           */}
           {metadata?.degradedReason && (
             <span style={styles.archivedBadge} title={metadata.degradedReason}>
-              From archive
+              {metadata.fidelity === 'DIVERGED' ? 'From archive' : 'Partial recording'}
             </span>
           )}
           {!isMobile && (

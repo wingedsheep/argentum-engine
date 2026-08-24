@@ -433,6 +433,25 @@ data class AdditionalCostData(
      * unit and the client never has to know which cost it is looking at.
      */
     val exileWeightUnit: String = "",
+    /**
+     * What each of the spell's *legal targets* would add to [exileMinTotalWeight] if chosen —
+     * non-empty only for a cost whose threshold is priced off the targets rather than printed:
+     * Urgent Necropsy's "collect evidence X, where X is the total mana value of the permanents this
+     * spell targets".
+     *
+     * Its presence is the whole contract, and it says two things at once. **The threshold is not
+     * final**: [exileMinTotalWeight] is the part that is already known (0 for Urgent Necropsy,
+     * whose four targets are each "up to one"), and the client adds these per-target weights for
+     * whatever the caster actually chooses. And **the picker runs after targeting** — a cost
+     * determined at CR 601.2f cannot be paid before the targets are announced at 601.2c, so the
+     * client moves its cost-payment step behind the targeting step for exactly these costs, the
+     * way `manaCostPerExtraTarget` already defers mana-source selection.
+     *
+     * A map rather than a boolean because the client must be able to *price* a selection, not just
+     * know that it is deferred, and shipping the weights keeps the one sum-gated picker: the same
+     * running total, drawn from the same server-side reading of the cards.
+     */
+    val exileWeightPerTarget: Map<EntityId, Int> = emptyMap(),
     val validBeholdTargets: List<EntityId> = emptyList(),
     val beholdCount: Int = 0,
     val counterRemovalCreatures: List<CounterRemovalCreatureData> = emptyList(),

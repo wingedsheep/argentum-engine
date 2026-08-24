@@ -3689,11 +3689,11 @@
                                     "amount": 2
                                 }
                             },
-                            "storeAs": "exiledCards"
+                            "storeAs": "impulseExiled"
                         },
                         {
                             "type": "MoveCollection",
-                            "from": "exiledCards",
+                            "from": "impulseExiled",
                             "destination": {
                                 "type": "ToZone",
                                 "zone": "Exile"
@@ -3701,7 +3701,7 @@
                         },
                         {
                             "type": "GrantMayPlayFromExile",
-                            "from": "exiledCards",
+                            "from": "impulseExiled",
                             "expiry": {
                                 "type": "UntilControllerStep",
                                 "step": "CLEANUP",
@@ -13176,7 +13176,7 @@
                     "type": "MoveToZone",
                     "target": "Self",
                     "destination": "Battlefield",
-                    "placement": "Tapped"
+                    "fromZone": "Hand"
                 },
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Hand"

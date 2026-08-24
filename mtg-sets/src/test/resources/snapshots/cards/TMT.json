@@ -8686,7 +8686,8 @@
                     "then": {
                         "type": "AttachEquipment",
                         "target": "TriggeringEntity"
-                    }
+                    },
+                    "descriptionOverride": "Whenever a Ninja you control enters, you may attach this Equipment to it."
                 },
                 "descriptionOverride": "Whenever a Ninja you control enters, you may attach this Equipment to it."
             }
@@ -9737,7 +9738,7 @@
                 "type": "CantBeBlockedByMoreThan",
                 "maxBlockers": 1,
                 "filter": {
-                    "baseFilter": "creature Boar ctrl:you"
+                    "baseFilter": "permanent Boar ctrl:you"
                 }
             }
         ]
@@ -12281,7 +12282,8 @@
                     "type": "MoveToZone",
                     "target": "Self",
                     "destination": "Battlefield",
-                    "placement": "Tapped"
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard"
                 },
                 "activateFromZone": "Graveyard"
             }

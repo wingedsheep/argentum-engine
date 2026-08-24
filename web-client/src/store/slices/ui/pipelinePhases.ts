@@ -5,7 +5,7 @@
  * - mergeResult: applies a phase result to the accumulated action
  * - enterPhase: calls the appropriate start* method for a phase
  */
-import type { EntityId, LegalActionInfo, GameAction, ClientGameState } from '@/types'
+import type { ChosenTarget, EntityId, LegalActionInfo, GameAction, ClientGameState } from '@/types'
 import { TAP_FOR_GENERIC_LABEL_IMPROVISE, TAP_FOR_GENERIC_LABEL_WATERBEND } from '@/types'
 import type {
   PipelinePhase,
@@ -30,6 +30,20 @@ import type {
  * requirement (Sorceress's Schemes: graveyard ∪ exile) matches it to the correct clause.
  */
 const CARD_TARGET_ZONES = new Set(['Graveyard', 'Exile', 'Hand', 'Library', 'Command'])
+
+/** The entity a chosen target points at, whichever arm of the union it is. */
+function targetEntityId(target: ChosenTarget): EntityId {
+  switch (target.type) {
+    case 'Player':
+      return target.playerId
+    case 'Permanent':
+      return target.entityId
+    case 'Spell':
+      return target.spellEntityId
+    case 'Card':
+      return target.cardId
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Store method interface (decouples pure logic from Zustand)
@@ -208,8 +222,16 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
     phases.push({ type: 'manaSource' })
   }
 
+  // A cost priced off the spell's targets can't be paid before they're chosen — the engine
+  // determines it at CR 601.2f, after targets are announced at 601.2c. `exileWeightPerTarget`
+  // carries the per-target prices *and* is the signal to defer, exactly as `manaCostPerExtraTarget`
+  // defers the manaSource step above. Urgent Necropsy: "collect evidence X, where X is the total
+  // mana value of the permanents this spell targets."
+  const costAfterTargeting =
+    Object.keys(actionInfo.additionalCostInfo?.exileWeightPerTarget ?? {}).length > 0
+
   // 5. Cost payment (sacrifice/discard/tap/bounce/exile) — emerge already pushed its own above.
-  if (actionInfo.additionalCostInfo?.costType && !isEmergeCast) {
+  if (actionInfo.additionalCostInfo?.costType && !isEmergeCast && !costAfterTargeting) {
     const costType = actionInfo.additionalCostInfo.costType
     const costTypesNeedingSelection = [
       'SacrificePermanent',
@@ -253,6 +275,12 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
   // 6. Targeting
   if (actionInfo.requiresTargets && actionInfo.validTargets && actionInfo.validTargets.length > 0) {
     phases.push({ type: 'targeting' })
+  }
+
+  // 6a. The deferred cost-payment step for a target-priced cost (see phase 5): the targets are
+  //     chosen now, so the threshold the picker gates on is the real one.
+  if (costAfterTargeting) {
+    phases.push({ type: 'costPayment' })
   }
 
   // 6b. The deferred manaSource step for a per-target-taxed spell (see phase 4): now that the
@@ -947,19 +975,36 @@ export function enterPhase(
         // server's per-card weights: the client computes no measure of its own, which is what lets
         // one branch serve both costs.
         case 'CollectEvidence':
-        case 'ExileForTotal':
+        case 'ExileForTotal': {
           validTargets = [...(costInfo.validExileTargets ?? [])]
-          minTargets = 1
           maxTargets = costInfo.validExileTargets?.length ?? 1
           flags.isSacrificeSelection = true
           flags.targetZone = 'Graveyard'
           flags.targetDescription = costInfo.description
           if (costInfo.exileMinTotalWeight != null) {
-            flags.minTotalWeight = costInfo.exileMinTotalWeight
+            // A target-priced threshold (Urgent Necropsy) reaches its real value only here, once
+            // `computePhases` has run this step behind targeting: the server's floor plus the
+            // per-target price of everything the caster actually chose (CR 601.2c → 601.2f). The
+            // weights are still the server's — the client only adds up the ones it picked.
+            const perTarget = costInfo.exileWeightPerTarget
+            const chosenTargets =
+              perTarget && (action.type === 'CastSpell' || action.type === 'ActivateAbility')
+                ? (action.targets ?? [])
+                : []
+            const targetTotal = chosenTargets.reduce(
+              (sum, t) => sum + (perTarget![targetEntityId(t)] ?? 0),
+              0,
+            )
+            flags.minTotalWeight = costInfo.exileMinTotalWeight + targetTotal
             flags.cardWeights = { ...(costInfo.exileCardWeights ?? {}) }
             if (costInfo.exileWeightUnit != null) flags.weightUnit = costInfo.exileWeightUnit
           }
+          // The count floor follows the sum gate rather than leading it: any threshold above 0
+          // needs at least one card, but collecting evidence 0 — Urgent Necropsy cast with no
+          // targets — is paid by exiling nothing, and a floor of 1 would make Confirm unreachable.
+          minTargets = (flags.minTotalWeight ?? 0) > 0 ? 1 : 0
           break
+        }
         case 'ExileFromZone':
           validTargets = [...(costInfo.validExileTargets ?? [])]
           minTargets = costInfo.exileMaxCount ?? 1

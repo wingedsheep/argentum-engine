@@ -218,6 +218,38 @@ data class AssignCombatDamageAsUnblocked(
  * @property condition The condition that must be met for the creature to attack
  * @property filter What this ability applies to
  */
+/**
+ * This creature can't attack unless its controller sacrifices [count] permanents matching
+ * [sacrificeFilter], paid as attackers are declared — Leviathan's "this creature can't attack
+ * unless you sacrifice two Islands".
+ *
+ * A **cost**, not a condition, which is why it is not [CantAttackUnless]: merely controlling two
+ * Islands is not enough, they have to go. It is also not an *optional* attack cost (CR 508.1g,
+ * "costs a player may pay as a creature attacks"): the clause is a restriction checked at
+ * CR 508.1c, and its cost is determined and paid at CR 508.1h–j. CR 508.1d is the reason an
+ * unpayable one simply keeps the creature home rather than making the whole declaration illegal. The declaration is illegal up front when the controller
+ * doesn't control enough matching permanents to pay (a cost you can't pay can't be paid), and
+ * otherwise the declare-attackers step pauses for the choice of which to sacrifice, in the same
+ * window the generic-mana [AttackTax] pauses to be paid.
+ *
+ * Unlike [CantAttackOrBlockUnlessPay] this has no blocking half: the printed line is attack-only,
+ * and a blocking sibling would need its own pause in the blocker step.
+ */
+@SerialName("CantAttackUnlessSacrifice")
+@Serializable
+data class CantAttackUnlessSacrifice(
+    val sacrificeFilter: GameObjectFilter,
+    val count: Int = 1,
+) : StaticAbility {
+    override val description: String =
+        "can't attack unless you sacrifice $count ${sacrificeFilter.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = sacrificeFilter.applyTextReplacement(replacer)
+        return if (newFilter !== sacrificeFilter) copy(sacrificeFilter = newFilter) else this
+    }
+}
+
 @SerialName("CantAttackUnless")
 @Serializable
 data class CantAttackUnless(
@@ -369,9 +401,22 @@ data class AttackTax(
 @Serializable
 data class CantAttackOrBlockUnlessPay(
     val amount: DynamicAmount,
+    /**
+     * Whether the tax also applies to declaring this creature as a *blocker*. True (the default) is
+     * the printed "can't attack or block unless …" of Myr Prototype; set false for the attack-only
+     * wording — Brainwash's "Enchanted creature can't attack unless its controller pays {3}".
+     *
+     * A separate flag rather than a separate ability because the two wordings differ in exactly one
+     * clause and share every other rule: same per-creature charge, same payment step, same
+     * evaluation source.
+     */
+    val appliesToBlocking: Boolean = true,
 ) : StaticAbility {
-    override val description: String =
-        "can't attack or block unless you pay {${amount.description}}"
+    override val description: String = buildString {
+        append("can't attack")
+        if (appliesToBlocking) append(" or block")
+        append(" unless you pay {${amount.description}}")
+    }
 }
 
 /**

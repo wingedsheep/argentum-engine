@@ -169,6 +169,17 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
                 else all
             }
 
+            // Seasinger — the conjunction of the two gates above. Either half failing ends the
+            // effect for good (CR 611.2b), which is what makes untapping Seasinger hand the
+            // borrowed creature back permanently rather than for one turn.
+            is Duration.WhileYouControlSourceAndSourceTapped -> {
+                val sourceId = floating.sourceId
+                if (sourceId == null || !state.getBattlefield().contains(sourceId)) emptySet()
+                else if (!sourceTapped(state, sourceId)) emptySet()
+                else if (projected.getController(sourceId) != floating.controllerId) emptySet()
+                else all
+            }
+
             is Duration.WhileAffectedHasCounter -> {
                 // "for as long as it has a [X] counter on it" (Ultima) — keep only affected
                 // entities that still carry the counter (CR 611.2b). Entities that merely left
@@ -242,9 +253,11 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
     }
 
     /**
-     * Revoke every [com.wingedsheep.engine.state.permissions.MayPlayPermission] whose
-     * `endsWhenSourceUncontrolled` window has closed — the granting permanent has left the
-     * battlefield, or its *projected* controller is no longer the grant's "you".
+     * Revoke every [com.wingedsheep.engine.state.permissions.MayPlayPermission] whose source-keyed
+     * window has closed. Two windows share this pass because they share the zone half:
+     * `endsWhenSourceUncontrolled` closes when the granting permanent leaves the battlefield **or**
+     * its *projected* controller is no longer the grant's "you"; `endsWhenSourceLeavesBattlefield`
+     * closes on the zone alone, whoever controls the source.
      *
      * "You" is `expiryControllerId ?: controllerId`, the same resolution the turn-keyed cleanup
      * window uses. For an ordinary grant those coincide; for an owner-scoped one the granting
@@ -261,14 +274,27 @@ class EndedDurationExpiryCheck : StateBasedActionCheck {
      * when nothing changed.
      */
     private fun pruneEndedMayPlayPermissions(state: GameState): GameState {
-        if (state.mayPlayPermissions.none { it.endsWhenSourceUncontrolled }) return state
+        if (state.mayPlayPermissions.none {
+                it.endsWhenSourceUncontrolled || it.endsWhenSourceLeavesBattlefield
+            }
+        ) {
+            return state
+        }
         val projected = state.projectedState
         val battlefield = state.getBattlefield()
         val surviving = state.mayPlayPermissions.filterNot { permission ->
-            if (!permission.endsWhenSourceUncontrolled) return@filterNot false
+            val windowed = permission.endsWhenSourceUncontrolled ||
+                permission.endsWhenSourceLeavesBattlefield
+            if (!windowed) return@filterNot false
             val sourceId = permission.sourceId ?: return@filterNot true
-            val you = permission.expiryControllerId ?: permission.controllerId
-            !battlefield.contains(sourceId) || projected.getController(sourceId) != you
+            if (!battlefield.contains(sourceId)) return@filterNot true
+            // Only the "for as long as **you** control it" window reads the controller. The
+            // battlefield-only window (Shared Fate) must not, because its grantees are usually
+            // other players — reading the controller there would revoke every opponent's grant
+            // on the first state-based check after it was made.
+            permission.endsWhenSourceUncontrolled &&
+                projected.getController(sourceId) !=
+                (permission.expiryControllerId ?: permission.controllerId)
         }
         return if (surviving.size == state.mayPlayPermissions.size) state
         else state.copy(mayPlayPermissions = surviving)

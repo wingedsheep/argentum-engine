@@ -23,6 +23,7 @@ import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
 import com.wingedsheep.sdk.scripting.effects.GatherSubtypesEffect
 import com.wingedsheep.sdk.scripting.effects.GatherUntilMatchEffect
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
+import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.NoteCreatureTypeEffect
@@ -157,6 +158,20 @@ class PipelineBuilder private constructor(private val shared: Shared) {
     // =========================================================================
     // Gather
     // =========================================================================
+
+    /**
+     * The collection a batch trigger already seeded for this resolution — the objects that caused
+     * it to fire, i.e. printed "them" / "those creatures" / "that many". Produced by the engine
+     * rather than by a step in this pipeline, so it takes no slot index and can be read straight
+     * away:
+     *
+     * ```kotlin
+     * val creatureCards = filter(triggerCaptured, GameObjectFilter.Creature)
+     * ```
+     *
+     * Empty when the trigger captured nothing, which every downstream step treats as "no cards".
+     */
+    val triggerCaptured: CollectionSlot get() = CollectionSlot(IterationSpace.TRIGGER_CAPTURED_COLLECTION)
 
     /** Gather cards from [source] into a new collection ([GatherCardsEffect]). */
     fun gather(source: CardSource, revealed: Boolean = false, name: String? = null): CollectionSlot {

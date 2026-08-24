@@ -112,7 +112,14 @@ class BattlefieldStaticsIndex private constructor(
                 val classLevel = container.get<ClassLevelComponent>()?.currentLevel
                 for (ability in cardDef.script.effectiveStaticAbilities(classLevel)) {
                     when {
-                        ability is GrantTriggeredAbility && ability.filter.scope is Scope.Battlefield ->
+                        // Battlefield scope is the lord/sliver grant. SoulbondPair is the same
+                        // shape read through a different membership test — "each of those creatures
+                        // has '<triggered ability>'" (Tandem Lookout) — and it has to be collected
+                        // here too, or the layer system projects the pair while the trigger never
+                        // fires. `getStaticGrantedFromProviders` branches on the scope to decide
+                        // which test to apply.
+                        ability is GrantTriggeredAbility &&
+                            (ability.filter.scope is Scope.Battlefield || ability.filter.scope is Scope.SoulbondPair) ->
                             (triggerGrants
                                 ?: mutableListOf<TriggerIndex.GrantProviderEntry>().also { triggerGrants = it })
                                 .add(TriggerIndex.GrantProviderEntry(ability, sourceControllerId, permanentId))

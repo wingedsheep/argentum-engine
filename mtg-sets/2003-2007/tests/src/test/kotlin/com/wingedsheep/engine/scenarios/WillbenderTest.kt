@@ -34,7 +34,7 @@ class WillbenderTest : FunSpec({
         typeLine = TypeLine.parse("Instant"),
         oracleText = "Change the target of target spell or ability with a single target.",
         script = CardScript.spell(
-            effect = ChangeTargetEffect,
+            effect = ChangeTargetEffect(),
             TargetObject(filter = TargetFilter.SpellOrAbilityOnStack)
         )
     )

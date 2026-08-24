@@ -165,6 +165,15 @@ class CreateTokenCopyOfTargetExecutor(
             if (effect.tapped) {
                 components.add(TappedComponent)
             }
+            // Provenance: record the creating permanent so `createdBySource()` can recognize this
+            // token later — the same stamp CreateTokenExecutor applies (Tetravus, Dance of Many).
+            if (effect.stampCreator) {
+                context.sourceId?.let { creatorId ->
+                    components.add(
+                        com.wingedsheep.engine.state.components.identity.CreatedByComponent(creatorId)
+                    )
+                }
+            }
             // Only creatures can be attacking. A copy of a card whose printed type line isn't a
             // creature (e.g. an animated permanent exiled and reverted to its printed type) still
             // enters tapped but never attacking — see Mardu Siegebreaker's rulings.
@@ -243,7 +252,7 @@ class CreateTokenCopyOfTargetExecutor(
                     .applyOnEntry(newState, tokenId, controllerId, cardRegistry)
             } else {
                 com.wingedsheep.engine.handlers.effects.EntersWithReplacements
-                    .applyGlobal(newState, tokenId, controllerId)
+                    .applyGlobal(newState, tokenId, controllerId, cardRegistry)
             }
             newState = afterCounters
             events.addAll(counterEvents)

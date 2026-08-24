@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.event
 
+import com.wingedsheep.engine.mechanics.SoulbondPairing
 import com.wingedsheep.engine.mechanics.battle.Battles
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.handlers.ConditionEvaluator
@@ -194,6 +195,12 @@ class TriggerAbilityResolver(
             val cardDef = registry.getCard(card.cardDefinitionId) ?: continue
             for (ability in cardDef.staticAbilities) {
                 if (ability !is GrantTriggeredAbility) continue
+                // Mirrors the fast provider path: the soulbond-pair scope carries its own
+                // membership test and skips the filter/controller checks below.
+                if (ability.filter.scope is Scope.SoulbondPair) {
+                    if (SoulbondPairing.isInPairOf(state, permanentId, entityId)) result.add(ability.ability)
+                    continue
+                }
                 if (ability.filter.scope !is Scope.Battlefield) continue
 
                 // Check if the target entity matches the filter's card predicates
@@ -340,6 +347,16 @@ class TriggerAbilityResolver(
 
         return buildList {
             for (entry in grantProviders) {
+                // CR 702.95b's "both creatures" — the scope IS the membership test, so it replaces
+                // the filter/controller checks below rather than adding to them (an unpaired source
+                // reaches nobody, which is what makes "as long as this creature is paired" need no
+                // condition of its own).
+                if (entry.grant.filter.scope is Scope.SoulbondPair) {
+                    if (SoulbondPairing.isInPairOf(state, entry.sourceEntityId, entityId)) {
+                        add(entry.grant.ability)
+                    }
+                    continue
+                }
                 // "Other creatures you control have …" — the granting permanent must not grant
                 // the ability to itself. The slow path honors excludeSelf; the fast provider
                 // path previously omitted it, so the source double-triggered (e.g. Bria,

@@ -150,7 +150,13 @@ data class PreventDamageEffect(
      * [duration] (Samite Ministration). This is orthogonal to which sources are eligible
      * ([sourceFilter]) — set it explicitly rather than inferring it from the filter.
      */
-    val nextInstanceOnly: Boolean = false
+    val nextInstanceOnly: Boolean = false,
+    /**
+     * With [nextInstanceOnly], prevent only **half** the instance, rounded down, instead of all of
+     * it — Dark Sphere's "prevent half that damage, rounded down". The rest is dealt and the shield
+     * is consumed either way, so a 1-damage instance halves to 0 prevented and still spends it.
+     */
+    val halvePreventedDamage: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append("Prevent ")
@@ -629,6 +635,29 @@ enum class RedirectScope {
 }
 
 /**
+ * Swap what two blocking creatures are blocking — Sorrow's Path's "if each of those creatures could
+ * block all creatures that the other is blocking, remove both of them from combat. Each one then
+ * blocks all creatures the other was blocking."
+ *
+ * Both targets must still be blocking creatures controlled by the same *opponent* of the
+ * activating player when this resolves — the printed line allows neither a split pair nor your
+ * own blockers — and the swap only happens if it would be **legal both ways**: each creature is
+ * checked against every attacker it is about to block, through the same evasion rules that govern
+ * a normal block declaration. A creature that couldn't have blocked a flier by declaring can't be
+ * handed one here either. When the check fails the effect does nothing, which is the printed
+ * behaviour and most of this card's reputation.
+ *
+ * Targets are read from the ability's chosen targets, so this effect carries no fields.
+ */
+@SerialName("SwapBlockingAssignments")
+@Serializable
+data object SwapBlockingAssignmentsEffect : Effect {
+    override val description: String =
+        "If each of those creatures could block all creatures that the other is blocking, remove " +
+            "both of them from combat. Each one then blocks all creatures the other was blocking"
+}
+
+/**
  * Redirect damage that would be dealt to the protected targets this turn.
  * "The next time damage would be dealt to [protected targets] this turn,
  *  that damage is dealt to [redirectTo] instead."
@@ -645,13 +674,39 @@ data class RedirectNextDamageEffect(
     val protectedTargets: List<EffectTarget>,
     val redirectTo: EffectTarget,
     val amount: Int? = null,
-    val scope: RedirectScope = RedirectScope.NEXT_INSTANCE
+    val scope: RedirectScope = RedirectScope.NEXT_INSTANCE,
+    /**
+     * Protect **every creature** instead of a fixed [protectedTargets] list — Blood of the Martyr's
+     * "if damage would be dealt to any creature". Evaluated against projected state at damage time,
+     * so creatures that arrive later are covered and players never are.
+     */
+    val creaturesOnly: Boolean = false,
+    /**
+     * Make the redirection a **"you may"** (Blood of the Martyr) instead of a mandatory replacement.
+     * The shield's controller is asked once per damage instance the shield could catch, before any
+     * of that damage is dealt, and answers for each instance separately — so a board-wide sweep can
+     * be soaked up for one creature and declined for the next.
+     *
+     * A path that deals damage without going through the choice pre-pass treats the shield as
+     * **declined** rather than redirecting silently; see
+     * `com.wingedsheep.engine.handlers.effects.damage.OptionalDamageRedirect`.
+     */
+    val optional: Boolean = false
 ) : Effect {
     override val description: String = buildString {
         append(if (scope == RedirectScope.CONTINUOUS) "All " else "The next ")
         if (amount != null) append("$amount ")
-        append("damage that would be dealt to ${protectedTargets.joinToString(" and/or ") { it.description }} this turn")
-        append(" is dealt to ${redirectTo.description} instead")
+        val recipients = if (creaturesOnly) {
+            "any creature"
+        } else {
+            protectedTargets.joinToString(" and/or ") { it.description }
+        }
+        append("damage that would be dealt to $recipients this turn")
+        if (optional) {
+            append(" may be dealt to ${redirectTo.description} instead")
+        } else {
+            append(" is dealt to ${redirectTo.description} instead")
+        }
     }
 }
 

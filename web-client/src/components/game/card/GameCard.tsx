@@ -1496,6 +1496,38 @@ function GameCardImpl({
         </>
       )}
 
+      {/* A token that copies a real card (Dance of Many, Clone-style tokens) carries that card's
+          full image, so nothing about it reads as a token — the generated frame above only kicks in
+          for the art-crop tokens. This chip is the marker for that case: it matters at a glance,
+          because a token that leaves the battlefield ceases to exist. Counter-rotated so it stays
+          upright on a tapped permanent, like the untap lock. */}
+      {!faceDown && card.isToken && !card.imageUri?.includes('/art_crop/') && (
+        <div
+          aria-label="Token"
+          title="Token — it ceases to exist if it leaves the battlefield"
+          style={{
+            position: 'absolute',
+            top: 3,
+            left: 3,
+            padding: '0 4px',
+            borderRadius: 3,
+            transform: totalRotateDeg ? `rotate(${-totalRotateDeg}deg)` : undefined,
+            transformOrigin: 'top left',
+            background: 'rgba(0, 0, 0, 0.78)',
+            border: '1px solid rgba(255, 255, 255, 0.55)',
+            color: '#f0f0f0',
+            fontSize: Math.max(responsive.badges.smallLabelFontSize - 1, 6),
+            fontWeight: 700,
+            letterSpacing: 0.5,
+            lineHeight: 1.5,
+            zIndex: 7,
+            pointerEvents: 'none',
+          }}
+        >
+          TOKEN
+        </div>
+      )}
+
       {/* Tapped indicator */}
       {isTapped && (
         <div style={styles.tappedOverlay} />

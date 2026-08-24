@@ -186,6 +186,92 @@
     ]
 }
 
+// Spitebellows
+{
+    "name": "Spitebellows",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature leaves the battlefield, it deals 6 damage to target creature.\nEvoke {1}{R}{R} (You may cast this spell for its evoke cost. If you do, it's sacrificed when it enters.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 1
+    },
+    "keywords": [
+        "EVOKE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Evoke",
+            "cost": "{1}{R}{R}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    },
+                    "target": {
+                        "type": "ContextTarget",
+                        "index": 0
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "descriptionOverride": "When this creature leaves the battlefield, it deals 6 damage to target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "UNCOMMON",
+        "artist": "Larry MacDougall",
+        "flavorText": "Disaster stalks with gaping jaws across unready lands.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43f2104d-aeff-493f-8227-cb95bf3e2eab.jpg",
+        "rulings": [
+            {
+                "date": "2008-04-01",
+                "text": "Evoke doesn't change the timing of when you can cast the creature that has it. If you could cast that creature spell only when you could cast a sorcery, the same is true for cast it with evoke."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "If a creature spell cast with evoke changes controllers before it enters, it will still be sacrificed when it enters. Similarly, if a creature cast with evoke changes controllers after it enters but before its sacrifice ability resolves, it will still be sacrificed. In both cases, the controller of the creature at the time it left the battlefield will control its leaves-the-battlefield ability."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "When you cast a spell by paying its evoke cost, its mana cost doesn't change. You just pay the evoke cost instead."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "Effects that cause you to pay more or less to cast a spell will cause you to pay that much more or less while casting it for its evoke cost, too. That's because they affect the total cost of the spell, not its mana cost."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "Whether evoke's sacrifice ability triggers when the creature enters depends on whether the spell's controller chose to pay the evoke cost, not whether they actually paid it (if it was reduced or otherwise altered by another ability, for example)."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "If you're casting a spell \"without paying its mana cost,\" you can't use its evoke ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Taurean Mauler
 {
     "name": "Taurean Mauler",
@@ -230,5 +316,84 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Walker of the Grove
+{
+    "name": "Walker of the Grove",
+    "manaCost": "{6}{G}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "When this creature leaves the battlefield, create a 4/4 green Elemental creature token.\nEvoke {4}{G} (You may cast this spell for its evoke cost. If you do, it's sacrificed when it enters.)",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 7
+    },
+    "keywords": [
+        "EVOKE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Evoke",
+            "cost": "{4}{G}"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 4,
+                    "toughness": 4,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Elemental"
+                    ]
+                },
+                "descriptionOverride": "When this creature leaves the battlefield, create a 4/4 green Elemental creature token."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "rarity": "UNCOMMON",
+        "artist": "Todd Lockwood",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2675b8b-a321-4982-b1d9-5c55d27b9bfd.jpg",
+        "rulings": [
+            {
+                "date": "2008-04-01",
+                "text": "Evoke doesn't change the timing of when you can cast the creature that has it. If you could cast that creature spell only when you could cast a sorcery, the same is true for cast it with evoke."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "If a creature spell cast with evoke changes controllers before it enters, it will still be sacrificed when it enters. Similarly, if a creature cast with evoke changes controllers after it enters but before its sacrifice ability resolves, it will still be sacrificed. In both cases, the controller of the creature at the time it left the battlefield will control its leaves-the-battlefield ability."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "When you cast a spell by paying its evoke cost, its mana cost doesn't change. You just pay the evoke cost instead."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "Effects that cause you to pay more or less to cast a spell will cause you to pay that much more or less while casting it for its evoke cost, too. That's because they affect the total cost of the spell, not its mana cost."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "Whether evoke's sacrifice ability triggers when the creature enters depends on whether the spell's controller chose to pay the evoke cost, not whether they actually paid it (if it was reduced or otherwise altered by another ability, for example)."
+            },
+            {
+                "date": "2008-04-01",
+                "text": "If you're casting a spell \"without paying its mana cost,\" you can't use its evoke ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }

@@ -1,0 +1,135 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Lightning Bolt",
+      "Giant Growth"
+    ],
+    "battlefield": [
+      {
+        "name": "Goblin Rock Sled"
+      },
+      {
+        "name": "Spitting Slug"
+      },
+      {
+        "name": "Whippoorwill"
+      },
+      {
+        "name": "Lurker"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "graveyard": [
+      "Forest"
+    ],
+    "library": [
+      "Forest",
+      "Mountain",
+      "Grizzly Bears"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Grizzly Bears"
+    ],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Hill Giant"
+      },
+      {
+        "name": "Drudge Skeletons"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Forest"
+      },
+      {
+        "name": "Forest"
+      }
+    ],
+    "graveyard": [
+      "Grizzly Bears"
+    ],
+    "library": [
+      "Mountain",
+      "Forest",
+      "Hill Giant"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "AI"
+}

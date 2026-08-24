@@ -5,16 +5,22 @@ import com.wingedsheep.assay.syntax.parseLine
 import com.wingedsheep.assay.syntax.printLine
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Counters
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.EntersWithCounters
+import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.WasKicked
 import com.wingedsheep.sdk.scripting.effects.AddCountersEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
@@ -146,5 +152,127 @@ class CountersTest : StringSpec({
             )
         )
         Grammar.abilityLine.printLine(named) shouldBe null
+    }
+
+    // ---------------------------------------------------------------------------------------
+    // A count that is not a number word
+    // ---------------------------------------------------------------------------------------
+
+    // The bare letter is the announced X and nothing else. `EntersWithDynamicCounters` is self by
+    // default — the flag its fixed sibling spells as `selfOnly` — so the whole value is the two
+    // fields the sentence names.
+    "the announced X is the count a permanent brings on with it" {
+        fragment("~ enters with X +1/+1 counters on it.") shouldBe CardFragment(
+            script = CardScript(
+                replacementEffects = listOf(
+                    EntersWithDynamicCounters(CounterTypeFilter.PlusOnePlusOne, DynamicAmount.XValue)
+                )
+            )
+        )
+        roundTrips("~ enters with X +1/+1 counters on it.")
+    }
+
+    // The kind is a slot in the dynamic rules exactly as it is in the fixed ones, which is why this
+    // band reached four tail families rather than the one it was named for: 18 of the 70 printed
+    // "enters with X … counters" lines name a kind other than +1/+1.
+    //
+    // Six of those 18 still decline, and on nothing this band owns: `oil`, `study`, `echo`, `void`,
+    // `scream` and `isolation` are counter kinds `CounterType` does not name, so
+    // `Primitives.counterKind`'s gate rejects the word. That gate is the right place for it —
+    // `CounterTypeFilter.Named` fails open to +1/+1 — so the fix is SDK vocabulary, one justified
+    // enum entry per kind, and not a wider regex here.
+    "the announced X reads every counter kind, not just the stat ones" {
+        roundTrips("~ enters with X charge counters on it.")
+        roundTrips("~ enters with X fire counters on it.")
+        roundTrips("~ enters with X +1/+0 counters on it.")
+        fragment("~ enters with X ice counters on it.").script.replacementEffects.single()
+            .shouldBeInstanceOf<EntersWithDynamicCounters>()
+            .counterType shouldBe CounterTypeFilter.Named(Counters.ICE)
+        declines("~ enters with X oil counters on it.")
+    }
+
+    // Stag Beetle's sentence, with the amount vocabulary this band does not own. What matters here is
+    // that the clause is read and the letter in front of it is the same value.
+    "a trailing where-clause names the count the letter stands for" {
+        fragment("~ enters with X +1/+1 counters on it, where X is the number of lands you control.")
+            .script.replacementEffects.single()
+            .shouldBeInstanceOf<EntersWithDynamicCounters>()
+            .count shouldBe DynamicAmounts.landsYouControl()
+        roundTrips("~ enters with X +1/+1 counters on it, where X is the number of lands you control.")
+    }
+
+    // Undergrowth Scavenger's spelling of the same model. One rule with two surfaces via
+    // `alsoSpelled`, so the reader and the reconstruction cannot drift apart — and the minority
+    // spelling parses and never prints, which is what makes the card a variant and not a decline.
+    "the count behind the noun is the same rule, and prints as the comma spelling" {
+        val behindTheNoun =
+            "~ enters with a number of +1/+1 counters on it equal to the number of lands you control."
+        val comma = "~ enters with X +1/+1 counters on it, where X is the number of lands you control."
+        fragment(behindTheNoun) shouldBe fragment(comma)
+        Grammar.abilityLine.printLine(fragment(behindTheNoun)) shouldBe comma
+    }
+
+    // The derivation is owned in one place, so a template it does not apply to fails at construction
+    // rather than silently registering a spelling no card prints.
+    "the equal-to spelling is derived from the comma one, and refuses a template without it" {
+        Amounts.equalTo("put X {kind} counters on {self}${Amounts.WHERE_X}") shouldBe
+            "put a number of {kind} counters on {self} equal to {amount}"
+        shouldThrow<IllegalArgumentException> { Amounts.equalTo("put {n} {kind} counters on {self}") }
+    }
+
+    // The two SDK types read the same sentence position, so they partition `DynamicAmount` rather
+    // than being tried in order. A `Fixed` amount belongs to the number word and the announced X
+    // belongs to the bare row; a dynamic effect holding either must not come back as a second
+    // reading of a sentence the fixed rules already print.
+    "a fixed amount in the dynamic effect never prints" {
+        listOf(DynamicAmount.Fixed(2), DynamicAmount.XValue).forEach { amount ->
+            Amounts.namesX(amount) shouldBe false
+            Grammar.abilityLine.printLine(
+                CardFragment(
+                    script = CardScript(
+                        spellEffect = Effects.AddDynamicCounters(
+                            Counters.PLUS_ONE_PLUS_ONE, amount, EffectTarget.ContextTarget(0)
+                        ),
+                        targetRequirements = listOf(Targets.permanent(GameObjectFilter.Creature)),
+                    )
+                )
+            ) shouldBe null
+        }
+    }
+
+    // The step positions take the defined clauses and *not* the bare letter, because `Triggers` lifts
+    // them and the announced X is silently zero anywhere but a spell. This is the assertion that
+    // keeps that decision from being quietly widened later.
+    "a step reads a defined count and refuses the bare letter" {
+        roundTrips("Put X +1/+1 counters on target creature, where X is the number of lands you control.")
+        roundTrips("Put X +1/+1 counters on ~, where X is the number of lands you control.")
+        declines("Put X +1/+1 counters on target creature.")
+        declines("Put X +1/+1 counters on ~.")
+    }
+
+    // The dynamic reader checks the target for `countersAdded`'s reason: the three counter sentences
+    // build the same effect with a different EffectTarget, so a reader that ignored it would let each
+    // rule print the others' sentence.
+    "the dynamic counter sentences stay told apart by their target" {
+        val onTarget =
+            fragment("Put X +1/+1 counters on target creature, where X is the number of lands you control.")
+        val onSelf = fragment("Put X +1/+1 counters on ~, where X is the number of lands you control.")
+        onTarget shouldNotBe onSelf
+        Grammar.abilityLine.printLine(onSelf) shouldBe
+            "Put X +1/+1 counters on ~, where X is the number of lands you control."
+    }
+
+    // Servant of the Scale's dies trigger, and the reason it must not read. `countersOnSelf` resolves
+    // from live state, so in the position this clause is usually printed in the source is already
+    // gone and the amount is zero. The SDK's reading for that position is `LastKnownSourceCounters`
+    // and only the trigger lift knows which is meant, so the rule refuses the live tally rather than
+    // emitting a model that evaluates to nothing.
+    "the source's own live counter tally is not a count a counter clause may name" {
+        Amounts.namesX(DynamicAmounts.countersOnSelf(CounterTypeFilter.PlusOnePlusOne)) shouldBe false
+        Amounts.namesX(DynamicAmounts.landsYouControl()) shouldBe true
+        declines(
+            "Put X +1/+1 counters on target creature you control, " +
+                "where X is the number of +1/+1 counters on ~."
+        )
     }
 })

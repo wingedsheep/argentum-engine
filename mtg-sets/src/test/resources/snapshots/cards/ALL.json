@@ -1,3 +1,27 @@
+// Deadly Insect
+{
+    "name": "Deadly Insect",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Insect",
+    "oracleText": "Shroud (This creature can't be the target of spells or abilities.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 1
+    },
+    "keywords": [
+        "SHROUD"
+    ],
+    "metadata": {
+        "collectorNumber": "86a",
+        "artist": "Scott Kirschner",
+        "flavorText": "\"Beautiful, indeed—but one sting could fell a Giant in a heartbeat.\"\n—Taaveti of Kelsinko, Elvish Hunter",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/add1b999-5c3f-4187-adac-ed1037406b3f.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Elvish Ranger
 {
     "name": "Elvish Ranger",

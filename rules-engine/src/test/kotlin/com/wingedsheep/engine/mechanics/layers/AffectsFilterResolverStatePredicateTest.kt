@@ -12,6 +12,7 @@ import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageCompone
 import com.wingedsheep.engine.state.components.battlefield.ReceivedCountersThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
+import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -30,6 +31,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.predicates.StatePredicate
+import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
@@ -677,5 +679,117 @@ class AffectsFilterResolverStatePredicateTest : FunSpec({
         val predicate = StatePredicate.Not(StatePredicate.IsTapped)
         val matched = resolver.resolveAffectedEntities(state, untapped, filterWith(predicate))
         matched shouldContainExactlyInAnyOrder setOf(untapped)
+    }
+
+    // =========================================================================
+    // CouldNotHaveAttackedThisTurn (Season of the Witch)
+    //
+    // This branch has no card using it inside a continuous effect's `affects` filter, so nothing
+    // else exercises it — and its whole job is to give the same answer PredicateEvaluator gives.
+    // Each clause gets a case here so the two can't drift apart silently.
+    // =========================================================================
+
+    /** A battlefield where [active] holds the turn and reached a Declare Attackers Step. */
+    fun battlefieldOnTurnOf(
+        active: EntityId,
+        entities: List<Pair<EntityId, ComponentContainer>>,
+        declaredAttackers: Boolean = true
+    ): GameState {
+        var state = battlefield(entities).copy(activePlayerId = active)
+        if (declaredAttackers) {
+            state = state.updateEntity(active) { it.with(AttackersDeclaredThisTurnComponent) }
+        }
+        return state
+    }
+
+    test("CouldNotHaveAttackedThisTurn spares every creature the nonactive player controls") {
+        val mine = EntityId.generate()
+        val theirs = EntityId.generate()
+        val state = battlefieldOnTurnOf(
+            playerA,
+            listOf(
+                mine to container(playerA, creature(playerA)),
+                theirs to container(playerB, creature(playerB))
+            )
+        )
+        val matched = resolver.resolveAffectedEntities(
+            state, mine, filterWith(StatePredicate.CouldNotHaveAttackedThisTurn)
+        )
+        matched shouldContainExactlyInAnyOrder setOf(theirs)
+    }
+
+    test("CouldNotHaveAttackedThisTurn spares everyone when no Declare Attackers Step happened") {
+        // False Peace / Fatespinner: the active player held the turn but never reached the step,
+        // so nobody stayed home by choice.
+        val mine = EntityId.generate()
+        val theirs = EntityId.generate()
+        val state = battlefieldOnTurnOf(
+            playerA,
+            listOf(
+                mine to container(playerA, creature(playerA)),
+                theirs to container(playerB, creature(playerB))
+            ),
+            declaredAttackers = false
+        )
+        val matched = resolver.resolveAffectedEntities(
+            state, mine, filterWith(StatePredicate.CouldNotHaveAttackedThisTurn)
+        )
+        matched shouldContainExactlyInAnyOrder setOf(mine, theirs)
+    }
+
+    test("CouldNotHaveAttackedThisTurn spares a summoning-sick creature but not its neighbour") {
+        val sick = EntityId.generate()
+        val ready = EntityId.generate()
+        val state = battlefieldOnTurnOf(
+            playerA,
+            listOf(
+                sick to container(playerA, creature(playerA), EnteredThisTurnComponent),
+                ready to container(playerA, creature(playerA))
+            )
+        )
+        val matched = resolver.resolveAffectedEntities(
+            state, ready, filterWith(StatePredicate.CouldNotHaveAttackedThisTurn)
+        )
+        matched shouldContainExactlyInAnyOrder setOf(sick)
+    }
+
+    test("CouldNotHaveAttackedThisTurn reads the projected controller, not the base one") {
+        // Act of Treason: the base ControllerComponent still says playerB, but projection has
+        // handed the creature to the active player, who could therefore have attacked with it.
+        val stolen = EntityId.generate()
+        val state = battlefieldOnTurnOf(
+            playerA,
+            listOf(stolen to container(playerB, creature(playerB)))
+        )
+        val projected = mapOf(
+            stolen to MutableProjectedValues().apply { controllerId = playerA }
+        )
+        val matched = resolver.resolveAffectedEntities(
+            state, stolen, filterWith(StatePredicate.CouldNotHaveAttackedThisTurn), projected
+        )
+        withClue("projection says the active player controls it, so staying home was a choice") {
+            matched shouldNotContain stolen
+        }
+    }
+
+    test("CouldNotHaveAttackedThisTurn spares a creature a projected effect stopped from attacking") {
+        // Pacifism. cantAttack only ever comes from projection — there is no base flag for it.
+        val pacified = EntityId.generate()
+        val free = EntityId.generate()
+        val state = battlefieldOnTurnOf(
+            playerA,
+            listOf(
+                pacified to container(playerA, creature(playerA)),
+                free to container(playerA, creature(playerA))
+            )
+        )
+        val projected = mapOf(
+            pacified to MutableProjectedValues().apply { cantAttack = true },
+            free to MutableProjectedValues()
+        )
+        val matched = resolver.resolveAffectedEntities(
+            state, free, filterWith(StatePredicate.CouldNotHaveAttackedThisTurn), projected
+        )
+        matched shouldContainExactlyInAnyOrder setOf(pacified)
     }
 })

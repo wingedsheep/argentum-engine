@@ -33,7 +33,7 @@ val BestialBloodline = card("Bestial Bloodline") {
     }
     activatedAbility {
         cost = Costs.Mana("{4}{G}")
-        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
+        effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self)
         activateFromZone = Zone.GRAVEYARD
     }
     metadata {

@@ -7762,20 +7762,13 @@
                     "scope": "Self"
                 },
                 "powerBonus": {
-                    "type": "Count",
+                    "type": "AggregateBattlefield",
                     "player": "You",
-                    "zone": "Battlefield",
                     "filter": "artifact"
                 },
                 "toughnessBonus": {
-                    "type": "Multiply",
-                    "amount": {
-                        "type": "Count",
-                        "player": "You",
-                        "zone": "Battlefield",
-                        "filter": "artifact"
-                    },
-                    "multiplier": 0
+                    "type": "Fixed",
+                    "amount": 0
                 }
             }
         ]

@@ -10,6 +10,17 @@ import kotlinx.serialization.Serializable
 /**
  * This creature can't be blocked.
  * Used for cards with unconditional unblockability or conditional via ConditionalStaticAbility.
+ *
+ * **Spell the `filter` on an Aura or an Equipment.** Every ability in this file defaults `filter` to
+ * [GroupFilter.source], while [com.wingedsheep.sdk.scripting.GrantKeyword] and
+ * [com.wingedsheep.sdk.scripting.ModifyStats] — the statics an attachment is otherwise made of —
+ * default to [GroupFilter.attachedCreature]. Two neighbouring families with opposite defaults for the
+ * same omitted field, so a card that omits it here reads as a restriction on the *Aura*, which never
+ * blocks or is blocked: the ability is silently inert and the board looks right. Argentum Assay's
+ * combat-restriction band found Air Bladder that way, and the card-level
+ * `flags(AbilityFlag.CANT_BE_BLOCKED)` shortcut had put the same no-op on Cloak of Mists, Whispersilk
+ * Cloak and My Precious. The unconditional form on a *creature* is the flag; on an attachment it is
+ * this type with `GroupFilter.attachedCreature()`, and there is no flag that can say it.
  */
 @SerialName("CantBeBlocked")
 @Serializable

@@ -1,4 +1,5 @@
 package com.wingedsheep.engine.mechanics.stack
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.dsl.Patterns
 
 import com.wingedsheep.engine.core.*
@@ -35,6 +36,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.handlers.effects.FaceDownTurnUp
+import com.wingedsheep.engine.handlers.effects.library.ChooseCreatureTypePipelineExecutor
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.engine.state.components.identity.HasMorphAbilityComponent
@@ -185,6 +187,8 @@ class StackResolver(
         totalManaSpent: Int = 0,
         beheldCards: List<EntityId> = emptyList(),
         discardedAsCostCards: List<EntityId> = emptyList(),
+        exiledAsCostCards: List<EntityId> = emptyList(),
+        exiledAsCostSnapshots: List<EntitySnapshot> = emptyList(),
         chosenEntitySnapshots: List<EntitySnapshot> = emptyList(),
         manaSpentWhite: Int = 0,
         manaSpentBlue: Int = 0,
@@ -344,6 +348,8 @@ class StackResolver(
                 wasMayhem = wasMayhem,
                 beheldCards = beheldCards,
                 discardedAsCostCards = discardedAsCostCards,
+                exiledAsCostCards = exiledAsCostCards,
+                exiledAsCostSnapshots = exiledAsCostSnapshots,
                 chosenEntitySnapshots = chosenEntitySnapshots,
                 manaSpentWhite = manaSpentWhite,
                 manaSpentBlue = manaSpentBlue,
@@ -1320,13 +1326,39 @@ class StackResolver(
         }
 
         // Normal permanent entry
-        val (newState, enterEvents) = enterPermanentOnBattlefield(state, spellId, spellComponent, cardComponent, cardDef)
+        val (enteredState, enterEvents) = enterPermanentOnBattlefield(state, spellId, spellComponent, cardComponent, cardDef)
         val sagaEvents = if (cardDef != null && !spellComponent.castFaceDown && cardDef.isSaga) {
             listOf(CountersAddedEvent(spellId, "LORE", 1, cardDef.name))
         } else {
             emptyList()
         }
-        return ExecutionResult.success(newState, enterEvents + sagaEvents)
+
+        // The generic "as this permanent enters, …" replacement ([OnEnterRunEffect]). The move path
+        // (MoveToZoneEffectExecutor) and the land path (PlayLandHandler) already run it; a permanent
+        // *cast as a spell* did not, which made the replacement silently inert on every creature and
+        // enchantment carrying it — Nameless Race's "as this creature enters, pay any amount of
+        // life". Runs after entry, like the move path, so the effect sees a real permanent.
+        //
+        // The effect may pause for a decision; the paused result carries the entry events with it so
+        // the ETB triggers are deferred to the resume path rather than lost, exactly as the move
+        // path documents. Skipped for a face-down entry (CR 708.2 — no abilities).
+        if (cardDef != null && !spellComponent.castFaceDown) {
+            val onEnterResult = com.wingedsheep.engine.handlers.effects.PermanentEntryReplacements
+                .runOnEnterRunEffect(
+                    enteredState, spellId, controllerId, cardRegistry,
+                    { s, e, ctx -> effectHandler.execute(s, e, ctx) },
+                    xValue = spellComponent.xValue,
+                )
+            if (onEnterResult != null) {
+                return ExecutionResult(
+                    state = onEnterResult.state,
+                    events = enterEvents + sagaEvents + onEnterResult.events,
+                    pendingDecision = onEnterResult.pendingDecision,
+                )
+            }
+        }
+
+        return ExecutionResult.success(enteredState, enterEvents + sagaEvents)
     }
 
     /**
@@ -2084,6 +2116,8 @@ class StackResolver(
                 wasMayhem = spellComponent.wasMayhem,
                 sacrificedPermanents = spellComponent.sacrificedPermanents,
                 discardedAsCostCards = spellComponent.discardedAsCostCards,
+                exiledAsCostCards = spellComponent.exiledAsCostCards,
+                exiledAsCostSnapshots = spellComponent.exiledAsCostSnapshots,
                 chosenEntitySnapshots = spellComponent.chosenEntitySnapshots,
                 damageDistribution = spellComponent.damageDistribution,
                 chosenModes = spellComponent.chosenModes,
@@ -2815,6 +2849,7 @@ class StackResolver(
                 abilityComponent.controllerId, targetsComponent.targetRequirements,
                 sourceId = abilityComponent.sourceId,
                 xValue = abilityComponent.xValue,
+                targetingSourceType = TargetingSourceType.ABILITY,
                 targetEntryStamps = targetsComponent.targetEntryStamps
             )
             if (validTargets.isEmpty()) {
@@ -2854,7 +2889,15 @@ class StackResolver(
             lastKnownSourceSnapshot = abilityComponent.lastKnownSourceSnapshot,
             lastKnownSourceAttachments = abilityComponent.lastKnownSourceAttachments,
             damageDistribution = abilityComponent.damageDistribution,
-            pipeline = PipelineState(namedTargets = EffectContext.buildNamedTargets(activatedReqs, alignedActivatedTargets))
+            pipeline = PipelineState(
+                namedTargets = EffectContext.buildNamedTargets(activatedReqs, alignedActivatedTargets),
+                // A "Reveal the creature type you chose" cost hands its type to the effect under the
+                // same key a mid-pipeline ChooseOption write uses, so CardPredicate
+                // .HasSubtypeFromVariable reads it without knowing where it came from.
+                chosenValues = abilityComponent.revealedNotedCreatureType
+                    ?.let { mapOf(ChooseCreatureTypePipelineExecutor.CHOSEN_CREATURE_TYPE_KEY to it) }
+                    ?: emptyMap()
+            )
         )
 
         val effectResult = effectHandler.execute(state, abilityComponent.effect, context)
@@ -2913,7 +2956,7 @@ class StackResolver(
         events.addAll(ownEvents)
 
         val (globalState, globalEvents) = EntersWithReplacements.applyGlobal(
-            newState, entityId, controllerId
+            newState, entityId, controllerId, cardRegistry
         )
         newState = globalState
         events.addAll(globalEvents)
@@ -3346,6 +3389,16 @@ class StackResolver(
                     // Check shroud — can't be targeted by anyone (Rule 702.18)
                     if (projected.hasKeyword(target.entityId, "SHROUD")) return@filterIndexed false
 
+                    // "Can't be the target of spells" (Lurker) — spells only, so an ability
+                    // resolving against the same permanent is unaffected. Mirrors the cast-time
+                    // check in TargetValidator so CR 608.2b re-validation agrees with it: a
+                    // permanent that gained the restriction after being targeted is dropped here.
+                    if (targetingSourceType == TargetingSourceType.SPELL &&
+                        projected.hasKeyword(target.entityId, AbilityFlag.CANT_BE_TARGETED_BY_SPELLS)
+                    ) {
+                        return@filterIndexed false
+                    }
+
                     // Check hexproof — can't be targeted by opponents (Rule 702.11)
                     val entityController = projected.getController(target.entityId)
                         ?: state.getEntity(target.entityId)?.get<ControllerComponent>()?.playerId
@@ -3622,15 +3675,11 @@ class StackResolver(
 
     /**
      * Which face-down mechanic lets [cardDef] be cast face down for {3} — morph (CR 702.37a) or
-     * disguise (CR 702.168a) — or null when it can't be cast face down at all. A card never prints
-     * both; morph wins if one somehow did.
+     * disguise (CR 702.168a) — or null when it can't be cast face down at all. Delegates to
+     * [FaceDownTurnUp.castMode], which owns the keyword-to-mode mapping.
      */
-    fun faceDownCastMode(cardDef: com.wingedsheep.sdk.model.CardDefinition?): FaceDownMode? = when {
-        cardDef == null -> null
-        cardDef.keywordAbilities.any { it is KeywordAbility.Morph } -> FaceDownMode.MORPH
-        cardDef.keywordAbilities.any { it is KeywordAbility.Disguise } -> FaceDownMode.DISGUISE
-        else -> null
-    }
+    fun faceDownCastMode(cardDef: com.wingedsheep.sdk.model.CardDefinition?): FaceDownMode? =
+        FaceDownTurnUp.castMode(cardDef)
 
     /**
      * Once a player casts a card face down, opponents can no longer know whether any previously

@@ -197,6 +197,7 @@ export enum Keyword {
   PROWESS = 'PROWESS',
   FLURRY = 'FLURRY',
   CHANGELING = 'CHANGELING',
+  DEVOID = 'DEVOID',
   CRAFT = 'CRAFT',
   // Cost reduction
   CONVOKE = 'CONVOKE',
@@ -295,6 +296,7 @@ export const KeywordDisplayNames: Record<Keyword, string> = {
   [Keyword.PROWESS]: 'Prowess',
   [Keyword.FLURRY]: 'Flurry',
   [Keyword.CHANGELING]: 'Changeling',
+  [Keyword.DEVOID]: 'Devoid',
   [Keyword.CRAFT]: 'Craft',
   [Keyword.CONVOKE]: 'Convoke',
   [Keyword.DELVE]: 'Delve',
@@ -355,6 +357,7 @@ export enum AbilityFlag {
   CANT_TRANSFORM = 'CANT_TRANSFORM',
   CANT_BECOME_SUSPECTED = 'CANT_BECOME_SUSPECTED',
   ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS = 'ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS',
+  ASSIGNS_NO_COMBAT_DAMAGE = 'ASSIGNS_NO_COMBAT_DAMAGE',
   MAY_ACTIVATE_ABILITIES_AS_THOUGH_HASTY = 'MAY_ACTIVATE_ABILITIES_AS_THOUGH_HASTY',
 }
 
@@ -368,6 +371,7 @@ export const AbilityFlagDisplayNames: Record<AbilityFlag, string> = {
   [AbilityFlag.CANT_TRANSFORM]: "Can't transform",
   [AbilityFlag.CANT_BECOME_SUSPECTED]: "Can't become suspected",
   [AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS]: 'Assigns combat damage equal to its toughness rather than its power',
+  [AbilityFlag.ASSIGNS_NO_COMBAT_DAMAGE]: 'Assigns no combat damage this turn',
   // Granted by Shang-Chi / Thousand-Year Elixir to a whole board of creatures at once, so it must be
   // named here or every creature you control shows the raw enum identifier in its preview panel.
   // Deliberately not in `displayableKeywords` — a battlefield icon on every creature is noise.
@@ -410,8 +414,13 @@ export enum CounterType {
   MINUS_ONE_MINUS_ONE = 'MINUS_ONE_MINUS_ONE',
   PLUS_ONE_PLUS_ZERO = 'PLUS_ONE_PLUS_ZERO',
   PLUS_ZERO_PLUS_ONE = 'PLUS_ZERO_PLUS_ONE',
+  PLUS_TWO_PLUS_ZERO = 'PLUS_TWO_PLUS_ZERO',
+  PLUS_ZERO_PLUS_TWO = 'PLUS_ZERO_PLUS_TWO',
   MINUS_ONE_MINUS_ZERO = 'MINUS_ONE_MINUS_ZERO',
   MINUS_ZERO_MINUS_ONE = 'MINUS_ZERO_MINUS_ONE',
+  PLUS_ONE_PLUS_TWO = 'PLUS_ONE_PLUS_TWO',
+  PLUS_TWO_PLUS_TWO = 'PLUS_TWO_PLUS_TWO',
+  MINUS_TWO_MINUS_TWO = 'MINUS_TWO_MINUS_TWO',
   LOYALTY = 'LOYALTY',
   CHARGE = 'CHARGE',
   GEM = 'GEM',
@@ -483,6 +492,23 @@ export enum CounterType {
   INVASION = 'INVASION',
   UNLOCK = 'UNLOCK',
   HONE = 'HONE',
+  // Mirrored from CounterType.kt; see CounterTypeClientMirrorTest.kt (mtg-sdk), which reads this
+  // file and fails when the two drift.
+  DEFENSE = 'DEFENSE',
+  SILVER = 'SILVER',
+  FATE = 'FATE',
+  AIM = 'AIM',
+  DOOM = 'DOOM',
+  FIRE = 'FIRE',
+  CONQUEROR = 'CONQUEROR',
+  NET = 'NET',
+  SPORE = 'SPORE',
+  STORAGE = 'STORAGE',
+  HUNGER = 'HUNGER',
+  JAVELIN = 'JAVELIN',
+  CREDIT = 'CREDIT',
+  CUBE = 'CUBE',
+  TIDE = 'TIDE',
 }
 
 export const CounterTypeDisplayNames: Record<CounterType, string> = {
@@ -490,8 +516,13 @@ export const CounterTypeDisplayNames: Record<CounterType, string> = {
   [CounterType.MINUS_ONE_MINUS_ONE]: '-1/-1',
   [CounterType.PLUS_ONE_PLUS_ZERO]: '+1/+0',
   [CounterType.PLUS_ZERO_PLUS_ONE]: '+0/+1',
+  [CounterType.PLUS_TWO_PLUS_ZERO]: '+2/+0',
+  [CounterType.PLUS_ZERO_PLUS_TWO]: '+0/+2',
   [CounterType.MINUS_ONE_MINUS_ZERO]: '-1/-0',
   [CounterType.MINUS_ZERO_MINUS_ONE]: '-0/-1',
+  [CounterType.PLUS_ONE_PLUS_TWO]: '+1/+2',
+  [CounterType.PLUS_TWO_PLUS_TWO]: '+2/+2',
+  [CounterType.MINUS_TWO_MINUS_TWO]: '-2/-2',
   [CounterType.LOYALTY]: 'Loyalty',
   [CounterType.CHARGE]: 'Charge',
   [CounterType.GEM]: 'Gem',
@@ -563,6 +594,21 @@ export const CounterTypeDisplayNames: Record<CounterType, string> = {
   [CounterType.INVASION]: 'Invasion',
   [CounterType.UNLOCK]: 'Unlock',
   [CounterType.HONE]: 'Hone',
+  [CounterType.DEFENSE]: 'Defense',
+  [CounterType.SILVER]: 'Silver',
+  [CounterType.FATE]: 'Fate',
+  [CounterType.AIM]: 'Aim',
+  [CounterType.DOOM]: 'Doom',
+  [CounterType.FIRE]: 'Fire',
+  [CounterType.CONQUEROR]: 'Conqueror',
+  [CounterType.NET]: 'Net',
+  [CounterType.SPORE]: 'Spore',
+  [CounterType.STORAGE]: 'Storage',
+  [CounterType.HUNGER]: 'Hunger',
+  [CounterType.JAVELIN]: 'Javelin',
+  [CounterType.CREDIT]: 'Credit',
+  [CounterType.CUBE]: 'Cube',
+  [CounterType.TIDE]: 'Tide',
 }
 
 /**

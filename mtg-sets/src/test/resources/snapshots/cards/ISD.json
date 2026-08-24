@@ -1016,6 +1016,61 @@
     ]
 }
 
+// Dearly Departed
+{
+    "name": "Dearly Departed",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nAs long as this creature is in your graveyard, each Human creature you control enters with an additional +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "otherOnly": true,
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature Human ctrl:you",
+                    "to": "Battlefield"
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "RARE",
+        "artist": "Daniel Ljunggren",
+        "flavorText": "\"Never forget our ancestors. They have not forgotten us.\"\n—Mikaeus, the Lunarch",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d008061f-cda4-4bcf-b6b3-d1b4a251cc66.jpg?1783940996",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "The effect is cumulative. Human creatures you control will enter with a +1/+1 counter for each Dearly Departed in your graveyard."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "In most cases, when determining whether a creature entering under your control should get a +1/+1 counter, you'll simply look at what the creature will look like on the battlefield. You'll consider any effects affecting a creature entering under your control."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Delver of Secrets
 {
     "name": "Delver of Secrets",
@@ -6349,6 +6404,78 @@
         "artist": "Kev Walker",
         "flavorText": "Kidnappers caught in Havengul are given two choices: languish in prison or become rat catchers. The smart ones go to prison.",
         "imageUri": "https://cards.scryfall.io/normal/front/4/4/4490ce65-c73a-4809-abd1-ccc3175bd2a4.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Unbreathing Horde
+{
+    "name": "Unbreathing Horde",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Zombie",
+    "oracleText": "This creature enters with a +1/+1 counter on it for each other Zombie you control and each Zombie card in your graveyard.\nIf this creature would be dealt damage, prevent that damage and remove a +1/+1 counter from it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "Add",
+                    "left": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Battlefield",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "HasSubtype",
+                                    "subtype": "Zombie"
+                                }
+                            ],
+                            "statePredicates": [
+                                {
+                                    "type": "StateNot",
+                                    "predicate": "IsSource"
+                                }
+                            ]
+                        }
+                    },
+                    "right": {
+                        "type": "Count",
+                        "player": "You",
+                        "zone": "Graveyard",
+                        "filter": "Zombie"
+                    }
+                }
+            },
+            "PreventDamageByRemovingCounter"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Dave Kendall",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a91ea47-0c06-4333-a309-ac360c5cc9bd.jpg?1783940947",
+        "rulings": [
+            {
+                "date": "2011-09-22",
+                "text": "Only one +1/+1 counter will be removed, no matter how much damage is prevented."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "If Unbreathing Horde has no +1/+1 counters on it (but its toughness is raised above 0 by another effect), any damage dealt to it will still be prevented, even though no counter will be removed."
+            },
+            {
+                "date": "2011-09-22",
+                "text": "If Unbreathing Horde enters from a graveyard, it will count itself when determining how many +1/+1 counters it enters with."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "BLACK"

@@ -103,6 +103,54 @@ data class IsAllCreatureTypes(
 }
 
 /**
+ * The permanents matching [filter] **have the creature types of the object [source] names**,
+ * replacing their own (CR 205.1b) while keeping every non-creature subtype.
+ *
+ * The type half of the "copy some characteristics of another object" family: [source] is an
+ * ordinary [com.wingedsheep.sdk.scripting.values.EntityReference], so the same static reads a card
+ * exiled with this permanent (`LinkedExiledCard()` — Duplicant), the source itself, or any other
+ * reference the evaluator can resolve. Pair it with
+ * [SetBasePowerToughnessDynamicStatic] fed `DynamicAmount.EntityProperty(source, Power/Toughness)`
+ * for the full "has the power, toughness, and creature types of X" sentence.
+ *
+ * This is a Layer 4 (TYPE) continuous effect, re-read on every projection pass — so the gainer's
+ * types track the referenced object live (Duplicant's ruling: "constantly updated if the exiled
+ * card's power and/or toughness change" applies to its types too). When [source] resolves to
+ * nothing, or the object it names has no creature types, only [retainedTypes] remains.
+ *
+ * [retainedTypes] is the printed "It's still a Shapeshifter." rider — types the gainer keeps
+ * *in addition* to the ones it copies. It exists as a field rather than a separate
+ * [GrantSubtype] static because both would land in Layer 4 with the same timestamp, and a
+ * `SetCreatureSubtypes` applied after an `AddSubtype` would silently wipe it.
+ *
+ * @property source The object whose creature types are copied.
+ * @property retainedTypes Creature types the gainer keeps regardless of what it copies.
+ * @property filter Which permanents gain the types (defaults to the source permanent itself).
+ */
+@SerialName("HasCreatureTypesOf")
+@Serializable
+data class HasCreatureTypesOf(
+    val source: com.wingedsheep.sdk.scripting.values.EntityReference,
+    val retainedTypes: Set<String> = emptySet(),
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String = buildString {
+        append("${filter.description} has the creature types of ${source.description}")
+        if (retainedTypes.isNotEmpty()) {
+            append(". It's still ")
+            append(retainedTypes.sorted().joinToString(" and ") { "a $it" })
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        val newRetained = retainedTypes.map { replacer.replaceCreatureType(it) }.toSet()
+        return if (newFilter !== filter || newRetained != retainedTypes)
+            copy(filter = newFilter, retainedTypes = newRetained) else this
+    }
+}
+
+/**
  * Adds a card type (e.g., "CREATURE") to the target permanent, in addition to its other types.
  * Used for Spacecraft Station mechanic: "It's an artifact creature at 7+."
  *

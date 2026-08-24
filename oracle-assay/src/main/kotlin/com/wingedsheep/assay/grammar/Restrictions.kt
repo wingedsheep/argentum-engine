@@ -113,6 +113,29 @@ object Restrictions {
         constant("before attackers are declared", ActivationRestriction.BeforeStep(Step.DECLARE_ATTACKERS)),
         constant("before blockers are declared", ActivationRestriction.BeforeStep(Step.DECLARE_BLOCKERS)),
         constant("once each turn", ActivationRestriction.OncePerTurn),
+        // "Activate only during your upkeep." — Eternal Dragon, Undead Gladiator, Nim Devourer.
+        //
+        // **One printed phrase, two SDK restrictions, and therefore an `All` rather than two rows.**
+        // "Your upkeep" names a step *and* whose turn it is, which the model has no single case for;
+        // spelling it as two rows of this vocabulary would put it in the run [activationSentence]
+        // joins with ", " and print "Activate only during your turn, during your upkeep." The corpus
+        // agrees six cards to two, and the two are fixed in this change.
+        constant(
+            "during your upkeep",
+            ActivationRestriction.All(
+                ActivationRestriction.OnlyDuringYourTurn,
+                ActivationRestriction.DuringStep(Step.UPKEEP),
+            ),
+        ),
+        // "Activate only if you control a legendary creature.", "Activate only if you attacked this
+        // turn." — the whole [Conditions] vocabulary, reached the same way [one]'s casting twin
+        // reaches it. This row is what the recursion band ([Recursion]) needed: eight of its lines
+        // print a bare condition after the move and nothing else.
+        phrase("if {cond}", name = "only if a condition holds") {
+            slot("cond", Conditions.condition)
+            build { ActivationRestriction.OnlyIfCondition(it.value("cond")) }
+            match { (it as? ActivationRestriction.OnlyIfCondition)?.let { r -> bind("cond" to r.condition) } }
+        },
     )
 
     /** "Activate only during your turn, before attackers are declared." — the trailing sentence. */

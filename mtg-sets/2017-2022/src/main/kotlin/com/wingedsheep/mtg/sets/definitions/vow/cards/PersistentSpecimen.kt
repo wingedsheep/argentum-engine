@@ -23,7 +23,7 @@ val PersistentSpecimen = card("Persistent Specimen") {
     toughness = 1
     activatedAbility {
         cost = Costs.Mana("{2}{B}")
-        effect = Effects.PutOntoBattlefield(EffectTarget.Self, tapped = true)
+        effect = Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.Self, tapped = true)
         activateFromZone = Zone.GRAVEYARD
     }
     metadata {

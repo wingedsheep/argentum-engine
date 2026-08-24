@@ -58,13 +58,42 @@ Model exactly what the card does under the Comprehensive Rules, not a convenient
 When the faithful implementation is more work than the shortcut, do the work — or stop and tell the user
 what's missing. **A card that looks right but resolves wrong is worse than an unimplemented one.**
 
-## Step 0: mtgish draftability probe — fail fast
+## Step 0: read the card with Assay, then probe draftability — fail fast
+
+Two cheap signals, in this order. Assay tells you what the card *means* in our own vocabulary; the
+mtgish probe hands you a Kotlin draft to start from.
+
+### Assay first — the first-party reading
+
+```bash
+just assay parse "<Card Name>"      # normalized lines + the SDK model each one parses to
+just assay explain "<Card Name>"    # the same, with a caret on the token a decline died on
+```
+
+[Argentum Assay](../../../oracle-assay/README.md) is our own bidirectional Oracle-text parser — Scryfall
+JSON in, `mtg-sdk` models out, every rule written in both directions so it can only claim a reading it
+can print back. That makes its answer worth more than a coverage guess:
+
+- **Read whole** — the grammar has an SDK spelling for every line, and `parse` shows you which effects,
+  triggers, filters and amounts it used. Take it as a strong hint at the shape to write. It is a
+  *reading*, not the card: Step 3 is still yours, and the printings decision in Step 1 is still unmade.
+- **Declined** — `explain` puts a caret on the token it died on. Read what the decline names before
+  concluding anything. It is either a real SDK gap (Step 4 territory) or merely a spelling the grammar
+  hasn't learned for vocabulary the SDK already has — those look identical here, so `grep` the SDK before
+  believing the first. `just assay-report --implemented --rank tail` is exactly the second list.
+
+`just assay compile "<Card Name>"` goes further and prints the whole `CardDefinition` as JSON when Assay
+reads the card whole — a useful second opinion on field-level questions in Steps 3 and 9. It is
+fail-closed by design (one declined line declines the card) and it is **not a card loader**: its output
+feeds the Scenario Builder's dev sandbox, never the corpus. You still hand-write the `cardDef`.
+
+### Then the mtgish draft
 
 ```bash
 just coverage-fidelity --emit "<Card Name>"     # prints a generated cardDef DSL + a tier banner
 ```
 
-The cheapest possible signal: it tells you in one command whether the tooling can already draft this
+The cheapest possible draft: it tells you in one command whether the tooling can already render this
 card, and hands you a starting `cardDef` with metadata pre-filled. Read the trailing tier line:
 
 - **`fidelity tier: AUTO`** — whole card rendered. Use it as your Step 3 draft, treating every line as a
@@ -277,6 +306,19 @@ Step 4 added engine behavior. **Once for the whole batch, after every card is wr
 `CardDefinitionSnapshotTest` diff; re-bless with `just rebless-cards` and confirm **only your cards** moved
 in the golden. An unrelated card moving means you changed shared SDK behavior — stop and report it rather
 than re-blessing past it.
+
+**Then let Assay read your card back.** Once the goldens are re-blessed:
+
+```bash
+just assay-differential --set <CODE>    # read every DIVERGENT row
+```
+
+This is Assay's independent reading of each oracle text diffed against the definition you just wrote from
+that same text — the one check in this skill that is not you re-reading your own work. Its limit is
+honest: it only covers the class of card the grammar reads whole, so most modern cards decline and a
+decline is **not** a pass. But when your card *is* covered, a `DIVERGENT` row is two readings of one text
+disagreeing, and it has repeatedly been the hand-written card that was wrong. Classify every row — card
+bug, parser bug, or known fold — and fix the card bugs here.
 
 Run `just check-card-printing "<Card Name>"` for each card.
 

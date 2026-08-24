@@ -249,6 +249,14 @@ object Costs {
      */
     val TapAttachedCreature: AbilityCost = AbilityCost.TapAttachedCreature
 
+    /**
+     * "Reveal the creature type you chose" — publish the secret creature type this permanent's
+     * controller noted with `Effects.SecretlyChooseCreatureType(...)`, and hand it to the ability's
+     * effect as `chosenValues["chosenCreatureType"]` (A Killer Among Us). Only the player who made
+     * the note can pay it; see [CostAtom.RevealNotedCreatureType].
+     */
+    val RevealNotedCreatureType: AbilityCost = AbilityCost.Atom(CostAtom.RevealNotedCreatureType)
+
     // =========================================================================
     // Exile Costs
     // =========================================================================
@@ -258,6 +266,30 @@ object Costs {
      */
     fun ExileFromGraveyard(count: Int, filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
         AbilityCost.Atom(CostAtom.ExileFrom(Zone.GRAVEYARD, filter, count))
+
+    /**
+     * Exile [count] cards matching [filter] from a *single* graveyard — any player's, but all
+     * from the same one (Night Soil). The pool is every graveyard; the constraint is that the
+     * chosen cards share an owner.
+     */
+    fun ExileFromSingleGraveyard(count: Int, filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
+        AbilityCost.Atom(
+            CostAtom.ExileFrom(Zone.GRAVEYARD, filter, count, anyPlayersZone = true, singleZone = true)
+        )
+
+    /**
+     * Exile exactly [count] permanents matching [filter] from the battlefield as a cost —
+     * "Exile a creature you control:" (City of Shadows).
+     *
+     * The fixed-count sibling of [ExilePermanents], which is variable-count and derives the
+     * ability's X from what was exiled. Use this one whenever the card names a specific number and
+     * nothing downstream reads an X.
+     *
+     * Pass a controller-scoped [filter] (`.youControl()`): the battlefield zone map is keyed by
+     * **owner**, so the filter is what actually enforces "you control".
+     */
+    fun ExilePermanentsFixed(count: Int = 1, filter: GameObjectFilter = GameObjectFilter.Any): AbilityCost =
+        AbilityCost.Atom(CostAtom.ExileFrom(Zone.BATTLEFIELD, filter, count))
 
     /**
      * Exile X cards from graveyard, where X is the ability's X value.
@@ -342,9 +374,12 @@ object Costs {
         filter: GameObjectFilter = GameObjectFilter.Any,
         minCount: Int = 1,
         excludeSelf: Boolean = true,
-        xMeasure: VariableCostMeasure = VariableCostMeasure.TOTAL_MANA_VALUE
+        xMeasure: VariableCostMeasure = VariableCostMeasure.TOTAL_MANA_VALUE,
+        minMeasure: Int = 0
     ): AbilityCost = AbilityCost.Atom(
-        CostAtom.VariablePermanents(filter, minCount, excludeSelf, PermanentCostAction.EXILE, xMeasure)
+        CostAtom.VariablePermanents(
+            filter, minCount, excludeSelf, PermanentCostAction.EXILE, xMeasure, minMeasure
+        )
     )
 
     /**
@@ -361,9 +396,35 @@ object Costs {
         filter: GameObjectFilter = GameObjectFilter.Any,
         minCount: Int = 1,
         excludeSelf: Boolean = false,
-        xMeasure: VariableCostMeasure = VariableCostMeasure.COUNT
+        xMeasure: VariableCostMeasure = VariableCostMeasure.COUNT,
+        minMeasure: Int = 0
     ): AbilityCost = AbilityCost.Atom(
-        CostAtom.VariablePermanents(filter, minCount, excludeSelf, PermanentCostAction.SACRIFICE, xMeasure)
+        CostAtom.VariablePermanents(
+            filter, minCount, excludeSelf, PermanentCostAction.SACRIFICE, xMeasure, minMeasure
+        )
+    )
+
+    /**
+     * Tap one or more untapped permanents matching [filter] you control (variable count, at least
+     * [minCount]) — the tapping twin of [ExilePermanents] and [SacrificePermanents], and the third
+     * value of [PermanentCostAction] the other two already name.
+     *
+     * Tapping this way is a cost rather than the `{T}` symbol, so summoning sickness (CR 302.6)
+     * does not apply and only untapped permanents may be chosen (CR 701.26a). Pass [minMeasure]
+     * with [VariableCostMeasure.TOTAL_POWER] for Mossbridge Troll's "tap any number of untapped
+     * creatures you control other than this creature with total power 10 or greater"; the
+     * additional-cost twin of that shape is [Additional.TapForTotalPower].
+     */
+    fun TapPermanentsVariable(
+        filter: GameObjectFilter = GameObjectFilter.Creature,
+        minCount: Int = 1,
+        excludeSelf: Boolean = false,
+        xMeasure: VariableCostMeasure = VariableCostMeasure.COUNT,
+        minMeasure: Int = 0
+    ): AbilityCost = AbilityCost.Atom(
+        CostAtom.VariablePermanents(
+            filter, minCount, excludeSelf, PermanentCostAction.TAP, xMeasure, minMeasure
+        )
     )
 
     // =========================================================================
@@ -617,6 +678,21 @@ object Costs {
             AdditionalCost.Atom(CostAtom.CollectEvidence(amount))
 
         /**
+         * "Collect evidence X, where X is the total mana value of the permanents this spell
+         * targets" — Urgent Necropsy, the one printed collect-evidence cost whose threshold is
+         * derived rather than literal.
+         *
+         * X is determined once the targets are announced and before the cost is paid (CR 601.2c →
+         * 601.2f → 601.2h), and the ruling that follows from CR 701.59b is that a caster who
+         * cannot exile that much **can't choose to collect evidence at all** — so a target set the
+         * graveyard can't pay for is an illegal cast (CR 601.2e), not a discounted one. The client
+         * therefore runs its evidence picker *after* targeting for this cost, priced on what was
+         * actually chosen.
+         */
+        val CollectEvidenceForTargetsTotalManaValue: AdditionalCost =
+            AdditionalCost.Atom(CostAtom.CollectEvidence(CostAtom.CollectEvidence.TARGET_SUM))
+
+        /**
          * Cost-vs-cost — the caster pays exactly one of [options] ("discard a card **or** sacrifice a
          * permanent"; Souls of the Lost). For options that are each independently payable non-mana
          * costs; use the `*OrPay` family instead when one branch pays extra *mana*. See
@@ -752,6 +828,15 @@ object Costs {
      */
     object pay {
 
+        /**
+         * Any shared payable thing, lifted into this context — the generic wrapper the other two
+         * cost contexts already publish (`AbilityCost.Atom`, `AdditionalCost.Atom`). Reach for a
+         * named factory below where one exists; this is what a caller holding a [CostAtom] it did
+         * not construct itself needs, and what keeps [CostAtom]'s "one cost language" reachable
+         * from "unless you …" without a factory per atom.
+         */
+        fun Atom(atom: CostAtom): PayCost = PayCost.Atom(atom)
+
         /** Pay a mana cost. */
         fun Mana(cost: ManaCost): PayCost = PayCost.Atom(CostAtom.Mana(cost))
 
@@ -782,6 +867,23 @@ object Costs {
 
         /** Pay [amount] life. */
         fun PayLife(amount: Int): PayCost = PayCost.Atom(CostAtom.PayLife(amount))
+
+        /**
+         * Pay life equal to a value computed when the cost is offered — "unless they pay life equal
+         * to its mana value" (Wand of Ith). PayOrSuffer only; see [PayCost.DynamicLife].
+         */
+        fun PayDynamicLife(amount: DynamicAmount): PayCost = PayCost.DynamicLife(amount)
+
+        /**
+         * Put [count] counters of [counterType] on a permanent matching [filter] the payer
+         * controls — Tourach's Chant's "unless they put a -1/-1 counter on a creature they
+         * control". Unpayable when they control no matching permanent.
+         */
+        fun PutCountersOnPermanent(
+            counterType: String,
+            count: Int = 1,
+            filter: GameObjectFilter = GameObjectFilter.Permanent
+        ): PayCost = PayCost.Atom(CostAtom.PutCountersOnPermanent(counterType, count, filter))
 
         /** Exile [count] cards matching [filter] from [zone]. */
         fun Exile(

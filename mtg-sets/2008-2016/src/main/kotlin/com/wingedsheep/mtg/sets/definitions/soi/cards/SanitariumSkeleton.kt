@@ -28,7 +28,7 @@ val SanitariumSkeleton = card("Sanitarium Skeleton") {
     toughness = 2
     activatedAbility {
         cost = Costs.Mana("{2}{B}")
-        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
+        effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self)
         activateFromZone = Zone.GRAVEYARD
     }
     metadata {

@@ -114,6 +114,22 @@ data class SpellOnStackComponent(
      */
     val discardedAsCostCards: List<EntityId> = emptyList(),
     /**
+     * Entity ids of the cards exiled to pay this spell's additional exile cost
+     * (`Costs.additional.ExileCards(...)`), recorded at payment time (CR 601.2h). The spell
+     * counterpart of [ActivatedAbilityOnStackComponent.exiledAsCostCards] — read at resolution by
+     * `CardSource.ExiledAsCost` and by `Conditions.ExiledAsCostHadSubtype` (Soul Exchange's "if
+     * the exiled creature was a Thrull"). Empty when the spell carried no exile cost.
+     */
+    val exiledAsCostCards: List<EntityId> = emptyList(),
+    /**
+     * Last-known-info snapshots (Rule 113.7a) for the entries of [exiledAsCostCards] exiled **from
+     * the battlefield**, captured before the zone change — a permanent exiled as a cost may be a
+     * token that ceases to exist, or may have held its subtype only through a continuous effect.
+     * Empty for exile costs paid from any other zone, where the exiled card is still a real object
+     * whose printed characteristics answer the question.
+     */
+    val exiledAsCostSnapshots: List<EntitySnapshot> = emptyList(),
+    /**
      * Last-known-info snapshots (Rule 113.7a) for entities chosen at cost-pay time
      * that may later leave the battlefield before the spell resolves. Populated
      * when an [com.wingedsheep.sdk.scripting.AdditionalCost.ChooseEntity] step
@@ -339,6 +355,16 @@ data class ActivatedAbilityOnStackComponent(
      * re-attach "an Equipment that was attached to it" (Zack Fair).
      */
     val lastKnownSourceAttachments: List<EntityId> = emptyList(),
+    /**
+     * The creature type published by a [com.wingedsheep.sdk.scripting.costs.CostAtom.RevealNotedCreatureType]
+     * cost, captured at activation because the same cost usually sacrifices the source and takes
+     * the note with it (CR 113.7a). Surfaced to the effect as
+     * `EffectContext.chosenValues["chosenCreatureType"]`, the key
+     * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtypeFromVariable] reads — so
+     * "if target attacking creature token is the chosen type" is an ordinary filter test.
+     * Null for every ability without that cost. Mirrors [lastKnownSourceCounters].
+     */
+    val revealedNotedCreatureType: String? = null,
     /** Optional human-readable description from `ActivatedAbility.descriptionOverride`,
      *  used when displaying the ability on the stack instead of the auto-generated effect text. */
     val descriptionOverride: String? = null,

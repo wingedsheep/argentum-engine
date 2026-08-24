@@ -14907,7 +14907,8 @@
                             "type": "MoveToZone",
                             "target": "Self",
                             "destination": "Battlefield",
-                            "placement": "Tapped"
+                            "placement": "Tapped",
+                            "fromZone": "Graveyard"
                         },
                         {
                             "type": "AddCounters",
@@ -17384,7 +17385,8 @@
                     "then": {
                         "type": "MoveToZone",
                         "target": "Self",
-                        "destination": "Hand"
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
                     }
                 },
                 "activeZones": [

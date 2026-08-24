@@ -252,7 +252,8 @@
                                 "type": "GatherCards",
                                 "source": {
                                     "type": "FromZone",
-                                    "zone": "Library"
+                                    "zone": "Library",
+                                    "filter": "enchantment mv<=3"
                                 },
                                 "storeAs": "searchable"
                             },
@@ -263,7 +264,7 @@
                                     "type": "ChooseUpTo",
                                     "count": {
                                         "type": "Fixed",
-                                        "amount": 3
+                                        "amount": 1
                                     }
                                 },
                                 "storeSelected": "found"

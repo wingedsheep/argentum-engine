@@ -306,13 +306,59 @@ enum class TappedForManaType {
  *   state from the land controller's perspective, so `youControl()` means "you, the controller of
  *   this static, control the land").
  */
+/**
+ * Creatures dealt damage by this permanent are doomed for the rest of the turn: they can't be
+ * regenerated, and if they would die they are exiled instead. Runesword's two riders, which the
+ * printed card states as separate sentences but which key off the same event and name the same
+ * creature.
+ *
+ * This has to be a static consulted **at damage time**, not a triggered ability. A trigger for
+ * "whenever this deals damage to a creature" only resolves after state-based actions have already
+ * put the dying creature into its graveyard (CR 704.3), so marking it then is too late to change
+ * where it went. Both marks are the same floating effects `Effects.CantBeRegenerated` and
+ * `Effects.MarkExileOnDeath` place — Carbonize can compose those after its own damage because that
+ * all happens in one resolution; combat damage gives no such window.
+ *
+ * The two clauses are flags on one ability rather than two abilities because they are one printed
+ * rider on one card; a future card wanting only half sets only that half.
+ */
+@SerialName("CreaturesDamagedBySourceAreDoomed")
+@Serializable
+data class CreaturesDamagedBySourceAreDoomed(
+    val cantBeRegenerated: Boolean = true,
+    val exileInsteadOfDying: Boolean = true
+) : StaticAbility {
+    override val description: String = buildString {
+        append("creatures dealt damage by this ")
+        val clauses = buildList {
+            if (cantBeRegenerated) add("can't be regenerated this turn")
+            if (exileInsteadOfDying) add("are exiled instead of dying this turn")
+        }
+        append(clauses.joinToString(" and "))
+    }
+}
+
 @SerialName("ReplaceLandManaColor")
 @Serializable
 data class ReplaceLandManaColor(
-    val filter: GameObjectFilter
+    val filter: GameObjectFilter,
+    /**
+     * When set, matched lands produce *this* color rather than one of the controller's choice —
+     * Deep Water's "it produces {U} instead of any other type". Null (the default) keeps Pulse of
+     * Llanowar's free choice, which the engine implements by swapping in an add-one-mana-of-any-color
+     * ability.
+     */
+    val color: Color? = null
 ) : StaticAbility {
     override val description: String =
-        "If a ${filter.description} is tapped for mana, it produces mana of a color of its controller's choice instead of any other type"
+        // describeObjectForEvent, not filter.description: it renders the article and puts the
+        // controller clause *after* the noun ("a land you control"), where the raw filter
+        // description would prefix it ("a you control land").
+        if (color != null) {
+            "If ${describeObjectForEvent(filter)} is tapped for mana, it produces {${color.symbol}} instead of any other type"
+        } else {
+            "If ${describeObjectForEvent(filter)} is tapped for mana, it produces mana of a color of its controller's choice instead of any other type"
+        }
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
@@ -357,7 +403,8 @@ data class MultiplyManaOnSourceTap(
     val multiplier: Int
 ) : StaticAbility {
     override val description: String =
-        "If you tap a ${sourceFilter.description} for mana, it produces $multiplier times as much of that mana instead"
+        // See ReplaceLandManaColor: the describer keeps "you control" a suffix, not a prefix.
+        "If you tap ${describeObjectForEvent(sourceFilter)} for mana, it produces $multiplier times as much of that mana instead"
 
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = sourceFilter.applyTextReplacement(replacer)
@@ -793,25 +840,43 @@ data class GainActivatedAbilitiesOfPermanents(
 }
 
 /**
- * Mana of any type can be spent to activate the activated abilities of permanents matching
- * [filter] (CR 118.14 / 609.4b — colored, hybrid, Phyrexian, and colorless requirements in the
- * ability's cost may be paid with mana of any color or colorless).
+ * The mana requirements in the activated-ability costs of permanents matching [filter] are relaxed
+ * (CR 118.14 / 609.4b). Two printed strengths, chosen by [substituteColor]:
  *
- * Models Sharkey, Tyrant of the Shire ("Mana of any type can be spent to activate Sharkey's
- * abilities") with `filter = GroupFilter.source()`. The relaxation is applied to the mana
- * portion of the ability's cost only — non-mana cost components (tap, sacrifice, …) are
- * untouched — and is honored by both affordability checks and the mana solver at payment time.
+ *  - `substituteColor = null` — **"mana of any type can be spent"**: every colored, hybrid,
+ *    Phyrexian and colorless requirement may be paid with any mana at all. Sharkey, Tyrant of the
+ *    Shire ("Mana of any type can be spent to activate Sharkey's abilities") and Agatha's Soul
+ *    Cauldron, both with `filter = GroupFilter.source()` / a battlefield filter.
+ *  - a color — **"you may spend [color] mana as though it were mana of any color"**: only that one
+ *    color gains the substitution, and only for *colored* requirements. Quicksilver Elemental
+ *    ("You may spend blue mana as though it were mana of any color to pay the activation costs of
+ *    this creature's abilities") with `filter = GroupFilter.source(), substituteColor = Color.BLUE`.
+ *    Lowered by rewriting each foreign colored pip into a hybrid with the substitute
+ *    ([com.wingedsheep.sdk.core.ManaCost.relaxColorsTo]), so it reuses the existing hybrid payment
+ *    path rather than adding a second one. Generic and `{C}` requirements are untouched — they are
+ *    not colored.
  *
- * @property filter Which permanents' activated-ability mana costs may be paid with any mana
- *   type (use [GroupFilter.source] for "this permanent's abilities").
+ * Either way the relaxation applies to the mana portion of the ability's cost only — non-mana
+ * components (tap, sacrifice, …) are untouched — and is honored by both affordability checks and
+ * the mana solver at payment time, through the single `relaxAbilityCostColorsIfAny` seam.
+ *
+ * @property filter Which permanents' activated-ability mana costs are relaxed (use
+ *   [GroupFilter.source] for "this permanent's abilities").
+ * @property substituteColor When set, only mana of this color may be spent as though it were mana
+ *   of any color. Null (the default) is the stronger "mana of any type can be spent".
  */
 @SerialName("SpendAnyManaTypeForActivatedAbilities")
 @Serializable
 data class SpendAnyManaTypeForActivatedAbilities(
-    val filter: GroupFilter
+    val filter: GroupFilter,
+    val substituteColor: com.wingedsheep.sdk.core.Color? = null
 ) : StaticAbility {
     override val description: String =
-        "Mana of any type can be spent to activate ${filter.description}'s abilities"
+        if (substituteColor == null)
+            "Mana of any type can be spent to activate ${filter.description}'s abilities"
+        else
+            "You may spend ${substituteColor.name.lowercase()} mana as though it were mana of any " +
+                "color to pay the activation costs of ${filter.description}'s abilities"
     override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
         val newFilter = filter.applyTextReplacement(replacer)
         return if (newFilter !== filter) copy(filter = newFilter) else this
@@ -1069,6 +1134,48 @@ data class WinCoinFlips(
         } else {
             "You win all coin flips"
         }
+}
+
+/**
+ * Each coin the controller would flip is replaced by [coinsPerFlip] coins, all but one of which the
+ * controller ignores — Krark's Thumb's "If you would flip a coin, instead flip two coins and ignore
+ * one" (CR 614.1a — an "instead" effect is a replacement effect; this one changes *how a flip's
+ * result is produced*, and the flip itself still
+ * happens, so a "whenever you flip a coin" ability sees exactly one flip per replaced coin).
+ *
+ * Queried by the coin-flip executors (`FlipCoinExecutor` / `FlipTwoCoinsExecutor` /
+ * `FlipCoinsExecutor` / `FlipCoinsUntilLossExecutor`) via `CoinFlipModifiers`, exactly like
+ * [WinCoinFlips]; it is not a Rule 613 continuous effect, so it maps to no layer (classified as
+ * no-op in `StaticAbilityHandler`).
+ *
+ * Three consequences of the Krark's Thumb rulings are load-bearing and are what make this a
+ * *per-coin* replacement rather than a per-flip-event one:
+ *
+ * - **It replaces each individual coin, not the instruction.** "If an effect tells you to flip two
+ *   coins, you don't flip four coins and ignore any two; you flip two coins, flip two coins, and
+ *   then ignore one flip from each pair." So a `FlipCoinsEffect(5)` under one Thumb flips ten coins
+ *   as five pairs and keeps one from each.
+ * - **All the coins are flipped before any is ignored** — "You will know the results of all
+ *   simultaneous flips before choosing which to ignore." The engine therefore flips the whole batch
+ *   up front and only then asks, so the flipper always chooses with complete information.
+ * - **Instances multiply.** A second Thumb replaces each of the first Thumb's coins in turn, so two
+ *   Thumbs flip four coins per original flip and ignore three. `CoinFlipModifiers` multiplies
+ *   [coinsPerFlip] across every source the flipper controls rather than summing them.
+ *
+ * A [WinCoinFlips] replacement that also applies makes every coin in the batch heads, which leaves
+ * the flipper nothing to choose — the engine skips the prompt whenever a batch is unanimous.
+ *
+ * @property coinsPerFlip How many coins are flipped in place of each single coin. Two is the printed
+ *   value (Krark's Thumb, and its silver-bordered twin Krark's Other Thumb); the parameter exists so
+ *   a future "flip three coins and ignore two" needs no new type. Values below two leave flips alone.
+ */
+@SerialName("FlipAdditionalCoins")
+@Serializable
+data class FlipAdditionalCoins(
+    val coinsPerFlip: Int = 2,
+) : StaticAbility {
+    override val description: String =
+        "If you would flip a coin, instead flip $coinsPerFlip coins and ignore all but one"
 }
 
 /**

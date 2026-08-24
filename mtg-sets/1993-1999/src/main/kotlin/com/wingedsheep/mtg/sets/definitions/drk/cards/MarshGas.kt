@@ -29,7 +29,7 @@ val MarshGas = card("Marsh Gas") {
         rarity = Rarity.COMMON
         collectorNumber = "48"
         artist = "Douglas Shuler"
-        flavorText = "\"Comes right outta th' ground. If ya can smell it, it's too late.\" —Keevy Bogsbury"
+        flavorText = "\"Comes right outta th' ground. If ya can smell it, it's too late.\"\n—Keevy Bogsbury"
         imageUri = "https://cards.scryfall.io/normal/front/b/8/b80ecb15-258b-4fc9-86e4-c2bf01891606.jpg?1783947938"
     }
 }

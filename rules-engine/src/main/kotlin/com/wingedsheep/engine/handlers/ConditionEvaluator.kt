@@ -2,11 +2,13 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.handlers.ConditionEvaluationContext.Projection
 import com.wingedsheep.engine.handlers.ConditionEvaluationContext.Resolution
+import com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExileLookup
 import com.wingedsheep.engine.state.CastSpellRecord
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.CastFromHandComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
@@ -52,6 +54,8 @@ import com.wingedsheep.sdk.scripting.conditions.APlayerControlsMostOfSubtype
 import com.wingedsheep.sdk.scripting.conditions.YouControlMostOfChosenType
 import com.wingedsheep.sdk.scripting.conditions.AllConditions
 import com.wingedsheep.sdk.scripting.conditions.AnyCondition
+import com.wingedsheep.sdk.scripting.conditions.ExiledAsCostHadSubtype
+import com.wingedsheep.sdk.scripting.conditions.ThisAbilityActivatedThisTurnAtLeast
 import com.wingedsheep.sdk.scripting.conditions.APlayerLifeAtMost
 import com.wingedsheep.sdk.scripting.conditions.EachPlayerLifeAtMost
 import com.wingedsheep.sdk.scripting.conditions.AnyPlayerDealtCombatDamageThisTurnAtLeast
@@ -637,6 +641,9 @@ class ConditionEvaluator(
                         ?.castTimeFlags?.contains(condition.flag) == true
             }
             is SacrificedPermanentHadSubtype -> ifResolution { evaluateSacrificedPermanentHadSubtype(condition, it) }
+            is ExiledAsCostHadSubtype -> ifResolution { evaluateExiledAsCostHadSubtype(state, condition, it) }
+            is ThisAbilityActivatedThisTurnAtLeast ->
+                ifResolution { evaluateThisAbilityActivatedThisTurnAtLeast(state, condition, it) }
             is SacrificedPermanentWasLegendary -> ifResolution { evaluateSacrificedPermanentWasLegendary(it) }
             is SacrificedPermanentWasSuspected -> ifResolution { evaluateSacrificedPermanentWasSuspected(it) }
             is YouSacrificedPermanentThisWay -> ifResolution { evaluateYouSacrificedPermanentThisWay(it) }
@@ -829,7 +836,39 @@ class ConditionEvaluator(
             (ctx as? Resolution)?.let {
                 evaluateDiscardedCardFilterMatch(state, condition.filter, entity.index, it.effectContext)
             } ?: false
+        is EffectTarget.LinkedExiledCard ->
+            evaluateLinkedExiledCardFilterMatch(state, condition.filter, entity.index, ctx)
         else -> false
+    }
+
+    /**
+     * Match the [index]-th card exiled with the source ([EffectTarget.LinkedExiledCard]) against
+     * [filter]. **Dual-mode**: the pile hangs off the source permanent, so this answers identically
+     * at resolution and during static-ability projection — which is what lets a
+     * `ConditionalStaticAbility` be gated on the imprinted card (Duplicant's "as long as a card
+     * exiled with this creature is a creature card").
+     *
+     * The card is in exile, so it has no projection entry and `matches` falls through to its
+     * printed `CardComponent` characteristics — the right read for "is a creature card". Returns
+     * false when the pile is empty at that index (imprint declined, or the card has left exile),
+     * via [LinkedExileLookup]'s still-in-exile guard.
+     */
+    private fun evaluateLinkedExiledCardFilterMatch(
+        state: GameState,
+        filter: GameObjectFilter,
+        index: Int,
+        ctx: ConditionEvaluationContext
+    ): Boolean {
+        val sourceId = ctx.sourceId ?: return false
+        val exiledId = LinkedExileLookup.exiledCard(state, sourceId, index) ?: return false
+        val predicateContext = when (ctx) {
+            is Resolution -> PredicateContext.fromEffectContext(ctx.effectContext)
+            is Projection -> ctx.controllerId?.let { PredicateContext(controllerId = it, sourceId = sourceId) }
+                ?: PredicateContext(controllerId = sourceId, sourceId = sourceId)
+        }
+        return PredicateEvaluator().matches(
+            state, ctx.projectedStateFor(state), exiledId, filter, predicateContext
+        )
     }
 
     /**
@@ -1548,6 +1587,55 @@ class ConditionEvaluator(
         return context.sacrificedPermanents.any { snapshot ->
             snapshot.subtypes.contains(condition.subtype)
         }
+    }
+
+    /**
+     * Soul Exchange's "if the exiled creature was a Thrull". The additional cost is fully paid
+     * before the spell resolves (CR 601.2h), so by resolution the exiled object is either a card
+     * sitting in exile or — when the cost exiled a *permanent* — possibly gone entirely, a token
+     * having ceased to exist. Prefer the cost-time snapshot when one was captured, because it is
+     * both the only reading that survives a token and the one Rule 113.7a asks for: what the
+     * permanent last was on the battlefield, continuous effects included. Fall back to the card's
+     * printed subtypes for exile costs paid from a non-battlefield zone, where the card is still
+     * there to read and its printed line is the right answer.
+     */
+    private fun evaluateExiledAsCostHadSubtype(
+        state: GameState,
+        condition: ExiledAsCostHadSubtype,
+        context: EffectContext
+    ): Boolean {
+        val snapshots = context.exiledAsCostSnapshots.associateBy { it.entityId }
+        return context.exiledAsCostCards.any { exiledId ->
+            val snapshot = snapshots[exiledId]
+            if (snapshot != null) {
+                snapshot.subtypes.any { it.equals(condition.subtype, ignoreCase = true) }
+            } else {
+                state.getEntity(exiledId)
+                    ?.get<CardComponent>()
+                    ?.typeLine?.subtypes
+                    ?.any { it.value.equals(condition.subtype, ignoreCase = true) } == true
+            }
+        }
+    }
+
+    /**
+     * Farrelite Priest's "if this ability has been activated four or more times this turn". The
+     * tally lives on the source permanent, keyed by ability id, and the handler increments it
+     * before the effect runs — so the fourth activation reads four. Reads false when the ability
+     * did not opt into bookkeeping (`activatedAbilityId` null), which is the correct answer for
+     * every ability that never asks.
+     */
+    private fun evaluateThisAbilityActivatedThisTurnAtLeast(
+        state: GameState,
+        condition: ThisAbilityActivatedThisTurnAtLeast,
+        context: EffectContext
+    ): Boolean {
+        val abilityId = context.activatedAbilityId ?: return false
+        val sourceId = context.sourceId ?: return false
+        val tracker = state.getEntity(sourceId)
+            ?.get<AbilityActivatedThisTurnComponent>()
+            ?: return false
+        return tracker.activationCount(abilityId) >= condition.count
     }
 
     private fun evaluateSacrificedPermanentWasLegendary(context: EffectContext): Boolean {

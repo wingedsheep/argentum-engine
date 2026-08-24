@@ -20,6 +20,10 @@
                             "keyword": "FLYING"
                         }
                     ]
+                },
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
                 }
             }
         ],
@@ -324,7 +328,7 @@
                             "source": {
                                 "type": "FromZone",
                                 "zone": "Library",
-                                "filter": "Rebel"
+                                "filter": "permanent Rebel mv<=3"
                             },
                             "storeAs": "searchable"
                         },
@@ -335,7 +339,7 @@
                                 "type": "ChooseUpTo",
                                 "count": {
                                     "type": "Fixed",
-                                    "amount": 3
+                                    "amount": 1
                                 }
                             },
                             "storeSelected": "found"
@@ -1674,7 +1678,7 @@
                             "source": {
                                 "type": "FromZone",
                                 "zone": "Library",
-                                "filter": "Mercenary"
+                                "filter": "permanent Mercenary mv<=2"
                             },
                             "storeAs": "searchable"
                         },
@@ -1685,7 +1689,7 @@
                                 "type": "ChooseUpTo",
                                 "count": {
                                     "type": "Fixed",
-                                    "amount": 2
+                                    "amount": 1
                                 }
                             },
                             "storeSelected": "found"

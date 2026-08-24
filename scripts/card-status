@@ -10,7 +10,11 @@ For each set folder under `mtg-sets/.../definitions/<code>/`:
   - loads the canonical name list from Scryfall, cached under
     `~/.cache/scryfall/<code>.json`, partitioned into draft cards (any
     printing in the set has Scryfall `booster: true`) and extras
-    (starter-deck exclusives, Special Guests, bonus sheets, etc.)
+    (starter-deck exclusives, Special Guests, bonus sheets, etc.).
+    Tokens and emblems are dropped — a handful of sets number them inside
+    the main set rather than a separate `t<code>` set, and a token has no
+    `CardDefinition` and no `Printing` row to implement (see
+    `NON_CARD_LAYOUTS`)
   - diffs the two to compute what's missing, reported per partition
 
 Cards listed in `coverage/card-exclusions.json` (ante, subgames, physical
@@ -57,7 +61,7 @@ REQUEST_DELAY_SEC = 0.15  # Scryfall asks for 50–100ms between requests; pad f
 # the script for 1h44m on one set, so every request is bounded and a timeout is retried like a 429.
 REQUEST_TIMEOUT_SEC = 30
 REFRESH_WINDOW_DAYS = 30
-CACHE_SCHEMA_VERSION = 8  # v8: `extra_products` (Scryfall promo_types per extra) recorded for every set
+CACHE_SCHEMA_VERSION = 9  # v9: token/emblem printings dropped from the canonical lists
 
 # A set is in current Standard if both:
 #   (a) its set_type is one of these (excludes commander, masters, alchemy, etc.), AND
@@ -67,10 +71,29 @@ CACHE_SCHEMA_VERSION = 8  # v8: `extra_products` (Scryfall promo_types per extra
 STANDARD_SET_TYPES = {"core", "expansion", "draft_innovation"}
 STANDARD_LEGAL_RATIO = 0.5
 
+# Scryfall layouts that are not cards. Most sets file their tokens under a separate `t<code>` set,
+# but a few number them inside the main set — duel decks (DDQ #77–80) and Global Series (GS1's
+# double-faced Mowu) — and those rows came back from `set:<code>` and sat in the denominator
+# forever. The engine has no `CardDefinition` and no `Printing` row for a token by design: token art
+# lives in its set object's `tokenArt` as `TokenPrinting`s. So a set that has authored every card it
+# prints must be able to read 100%, and these can never be "implemented" in the sense the count
+# means. Dropped at the fetch site so every consumer of the cache — `card-status`, `gen-set-totals`
+# (the Set Completion resource) and `assay-ready.py`, which reuses `build_report` — inherits it.
+NON_CARD_LAYOUTS = {"token", "double_faced_token", "emblem"}
+
 SET_CODE_RE = re.compile(r'override\s+val\s+code\s*=\s*"([^"]+)"')
 DISPLAY_NAME_RE = re.compile(r'override\s+val\s+displayName\s*=\s*"([^"]+)"')
-CARD_DSL_RE = re.compile(r'\b(?:card|basicLand)\(\s*"([^"]+)"')
-PRINTING_NAME_RE = re.compile(r'\bname\s*=\s*"([^"]+)"')
+# The `(?:[^"\\]|\\.)*` body (rather than `[^"]+`) is load-bearing: a handful of real card
+# names embed escaped double quotes — `card("Kongming, \\"Sleeping Dragon\\"")` — and a naive
+# `[^"]+` truncates at the first `\\"`, so the card reads as missing from a set that has it.
+# Captured values are Kotlin string literals; unescape them before comparing to Scryfall names.
+CARD_DSL_RE = re.compile(r'\b(?:card|basicLand)\(\s*"((?:[^"\\]|\\.)*)"')
+PRINTING_NAME_RE = re.compile(r'\bname\s*=\s*"((?:[^"\\]|\\.)*)"')
+
+
+def unescape_kotlin(literal: str) -> str:
+    """Turn the body of a Kotlin string literal back into the value it denotes."""
+    return re.sub(r'\\(.)', r'\1', literal)
 
 SKIP_FOLDERS = {"custom"}
 
@@ -170,8 +193,8 @@ def scan_implementations(cards_dir: Path) -> set[str]:
         return names
     for kt in cards_dir.glob("*.kt"):
         text = kt.read_text(encoding="utf-8")
-        names.update(CARD_DSL_RE.findall(text))
-        names.update(PRINTING_NAME_RE.findall(text))
+        names.update(unescape_kotlin(n) for n in CARD_DSL_RE.findall(text))
+        names.update(unescape_kotlin(n) for n in PRINTING_NAME_RE.findall(text))
     return names
 
 
@@ -267,6 +290,8 @@ def fetch_from_scryfall(code: str) -> dict:
     while url:
         data = scryfall_get(url)
         for card in data.get("data", []):
+            if card.get("layout") in NON_CARD_LAYOUTS:
+                continue
             printings.setdefault(card["name"], []).append(card)
         url = data.get("next_page") if data.get("has_more") else None
 

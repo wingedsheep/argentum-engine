@@ -8463,7 +8463,8 @@
                             "DEFENDER"
                         ],
                         "imageUri": "https://cards.scryfall.io/normal/front/8/2/82d35a61-3c87-405d-b857-cf43067cb1c4.jpg?1783902804"
-                    }
+                    },
+                    "descriptionOverride": "Whenever you put one or more +1/+1 counters on one or more other Heroes you control, you may create a 0/4 colorless Wall creature token with defender."
                 },
                 "descriptionOverride": "Whenever you put one or more +1/+1 counters on one or more other Heroes you control, you may create a 0/4 colorless Wall creature token with defender."
             }
@@ -12654,7 +12655,8 @@
                 "effect": {
                     "type": "MoveToZone",
                     "target": "Self",
-                    "destination": "Hand"
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
                 },
                 "activateFromZone": "Graveyard"
             }

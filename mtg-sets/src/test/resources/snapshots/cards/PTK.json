@@ -1,3 +1,28 @@
+// Alert Shu Infantry
+{
+    "name": "Alert Shu Infantry",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Vigilance",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Solomon Au Yeung",
+        "flavorText": "Kongming's predecessor helped Liu Bei win the battle of Fancheng by recognizing and defeating Cao Ren's use of the dreaded \"Eight Gold Locks\" formation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c94a92a9-060e-42d3-a8d1-49425defc08a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ambition's Cost
 {
     "name": "Ambition's Cost",
@@ -38,6 +63,31 @@
     ]
 }
 
+// Barbarian General
+{
+    "name": "Barbarian General",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Human Barbarian Soldier",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "metadata": {
+        "collectorNumber": "100",
+        "rarity": "UNCOMMON",
+        "artist": "Kuang Sheng",
+        "flavorText": "\"Barbarian tribes with their rulers are inferior to Chinese states without them.\"\n—Confucius, *The Analects* (trans. Lau)",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/060da652-03c7-45e3-ad83-f0a9fa9d1049.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Barbarian Horde
 {
     "name": "Barbarian Horde",
@@ -55,6 +105,243 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Borrowing 100,000 Arrows
+{
+    "name": "Borrowing 100,000 Arrows",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw a card for each tapped creature target opponent controls.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "AggregateBattlefield",
+                "player": "TargetOpponent",
+                "filter": "creature tapped"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "UNCOMMON",
+        "artist": "Song Shikai",
+        "flavorText": "Kongming and Lu Su tricked Wei troops into shooting over 100,000 arrows at them to later use against the Wei at Red Cliffs.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96b5362a-bbca-4dc3-a320-3664609fe169.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Borrowing the East Wind
+{
+    "name": "Borrowing the East Wind",
+    "manaCost": "{X}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Borrowing the East Wind deals X damage to each creature with horsemanship and each player.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature kw:horsemanship"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": "Self"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": "Controller"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Gao Yan",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96ba9014-d750-4924-aa6f-8b9f421807f9.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Brilliant Plan
+{
+    "name": "Brilliant Plan",
+    "manaCost": "{4}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Draw three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 3
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "36",
+        "rarity": "UNCOMMON",
+        "artist": "Song Shikai",
+        "flavorText": "At Red Cliffs, Kongming and Zhou Yu each wrote his plan for defeating the Wei on the palm of his hand. They laughed as they both revealed the same word, \"Fire.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/a/6acae374-9d71-4f8d-ba75-a983756624c7.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Burning Fields
+{
+    "name": "Burning Fields",
+    "manaCost": "{4}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Burning Fields deals 5 damage to target opponent or planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 5
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponentOrPlaneswalker",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "artist": "Yang Hong",
+        "flavorText": "\"In raiding and plundering, be like fire, in immovability like a mountain.\"\n—Sun Tzu, *Art of War* (trans. Giles)",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/e/dee12f01-581e-4a3c-a8b5-41bef2516781.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Cao Ren, Wei Commander
+{
+    "name": "Cao Ren, Wei Commander",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Human Soldier Warrior",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)\nWhen Cao Ren enters, you lose 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": "Controller"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "RARE",
+        "artist": "Junko Taguchi",
+        "flavorText": "Cao Cao's cousin, Cao Ren was known throughout the three kingdoms as the fiercest of warriors.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4f7e8366-82ba-4df0-b9df-7d0aa9b972eb.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Champion's Victory
+{
+    "name": "Champion's Victory",
+    "manaCost": "{U}",
+    "typeLine": "Instant",
+    "oracleText": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nReturn target attacking creature to its owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature attacking"
+                },
+                "id": "target"
+            }
+        ],
+        "castRestrictions": [
+            {
+                "type": "OnlyDuringStep",
+                "step": "DECLARE_ATTACKERS"
+            },
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": "YouWereAttackedThisStep"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "UNCOMMON",
+        "artist": "Hong Yan",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/451ef657-8590-497a-9d98-a732d4de6165.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -138,6 +425,489 @@
     ]
 }
 
+// Corrupt Eunuchs
+{
+    "name": "Corrupt Eunuchs",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Advisor",
+    "oracleText": "When this creature enters, it deals 2 damage to target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "rarity": "UNCOMMON",
+        "artist": "Li Yousong",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e084664-2faf-4f7a-9068-d58d3f4b8456.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Council of Advisors
+{
+    "name": "Council of Advisors",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Advisor",
+    "oracleText": "When this creature enters, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "UNCOMMON",
+        "artist": "Liu Shangying",
+        "flavorText": "Sun Quan's long and successful rule in the years 199 to 251 was due to his ability to choose and foster talented advisors and generals.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c59f45b-46fa-4494-9b25-cf9d3e462539.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Desert Sandstorm
+{
+    "name": "Desert Sandstorm",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Desert Sandstorm deals 1 damage to each creature.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "107",
+        "artist": "Xu Tan",
+        "flavorText": "While pursuing the remnants of Yuan Shao's forces into the Wuhan Desert, Cao Cao was temporarily turned back by a fierce sandstorm.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/588ad2bf-405d-4c36-b485-e415c22f2703.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Desperate Charge
+{
+    "name": "Desperate Charge",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creatures you control get +2/+0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 0
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "74",
+        "rarity": "UNCOMMON",
+        "artist": "Chen Weidong",
+        "flavorText": "\"Lieutenants dishonored, corpses carted home; The general raises troops again to take revenge.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a5587089-b17e-4187-97aa-1c3eec070a0b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Eightfold Maze
+{
+    "name": "Eightfold Maze",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nDestroy target attacking creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature attacking"
+                },
+                "id": "target"
+            }
+        ],
+        "castRestrictions": [
+            {
+                "type": "OnlyDuringStep",
+                "step": "DECLARE_ATTACKERS"
+            },
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": "YouWereAttackedThisStep"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "RARE",
+        "artist": "Shang Huitong",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc8c377a-82c4-46ee-94c2-b970160a3205.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// False Defeat
+{
+    "name": "False Defeat",
+    "manaCost": "{3}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card from your graveyard to the battlefield.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Battlefield",
+            "fromZone": "Graveyard"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "artist": "Li Wang",
+        "flavorText": "\"All warfare is based on deception.\"\n—Sun Tzu, *Art of War* (trans. Giles)",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5ca71ce3-8633-428a-8d9e-9b807b77a8e2.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Famine
+{
+    "name": "Famine",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Famine deals 3 damage to each creature and each player.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature"
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "Self"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": "Controller"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "UNCOMMON",
+        "artist": "Sun Nan",
+        "flavorText": "\"But it was a year of dearth. People were reduced to eating leaves of jujube trees. Corpses were seen everywhere in the countryside.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d6c10ca-f6d6-4322-aa17-7e874cb10bb1.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Fire Ambush
+{
+    "name": "Fire Ambush",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Fire Ambush deals 3 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 3
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Tang Xiaogu",
+        "flavorText": "\"With fire he broke the battle at Bowang . . . . Striking fear deep into Cao Cao's soul, thus Kongming scored a coup at his debut.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4dd8bdbd-99c9-4fa7-936a-acc7f4238507.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Fire Bowman
+{
+    "name": "Fire Bowman",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Soldier Archer",
+    "oracleText": "Sacrifice this creature: It deals 1 damage to any target. Activate only during your turn, before attackers are declared.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "target"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn",
+                    {
+                        "type": "BeforeStep",
+                        "step": "DECLARE_ATTACKERS"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "rarity": "UNCOMMON",
+        "artist": "Cai Tingting",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18acc721-e9ae-4ba4-b435-754e41fb541e.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Flanking Troops
+{
+    "name": "Flanking Troops",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature attacks, you may tap target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "TapUntap",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "rarity": "UNCOMMON",
+        "artist": "Li Wang",
+        "flavorText": "Following the battle of Redcliffs, both Liu Bei and Sun Quan coveted the province of Jingzhou. After Sun Quan's troops failed to capture it, Liu Bei's succeeded.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a219a031-2466-4850-b646-79a09e30cf18.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Forced Retreat
+{
+    "name": "Forced Retreat",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Put target creature on top of its owner's library.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Library",
+            "placement": "Top"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "artist": "Huang Qishi",
+        "flavorText": "\"Leadership, not numbers, determines victory.\"\n—A Wu commander, before his 5,000 troops forced 15,000 Wei troops to retreat from Ruxu",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/7/9753d211-3436-4a9b-86d9-54a541770ec2.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Forest Bear
 {
     "name": "Forest Bear",
@@ -155,6 +925,294 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Ghostly Visit
+{
+    "name": "Ghostly Visit",
+    "manaCost": "{2}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target nonblack creature.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotColor",
+                                "color": "BLACK"
+                            }
+                        ]
+                    }
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Kang Yu",
+        "flavorText": "Cao Cao was haunted to death by the ghosts of the empresses and other high courtiers he had murdered.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06f6938a-229a-4521-b5d5-7999ce5fb372.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Guan Yu's 1,000-Li March
+{
+    "name": "Guan Yu's 1,000-Li March",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all tapped creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature tapped"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "7",
+        "rarity": "RARE",
+        "artist": "Yang Guangmai",
+        "flavorText": "\"He [Guan Yu] covered the ground on a thousand-*li* horse; / With dragon blade he took each pass by force.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8fa7526a-7a4e-4b3d-b96e-91f2bbf1c7bd.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Heavy Fog
+{
+    "name": "Heavy Fog",
+    "manaCost": "{1}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nPrevent all damage that would be dealt to you this turn by attacking creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "sourceFilter": "AttackingCreatures"
+        },
+        "castRestrictions": [
+            {
+                "type": "OnlyDuringStep",
+                "step": "DECLARE_ATTACKERS"
+            },
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": "YouWereAttackedThisStep"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Liu Shangying",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/499fee7b-1942-4eb9-b1d0-806a1f6c0cd8.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Huang Zhong, Shu General
+{
+    "name": "Huang Zhong, Shu General",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Huang Zhong can't be blocked by more than one creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByMoreThan",
+                "maxBlockers": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Quan Xuejun",
+        "flavorText": "\"Virile in war, he kept the north in fear; His prodigies subdued the western sphere.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c079037c-f4cf-423f-ad15-ee57136d6148.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Imperial Recruiter
+{
+    "name": "Imperial Recruiter",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Advisor",
+    "oracleText": "When this creature enters, search your library for a creature card with power 2 or less, reveal it, put it into your hand, then shuffle.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": "creature pow<=2"
+                            },
+                            "storeAs": "searchable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "UNCOMMON",
+        "artist": "Mitsuaki Sagiri",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1c473253-3992-4cc1-8b46-5d1da308c537.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Imperial Seal
+{
+    "name": "Imperial Seal",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Search your library for a card, then shuffle and put that card on top. You lose 2 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library"
+                            },
+                            "storeAs": "searchable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        "ShuffleLibrary",
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Top"
+                            }
+                        },
+                        "EmitLibrarySearchedEvent"
+                    ]
+                },
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Controller"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "rarity": "RARE",
+        "artist": "Li Tie",
+        "flavorText": "\"If Heaven has placed it in your hands, it means that the throne is destined to be yours.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/822e30db-40c5-4099-868b-185ad9b7c7dc.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -178,6 +1236,167 @@
     ]
 }
 
+// Kongming, "Sleeping Dragon"
+{
+    "name": "Kongming, \"Sleeping Dragon\"",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Other creatures you control get +1/+1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "9",
+        "rarity": "RARE",
+        "artist": "Gao Yan",
+        "flavorText": "\"Such a lord as this—all virtues' height—Had never been, nor ever was again.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4ae0a05-1870-4f4a-b8a2-bfb5381acacb.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Lady Zhurong, Warrior Queen
+{
+    "name": "Lady Zhurong, Warrior Queen",
+    "manaCost": "{4}{G}",
+    "typeLine": "Legendary Creature — Human Soldier Warrior",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Simple",
+            "keyword": "HORSEMANSHIP"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "139",
+        "rarity": "RARE",
+        "artist": "Miao Aili",
+        "flavorText": "\"A man, and such a fool! I, a woman, will fight them for you.\"\n—Lady Zhurong to her husband Meng Huo, before leading an army against the Shu",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/009661e7-c704-43a1-82e3-7da0b609844e.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Lu Bu, Master-at-Arms
+{
+    "name": "Lu Bu, Master-at-Arms",
+    "manaCost": "{5}{R}",
+    "typeLine": "Legendary Creature — Human Soldier Warrior",
+    "oracleText": "Haste; horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE",
+        "HORSEMANSHIP"
+    ],
+    "metadata": {
+        "collectorNumber": "115",
+        "rarity": "RARE",
+        "artist": "Gao Jianzhang",
+        "flavorText": "\"Dong Zhuo's man, Lu Bu, warrior without peer, / Far surpassed the champions of his sphere.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07d60c27-8625-48eb-a3f0-1e26d6930ae7.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Lu Meng, Wu General
+{
+    "name": "Lu Meng, Wu General",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Gao Yan",
+        "flavorText": "As the Wu chief commander, Lu Meng conquered Shu-held Jingzhou in 219 by disguising soldiers as merchants on boats filled with hiding troops.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77a8b376-eda5-4bf9-9093-9518c09e50e8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Lu Su, Wu Advisor
+{
+    "name": "Lu Su, Wu Advisor",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "{T}: Draw a card. Activate only during your turn, before attackers are declared.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    "OnlyDuringYourTurn",
+                    {
+                        "type": "BeforeStep",
+                        "step": "DECLARE_ATTACKERS"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "RARE",
+        "artist": "Zhao Tan",
+        "flavorText": "Lu Su served as an intermediary between the Wu and Shu kingdoms until Zhou Yu's death in 210, when he became Wu's supreme commander.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d361823-31ce-42c4-997d-3d3b52c0599a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Meng Huo's Horde
 {
     "name": "Meng Huo's Horde",
@@ -195,6 +1414,172 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Meng Huo, Barbarian King
+{
+    "name": "Meng Huo, Barbarian King",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Legendary Creature — Human Barbarian Soldier",
+    "oracleText": "Other green creatures you control get +1/+1.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature green ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "rarity": "RARE",
+        "artist": "Yang Guangmai",
+        "flavorText": "The stubborn Meng Huo was captured and released by Kongming seven times before finally surrendering.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e340647c-fb6d-45a6-9f42-235390b40337.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Misfortune's Gain
+{
+    "name": "Misfortune's Gain",
+    "manaCost": "{3}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature. Its owner gains 4 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "OwnerGainsLife",
+                    "amount": 4
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Jiaming",
+        "flavorText": "The mourning families of commanders and generals were often given land, valuables, or money to compensate for their losses.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/80abd7c1-8f7a-4279-b76f-251a02624345.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Mountain Bandit
+{
+    "name": "Mountain Bandit",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Human Soldier Rogue",
+    "oracleText": "Haste",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "metadata": {
+        "collectorNumber": "117",
+        "artist": "Xu Xiaoming",
+        "flavorText": "Penniless and far from home, many former Yellow Scarves and other soldiers became bandits to survive.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/4/34fd541d-9956-4595-9527-a83db4c5f74f.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Pang Tong, "Young Phoenix"
+{
+    "name": "Pang Tong, \"Young Phoenix\"",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "{T}: Target creature gets +0/+2 until end of turn. Activate only during your turn, before attackers are declared.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn",
+                    {
+                        "type": "BeforeStep",
+                        "step": "DECLARE_ATTACKERS"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "RARE",
+        "artist": "Li Tie",
+        "flavorText": "\". . . It was Pang Tong's boat-connecting scheme That let Zhou Yu accomplish his great deed.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/4/f484d47a-fb1d-4746-8f1d-dd9d24e67c1a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -230,6 +1615,568 @@
     ]
 }
 
+// Poison Arrow
+{
+    "name": "Poison Arrow",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target nonblack creature. You gain 3 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotColor",
+                                "color": "BLACK"
+                            }
+                        ]
+                    }
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "80",
+        "rarity": "UNCOMMON",
+        "artist": "Li Tie",
+        "flavorText": "In ancient China, not wearing armor could be a fatal mistake. Guan Yu, Zhou Yu, Sun Ce, and other heros were struck by poison arrows.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6b7b5f34-c250-484e-9bae-94789b2a87fb.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Preemptive Strike
+{
+    "name": "Preemptive Strike",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target creature spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature",
+                    "zone": "Stack"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "50",
+        "artist": "Jiaming",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2314bf1-b22d-48c2-860f-e1081f56296b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Ravages of War
+{
+    "name": "Ravages of War",
+    "manaCost": "{3}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all lands.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "land"
+                    },
+                    "storeAs": "destroyAll_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "destroyAll_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "17",
+        "rarity": "RARE",
+        "artist": "Fang Yue",
+        "flavorText": "\"Thorn bushes spring up wherever the army has passed. Lean years follow in the wake of a great war.\"\n—Lao Tzu, *Tao Te Ching* (trans. Feng and English)",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11dca9ba-b27f-4af8-9962-3794e743886f.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Ravaging Horde
+{
+    "name": "Ravaging Horde",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, destroy target land.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "UNCOMMON",
+        "artist": "Liu Jianjian",
+        "flavorText": "Upon his return to the capitol after taking soldiers to loot a nearby peaceful town, the prime minister, Dong Zhou, boasted of it as a victory over bandits.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/6278d679-fc54-4527-ab16-90735574ab9b.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Red Cliffs Armada
+{
+    "name": "Red Cliffs Armada",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "This creature can't attack unless defending player controls an Island.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "DefendingPlayer",
+                    "zone": "Battlefield",
+                    "filter": "land Island"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "UNCOMMON",
+        "artist": "Zhang Jiazhen",
+        "flavorText": "By the battle of Red Cliffs in the year 208, the Wu kingdom controlled more than 7,000 warships on the Yangtze.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8fe0f33-35c7-439b-bece-4a9461b92352.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Renegade Troops
+{
+    "name": "Renegade Troops",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Haste",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "metadata": {
+        "collectorNumber": "120",
+        "rarity": "UNCOMMON",
+        "artist": "Liu Jianjian",
+        "flavorText": "\"Across the land rebellions seethed and swarmed / As vicious war lords swooped down on all sides.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a75095f4-a77f-4237-ae25-2e6f2f8788c1.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Return to Battle
+{
+    "name": "Return to Battle",
+    "manaCost": "{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target creature card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "81",
+        "artist": "Ding Songjian",
+        "flavorText": "\"Swallowing his eye, the valiant Xiahou Dun fought on; / But Cao Cao's vanguard, its commander wounded, could not hold out for long.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/1841e615-fdcd-4187-bd69-d07abde0e1ae.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Riding Red Hare
+{
+    "name": "Riding Red Hare",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +3/+3 and gains horsemanship until end of turn. (It can't be blocked except by creatures with horsemanship.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "HORSEMANSHIP",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "artist": "Qi Baocheng",
+        "flavorText": "One of the greatest steeds in the empire, Red Hare could travel a thousand *li* a day and climb hills as if running on flat ground.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0504a24-4b92-471a-8da4-02ec57eb43be.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Rockslide Ambush
+{
+    "name": "Rockslide Ambush",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Rockslide Ambush deals damage to target creature equal to the number of Mountains you control.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land Mountain"
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "UNCOMMON",
+        "artist": "Inoue Junichi",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/04e5faf1-25c9-46c0-88f2-c59e7b9c08c5.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rolling Earthquake
+{
+    "name": "Rolling Earthquake",
+    "manaCost": "{X}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Rolling Earthquake deals X damage to each creature without horsemanship and each player.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotKeyword",
+                                        "keyword": "HORSEMANSHIP"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": "Self"
+                    }
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Players",
+                        "players": "Each"
+                    },
+                    "body": {
+                        "type": "DealDamage",
+                        "amount": "XValue",
+                        "target": "Controller"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Yang Hong",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c1bf210-ecdb-4b49-8504-51360c269e66.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Sage's Knowledge
+{
+    "name": "Sage's Knowledge",
+    "manaCost": "{2}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return target sorcery card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Hand"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "sorcery own:you",
+                    "zone": "Graveyard"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "artist": "Ding Songjian",
+        "flavorText": "\"Those who know do not talk. Those who talk do not know.\"\n—Lao Tzu, *Tao Te Ching*\n(trans. Feng and English)",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/156d7c70-6c6d-4052-9d44-029ba1bb66e4.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Shu Cavalry
+{
+    "name": "Shu Cavalry",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Simple",
+            "keyword": "HORSEMANSHIP"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "19",
+        "artist": "Li Xiaohua",
+        "flavorText": "In establishing the Shu kingdom, Liu Bei's forces fought against Ma Chao at Chengdu. Eventually, Ma Chao surrendered and became one of Liu Bei's Tiger Generals.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/4/0433bee7-406d-4dd3-8d1b-dfd6cb64d038.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Shu Defender
+{
+    "name": "Shu Defender",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature blocks, it gets +0/+2 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "20",
+        "artist": "Sun Nan",
+        "flavorText": "Confronting Cao Cao's army at Steepslope Bridge, Zhang Fei bellowed, \"I am Zhang Fei of Yan! Who dares fight me to the death?\" Cao Cao's army cowered and fled.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee57a9ab-c385-4a51-aff7-6a654f5d7611.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Shu Elite Companions
+{
+    "name": "Shu Elite Companions",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "metadata": {
+        "collectorNumber": "21",
+        "rarity": "UNCOMMON",
+        "artist": "Qiao Dafu",
+        "flavorText": "Throughout the three kingdoms, important generals were often guarded by small groups of expert soldiers known as \"elite companions.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11ac63f6-cd61-4334-902a-777410311b2d.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Shu Elite Infantry
 {
     "name": "Shu Elite Infantry",
@@ -244,6 +2191,49 @@
         "artist": "Song Shikai",
         "flavorText": "Kongming's first campaign against the Wei kingdom was a rousing success until an arrogant Shu general, Ma Su, foolishly lost the city of Jieting.",
         "imageUri": "https://cards.scryfall.io/normal/front/3/6/36bcd751-1142-4e72-9d87-7a25c74c038b.jpg?1783946128"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Shu Farmer
+{
+    "name": "Shu Farmer",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human",
+    "oracleText": "{T}: You gain 1 life. Activate only during your turn, before attackers are declared.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "restrictions": [
+                    "OnlyDuringYourTurn",
+                    {
+                        "type": "BeforeStep",
+                        "step": "DECLARE_ATTACKERS"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "artist": "Li Xiaohua",
+        "flavorText": "\"The common folk are ceaselessly active. The fields are fertile and the soil productive, and neither flood nor drought plagues us.\"\n—A Shu diplomat",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fc6d6524-d8bd-4eb9-9222-747443492b8c.jpg"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -270,6 +2260,181 @@
     ]
 }
 
+// Shu General
+{
+    "name": "Shu General",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Vigilance; horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE",
+        "HORSEMANSHIP"
+    ],
+    "metadata": {
+        "collectorNumber": "25",
+        "rarity": "UNCOMMON",
+        "artist": "Li Xiaohua",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/9/c9c3be7a-82a8-411c-bfe2-16749ada1244.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Shu Grain Caravan
+{
+    "name": "Shu Grain Caravan",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, you gain 2 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "26",
+        "artist": "Li Wang",
+        "flavorText": "Keeping a million-man army fed was no easy task. Grain and rice caravans were the lifeblood of the empire.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bf26eb7-8a31-4022-87bb-67394653f06a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Shu Soldier-Farmers
+{
+    "name": "Shu Soldier-Farmers",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, you gain 4 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "rarity": "UNCOMMON",
+        "artist": "Li Xiaohua",
+        "flavorText": "During Kongming's campaigns against the Wei, his Shu troops rotated from the battlefront to the fields every hundred days.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/edb576e9-98ba-4bd1-9d1e-e316acf2e7f5.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Sima Yi, Wei Field Marshal
+{
+    "name": "Sima Yi, Wei Field Marshal",
+    "manaCost": "{5}{B}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Sima Yi's power is equal to the number of Swamps you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land Swamp"
+            }
+        },
+        "toughness": 4
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Gao Yan",
+        "flavorText": "Sima Yi fought for four generations of the Cao family before his own grandson became emperor and united the three kingdoms.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/6500b690-d601-4c6d-baea-552e366ea242.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Slashing Tiger
+{
+    "name": "Slashing Tiger",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Whenever this creature becomes blocked, it gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "RARE",
+        "artist": "Yang Jun Kwon",
+        "flavorText": "\"Unless you enter the tiger's lair, you cannot get hold of the tiger's cubs.\"\n—Sun Tzu, *Art of War* (trans. Giles)",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4fbedd66-457a-4e1c-a9f3-fa37dec81c7a.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Southern Elephant
 {
     "name": "Southern Elephant",
@@ -287,6 +2452,81 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Spring of Eternal Peace
+{
+    "name": "Spring of Eternal Peace",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "You gain 8 life.",
+    "script": {
+        "spellEffect": {
+            "type": "GainLife",
+            "amount": {
+                "type": "Fixed",
+                "amount": 8
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Wang Yuqun",
+        "flavorText": "Bathing in this spring could cure ailments of body and mind alike.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6862d7a-04ee-48ac-a5b3-46a4e8694d5b.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Stolen Grain
+{
+    "name": "Stolen Grain",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Stolen Grain deals 5 damage to target opponent or planeswalker. You gain 5 life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponentOrPlaneswalker",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "83",
+        "rarity": "UNCOMMON",
+        "artist": "LHQ",
+        "flavorText": "At the battle of Guandu, Cao Cao defeated Yuan Shao by raiding his grain depot, leaving him with no way to feed his troops.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1f08862-5107-46a0-8c14-a961a5c4b135.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -377,6 +2617,192 @@
     ]
 }
 
+// Sun Ce, Young Conquerer
+{
+    "name": "Sun Ce, Young Conquerer",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)\nWhen Sun Ce enters, you may return target creature to its owner's hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "55",
+        "rarity": "RARE",
+        "artist": "Yang Guangmai",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/16114a68-58d1-4aad-9b3a-890e9c84b253.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Sun Quan, Lord of Wu
+{
+    "name": "Sun Quan, Lord of Wu",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Creatures you control have horsemanship. (They can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HORSEMANSHIP",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "RARE",
+        "artist": "Xu Xiaoming",
+        "flavorText": "\"One score and four he reigned, the Southland king: / A dragon coiled, a tiger poised below the mighty Yangtze.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6def4492-3f67-4cdb-8a25-c3ddebd125c7.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Taoist Hermit
+{
+    "name": "Taoist Hermit",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Mystic",
+    "oracleText": "Hexproof (This creature can't be the target of spells or abilities your opponents control.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "metadata": {
+        "collectorNumber": "150",
+        "rarity": "UNCOMMON",
+        "artist": "Wang Yuqun",
+        "flavorText": "Taoists chose to be hermits for many reasons, but all shared one unchanging goal: to follow the Tao.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d818c231-8d66-4024-91de-fe29f8622902.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Taoist Mystic
+{
+    "name": "Taoist Mystic",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Mystic",
+    "oracleText": "This creature can't be blocked by creatures with horsemanship.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "HORSEMANSHIP"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "151",
+        "rarity": "RARE",
+        "artist": "Qu Xin",
+        "flavorText": "By appearing in places miles apart at the same time, Zuo Ci exhibited the mystic's ability to \"shrink the land.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/023ae64a-7888-4ad2-b879-0649d8e341ac.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Taunting Challenge
+{
+    "name": "Taunting Challenge",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "All creatures able to block target creature this turn do so.",
+    "script": {
+        "spellEffect": {
+            "type": "MustBeBlocked",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "152",
+        "rarity": "RARE",
+        "artist": "Gao Yan",
+        "flavorText": "Incensed by their opponents' unrelenting taunts, even wise generals were known to rashly lead their troops into battle—often to disastrous defeats.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/4620867c-a3a6-4c81-b923-24007367132e.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Three Visits
 {
     "name": "Three Visits",
@@ -432,6 +2858,48 @@
     ]
 }
 
+// Trained Cheetah
+{
+    "name": "Trained Cheetah",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Whenever this creature becomes blocked, it gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "154",
+        "rarity": "UNCOMMON",
+        "artist": "Fang Yue",
+        "flavorText": "\"[King Mulu's cheetahs] came riding on the winds, charging, with fangs bared and claws flexed.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab242eab-5cab-41a0-bcf8-93a6919e4558.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Trained Jackal
 {
     "name": "Trained Jackal",
@@ -449,6 +2917,174 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Trip Wire
+{
+    "name": "Trip Wire",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target creature with horsemanship.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature kw:horsemanship"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "UNCOMMON",
+        "artist": "Hong Yan",
+        "flavorText": "Trip wire, hooked poles, and sunken pits were commonly used to unhorse riders during the Three Kingdoms period.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4eb1e16f-002e-4a81-ba41-cfe41f3a9071.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Virtuous Charge
+{
+    "name": "Virtuous Charge",
+    "manaCost": "{2}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Creatures you control get +1/+1 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 1
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Qu Xin",
+        "flavorText": "\"The empire belongs to no one man but to all in the empire. He who has virtue shall possess it.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/2/72ad4c79-a85d-4fc6-95ab-5a6d6d667579.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Warrior's Oath
+{
+    "name": "Warrior's Oath",
+    "manaCost": "{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Take an extra turn after this one. At the beginning of that turn's end step, you lose the game.",
+    "script": {
+        "spellEffect": {
+            "type": "TakeExtraTurn",
+            "loseAtEndStep": true
+        }
+    },
+    "metadata": {
+        "collectorNumber": "124",
+        "rarity": "RARE",
+        "artist": "Mitsuaki Sagiri",
+        "flavorText": "\"If I fail, my head is yours.\"\n—Warrior's oath common during the Three Kingdoms period",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/5/d582861a-ca6e-4b74-adf0-3eb588ea5ed2.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Wei Ambush Force
+{
+    "name": "Wei Ambush Force",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Whenever this creature attacks, it gets +2/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "85",
+        "artist": "Ku Xueming",
+        "flavorText": "The battle of Puyang marked the beginning of the end for Lu Bu. He lost the city—and later his life—to Cao Cao.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9b241ba4-cff5-48ce-83bd-d70fb5e20ff4.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wei Elite Companions
+{
+    "name": "Wei Elite Companions",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "metadata": {
+        "collectorNumber": "87",
+        "rarity": "UNCOMMON",
+        "artist": "Li Youliang",
+        "flavorText": "Cao Cao was more concerned with capabilities than lineage. He excelled at recruiting and retaining men of talent to serve him.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/843cbf18-60ac-4d97-b156-874735db61c6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -472,6 +3108,165 @@
     ]
 }
 
+// Wei Scout
+{
+    "name": "Wei Scout",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Soldier Scout",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "metadata": {
+        "collectorNumber": "90",
+        "artist": "Jiang Zhuqing",
+        "flavorText": "\"He will win who, prepared himself, waits to take the enemy unprepared.\"\n—Sun Tzu, *Art of War* (trans. Giles)",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a11d58fb-fb70-4e8f-8f64-232ad2c1f59b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wei Strike Force
+{
+    "name": "Wei Strike Force",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "metadata": {
+        "collectorNumber": "91",
+        "artist": "Tang Xiaogu",
+        "flavorText": "At the battle of Chang'an, Ma Chao defeated the two generals Cao Cao sent to guard the pass but was forced to flee when Cao Cao's trickery turned his own ally against him.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6eae8ce1-b21f-4d64-91ff-e98bf6a4548a.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Wielding the Green Dragon
+{
+    "name": "Wielding the Green Dragon",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target creature gets +4/+4 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "toughnessModifier": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "target"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "157",
+        "artist": "Quan Xuejun",
+        "flavorText": "Named for the eastern part of the sky, the source of energy and renewal, Guan Yu's crescent-moon blade weighed over 100 pounds.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b138167-8129-4109-a58b-af26c95577e4.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Wu Admiral
+{
+    "name": "Wu Admiral",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "This creature gets +1/+1 as long as an opponent controls an Island.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "EachOpponent",
+                    "zone": "Battlefield",
+                    "filter": "land Island"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "57",
+        "rarity": "UNCOMMON",
+        "artist": "Zhang Jiazhen",
+        "flavorText": "The Wu kingdom's well-trained admirals were integral to the Southlands' victory at Red Cliffs as well as the kingdom's defense.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/499ae191-80ac-42bf-b49d-db343803bd56.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Wu Elite Cavalry
+{
+    "name": "Wu Elite Cavalry",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "metadata": {
+        "collectorNumber": "58",
+        "artist": "Li Wang",
+        "flavorText": "At the second battle of Ruxu, the brave Wu general Gan Ning raided Cao Cao's camp of 400,000 men with only 100 cavalry. Not a single man or horse was lost.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cf562e2-be8e-4514-b2c8-3268dc1ab0db.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Wu Infantry
 {
     "name": "Wu Infantry",
@@ -489,5 +3284,812 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Wu Light Cavalry
+{
+    "name": "Wu Light Cavalry",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "metadata": {
+        "collectorNumber": "60",
+        "artist": "Huang Qishi",
+        "flavorText": "A cunning strategist, Cao Ren tricked Zhou Yu by letting him enter Nanjun. Zhou Yu thought he was capturing the city until Cao Ren's arrows rained down upon him.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60e55b25-fde2-4b57-b5db-65b75262ff3d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Wu Longbowman
+{
+    "name": "Wu Longbowman",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Soldier Archer",
+    "oracleText": "{T}: This creature deals 1 damage to any target. Activate only during your turn, before attackers are declared.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "target"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn",
+                    {
+                        "type": "BeforeStep",
+                        "step": "DECLARE_ATTACKERS"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "rarity": "UNCOMMON",
+        "artist": "Xu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/8/28e68635-b0ed-4a56-8b18-679f95db12b6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Wu Scout
+{
+    "name": "Wu Scout",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Soldier Scout",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)\nWhen this creature enters, look at target opponent's hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Simple",
+            "keyword": "HORSEMANSHIP"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "LookAtTargetHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "artist": "Jiaming",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d13330f-6e07-451f-b17a-4e1606a74c3f.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Wu Warship
+{
+    "name": "Wu Warship",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "This creature can't attack unless defending player controls an Island.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "DefendingPlayer",
+                    "zone": "Battlefield",
+                    "filter": "land Island"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "64",
+        "artist": "Jiang Zhuqing",
+        "flavorText": "Both Wu and Wei warships patrolled the Yangtze River, the natural border between the two kingdoms.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e211d47-dab4-429a-a90b-5b8489441886.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Xun Yu, Wei Advisor
+{
+    "name": "Xun Yu, Wei Advisor",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "{T}: Target creature you control gets +2/+0 until end of turn. Activate only during your turn, before attackers are declared.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "target"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn",
+                    {
+                        "type": "BeforeStep",
+                        "step": "DECLARE_ATTACKERS"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "Jack Wei",
+        "flavorText": "\"A splendid talent, admired of all men! His folly lay in serving Cao Cao's power.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f0a25ea-b414-423c-94a6-8a4795d60b46.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Yellow Scarves Cavalry
+{
+    "name": "Yellow Scarves Cavalry",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)\nThis creature can't block.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "125",
+        "artist": "Chen Weidong",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84460666-4f6b-422c-b20e-dc1651c66e15.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Yellow Scarves General
+{
+    "name": "Yellow Scarves General",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)\nThis creature can't block.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "126",
+        "rarity": "RARE",
+        "artist": "Chen Weidong",
+        "flavorText": "Zhang Jue, leader of the Yellow Scarves rebellion, was a Taoist master and tutored his soldiers in those arts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/6/06e98691-6227-41f2-a3f4-3131b07a3a6f.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Yellow Scarves Troops
+{
+    "name": "Yellow Scarves Troops",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "This creature can't block.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "artist": "Chen Weidong",
+        "flavorText": "Over 500,000 commoners followed Zhang Jue, General of Heaven, in his attempt to overthrow the corrupt Han dynasty.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3ca36a8d-ca44-485e-a219-85814f160c4d.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Young Wei Recruits
+{
+    "name": "Young Wei Recruits",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "This creature can't block.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "artist": "Li Youliang",
+        "flavorText": "\"To send the common people to war untrained is to throw them away.\"\n—Confucius, *The Analects* (trans. Lau)",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11431c4c-b0bb-4747-a34a-4a90238ec9c6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Zhang Fei, Fierce Warrior
+{
+    "name": "Zhang Fei, Fierce Warrior",
+    "manaCost": "{4}{W}{W}",
+    "typeLine": "Legendary Creature — Human Soldier Warrior",
+    "oracleText": "Vigilance; horsemanship (This creature can't be blocked except by creatures with horsemanship.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "VIGILANCE",
+        "HORSEMANSHIP"
+    ],
+    "metadata": {
+        "collectorNumber": "32",
+        "rarity": "RARE",
+        "artist": "Qiao Dafu",
+        "flavorText": "Zhang Fei's uncharacteristic alliance with a defeated Riverlands general, Yan Yan, allowed Shu forces to advance through forty-five Riverlands strongpoints with no casualties.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a58ec38-f1dc-4c69-9d26-a4599bce586a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Zhao Zilong, Tiger General
+{
+    "name": "Zhao Zilong, Tiger General",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Legendary Creature — Human Soldier Warrior",
+    "oracleText": "Horsemanship (This creature can't be blocked except by creatures with horsemanship.)\nWhenever Zhao Zilong blocks, it gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "HORSEMANSHIP"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Quan Xuejun",
+        "flavorText": "Zhao Zilong was a brave and noble warrior. Twice he rescued Liu Bei's son, Liu Shan.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d16cf1d-a7c3-4038-a648-299c1bedae99.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Zhou Yu, Chief Commander
+{
+    "name": "Zhou Yu, Chief Commander",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Legendary Creature — Human Soldier",
+    "oracleText": "Zhou Yu can't attack unless defending player controls an Island.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantAttackUnless",
+                "condition": {
+                    "type": "Exists",
+                    "player": "DefendingPlayer",
+                    "zone": "Battlefield",
+                    "filter": "land Island"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "RARE",
+        "artist": "Xu Xiaoming",
+        "flavorText": "\"After making me, Zhou Yu, did you have to make Kongming?\"\n—Zhou Yu crying to heaven on his deathbed",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6e2cf83b-417d-41ca-8e65-86aa65180c40.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Zhuge Jin, Wu Strategist
+{
+    "name": "Zhuge Jin, Wu Strategist",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "{T}: Target creature can't be blocked this turn. Activate only during your turn, before attackers are declared.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "CANT_BE_BLOCKED",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn",
+                    {
+                        "type": "BeforeStep",
+                        "step": "DECLARE_ATTACKERS"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Song Shikai",
+        "flavorText": "When Zhuge Jin proposed the marriage of Guan Yu's daugher and Sun Quan's heir, Guan Yu's arrogant refusal led to disaster.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/60790b07-53da-41fa-b9e0-e7ce22fdcb11.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Zodiac Dog
+{
+    "name": "Zodiac Dog",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Dog",
+    "oracleText": "Mountainwalk (This creature can't be blocked as long as defending player controls a Mountain.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "MOUNTAINWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Qi Baocheng",
+        "flavorText": "\". . . Jiang Wei alone still strove with might and main: / Nine times more he fought the north—in vain. . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc61aa62-25ee-40a4-9b6e-d6277316b464.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Zodiac Goat
+{
+    "name": "Zodiac Goat",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Goat",
+    "oracleText": "Mountainwalk (This creature can't be blocked as long as defending player controls a Mountain.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "MOUNTAINWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "132",
+        "artist": "Qi Baocheng",
+        "flavorText": "\". . . Near death in Baidi, having reigned three years, / Bei sadly placed his son in Kongming's care. . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52510462-2802-4e16-87d4-da376ee2e3be.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Zodiac Horse
+{
+    "name": "Zodiac Horse",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Horse",
+    "oracleText": "Islandwalk (This creature can't be blocked as long as defending player controls an Island.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "ISLANDWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "159",
+        "rarity": "UNCOMMON",
+        "artist": "Ai Desheng",
+        "flavorText": "\". . . 'First take Jingzhou, next the Riverlands; / On that rich region, base your own royal stand.' . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb24cb19-3409-45f7-b0e0-7c652064d2dd.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Zodiac Monkey
+{
+    "name": "Zodiac Monkey",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Monkey",
+    "oracleText": "Forestwalk (This creature can't be blocked as long as defending player controls a Forest.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FORESTWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "160",
+        "artist": "Ai Desheng",
+        "flavorText": "\". . . By six offensives from the hills of Qi Kongming sought to change Han's destiny. . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/e/5e98eb0b-c3b5-4561-b8a2-f22bd0fe1115.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Zodiac Ox
+{
+    "name": "Zodiac Ox",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Ox",
+    "oracleText": "Swampwalk (This creature can't be blocked as long as defending player controls a Swamp.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "SWAMPWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "UNCOMMON",
+        "artist": "Ai Desheng",
+        "flavorText": "\". . . Cao's abdication changed the face of all; / No mighty battles marked the Southland's fall. . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a731b3a-0065-448d-841c-28700d78a4fd.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Zodiac Pig
+{
+    "name": "Zodiac Pig",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Boar",
+    "oracleText": "Swampwalk (This creature can't be blocked as long as defending player controls a Swamp.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "SWAMPWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "97",
+        "rarity": "UNCOMMON",
+        "artist": "Qi Baocheng",
+        "flavorText": "\". . . Zhong Hui and Deng Ai next led armies west: / And to the Cao, Han's hills and streams now passed. . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/52e364b5-55ca-4df5-8755-6643218b0969.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Zodiac Rabbit
+{
+    "name": "Zodiac Rabbit",
+    "manaCost": "{G}",
+    "typeLine": "Creature — Rabbit",
+    "oracleText": "Forestwalk (This creature can't be blocked as long as defending player controls a Forest.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FORESTWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "162",
+        "artist": "Ai Desheng",
+        "flavorText": "\". . . The world's affairs rush on, an endless stream; / A sky-told fate, infinite in reach, dooms all. . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/b/ab4211d0-deef-4113-84e0-47ce0df7a5c6.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Zodiac Rat
+{
+    "name": "Zodiac Rat",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Rat",
+    "oracleText": "Swampwalk (This creature can't be blocked as long as defending player controls a Swamp.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "SWAMPWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "98",
+        "artist": "Qi Baocheng",
+        "flavorText": "\" . . . Cao Pi, Cao Rui, Fang, Mao, and briefly, Huan— / The Sima took the empire in their turn. . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/b/fb6e5814-e1b5-48d2-9c4f-62b5727f333f.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Zodiac Rooster
+{
+    "name": "Zodiac Rooster",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Plainswalk (This creature can't be blocked as long as defending player controls a Plains.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "PLAINSWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "163",
+        "artist": "Ai Desheng",
+        "flavorText": "\". . . But the time of Han had run—could he [Kongming] not tell?— / That night his master star fell past the hills. . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/81dd362e-42f6-4eeb-9fe7-0d9cbeb4f21e.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Zodiac Snake
+{
+    "name": "Zodiac Snake",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "Swampwalk (This creature can't be blocked as long as defending player controls a Swamp.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "SWAMPWALK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Simple",
+            "keyword": "SWAMPWALK"
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "99",
+        "artist": "Qi Baocheng",
+        "flavorText": "\"Thrice Xuande's ardent quest led to Nanyang, / Where Sleeping Dragon unveiled Han's partition: . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/d/6d30d6f0-ca4c-4442-a47f-ecdf52088ecc.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Zodiac Tiger
+{
+    "name": "Zodiac Tiger",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Cat",
+    "oracleText": "Forestwalk (This creature can't be blocked as long as defending player controls a Forest.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FORESTWALK"
+    ],
+    "metadata": {
+        "collectorNumber": "164",
+        "rarity": "UNCOMMON",
+        "artist": "Ai Desheng",
+        "flavorText": "\". . . Three kings no more—Chenliu, Guiming, Anle. / The fiefs and posts must now be filled anew. . . .\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aafd78d5-df9f-46a3-a634-ebf7634a6358.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Zuo Ci, the Mocking Sage
+{
+    "name": "Zuo Ci, the Mocking Sage",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Hexproof (This creature can't be the target of spells or abilities your opponents control.)\nZuo Ci can't be blocked by creatures with horsemanship.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "HEXPROOF"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedBy",
+                "blockerFilter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        {
+                            "type": "HasKeyword",
+                            "keyword": "HORSEMANSHIP"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Wang Yuqun",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3425241-efdc-4261-a2bb-58fbf4a9fe8c.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }

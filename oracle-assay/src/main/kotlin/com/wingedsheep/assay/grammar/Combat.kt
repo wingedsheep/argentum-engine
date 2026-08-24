@@ -3,6 +3,7 @@ package com.wingedsheep.assay.grammar
 import com.wingedsheep.assay.syntax.Phrase
 import com.wingedsheep.assay.syntax.bind
 import com.wingedsheep.assay.syntax.phrase
+import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -14,6 +15,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
 import com.wingedsheep.sdk.scripting.effects.GrantAttackBlockTaxPerCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedExceptByColorEffect
+import com.wingedsheep.sdk.scripting.effects.GrantCantBeBlockedExceptByEffect
 import com.wingedsheep.sdk.scripting.effects.MustBeBlockedEffect
 import com.wingedsheep.sdk.scripting.effects.ReflectCombatDamageEffect
 import com.wingedsheep.sdk.scripting.effects.SkipCombatPhasesEffect
@@ -89,6 +91,165 @@ object Combat {
             }
         }
     }
+
+
+    // ---------------------------------------------------------------------------------------
+    // The durational combat restrictions — "can't be blocked this turn", "can't block this turn"
+    // ---------------------------------------------------------------------------------------
+
+    /**
+     * One durational combat restriction: the clause English prints for it, and the SDK effect it
+     * denotes.
+     *
+     * The table is the family, and every column but these two is shared — the subject, the object it
+     * denotes, the duration, and the fail-closed reconstruct-and-compare. [Statics]' combat
+     * restrictions are the same five sentences about a permanent's *printed* abilities, which is why
+     * the two files hold one table each rather than one file holding both: a static says what a
+     * permanent is for as long as it is on the battlefield, and these say what happens for a turn,
+     * and neither vocabulary can be spelled in terms of the other.
+     *
+     * **"Can't be blocked" is the odd surface, and it is odd for a reason worth stating.** Its model
+     * is `GrantKeywordEffect` — the *same* effect "gains flying until end of turn" builds ([Steps]'
+     * and [SelfSteps]' grant families) — over `AbilityFlag.CANT_BE_BLOCKED` instead of a
+     * `Keyword`. A CR 702.x keyword is a **noun** a creature can be said to gain; an `AbilityFlag`
+     * names a whole sentence and has no noun, so Oracle prints the flag as its own predicate with the
+     * duration spelled "this turn". That makes it a row of the grant family whose *surface* is
+     * irregular rather than a second grant vocabulary, and it is the same flag the unconditional
+     * printed static carries on the card ([com.wingedsheep.assay.grammar.Grammar.flagLine]).
+     *
+     * @param blockerFilterOf non-null only for the row that names a class of blocker, and it is what
+     *   marks the row as taking a `{blockers}` slot — the field's presence *is* the flag, so a row
+     *   cannot declare the slot and forget to read it back.
+     */
+    private class Restriction(
+        val clause: String,
+        val name: String,
+        val blockerFilterOf: ((Effect) -> GameObjectFilter?)? = null,
+        // Last, so the common rows read as `Restriction(clause, name) { target, _ -> … }`.
+        val effect: (EffectTarget, GameObjectFilter?) -> Effect,
+    ) {
+        val takesBlockers: Boolean get() = blockerFilterOf != null
+    }
+
+    private val restrictions: List<Restriction> = listOf(
+        Restriction("can't be blocked this turn", "can't be blocked") { target, _ ->
+            Effects.GrantKeyword(AbilityFlag.CANT_BE_BLOCKED, target)
+        },
+        // "{1}: ~ can't be blocked this turn except by creatures with haste." — Gingerbrute.
+        Restriction(
+            "can't be blocked this turn except by {blockers}",
+            "can't be blocked except by",
+            blockerFilterOf = { (it as? GrantCantBeBlockedExceptByEffect)?.blockerFilter },
+        ) { target, blockers -> Effects.GrantCantBeBlockedExceptBy(target, blockers!!) },
+        Restriction("can't block this turn", "can't block") { target, _ -> Effects.CantBlock(target) },
+        Restriction("can't attack this turn", "can't attack") { target, _ -> Effects.CantAttack(target) },
+        Restriction("can't attack or block this turn", "can't attack or block") { target, _ ->
+            Effects.CantAttackOrBlock(target)
+        },
+    )
+
+    /**
+     * The table aimed at an object the sentence has **already fixed** — the source, the pronoun, or
+     * the target an earlier clause chose.
+     *
+     * Written once and instantiated per position, the treatment [SelfSteps.retargetable] and
+     * [Prevention.clausesFor] get and for the same reason: the two anaphors denote different things
+     * ("~"/"it" in a first clause is the source, "that creature" is the target already chosen), so
+     * registering one surface in both positions would be two readings of one text. Only the
+     * subject's spelling and the [EffectTarget] move.
+     *
+     * @param subject the phrase standing in the `{self}` slot, or null when [surface] spells the
+     *   subject as a literal — the same split [SelfSteps.retargetable]'s `pronominal` flag makes.
+     */
+    fun restrictionClauses(
+        target: EffectTarget,
+        subject: Phrase<Unit>?,
+        surface: String,
+        tag: String,
+    ): List<Phrase<CardScript>> = restrictions.map { restriction ->
+        fun scriptFor(blockers: GameObjectFilter?) =
+            CardScript(spellEffect = restriction.effect(target, blockers))
+        phrase("$surface ${restriction.clause}", name = "${restriction.name}$tag") {
+            if (subject != null) slot("self", subject)
+            if (restriction.takesBlockers) slot("blockers", Filters.plural)
+            build { bindings ->
+                scriptFor(if (restriction.takesBlockers) bindings.value("blockers") else null)
+            }
+            match { script ->
+                val effect = script.spellEffect ?: return@match null
+                val blockers = restriction.blockerFilterOf?.invoke(effect) ?: if (restriction.takesBlockers) {
+                    return@match null
+                } else {
+                    null
+                }
+                if (script != scriptFor(blockers)) return@match null
+                bind("self" to Unit, "blockers" to blockers)
+            }
+        }
+    }
+
+    /**
+     * "Target creature can't be blocked this turn.", "Up to two target creatures can't block this
+     * turn.", "X target creatures can't be blocked this turn." — the table over every quantifier
+     * English prints in front of "target".
+     *
+     * "Can't be blocked" was one rule here with the singular row frozen into it, which is exactly the
+     * state [Steps.quantifiedPermanentSteps]' KDoc describes replacing: the plural rows were missing
+     * because nobody's card had needed them, not because English does not print them. The family takes
+     * the whole table rather than [Targets.singularQuantifiers], because its plural changes only the
+     * noun and the verb's agreement — unlike damage and counters, whose plurals are a different
+     * requirement.
+     */
+    private val restrictionsOnTargets: List<Phrase<CardScript>> =
+        Targets.quantifiers.flatMap { quantifier ->
+            restrictions.map { restriction ->
+                fun scriptFor(count: Int, filter: GameObjectFilter, blockers: GameObjectFilter?) = CardScript(
+                    spellEffect = quantifier.effectOver { restriction.effect(it, blockers) },
+                    targetRequirements = listOf(quantifier.requirement(count, filter)),
+                )
+                phrase(
+                    quantifier.splice("{q}target {filter} ${restriction.clause}"),
+                    name = "a target ${restriction.name}, ${quantifier.name}",
+                ) {
+                    if (quantifier.counted) slot(Targets.COUNT_SLOT, Cardinals.word)
+                    slot("filter", if (quantifier.plural) Filters.plural else Filters.filter)
+                    if (restriction.takesBlockers) slot("blockers", Filters.plural)
+                    build { bindings ->
+                        scriptFor(
+                            if (quantifier.counted) bindings.int(Targets.COUNT_SLOT) else 1,
+                            bindings.value("filter"),
+                            if (restriction.takesBlockers) bindings.value("blockers") else null,
+                        )
+                    }
+                    match { script ->
+                        val member = quantifier.memberOf(script.spellEffect) ?: return@match null
+                        val blockers = restriction.blockerFilterOf?.invoke(member)
+                            ?: if (restriction.takesBlockers) return@match null else null
+                        val requirement = script.targetRequirements.singleOrNull() ?: return@match null
+                        val filter = Targets.targetedFilter(requirement) ?: return@match null
+                        val count = if (quantifier.counted) requirement.count else 1
+                        if (quantifier.counted && !Cardinals.spellable(count)) return@match null
+                        if (script != scriptFor(count, filter, blockers)) return@match null
+                        bind(Targets.COUNT_SLOT to count, "filter" to filter, "blockers" to blockers)
+                    }
+                }
+            }
+        }
+
+    /**
+     * The same table over the anaphor — what [Continuations] slots.
+     *
+     * "That creature" only, and deliberately not "it": in a later clause [Continuations] reads "it"
+     * as the target and [SelfSteps] reads it as the source, and nine of the corpus's lines print it
+     * about a permanent the *same* clause animated ("{1}{U}{B}: Until end of turn, ~ becomes a 3/2
+     * blue and black Elemental creature. It's still a land. It can't be blocked this turn." — Creeping
+     * Tar Pit). Registering the pronoun here would read those as the target: byte-perfect and about
+     * the wrong creature, which is the reversible-but-wrong class. [Prevention.continuationClauses]
+     * can spell the pronoun because its recipient vocabulary makes the two readings disjoint; this
+     * table has no such handle, so the pronoun declines and is counted.
+     */
+    val restrictionContinuationClauses: List<Phrase<CardScript>> =
+        restrictionClauses(Targets.bound(), subject = null, surface = "that creature", tag = ", that creature")
 
     /**
      * "Return one or two target attacking creatures to their owner's hand." — Command of
@@ -301,5 +462,5 @@ object Combat {
             "reflect combat damage",
             ReflectCombatDamageEffect(),
         ),
-    )
+    ) + restrictionsOnTargets
 }

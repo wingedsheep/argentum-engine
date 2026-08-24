@@ -220,7 +220,8 @@
                             "name": "target creature card in your graveyard"
                         },
                         "destination": "Hand"
-                    }
+                    },
+                    "descriptionOverride": "When this creature enters, you may return target creature card from your graveyard to your hand."
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -366,6 +367,88 @@
         "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc7e0407-fea1-43ef-8580-82271e440bb3.jpg?1562708057"
     },
     "colorIdentityOverride": []
+}
+
+// Fissure Vent
+{
+    "name": "Fissure Vent",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose one or both —\n• Destroy target artifact.\n• Destroy target nonbasic land.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Destroy target artifact"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsLand",
+                                        {
+                                            "type": "Not",
+                                            "predicate": "IsBasicLand"
+                                        }
+                                    ]
+                                }
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Destroy target nonbasic land"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "144",
+        "artist": "Philip Straub",
+        "flavorText": "\"Something down there has an appetite for what we're standing on. Let's hope it doesn't want seconds.\"\n—Samila, Murasa Expeditionary House",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15f4f813-f04c-4309-a007-b0549c00d6ab.jpg",
+        "rulings": [
+            {
+                "date": "2010-06-15",
+                "text": "You may choose just the first mode (targeting an artifact), just the second mode (targeting a nonbasic land), or both modes (targeting an artifact and a nonbasic land). You can’t choose a mode unless there’s a legal target for it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Fleeting Distraction

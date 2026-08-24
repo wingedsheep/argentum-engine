@@ -23,8 +23,10 @@ val GangrenousGoliath = card("Gangrenous Goliath") {
     oracleText = "Tap three untapped Clerics you control: Return Gangrenous Goliath from your graveyard to your hand."
 
     activatedAbility {
-        cost = Costs.TapPermanents(3, GameObjectFilter.Creature.withSubtype("Cleric"))
-        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
+        // "three untapped **Clerics**" — a bare tribal noun means any permanent with the subtype,
+        // not only a creature with it.
+        cost = Costs.TapPermanents(3, GameObjectFilter.Permanent.withSubtype("Cleric"))
+        effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self)
         activateFromZone = Zone.GRAVEYARD
     }
 

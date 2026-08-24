@@ -6646,7 +6646,8 @@
                         "type": "BoundVariable",
                         "name": "target artifact card with mana value X or less from your graveyard"
                     },
-                    "destination": "Battlefield"
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
                 },
                 "targetRequirements": [
                     {

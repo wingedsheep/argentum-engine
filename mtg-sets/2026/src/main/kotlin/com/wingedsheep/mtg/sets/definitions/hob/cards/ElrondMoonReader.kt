@@ -23,13 +23,15 @@ import com.wingedsheep.sdk.scripting.targets.TargetPermanent
  * {5}{U}{U}: Exile up to two other target nonland permanents you control. Return those cards to
  * the battlefield under their owner's control at the beginning of the next end step.
  *
- * The trigger is [Triggers.activatesAbilityOf] — the source-scoped form of the existing "whenever
- * you activate an ability that isn't a mana ability" event, so a creature's mana ability doesn't
- * fire it, but a {T} ability does. `oncePerTurn` carries the "only once each turn" clause; a
- * per-permanent restriction would be wrong here since the clause bounds the *ability*, not the
- * creatures it watches. The filter is unrestricted by controller — the oracle says "a creature",
- * not "a creature you control" — so an ability of a creature you don't control but may activate
- * still triggers it.
+ * The trigger is [Triggers.activatesAbilityOf] with `includeManaAbilities = true`: the Oracle text
+ * puts no "that isn't a mana ability" clause on it, and a mana ability is still an activated
+ * ability (CR 605.3), so a creature's "{T}: Add {G}" fires it — the card's own ruling says so
+ * explicitly. Elrond's trigger is not itself a mana ability (CR 605.1b needs one that could add
+ * mana; drawing a card can't), so it uses the stack normally. `oncePerTurn` carries the "only once
+ * each turn" clause; a per-permanent restriction would be wrong here since the clause bounds the
+ * *ability*, not the creatures it watches. The filter is unrestricted by controller — the oracle
+ * says "a creature", not "a creature you control" — so an ability of a creature you don't control
+ * but may activate still triggers it.
  *
  * The activated ability is the blink pattern from Hide on the Ceiling: one target requirement of
  * `count = 2, optional = true` for "up to two", then [ForEachTargetEffect] running
@@ -49,7 +51,7 @@ val ElrondMoonReader = card("Elrond, Moon-Reader") {
     toughness = 3
 
     triggeredAbility {
-        trigger = Triggers.activatesAbilityOf(GameObjectFilter.Creature)
+        trigger = Triggers.activatesAbilityOf(GameObjectFilter.Creature, includeManaAbilities = true)
         oncePerTurn = true
         effect = DrawCardsEffect(1)
     }

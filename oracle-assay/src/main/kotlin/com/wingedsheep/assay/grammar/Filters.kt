@@ -33,8 +33,20 @@ import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
  * |---|---|---|
  * | [typeNoun] | the whole predicate set of a named type | "creature", "nonbasic land", "Mountain" |
  * | [coloured] | the last [CardPredicate] when it is a colour one | "white creature", "nonblack creature" |
- * | [qualified] | the last [CardPredicate] when it is a keyword or power one | "creature with flying" |
+ * | [cardNoun] | nothing — the head noun the position prints | "creature **card**", "cards" |
  * | [controlledBy] | `controllerPredicate` | "creature you control" |
+ * | the quality clauses | the last [CardPredicate] when it is a keyword, power or mana-value one | "creature you control with flying" |
+ *
+ * [cardNoun] is the one layer that owns no field, and its place in the list is the point: the layers
+ * above it are modifiers English writes in *front* of the head noun and the layers below it are
+ * clauses English writes *behind* it. A position that prints a head noun therefore splits the
+ * cascade in exactly one place, and every suffix layer reaches card position without being told.
+ * The mana-value suffix is a product rather than a single rule and lives in [ManaValues].
+ *
+ * The two *clause* layers are ordered by English alone. `controllerPredicate` is not a member of
+ * `cardPredicates`, so the controller clause and the quality clauses commute in the model; Oracle
+ * prints the controller first ("creatures **you control** with power 2 or greater") 158 times to 5,
+ * so that is the canonical order and the reverse is an [alternate].
  *
  * The fluent builders these rules go through (`withColor`, `withKeyword`, `powerAtLeast`, …) all
  * **append** to `cardPredicates`, so the list is a stack and the outermost layer owns its top. That
@@ -437,17 +449,40 @@ object Filters {
             }
         }
 
-    /** "creature with mana value 3 or less" — Sunstrike Legionnaire's tap target. */
-    private fun withManaValueAtMost(inner: Phrase<GameObjectFilter>, name: String): Phrase<GameObjectFilter> =
-        phrase("{type} with mana value {n} or less", name = name) {
-            slot("type", inner)
-            slot("n", Primitives.cardinal)
-            build { it.value<GameObjectFilter>("type").manaValueAtMost(it.int("n")) }
-            match { filter ->
-                filter.stripTop<CardPredicate.ManaValueAtMost>()
-                    ?.let { (predicate, rest) -> bind("type" to rest, "n" to predicate.max) }
-            }
-        }
+    /**
+     * The word **"card"**, and the type phrase that qualifies it — "card", "creature card",
+     * "green creature cards".
+     *
+     * A layer, and the layer that made this cascade reusable outside the battlefield. Every
+     * card-position rule used to spell the noun in its *own* template — `"return target {filter} card
+     * from your graveyard to your hand"` — which put the head noun in the **sentence** rather than in
+     * the noun phrase. That is what froze the phrase at its type: a suffix layer attaches behind the
+     * head noun, and there was no head noun here for it to attach behind. "Creature card with mana
+     * value 3 or less" was therefore unreachable while "creature with mana value 3 or less" had been
+     * readable since the counting band — one printed word apart, and a family near the top of the
+     * tail ranking.
+     *
+     * The type phrase in front stays **singular in both numbers** ("creature cards", never "creatures
+     * cards") because Oracle inflects only the head noun. So the card positions instantiate the
+     * cascade with a singular type noun and pluralize *here*, which is why [nounPhrase] takes the
+     * two numbers as separate arguments rather than threading one flag through.
+     *
+     * The unmodified row is a row rather than an omissible slot: `GameObjectFilter.Any` is exactly
+     * what the bare word means, and the qualified row refuses it. One printed form per model, in
+     * both directions — the same split this vocabulary has had since it was `pluralCards`.
+     */
+    private fun cardNoun(inner: Phrase<GameObjectFilter>, plural: Boolean, suffix: String): Phrase<GameObjectFilter> {
+        val noun = if (plural) "cards" else "card"
+        return oneOf(
+            "a card$suffix",
+            constant(noun, GameObjectFilter.Any),
+            phrase("{type} $noun", name = "a card of a type$suffix") {
+                slot("type", inner)
+                build { it.value<GameObjectFilter>("type").takeIf { f -> f != GameObjectFilter.Any } }
+                match { f -> if (f == GameObjectFilter.Any) null else bind("type" to f) }
+            },
+        )
+    }
 
     /**
      * The controller clause, which is a suffix in English and a single field in the model — so it is
@@ -484,14 +519,19 @@ object Filters {
         plural: Boolean,
         spellPosition: Boolean = false,
         controlled: Boolean = true,
+        card: Boolean = false,
     ): Phrase<GameObjectFilter> {
         val suffix = when {
+            card && plural -> " (cards)"
+            card -> " (card)"
             plural && !controlled -> " (plural, uncontrolled)"
             plural -> " (plural)"
             spellPosition -> " (of a spell)"
             else -> ""
         }
-        val named = typeNoun(plural)
+        // In card position only the head noun inflects, so the type phrase under it is always
+        // singular; see [cardNoun].
+        val named = typeNoun(plural && !card)
         val types = oneOf(
             "a permanent type or subtype$suffix",
             listOf(
@@ -502,7 +542,7 @@ object Filters {
                 if (spellPosition) {
                     spellSubtype(suffix)
                 } else {
-                    bareSubtype(plural, "a subtype standing alone$suffix")
+                    bareSubtype(plural && !card, "a subtype standing alone$suffix")
                 },
             ) + if (spellPosition) listOf(spellColour(suffix)) else emptyList(),
         )
@@ -518,27 +558,53 @@ object Filters {
             notColour(counted, "a permanent of another colour$suffix"),
             anyColour(counted, "a permanent of either colour$suffix"),
         )
-        val qualified = oneOf(
-            "a qualified permanent$suffix",
-            coloured,
-            withKeyword(coloured, "a permanent with a keyword$suffix"),
-            withoutKeyword(coloured, "a permanent without a keyword$suffix"),
-            withPowerAtLeast(coloured, "a permanent with power at least$suffix"),
-            withPowerAtMost(coloured, "a permanent with power at most$suffix"),
-            withManaValueAtMost(coloured, "a permanent with mana value at most$suffix"),
+        // The head noun, where the position prints one. Everything above this line is a modifier
+        // English writes *in front* of the noun and everything below it is a clause English writes
+        // *behind* the noun, which is the whole reason the insertion point is here and not at either
+        // end of the cascade.
+        val head = if (card) cardNoun(coloured, plural, suffix) else coloured
+        // The quality clauses, over whatever noun phrase is handed in, and **without** the bare
+        // pass-through. Keeping the pass-through out is what lets the minority word order below be an
+        // alternate rather than a second reading of every unqualified noun.
+        fun qualities(inner: Phrase<GameObjectFilter>, label: String) = listOf(
+            withKeyword(inner, "a permanent with a keyword$label"),
+            withoutKeyword(inner, "a permanent without a keyword$label"),
+            withPowerAtLeast(inner, "a permanent with power at least$label"),
+            withPowerAtMost(inner, "a permanent with power at most$label"),
+            ManaValues.layer(inner, label),
         )
-        if (!controlled) return qualified
-        return oneOf(
-            "a permanent$suffix",
-            qualified,
-            controlledBy(qualified, "you control", ControllerPredicate.ControlledByYou, "a permanent you control$suffix"),
+
+        fun byController(inner: Phrase<GameObjectFilter>, label: String) = listOf(
+            controlledBy(inner, "you control", ControllerPredicate.ControlledByYou, "a permanent you control$label"),
             controlledBy(
-                qualified,
+                inner,
                 "an opponent controls",
                 ControllerPredicate.ControlledByOpponent,
-                "a permanent an opponent controls$suffix",
+                "a permanent an opponent controls$label",
             ),
         )
+
+        if (!controlled) return oneOf("a qualified permanent$suffix", listOf(head) + qualities(head, suffix))
+
+        // The controller clause sits **inside** the quality clauses, which is where Oracle puts it:
+        // "creatures **you control** with power 2 or greater", "creature **an opponent controls** with
+        // mana value 3 or less". Corpus-wide the controller-first order is printed 158 times against 5
+        // for the other one, and this layer used to be the outermost — so the grammar read the five and
+        // declined the hundred and fifty-eight. The predicate stack does not care either way:
+        // `controllerPredicate` is its own field and not a member of `cardPredicates`, so the two
+        // layers commute in the model and only the word order was ever at stake.
+        val owned = oneOf("a permanent by controller$suffix", listOf(head) + byController(head, suffix))
+        val canonical = oneOf("a qualified permanent$suffix", listOf(owned) + qualities(owned, suffix))
+        // …and the fourteen cards that print the two clauses the other way round — "destroy target
+        // creature with mana value 4 or less an opponent controls" (Darkstar Banisher, Silkwrap,
+        // Arbor Colossus, …). Real English for the same value, so it parses and never prints: those
+        // cards come back as a VARIANT rather than a decline. Its inner phrase is [qualities] without
+        // the pass-through, so an unqualified "creature you control" has exactly one reading.
+        val reversed = byController(
+            oneOf("a permanent with a quality$suffix (unowned)", qualities(head, "$suffix (unowned)")),
+            "$suffix (controller last)",
+        ).map { alternate(it) }
+        return oneOf("a permanent$suffix", listOf(canonical) + reversed)
     }
 
     /** A whole noun phrase in the singular — "creature", "nonblack attacking creature". */
@@ -565,27 +631,24 @@ object Filters {
     val pluralSubject: Phrase<GameObjectFilter> = nounPhrase(plural = true, controlled = false)
 
     /**
-     * "cards", "creature cards", "land cards" — the plural card noun a zone-change batch names.
+     * "card", "creature card", "green creature card with mana value 3 or less" — the noun phrase in
+     * **card position**: a library search, a graveyard return, a discard cost, a look-at-the-top.
      *
-     * Outside the cascade for [subtypeOnly]'s reason and [Graveyard]'s: "card" is not a permanent
-     * type, and a row for it inside [typeNoun] would let "destroy target card" parse. Oracle
-     * inflects only the head noun, so the type phrase in front of it stays singular ("creature
-     * cards") — which is why this is [filter] with a fixed plural noun after it rather than a use
-     * of [plural].
+     * A fourth instantiation of the cascade, beside [plural], [pluralSubject] and [spellQuality],
+     * and its reason is the plainest of the four: the printed head noun is different, so a suffix
+     * clause attaches in a different place. See [cardNoun] for what that changes and why it could
+     * not be a row inside [typeNoun].
      *
-     * The unmodified form is a row of its own rather than an optional slot, because
-     * `GameObjectFilter.Any` is exactly what the bare word means and the qualified row refuses it.
-     * One printed form per model, in both directions.
+     * The controller layer is deliberately absent. An object in a graveyard or a library is *owned*,
+     * not controlled, and every sentence here says which zone in its own words — "from **your**
+     * graveyard", "in an opponent's graveyard" — so the field belongs to the sentence. The filters
+     * these rules slot carry no `controllerPredicate` today for exactly that reason: `Graveyard`
+     * strips it before binding the slot.
      */
-    val pluralCards: Phrase<GameObjectFilter> = oneOf(
-        "cards",
-        constant("cards", GameObjectFilter.Any),
-        phrase("{type} cards", name = "cards of a type") {
-            slot("type", filter)
-            build { it.value<GameObjectFilter>("type").takeIf { f -> f != GameObjectFilter.Any } }
-            match { f -> if (f == GameObjectFilter.Any) null else bind("type" to f) }
-        },
-    )
+    val cardNoun: Phrase<GameObjectFilter> = nounPhrase(plural = false, controlled = false, card = true)
+
+    /** …and in the plural — "cards", "creature cards", the noun a zone-change batch names. */
+    val pluralCards: Phrase<GameObjectFilter> = nounPhrase(plural = true, controlled = false, card = true)
 
     /**
      * …and in **spell position** — the adjective in "Zombie spells you cast", "Red spells",
@@ -607,8 +670,24 @@ object Filters {
      */
     val indefinite: Phrase<GameObjectFilter> = oneOf(
         "a permanent with its article",
-        article("a"),
-        article("an"),
+        article(filter, "a", "permanent"),
+        article(filter, "an", "permanent"),
+    )
+
+    /**
+     * "a creature card", "an artifact card with mana value 6 or greater" — [cardNoun] with its
+     * article.
+     *
+     * The article derives from the printed form of [cardNoun] rather than of [filter], which is the
+     * whole point of sharing the generator: the word the article agrees with is the first word of
+     * the *noun phrase*, and in card position that is the type phrase inside "creature card" — while
+     * for the bare row it is "card" itself. Deriving it from the type alone would have had nothing
+     * to look at for "**a** card".
+     */
+    val indefiniteCard: Phrase<GameObjectFilter> = oneOf(
+        "a card with its article",
+        article(cardNoun, "a", "card"),
+        article(cardNoun, "an", "card"),
     )
 
     /**
@@ -630,16 +709,16 @@ object Filters {
         }
     }
 
-    private fun article(article: String): Phrase<GameObjectFilter> =
-        phrase("$article {type}", name = "\"$article\" plus a permanent") {
-            slot("type", filter)
-            build { it.value<GameObjectFilter>("type").takeIf { f -> articleFor(f) == article } }
-            match { f -> if (articleFor(f) == article) bind("type" to f) else null }
+    private fun article(noun: Phrase<GameObjectFilter>, article: String, position: String): Phrase<GameObjectFilter> =
+        phrase("$article {type}", name = "\"$article\" plus a $position") {
+            slot("type", noun)
+            build { it.value<GameObjectFilter>("type").takeIf { f -> articleFor(noun, f) == article } }
+            match { f -> if (articleFor(noun, f) == article) bind("type" to f) else null }
         }
 
-    /** The article [filter] would print [f] with, or null when it cannot print it at all. */
-    private fun articleFor(f: GameObjectFilter): String? {
-        val head = filter.unparse(f)?.firstOrNull()?.lowercaseChar() ?: return null
+    /** The article [noun] would print [f] with, or null when it cannot print it at all. */
+    private fun articleFor(noun: Phrase<GameObjectFilter>, f: GameObjectFilter): String? {
+        val head = noun.unparse(f)?.firstOrNull()?.lowercaseChar() ?: return null
         return if (head in listOf('a', 'e', 'i', 'o', 'u')) "an" else "a"
     }
 }

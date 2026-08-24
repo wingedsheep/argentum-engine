@@ -32,8 +32,7 @@ val BogGlider = card("Bog Glider") {
     activatedAbility {
         cost = Costs.Composite(Costs.Tap, Costs.Sacrifice(GameObjectFilter.Land))
         effect = Patterns.Library.searchLibrary(
-            filter = GameObjectFilter.Any.withSubtype("Mercenary"),
-            count = 2,
+            filter = GameObjectFilter.Permanent.withSubtype("Mercenary").manaValueAtMost(2),
             destination = SearchDestination.BATTLEFIELD
         )
     }

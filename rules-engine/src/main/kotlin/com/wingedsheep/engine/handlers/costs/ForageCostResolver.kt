@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.costs
 
+import com.wingedsheep.engine.core.ForagedEvent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PermanentsSacrificedEvent
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
@@ -13,7 +14,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
 /**
- * Single source of truth for the **cost-based** Forage mechanic (CR 701.61 — "To forage,
+ * Single source of truth for the **cost-based** Forage mechanic (CR 701.59a — "To forage,
  * exile three cards from your graveyard or sacrifice a Food").
  *
  * Forage is a *choice* between two sub-costs, and that choice belongs to the foraging player.
@@ -36,7 +37,11 @@ import com.wingedsheep.sdk.model.EntityId
  *
  * The *effect*-based forage (`Patterns.Mechanic.forage()` → `ChooseActionEffect`, used by the
  * "you may forage" ETB cards) already resolves the choice correctly through the normal effect
- * pipeline and is intentionally left alone.
+ * pipeline and is intentionally left alone. That is also why
+ * [com.wingedsheep.engine.core.ForagedEvent] has two emission sites rather than one: this object is
+ * the chokepoint for the three *cost* contexts, and the effect form carries the
+ * [com.wingedsheep.sdk.scripting.effects.ForagedEffect] marker instead because it lowers to generic
+ * gather/select/move and sacrifice effects with nothing forage-shaped to emit from.
  */
 object ForageCostResolver {
 
@@ -126,6 +131,27 @@ object ForageCostResolver {
         exileChoices: List<EntityId> = emptyList(),
         sacrificeChoices: List<EntityId> = emptyList(),
         excludeCardId: EntityId? = null,
+    ): Result = payMode(state, playerId, exileChoices, sacrificeChoices, excludeCardId).foraged(playerId)
+
+    /**
+     * The forage event, appended to whichever mode was actually paid.
+     *
+     * Written as one wrapper over [payMode]'s four exits rather than a line in each of them, which is
+     * the property that matters: a mode added later cannot forget to emit it, and a `Failure`
+     * carries nothing — forage has no "even if you can't" clause, so an unpayable forage must not
+     * fire "Whenever you forage".
+     */
+    private fun Result.foraged(playerId: EntityId): Result = when (this) {
+        is Result.Success -> Result.Success(state, events + ForagedEvent(playerId))
+        is Result.Failure -> this
+    }
+
+    private fun payMode(
+        state: GameState,
+        playerId: EntityId,
+        exileChoices: List<EntityId>,
+        sacrificeChoices: List<EntityId>,
+        excludeCardId: EntityId?,
     ): Result {
         val candidates = candidates(state, playerId, excludeCardId)
 

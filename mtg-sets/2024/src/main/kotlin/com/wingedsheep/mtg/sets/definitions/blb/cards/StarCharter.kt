@@ -1,22 +1,13 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Conditions
+import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
-import com.wingedsheep.sdk.scripting.effects.CardDestination
-import com.wingedsheep.sdk.scripting.effects.CardOrder
-import com.wingedsheep.sdk.scripting.effects.CardSource
-import com.wingedsheep.sdk.scripting.effects.GatherCardsEffect
-import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
-import com.wingedsheep.sdk.scripting.effects.SelectionMode
-import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
-import com.wingedsheep.sdk.dsl.Effects
 
 /**
  * Star Charter {3}{W}
@@ -42,31 +33,13 @@ val StarCharter = card("Star Charter") {
     triggeredAbility {
         trigger = Triggers.YourEndStep
         interveningIf = Conditions.YouGainedOrLostLifeThisTurn
-        effect = Effects.Composite(
-            listOf(
-                GatherCardsEffect(
-                    source = CardSource.TopOfLibrary(DynamicAmount.Fixed(4)),
-                    storeAs = "looked"
-                ),
-                SelectFromCollectionEffect(
-                    from = "looked",
-                    selection = SelectionMode.ChooseUpTo(DynamicAmount.Fixed(1)),
-                    filter = GameObjectFilter.Creature.powerAtMost(3),
-                    storeSelected = "kept",
-                    storeRemainder = "rest",
-                    prompt = "You may reveal a creature card with power 3 or less and put it into your hand",
-                    showAllCards = true
-                ),
-                MoveCollectionEffect(
-                    from = "kept",
-                    destination = CardDestination.ToZone(Zone.HAND)
-                ),
-                MoveCollectionEffect(
-                    from = "rest",
-                    destination = CardDestination.ToZone(Zone.LIBRARY, placement = ZonePlacement.Bottom),
-                    order = CardOrder.Random
-                )
-            )
+        // `Patterns.Library.lookAtTopRevealMatchingToHand` names this card in its own KDoc, and the
+        // recipe was restated here by hand instead of called — which lost the `revealed = true` on
+        // the move to hand, so the card the text says to *reveal* went to hand unseen.
+        effect = Patterns.Library.lookAtTopRevealMatchingToHand(
+            count = DynamicAmount.Fixed(4),
+            filter = GameObjectFilter.Creature.powerAtMost(3),
+            prompt = "You may reveal a creature card with power 3 or less from among them and put it into your hand",
         )
     }
 

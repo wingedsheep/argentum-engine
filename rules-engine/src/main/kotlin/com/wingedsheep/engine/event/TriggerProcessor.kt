@@ -14,6 +14,7 @@ import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComp
 import com.wingedsheep.engine.state.components.stack.abilityIdentityOf
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.sdk.dsl.LibraryPatterns
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
@@ -207,7 +208,11 @@ class TriggerProcessor(
             )
         )
         if (legalTargets.isEmpty() && targetRequirement.effectiveMinCount > 0) return null
-        return BatchKey(trigger.controllerId, identity)
+        // Keyed on who is *asked*, not who controls the ability. A card whose "may" names someone
+        // else (Farrel's Mantle's "its controller may") can produce two triggers with the same
+        // controller and the same identity while the question belongs to two different players —
+        // batching those would fan one player's answer onto the other's decision.
+        return BatchKey(askedPlayerFor(state, trigger), identity)
     }
 
     /**
@@ -245,7 +250,9 @@ class TriggerProcessor(
         val decisionId = "batch-may-${java.util.UUID.randomUUID()}"
         val decision = BatchYesNoDecision(
             id = decisionId,
-            playerId = first.controllerId,
+            // Same player the BatchKey was built on, so the auto-answer store is keyed identically
+            // on the batched and single paths.
+            playerId = askedPlayerFor(state, first),
             prompt = ability.effect.description,
             context = DecisionContext(
                 sourceId = first.sourceId,
@@ -397,6 +404,26 @@ class TriggerProcessor(
      * Before asking, checks if legal targets exist — if not, the ability fizzles
      * without even asking the may question.
      */
+    /**
+     * The player who answers a "you may" on a triggered ability: the ability's `decisionMaker` when
+     * it names one, else its controller.
+     *
+     * Routed through the shared [TargetResolutionUtils.resolvePlayerTarget] rather than a local
+     * `when`, so every [EffectTarget] player shape it already understands works here too and cannot
+     * drift from the resolution-time answer [GatedEffectExecutor] gives. Anything it cannot resolve
+     * falls back to the controller — what every card without a `decisionMaker` already gets.
+     */
+    private fun askedPlayerFor(state: GameState, trigger: PendingTrigger): EntityId {
+        val chooser = trigger.ability.effect.asMayDecide()?.decisionMaker ?: return trigger.controllerId
+        val context = EffectContext(
+            sourceId = trigger.sourceId,
+            controllerId = trigger.controllerId,
+            triggeringEntityId = trigger.triggerContext.triggeringEntityId,
+            triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
+        )
+        return TargetResolutionUtils.resolvePlayerTarget(chooser, context, state) ?: trigger.controllerId
+    }
+
     private fun processMayThenTargetTrigger(
         state: GameState,
         trigger: PendingTrigger,
@@ -451,11 +478,17 @@ class TriggerProcessor(
         val sourceName = trigger.sourceName
         val abilityIdentity = state.abilityIdentityOf(trigger.sourceId, ability.id)
 
+        // Who is asked. Normally the ability's controller, but a card can name someone else —
+        // Farrel's Mantle's "its controller may", where "it" is the enchanted creature and the Aura
+        // may sit on an opponent's permanent. This path asks the question before the effect runs,
+        // so GatedEffectExecutor's own decisionMaker handling never gets the chance.
+        val askedPlayerId = askedPlayerFor(state, trigger)
+
         // Persistent auto-answer yield (backlog §C): a remembered yes/no for this ability resolves
         // the may-question without prompting. "Yes" still proceeds to per-instance target selection
         // (only the yes/no is batched, never the targeting — §C.6); "no" skips the trigger.
-        abilityIdentity?.let { state.autoAnswerFor(trigger.controllerId, it) }?.let { auto ->
-            val note = AbilityAutoAnsweredEvent(trigger.sourceId, sourceName, trigger.controllerId, auto)
+        abilityIdentity?.let { state.autoAnswerFor(askedPlayerId, it) }?.let { auto ->
+            val note = AbilityAutoAnsweredEvent(trigger.sourceId, sourceName, askedPlayerId, auto)
             if (!auto) return ExecutionResult.success(state, listOf(note))
             val innerEffect = ability.effect.asMayDecide()!!.then
             val unwrappedTrigger = trigger.copy(ability = ability.copy(effect = innerEffect))
@@ -463,13 +496,19 @@ class TriggerProcessor(
             return result.copy(events = listOf(note) + result.events)
         }
 
-        // Create yes/no decision
+        // Create yes/no decision.
+        //
+        // The card's own `description` wins over the generated effect text. A generated description
+        // is assembled bottom-up from pipeline steps, so a composed effect reads like plumbing —
+        // Safe Haven's upkeep trigger rendered as "You may sacrifice this creature. If you do, look
+        // at cards exiled by this permanent. Put those cards onto the battlefield" instead of its
+        // printed text. Whenever an author wrote the clause out, that is the prompt.
         val decisionResult = decisionHandler.createYesNoDecision(
             state = state,
-            playerId = trigger.controllerId,
+            playerId = askedPlayerId,
             sourceId = trigger.sourceId,
             sourceName = sourceName,
-            prompt = ability.effect.description,
+            prompt = ability.descriptionOverride ?: ability.effect.description,
             phase = DecisionPhase.RESOLUTION,
             abilityIdentity = abilityIdentity
         )
@@ -716,7 +755,9 @@ class TriggerProcessor(
                 maxTargets = maxTargets,
                 sameOwner = (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.sameOwner == true,
                 totalManaValueAtMost = resolveTotalManaValueAtMost(state, trigger, req),
-                differentNames = (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.differentNames == true
+                differentNames = (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.differentNames == true,
+                differentControllers =
+                    (req as? com.wingedsheep.sdk.scripting.targets.TargetObject)?.differentControllers == true
             )
         }
 
@@ -816,6 +857,7 @@ class TriggerProcessor(
             triggerXValueOfTriggeringSpell = trigger.triggerContext.xValueOfTriggeringSpell,
             xValue = trigger.triggerContext.xValue,
             carriedPipeline = trigger.carriedPipeline,
+            capturedEntityIds = trigger.triggerContext.capturedEntityIds ?: emptyList(),
             interveningIf = ability.interveningIf
         )
 

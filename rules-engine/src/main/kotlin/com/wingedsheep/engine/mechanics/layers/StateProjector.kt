@@ -203,8 +203,15 @@ class StateProjector(
         }
 
         // === Layer 2 (Control) ===
+        // The controller gates are applied *inside* the loop rather than to the whole list first,
+        // so each control effect is judged against the control state as it stands at its own
+        // timestamp (CR 613.1b) — an earlier steal of the source is visible to a later effect's
+        // "for as long as you control this permanent" gate. Seasinger's
+        // [Duration.WhileYouControlSourceAndSourceTapped] is the case that needs it: losing
+        // Seasinger has to hand the borrowed creature back, and its own effect lives in this layer.
         val controlEffects = sortedEffects.filter { it.layer == Layer.CONTROL }
-        for (effect in controlEffects) {
+        for (rawEffect in controlEffects) {
+            val effect = applyControllerGate(rawEffect, projectedValues)
             effectApplicator.applyEffect(effect.copy(affectedEntities = lockAffected(effect, effect.affectedEntities)), state, projectedValues)
         }
 
@@ -656,6 +663,16 @@ class StateProjector(
                     continue
                 }
             }
+            // Seasinger — both halves at once. The battlefield and tapped halves are checkable
+            // here; the source-controller half joins WhileYouControlSource's post-Layer-2 sweep.
+            if (floating.duration is Duration.WhileYouControlSourceAndSourceTapped) {
+                val sourceId = floating.sourceId
+                if (sourceId == null || !state.getBattlefield().contains(sourceId) ||
+                    state.getEntity(sourceId)?.has<TappedComponent>() != true
+                ) {
+                    continue
+                }
+            }
             // "for as long as [the source Aura/Equipment] remains attached to it" — gate the whole
             // effect on the source still being on the battlefield (CR 611.2b). The per-affected
             // "still attached to *this* entity" half is applied below.
@@ -751,10 +768,10 @@ class StateProjector(
                         // if the source's projected controller drifts (Threaten-style steal of the
                         // source, static control Aura, etc.). One-way: EndedDurationExpiryCheck removes
                         // the floating effect itself so regaining control does not re-apply.
-                        sourceControllerGate = if (floating.duration is Duration.WhileYouControlSource) {
-                            floating.controllerId
-                        } else {
-                            null
+                        sourceControllerGate = when (floating.duration) {
+                            is Duration.WhileYouControlSource,
+                            is Duration.WhileYouControlSourceAndSourceTapped -> floating.controllerId
+                            else -> null
                         },
                         // Captured controller — lets a dynamic P/T (or other controller-dependent)
                         // effect still resolve a controller after its source has left the

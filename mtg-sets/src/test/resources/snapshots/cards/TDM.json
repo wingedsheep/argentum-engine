@@ -10285,7 +10285,7 @@
                             "type": "Exists",
                             "player": "You",
                             "zone": "Battlefield",
-                            "filter": "creature Dragon"
+                            "filter": "permanent Dragon"
                         }
                     }
                 ],

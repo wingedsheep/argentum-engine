@@ -21,6 +21,21 @@ import com.wingedsheep.sdk.scripting.effects.FaceDownMode
  */
 object FaceDownTurnUp {
 
+    /**
+     * Which face-down mechanic lets [cardDef] be *cast* face down for {3} — morph (CR 702.37a) or
+     * disguise (CR 702.168a) — or null when it can't be cast face down at all. A card never prints
+     * both; morph wins if one somehow did.
+     *
+     * The single place that maps the printed keyword to its mode, so the cast path, the resolution
+     * path and the client view all agree on which helper card a face-down spell is drawn as.
+     */
+    fun castMode(cardDef: CardDefinition?): FaceDownMode? = when {
+        cardDef == null -> null
+        cardDef.keywordAbilities.any { it is KeywordAbility.Morph } -> FaceDownMode.MORPH
+        cardDef.keywordAbilities.any { it is KeywordAbility.Disguise } -> FaceDownMode.DISGUISE
+        else -> null
+    }
+
     fun dataFor(
         cardDef: CardDefinition?,
         cardDefinitionId: String,

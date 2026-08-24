@@ -203,6 +203,13 @@ object Targets {
     val PermanentOpponentControls: TargetRequirement = TargetPermanent(filter = TargetFilter.PermanentOpponentControls)
 
     /**
+     * Target **token** you control — any token permanent, not just a creature token. "Target token
+     * you control becomes a copy of it" (Kaya, Spirits' Justice) is deliberately wide enough to
+     * turn a Clue or a Treasure into a creature.
+     */
+    val TokenYouControl: TargetRequirement = TargetPermanent(filter = TargetFilter.TokenYouControl)
+
+    /**
      * Target planeswalker (any player's) — "destroy target planeswalker" (Graf Reaver).
      */
     val Planeswalker: TargetRequirement = TargetPermanent(filter = TargetFilter.Planeswalker)

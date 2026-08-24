@@ -2,6 +2,7 @@ package com.wingedsheep.mtg.sets.definitions.sos.cards
 
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Targets
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -29,7 +30,7 @@ val SilverquillCharm = card("Silverquill Charm") {
         modal(chooseCount = 1) {
             mode("Put two +1/+1 counters on target creature") {
                 val t = target("target creature", TargetCreature())
-                effect = Effects.AddCounters("+1+1", 2, t)
+                effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 2, t)
             }
             mode("Exile target creature with power 2 or less") {
                 val t = target(

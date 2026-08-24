@@ -157,6 +157,13 @@ data class TargetFilter(
         /** Target permanent you control */
         val PermanentYouControl = TargetFilter(GameObjectFilter.Companion.Permanent.youControl())
 
+        /**
+         * Target token you control — any token permanent, not just a creature one. "Target token
+         * you control becomes a copy of it" (Kaya, Spirits' Justice) is deliberately wide enough to
+         * turn a Clue or a Treasure into a creature.
+         */
+        val TokenYouControl = TargetFilter(GameObjectFilter.Companion.Permanent.token().youControl())
+
         /** Target nonland permanent an opponent controls */
         val NonlandPermanentOpponentControls = TargetFilter(GameObjectFilter.Companion.NonlandPermanent.opponentControls())
 

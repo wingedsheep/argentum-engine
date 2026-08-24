@@ -122,6 +122,12 @@ internal object CombatDamageUtils {
         creatureId: EntityId,
         cardRegistry: CardRegistry?,
     ): Int {
+        // "It assigns no combat damage this turn" (Farrel's Zealot and its Fallen Empires kin).
+        // Checked before anything else and ahead of the cardRegistry short-circuit: the creature
+        // assigns nothing at all, which is not the same as its damage being prevented — no damage
+        // event happens, so no damage trigger fires and nothing is left for trample to spill.
+        if (projected.hasKeyword(creatureId, AbilityFlag.ASSIGNS_NO_COMBAT_DAMAGE)) return 0
+
         val power = projected.getPower(creatureId) ?: 0
         if (cardRegistry == null) return power
 

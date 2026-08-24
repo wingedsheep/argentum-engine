@@ -46,8 +46,17 @@ USER_AGENT = "argentum-engine-check-card-printing/1.0"
 REQUEST_DELAY_SEC = 0.15  # Scryfall asks for 50–100ms between requests
 CACHE_TTL_DAYS = 30
 
-CARD_DSL_RE = re.compile(r'\b(?:card|basicLand)\(\s*"([^"]+)"')
-PRINTING_NAME_RE = re.compile(r'\bname\s*=\s*"([^"]+)"')
+# The `(?:[^"\\]|\\.)*` body (rather than `[^"]+`) is load-bearing: a handful of real card
+# names embed escaped double quotes — `card("Kongming, \\"Sleeping Dragon\\"")` — and a naive
+# `[^"]+` truncates at the first `\\"`, so the card reports as having no declaration at all.
+# Captured values are Kotlin string literals; unescape them before comparing to Scryfall names.
+CARD_DSL_RE = re.compile(r'\b(?:card|basicLand)\(\s*"((?:[^"\\]|\\.)*)"')
+PRINTING_NAME_RE = re.compile(r'\bname\s*=\s*"((?:[^"\\]|\\.)*)"')
+
+
+def unescape_kotlin(literal: str) -> str:
+    """Turn the body of a Kotlin string literal back into the value it denotes."""
+    return re.sub(r'\\(.)', r'\1', literal)
 PRINTING_SETCODE_RE = re.compile(r'\bsetCode\s*=\s*"([^"]+)"')
 
 # Set types we expect to scaffold as a top-level set. Promo/token/memorabilia
@@ -153,7 +162,7 @@ def find_canonical(card_name: str) -> tuple[str, Path] | None:
     for kt in iter_card_files():
         text = kt.read_text(encoding="utf-8")
         for m in CARD_DSL_RE.finditer(text):
-            if m.group(1) in (card_name, front):
+            if unescape_kotlin(m.group(1)) in (card_name, front):
                 # definitions/<dir>/cards/<file>.kt
                 set_code = codes.get(kt.parts[-3], kt.parts[-3])
                 return (set_code, kt)
@@ -171,9 +180,9 @@ def find_reprint_rows(card_name: str) -> dict[str, Path]:
         text = kt.read_text(encoding="utf-8")
         if "Printing(" not in text:
             continue
-        if any(m.group(1) in (card_name, front) for m in CARD_DSL_RE.finditer(text)):
+        if any(unescape_kotlin(m.group(1)) in (card_name, front) for m in CARD_DSL_RE.finditer(text)):
             continue  # this file holds the CardDefinition, not a reprint row
-        if not any(n in (card_name, front) for n in PRINTING_NAME_RE.findall(text)):
+        if not any(unescape_kotlin(n) in (card_name, front) for n in PRINTING_NAME_RE.findall(text)):
             continue
         set_code = codes.get(kt.parts[-3], kt.parts[-3])
         result[set_code] = kt

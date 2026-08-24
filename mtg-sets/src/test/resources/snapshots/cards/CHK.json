@@ -93,6 +93,49 @@
     ]
 }
 
+// Azami, Lady of Scrolls
+{
+    "name": "Azami, Lady of Scrolls",
+    "manaCost": "{2}{U}{U}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "Tap an untapped Wizard you control: Draw a card.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": "permanent Wizard"
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "52",
+        "rarity": "RARE",
+        "artist": "Ittoku",
+        "flavorText": "\"Choices belong to those with the luxuries of time and distance. We have neither. I recommend we proceed with the plan to destroy all shrines of the kami.\"\n—Lady Azami, letter to Sensei Hisoka",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/15ea91b1-f2ff-4b99-8148-333aa27ea8cd.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Ben-Ben, Akki Hermit
 {
     "name": "Ben-Ben, Akki Hermit",

@@ -55,7 +55,14 @@ class DealDamagePerEntityInZoneExecutor : EffectExecutor<DealDamagePerEntityInZo
                 return EffectResult.success(state)
             }
 
-            var newState = state
+            val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
+                state,
+                playerIds.map { OptionalDamageRedirect.Instance(sourceId, it, totalDamage) },
+                effect,
+                context
+            )
+            if (pause != null) return pause
+            var newState = readyState
             val events = mutableListOf<EngineGameEvent>()
             for (playerId in playerIds) {
                 val result = dealDamageToTarget(newState, playerId, totalDamage, sourceId, cantBePrevented = false)
@@ -69,6 +76,14 @@ class DealDamagePerEntityInZoneExecutor : EffectExecutor<DealDamagePerEntityInZo
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "No valid target for damage")
 
-        return dealDamageToTarget(state, targetId, totalDamage, sourceId, cantBePrevented = false)
+        val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
+            state,
+            listOf(OptionalDamageRedirect.Instance(sourceId, targetId, totalDamage)),
+            effect,
+            context
+        )
+        if (pause != null) return pause
+
+        return dealDamageToTarget(readyState, targetId, totalDamage, sourceId, cantBePrevented = false)
     }
 }

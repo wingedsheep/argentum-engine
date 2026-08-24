@@ -120,6 +120,15 @@ object ChooserResolution {
                 ?: Outcome.Unresolvable("No card to derive the selection's controller from")
         }
 
+        // CR 802.2a — the player the source is attacking (or the controller/protector of the
+        // planeswalker or battle it is attacking). Shares the resolution-time read with
+        // `Player.DefendingPlayer`, removed-from-combat leg included, so a "defending player
+        // discards" that follows a self-sacrifice still asks the right player.
+        Chooser.DefendingPlayer ->
+            TargetResolutionUtils.resolveDefendingPlayer(context, state)
+                ?.let { Outcome.Resolved(it) }
+                ?: Outcome.Unresolvable("No defending player to make the choice")
+
         Chooser.ControllerOfTarget -> {
             val targetId = context.targets.firstOrNull()?.let {
                 TargetResolutionUtils.run { it.toEntityId() }

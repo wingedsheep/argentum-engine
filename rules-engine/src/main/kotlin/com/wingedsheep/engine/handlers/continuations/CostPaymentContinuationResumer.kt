@@ -54,6 +54,9 @@ class CostPaymentContinuationResumer(
         // Resolved away before the frame is built; should never reach the resumer.
         is PayCost.OwnManaCost ->
             ExecutionResult.error(state, "OwnManaCost should have been resolved before payment")
+        // Lowered to a concrete PayLife before the frame is built; should never reach the resumer.
+        is PayCost.DynamicLife ->
+            ExecutionResult.error(state, "DynamicLife should have been resolved before payment")
         is PayCost.Atom -> when (val atom = cost.atom) {
             // Yes/no costs: mana, life, mill (the milled cards are the top of the library, so
             // there is nothing to select), and random discard.
@@ -83,6 +86,13 @@ class CostPaymentContinuationResumer(
             // Ability-scoped only; never reaches a PayCost prompt, but it is a yes/no shape
             // (nothing to select) if one is ever built.
             is CostAtom.PutCountersOnSelf ->
+                resumeYesNo(state, continuation, cost, response, checkForMore)
+            // Selected-permanent counter placement — one permanent chosen on the battlefield.
+            is CostAtom.PutCountersOnPermanent ->
+                resumeSelection(state, continuation, cost, response, checkForMore)
+            // Ability-scoped only (it reads a note on the source permanent), and it takes no
+            // selection — never reaches a PayCost prompt.
+            is CostAtom.RevealNotedCreatureType ->
                 resumeYesNo(state, continuation, cost, response, checkForMore)
             // VariablePermanents is an activated-ability-only cost, never a PayCost — unreachable here.
             is CostAtom.VariablePermanents ->

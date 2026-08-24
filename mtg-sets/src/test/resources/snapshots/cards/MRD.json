@@ -2819,6 +2819,96 @@
     "colorIdentityOverride": []
 }
 
+// Duplicant
+{
+    "name": "Duplicant",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Shapeshifter",
+    "oracleText": "Imprint — When this creature enters, you may exile target nontoken creature.\nAs long as a card exiled with this creature is a creature card, this creature has the power, toughness, and creature types of the last creature card exiled with it. It's still a Shapeshifter.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target nontoken creature"
+                        },
+                        "destination": "Exile",
+                        "linkToSource": true
+                    },
+                    "descriptionOverride": "Imprint — When this creature enters, you may exile target nontoken creature."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature nontoken"
+                    },
+                    "id": "target nontoken creature"
+                },
+                "descriptionOverride": "Imprint — When this creature enters, you may exile target nontoken creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "HasCreatureTypesOf",
+                    "source": "LinkedExiledCard",
+                    "retainedTypes": [
+                        "Shapeshifter"
+                    ]
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "LinkedExiledCard",
+                    "filter": "creature"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "SetBasePowerToughnessDynamicStatic",
+                    "power": {
+                        "type": "EntityProperty",
+                        "entity": "LinkedExiledCard",
+                        "numericProperty": "Power"
+                    },
+                    "toughness": {
+                        "type": "EntityProperty",
+                        "entity": "LinkedExiledCard",
+                        "numericProperty": "Toughness"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "LinkedExiledCard",
+                    "filter": "creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "165",
+        "rarity": "RARE",
+        "artist": "Thomas M. Baxa",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/4/d48a96f2-738f-433f-bfae-fbf378832a3b.jpg?1783944522"
+    },
+    "colorIdentityOverride": []
+}
+
 // Duskworker
 {
     "name": "Duskworker",
@@ -5161,6 +5251,26 @@
     ]
 }
 
+// Krark's Thumb
+{
+    "name": "Krark's Thumb",
+    "manaCost": "{2}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "If you would flip a coin, instead flip two coins and ignore one.",
+    "script": {
+        "staticAbilities": [
+            "FlipAdditionalCoins"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "RARE",
+        "artist": "Ron Spencer",
+        "flavorText": "\"I can think of one goblin it ain't so lucky for.\"\n—Slobad, goblin tinkerer",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/8/78a5d49a-747e-4ec8-a20a-ca917c315774.jpg?1783944517"
+    }
+}
+
 // Krark-Clan Grunt
 {
     "name": "Krark-Clan Grunt",
@@ -7162,7 +7272,8 @@
                             "name": "card"
                         },
                         "destination": "Hand"
-                    }
+                    },
+                    "descriptionOverride": "When this creature enters, you may return target artifact creature card from your graveyard to your hand."
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -7954,24 +8065,26 @@
                         {
                             "type": "MoveToZone",
                             "target": "Self",
-                            "destination": "Battlefield"
+                            "destination": "Battlefield",
+                            "fromZone": "Graveyard"
                         },
                         {
-                            "type": "ForceSacrifice",
-                            "filter": "creature",
-                            "target": {
-                                "type": "PlayerRef",
-                                "player": "You"
-                            }
+                            "type": "Sacrifice",
+                            "filter": "creature"
                         }
                     ]
                 },
                 "restrictions": [
                     {
-                        "type": "DuringStep",
-                        "step": "UPKEEP"
-                    },
-                    "OnlyDuringYourTurn"
+                        "type": "ActivationAll",
+                        "restrictions": [
+                            "OnlyDuringYourTurn",
+                            {
+                                "type": "DuringStep",
+                                "step": "UPKEEP"
+                            }
+                        ]
+                    }
                 ],
                 "activateFromZone": "Graveyard"
             }
@@ -8148,9 +8261,8 @@
                     "scope": "Self"
                 },
                 "powerBonus": {
-                    "type": "Count",
+                    "type": "AggregateBattlefield",
                     "player": "You",
-                    "zone": "Battlefield",
                     "filter": "artifact"
                 },
                 "toughnessBonus": {
@@ -10248,6 +10360,91 @@
     "colorIdentityOverride": []
 }
 
+// Shared Fate
+{
+    "name": "Shared Fate",
+    "manaCost": "{4}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "If a player would draw a card, that player exiles the top card of one of their opponents' libraries face down instead.\nEach player may look at cards they exiled with this enchantment, and they may play lands and cast spells from among those cards.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "AnOpponent"
+                            },
+                            "storeAs": "sharedFateExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "sharedFateExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN"
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "sharedFateExiled",
+                            "expiry": {
+                                "type": "WhileSourceOnBattlefield",
+                                "sourceDescription": "this enchantment"
+                            }
+                        }
+                    ]
+                },
+                "appliesTo": {
+                    "type": "DrawEvent",
+                    "player": "Each"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "49",
+        "rarity": "RARE",
+        "artist": "Matt Cavotta",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad0d5b02-ef38-4dab-8ac6-78814ef27b55.jpg?1783944552",
+        "rulings": [
+            {
+                "date": "2008-08-01",
+                "text": "Each Shared Fate tracks only the cards it exiled. If the Shared Fate which was responsible for a card being exiled leaves the battlefield, putting another Shared Fate onto the battlefield will not allow you to play that card again."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "You need to pay the costs of any cards you play from the Exile zone. This could be a problem if you don't have the right colors of mana available."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "Replacing your draws isn't optional. You can't draw cards from your own library, even if all your opponents' libraries are empty."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "If more than one Shared Fate is on the battlefield, you choose which one replaces each card draw, but you can replace a draw only once."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "The cards are exiled, not put onto the players' hands. Players can look at and play the exiled cards, but can't do anything else with them (the exiled cards can't be discarded or cycled, for example)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Shrapnel Blast
 {
     "name": "Shrapnel Blast",
@@ -11091,6 +11288,132 @@
     ]
 }
 
+// Soul Foundry
+{
+    "name": "Soul Foundry",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "Imprint — When this artifact enters, you may exile a creature card from your hand.\n{X}, {T}: Create a token that's a copy of the exiled card. X is the mana value of that card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "creature"
+                                },
+                                "storeAs": "foundryImprintCandidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "foundryImprintCandidates",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "foundryImprint",
+                                "prompt": "Choose a creature card to exile"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "foundryImprint",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "linkToSource": true
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may exile a creature card from your hand."
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "foundryImprinted"
+                        },
+                        {
+                            "type": "CreateTokenCopyOfTarget",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "foundryImprinted"
+                            }
+                        }
+                    ],
+                    "descriptionOverride": "Create a token that's a copy of the exiled card."
+                },
+                "xDefinedAs": {
+                    "type": "EntityProperty",
+                    "entity": "LinkedExiledCard",
+                    "numericProperty": "ManaValue"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "RARE",
+        "artist": "Arnie Swekel",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11b4983a-2a95-4322-a315-27b4bd430d39.jpg?1783944502",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "Soul Foundry puts a token copy of the imprinted card onto the battlefield. The token is put onto the battlefield, not cast."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "The token is an exact copy in every way, except that it's a token, not a card."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "Most creature tokens have no mana cost and a mana value of 0, but a creature token put onto the battlefield by Soul Foundry has the same mana cost and mana value as the card it copies."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "You do not get a chance to pay any optional costs, such as Kicker, on the imprinted card."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Soul Nova
 {
     "name": "Soul Nova",
@@ -11152,6 +11475,204 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Spellweaver Helix
+{
+    "name": "Spellweaver Helix",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Imprint — When this artifact enters, you may exile two target sorcery cards from a single graveyard.\nWhenever a player casts a card, if it has the same name as one of the cards exiled with this artifact, you may copy the other. If you do, you may cast the copy without paying its mana cost.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "ChosenTargets",
+                                "storeAs": "helixImprints"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "helixImprints",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "linkToSource": true
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Imprint — When this artifact enters, you may exile two target sorcery cards from a single graveyard."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "filter": {
+                        "baseFilter": "sorcery",
+                        "zone": "Graveyard"
+                    },
+                    "id": "two target sorcery cards from a single graveyard",
+                    "sameOwner": true
+                },
+                "descriptionOverride": "Imprint — When this artifact enters, you may exile two target sorcery cards from a single graveyard."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "FromLinkedExile",
+                                "storeAs": "helixPile"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "helixPile",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "SharesNameWith",
+                                            "entity": "Triggering"
+                                        }
+                                    ]
+                                },
+                                "storeSelected": "helixNamed",
+                                "storeRemainder": "helixOther",
+                                "prompt": "Choose the exiled card with the same name as the spell just cast"
+                            },
+                            {
+                                "type": "CopyCollectionIntoCollection",
+                                "from": "helixOther",
+                                "storeAs": "helixCopy"
+                            },
+                            {
+                                "type": "CastFromCollectionWithoutPayingCost",
+                                "from": "helixCopy"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may copy the other exiled card and cast the copy without paying its mana cost."
+                },
+                "interveningIf": {
+                    "type": "Any",
+                    "conditions": [
+                        {
+                            "type": "EntityMatches",
+                            "entity": "LinkedExiledCard",
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "SharesNameWith",
+                                        "entity": "Triggering"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "LinkedExiledCard",
+                                "index": 1
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "SharesNameWith",
+                                        "entity": "Triggering"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever a player casts a card, if it has the same name as one of the cards exiled with this artifact, you may copy the other. If you do, you may cast the copy without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "RARE",
+        "artist": "Luca Zontini",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a48d44b4-1c3b-4109-aaad-8351bf8a7624.jpg?1783944502",
+        "rulings": [
+            {
+                "date": "2017-04-18",
+                "text": "A split card has the same name as a spell if either of its names is that spell's name."
+            },
+            {
+                "date": "2005-03-01",
+                "text": "The creation of the copy and then the casting of the copy are both optional."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "Spellweaver Helix's second ability creates a copy of the imprinted card in the Exile zone (that's where the imprinted sorcery card is), then allows you to cast it without paying its mana cost."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "You cast the copy while this ability is resolving, and still on the stack. Normally, you're not allowed to cast spells or activate abilities at this time. Spellweaver Helix's ability breaks this rule. (The card that triggered this ability is also still on the stack.)"
+            },
+            {
+                "date": "2004-12-01",
+                "text": "If there's only one imprinted sorcery card, nothing happens."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "You can't cast the copy if an effect prevents you from casting sorceries or from casting that particular sorcery."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "You can't cast the copy unless all of its targets can be chosen."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "If you don't want to cast the copy, you can choose not to; the copy ceases to exist the next time state-based actions are checked."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "You don't pay the spell's mana cost. If a spell has X in its mana cost, X is 0. You do pay any additional costs for that spell. You can't use any alternative costs."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "If the two imprinted sorcery cards have the same name and a card with that name is cast, only one copy is created, not two."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If this card leaves the battlefield while the ability to make a copy is on the stack, the ability will still make a copy using the last-known-information rule."
+            },
+            {
+                "date": "2004-10-04",
+                "text": "If the imprinted card leaves the exile zone while the ability to make a copy is on the stack, then no copy will be made."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Sphere of Purity
@@ -14296,7 +14817,8 @@
                             "name": "target creature card"
                         },
                         "destination": "Hand"
-                    }
+                    },
+                    "descriptionOverride": "Whenever this creature deals combat damage to a player, you may return target creature card from your graveyard to your hand."
                 },
                 "targetRequirement": {
                     "type": "TargetObject",

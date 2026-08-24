@@ -4007,7 +4007,8 @@
                 "id": "ability_1",
                 "trigger": {
                     "type": "AbilityActivatedEvent",
-                    "sourceFilter": "creature"
+                    "sourceFilter": "creature",
+                    "includeManaAbilities": true
                 },
                 "binding": "ANY",
                 "effect": {
@@ -8466,9 +8467,6 @@
     "manaCost": "{3}",
     "typeLine": "Legendary Artifact — Equipment",
     "oracleText": "Equipped creature has hexproof and can't be blocked.\nEquip—{2}, Pay 2 life.",
-    "flags": [
-        "CANT_BE_BLOCKED"
-    ],
     "script": {
         "activatedAbilities": [
             {
@@ -8516,6 +8514,13 @@
             {
                 "type": "GrantKeyword",
                 "keyword": "HEXPROOF"
+            },
+            {
+                "type": "CantBeBlocked",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
             }
         ]
     },

@@ -54,6 +54,20 @@ class PipelineDescriptionLeakTest : DescribeSpec({
                 "Put those cards into exile"
         }
 
+        it("a return under its owner's control says so (Safe Haven)") {
+            // The flag is the only thing separating this from a plain return to the battlefield,
+            // and it is printed on every card that sets it — dropping it from the generated text
+            // loses the clause that matters.
+            MoveCollectionEffect(
+                "x",
+                CardDestination.ToZone(Zone.BATTLEFIELD),
+                underOwnersControl = true,
+            ).description shouldBe "Put those cards onto the battlefield under its owner's control"
+
+            MoveCollectionEffect("x", CardDestination.ToZone(Zone.BATTLEFIELD)).description shouldBe
+                "Put those cards onto the battlefield"
+        }
+
         it("collection-referencing effects don't echo their key") {
             val key = "secret_internal_key"
             listOf(

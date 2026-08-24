@@ -31,6 +31,7 @@ import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.legalactions.MeaningfulActionFilter
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.Format
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.ManaSymbol
@@ -687,7 +688,9 @@ class Strategist(
         forceTargetRefinement: Boolean = false,
     ): com.wingedsheep.engine.core.GameAction {
         val baseAction = withAutomaticPayments(action)
-        if (TargetSelection.targetsAlreadyFilled(baseAction) != false) return baseAction
+        if (TargetSelection.targetsAlreadyFilled(baseAction) != false) {
+            return withSumGatedExilePayment(state, action, baseAction)
+        }
         if (!budget.allowances.refineTargetsBySimulation && !forceTargetRefinement) {
             return heuristicTargets(state, action, playerId)
         }
@@ -746,7 +749,9 @@ class Strategist(
             chosenTargets[i] = TargetSelection.toChosenTarget(state, info, best, playerId)
             chosenTargetIds[i] = best
         }
-        return TargetSelection.applyTargets(baseAction, chosenTargets)
+        return withSumGatedExilePayment(
+            state, action, TargetSelection.applyTargets(baseAction, chosenTargets)
+        )
     }
 
     /** The cheap target pick — one heuristic choice per requirement, no simulation. */
@@ -754,9 +759,12 @@ class Strategist(
         state: GameState,
         action: LegalAction,
         playerId: EntityId,
-    ): com.wingedsheep.engine.core.GameAction = TargetSelection.fillHeuristically(
-        state, action.copy(action = withAutomaticPayments(action)), playerId,
-        fillPartialRequirements = useMeaningfulFilter, intents = intents
+    ): com.wingedsheep.engine.core.GameAction = withSumGatedExilePayment(
+        state, action,
+        TargetSelection.fillHeuristically(
+            state, action.copy(action = withAutomaticPayments(action)), playerId,
+            fillPartialRequirements = useMeaningfulFilter, intents = intents
+        ),
     )
 
     /**
@@ -825,6 +833,75 @@ class Strategist(
             is ActivateAbility -> gameAction.copy(costPayment = payment)
             else -> gameAction
         }
+    }
+
+    /** The entity a chosen target points at, whichever arm of the union it is. */
+    private fun targetEntityId(target: ChosenTarget): EntityId = when (target) {
+        is ChosenTarget.Player -> target.playerId
+        is ChosenTarget.Permanent -> target.entityId
+        is ChosenTarget.Card -> target.cardId
+        is ChosenTarget.Spell -> target.spellEntityId
+    }
+
+    /**
+     * Pay a **sum-gated graveyard exile** cast cost — collect evidence N and its filtered sibling —
+     * once the targets are known.
+     *
+     * Every other additional cost is filled by [withAutomaticPayments] before targeting, which is
+     * where the AI picks its targets from. This one can't be: Urgent Necropsy's threshold *is* the
+     * summed mana value of the targets ("collect evidence X, where X is the total mana value of the
+     * permanents this spell targets"), so it isn't determined until CR 601.2f, after the targets are
+     * announced at 601.2c. `exileWeightPerTarget` is what the enumerator ships for exactly that, and
+     * this runs on the finished action rather than the bare one.
+     *
+     * Cards are spent highest-mana-value-first, the same choice `CollectEvidenceResolver.autoSelect`
+     * makes, so the AI's selection and the engine's fallback can't disagree about what a payment
+     * looks like. When the graveyard can't cover what was targeted the *targets* give way, trimmed
+     * from the end until the price is affordable (down to none, which prices at 0 and is always
+     * payable): per the printed ruling an unreachable threshold means the caster "can't choose to
+     * collect evidence at all", so such a cast would simply be rejected — trimming turns a rejected
+     * action into a smaller legal one, and never into a worse one, since a target the AI drops was
+     * one it could not have kept.
+     */
+    private fun withSumGatedExilePayment(
+        state: GameState,
+        action: LegalAction,
+        gameAction: GameAction,
+    ): GameAction {
+        val cast = gameAction as? CastSpell ?: return gameAction
+        val info = action.additionalCostInfo ?: return gameAction
+        if (info.costType != "CollectEvidence" && info.costType != "ExileForTotal") return gameAction
+
+        // Most expensive first: the fewest cards that clear the floor.
+        val pool = info.validExileTargets
+            .filter { state.getEntity(it) != null }
+            .sortedByDescending { info.exileCardWeights[it] ?: 0 }
+        val available = pool.sumOf { info.exileCardWeights[it] ?: 0 }
+
+        var targets = cast.targets
+        var required = info.exileMinTotalWeight + targets.sumOf {
+            info.exileWeightPerTarget[targetEntityId(it)] ?: 0
+        }
+        while (required > available && targets.isNotEmpty()) {
+            targets = targets.dropLast(1)
+            required = info.exileMinTotalWeight + targets.sumOf {
+                info.exileWeightPerTarget[targetEntityId(it)] ?: 0
+            }
+        }
+        if (required > available) return gameAction // nothing left to trim; the engine will refuse
+
+        val chosen = mutableListOf<EntityId>()
+        var total = 0
+        for (cardId in pool) {
+            if (total >= required) break
+            chosen += cardId
+            total += info.exileCardWeights[cardId] ?: 0
+        }
+        return cast.copy(
+            targets = targets,
+            additionalCostPayment = (cast.additionalCostPayment ?: AdditionalCostPayment())
+                .copy(exiledCards = chosen),
+        )
     }
 
     /**

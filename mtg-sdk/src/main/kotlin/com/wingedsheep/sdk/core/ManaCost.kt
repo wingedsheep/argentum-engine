@@ -300,6 +300,32 @@ data class ManaCost(val symbols: List<ManaSymbol>) {
     }
 
     /**
+     * Return a relaxed cost where every colored requirement of a color other than [substitute] may
+     * *also* be paid with [substitute] — the narrower "you may spend [color] mana as though it were
+     * mana of any color" relaxation (CR 609.4b), as opposed to [relaxColors]'s "mana of any type
+     * can be spent".
+     *
+     * Modelled by rewriting each `{C}`-style colored pip into a hybrid of its own color and
+     * [substitute]: `{G}` becomes `{G/U}` for Quicksilver Elemental's blue substitution, which is
+     * exactly "pay this with green or with blue" and needs no new payment path — the solver and
+     * affordability checks already understand hybrids (CR 118.7e).
+     *
+     * Deliberately narrower than [relaxColors] in three places, because the printed wording is:
+     * generic and `{C}` requirements are untouched (they are not *colored*), and hybrid/Phyrexian
+     * pips are left alone — each already offers a choice, and no printed card turns on widening one.
+     */
+    fun relaxColorsTo(substitute: Color): ManaCost {
+        if (symbols.none { it is ManaSymbol.Colored && it.color != substitute }) return this
+        return ManaCost(
+            symbols.map { symbol ->
+                if (symbol is ManaSymbol.Colored && symbol.color != substitute)
+                    ManaSymbol.Hybrid(symbol.color, substitute)
+                else symbol
+            }
+        )
+    }
+
+    /**
      * Return a relaxed cost where every colored, hybrid, phyrexian, and colorless requirement
      * is converted into generic mana — suitable for "mana of any type can be spent" effects
      * (e.g. Taster of Wares, Cruelclaw's Heist).

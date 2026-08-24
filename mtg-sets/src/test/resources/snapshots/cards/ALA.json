@@ -371,6 +371,118 @@
     ]
 }
 
+// Grixis Charm
+{
+    "name": "Grixis Charm",
+    "manaCost": "{U}{B}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Return target permanent to its owner's hand.\n• Target creature gets -4/-4 until end of turn.\n• Creatures you control get +2/+0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Return target permanent to its owner's hand"
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -4
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -4
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Target creature gets -4/-4 until end of turn"
+                },
+                {
+                    "effect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature ctrl:you"
+                            }
+                        },
+                        "body": {
+                            "type": "ModifyStats",
+                            "powerModifier": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "toughnessModifier": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "description": "Creatures you control get +2/+0 until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "UNCOMMON",
+        "artist": "Lars Grant-West",
+        "flavorText": "\"So many choices. Shall I choose loathing, hate, or malice today?\"\n—Eliza of the Keep",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a98a6695-44ce-445f-b476-e18a0b5dd8f2.jpg",
+        "rulings": [
+            {
+                "date": "2008-10-01",
+                "text": "You can choose a mode only if you can choose legal targets for that mode. If you can’t choose legal targets for any of the modes, you can’t cast the spell."
+            },
+            {
+                "date": "2008-10-01",
+                "text": "While the spell is on the stack, treat it as though its only text is the chosen mode. The other two modes are treated as though they don’t exist. You don’t choose targets for those modes."
+            },
+            {
+                "date": "2008-10-01",
+                "text": "If this spell is copied, the copy will have the same mode as the original."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Incurable Ogre
 {
     "name": "Incurable Ogre",
@@ -460,6 +572,225 @@
         "artist": "Wayne Reynolds",
         "flavorText": "On Naya, ambition and treachery are scarce, hunted nearly to extinction by the awe owed to terrestrial gods.",
         "imageUri": "https://cards.scryfall.io/normal/front/e/4/e4f0d262-cbfe-42d2-9066-0b48a38995d6.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Obelisk of Esper
+{
+    "name": "Obelisk of Esper",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {W}, {U}, or {B}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "WHITE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "artist": "Francis Tsai",
+        "flavorText": "It is a monument as austere, unyielding, and inscrutable as Esper itself.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/9/19869e75-0925-45dc-b5d9-6968fbfb35b5.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Obelisk of Grixis
+{
+    "name": "Obelisk of Grixis",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {U}, {B}, or {R}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLUE"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "artist": "Nils Hamm",
+        "flavorText": "Like most features of Grixis, the obelisks that remain from the time of Alara now exist only for dark exploitation.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/5200e41f-fe10-4c39-ab12-c6e13fb81a3d.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
+// Obelisk of Jund
+{
+    "name": "Obelisk of Jund",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {B}, {R}, or {G}.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "BLACK"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "RED"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddMana",
+                    "color": "GREEN"
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "artist": "Brandon Kitkouski",
+        "flavorText": "Volcanic ash-winds batter it, climbing vines overwhelm it, dragonfire roasts it, and yet it still stands as a testament to a forgotten world.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffe1a49a-5c1c-4274-a2ed-9a8a44abfaa6.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Rakeclaw Gargantuan
+{
+    "name": "Rakeclaw Gargantuan",
+    "manaCost": "{2}{R}{G}{W}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "{1}: Target creature with power 5 or greater gains first strike until end of turn.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "FIRST_STRIKE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature pow>=5"
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "artist": "Jesper Ejsing",
+        "flavorText": "Naya teems with gargantuans, titanic monsters to whom both nature and civilization defer.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/1/d1995ab8-7382-4c2a-b8c7-8b9272cab4fb.jpg",
+        "rulings": [
+            {
+                "date": "2008-10-01",
+                "text": "The ability checks the targeted creature’s power twice: when the creature becomes the target, and when the ability resolves. Once the ability resolves, it will continue to apply to the affected creature no matter what its power may become later in the turn."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "WHITE",
@@ -640,6 +971,176 @@
         "WHITE",
         "BLUE",
         "GREEN"
+    ]
+}
+
+// Sharuum the Hegemon
+{
+    "name": "Sharuum the Hegemon",
+    "manaCost": "{3}{W}{U}{B}",
+    "typeLine": "Legendary Artifact Creature — Sphinx",
+    "oracleText": "Flying\nWhen Sharuum enters, you may return target artifact card from your graveyard to the battlefield.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Battlefield",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "target"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "MYTHIC",
+        "artist": "Izzy",
+        "flavorText": "To gain audience with the hegemon, one must bring a riddle she has not heard.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/5/6589eaa8-95ec-4c97-8155-185487560ae6.jpg",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "If Sharuum the Hegemon is put into your graveyard as a state-based action immediately after Sharuum the Hegemon enters the battlefield (most likely due to the \"legend rule\") it can be the artifact card targeted by its own ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Sprouting Thrinax
+{
+    "name": "Sprouting Thrinax",
+    "manaCost": "{B}{R}{G}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "When this creature dies, create three 1/1 green Saproling creature tokens.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Saproling"
+                    ]
+                },
+                "descriptionOverride": "When this creature dies, create three 1/1 green Saproling creature tokens."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "UNCOMMON",
+        "artist": "Jarreau Wimberly",
+        "flavorText": "The vast network of predation on Jund has actually caused some strange creatures to adapt to being eaten.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/9/8950df86-1e27-4b6b-8b5c-25298a3bda85.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
+// Tidehollow Strix
+{
+    "name": "Tidehollow Strix",
+    "manaCost": "{U}{B}",
+    "typeLine": "Artifact Creature — Bird",
+    "oracleText": "Flying\nDeathtouch (Any amount of damage this deals to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "DEATHTOUCH"
+    ],
+    "metadata": {
+        "collectorNumber": "203",
+        "artist": "Cyril Van Der Haegen",
+        "flavorText": "The scullers beneath Esper keep strixes as trained pets, and set them loose when a fare refuses to pay.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4aafc65d-faa8-4bfe-83ac-7714c969022b.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Tower Gargoyle
+{
+    "name": "Tower Gargoyle",
+    "manaCost": "{1}{W}{U}{B}",
+    "typeLine": "Artifact Creature — Gargoyle",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Cavotta",
+        "flavorText": "\"Esper, like any work of art, can be truly appreciated only from a distance.\"\n—Tezzeret",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/0/10504d1b-8d3e-411a-bf40-51a8e7a863a0.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
     ]
 }
 

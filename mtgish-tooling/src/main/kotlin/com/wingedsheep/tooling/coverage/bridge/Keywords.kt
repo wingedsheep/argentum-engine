@@ -19,6 +19,14 @@ internal fun BridgeBuilder.keywords() {
     // so pinning the capability doesn't imply an AUTO render of the whole card.
     keyword("Daybound", "DAYBOUND")
     keyword("Nightbound", "NIGHTBOUND")
+    // Devoid (CR 702.114, Battle for Zendikar / Oath of the Gatewatch). A characteristic-defining
+    // ability — "this object is colorless" — that the IR carries not as a rule name but as the
+    // nested `_SettableColor: Devoid` under a `CDA_Color` envelope. A bare `keywords(Keyword.DEVOID)`
+    // stamp IS the whole mechanic: the SDK derives `CardDefinition.colors` as empty from the keyword,
+    // so it functions in every zone with nothing else to render. It would auto-resolve via
+    // PascalCase->enum (Devoid->DEVOID), but pin it like daybound/nightbound so the capability reads
+    // explicitly and an enum rename surfaces as a MISSING gap rather than silently dropping.
+    keyword("Devoid", "DEVOID")
     // Intimidate (CR 702.13) — `Keyword.INTIMIDATE` exists in the SDK enum, so the PascalCase→enum
     // auto-resolve would accept it, but the rules engine has NO block-evasion handling for it
     // (BlockEvasionRules covers flying/fear/shadow/horsemanship/landwalk only). A bare or granted

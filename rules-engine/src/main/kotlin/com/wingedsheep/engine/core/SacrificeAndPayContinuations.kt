@@ -103,6 +103,12 @@ data class PayOrSufferContinuation(
     val manaCost: ManaCost? = null,
     val zone: Zone? = null,
     val counterType: String? = null,
+    /**
+     * How many counters of [counterType] the payment places, for
+     * [PayOrSufferCostType.PUT_COUNTERS]. Distinct from [requiredCount], which is how many
+     * *permanents* the player must select — one, for every printed use.
+     */
+    val requiredCounters: Int = 1,
     val self: Boolean = false,
     /**
      * Trigger context from the original PayOrSufferEffect execution, preserved so the
@@ -124,7 +130,25 @@ data class PayOrSufferContinuation(
      * controller (you steal the card), not the player who declined to pay. Falls back to [playerId]
      * for the common case where the payer *is* the controller.
      */
-    val abilityControllerId: EntityId? = null
+    val abilityControllerId: EntityId? = null,
+    /**
+     * The resolving pipeline's collections, carried across the pay-or-decline pause so a suffer
+     * effect can still name them. Wand of Ith's suffer is "discard the card revealed this way" — a
+     * `MoveCollection` over a collection built earlier in the same resolution — and without this it
+     * resumes against an empty pipeline and silently discards nothing.
+     *
+     * Mirrors the same field on [AnyPlayerMayPayContinuation], for the same reason.
+     */
+    val storedCollections: Map<String, List<EntityId>> = emptyMap(),
+    /**
+     * The enclosing `ForEachInGroup` loop's current entity, when the pay-or-suffer sits inside one
+     * (Tidal Flats: "for each attacking creature ... its controller may pay {1}"). The consequence
+     * refers back to it — "creatures you control blocking *that creature*" — so the resumed context
+     * has to rebind `PipelineState.iterationTarget`. Without it the auto-suffer path (nothing to
+     * pay with, no prompt) worked while the far more common declined-a-prompt path silently
+     * matched nothing.
+     */
+    val iterationEntityId: EntityId? = null
 ) : ContinuationFrame
 
 /**
@@ -139,7 +163,9 @@ enum class PayOrSufferCostType {
     EXILE,
     CHOICE,
     TAP,
-    REMOVE_COUNTERS
+    REMOVE_COUNTERS,
+    PUT_COUNTERS,
+    MILL
 }
 
 /**
@@ -166,7 +192,17 @@ data class PayOrSufferChoiceContinuation(
     /** Mirror of [PayOrSufferContinuation.triggeringPlayerId] for the multi-option path. */
     val triggeringPlayerId: EntityId? = null,
     /** Mirror of [PayOrSufferContinuation.abilityControllerId] for the multi-option path. */
-    val abilityControllerId: EntityId? = null
+    val abilityControllerId: EntityId? = null,
+    /**
+     * The effect's authored consequence clause, carried so the second prompt — the one for the
+     * cost option the player picked — asks in the same words as the first. Rebuilding a
+     * single-cost effect without it would silently fall back to the generated description.
+     */
+    val consequenceDescription: String? = null,
+    /** Mirror of [PayOrSufferContinuation.storedCollections] for the multi-option path. */
+    val storedCollections: Map<String, List<EntityId>> = emptyMap(),
+    /** Mirror of [PayOrSufferContinuation.iterationEntityId] for the multi-option path. */
+    val iterationEntityId: EntityId? = null
 ) : ContinuationFrame
 
 /**
@@ -191,6 +227,11 @@ data class PayOrSufferChoiceContinuation(
  *   referencing [com.wingedsheep.sdk.scripting.references.Player.TriggeringPlayer] still resolves
  *   after the async pay-or-decline round-trip (mirrors [PayOrSufferContinuation]).
  * @property triggeringPlayerId See [triggeringEntityId].
+ * @property iterationTarget The permanent the enclosing `ForEachInGroup` / `ForEachInCollection`
+ *   loop is currently on, preserved across the pay-or-decline round-trip so a consequence written
+ *   as `EffectTarget.Self` still means *that* permanent. Cleansing ("for each land, destroy that
+ *   land unless any player pays 1 life") is the shape that needs it: without this the consequence
+ *   resolves `Self` to the resolving spell and destroys nothing.
  */
 @Serializable
 data class AnyPlayerMayPayContinuation(
@@ -207,7 +248,8 @@ data class AnyPlayerMayPayContinuation(
     val filter: GameObjectFilter,
     val storedCollections: Map<String, List<EntityId>> = emptyMap(),
     val triggeringEntityId: EntityId? = null,
-    val triggeringPlayerId: EntityId? = null
+    val triggeringPlayerId: EntityId? = null,
+    val iterationTarget: EntityId? = null
 ) : ContinuationFrame
 
 /**

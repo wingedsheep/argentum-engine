@@ -10,6 +10,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardScript
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.costs.PayCost
@@ -80,7 +81,14 @@ object SelfSteps {
             selfLosesKeyword(target, subject, tag),
             move("untap {self}", "untap$tag", Effects.Untap(target), subject),
             move("regenerate {self}", "regenerate$tag", RegenerateEffect(target), subject),
-        ) + putCounters(target, subject, tag)
+        ) + putCounters(target, subject, tag) +
+            // "{2}{U}: ~ can't be blocked this turn." — the durational evasion, whose whole family
+            // lives in [Combat] beside the combat statics it is the spell-side sibling of. It is a
+            // member here rather than a clause of its own because its object moves with every other
+            // member's: 24 printed lines say it about the source, and being a clause is also what
+            // lets "~ gets +1/+0 until end of turn and can't be blocked this turn." read as the two
+            // clauses it is.
+            Combat.restrictionClauses(target, subject, surface = "{self}", tag = tag)
         if (!pronominal) return named
         return named + listOf(
             putOnTop(target, tag),
@@ -148,9 +156,36 @@ object SelfSteps {
                     bind("kind" to kind, "n" to count, "self" to Unit)
                 }
             }
+        // The count named by a trailing clause instead of by a number word. One rule, both of
+        // Oracle's spellings, over the SDK's dynamic counter effect — and no bare-"X" row, for the
+        // reason [Amounts.namesX] gives: this clause is one [Triggers] lifts, and the announced X is
+        // silently zero anywhere it lands but a spell.
+        fun dynamicScriptFor(kind: String, amount: DynamicAmount) =
+            CardScript(spellEffect = Effects.AddDynamicCounters(kind, amount, target))
+        val defined = phrase<CardScript>(
+            "put X {kind} counters on {self}${Amounts.WHERE_X}",
+            name = "put a counted number of counters on$tag",
+        ) {
+            definedByCount()
+            slot("kind", Primitives.counterKind)
+            slot("self", subject)
+            slot("amount", Amounts.count)
+            build {
+                val amount = it.value<DynamicAmount>("amount")
+                if (Amounts.namesX(amount)) dynamicScriptFor(it.value("kind"), amount) else null
+            }
+            match { script ->
+                val (kind, amount) =
+                    Steps.dynamicCountersAdded(script.spellEffect, target) ?: return@match null
+                if (!Amounts.namesX(amount)) return@match null
+                if (script != dynamicScriptFor(kind, amount)) return@match null
+                bind("kind" to kind, "amount" to amount, "self" to Unit)
+            }
+        }
         return listOf(
             rule("put {kind} counter on {self}", "put a counter on$tag", null),
             rule("put {n} {kind} counters on {self}", "put counters on$tag", Cardinals.word),
+            defined,
         )
     }
 
@@ -308,6 +343,30 @@ object SelfSteps {
     }
 
     /**
+     * "Sacrifice ~." — Ball Lightning's end step, and every other creature that pays for its
+     * statistics by leaving.
+     *
+     * The bare sentence, and it declined until now because the four [sacrificeUnless] rules had the
+     * *rider* written into their templates: "sacrifice ~" was only ever readable as the front of
+     * "sacrifice ~ unless you pay {2}", so a card that printed the clause and stopped died on its
+     * own full stop. An "unless" clause is something English adds to this sentence, not something
+     * the sentence is made of, and a rule that cannot be read without its modifier is the shape
+     * that puts a line in the `.` decline family.
+     *
+     * The model is the sacrifice with no cost in front of it — [SacrificeSelfEffect] alone rather
+     * than the `PayOrSufferEffect` the riders build — so the two spellings denote different values
+     * and neither can print the other's sentence.
+     */
+    private val sacrificeSelf: Phrase<CardScript> = run {
+        val script = CardScript(spellEffect = SacrificeSelfEffect)
+        phrase("sacrifice {self}", name = "sacrifice the source") {
+            slot("self", Primitives.self)
+            build { script }
+            match { if (it == script) bind("self" to Unit) else null }
+        }
+    }
+
+    /**
      * "Sacrifice ~ unless you pay {G}{G}." — Krosan Cloudscraper's upkeep tax.
      *
      * A row of the [sacrificeUnless] shape over a *mana* cost rather than a permanent one, which is
@@ -344,13 +403,16 @@ object SelfSteps {
     private fun sacrificeUnless(
         template: String,
         name: String,
+        // A discard names a *card* and a sacrifice names a permanent, which are two noun phrases
+        // rather than one with a word appended; see [Filters.cardNoun].
+        noun: Phrase<GameObjectFilter> = Filters.indefinite,
         cost: (GameObjectFilter) -> PayCost,
     ): Phrase<CardScript> {
         fun scriptFor(filter: GameObjectFilter) = CardScript(
             spellEffect = PayOrSufferEffect(cost = cost(filter), suffer = SacrificeSelfEffect)
         )
         return phrase(template, name = name) {
-            slot("filter", Filters.indefinite)
+            slot("filter", noun)
             build { scriptFor(it.value("filter")) }
             match { script ->
                 val effect = script.spellEffect as? PayOrSufferEffect ?: return@match null
@@ -402,6 +464,33 @@ object SelfSteps {
         }
     }
 
+    /**
+     * "Sacrifice it unless you sacrifice any number of creatures with total power 12 or greater." —
+     * Phyrexian Dreadnought, and the third context `CostAtom` names.
+     *
+     * The whole of [VariableCosts] rather than a row of its own: a payable cost is the same payable
+     * thing as an activation cost and an additional cost, so this slots the family the other two
+     * slot. That is [Costs]' own argument one context further along, and it is why a verb this
+     * sentence has never printed ("unless you tap any number of …") costs nothing to have — the
+     * family is the type's product, and a context that can pay it can pay all of it.
+     */
+    private val sacrificeUnlessVariable: Phrase<CardScript> = run {
+        fun scriptFor(atom: CostAtom) = CardScript(
+            spellEffect = PayOrSufferEffect(cost = Costs.pay.Atom(atom), suffer = SacrificeSelfEffect)
+        )
+        phrase("sacrifice it unless you {atom}", name = "sacrifice the source unless you pay a chosen count") {
+            slot("atom", VariableCosts.payAtoms)
+            build { scriptFor(it.value("atom")) }
+            match { script ->
+                val effect = script.spellEffect as? PayOrSufferEffect ?: return@match null
+                val atom = (effect.cost as? PayCost.Atom)?.atom as? CostAtom.VariablePermanents
+                    ?: return@match null
+                if (script != scriptFor(atom)) return@match null
+                bind("atom" to atom)
+            }
+        }
+    }
+
     /** "Sacrifice it unless you discard a card at random." — Pillaging Horde. */
     private val sacrificeUnlessRandomDiscard: Phrase<CardScript> = run {
         val script = CardScript(
@@ -429,12 +518,15 @@ object SelfSteps {
      * this" needs an effect the SDK does not have, so it declines and is counted.
      */
     private val sacrificesSource: List<Phrase<CardScript>> = listOf(
+        sacrificeSelf,
         sacrificeUnlessPay,
         sacrificeUnlessCounted,
+        sacrificeUnlessVariable,
         sacrificeUnlessRandomDiscard,
         sacrificeUnless(
-            "sacrifice it unless you discard {filter} card",
+            "sacrifice it unless you discard {filter}",
             "sacrifice the source unless you discard",
+            noun = Filters.indefiniteCard,
         ) { Costs.pay.Discard(filter = it) },
         sacrificeUnless(
             "sacrifice it unless you sacrifice {filter}",

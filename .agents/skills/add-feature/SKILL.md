@@ -192,11 +192,30 @@ details (`ScenarioTestBase` vs `GameTestDriver`, inline test cards) and which co
 - Any other doc the feature contradicts: `engine-server-interface.md`, `data-contracts.md`,
   `player-input.md`, `web-client-architecture.md`, `continuous-effect-dependency-system.md`.
 
+## Step 8a: Keep Argentum Assay compiling and honest
+
+[Argentum Assay](../../../oracle-assay/README.md) — our first-party Oracle-text parser — reads printed
+text into the very SDK types you just touched, so it is a compile-time consumer of `mtg-sdk` and the
+closest thing the SDK has to an outside reader.
+
+- **You changed or renamed an existing type** (new required parameter, moved constant, reshaped effect):
+  fix the grammar rules that construct it **in this change**, and run `just assay-gate --limit 2000` so
+  the touchstone still round-trips. Skipping this breaks the `:oracle-assay` build for everyone.
+- **You added a new type**: nothing is owed here. An Assay rule is bidirectional and ships as a measured
+  *band* — its own probe, ranking and PR (see [`docs/oracle-assay.md`](../../../docs/oracle-assay.md)) —
+  so don't grow this PR into one. Name the new vocabulary in the PR body instead:
+  `just assay-report --rank tail` is the ranked backlog of what the grammar still can't read, and new
+  vocabulary is how a row on it becomes reachable.
+- **Your feature changed how existing cards behave**: run `just assay-differential` over the affected
+  set. A new `DIVERGENT` row means Assay and the corpus now disagree about a card you moved — classify it
+  before committing rather than leaving it for the next set sweep.
+
 ## Step 8b: Teach the mtgish generator your new capability
 
-A new SDK primitive should also become something the generator can *predict and draft* corpus-wide — one
-bridge/emitter entry typically unlocks coverage and auto-draft for many cards sharing the mechanic.
-Mechanics: [`add-card/new-sdk-types.md`](../add-card/new-sdk-types.md) → "Teach the mtgish generator".
+A new SDK primitive should also become something the mtgish generator can *predict and draft*
+corpus-wide — one bridge/emitter entry typically unlocks coverage and auto-draft for many cards sharing
+the mechanic. Mechanics: [`add-card/new-sdk-types.md`](../add-card/new-sdk-types.md) → "Teach the mtgish
+generator". Unlike an Assay band, this really is a one-line entry, which is why it stays in-PR.
 
 **Gate this on the right axis.** It applies when the feature introduces a new SDK effect/primitive
 mapping to an mtgish IR tag. It does **not** apply to pure composition of effects the emitter already

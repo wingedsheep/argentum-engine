@@ -185,7 +185,9 @@ fun TargetCreature(
     id: String? = null,
     dynamicMaxCount: DynamicAmount? = null,
     sameController: Boolean = false,
-    sameCreatureType: Boolean = false
+    differentControllers: Boolean = false,
+    sameCreatureType: Boolean = false,
+    chooser: TargetChooser = TargetChooser.Controller
 ): TargetObject = TargetObject(
     count = count,
     minCount = minCount,
@@ -195,7 +197,9 @@ fun TargetCreature(
     id = id,
     dynamicMaxCount = dynamicMaxCount,
     sameController = sameController,
-    sameCreatureType = sameCreatureType
+    differentControllers = differentControllers,
+    sameCreatureType = sameCreatureType,
+    chooser = chooser
 )
 
 // =============================================================================
@@ -499,6 +503,19 @@ data class TargetObject(
      */
     val differentNames: Boolean = false,
     /**
+     * When true and more than one target is chosen for this requirement, every chosen target must
+     * be controlled by a **different player** — the "one per player" distribution wording, whose
+     * canonical shape is "for each other player, exile **up to one** target creature that player
+     * controls" (Kaya, Spirits' Justice). The exact inverse of [sameController], and it composes
+     * with `optional = true` + `dynamicMaxCount = DynamicAmount.PlayerCount(Player.EachOpponent)`
+     * to spell that clause completely: the count says *how many* players are in scope, this says
+     * *at most one each*, and `optional` is the "up to". Enforced cross-target by `TargetValidator`
+     * (authoritative) and the interactive `DecisionValidators`, grouping by each permanent's
+     * *projected* controller so a control-change effect is respected; a no-op for single-target
+     * requirements and for non-permanent targets. Defaults to false.
+     */
+    val differentControllers: Boolean = false,
+    /**
      * Who picks which legal object this requirement lands on. See [TargetChooser] — the target
      * stays the *controller's* target either way (legality, respondability and CR 115 all still
      * run relative to the controller); only the selection decision is routed elsewhere.
@@ -538,6 +555,7 @@ data class TargetObject(
         }
         val qualified = when {
             sameController -> "$base controlled by the same player"
+            differentControllers -> "$base controlled by different players"
             sameOwner -> "$base from a single graveyard"
             sameCreatureType -> "$base that share a creature type"
             sameCardType -> "$base that share a card type"

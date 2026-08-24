@@ -14,7 +14,7 @@ cards using *only* supported mechanics need **no backend change** — pure `add-
 | Mechanic | Cards | Unimpl | Engine support | Notes |
 |----------|------:|-------:|----------------|-------|
 | **Blood token** | ~30 | ~19 | ✅ `Effects.CreateBlood` | Artifact token: `{1}, {T}, Discard a card, Sacrifice: Draw a card.` 11 already done (e.g. Blood Fountain, Voldaren Epicure). |
-| **Cleave** | 12 | 2 | ✅ `AlternativeCostType.CLEAVE` + `cleaveTarget`/`cleaveEffect` DSL | CR 702.148 — text-modifying alternative cost on instants/sorceries, modeled as a cast-mode branch (not string mutation). 10 authored (reference cards Alchemist's Gambit, Dig Up, Fierce Retribution, Path of Peril, Wash Away + this batch's Alchemist's Retrieval, Dread Fugue, Lunar Rejection, Parasitic Grasp, Winged Portent). 2 blocked on orthogonal sub-features — see [`../../../ENGINE-FEATURES-cleave-blocked.md`](../../../ENGINE-FEATURES-cleave-blocked.md): **Inspired Idea** (reduce max hand size by N) and **Lantern Flare** (`{X}` in the cleave cost). |
+| **Cleave** | 12 | 2 | ✅ `AlternativeCostType.CLEAVE` + `cleaveTarget`/`cleaveEffect` DSL | CR 702.148 — text-modifying alternative cost on instants/sorceries, modeled as a cast-mode branch (not string mutation). 10 authored (reference cards Alchemist's Gambit, Dig Up, Fierce Retribution, Path of Peril, Wash Away + this batch's Alchemist's Retrieval, Dread Fugue, Lunar Rejection, Parasitic Grasp, Winged Portent). 2 blocked on orthogonal sub-features — see [`engine-features-cleave-blocked.md`](engine-features-cleave-blocked.md): **Inspired Idea** (reduce max hand size by N) and **Lantern Flare** (`{X}` in the cleave cost). |
 | **Training** | 9 | 9 | ❌ **GAP → [#1261](https://github.com/wingedsheep/argentum-engine/issues/1261)** | CR 702.149 — attack trigger gated on a co-attacker with greater power → +1/+1 counter; plus a "when this creature trains" payoff hook (702.149c). Structural analog: Mentor + Decayed. |
 | **Exploit** | 9 | 9 | ❌ **GAP → [#1260](https://github.com/wingedsheep/argentum-engine/issues/1260)** | CR 702.110 — ETB "may sacrifice a creature" + a paired "when this creature exploits a creature" payoff (702.110b, the crux). Analog: Casualty's reflexive "when you do" trigger. Also surfaces as blocked trigger `WhenAPermanentExploitsAPermanent` (×9). |
 | **Disturb** | ~13 | ~13 | ⚠️ **GAP — no issue yet** | CR 702.146 — cast the back face from your graveyard, then exile. Transform machinery exists (`TransformEffects`), but there is no Disturb keyword or graveyard-cast-back-face DSL. All are DFCs (spirit front // enchantment or aura back). Not on the coverage leaderboard because these DFCs sit in the tool's "unmatched in mtgish" bucket. |
@@ -46,7 +46,7 @@ Two headline VOW mechanics still have open engine work items (route through `add
 **implemented** — `AlternativeCostType.CLEAVE` + the `cleaveTarget`/`cleaveEffect` DSL model it as a
 cast-mode branch (not text mutation). 10 of 12 cleave cards are authored. The remaining 2 are blocked
 not by cleave itself but by orthogonal sub-features (documented at
-[`../../../ENGINE-FEATURES-cleave-blocked.md`](../../../ENGINE-FEATURES-cleave-blocked.md)):
+[`engine-features-cleave-blocked.md`](engine-features-cleave-blocked.md)):
 **Inspired Idea** needs a reduce-max-hand-size-by-N effect; **Lantern Flare** needs `{X}` support in
 the cleave-cost enumerator.
 

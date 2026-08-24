@@ -1082,10 +1082,16 @@
     "manaCost": "{1}{U}",
     "typeLine": "Enchantment — Aura",
     "oracleText": "Enchant creature\nEnchanted creature can't be blocked.",
-    "flags": [
-        "CANT_BE_BLOCKED"
-    ],
     "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlocked",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
         "auraTarget": {
             "type": "TargetObject",
             "filter": {

@@ -178,6 +178,7 @@ object Reminders {
         Keyword.FLASH -> "You may cast this spell any time you could cast an instant."
         Keyword.PROWESS -> "Whenever you cast a noncreature spell, $self gets +1/+1 until end of turn."
         Keyword.CHANGELING -> "This card is every creature type."
+        Keyword.DEVOID -> "This card has no color."
         Keyword.CONVOKE -> "Your creatures can help cast this spell. Each creature you tap while casting this " +
             "spell pays for {1} or one mana of that creature's color."
 

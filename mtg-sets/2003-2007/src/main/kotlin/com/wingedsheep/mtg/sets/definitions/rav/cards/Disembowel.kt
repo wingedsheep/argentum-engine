@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.TargetCreature
 
@@ -24,7 +25,9 @@ val Disembowel = card("Disembowel") {
     typeLine = "Instant"
     oracleText = "Destroy target creature with mana value X."
     spell {
-        val t = target("target", TargetCreature(filter = TargetFilter.Creature))
+        // "with mana value X" is the X announced for this spell, which the filter reads at
+        // resolution — without it the card destroys any creature whatever X was paid.
+        val t = target("target", TargetCreature(filter = TargetFilter(GameObjectFilter.Creature.manaValueEqualsX())))
         effect = Effects.Move(t, Zone.GRAVEYARD, byDestruction = true)
     }
     metadata {

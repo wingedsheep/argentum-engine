@@ -289,10 +289,15 @@ data class TriggerContext(
                     triggeringPlayerId = event.playerId,
                     discoverValue = event.value
                 )
-                // Collect evidence (CR 701.59): the collecting player is the triggering player, so
+                // Collect evidence (CR 701.57): the collecting player is the triggering player, so
                 // "whenever you collect evidence" resolves "you" correctly for an opponent's
                 // collection against a ward cost.
                 is com.wingedsheep.engine.core.EvidenceCollectedEvent -> TriggerContext(
+                    triggeringPlayerId = event.playerId
+                )
+                // Forage (CR 701.59a): the foraging player is the triggering player, for the same
+                // reason — a forage paid as an opponent's cost must resolve "you" as that opponent.
+                is com.wingedsheep.engine.core.ForagedEvent -> TriggerContext(
                     triggeringPlayerId = event.playerId
                 )
                 // Solve a Case (CR 719.3a): the solving player is the triggering player, and the

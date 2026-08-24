@@ -34,7 +34,7 @@ import com.wingedsheep.sdk.scripting.ProtectionScope
  *   a [KeywordAbility]. There is nothing here to parse *into*.
  * - `Equip {N}` (621 cards) — equip is a field on `CardDefinition` (`equipCost`), likewise not a
  *   [KeywordAbility]. Two keyword abilities of the same shape, modelled two different ways.
- * - `Devoid`, `Partner`, `Infect`, `Fuse`, `Exalted`, `Myriad`, `Melee`, `Skulk` — no [Keyword]
+ * - `Partner`, `Infect`, `Fuse`, `Exalted`, `Myriad`, `Melee`, `Skulk` — no [Keyword]
  *   enum constant exists, so the capability genuinely is not in the SDK yet.
  *
  * That list is the fineness report's top declines, and it is exactly the backlog signal the design
@@ -148,6 +148,7 @@ object Keywords {
         // Static / triggered keyword abilities
         simple(Keyword.PROWESS),
         simple(Keyword.CHANGELING),
+        simple(Keyword.DEVOID),
         simple(Keyword.SOULBOND),
         simple(Keyword.PERSIST),
         simple(Keyword.UNDYING),

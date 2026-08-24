@@ -595,6 +595,14 @@ class TurnManager(
                 newState = endCombatResult.newState
                 events.addAll(endCombatResult.events)
 
+                // "This combat" delayed triggers (Goblin Flotilla) end here too — the same moment
+                // the combat phase is over for everything else.
+                newState = newState.copy(
+                    delayedTriggers = newState.delayedTriggers.filter {
+                        it.expiry !is com.wingedsheep.sdk.scripting.effects.DelayedTriggerExpiry.EndOfCombat
+                    }
+                )
+
                 newState = newState.withPriority(activePlayer)
             }
 

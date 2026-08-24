@@ -25,13 +25,13 @@ import com.wingedsheep.sdk.scripting.values.ManaColorSet
  * ([activateFromZone] = [Zone.HAND]), its additional cost
  * bounces a tapped creature you control ([Costs.ReturnToHand] over `Creature.tapped()` — the
  * cost is limited to permanents you control), and its effect puts this card (the source, in
- * hand) onto the battlefield ([Effects.PutOntoBattlefield] on [EffectTarget.Self]).
+ * hand) onto the battlefield. `fromZone = HAND` is the resolution guard: nothing re-checks
+ * [activateFromZone] once the ability is on the stack, so without it a card that left the hand in
+ * response would still be put onto the battlefield — from wherever it now is.
  *
- * "This land enters tapped" is the [EntersTapped] self-replacement, which the normal land-play
- * path honors. The engine's effect-based entry path does not re-apply a card's own
- * self-replacement, so the from-hand put also passes `tapped = true`; both routes make it enter
- * tapped, and an "enters untapped" replacement still overrides either. Sorcery-speed via
- * [TimingRule.SorcerySpeed].
+ * "This land enters tapped" is the [EntersTapped] self-replacement, and it is the *only* place
+ * this card says tapped: the from-hand put spells no placement, because the effect-based entry
+ * path applies the entering card's own clause too. Sorcery-speed via [TimingRule.SorcerySpeed].
  */
 val UrbanRetreat = card("Urban Retreat") {
     manaCost = ""
@@ -62,7 +62,11 @@ val UrbanRetreat = card("Urban Retreat") {
             Costs.ReturnToHand(GameObjectFilter.Creature.tapped())
         )
         activateFromZone = Zone.HAND
-        effect = Effects.PutOntoBattlefield(EffectTarget.Self, tapped = true)
+        effect = Effects.Move(
+            EffectTarget.Self,
+            Zone.BATTLEFIELD,
+            fromZone = Zone.HAND
+        )
         timing = TimingRule.SorcerySpeed
     }
 

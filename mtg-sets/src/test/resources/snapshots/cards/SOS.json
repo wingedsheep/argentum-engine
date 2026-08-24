@@ -8280,10 +8280,7 @@
         "triggeredAbilities": [
             {
                 "id": "ability_1",
-                "trigger": {
-                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
-                    "sourceFilter": "creature ctrl:you"
-                },
+                "trigger": "OneOrMoreDealCombatDamageToPlayerEvent",
                 "binding": "ANY",
                 "effect": {
                     "type": "Gated",
@@ -8297,7 +8294,8 @@
                     "then": {
                         "type": "MoveToZone",
                         "target": "Self",
-                        "destination": "Hand"
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
                     }
                 },
                 "activeZones": [
@@ -14249,7 +14247,7 @@
                 {
                     "effect": {
                         "type": "AddCounters",
-                        "counterType": "+1+1",
+                        "counterType": "+1/+1",
                         "count": 2,
                         "target": {
                             "type": "BoundVariable",
@@ -16180,7 +16178,8 @@
                 "effect": {
                     "type": "MoveToZone",
                     "target": "Self",
-                    "destination": "Hand"
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
                 },
                 "timing": "SorcerySpeed",
                 "activateFromZone": "Graveyard"
@@ -16643,7 +16642,8 @@
                     "type": "MoveToZone",
                     "target": "Self",
                     "destination": "Battlefield",
-                    "placement": "Tapped"
+                    "placement": "Tapped",
+                    "fromZone": "Graveyard"
                 },
                 "activateFromZone": "Graveyard",
                 "descriptionOverride": "Return this card from your graveyard to the battlefield tapped."

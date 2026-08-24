@@ -38,7 +38,7 @@ val ShamblingCieth = card("Shambling Cie'th") {
         triggerZone = Zone.GRAVEYARD
         effect = MayPayManaEffect(
             cost = ManaCost.parse("{B}"),
-            effect = Effects.ReturnToHand(EffectTarget.Self),
+            effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self),
         )
     }
 

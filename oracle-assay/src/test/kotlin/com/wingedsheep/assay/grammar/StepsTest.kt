@@ -464,6 +464,18 @@ class StepsTest : StringSpec({
             fragment("Destroy all creatures.")
     }
 
+    // The rider is something English adds to the sentence, not something the sentence is made of.
+    // The four "unless" rules had it written into their templates, so "Sacrifice ~." — a complete
+    // Oracle sentence — died on its own full stop, which is the shape of the whole `.` decline
+    // family. The bare model is the sacrifice with no cost in front of it, so the two do not collide.
+    "the bare sacrifice is a sentence, not the front of the unless one" {
+        roundTrips("At the beginning of each end step, sacrifice ~.")
+        roundTrips("{1}{R}: Sacrifice ~.")
+        roundTrips("At the beginning of your upkeep, sacrifice ~ unless you pay {2}.")
+        fragment("At the beginning of each end step, sacrifice ~.") shouldNotBe
+            fragment("At the beginning of each end step, sacrifice ~ unless you pay {2}.")
+    }
+
     // Both leaves in one file: a quantity of cards is a word, a quantity of life or damage a numeral.
     "the counted verbs keep the two number conventions apart" {
         roundTrips("You gain 3 life.")

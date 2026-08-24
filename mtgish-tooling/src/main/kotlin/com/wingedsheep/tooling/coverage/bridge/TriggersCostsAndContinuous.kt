@@ -250,6 +250,21 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // cast-time-value area is exactly what the emitter declines to render exactly (creator's note in
     // mtgish-tooling/CLAUDE.md), so cards using it stay SCAFFOLD even though the capability is present.
     supported("PayManaAnyX", "cost: pay mana with {X} (player-declared, threads to resolution via DynamicAmount.XValue)")
+    // An *activation* cost carrying {X} — the tag covers both halves of CR 107.3, and the engine now
+    // has both. When the ability's text doesn't define X (CR 107.3a) the controller announces it: the
+    // enumerator surfaces `hasXCost` / `maxAffordableX` / `minX`, the handler pauses for a
+    // ChooseNumberDecision, and the chosen value threads to payment and to `DynamicAmount.XValue`
+    // (Necropolis Fiend, Wizard's Rockets, Gogo's `minimumXValue = 1`). When the text *does* define it
+    // (CR 107.3c — "X is the mana value of that card"), `activatedAbility { xDefinedAs = <amount> }`
+    // substitutes the value into the {X} before enumeration, validation and payment read the cost, so
+    // the ability is offered at its resolved price with no picker (Soul Foundry, Elite Arcanist,
+    // Prototype Portal). Capability-only: the {X} / cast-time-value area is exactly what the emitter
+    // declines to render exactly, so these cards stay SCAFFOLD even though the capability is present.
+    supported(
+        "PayManaX",
+        "cost: activation cost with {X} — player-declared (ChooseNumberDecision -> DynamicAmount.XValue) " +
+            "or card-defined (activatedAbility { xDefinedAs = … }, CR 107.3c)"
+    )
     // Planeswalker loyalty cost (CR 606) — the +N / -N ability activation cost. The engine models it
     // via `loyaltyAbility(loyaltyChange) { }` with `startingLoyalty`. Oko, the Ringleader. The emitter
     // declines the whole loyalty-ability envelope (Activated) -> SCAFFOLD, so this is capability-only.
@@ -454,4 +469,14 @@ internal fun BridgeBuilder.triggersCostsAndContinuous() {
     // an unreadable count still scaffolds.
     supported("CDA_Power", "rule: characteristic-defining power (dynamicPower / dynamicStats)")
     supported("CDA_Toughness", "rule: characteristic-defining toughness (dynamicToughness / dynamicStats)")
+
+    // Characteristic-defining COLOR (CR 604.3, applied in layer 5). Unlike its power/toughness
+    // siblings this rule carries no capability of its own — every colour CDA in the corpus is one of
+    // several very different mechanics, told apart only by the nested `_SettableColor`: `Devoid`
+    // (CR 702.114, 132 cards) is a bare keyword the SDK derives `CardDefinition.colors` from, while
+    // `SimpleColorList` ("this card is blue"), `AllColors`, `Colorless` and `TheChosenColor` are each
+    // a colour-setting shape the SDK has no card-level home for. So this is an ENVELOPE: the nested
+    // tag decides. `Devoid` resolves through the Keyword entry in `keywords()`; the others stay
+    // UNMAPPED and keep blocking, which is the honest split.
+    envelope("CDA_Color", "envelope: the nested _SettableColor carries the capability (Devoid -> Keyword.DEVOID)")
 }

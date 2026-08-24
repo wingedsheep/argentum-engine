@@ -2,9 +2,15 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.EventPattern
+import com.wingedsheep.sdk.scripting.PreventDamageByRemovingCounter
+import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
+import com.wingedsheep.sdk.scripting.events.DamageType
+import com.wingedsheep.sdk.scripting.events.RecipientFilter
 
 /**
  * Consume one shield counter from [entityId], the single mutation behind both halves of
@@ -110,4 +116,94 @@ fun applyShieldCounterToDamage(
 ): ShieldedDamage? {
     val (newState, event) = consumeShieldCounter(state, entityId) ?: return null
     return ShieldedDamage(newState, event, damagePrevented = !cantBePrevented)
+}
+
+/**
+ * The printed sibling of [applyShieldCounterToDamage]: a
+ * [com.wingedsheep.sdk.scripting.PreventDamageByRemovingCounter] on [entityId] itself — "If this
+ * creature would be dealt damage, prevent that damage and remove a +1/+1 counter from it"
+ * (Unbreathing Horde).
+ *
+ * Same shape as the shield-counter rule and wired at the same two chokepoints, with one deliberate
+ * difference: the prevention is **not** gated on having a counter to remove. CR 122.1c's shield is
+ * *made of* its counters, so no counter means no effect; Unbreathing Horde's is a printed ability
+ * that prevents unconditionally and removes a counter if one is there. Hence this returns a
+ * [ShieldedDamage] whose `event` is nullable, where the shield version returns `null` outright.
+ *
+ * Only self-recipient patterns are honoured — the printed line says "this creature", and a
+ * card that shielded *other* permanents this way would need the scan to run over the battlefield
+ * rather than over the damaged permanent.
+ *
+ * @return `null` when [entityId] carries no such replacement effect, so callers fall through to the
+ *   normal damage-application path unchanged.
+ */
+fun applyPreventByRemovingCounterToDamage(
+    state: GameState,
+    entityId: EntityId,
+    isCombatDamage: Boolean,
+    cantBePrevented: Boolean,
+): CounterSpendingShield? {
+    val container = state.getEntity(entityId) ?: return null
+    val effects = container.get<ReplacementEffectSourceComponent>()?.replacementEffects ?: return null
+    val effect = effects.filterIsInstance<PreventDamageByRemovingCounter>().firstOrNull { candidate ->
+        val pattern = candidate.appliesTo
+        pattern is EventPattern.DamageEvent &&
+            pattern.recipient == RecipientFilter.Self &&
+            when (pattern.damageType) {
+                is DamageType.Any -> true
+                is DamageType.Combat -> isCombatDamage
+                is DamageType.NonCombat -> !isCombatDamage
+            }
+    } ?: return null
+
+    val counterType = counterTypeOf(effect.counterType) ?: return null
+    val counters = container.get<CountersComponent>()
+    val hasCounter = (counters?.getCount(counterType) ?: 0) > 0
+    if (!hasCounter) {
+        // Nothing to remove, but the damage is still prevented (the printed ruling).
+        return CounterSpendingShield(state, event = null, damagePrevented = !cantBePrevented)
+    }
+    val newState = state.updateEntity(entityId) { c ->
+        c.with(counters!!.withRemoved(counterType, 1))
+    }
+    val event = CountersRemovedEvent(
+        entityId,
+        counterType.name,
+        1,
+        container.get<CardComponent>()?.name ?: "Permanent"
+    )
+    return CounterSpendingShield(newState, event, damagePrevented = !cantBePrevented)
+}
+
+/**
+ * Outcome of a printed prevent-and-remove-a-counter ability meeting an incoming damage instance.
+ *
+ * Unlike [ShieldedDamage] the [event] is nullable: the ability fires (and prevents) even when the
+ * permanent has no counter of the named type left to remove.
+ */
+data class CounterSpendingShield(
+    val state: GameState,
+    val event: CountersRemovedEvent?,
+    val damagePrevented: Boolean,
+)
+
+/**
+ * The concrete [CounterType] a [CounterTypeFilter] names, or `null` for the filters that describe a
+ * *set* of counter types rather than one ("any counter") — those can't say which counter to remove.
+ */
+private fun counterTypeOf(filter: CounterTypeFilter): CounterType? = when (filter) {
+    is CounterTypeFilter.PlusOnePlusOne -> CounterType.PLUS_ONE_PLUS_ONE
+    is CounterTypeFilter.MinusOneMinusOne -> CounterType.MINUS_ONE_MINUS_ONE
+    is CounterTypeFilter.PlusOnePlusZero -> CounterType.PLUS_ONE_PLUS_ZERO
+    is CounterTypeFilter.PlusZeroPlusOne -> CounterType.PLUS_ZERO_PLUS_ONE
+    is CounterTypeFilter.MinusOneMinusZero -> CounterType.MINUS_ONE_MINUS_ZERO
+    is CounterTypeFilter.MinusZeroMinusOne -> CounterType.MINUS_ZERO_MINUS_ONE
+    is CounterTypeFilter.Loyalty -> CounterType.LOYALTY
+    // Fails *closed*, unlike the enters-with resolver's +1/+1 fallback: an unknown counter name
+    // here would silently spend the wrong counter, so the effect declines instead.
+    is CounterTypeFilter.Named -> CounterType.entries.firstOrNull {
+        it.name.equals(filter.name.uppercase().replace(' ', '_'), ignoreCase = true)
+    }
+    // "Any counter" cannot say which counter to remove.
+    is CounterTypeFilter.Any -> null
 }

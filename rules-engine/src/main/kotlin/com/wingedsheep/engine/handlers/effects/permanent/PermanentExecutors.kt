@@ -4,6 +4,7 @@ import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.handlers.effects.ExecutorModule
+import com.wingedsheep.engine.handlers.effects.permanent.abilities.GainAllActivatedAbilitiesOfExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantActivatedAbilityExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantActivatedAbilityToGroupExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.GrantEmbalmExecutor
@@ -209,6 +210,7 @@ class PermanentExecutors(
         SetBaseStatsExecutor(amountEvaluator),
         // abilities
         GrantActivatedAbilityExecutor(),
+        GainAllActivatedAbilitiesOfExecutor(cardRegistry),
         GrantActivatedAbilityToGroupExecutor(),
         GrantEmbalmExecutor(),
         GrantFlashbackExecutor(),

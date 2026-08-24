@@ -357,6 +357,11 @@ export interface CoinFlippedEvent {
   readonly won: boolean
   readonly sourceId: EntityId
   readonly sourceName: string
+  /**
+   * True when a "flip N coins and ignore all but one" replacement (Krark's Thumb) discarded this
+   * flip. The coin really was flipped, so it is still shown, but its result decided nothing.
+   */
+  readonly ignored?: boolean
   readonly description: string
 }
 

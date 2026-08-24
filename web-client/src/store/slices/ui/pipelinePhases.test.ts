@@ -314,3 +314,84 @@ describe('computePhases — per-target mana tax (Officious Interrogation)', () =
     expect(phases).toEqual([{ type: 'targeting' }])
   })
 })
+
+describe('computePhases — target-priced collect evidence (Urgent Necropsy)', () => {
+  /**
+   * "Collect evidence X, where X is the total mana value of the permanents this spell targets."
+   * The threshold is determined at CR 601.2f, after the targets are announced at 601.2c — so the
+   * evidence picker cannot run before the targeting step, and once it does run it has to be priced
+   * on what was actually chosen. `exileWeightPerTarget` carries both facts: the per-target prices,
+   * and (by being present at all) the instruction to defer.
+   */
+  function necropsy(costInfo: Record<string, unknown> = {}): LegalActionInfo {
+    return castAction({
+      actionType: 'CastSpell',
+      description: 'Cast Urgent Necropsy',
+      manaCostString: '{2}{B}{G}',
+      requiresTargets: true,
+      validTargets: ['artifact1', 'creature1'],
+      additionalCostInfo: {
+        costType: 'CollectEvidence',
+        description: 'Collect evidence X',
+        validExileTargets: ['gy1', 'gy2'],
+        exileMinTotalWeight: 0,
+        exileCardWeights: { gy1: 5, gy2: 2 },
+        exileWeightUnit: 'mana value',
+        exileWeightPerTarget: { artifact1: 1, creature1: 2 },
+        ...costInfo,
+      },
+    })
+  }
+
+  function captureEvidencePicker(
+    info: LegalActionInfo,
+    targets: unknown[],
+  ): Record<string, unknown> | null {
+    let captured: Record<string, unknown> | null = null
+    const store = {
+      startTargeting: (arg: Record<string, unknown>) => {
+        captured = arg
+      },
+    } as unknown as Parameters<typeof enterPhase>[3]
+    enterPhase({ type: 'costPayment' }, info, { ...info.action, targets } as never, store)
+    return captured
+  }
+
+  it('runs the evidence picker after targeting, never before', () => {
+    expect(computePhases(necropsy(), { autoTapEnabled: true })).toEqual([
+      { type: 'targeting' },
+      { type: 'costPayment' },
+    ])
+  })
+
+  it('keeps costPayment before targeting when the threshold is printed, not derived', () => {
+    const phases = computePhases(necropsy({ exileWeightPerTarget: {}, exileMinTotalWeight: 6 }), {
+      autoTapEnabled: true,
+    })
+    expect(phases).toEqual([{ type: 'costPayment' }, { type: 'targeting' }])
+  })
+
+  it('prices the picker on the targets the caster chose', () => {
+    const captured = captureEvidencePicker(necropsy(), [
+      { type: 'Permanent', entityId: 'artifact1' },
+      { type: 'Permanent', entityId: 'creature1' },
+    ])
+    expect(captured).toMatchObject({
+      minTotalWeight: 3, // 1 + 2
+      minTargets: 1,
+      cardWeights: { gy1: 5, gy2: 2 },
+    })
+  })
+
+  it('counts only the chosen targets, not every legal one', () => {
+    const captured = captureEvidencePicker(necropsy(), [
+      { type: 'Permanent', entityId: 'creature1' },
+    ])
+    expect(captured).toMatchObject({ minTotalWeight: 2, minTargets: 1 })
+  })
+
+  it('a cast with no targets asks for evidence 0 and lets the player confirm with none', () => {
+    const captured = captureEvidencePicker(necropsy(), [])
+    expect(captured).toMatchObject({ minTotalWeight: 0, minTargets: 0 })
+  })
+})

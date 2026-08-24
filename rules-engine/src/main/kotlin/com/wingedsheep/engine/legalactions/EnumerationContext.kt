@@ -93,7 +93,12 @@ class EnumerationContext(
         val landDrops = state.getEntity(playerId)?.get<LandDropsComponent>()
         val remaining = landDrops?.remaining ?: 0
         val staticBonus = castPermissionUtils.getAdditionalLandDrops(state, playerId)
-        canPlaySorcerySpeed && (remaining + staticBonus > 0)
+        canPlaySorcerySpeed && (remaining + staticBonus > 0) &&
+            // Worms of the Earth's "players can't play lands". Mirrored in PlayLandHandler: a
+            // legal-action list that offers a land drop the handler will refuse is worse than
+            // either check alone.
+            !com.wingedsheep.engine.legalactions.utils.LandDropUtils
+                .playerCantPlayLands(state, playerId, cardRegistry)
     }
 
     // Cast restrictions — blanket, spell-independent locks (a Silence-style CantCastSpellsComponent

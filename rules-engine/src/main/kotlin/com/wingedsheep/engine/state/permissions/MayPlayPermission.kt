@@ -113,6 +113,26 @@ data class MayPlayPermission(
      */
     val endsWhenSourceUncontrolled: Boolean = false,
     /**
+     * When true, this permission lasts only for as long as [sourceId] is **on the battlefield** —
+     * "for as long as this permanent remains on the battlefield", regardless of who controls it and
+     * regardless of who holds the permission.
+     *
+     * The controller-blind sibling of [endsWhenSourceUncontrolled], and the difference is
+     * load-bearing rather than cosmetic: Shared Fate grants play permission to *every* player,
+     * including opponents who never control the enchantment, so a window keyed to "you control the
+     * source" would revoke each opponent's grant on the first state-based check. Because the window
+     * reads only the source's zone, a control change leaves the permission alone — right for a
+     * grant that models a static ability, which keeps functioning under a new controller.
+     *
+     * Enforced the same way and for the same reason: [com.wingedsheep.engine.mechanics.sba.permanent
+     * .EndedDurationExpiryCheck] deletes rather than gates, so the latch is one-way (CR 611.2b) and
+     * the source returning cannot revive it. Set together with [permanent] = true by
+     * [com.wingedsheep.engine.handlers.effects.library.GrantMayPlayFromExileExecutor] when the grant
+     * carries [com.wingedsheep.sdk.scripting.effects.MayPlayExpiry.WhileSourceOnBattlefield].
+     * Meaningless without a [sourceId]; the executor refuses to build such a permission.
+     */
+    val endsWhenSourceLeavesBattlefield: Boolean = false,
+    /**
      * When true, this permission authorizes casting spells only — a land among [cardIds] can
      * never be played through it. Mirrors
      * [com.wingedsheep.sdk.scripting.effects.GrantMayPlayFromExileEffect.nonLandOnly]: "cast"
@@ -172,6 +192,11 @@ data class MayPlayPermission(
         // one it could never close, which is the opposite of what the duration says.
         require(!endsWhenSourceUncontrolled || sourceId != null) {
             "MayPlayPermission with endsWhenSourceUncontrolled must specify sourceId"
+        }
+        // Same reasoning as above: the "while the source is on the battlefield" window is
+        // evaluated entirely from sourceId, so without one it could never close.
+        require(!endsWhenSourceLeavesBattlefield || sourceId != null) {
+            "MayPlayPermission with endsWhenSourceLeavesBattlefield must specify sourceId"
         }
     }
 }

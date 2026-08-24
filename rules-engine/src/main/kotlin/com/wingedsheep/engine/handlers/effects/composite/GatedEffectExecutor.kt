@@ -808,7 +808,18 @@ class GatedEffectExecutor(
             is SuccessCriterion.ControlChanged -> evaluateControlChanged(priorEvents)
             is SuccessCriterion.CountersRemoved -> evaluateCountersRemoved(priorEvents)
             is SuccessCriterion.PermanentsSacrificed -> evaluatePermanentsSacrificed(priorEvents)
+            is SuccessCriterion.TurnedFaceUp -> evaluateTurnedFaceUp(priorEvents)
         }
+
+        /**
+         * Did the gated action actually turn a permanent face up? Scans the action's own events for
+         * a [TurnFaceUpEvent]. `TurnFaceUpExecutor` emits one only when the permanent really flipped:
+         * a manifested/cloaked instant or sorcery card is revealed and left face down (CR 701.40g /
+         * 701.58g, a [CardsRevealedEvent] instead), and an already-face-up permanent produces no
+         * event at all. Both are the "you can't" case Etrata, Deadly Fugitive's fallback branch needs.
+         */
+        private fun evaluateTurnedFaceUp(priorEvents: List<GameEvent>): Boolean =
+            priorEvents.any { event -> event is TurnFaceUpEvent }
 
         /**
          * Did the gated action actually sacrifice something? Scans the action's own events for a

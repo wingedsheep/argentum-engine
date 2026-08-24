@@ -28,7 +28,7 @@ val ReassemblingSkeleton = card("Reassembling Skeleton") {
     toughness = 1
     activatedAbility {
         cost = Costs.Mana("{1}{B}")
-        effect = Effects.PutOntoBattlefield(EffectTarget.Self, tapped = true)
+        effect = Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.Self, tapped = true)
         activateFromZone = Zone.GRAVEYARD
     }
     metadata {

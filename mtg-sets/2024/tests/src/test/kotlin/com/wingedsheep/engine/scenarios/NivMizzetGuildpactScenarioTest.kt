@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -150,17 +151,29 @@ class NivMizzetGuildpactScenarioTest : FunSpec({
         val req = listOf(TargetCreature())
 
         // A multicolored opponent source is blocked.
-        validator.validateTargets(driver.state, target, req, casterId = opponent, sourceColors = setOf(Color.RED, Color.WHITE))
-            .shouldNotBeNull()
+        validator.validateTargets(
+            driver.state, target, req, casterId = opponent,
+            sourceColors = setOf(Color.RED, Color.WHITE),
+            targetingSourceType = TargetingSourceType.SPELL
+        ).shouldNotBeNull()
         // A monocolored one isn't — CR 105.2b, multicolored is two *or more* colors.
-        validator.validateTargets(driver.state, target, req, casterId = opponent, sourceColors = setOf(Color.RED))
-            .shouldBeNull()
+        validator.validateTargets(
+            driver.state, target, req, casterId = opponent,
+            sourceColors = setOf(Color.RED),
+            targetingSourceType = TargetingSourceType.SPELL
+        ).shouldBeNull()
         // Nor is a colorless one.
-        validator.validateTargets(driver.state, target, req, casterId = opponent, sourceColors = emptySet())
-            .shouldBeNull()
+        validator.validateTargets(
+            driver.state, target, req, casterId = opponent,
+            sourceColors = emptySet(),
+            targetingSourceType = TargetingSourceType.SPELL
+        ).shouldBeNull()
         // Hexproof never stops the permanent's own controller.
-        validator.validateTargets(driver.state, target, req, casterId = me, sourceColors = setOf(Color.RED, Color.WHITE))
-            .shouldBeNull()
+        validator.validateTargets(
+            driver.state, target, req, casterId = me,
+            sourceColors = setOf(Color.RED, Color.WHITE),
+            targetingSourceType = TargetingSourceType.SPELL
+        ).shouldBeNull()
 
         // The client DTO carries the quality so the FE renders the shield chip.
         val view = ClientStateTransformer(cardRegistry = driver.cardRegistry).transform(driver.state, viewingPlayerId = opponent)

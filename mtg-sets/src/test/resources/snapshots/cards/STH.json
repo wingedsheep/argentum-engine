@@ -421,6 +421,74 @@
     ]
 }
 
+// Stronghold Assassin
+{
+    "name": "Stronghold Assassin",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Creature — Phyrexian Zombie Assassin",
+    "oracleText": "{T}, Sacrifice a creature: Destroy target nonblack creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "NotColor",
+                                        "color": "BLACK"
+                                    }
+                                ]
+                            }
+                        },
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "71",
+        "rarity": "RARE",
+        "artist": "Matthew D. Wilson",
+        "flavorText": "The assassin sees only throats and hears only heartbeats.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc0f043c-efb3-4392-ae25-b3ec180b0cb2.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Wall of Blossoms
 {
     "name": "Wall of Blossoms",

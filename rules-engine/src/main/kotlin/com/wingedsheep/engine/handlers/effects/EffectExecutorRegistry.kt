@@ -84,7 +84,7 @@ class EffectExecutorRegistry(
         registerModule(libraryExecutors)
         registerModule(StackExecutors(amountEvaluator, cardRegistry))
         registerModule(InformationExecutors())
-        registerModule(CombatExecutors(amountEvaluator))
+        registerModule(CombatExecutors(amountEvaluator, cardRegistry))
         // Wire the recursion (so a card put onto the battlefield by an effect can run its
         // OnEnterRunEffect replacement) before registering; the ref is read lazily at execution
         // time, so order is not load-bearing.

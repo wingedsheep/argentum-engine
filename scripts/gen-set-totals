@@ -66,7 +66,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = REPO_ROOT / "game-server/src/main/resources/coverage/set-totals.json"
 PRODUCTS_OUTPUT = REPO_ROOT / "game-server/src/main/resources/coverage/set-products.json"
 CACHE_ROOT = Path.home() / ".cache" / "scryfall"
-CACHE_SCHEMA_VERSION = 8
+CACHE_SCHEMA_VERSION = 9
 REFRESH_WINDOW_DAYS = 30
 
 # Scryfall's set pages split a set's printings into named sections — "Draft Cards" first, then the

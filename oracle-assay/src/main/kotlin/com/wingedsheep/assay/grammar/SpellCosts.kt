@@ -1,6 +1,7 @@
 package com.wingedsheep.assay.grammar
 
 import com.wingedsheep.assay.syntax.Phrase
+import com.wingedsheep.assay.syntax.alternate
 import com.wingedsheep.assay.syntax.bind
 import com.wingedsheep.assay.syntax.constant
 import com.wingedsheep.assay.syntax.oneOf
@@ -211,12 +212,28 @@ object SpellCosts {
         countedRule("{filter} on the battlefield", "permanents on the battlefield") { filter ->
             CostReductionSource.PermanentsOnBattlefieldMatching(filter)
         },
-        countedRule("{filter} card in your graveyard", "cards in your graveyard") { filter ->
+        // "This spell costs {1} less to cast for each attacking creature." — Stone Idol Trap. The
+        // same source with the clause left off, which is [Amounts.Scope]'s empty row: English omits
+        // "on the battlefield" and means it, so this spelling parses and the row above prints. It is
+        // kept apart from the "you control" row above by the noun phrase alone — that one requires a
+        // controller predicate and `countedRule`'s `scopeFree` here refuses one — so one text still
+        // has one reading.
+        alternate(
+            countedRule("{filter}", "permanents on the battlefield (unqualified)") { filter ->
+                CostReductionSource.PermanentsOnBattlefieldMatching(filter)
+            }
+        ),
+        countedRule(
+            "{filter} in your graveyard",
+            "cards in your graveyard",
+            noun = Filters.cardNoun,
+        ) { filter ->
             CostReductionSource.CardsInGraveyardMatchingFilter(filter, 1)
         },
         countedRule(
-            "{filter} card in your graveyard and in exile",
+            "{filter} in your graveyard and in exile",
             "cards in your graveyard and in exile",
+            noun = Filters.cardNoun,
         ) { filter ->
             CostReductionSource.CardsInGraveyardAndExileMatchingFilter(filter, 1)
         },
@@ -253,9 +270,12 @@ object SpellCosts {
         template: String,
         name: String,
         controlled: Boolean = false,
+        // The noun the row counts: permanents for the battlefield rows, *cards* for the graveyard
+        // ones, which is a different noun phrase and not the same one with a word after it.
+        noun: Phrase<GameObjectFilter> = Filters.filter,
         source: (GameObjectFilter) -> CostReductionSource?,
     ): Phrase<CostReductionSource> = phrase(template, name = name) {
-        slot("filter", Filters.filter)
+        slot("filter", noun)
         build { bindings ->
             val printed = bindings.value<GameObjectFilter>("filter")
             val filter = if (controlled) controlledScope(printed) else printed.takeIf { scopeFree(it) }

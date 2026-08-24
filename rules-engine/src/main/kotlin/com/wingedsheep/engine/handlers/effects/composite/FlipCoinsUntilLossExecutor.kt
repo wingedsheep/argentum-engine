@@ -1,6 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.composite
 
-import com.wingedsheep.engine.core.CoinFlipEvent
+import com.wingedsheep.engine.core.CoinFlipChoiceContinuation
 import com.wingedsheep.engine.core.DecisionPhase
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.FlipCoinsUntilLossContinuation
@@ -8,7 +8,7 @@ import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.GameLimits
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
-import com.wingedsheep.engine.handlers.effects.CoinFlipModifiers
+import com.wingedsheep.engine.handlers.effects.CoinFlipService
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
@@ -33,11 +33,15 @@ import kotlin.reflect.KClass
  * to continue flipping"): the choice only ever follows a *won* flip, because a lost flip has already
  * ended the run and there is nothing left to decide.
  *
- * Unlike [FlipCoinsExecutor], [CoinFlipModifiers.shouldForceWin] is consulted **per flip** and
- * [CoinFlipModifiers.markFlipped] runs after each one. `FlipCoinsEffect` flips its whole batch as a
- * single "flip N coins" event, so one replacement decision covers all of it; here each coin is its own
- * flip, so a "the first time you flip one or more coins each turn" replacement (Edgar, King of Figaro)
- * applies to the first coin only and the rest are honest flips.
+ * This run has **two** pause points, and they must not be confused. The coin itself can pause under a
+ * [com.wingedsheep.sdk.scripting.FlipAdditionalCoins] replacement (Krark's Thumb: "which of these two
+ * do you keep?", a [CoinFlipChoiceContinuation]), and only once that coin has settled does the
+ * "flip again?" question arise. The tally therefore has to survive the *first* pause too, which is
+ * why [CoinFlipChoiceContinuation.winsSoFar] exists.
+ *
+ * Unlike [FlipCoinsExecutor], each coin here is its own flip event: [CoinFlipService] is called once
+ * per coin, so a "the first time you flip one or more coins each turn" replacement (Edgar, King of
+ * Figaro) applies to the first coin only and the rest are honest flips.
  */
 class FlipCoinsUntilLossExecutor(
     private val cardRegistry: CardRegistry,
@@ -52,10 +56,9 @@ class FlipCoinsUntilLossExecutor(
         context: EffectContext
     ): EffectResult = flipOnce(
         state = state,
-        flipperId = context.controllerId,
-        storeWinsAs = effect.storeWinsAs,
+        effect = effect,
+        context = context,
         winsSoFar = 0,
-        sourceId = context.sourceId,
         cardRegistry = cardRegistry,
         decisionHandler = decisionHandler,
         priorEvents = emptyList()
@@ -64,35 +67,76 @@ class FlipCoinsUntilLossExecutor(
     companion object {
 
         /**
-         * Flip one coin for [flipperId] on top of [winsSoFar] already-won flips.
+         * Flip one coin for the run's flipper on top of [winsSoFar] already-won flips.
          *
-         * Returns either a finished result carrying the final tally under [storeWinsAs], or a pause on
-         * the "flip again?" question with a [FlipCoinsUntilLossContinuation] holding the new tally.
+         * Returns a finished result carrying the final tally under
+         * [FlipCoinsUntilLossEffect.storeWinsAs], a pause on "which coin do you keep?" when a
+         * flip-additional-coins replacement applies, or a pause on "flip again?" after a win.
          */
         fun flipOnce(
             state: GameState,
-            flipperId: EntityId,
-            storeWinsAs: String,
+            effect: FlipCoinsUntilLossEffect,
+            context: EffectContext,
             winsSoFar: Int,
-            sourceId: EntityId?,
             cardRegistry: CardRegistry,
             decisionHandler: DecisionHandler,
             priorEvents: List<GameEvent>
         ): EffectResult {
-            val sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
+            val resolution = CoinFlipService.flip(
+                state = state,
+                flipperId = context.controllerId,
+                count = 1,
+                sourceId = context.sourceId,
+                cardRegistry = cardRegistry,
+                decisionHandler = decisionHandler
+            )
 
-            val forced = CoinFlipModifiers.shouldForceWin(state, cardRegistry, flipperId)
-            val (won, afterFlip) = if (forced) true to state else state.nextRandom { nextBoolean() }
-            val afterMark = CoinFlipModifiers.markFlipped(afterFlip, flipperId)
+            return when (resolution) {
+                is CoinFlipService.Resolution.NeedsChoice -> EffectResult.paused(
+                    resolution.state.pushContinuation(
+                        CoinFlipChoiceContinuation(
+                            decisionId = resolution.decision.id,
+                            effect = effect,
+                            effectContext = context,
+                            pending = resolution.pending,
+                            winsSoFar = winsSoFar
+                        )
+                    ),
+                    resolution.decision,
+                    priorEvents + resolution.events
+                )
 
-            val events = priorEvents +
-                CoinFlipEvent(flipperId, won, sourceId ?: flipperId, sourceName)
+                is CoinFlipService.Resolution.Resolved -> afterFlip(
+                    state = resolution.state,
+                    effect = effect,
+                    context = context,
+                    won = resolution.results.firstOrNull() == true,
+                    winsSoFar = winsSoFar,
+                    decisionHandler = decisionHandler,
+                    priorEvents = priorEvents + resolution.events
+                )
+            }
+        }
 
+        /**
+         * Continue the run now that one coin has settled: a lost flip ends it, a won flip asks
+         * whether to keep going. Shared with the resume path so a coin that paused for a Krark's
+         * Thumb choice rejoins the run exactly where an unreplaced coin would have.
+         */
+        fun afterFlip(
+            state: GameState,
+            effect: FlipCoinsUntilLossEffect,
+            context: EffectContext,
+            won: Boolean,
+            winsSoFar: Int,
+            decisionHandler: DecisionHandler,
+            priorEvents: List<GameEvent>
+        ): EffectResult {
             if (!won) {
                 // The run ends on a lost flip and the flip that lost is not counted. Losing the first
                 // flip therefore stores 0 — which is how "if you lose a flip, this has no effect" is
                 // modelled: every `GTE 1` payoff gate reads the zero and falls away on its own.
-                return finish(afterMark, storeWinsAs, winsSoFar, events)
+                return finish(state, effect.storeWinsAs, winsSoFar, priorEvents)
             }
 
             val wins = winsSoFar + 1
@@ -105,12 +149,15 @@ class FlipCoinsUntilLossExecutor(
                     "GameLimits: flip-until-loss reached $wins won flips — stopping " +
                         "(likely a forced-win replacement with an automated 'continue' answer)."
                 )
-                return finish(afterMark, storeWinsAs, wins, events)
+                return finish(state, effect.storeWinsAs, wins, priorEvents)
             }
 
+            val sourceId = context.sourceId
+            val sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name } ?: "Unknown"
+
             val decisionResult = decisionHandler.createYesNoDecision(
-                state = afterMark,
-                playerId = flipperId,
+                state = state,
+                playerId = context.controllerId,
                 sourceId = sourceId,
                 sourceName = sourceName,
                 prompt = "Flip another coin? You have won $wins " +
@@ -120,12 +167,12 @@ class FlipCoinsUntilLossExecutor(
                 phase = DecisionPhase.RESOLUTION
             )
             val decision = decisionResult.pendingDecision
-                ?: return EffectResult.error(afterMark, "Failed to create continue-flipping decision")
+                ?: return EffectResult.error(state, "Failed to create continue-flipping decision")
 
             val continuation = FlipCoinsUntilLossContinuation(
                 decisionId = decision.id,
-                flipperId = flipperId,
-                storeWinsAs = storeWinsAs,
+                flipperId = context.controllerId,
+                storeWinsAs = effect.storeWinsAs,
                 winsSoFar = wins,
                 sourceId = sourceId
             )
@@ -133,9 +180,13 @@ class FlipCoinsUntilLossExecutor(
             return EffectResult.paused(
                 decisionResult.state.pushContinuation(continuation),
                 decision,
-                events + decisionResult.events
+                priorEvents + decisionResult.events
             )
         }
+
+        /** The run's flipper and source, rebuilt for a resume that only kept the frame's fields. */
+        fun contextFor(flipperId: EntityId, sourceId: EntityId?): EffectContext =
+            EffectContext(sourceId = sourceId, controllerId = flipperId)
 
         private fun finish(
             state: GameState,

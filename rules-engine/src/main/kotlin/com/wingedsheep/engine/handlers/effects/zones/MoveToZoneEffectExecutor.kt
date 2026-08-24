@@ -103,8 +103,18 @@ class MoveToZoneEffectExecutor(
             return attachAuraOnEnter(state, targetId, cardComponent, controllerId, context)
         }
 
+        // "Lands can't enter the battlefield" (Worms of the Earth). The land simply doesn't enter:
+        // the move is a no-op and the card stays where it was. Only this path needs the check —
+        // *playing* a land is stopped earlier by PlayersCantPlayLands, and a land can't be cast.
+        if (effect.destination == Zone.BATTLEFIELD &&
+            cardComponent.typeLine.isLand &&
+            LandEntryLocks.landsCantEnter(state, cardRegistry)
+        ) {
+            return EffectResult.success(state)
+        }
+
         // Build ZoneEntryOptions based on placement and effect properties
-        val entryOptions = buildEntryOptions(effect, cardComponent, controllerId)
+        val entryOptions = buildEntryOptions(effect, cardComponent, controllerId, context.controllerId)
 
         val transitionResult = ZoneTransitionService.moveToZone(
             state, targetId, effect.destination, entryOptions, currentZone
@@ -325,7 +335,8 @@ class MoveToZoneEffectExecutor(
     private fun buildEntryOptions(
         effect: MoveToZoneEffect,
         cardComponent: CardComponent,
-        controllerId: com.wingedsheep.sdk.model.EntityId
+        controllerId: com.wingedsheep.sdk.model.EntityId,
+        moverId: com.wingedsheep.sdk.model.EntityId
     ): ZoneEntryOptions {
         val libraryPlacement = when {
             effect.positionFromTop != null && effect.destination == Zone.LIBRARY ->
@@ -354,7 +365,12 @@ class MoveToZoneEffectExecutor(
             tappedAndAttacking = effect.placement == ZonePlacement.TappedAndAttacking,
             faceDown = isBattlefieldFaceDown,
             morphData = morphData,
-            faceDownMode = if (isBattlefieldFaceDown) faceDownMode else null
+            faceDownMode = if (isBattlefieldFaceDown) faceDownMode else null,
+            // Single-card sibling of the collection path: the player resolving the effect chose
+            // this card and saw where it went, so they keep knowing it. The audience policy —
+            // including "out of a public zone means the whole table knows" — is
+            // LibraryRevealUtils.placementAudience's, not this executor's.
+            libraryMoverId = moverId
         )
     }
 

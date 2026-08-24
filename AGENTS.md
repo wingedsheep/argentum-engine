@@ -23,6 +23,10 @@ docs it points at; load those when the work needs them.
     keyword, decision flow → **`add-feature`** (composition-first design, cross-layer tracing, perf + UX).
   - Starting a set that has no `backlog/sets/` entry yet → **`create-backlog-for-set`** (Scryfall dump,
     `cards.md` checklist, `definitions/<code>/` scaffold, `mechanics.md`). It runs *before* `set-loop`.
+  - Implementing every *Assay-ready* card for a set — the ⚡ badge on the Set Completion view, i.e.
+    the cards Argentum Assay reads whole that the set hasn't authored → **`assay-ready-sweep`**
+    (`just assay-ready <CODE>` for the four-way split; canonical placement + reprint rows are half
+    the job, and the half that gets forgotten).
   - Running the build/test gates and reading the results → **`verify`**.
   - Working autonomously through a whole set, one PR at a time, until it's done → **`set-loop`** (launches
     the harness's own loop — Claude Code `/loop`, Codex `/goal`; every PR it opens is titled

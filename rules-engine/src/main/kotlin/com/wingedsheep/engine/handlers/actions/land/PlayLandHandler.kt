@@ -76,6 +76,12 @@ class PlayLandHandler(
             return "You can only play lands when the stack is empty"
         }
 
+        // Blanket "players can't play lands" lock (Worms of the Earth). Checked before the land
+        // drop so the message says why, rather than blaming a drop the player still has.
+        if (LandDropUtils.playerCantPlayLands(state, action.playerId, cardRegistry, conditionEvaluator)) {
+            return "You can't play lands"
+        }
+
         // Check land drop availability (accounts for static ability bonuses)
         val landDrops = state.getEntity(action.playerId)?.get<LandDropsComponent>()
             ?: LandDropsComponent()

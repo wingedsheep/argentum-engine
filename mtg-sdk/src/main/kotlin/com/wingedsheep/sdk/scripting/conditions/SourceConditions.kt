@@ -512,6 +512,47 @@ data class SacrificedPermanentHadSubtype(val subtype: String) : Condition {
 }
 
 /**
+ * True when the activated ability currently resolving has been activated at least [count] times
+ * this turn, counting the activation that is resolving right now.
+ *
+ * Fallen Empires' burnout mana creatures — Farrelite Priest and Initiates of the Ebon Hand — print
+ * "{1}: Add {W}. If this ability has been activated four or more times this turn, sacrifice this
+ * creature at the beginning of the next end step." (the Initiates add {B} rather than {W}; the
+ * burnout clause is identical). The clause reads a tally rather than imposing a limit, so the
+ * ability must opt into bookkeeping with
+ * [com.wingedsheep.sdk.scripting.ActivatedAbility.trackActivations]; without that the engine only
+ * counts activations for abilities gated by OncePerTurn / MaxPerTurn and this reads zero.
+ *
+ * Scoped to the resolving ability on its own source: two copies of Farrelite Priest each burn out
+ * on their own fourth activation.
+ */
+@SerialName("ThisAbilityActivatedThisTurnAtLeast")
+@Serializable
+data class ThisAbilityActivatedThisTurnAtLeast(val count: Int) : Condition {
+    override val description: String = "if this ability has been activated $count or more times this turn"
+}
+
+/**
+ * Condition: "if the exiled creature was a [subtype]" — reads what an **exile additional cost**
+ * (`Costs.additional.ExileCards`) just ate, for either a spell (Soul Exchange's "Put a +2/+2
+ * counter on that creature if the exiled creature was a Thrull") or an activated ability.
+ *
+ * The cost is paid as the spell is cast or the ability is activated (CR 601.2h), long before the
+ * effect resolves, so the answer is recorded at payment time. For a cost exiling from the
+ * battlefield the engine keeps a last-known-information snapshot (CR 113.7a), which is what makes
+ * an exiled *token* — a Breeding Pit Thrull, say — still count.
+ */
+@SerialName("ExiledAsCostHadSubtype")
+@Serializable
+data class ExiledAsCostHadSubtype(val subtype: String) : Condition {
+    override val description: String = "if a $subtype was exiled this way"
+    override fun applyTextReplacement(replacer: TextReplacer): Condition {
+        val newSubtype = replacer.replaceSubtype(Subtype(subtype))
+        return if (newSubtype.value == subtype) this else ExiledAsCostHadSubtype(newSubtype.value)
+    }
+}
+
+/**
  * Condition: "If the sacrificed permanent was legendary."
  *
  * Reads `EffectContext.sacrificedPermanents` (snapshots captured at cost-payment time

@@ -1304,39 +1304,6 @@
     ]
 }
 
-// Fellwar Stone
-{
-    "name": "Fellwar Stone",
-    "manaCost": "{2}",
-    "typeLine": "Artifact",
-    "oracleText": "{T}: Add one mana of any color that a land an opponent controls could produce.",
-    "script": {
-        "activatedAbilities": [
-            {
-                "id": "ability_1",
-                "cost": "CostTap",
-                "effect": {
-                    "type": "AddManaOfChoice",
-                    "colorSet": {
-                        "type": "ManaColorSet.LandsCouldProduce",
-                        "scope": "OPPONENTS"
-                    }
-                },
-                "timing": "ManaAbility",
-                "isManaAbility": true
-            }
-        ]
-    },
-    "metadata": {
-        "collectorNumber": "269",
-        "rarity": "UNCOMMON",
-        "artist": "John Avon",
-        "flavorText": "\"What do you have that I cannot obtain?\"\n—Mairsil, the Pretender",
-        "imageUri": "https://cards.scryfall.io/normal/front/e/9/e99c4fec-eb21-4288-a12f-1c58c4946bae.jpg?1721429553"
-    },
-    "colorIdentityOverride": []
-}
-
 // Garruk's Packleader
 {
     "name": "Garruk's Packleader",

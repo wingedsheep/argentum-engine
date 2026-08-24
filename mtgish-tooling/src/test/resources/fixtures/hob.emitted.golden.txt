@@ -1255,7 +1255,7 @@ val DancingFromDarkToDawn = card("Dancing from Dark to Dawn") {
 package com.wingedsheep.mtg.sets.generated.demo.cards
 
 import com.wingedsheep.sdk.core.Subtype
-import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -1284,13 +1284,10 @@ val DesertWereWorm = card("Desert Were-Worm") {
         ability = GrantDynamicStatsEffect(
             filter = GroupFilter.source(),
             powerBonus = DynamicAmount.Multiply(
-                DynamicAmount.Count(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Land.withSubtype(Subtype.MOUNTAIN)),
+                DynamicAmounts.battlefield(Player.You, GameObjectFilter.Land.withSubtype(Subtype.MOUNTAIN)).count(),
                 2
             ),
-            toughnessBonus = DynamicAmount.Multiply(
-                DynamicAmount.Count(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Land.withSubtype(Subtype.MOUNTAIN)),
-                0
-            )
+            toughnessBonus = DynamicAmount.Fixed(0)
         )
     }
     // STRUCTURE needs human wiring: trigger-shape

@@ -212,7 +212,7 @@ object Library {
             )
         )
         val rule = phrase<CardScript>(template, name = name) {
-            slot("filter", Filters.indefinite)
+            slot("filter", Filters.indefiniteCard)
             build { scriptFor(it.value("filter")) }
             match { script ->
                 val filter = searchedFilter(script) ?: return@match null
@@ -249,11 +249,14 @@ object Library {
             )
         )
         phrase(
-            "search your library for up to {n} {filter} cards, reveal them, put them into your hand, then shuffle",
+            "search your library for up to {n} {filter}, reveal them, put them into your hand, then shuffle",
             name = "search your library for several cards",
         ) {
             slot("n", Cardinals.word)
-            slot("filter", Filters.plural)
+            // The card noun, not [Filters.plural]: Oracle inflects the head noun and leaves the type
+            // phrase in front of it singular, so "creature cards" — never "creatures cards", which is
+            // what this rule printed while the noun was in its own template.
+            slot("filter", Filters.pluralCards)
             build { scriptFor(it.int("n"), it.value("filter")) }
             match { script ->
                 val filter = searchedFilter(script) ?: return@match null
@@ -294,12 +297,12 @@ object Library {
             )
         )
         phrase(
-            "search your library for {first} card and {second} card, reveal them, put them into " +
+            "search your library for {first} and {second}, reveal them, put them into " +
                 "your hand, then shuffle",
             name = "search your library for two cards",
         ) {
-            slot("first", Filters.indefinite)
-            slot("second", Filters.indefinite)
+            slot("first", Filters.indefiniteCard)
+            slot("second", Filters.indefiniteCard)
             build { scriptFor(it.value("first"), it.value("second")) }
             match { script ->
                 // `then` splices the *left* recipe's steps and appends the right one whole, so the
@@ -390,11 +393,11 @@ object Library {
             )
         )
         phrase(
-            "reveal the top card of your library. if it's {filter} card, put it onto the " +
+            "reveal the top card of your library. if it's {filter}, put it onto the " +
                 "battlefield. otherwise, put it into your graveyard",
             name = "reveal the top card and sort it",
         ) {
-            slot("filter", Filters.indefinite)
+            slot("filter", Filters.indefiniteCard)
             build { scriptFor(it.value("filter")) }
             match { script ->
                 val steps = (script.spellEffect as? CompositeEffect)?.effects ?: return@match null
@@ -414,29 +417,29 @@ object Library {
         mayShuffle,
         lookAtOpponentTopAndBury,
         search(
-            "search your library for {filter} card, put that card onto the battlefield, then shuffle",
+            "search your library for {filter}, put that card onto the battlefield, then shuffle",
             "search your library for a card to the battlefield",
             destination = SearchDestination.BATTLEFIELD,
         ),
         search(
-            "search your library for {filter} card, put it onto the battlefield, then shuffle",
+            "search your library for {filter}, put it onto the battlefield, then shuffle",
             "search your library for a card to the battlefield (pronoun)",
             canonicalForm = false,
             destination = SearchDestination.BATTLEFIELD,
         ),
         search(
-            "search your library for {filter} card, reveal it, then shuffle and put that card on top",
+            "search your library for {filter}, reveal it, then shuffle and put that card on top",
             "search your library for a card, revealed, to the top",
             destination = SearchDestination.TOP_OF_LIBRARY,
             reveal = true,
         ),
         search(
-            "search your library for {filter} card, put it into your hand, then shuffle",
+            "search your library for {filter}, put it into your hand, then shuffle",
             "search your library for a card to your hand",
             destination = SearchDestination.HAND,
         ),
         search(
-            "search your library for {filter} card, reveal it, put it into your hand, then shuffle",
+            "search your library for {filter}, reveal it, put it into your hand, then shuffle",
             "search your library for a card, revealed, to your hand",
             destination = SearchDestination.HAND,
             reveal = true,

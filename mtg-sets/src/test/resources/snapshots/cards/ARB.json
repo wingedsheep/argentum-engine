@@ -1,3 +1,76 @@
+// Behemoth Sledge
+{
+    "name": "Behemoth Sledge",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +2/+2 and has trample and lifelink.\nEquip {3}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "TRAMPLE"
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "LIFELINK"
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "Those who worship the great gargantuans could hardly be expected to fight with a subtle weapon.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/4/84e4a224-2db7-47d0-ba8b-98aeb50ad5d3.jpg",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "Multiple instances of lifelink on the same creature are redundant. If a creature with multiple instances of lifelink deals damage, its controller still only gains life equal to the damage dealt."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "GREEN"
+    ]
+}
+
 // Bloodbraid Elf
 {
     "name": "Bloodbraid Elf",
@@ -31,6 +104,61 @@
     "colorIdentityOverride": [
         "GREEN",
         "RED"
+    ]
+}
+
+// Filigree Angel
+{
+    "name": "Filigree Angel",
+    "manaCost": "{5}{W}{W}{U}",
+    "typeLine": "Artifact Creature — Angel",
+    "oracleText": "Flying\nWhen this creature enters, you gain 3 life for each artifact you control.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "artifact"
+                        },
+                        "multiplier": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "rarity": "RARE",
+        "artist": "Richard Whitters",
+        "flavorText": "\"I craved enlightenment, and Crucius's etherium opened my eyes. I would share my sight with you, but first you must believe.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7a0c7a2a-85c1-4b20-95b9-04aab0bd0d3b.jpg",
+        "rulings": [
+            {
+                "date": "2009-05-01",
+                "text": "Filigree Angel's \"enters\" ability counts Filigree Angel itself, assuming that it's still on the battlefield and still an artifact by the time the ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
     ]
 }
 
@@ -187,6 +315,151 @@
     },
     "colorIdentityOverride": [
         "RED",
+        "GREEN"
+    ]
+}
+
+// Soul Manipulation
+{
+    "name": "Soul Manipulation",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one or both —\n• Counter target creature spell.\n• Return target creature card from your graveyard to your hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature",
+                                "zone": "Stack"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Counter target creature spell"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature own:you",
+                                "zone": "Graveyard"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Return target creature card from your graveyard to your hand"
+                }
+            ],
+            "chooseCount": 2,
+            "minChooseCount": 1
+        }
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Carl Critchlow",
+        "flavorText": "\"Birth and death are both reversible.\"\n—Nicol Bolas",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bcd3cb05-c6f9-435a-a0e7-1f85da4a36eb.jpg",
+        "rulings": [
+            {
+                "date": "2009-05-01",
+                "text": "You may choose just the first mode (targeting a creature spell), just the second mode (targeting a creature card in your graveyard), or both modes (targeting a creature spell and a creature card in your graveyard). You can’t choose a mode unless there’s a legal target for it."
+            },
+            {
+                "date": "2009-05-01",
+                "text": "If you choose both modes, you choose their targets at the same time. You can’t counter your own creature spell and then return that card from your graveyard to your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Sphinx of the Steel Wind
+{
+    "name": "Sphinx of the Steel Wind",
+    "manaCost": "{5}{W}{U}{B}",
+    "typeLine": "Artifact Creature — Sphinx",
+    "oracleText": "Flying, first strike, vigilance, lifelink, protection from red and from green",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE",
+        "VIGILANCE",
+        "LIFELINK"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "RED"
+            }
+        },
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Color",
+                "color": "GREEN"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "110",
+        "rarity": "MYTHIC",
+        "artist": "Kev Walker",
+        "flavorText": "No one has properly answered her favorite riddle: \"Why should I spare your life?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c860cf0f-ef68-455f-9c71-a6dd25b51d71.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK"
+    ]
+}
+
+// Winged Coatl
+{
+    "name": "Winged Coatl",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Snake",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nFlying\nDeathtouch (Any amount of damage this deals to a creature is enough to destroy it.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING",
+        "DEATHTOUCH"
+    ],
+    "metadata": {
+        "collectorNumber": "105",
+        "artist": "Izzy",
+        "flavorText": "The nacatl called this new species \"vetli,\" their word for poison arrows.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/d/bd23ae2b-9f69-4d8d-87f9-ebcbccd67342.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
         "GREEN"
     ]
 }

@@ -42,7 +42,8 @@
                             "type": "ContextTarget",
                             "index": 0
                         }
-                    }
+                    },
+                    "descriptionOverride": "When this creature dies, you may put its +1/+1 counters on target artifact creature."
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -947,7 +948,6 @@
                     "fromZone": "Graveyard"
                 },
                 "activeZones": [
-                    "Battlefield",
                     "Graveyard"
                 ],
                 "descriptionOverride": "When you draw your third card in a turn, return this card from your graveyard to the battlefield tapped."

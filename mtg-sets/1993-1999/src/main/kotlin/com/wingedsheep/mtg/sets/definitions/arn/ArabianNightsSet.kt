@@ -34,6 +34,14 @@ object ArabianNightsSet : MtgSet {
     }
 
     /**
+     * ARN printed only Mountain. Keep [basicLandsFallback] for a complete Limited land supply while
+     * exposing the set's own printing here so discovery and set coverage include it.
+     */
+    override val basicLands: List<CardDefinition> by lazy {
+        CardDiscovery.findBasicLandsIn(CARDS_PACKAGE, code)
+    }
+
+    /**
      * Arabian Nights predates token *cards* — Scryfall has no `tarn` set to sync from — so its token
      * art is self-hosted under `web-client/public/images/tokens/` and declared here, the same route
      * Invasion, Apocalypse and Odyssey take.

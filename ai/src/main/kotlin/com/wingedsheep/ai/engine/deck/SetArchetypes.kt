@@ -110,6 +110,29 @@ object SetArchetypes {
                     "Ramp into large green creatures, then leverage their high mana cost for powerful draw spells. Bury opponents in card advantage."),
             )
         ),
+        "MRD" to SetSynergies(
+            setCode = "MRD",
+            setName = "Mirrodin",
+            archetypes = listOf(
+                Archetype("Affinity", listOf(Color.BLUE),
+                    "Flood the board with cheap artifacts, then cast Frogmite, Myr Enforcer and Somber Hoverguard for a fraction of their printed cost. The format's defining deck — count artifacts, not lands."),
+                Archetype("Equipment Aggro", listOf(Color.WHITE),
+                    "Cheap Leonin bodies plus Bonesplitter and Leonin Scimitar. Equipment survives removal and moves on to the next creature, so trades never cost you the beatdown.",
+                    creatureTypes = listOf("Cat")),
+                Archetype("Skyhunter Skies", listOf(Color.WHITE, Color.BLUE),
+                    "Evasive fliers wearing Equipment. Nothing on the ground matters once a Leonin Skyhunter is carrying a Bonesplitter and blue is holding the board back.",
+                    creatureTypes = listOf("Cat", "Drone")),
+                Archetype("Nim Sacrifice", listOf(Color.BLACK, Color.RED),
+                    "Nim creatures grow with every artifact you control, and Disciple of the Vault turns each one you sacrifice into damage. Your own artifacts dying is the payoff, not the cost.",
+                    creatureTypes = listOf("Zombie")),
+                Archetype("Artifact Demolition", listOf(Color.RED, Color.GREEN),
+                    "Shatter effects and Tel-Jilad hate punish a format built out of artifacts, while red removal clears the way for green's oversized bodies.",
+                    creatureTypes = listOf("Elf", "Beast")),
+                Archetype("Myr Ramp", listOf(Color.GREEN),
+                    "Myr and Talismans accelerate you past the aggro decks and fix a splash, then dump the set's biggest artifacts a turn or two early.",
+                    creatureTypes = listOf("Myr")),
+            )
+        ),
         "DOM" to SetSynergies(
             setCode = "DOM",
             setName = "Dominaria",
@@ -180,6 +203,33 @@ object SetArchetypes {
                     "Sacrifice your own creatures to switch on void payoffs, turning every permanent that dies into value. A grindy sacrifice-aggro deck that controls the board while bleeding the opponent."),
                 Archetype("Counters", listOf(Color.GREEN, Color.WHITE),
                     "Take the board early with cheap creatures and pile on +1/+1 counters. Station synergies and counter payoffs build a sticky, go-tall-and-wide deck that's hard to climb back against."),
+            )
+        ),
+        "MKM" to SetSynergies(
+            setCode = "MKM",
+            setName = "Murders at Karlov Manor",
+            archetypes = listOf(
+                Archetype("Detectives", listOf(Color.WHITE, Color.BLUE),
+                    "Field a squad of Detectives, turn Clues into cards, and ride the format's best evasive bodies. A tempo-value deck that never runs out of gas.",
+                    creatureTypes = listOf("Detective")),
+                Archetype("Surveil", listOf(Color.BLUE, Color.BLACK),
+                    "Surveil to fix your draws and stock your graveyard, then take over with cheap interaction and recursive threats. A grindy control deck that wins the long game."),
+                Archetype("Sacrifice", listOf(Color.BLACK, Color.RED),
+                    "Suspect your own creatures to push damage, then sacrifice them for value before the drawback bites. An aggressive deck that turns every body into reach."),
+                Archetype("Disguise", listOf(Color.RED, Color.GREEN),
+                    "Deploy face-down 2/2s early and flip them at the perfect moment for a blowout. A midrange deck that turns every attack into a guessing game."),
+                Archetype("Face-Down Counters", listOf(Color.GREEN, Color.WHITE),
+                    "Cloak and disguise creatures, then cash in the turn-up triggers for +1/+1 counters. A go-tall midrange deck that snowballs off every flip."),
+                Archetype("Small Creatures", listOf(Color.WHITE, Color.BLACK),
+                    "Flood the board with cheap creatures with power 2 or less and drain the opponent with the payoffs that count them. A wide, incremental aggro deck."),
+                Archetype("Artifacts", listOf(Color.BLUE, Color.RED),
+                    "Investigate for Clues, then sacrifice artifacts to trigger payoffs and refuel. An artifact-fueled tempo deck that converts leftovers into damage."),
+                Archetype("Graveyard", listOf(Color.BLACK, Color.GREEN),
+                    "Fill your graveyard and spend it — collect evidence, recur creature cards, and out-attrition the table. A resilient midrange deck with a deep back end."),
+                Archetype("Go Wide Aggro", listOf(Color.RED, Color.WHITE),
+                    "Attack with three or more creatures every turn to switch on the format's go-wide payoffs. The fastest deck in the format, backed by burn."),
+                Archetype("Collect Evidence", listOf(Color.GREEN, Color.BLUE),
+                    "Bank cards in your graveyard, collect evidence to unlock discounted spells, and grow a threat with +1/+1 counters. A ramp-value deck that plays the biggest spells."),
             )
         ),
         "OTJ" to SetSynergies(

@@ -28,8 +28,11 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import importlib.machinery
+import importlib.util
 import json
 import re
+import sys
 import time
 from collections import defaultdict
 from pathlib import Path
@@ -43,12 +46,43 @@ from set_dirs import (
 )
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+SCRIPTS_DIR = Path(__file__).resolve().parent
 PRINTINGS_CACHE = Path.home() / ".cache" / "scryfall" / "printings"
 SET_CACHE = Path.home() / ".cache" / "scryfall"
 CACHE_TTL_DAYS = 30
 
-CARD_DSL_RE = re.compile(r'\bcard\(\s*"([^"]+)"')
-PRINTING_NAME_RE = re.compile(r'\bname\s*=\s*"([^"]+)"')
+
+def _load_module(name: str, filename: str):
+    """Import a sibling script that isn't a legal module name (`missing-reprints.py`).
+
+    Registered in `sys.modules` *before* it executes, because `@dataclass` resolves a class's own
+    module out of that table while decorating it and fails on a module that isn't there yet.
+    Mirrors the loader in `assay-ready.py`.
+    """
+    loader = importlib.machinery.SourceFileLoader(name, str(SCRIPTS_DIR / filename))
+    spec = importlib.util.spec_from_loader(name, loader)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    loader.exec_module(module)
+    return module
+
+
+missing_reprints = _load_module("missing_reprints", "missing-reprints.py")
+
+# Borrowed rather than re-declared: these three are one unit, and a local copy is exactly how this
+# script used to truncate `card("Kongming, \"Sleeping Dragon\"")` to `Kongming, \` — a name that
+# slugifies to a cache file that doesn't exist, so the card fell into the "no fresh cache" bucket
+# and was reported as *stale* instead of as covered. See the comment above their definitions.
+CARD_DSL_RE = missing_reprints.CARD_DSL_RE
+PRINTING_NAME_RE = missing_reprints.PRINTING_NAME_RE
+unescape_kotlin = missing_reprints.unescape_kotlin
+
+# Guard against the naive bodies coming back: `[^"]+` cannot match a name with an escaped quote.
+assert CARD_DSL_RE.search(r'card("Kongming, \"Sleeping Dragon\"")').group(1) == \
+    r'Kongming, \"Sleeping Dragon\"', "CARD_DSL_RE no longer spans escaped quotes"
+assert PRINTING_NAME_RE.search(r'name = "Pang Tong, \"Young Phoenix\"",').group(1) == \
+    r'Pang Tong, \"Young Phoenix\"', "PRINTING_NAME_RE no longer spans escaped quotes"
+assert unescape_kotlin(r'Kongming, \"Sleeping Dragon\"') == 'Kongming, "Sleeping Dragon"'
 
 SCAFFOLDABLE_SET_TYPES = {
     "core", "expansion", "draft_innovation", "masters", "commander",
@@ -83,11 +117,12 @@ def scan_definitions() -> tuple[dict[str, str], dict[str, set[str]]]:
     for kt in iter_card_files():
         text = kt.read_text(encoding="utf-8")
         set_code = codes.get(kt.parts[-3], kt.parts[-3])
-        card_names = {m.group(1) for m in CARD_DSL_RE.finditer(text)}
+        card_names = {unescape_kotlin(m.group(1)) for m in CARD_DSL_RE.finditer(text)}
         for name in card_names:
             canonical[name] = set_code
         if "Printing(" in text:
-            for name in PRINTING_NAME_RE.findall(text):
+            for literal in PRINTING_NAME_RE.findall(text):
+                name = unescape_kotlin(literal)
                 if name not in card_names:
                     reprints[name].add(set_code)
     return canonical, reprints
@@ -204,11 +239,16 @@ def main() -> int:
     written = 0
     skipped_exists = 0
     skipped_nocache = 0
+    stale: list[str] = []
     by_set: dict[str, int] = defaultdict(int)
 
     for name in sorted(canonical):
         printings = load_card_printings(name)
         if printings is None:
+            # No per-card cache, or one past the 30-day TTL. Counted and named rather than skipped
+            # quietly: a stale entry drops a card that genuinely owes rows, and a silent drop reads
+            # as "this card needed nothing" — 40 of Jumpstart's 79 missing rows vanished this way.
+            stale.append(name)
             continue
         canon_set = canonical[name]
         expected = expected_canonical(printings)
@@ -249,6 +289,12 @@ def main() -> int:
     print(f"{'(dry-run) would write' if args.dry_run else 'wrote'} {written} reprint files "
           f"across {len(by_set)} sets")
     print(f"skipped: {skipped_exists} already exist, {skipped_nocache} missing ids in cache")
+    if stale:
+        shown = ", ".join(stale[:8]) + (" …" if len(stale) > 8 else "")
+        print(
+            f"WARNING: {len(stale)} cards had no fresh printing cache and were NOT considered: {shown}\n"
+            f"         re-run scripts/missing-reprints.py (or fetch_printings per name) first"
+        )
     for sc in sorted(by_set, key=lambda s: (-by_set[s], s)):
         print(f"  {sc.upper():<6} {by_set[sc]}")
     return 0

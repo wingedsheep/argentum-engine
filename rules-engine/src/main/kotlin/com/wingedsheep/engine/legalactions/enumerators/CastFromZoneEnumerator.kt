@@ -2514,10 +2514,9 @@ class CastFromZoneEnumerator : ActionEnumerator {
                 val manaKicker = kickers.firstOrNull { it.manaCost != null && it.keyword != Keyword.OFFSPRING }
                 val additionalCostKicker = kickers.firstOrNull { it.additionalCost != null }
                 val offspringAbility = kickers.firstOrNull { it.keyword == Keyword.OFFSPRING }
-                val collectEvidenceAmount = (
+                val collectEvidenceAtom = (
                     (additionalCostKicker?.additionalCost as? AdditionalCost.Atom)?.atom
-                        as? CostAtom.CollectEvidence
-                    )?.amount
+                    ) as? CostAtom.CollectEvidence
 
                 // Calculate the cost for this branch — a declaration-gated reduction ("costs {2} less
                 // to cast if it's bargained") applies only to the variant that declares it.
@@ -2613,7 +2612,9 @@ class CastFromZoneEnumerator : ActionEnumerator {
                     declaredSlot == ChoiceSlot.BARGAINED -> "Bargained"
                     // See CastSpellEnumerator — the amount is the choice.
                     declaredSlot == ChoiceSlot.EVIDENCE_COLLECTED ->
-                        collectEvidenceAmount?.let { "Collect evidence $it" } ?: "Collect evidence"
+                        collectEvidenceAtom
+                            ?.description?.replaceFirstChar { it.uppercase() }
+                            ?: "Collect evidence"
                     // Teamwork prints its N, so the variant reads "Cast X (Teamwork 2)".
                     declaredSlot == ChoiceSlot.TEAMWORK ->
                         additionalCostKicker?.displayPrefix ?: "Teamwork"

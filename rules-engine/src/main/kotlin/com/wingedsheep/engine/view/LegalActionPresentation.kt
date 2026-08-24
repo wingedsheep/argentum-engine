@@ -285,6 +285,13 @@ data class AdditionalCostInfo(
     val exileMinTotalWeight: Int = 0,
     val exileCardWeights: Map<EntityId, Int> = emptyMap(),
     val exileWeightUnit: String = "",
+    /**
+     * What each legal target would add to [exileMinTotalWeight] — see
+     * [com.wingedsheep.engine.legalactions.AdditionalCostData.exileWeightPerTarget]. Non-empty only
+     * for a cost priced off the spell's targets, and its presence is what tells the client to run
+     * this cost's picker *after* targeting and to price it on what was chosen.
+     */
+    val exileWeightPerTarget: Map<EntityId, Int> = emptyMap(),
     val validBeholdTargets: List<EntityId> = emptyList(),
     val beholdCount: Int = 0,
     val counterRemovalCreatures: List<CounterRemovalCreatureInfo> = emptyList(),

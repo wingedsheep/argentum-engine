@@ -4,7 +4,13 @@ Cross-reference of the **260 remaining (unimplemented, non-basic) MKM cards** ag
 actual capabilities (SDK reference + source verification, June 2026). Generated to scope what must be
 built before the set can be completed.
 
-**Status:** 14 / 276 implemented (5%). The 14 done are almost entirely the ten surveil dual lands
+> **DONE — MKM is 276/276 as of 2026-08-21.** Every gap below was built; the set is
+> `sealedSupported = true` with draft/sealed archetypes. The last card in was Kaya, Spirits'
+> Justice, which needed the ownership-scoped/token-inclusive exile batch trigger and the
+> one-target-per-other-player requirement shape. Kept for the build-order reasoning, which is the
+> template the next set's gap analysis follows.
+
+**Status (at time of writing):** 14 / 276 implemented (5%). The 14 done are almost entirely the ten surveil dual lands
 (Raucous Theater, Hedge Maze, Undercity Sewers, Elegant Parlor, Underground Mortuary, Lush Portico,
 Meticulous Archive, …) — essentially no MKM *mechanic* is built yet. Card list comes from
 `scripts/card-status --list --set MKM`; oracle text pulled from Scryfall (`set:mkm`, 279 printings).

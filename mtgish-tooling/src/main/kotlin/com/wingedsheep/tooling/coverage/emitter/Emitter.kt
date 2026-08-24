@@ -256,6 +256,14 @@ object Emitter {
                 rname == "CDA_Toughness" ->
                     if (jsonContains(card["Rules"], "_Rule", "CDA_Power")) continue  // emitted with CDA_Power
                     else block = ctx.cdaToughnessBlock(rule)
+                // Devoid (CR 702.114) — the characteristic-defining colour rule. `keywordLines` has
+                // already stamped `keywords(Keyword.DEVOID)` from the nested `_SettableColor` (see
+                // there), and the keyword IS the whole mechanic, so there is nothing left to render.
+                // Only the `Devoid` flavour: `SimpleColorList` / `AllColors` / `Colorless` /
+                // `TheChosenColor` are colour-setting CDAs the emitter can't express and must
+                // scaffold, so they fall through to the gap branch below.
+                rname == "CDA_Color" && "DEVOID" in keywords &&
+                    rule["args"].strField("_SettableColor") == "Devoid" -> continue
                 rname == "Activated" || rname == "ActivatedWithModifiers" -> block = ctx.activatedBlock(rule)
                 rname == "Cycling" -> block = manaKeywordCost(rule)?.let { listOf(Eval(call("keywordAbility", arg(call("KeywordAbility.cycling", arg("\"$it\"")))))) }
                 // Typecycling (CR 702.29) — the land-type "Forestcycling"/"Swampcycling"/… forms carry

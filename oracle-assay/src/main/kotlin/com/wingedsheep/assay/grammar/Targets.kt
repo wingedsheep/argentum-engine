@@ -4,6 +4,10 @@ import com.wingedsheep.assay.syntax.Phrase
 import com.wingedsheep.assay.syntax.bind
 import com.wingedsheep.assay.syntax.phrase
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ForEachEffect
+import com.wingedsheep.sdk.scripting.effects.ForEachTargetEffect
+import com.wingedsheep.sdk.scripting.effects.IterationSpace
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
@@ -295,6 +299,33 @@ object Targets {
 
         /** [template] with the quantifier spliced in, for a rule declaring itself from this row. */
         fun splice(template: String): String = template.replace(QUANTIFIER_PLACEHOLDER, prefix)
+
+        /**
+         * A per-target [member] effect wrapped the way this row's requirement needs.
+         *
+         * A plural row admits more than one target, so the effect is a `ForEachTargetEffect` over
+         * `ContextTarget(0)`: the iteration rebinds slot 0 to the target being processed, which a
+         * named [bound] reference would not — it names the whole declaration. A singular row keeps
+         * the named reference, which is what every hand-written single-target card carries.
+         *
+         * This lives on the row rather than in a family, because it is the same knowledge
+         * [requirement] is: what one quantifier *denotes*. Both [Steps] and [Combat] build effects
+         * over these rows, and a second copy of this pair is a second place for the iteration space
+         * to be got wrong.
+         */
+        fun effectOver(member: (EffectTarget) -> Effect): Effect =
+            if (plural) ForEachTargetEffect(listOf(member(EffectTarget.ContextTarget(0)))) else member(bound())
+
+        /**
+         * The inverse of [effectOver] — the member effect inside [effect], or null when [effect] is
+         * not the shape this row writes. Fail-closed on the iteration space: a `ForEachEffect` over
+         * players or over a group says something no quantified *target* sentence does.
+         */
+        fun memberOf(effect: Effect?): Effect? = if (plural) {
+            (effect as? ForEachEffect)?.takeIf { it.space is IterationSpace.Targets }?.body
+        } else {
+            effect
+        }
 
         override fun toString(): String = name
     }

@@ -1,0 +1,109 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Necropolis",
+      "Sorrow's Path"
+    ],
+    "battlefield": [
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Hill Giant"
+      }
+    ],
+    "graveyard": [
+      "Grizzly Bears",
+      "Hill Giant",
+      "Serra Angel",
+      "Scathe Zombies"
+    ],
+    "library": [
+      "Island",
+      "Plains",
+      "Grizzly Bears"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Grizzly Bears"
+    ],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Hill Giant"
+      },
+      {
+        "name": "Wall of Stone"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      }
+    ],
+    "graveyard": [
+      "Grizzly Bears"
+    ],
+    "library": [
+      "Plains",
+      "Island",
+      "Hill Giant"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [
+    "DECLARE_ATTACKERS",
+    "DECLARE_BLOCKERS"
+  ],
+  "player2StopAtSteps": [
+    "DECLARE_ATTACKERS",
+    "DECLARE_BLOCKERS"
+  ],
+  "player1OpponentStopAtSteps": [
+    "DECLARE_BLOCKERS"
+  ],
+  "player2OpponentStopAtSteps": [
+    "DECLARE_BLOCKERS"
+  ],
+  "mode": "SELF"
+}

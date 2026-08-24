@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
@@ -131,20 +132,28 @@ class DragonfireBladeTest : FunSpec({
         val req = listOf(TargetCreature())
 
         // A monocolored opponent's source can't target it.
-        validator.validateTargets(driver.state, target, req, casterId = opponent, sourceColors = setOf(Color.RED))
-            .shouldNotBeNull()
+        validator.validateTargets(
+            driver.state, target, req, casterId = opponent, sourceColors = setOf(Color.RED),
+            targetingSourceType = TargetingSourceType.SPELL
+        ).shouldNotBeNull()
 
         // A multicolored opponent's source can.
-        validator.validateTargets(driver.state, target, req, casterId = opponent, sourceColors = setOf(Color.RED, Color.WHITE))
-            .shouldBeNull()
+        validator.validateTargets(
+            driver.state, target, req, casterId = opponent, sourceColors = setOf(Color.RED, Color.WHITE),
+            targetingSourceType = TargetingSourceType.SPELL
+        ).shouldBeNull()
 
         // A colorless opponent's source can (colorless is not monocolored).
-        validator.validateTargets(driver.state, target, req, casterId = opponent, sourceColors = emptySet())
-            .shouldBeNull()
+        validator.validateTargets(
+            driver.state, target, req, casterId = opponent, sourceColors = emptySet(),
+            targetingSourceType = TargetingSourceType.SPELL
+        ).shouldBeNull()
 
         // The controller can still target their own creature with a monocolored source.
-        validator.validateTargets(driver.state, target, req, casterId = player, sourceColors = setOf(Color.RED))
-            .shouldBeNull()
+        validator.validateTargets(
+            driver.state, target, req, casterId = player, sourceColors = setOf(Color.RED),
+            targetingSourceType = TargetingSourceType.SPELL
+        ).shouldBeNull()
 
         // The client DTO surfaces the quality so the FE can render the hexproof-from-monocolored chip.
         val view = ClientStateTransformer(cardRegistry = driver.cardRegistry).transform(driver.state, viewingPlayerId = opponent)

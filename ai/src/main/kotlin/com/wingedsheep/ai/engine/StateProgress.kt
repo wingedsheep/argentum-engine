@@ -1,11 +1,13 @@
 package com.wingedsheep.ai.engine
 
+import com.wingedsheep.engine.state.Component
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedEverComponent
 import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasBecomeTappedComponent
 import com.wingedsheep.engine.state.components.battlefield.TargetedByControllerThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.TimestampComponent
+import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.model.GameRng
@@ -133,7 +135,7 @@ object StateProgress {
         for (component in container.all()) {
             val type = component::class.java
             if (type in IGNORED_COMPONENTS) continue
-            components += type.name.hashCode().toLong().mix(component.hashCode())
+            components += type.name.hashCode().toLong().mix(saturated(component).hashCode())
         }
         return entityId.hashCode().toLong().mix(components)
     }
@@ -171,6 +173,40 @@ object StateProgress {
         HasBecomeTappedComponent::class.java,
         TimestampComponent::class.java,
     )
+
+    /**
+     * The half-measure between counting a component and ignoring it: a tally whose readers only
+     * ever ask "any yet?", clamped to `0` or `1` so its second and later increments are not a new
+     * position.
+     *
+     * [IGNORED_COMPONENTS] is too blunt for [EquipActivationsThisTurnComponent]. Its `0 -> 1` step
+     * is a game fact — Forge Anew's "you may pay {0} rather than pay the equip cost the first time
+     * you activate an equip ability each turn" is exactly that boundary, and dropping the component
+     * would tell the AI that using up the free equip changed nothing. Its `1 -> 2 -> 3 -> ...`
+     * steps are not: `CastPermissionUtils.applyFreeFirstEquipDiscount` is the component's only
+     * reader and it tests `count == 0`, so nothing in the game can distinguish a second equip
+     * activation from a third. Clamping keeps the boundary and discards the rest.
+     *
+     * Which is what closes the loop this was written for. Equip's target is "target creature you
+     * control" (CR 702.6a) with no exclusion for the creature the Equipment is already on, and
+     * re-attaching it there "does nothing" (CR 701.3b) — so the activation is inert by rule. Put it
+     * on a board that reduces the cost to {0} (The Hobbit's Dwarven Mauler discounting equip
+     * abilities aimed at itself) and it is free as well, leaving nothing behind but this tally.
+     * Under the unclamped count every repetition hashed as a fresh position, so [Strategist] had
+     * nothing to refuse and an evaluator that preferred holding priority activated equip until the
+     * game had to be abandoned. Equip stays legal — this is the AI declining a line, not the rules
+     * forbidding one.
+     *
+     * `ExhaustAbilitiesActivatedThisTurnComponent` is the same activation-counter shape and is
+     * deliberately *not* here: `PlayerActivatedExhaustAbilitiesThisTurn` carries an `atLeast`
+     * threshold, so a card may yet ask whether the count reached two, and an exhaust ability can
+     * only be activated once per permanent anyway (CR 702.177a) — there is no loop for it to feed.
+     */
+    private fun saturated(component: Component): Component = when (component) {
+        is EquipActivationsThisTurnComponent ->
+            if (component.count > 1) component.copy(count = 1) else component
+        else -> component
+    }
 
     private const val SEED = -0x340d631b7bdddcdbL
 }

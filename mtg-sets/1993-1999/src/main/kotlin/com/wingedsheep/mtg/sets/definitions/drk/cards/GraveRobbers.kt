@@ -44,7 +44,7 @@ val GraveRobbers = card("Grave Robbers") {
         rarity = Rarity.RARE
         collectorNumber = "46"
         artist = "Quinton Hoover"
-        flavorText = "\"If you don't have your health, you don't have anything.\" —Proverb"
+        flavorText = "\"If you don't have your health, you don't have anything.\"\n—Proverb"
         imageUri = "https://cards.scryfall.io/normal/front/a/1/a131605a-f646-4745-a1e4-48d155a3d94f.jpg?1783947938"
 
         ruling("2004-10-04", "This exiles the artifact on resolution, but you choose it as a target when activating the ability.")

@@ -1,0 +1,118 @@
+{
+  "player1Name": "Alice",
+  "player2Name": "Bob",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Blood of the Martyr",
+      "Cleansing",
+      "Brainwash",
+      "Dark Sphere",
+      "Wand of Ith"
+    ],
+    "battlefield": [
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Island"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "graveyard": [
+      "Grizzly Bears",
+      "Crusade"
+    ],
+    "library": [
+      "Plains",
+      "Island",
+      "Grizzly Bears",
+      "Hill Giant"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Lightning Bolt",
+      "Plains",
+      "Hill Giant"
+    ],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      },
+      {
+        "name": "Hill Giant"
+      },
+      {
+        "name": "Serra Angel"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Mountain"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "graveyard": [
+      "Grizzly Bears"
+    ],
+    "library": [
+      "Mountain",
+      "Plains",
+      "Grizzly Bears"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1,
+  "player1StopAtSteps": [],
+  "player2StopAtSteps": [],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": [],
+  "mode": "AI"
+}

@@ -1,5 +1,6 @@
 package com.wingedsheep.assay.grammar
 
+import com.wingedsheep.assay.normalize.Reminders
 import com.wingedsheep.assay.syntax.ParseOutcome
 import com.wingedsheep.assay.syntax.parseLine
 import com.wingedsheep.assay.syntax.printLine
@@ -40,6 +41,25 @@ class KeywordGrammarTest : StringSpec({
             listOf(KeywordAbility.of(Keyword.FLYING), KeywordAbility.of(Keyword.VIGILANCE))
         roundTrips("Flying, vigilance")
         roundTrips("Vigilance, flying")
+    }
+
+    // Devoid (CR 702.114) prints as its own leading line on every Eldrazi that has it, and the
+    // grammar reads it through the same `simple(...)` row as flying — which is the point: the row
+    // feeds both the keyword-line list and the bare-keyword list, so the word can never be readable
+    // as a line and unreadable when a sentence names it.
+    "devoid reads and prints as a plain keyword line" {
+        parse("Devoid") shouldContainExactly listOf(KeywordAbility.of(Keyword.DEVOID))
+        roundTrips("Devoid")
+        // Sentence case is applied at the line boundary, so the one rule serves both positions.
+        roundTrips("Devoid, flying")
+        roundTrips("Flying, devoid")
+    }
+
+    "devoid regenerates its printed reminder text" {
+        Reminders.gloss(KeywordAbility.of(Keyword.DEVOID)) shouldBe "This card has no color."
+        // The gloss is a property of the ability alone — devoid says "this card" whatever the card is.
+        Reminders.gloss(KeywordAbility.of(Keyword.DEVOID), self = "this spell") shouldBe
+            "This card has no color."
     }
 
     "a vanilla card's absent line is a rule, not a special case" {

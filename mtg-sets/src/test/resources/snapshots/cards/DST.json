@@ -1833,9 +1833,6 @@
     "manaCost": "{3}",
     "typeLine": "Artifact — Equipment",
     "oracleText": "Equipped creature can't be blocked and has shroud. (It can't be the target of spells or abilities.)\nEquip {2}",
-    "flags": [
-        "CANT_BE_BLOCKED"
-    ],
     "script": {
         "activatedAbilities": [
             {
@@ -1868,6 +1865,13 @@
             }
         ],
         "staticAbilities": [
+            {
+                "type": "CantBeBlocked",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
             {
                 "type": "GrantKeyword",
                 "keyword": "SHROUD"

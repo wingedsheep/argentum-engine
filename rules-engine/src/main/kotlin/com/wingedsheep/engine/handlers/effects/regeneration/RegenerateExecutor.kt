@@ -26,7 +26,12 @@ class RegenerateExecutor : EffectExecutor<RegenerateEffect> {
         effect: RegenerateEffect,
         context: EffectContext
     ): EffectResult {
-        val targetId = context.resolveTarget(effect.target)
+        // State-aware resolution: "regenerate enchanted creature" (Thrull Retainer) names its host
+        // through the attachment link, and only the [GameState] overload can follow one — the
+        // context-only overload returns null for it, so such an ability produced no shield at all.
+        // Once the Aura has sacrificed itself to pay for this very ability, the same overload reads
+        // the host frozen into its battlefield-exit snapshot (CR 608.2h).
+        val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "Could not resolve target for RegenerateEffect")
 
         val newState = state.addFloatingEffect(

@@ -156,7 +156,7 @@ class CreateTokenCopyOfChosenPermanentExecutor(
             val (stateWithCounters, counterEvents) = if (cardRegistry != null) {
                 EntersWithReplacements.applyOnEntry(newState, tokenId, controllerId, cardRegistry)
             } else {
-                EntersWithReplacements.applyGlobal(newState, tokenId, controllerId)
+                EntersWithReplacements.applyGlobal(newState, tokenId, controllerId, cardRegistry)
             }
             newState = stateWithCounters
 
