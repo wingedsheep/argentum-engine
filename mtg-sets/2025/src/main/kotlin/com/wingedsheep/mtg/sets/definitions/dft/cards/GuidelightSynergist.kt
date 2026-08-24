@@ -5,7 +5,7 @@
 package com.wingedsheep.mtg.sets.definitions.dft.cards
 
 import com.wingedsheep.sdk.core.Keyword
-import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -34,11 +34,8 @@ val GuidelightSynergist = card("Guidelight Synergist") {
     staticAbility {
         ability = GrantDynamicStatsEffect(
             filter = GroupFilter.source(),
-            powerBonus = DynamicAmount.Count(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Artifact),
-            toughnessBonus = DynamicAmount.Multiply(
-                DynamicAmount.Count(Player.You, Zone.BATTLEFIELD, GameObjectFilter.Artifact),
-                0
-            )
+            powerBonus = DynamicAmounts.battlefield(Player.You, GameObjectFilter.Artifact).count(),
+            toughnessBonus = DynamicAmount.Fixed(0)
         )
     }
     metadata {

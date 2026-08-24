@@ -2,7 +2,7 @@ import React, { createContext, useContext, useLayoutEffect, useMemo, useState, t
 import type { ResponsiveSizes, BadgeSizes } from '../../../hooks/useResponsive'
 import { getScryfallFallbackUrl } from '../../../utils/cardImages'
 import type { ClientCard, LegalActionInfo } from '../../../types'
-import { CounterType } from '../../../types'
+import { CounterType, CounterTypeDisplayNames } from '../../../types'
 import { Color } from '../../../types/enums'
 
 // Context to pass responsive sizes down the component tree
@@ -784,6 +784,45 @@ export function getCounterCount(card: ClientCard, type: CounterType): number {
   return card.counters[type] ?? 0
 }
 
+/** One counter type present on a card, ready to render: engine type, player-facing label, count. */
+export interface CardCounterEntry {
+  readonly type: CounterType
+  readonly label: string
+  readonly count: number
+}
+
+/**
+ * Every counter type currently on [card], with its display label and count.
+ *
+ * Deliberately driven by the counters the server actually sent rather than by a curated list of
+ * types the client knows how to badge: the battlefield badges are an allowlist, so a counter with
+ * no badge (storage on City of Shadows, hunger on Fasting) was invisible everywhere. This is the
+ * complete inventory, which is what the card preview shows.
+ *
+ * A type missing from `CounterTypeDisplayNames` still renders — its enum name is title-cased —
+ * so a counter added to the engine before the client mirror catches up degrades to a readable
+ * label instead of disappearing. `CounterTypeClientMirrorTest.kt` (mtg-sdk) keeps the mirror honest
+ * separately — it reads `enums.ts` and fails when it drifts from the engine enum.
+ *
+ * Sorted by count descending, then label, so the biggest pile reads first and the order is stable.
+ */
+export function listCardCounters(card: ClientCard): CardCounterEntry[] {
+  return Object.entries(card.counters)
+    .filter(([, count]) => (count ?? 0) > 0)
+    .map(([type, count]) => ({
+      type: type as CounterType,
+      label: CounterTypeDisplayNames[type as CounterType] ?? titleCaseCounterName(type),
+      count: count as number,
+    }))
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
+}
+
+/** `SOME_COUNTER` → `Some counter`, for a counter type the client mirror doesn't name yet. */
+function titleCaseCounterName(raw: string): string {
+  const words = raw.toLowerCase().split('_').join(' ')
+  return words.charAt(0).toUpperCase() + words.slice(1)
+}
+
 /**
  * Passive storage counters (hope/verse/influence/burden/loot) — pure marker counters whose only
  * UI is a colored badge with a count. They have no inherent rule and never co-occur on
@@ -822,10 +861,40 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.INVASION,
   CounterType.UNLOCK,
   CounterType.HONE,
+  // Counter types with live cards that rendered no badge at all until now: storage (City of
+  // Shadows), hunger (Fasting), doom, fire, conqueror, net, silver, fate (Oblivion Stone), aim,
+  // spore (the Fungus/Thallid mechanic).
+  //
+  // CounterType.DEFENSE is deliberately absent. It is the battle analogue of loyalty (CR 310.4c) —
+  // a number the permanent is defined by, not a marker sitting on it — so it belongs with the
+  // loyalty-style display battles will need, not in this marker-badge allowlist. Until that exists
+  // it still shows in the card preview's counter panel, which lists whatever the server sent.
+  CounterType.STORAGE,
+  CounterType.HUNGER,
+  CounterType.DOOM,
+  CounterType.FIRE,
+  CounterType.CONQUEROR,
+  CounterType.NET,
+  CounterType.SILVER,
+  CounterType.FATE,
+  CounterType.AIM,
+  CounterType.SPORE,
   CounterType.PLUS_ONE_PLUS_ZERO,
   CounterType.PLUS_ZERO_PLUS_ONE,
+  CounterType.PLUS_TWO_PLUS_ZERO,
+  CounterType.PLUS_ZERO_PLUS_TWO,
   CounterType.MINUS_ONE_MINUS_ZERO,
   CounterType.MINUS_ZERO_MINUS_ONE,
+  // Fallen Empires. Tide is the one that most needs a badge: Homarid's whole clock is the exact
+  // count, switching at one and at three and shedding all at four, so a player who can't read it
+  // off the board can't play the card.
+  CounterType.TIDE,
+  CounterType.JAVELIN,
+  CounterType.CREDIT,
+  CounterType.CUBE,
+  CounterType.PLUS_ONE_PLUS_TWO,
+  CounterType.PLUS_TWO_PLUS_TWO,
+  CounterType.MINUS_TWO_MINUS_TWO,
 ]
 
 /**

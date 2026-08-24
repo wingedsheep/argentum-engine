@@ -33,8 +33,7 @@ val ZurTheEnchanter = card("Zur the Enchanter") {
         trigger = Triggers.Attacks
         optional = true
         effect = Patterns.Library.searchLibrary(
-            filter = GameObjectFilter.Any,
-            count = 3,
+            filter = GameObjectFilter.Enchantment.manaValueAtMost(3),
             destination = SearchDestination.BATTLEFIELD
         )
     }

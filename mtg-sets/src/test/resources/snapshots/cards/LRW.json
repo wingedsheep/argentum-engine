@@ -936,7 +936,8 @@
                         "counterType": "+1/+1",
                         "count": 1,
                         "target": "Self"
-                    }
+                    },
+                    "descriptionOverride": "Whenever a player casts a Giant spell, you may put a +1/+1 counter on this creature."
                 },
                 "descriptionOverride": "Whenever a player casts a Giant spell, you may put a +1/+1 counter on this creature."
             }
@@ -4650,7 +4651,8 @@
                             "name": "target Goblin card from your graveyard"
                         },
                         "destination": "Hand"
-                    }
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, you may return target Goblin card from your graveyard to your hand."
                 },
                 "targetRequirement": {
                     "type": "TargetObject",

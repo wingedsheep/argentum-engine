@@ -1,4 +1,5 @@
 package com.wingedsheep.engine.handlers.actions.spell
+import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.dsl.giftKeyword
 
@@ -737,7 +738,8 @@ class CastSpellHandler(
                     sourceColors = (transformedFace ?: cardDef).colors,
                     sourceSubtypes = (transformedFace ?: cardDef).typeLine.subtypes.map { it.value }.toSet(),
                     sourceId = action.cardId,
-                    xValue = action.xValue
+                    xValue = action.xValue,
+                    targetingSourceType = TargetingSourceType.SPELL
                 )
                 if (targetError != null) {
                     return targetError
@@ -1628,6 +1630,8 @@ class CastSpellHandler(
         CounterType.MINUS_ONE_MINUS_ONE -> Counters.MINUS_ONE_MINUS_ONE
         CounterType.PLUS_ONE_PLUS_ZERO -> Counters.PLUS_ONE_PLUS_ZERO
         CounterType.PLUS_ZERO_PLUS_ONE -> Counters.PLUS_ZERO_PLUS_ONE
+        CounterType.PLUS_TWO_PLUS_ZERO -> Counters.PLUS_TWO_PLUS_ZERO
+        CounterType.PLUS_ZERO_PLUS_TWO -> Counters.PLUS_ZERO_PLUS_TWO
         CounterType.MINUS_ONE_MINUS_ZERO -> Counters.MINUS_ONE_MINUS_ZERO
         CounterType.MINUS_ZERO_MINUS_ONE -> Counters.MINUS_ZERO_MINUS_ONE
         else -> type.name.lowercase()
@@ -1806,11 +1810,18 @@ class CastSpellHandler(
                     // A GameAction is client-supplied: never trust the submitted selection.
                     is CostAtom.CollectEvidence -> {
                         val exiled = action.additionalCostPayment?.exiledCards ?: emptyList()
+                        // CR 601.2f — the threshold is determined here, from the targets announced
+                        // at 601.2c, and then locked in. Urgent Necropsy's ruling spells the
+                        // consequence out: if the graveyard can't reach it, the caster can't
+                        // choose to collect evidence at all, so this rejection *is* the 601.2e
+                        // illegal-cast rewind rather than a discount.
+                        val required = com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                            .evaluate(state, atom.amount, action.xValue, action.targets)
                         if (!com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
-                                .isLegalSelection(state, action.playerId, atom.amount, exiled)
+                                .isLegalSelection(state, action.playerId, required, exiled)
                         ) {
-                            return "You must exile cards with total mana value ${atom.amount} or " +
-                                "greater from your graveyard to collect evidence ${atom.amount}"
+                            return "You must exile cards with total mana value $required or " +
+                                "greater from your graveyard to collect evidence $required"
                         }
                     }
                     is CostAtom.ExileFrom -> {
@@ -1958,7 +1969,9 @@ class CastSpellHandler(
                     // Mill and ExileFromGraveyardForTotal are activated-ability-only costs, never
                     // spell additional costs (canPayAdditionalCost already reports both unpayable).
                     is CostAtom.Mana, is CostAtom.RevealFromHand,
+                    is CostAtom.PutCountersOnPermanent,
                     is CostAtom.PutCountersOnSelf,
+                    is CostAtom.RevealNotedCreatureType,
                     is CostAtom.ExileFromGraveyardForTotal,
                     is CostAtom.ExileTopOfLibrary,
                     is CostAtom.Mill -> {}
@@ -2531,6 +2544,12 @@ class CastSpellHandler(
         // Cards discarded to pay an additional discard cost — threaded to the spell on the stack so
         // a resolution-time condition can test the discarded card (EffectTarget.DiscardedAsCost).
         val discardedAsCostCards = mutableListOf<EntityId>()
+        // Cards exiled to pay an additional exile cost, threaded to the spell on the stack so a
+        // resolution-time effect can name them (CardSource.ExiledAsCost) or test what they were
+        // (Conditions.ExiledAsCostHadSubtype). Snapshots are taken only for battlefield exiles —
+        // see SpellOnStackComponent.exiledAsCostSnapshots.
+        val exiledAsCostCards = mutableListOf<EntityId>()
+        val exiledAsCostSnapshots = mutableListOf<EntitySnapshot>()
         /**
          * LKI snapshots for entities chosen via [AdditionalCost.ChooseEntity] when
          * `captureSnapshot = true`. Captured at cost-pay time so downstream effects
@@ -2686,7 +2705,10 @@ class CastSpellHandler(
                                 .CollectEvidenceResolver.collect(
                                     state = currentState,
                                     playerId = action.playerId,
-                                    amount = atom.amount,
+                                    // Priced from the same targets validateAdditionalCosts read,
+                                    // so the payment can't drift from the check that allowed it.
+                                    amount = com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                                        .evaluate(currentState, atom.amount, action.xValue, action.targets),
                                     chosenCards = action.additionalCostPayment.exiledCards,
                                     sourceName = cardDef?.name ?: "Collect evidence",
                                 )
@@ -2699,6 +2721,14 @@ class CastSpellHandler(
                         }
                         is CostAtom.ExileFrom -> {
                             val exiledCards = action.additionalCostPayment.exiledCards
+                            exiledAsCostCards.addAll(exiledCards)
+                            // Rule 113.7a — freeze what a permanent last was while it is still on
+                            // the battlefield; a token won't be readable at all by resolution.
+                            if (atom.zone == Zone.BATTLEFIELD) {
+                                exiledAsCostSnapshots.addAll(
+                                    captureEntitySnapshots(exiledCards, currentState)
+                                )
+                            }
                             for (cardId in exiledCards) {
                                 val cardContainer = currentState.getEntity(cardId) ?: continue
                                 val card = cardContainer.get<CardComponent>() ?: continue
@@ -2802,7 +2832,9 @@ class CastSpellHandler(
                         // offered as a spell's additional cost (canPayAdditionalCost reports it
                         // unpayable), so this branch is unreachable for the same reason Mill's is.
                         is CostAtom.PayLife, is CostAtom.Mana, is CostAtom.RevealFromHand,
+                        is CostAtom.PutCountersOnPermanent,
                         is CostAtom.PutCountersOnSelf,
+                        is CostAtom.RevealNotedCreatureType,
                         is CostAtom.ExileFromGraveyardForTotal,
                         is CostAtom.ExileTopOfLibrary,
                         is CostAtom.Mill -> {}
@@ -3605,6 +3637,8 @@ class CastSpellHandler(
             totalManaSpent = manaSpentThisCast,
             beheldCards = beheldCards,
             discardedAsCostCards = discardedAsCostCards,
+            exiledAsCostCards = exiledAsCostCards,
+            exiledAsCostSnapshots = exiledAsCostSnapshots,
             chosenEntitySnapshots = chosenEntitySnapshots,
             manaSpentWhite = manaSpentEvent?.white ?: 0,
             manaSpentBlue = manaSpentEvent?.blue ?: 0,

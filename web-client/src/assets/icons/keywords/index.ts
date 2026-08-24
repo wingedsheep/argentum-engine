@@ -45,6 +45,18 @@ export const keywordManaClass: Record<string, string> = {
   PROWESS: 'ability-prowess',
   WARD: 'ability-ward',
   INTIMIDATE: 'ability-intimidate',
+  // Landwalk (CR 702.14). Evasion the player has to be able to see: it decides whether an attacker
+  // can be blocked at all, and cards grant and strip it (Scarwood Hag does both), so a badge that
+  // appears and disappears is the only on-card signal that anything happened.
+  SWAMPWALK: 'ability-swampwalk',
+  FORESTWALK: 'ability-forestwalk',
+  ISLANDWALK: 'ability-islandwalk',
+  MOUNTAINWALK: 'ability-mountainwalk',
+  PLAINSWALK: 'ability-plainswalk',
+  // mana-font has no glyph for these two, so they share the generic land symbol; the badge's
+  // tooltip names which landwalk it is.
+  DESERTWALK: 'land',
+  NONBASIC_LANDWALK: 'land',
   INFECT: 'ability-infect',
   MORPH: 'ability-morph',
   PROTECTION: 'ability-protection',
@@ -69,6 +81,8 @@ export const displayableKeywords = new Set([
   'LIFELINK', 'VIGILANCE', 'HASTE', 'HEXPROOF',
   'SHROUD', 'INDESTRUCTIBLE', 'DEFENDER', 'MENACE', 'FEAR',
   'PROWESS', 'WARD', 'INTIMIDATE', 'INFECT',
+  'SWAMPWALK', 'FORESTWALK', 'ISLANDWALK', 'MOUNTAINWALK', 'PLAINSWALK',
+  'DESERTWALK', 'NONBASIC_LANDWALK',
   'WITHER', 'TOXIC', 'CANT_BE_BLOCKED', 'CHANGELING',
   'PERSIST', 'BANDING', 'FLANKING', 'EXPLOIT', 'TRAINING',
 ])
@@ -79,7 +93,12 @@ export const counterManaClass: Record<string, string> = {
   MINUS_ONE_MINUS_ONE: 'counter-minus',
   PLUS_ONE_PLUS_ZERO: 'counter-plus',
   PLUS_ZERO_PLUS_ONE: 'counter-plus',
+  PLUS_TWO_PLUS_ZERO: 'counter-plus',
+  PLUS_ZERO_PLUS_TWO: 'counter-plus',
   MINUS_ONE_MINUS_ZERO: 'counter-minus',
+  PLUS_ONE_PLUS_TWO: 'counter-plus',
+  PLUS_TWO_PLUS_TWO: 'counter-plus',
+  MINUS_TWO_MINUS_TWO: 'counter-minus',
   MINUS_ZERO_MINUS_ONE: 'counter-minus',
   LOYALTY: 'counter-loyalty',
   CHARGE: 'counter-charge',
@@ -146,4 +165,20 @@ export const counterManaClass: Record<string, string> = {
   INVASION: 'counter-charge',
   UNLOCK: 'counter-charge',
   HONE: 'counter-arrow',
+  STORAGE: 'counter-brick',
+  HUNGER: 'counter-doom',
+  DOOM: 'counter-doom',
+  FIRE: 'counter-bolt',
+  CONQUEROR: 'counter-devotion',
+  NET: 'counter-fungus',
+  SILVER: 'counter-charge',
+  FATE: 'counter-shield',
+  AIM: 'counter-arrow',
+  // Spore counters are the Fungus mechanic's own, so they get the font's fungus glyph. Sharing a
+  // glyph with another type (as SILVER does with CHARGE) is fine — the badge tooltip disambiguates.
+  SPORE: 'counter-fungus',
+  TIDE: 'counter-flood',
+  JAVELIN: 'counter-arrow',
+  CREDIT: 'counter-gold',
+  CUBE: 'counter-charge',
 }

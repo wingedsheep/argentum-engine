@@ -229,6 +229,17 @@ class GameSession(
         val aiModelOverride: String? = null
     )
 
+    /**
+     * Runaway/wedge backstop for this game — see [GameStallGuard]. Lives on the session because
+     * every applied action funnels through [recordAction], which is the only place that can see
+     * "the game moved" for every path at once.
+     */
+    private var stallGuard = GameStallGuard()
+
+    /** Where [appendToReplayLog] stops recording. Mutable only for the test seam below. */
+    private var replayActionCap =
+        com.wingedsheep.gameserver.replay.ReplayRecordingPolicy.MAX_RECORDED_ACTIONS
+
     private val actionProcessor = ActionProcessor(services)
     private val gameInitializer = GameInitializer(cardRegistry, services.printingRegistry)
     private val autoPassManager = AutoPassManager(cardRegistry)
@@ -258,6 +269,10 @@ class GameSession(
     @Volatile
     private var replaySetup: com.wingedsheep.gameserver.replay.ReplaySetup? = null
     private val recordedActions = CopyOnWriteArrayList<GameAction>()
+    // Set once the recording has hit [ReplayRecordingPolicy.MAX_RECORDED_ACTIONS] and been frozen.
+    // Sticky, and stored with the record — see [recordAction].
+    @Volatile
+    private var replayTruncated = false
     // Persistent-yield mutations applied out-of-band of [recordedActions]. Captured in turn order so
     // the reconstructor can re-apply each at the action position it was set (see [CompactReplay.yields]).
     private val recordedYields = CopyOnWriteArrayList<com.wingedsheep.gameserver.replay.ReplayYieldEntry>()
@@ -1342,10 +1357,85 @@ class GameSession(
     // Replay Recording
     // =========================================================================
 
-    /** Append an applied, state-advancing action to the compact replay log. */
+    /**
+     * The one thing every applied action passes through: append it to the compact replay log, and
+     * ask the [stallGuard] whether this game is still going anywhere.
+     *
+     * Both halves are bounded on purpose, and for different reasons — see [appendToReplayLog] and
+     * [enforceProgress].
+     */
     private fun recordAction(action: GameAction) {
+        appendToReplayLog(action)
+        enforceProgress()
+    }
+
+    /**
+     * Append to the replay log, up to [ReplayRecordingPolicy.MAX_RECORDED_ACTIONS] actions.
+     *
+     * A replay costs ~7 stored bytes per action, so length is not what makes a runaway game
+     * expensive — this list is. It is a [CopyOnWriteArrayList] (read by the flusher off the game
+     * thread, appended under the state lock), so every append copies the whole array: the recording
+     * costs O(n²) element copies over a game, which is nothing at the few hundred actions a real
+     * game takes and ruinous at six figures. On top of that the flusher re-encodes the entire log
+     * every few seconds for as long as the game lasts.
+     *
+     * So the recording gives up rather than the game: past the cap the log is frozen and marked
+     * [replayTruncated], which is the same "keep the honest shorter prefix" outcome a lost flush
+     * already produces (see [restoreReplayRecording]) and which the viewer reports as a partial
+     * recording. Freezing is permanent for the session — an undo may shorten the log afterwards
+     * (leaving a valid, shorter prefix) but nothing may extend it again, or the record would have a
+     * hole in the middle and reconstruct a game nobody played.
+     */
+    private fun appendToReplayLog(action: GameAction) {
+        if (replayTruncated) return
+        if (recordedActions.size >= replayActionCap) {
+            replayTruncated = true
+            logger.warn(
+                "Replay recording for $sessionId hit $replayActionCap actions — freezing the log; " +
+                    "the game continues but its replay stops here"
+            )
+            return
+        }
         recordedActions.add(action)
         stampCheckpointIfDue()
+    }
+
+    /**
+     * End the game as a draw when it has stopped making progress — see [GameStallGuard] for the two
+     * shapes this catches and CR 104.4b for why a draw is the right verdict.
+     *
+     * The draw is expressed the way the engine expresses one (`gameOver` with no winner), so every
+     * caller's existing `isGameOver()` check finalizes the match through the normal game-over path:
+     * players and spectators are notified, the replay is saved, the lobby callback fires, the
+     * session is cleaned up. Nothing needs to know this particular game over was our idea except
+     * [stallMessage], which explains it to the players.
+     */
+    private fun enforceProgress() {
+        val state = gameState ?: return
+        if (state.gameOver) return
+        val stall = stallGuard.onActionApplied(state) ?: return
+        logger.error(
+            "Game $sessionId is not making progress (${stall.code}) — ending it as a draw. " +
+                "This is a backstop for a loop the AI's own guard missed; the replay is worth reading."
+        )
+        gameState = state.copy(gameOver = true, winnerId = null)
+    }
+
+    /**
+     * Why this game was abandoned, for the game-over overlay, or null for a game that ended on its
+     * own terms. Preferred over the engine's stock reason text because "Draw" alone reads like a
+     * rules outcome the players caused.
+     */
+    fun stallMessage(): String? = stallGuard.stall?.playerMessage
+
+    /**
+     * Record that [playerId]'s action was rejected and no fallback could be applied either, and
+     * report whether that seat has run out of moves it will make — see
+     * [GameStallGuard.onActionRejected]. Nothing reached the engine, so this is invisible to
+     * [recordAction] and has to be reported by the caller that saw the rejection.
+     */
+    fun noteActionRejected(playerId: EntityId): Boolean = synchronized(stateLock) {
+        stallGuard.onActionRejected(playerId)
     }
 
     /**
@@ -1404,6 +1494,12 @@ class GameSession(
     /** The persistent-yield mutations applied to this game, in order, for replay reconstruction. */
     fun getReplayYields(): List<com.wingedsheep.gameserver.replay.ReplayYieldEntry> = recordedYields.toList()
 
+    /**
+     * Whether this game's recording was frozen before the game ended (see [appendToReplayLog]), so
+     * the stored record is an honest prefix rather than the whole game.
+     */
+    fun isReplayTruncated(): Boolean = replayTruncated
+
     /** Sparse position fingerprints taken while this game was played. */
     fun getReplayCheckpoints(): List<com.wingedsheep.gameserver.replay.ReplayCheckpoint> =
         recordedCheckpoints.toList()
@@ -1447,6 +1543,7 @@ class GameSession(
                 fingerprint = com.wingedsheep.gameserver.replay.ReplayFingerprint.of(state),
                 startedAt = replayStartedAt,
                 gameOver = state.gameOver,
+                truncated = replayTruncated,
             )
         }
 
@@ -1459,6 +1556,20 @@ class GameSession(
     // =========================================================================
     // Test Support (for scenario-based testing)
     // =========================================================================
+
+    /**
+     * Replace the runaway backstops with tighter ones.
+     *
+     * **Testing only.** The shipped thresholds are set so that only a game that has already gone
+     * wrong can reach them, which also puts them out of reach of a test that would have to play
+     * tens of thousands of actions to get there. Must be called before the game starts — the guard
+     * carries the counters, so swapping it mid-game resets them.
+     */
+    internal fun tightenBackstopsForTesting(guard: GameStallGuard, replayCap: Int) {
+        stallGuard = guard
+        replayActionCap = replayCap
+    }
+
 
     /**
      * Inject a pre-built game state for testing purposes.
@@ -1687,6 +1798,10 @@ class GameSession(
         recordedYields.addAll(record.yields)
         recordedCheckpoints.clear()
         recordedCheckpoints.addAll(record.checkpoints)
+        // A record frozen by the size cap before the restart stays frozen: the actions played
+        // between the cap and now were never recorded, so appending from here would splice a hole
+        // into the log exactly as extending a stale prefix would.
+        replayTruncated = record.truncated
         replayStartedAt = runCatching { Instant.parse(record.startedAt) }.getOrNull()
         return true
     }

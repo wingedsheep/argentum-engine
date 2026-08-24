@@ -6,6 +6,10 @@ import com.wingedsheep.assay.syntax.printLine
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.model.CardScript
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.DrawCardsEffect
+import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -23,6 +27,13 @@ class SequencesTest : StringSpec({
 
     fun roundTrips(line: String) {
         Grammar.abilityLine.printLine(fragment(line)) shouldBe line
+    }
+
+    /** The slot one clause's effect reads, found the way a reader would: by looking at its target. */
+    fun referencedSlot(effect: Effect): String? = when (effect) {
+        is MoveToZoneEffect -> (effect.target as? EffectTarget.BoundVariable)?.name
+        is DrawCardsEffect -> (effect.target as? EffectTarget.BoundVariable)?.name
+        else -> null
     }
 
     "two sentences on one line are one composite" {
@@ -98,11 +109,24 @@ class SequencesTest : StringSpec({
             fragment("Scry 2. Draw two cards. You lose 2 life.")
     }
 
-    // Fail-closed: one slot name means two declared targets cannot both be referred to, so a line
-    // that would need two declines rather than producing a model whose second slot is unreachable.
-    "two clauses that each declare a target decline" {
+    // Two declared targets are numbered by the position their clause introduces them in, and the
+    // first one keeps the bare name so a single-target line folds through unchanged.
+    "two clauses that each declare a target are numbered by position" {
+        val line = fragment("Destroy target land. Draw a card. Target player draws a card.").script
+        line.targetRequirements.map { it.id } shouldBe listOf(Targets.slot(0), Targets.slot(1))
+        val effects = (line.spellEffect as CompositeEffect).effects
+        effects.map { referencedSlot(it) } shouldBe listOf(Targets.slot(0), null, Targets.slot(1))
+        roundTrips("Destroy target land. Draw a card. Target player draws a card.")
+        roundTrips("Destroy target land. ~ deals 13 damage to target creature.")
+        roundTrips("Counter target spell. Return target permanent to its owner's hand.")
+    }
+
+    // Fail-closed, and now the only case that is: a pronoun clause beside a second declared target
+    // would mean the most recent mention in English and the first slot in this grammar, and nothing
+    // in the printed line chooses between them.
+    "a pronoun clause beside a second target declines" {
         Grammar.abilityLine
-            .parseLine("Destroy target land. Draw a card. Target player draws a card.")
+            .parseLine("Destroy target land. ~ deals 13 damage to target creature. Untap that creature.")
             .shouldBeInstanceOf<ParseOutcome.Declined>()
     }
 

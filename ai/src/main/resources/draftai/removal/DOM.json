@@ -1,0 +1,165 @@
+{
+  "Academy Journeymage": [
+    "removal",
+    "creature-removal"
+  ],
+  "Ancient Animus": [
+    "removal",
+    "creature-removal"
+  ],
+  "Befuddle": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blessed Light": [
+    "removal",
+    "creature-removal"
+  ],
+  "Blink of an Eye": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Bloodtallow Candle": [
+    "removal",
+    "creature-removal"
+  ],
+  "Broken Bond": [
+    "removal"
+  ],
+  "Cast Down": [
+    "removal",
+    "creature-removal"
+  ],
+  "D'Avenant Trapper": [
+    "removal",
+    "creature-removal"
+  ],
+  "Deep Freeze": [
+    "removal",
+    "creature-removal"
+  ],
+  "Eviscerate": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fiery Intervention": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fight with Fire": [
+    "removal",
+    "creature-removal"
+  ],
+  "Firefist Adept": [
+    "removal",
+    "creature-removal"
+  ],
+  "Fungal Infection": [
+    "removal",
+    "creature-removal"
+  ],
+  "Gideon's Reproach": [
+    "removal",
+    "creature-removal"
+  ],
+  "Goblin Barrage": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Goblin Chainwhirler": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Icy Manipulator": [
+    "removal",
+    "creature-removal"
+  ],
+  "In Bolas's Clutches": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Invoke the Divine": [
+    "removal"
+  ],
+  "Jaya's Immolating Inferno": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Kazarov, Sengir Pureblood": [
+    "removal",
+    "creature-removal"
+  ],
+  "Merfolk Trickster": [
+    "removal",
+    "creature-removal"
+  ],
+  "Orcish Vandal": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Phyrexian Scriptures": [
+    "removal",
+    "creature-removal"
+  ],
+  "Pierce the Sky": [
+    "removal",
+    "creature-removal"
+  ],
+  "Radiating Lightning": [
+    "removal",
+    "creature-removal"
+  ],
+  "Seal Away": [
+    "removal",
+    "creature-removal"
+  ],
+  "Settle the Score": [
+    "removal",
+    "creature-removal"
+  ],
+  "Shivan Fire": [
+    "removal",
+    "creature-removal"
+  ],
+  "Slinn Voda, the Rising Deep": [
+    "removal",
+    "creature-removal"
+  ],
+  "Territorial Allosaurus": [
+    "removal",
+    "creature-removal"
+  ],
+  "The Eldest Reborn": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "The First Eruption": [
+    "removal",
+    "creature-removal"
+  ],
+  "Time of Ice": [
+    "removal",
+    "creature-removal"
+  ],
+  "Urza's Ruinous Blast": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Vicious Offering": [
+    "removal",
+    "creature-removal"
+  ],
+  "Wizard's Lightning": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ]
+}

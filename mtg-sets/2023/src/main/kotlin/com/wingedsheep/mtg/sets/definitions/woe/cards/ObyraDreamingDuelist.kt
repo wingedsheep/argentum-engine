@@ -35,7 +35,9 @@ val ObyraDreamingDuelist = card("Obyra, Dreaming Duelist") {
     keywords(Keyword.FLASH, Keyword.FLYING)
     triggeredAbility {
         trigger = Triggers.entersBattlefield(
-            filter = GameObjectFilter.Creature.withSubtype(Subtype.FAERIE).youControl(),
+            // A bare tribal noun names *permanents* of that tribe, not creatures of it — the
+            // reading the Assay differential settled across the corpus.
+            filter = GameObjectFilter.Permanent.withSubtype(Subtype.FAERIE).youControl(),
             binding = TriggerBinding.OTHER
         )
         effect = Effects.LoseLife(1, EffectTarget.PlayerRef(Player.EachOpponent))

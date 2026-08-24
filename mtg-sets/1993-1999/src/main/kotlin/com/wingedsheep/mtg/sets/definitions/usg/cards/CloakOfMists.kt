@@ -4,10 +4,11 @@
 
 package com.wingedsheep.mtg.sets.definitions.usg.cards
 
-import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.dsl.Targets
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.CantBeBlocked
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 
 /**
@@ -23,7 +24,12 @@ val CloakOfMists = card("Cloak of Mists") {
     typeLine = "Enchantment — Aura"
     oracleText = "Enchant creature\nEnchanted creature can't be blocked."
     auraTarget = Targets.Creature
-    flags(AbilityFlag.CANT_BE_BLOCKED)
+    staticAbility {
+        // A card-level `flags(AbilityFlag.CANT_BE_BLOCKED)` would land the evasion on this
+        // Aura itself, which never blocks or is blocked — the printed line is about the
+        // enchanted creature, so the evasion is a static scoped to what this is attached to.
+        ability = CantBeBlocked(GroupFilter.attachedCreature())
+    }
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "65"

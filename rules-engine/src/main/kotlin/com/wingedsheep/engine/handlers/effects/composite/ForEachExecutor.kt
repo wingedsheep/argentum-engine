@@ -213,6 +213,7 @@ class ForEachExecutor(
     ): EffectContext = when (item) {
         is ForEachItem.OfTarget -> outerContext.copy(
             targets = listOf(item.target),
+            alignedTargets = listOf(item.target),
             pipeline = outerContext.pipeline.copy(storedCollections = emptyMap())
         )
 

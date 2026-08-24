@@ -198,6 +198,53 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  MRD: {
+    setCode: 'MRD',
+    setName: 'Mirrodin',
+    archetypes: [
+      {
+        name: 'Affinity',
+        colors: ['U'],
+        keyCard: 'Somber Hoverguard',
+        description: 'Flood the board with cheap artifacts, then cast Frogmite, Myr Enforcer and Somber Hoverguard for a fraction of their printed cost. The format\'s defining deck — count artifacts, not lands.',
+      },
+      {
+        name: 'Equipment Aggro',
+        colors: ['W'],
+        creatureTypes: ['Cat'],
+        keyCard: 'Bonesplitter',
+        description: 'Cheap Leonin bodies plus Bonesplitter and Leonin Scimitar. Equipment survives removal and moves on to the next creature, so trades never cost you the beatdown.',
+      },
+      {
+        name: 'Skyhunter Skies',
+        colors: ['W', 'U'],
+        creatureTypes: ['Cat', 'Drone'],
+        keyCard: 'Leonin Skyhunter',
+        description: 'Evasive fliers wearing Equipment. Nothing on the ground matters once a Leonin Skyhunter is carrying a Bonesplitter and blue is holding the board back.',
+      },
+      {
+        name: 'Nim Sacrifice',
+        colors: ['B', 'R'],
+        creatureTypes: ['Zombie'],
+        keyCard: 'Disciple of the Vault',
+        description: 'Nim creatures grow with every artifact you control, and Disciple of the Vault turns each one you sacrifice into damage. Your own artifacts dying is the payoff, not the cost.',
+      },
+      {
+        name: 'Artifact Demolition',
+        colors: ['R', 'G'],
+        creatureTypes: ['Elf', 'Beast'],
+        keyCard: 'Electrostatic Bolt',
+        description: 'Shatter effects and Tel-Jilad hate punish a format built out of artifacts, while red removal clears the way for green\'s oversized bodies.',
+      },
+      {
+        name: 'Myr Ramp',
+        colors: ['G'],
+        creatureTypes: ['Myr'],
+        keyCard: 'Copper Myr',
+        description: 'Myr and Talismans accelerate you past the aggro decks and fix a splash, then dump the set\'s biggest artifacts a turn or two early.',
+      },
+    ],
+  },
   DOM: {
     setCode: 'DOM',
     setName: 'Dominaria',
@@ -479,6 +526,83 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
         colors: ['G', 'W'],
         keyCard: 'Dyadrine, Synthesis Amalgam',
         description: "Take the board early with cheap creatures and pile on +1/+1 counters. Station synergies and counter payoffs build a sticky, go-tall-and-wide deck that's hard to climb back against.",
+      },
+    ],
+  },
+  MKM: {
+    setCode: 'MKM',
+    setName: 'Murders at Karlov Manor',
+    archetypes: [
+      {
+        name: 'Detectives',
+        colors: ['W', 'U'],
+        creatureTypes: ['Detective'],
+        keyCard: 'Private Eye',
+        description:
+          "Field a squad of Detectives, turn Clues into cards, and ride the format's best evasive bodies. A tempo-value deck that never runs out of gas.",
+      },
+      {
+        name: 'Surveil',
+        colors: ['U', 'B'],
+        keyCard: 'Curious Cadaver',
+        description:
+          'Surveil to fix your draws and stock your graveyard, then take over with cheap interaction and recursive threats. A grindy control deck that wins the long game.',
+      },
+      {
+        name: 'Sacrifice',
+        colors: ['B', 'R'],
+        keyCard: 'Rune-Brand Juggler',
+        description:
+          'Suspect your own creatures to push damage, then sacrifice them for value before the drawback bites. An aggressive deck that turns every body into reach.',
+      },
+      {
+        name: 'Disguise',
+        colors: ['R', 'G'],
+        keyCard: 'Tin Street Gossip',
+        description:
+          'Deploy face-down 2/2s early and flip them at the perfect moment for a blowout. A midrange deck that turns every attack into a guessing game.',
+      },
+      {
+        name: 'Face-Down Counters',
+        colors: ['G', 'W'],
+        keyCard: 'Sumala Sentry',
+        description:
+          'Cloak and disguise creatures, then cash in the turn-up triggers for +1/+1 counters. A go-tall midrange deck that snowballs off every flip.',
+      },
+      {
+        name: 'Small Creatures',
+        colors: ['W', 'B'],
+        keyCard: 'Wispdrinker Vampire',
+        description:
+          'Flood the board with cheap creatures with power 2 or less and drain the opponent with the payoffs that count them. A wide, incremental aggro deck.',
+      },
+      {
+        name: 'Artifacts',
+        colors: ['U', 'R'],
+        keyCard: 'Gleaming Geardrake',
+        description:
+          'Investigate for Clues, then sacrifice artifacts to trigger payoffs and refuel. An artifact-fueled tempo deck that converts leftovers into damage.',
+      },
+      {
+        name: 'Graveyard',
+        colors: ['B', 'G'],
+        keyCard: 'Insidious Roots',
+        description:
+          'Fill your graveyard and spend it — collect evidence, recur creature cards, and out-attrition the table. A resilient midrange deck with a deep back end.',
+      },
+      {
+        name: 'Go Wide Aggro',
+        colors: ['R', 'W'],
+        keyCard: 'Meddling Youths',
+        description:
+          "Attack with three or more creatures every turn to switch on the format's go-wide payoffs. The fastest deck in the format, backed by burn.",
+      },
+      {
+        name: 'Collect Evidence',
+        colors: ['G', 'U'],
+        keyCard: 'Evidence Examiner',
+        description:
+          'Bank cards in your graveyard, collect evidence to unlock discounted spells, and grow a threat with +1/+1 counters. A ramp-value deck that plays the biggest spells.',
       },
     ],
   },

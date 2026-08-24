@@ -264,9 +264,35 @@ data class CardDefinition(
      * override. A card with an empty mana cost and a black color indicator is exactly black; a
      * normal card (no indicator) is just its mana-cost colors. Used e.g. by The Grim Captain, whose
      * transformed back face has no mana cost and a black color indicator.
+     *
+     * [Keyword.DEVOID] (CR 702.114a) overrides both. Devoid is a characteristic-defining ability —
+     * "this object is colorless" — and CDAs function in every zone (CR 604.3), so it belongs to the
+     * card's derived colors rather than to any continuous effect: every reader downstream (the
+     * engine's `CardComponent.colors`, projection's layer-5 base row, evasion and protection checks,
+     * the client card view, search) then sees a colorless object in hand, graveyard, exile, on the
+     * stack and on the battlefield alike, with nothing to wire per zone. A layer-5 effect that says
+     * "becomes blue" still applies on top, which is the order CR 613.3 asks for (CDAs first, then
+     * other effects by timestamp).
+     *
+     * [colorIdentity] deliberately does **not** consult devoid: CR 903.4 builds identity out of the
+     * mana symbols in the cost and rules text, and devoid defines *no* color for the CDA clause to
+     * contribute. Ulamog's Nullifier is colorless and blue-identity at the same time.
      */
     val colors: Set<Color>
-        get() = if (colorIndicator == null) manaCost.colors else manaCost.colors + colorIndicator
+        get() = when {
+            hasDevoid -> emptySet()
+            colorIndicator == null -> manaCost.colors
+            else -> manaCost.colors + colorIndicator
+        }
+
+    /**
+     * Devoid, in either of the two spellings the SDK gives a parameterless keyword: the bare
+     * [keywords] set — what the `keywords(…)` DSL and Assay's compiler both write — and the
+     * [keywordAbilities] list a card may reach for instead. Reading only one would make a card's
+     * colorlessness depend on which spelling its author picked.
+     */
+    private val hasDevoid: Boolean
+        get() = Keyword.DEVOID in keywords || keywordAbilities.any { it.keyword == Keyword.DEVOID }
 
     /**
      * Color identity per CR 903.4: the colors of any mana symbols in the card's mana cost or

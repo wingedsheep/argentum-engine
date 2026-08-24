@@ -425,6 +425,20 @@ fix-backlog-implementations:
 check-card-printing CARD:
     scripts/check-card-printing.py "{{CARD}}"
 
+# THE ASSAY-READY WORKLIST — the cards Argentum Assay reads whole that this set has not authored,
+# split by where the work lands: author here / author in the earlier set + a row here / row only /
+# basic land. The split is the point: `assayReady` counts a card as done when it appears in the
+# set's cards + basicLands + printings, so a missing reprint row badges a card exactly like a
+# missing canonical does, and a sweep that only authors canonicals leaves half the badge behind.
+# Needs a baked ledger (`just assay-bake`). The `assay-ready-sweep` skill drives the whole job.
+#   just assay-ready MH2                 the split, as a table
+#   just assay-ready MH2 --names         ... and every card name under its bucket
+#   just assay-ready MH2 --tail          ... and the Printing rows owed in OTHER sets
+#   just assay-ready MH2 --json          machine-readable, for generating agent briefs
+[group: 'build']
+assay-ready SET *ARGS:
+    scripts/assay-ready.py --set {{SET}} {{ARGS}}
+
 # Start the game server (loads .env if present)
 [group: 'dev']
 server:

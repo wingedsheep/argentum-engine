@@ -494,6 +494,24 @@ sealed interface ClientEvent {
     // Player Choice Events
     // =========================================================================
 
+    /**
+     * A creature type chosen secretly earlier is now public — "Reveal the creature type you chose".
+     * The sibling of [CreatureTypeChosen], which announces only that a choice was made.
+     */
+    @Serializable
+    @SerialName("creatureTypeRevealed")
+    data class CreatureTypeRevealed(
+        val playerId: EntityId,
+        val sourceId: EntityId,
+        val sourceName: String,
+        val revealedType: String,
+        val isYours: Boolean? = null,
+        override val description: String = when (isYours) {
+            true -> "You revealed $revealedType ($sourceName)"
+            else -> "Opponent revealed $revealedType ($sourceName)"
+        }
+    ) : ClientEvent
+
     @Serializable
     @SerialName("creatureTypeChosen")
     data class CreatureTypeChosen(
@@ -560,10 +578,17 @@ sealed interface ClientEvent {
         val sourceId: EntityId,
         val sourceName: String,
         val isYours: Boolean? = null,
-        override val description: String = when (isYours) {
-            true -> "You flipped a coin ($sourceName) — ${if (won) "you won" else "you lost"}"
-            false -> "Opponent flipped a coin ($sourceName) — ${if (won) "they won" else "they lost"}"
-            null -> "Flipped a coin ($sourceName) — ${if (won) "won" else "lost"}"
+        /** True when a "flip N coins and ignore all but one" replacement discarded this flip
+         *  (Krark's Thumb). The coin was really flipped, so it is shown, but its result was not
+         *  used — the log says so rather than reporting a win the player never got. */
+        val ignored: Boolean = false,
+        override val description: String = when {
+            ignored && isYours == true -> "You flipped a coin ($sourceName) — ${if (won) "heads" else "tails"}, ignored"
+            ignored && isYours == false -> "Opponent flipped a coin ($sourceName) — ${if (won) "heads" else "tails"}, ignored"
+            ignored -> "Flipped a coin ($sourceName) — ${if (won) "heads" else "tails"}, ignored"
+            isYours == true -> "You flipped a coin ($sourceName) — ${if (won) "you won" else "you lost"}"
+            isYours == false -> "Opponent flipped a coin ($sourceName) — ${if (won) "they won" else "they lost"}"
+            else -> "Flipped a coin ($sourceName) — ${if (won) "won" else "lost"}"
         }
     ) : ClientEvent
 
@@ -1041,7 +1066,11 @@ object ClientEventTransformer {
                 isYours = event.controllerId == viewingPlayerId
             )
 
-            is AbilityActivatedEvent -> ClientEvent.AbilityActivated(
+            // Mana abilities never used the stack and so never showed up in the game log; the
+            // engine now emits AbilityActivatedEvent for them too (so "whenever you activate an
+            // ability" triggers can see them — Elrond, Moon-Reader), but they stay out of the log.
+            // A line whose description is empty says nothing the ManaAddedEvent doesn't already.
+            is AbilityActivatedEvent -> if (event.isManaAbility) null else ClientEvent.AbilityActivated(
                 sourceId = event.sourceId,
                 sourceName = event.sourceName,
                 abilityDescription = "", // Description not available
@@ -1207,7 +1236,8 @@ object ClientEventTransformer {
                 won = event.won,
                 sourceId = event.sourceId,
                 sourceName = event.sourceName,
-                isYours = event.playerId == viewingPlayerId
+                isYours = event.playerId == viewingPlayerId,
+                ignored = event.ignored
             )
 
             is TurnFaceUpEvent -> ClientEvent.TurnedFaceUp(
@@ -1250,6 +1280,14 @@ is PermanentsSacrificedEvent -> {
                 permanentName = event.permanentName,
                 newControllerId = event.newControllerId,
                 isYours = event.newControllerId == viewingPlayerId
+            )
+
+            is CreatureTypeRevealedEvent -> ClientEvent.CreatureTypeRevealed(
+                playerId = event.playerId,
+                sourceId = event.sourceId,
+                sourceName = event.sourceName,
+                revealedType = event.revealedType,
+                isYours = event.playerId == viewingPlayerId
             )
 
             is CreatureTypeChosenEvent -> ClientEvent.CreatureTypeChosen(
@@ -1369,6 +1407,10 @@ is PermanentsSacrificedEvent -> {
             // (Surveillance Monitor, Evidence Examiner); the exiles themselves are already
             // surfaced by their own zone-change events, so no separate client event.
             is EvidenceCollectedEvent,
+            // Internal signal that fires "whenever you forage" watcher triggers (Corpseberry
+            // Cultivator); the three exiles or the Food's sacrifice are already surfaced by their
+            // own zone-change / sacrifice events, so no separate client event.
+            is ForagedEvent,
             // Internal signal that fires "whenever a creature you control explores" watcher
             // triggers; the reveal/hand/counter moves are already surfaced by their own events, so
             // no separate client event.

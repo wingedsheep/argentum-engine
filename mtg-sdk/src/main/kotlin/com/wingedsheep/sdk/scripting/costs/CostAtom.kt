@@ -246,11 +246,29 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     data class ExileFrom(
         val zone: Zone,
         val filter: GameObjectFilter = GameObjectFilter.Any,
-        val count: Int = 1
+        val count: Int = 1,
+        /**
+         * Widen the pool from the payer's own [zone] to *every* player's — "exile two creature
+         * cards from a single graveyard" (Night Soil). Each card leaves from and is exiled by its
+         * own owner's zone; the payer only chooses.
+         */
+        val anyPlayersZone: Boolean = false,
+        /**
+         * With [anyPlayersZone], require all [count] cards to come from the *same* player's zone.
+         * That is the whole restriction on Night Soil: two lone creatures in two graveyards can't
+         * be combined, so a board with one creature card in each graveyard pays nothing.
+         */
+        val singleZone: Boolean = false,
     ) : CostAtom {
         override val selectionCount: Int get() = count
-        override val description: String get() =
-            "exile ${quantify(count, filter.description)} from your ${zone.name.lowercase()}"
+        override val description: String get() = when {
+            anyPlayersZone && singleZone ->
+                "exile ${quantify(count, filter.description)} from a single ${zone.name.lowercase()}"
+            anyPlayersZone ->
+                "exile ${quantify(count, filter.description)} from a ${zone.name.lowercase()}"
+            else ->
+                "exile ${quantify(count, filter.description)} from your ${zone.name.lowercase()}"
+        }
 
         override fun applyTextReplacement(replacer: TextReplacer): CostAtom {
             val newFilter = filter.applyTextReplacement(replacer)
@@ -382,6 +400,40 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     }
 
     /**
+     * Put [count] counters of [counterType] on a permanent matching [filter] that the *payer*
+     * controls — the selected-permanent sibling of [PutCountersOnSelf].
+     *
+     * Fallen Empires' Chants print it as the way out of a punisher clause: Tourach's Chant deals 3
+     * damage to a player "unless the player puts a -1/-1 counter on a creature they control". The
+     * payer picks which of their creatures takes it, and a player controlling no matching permanent
+     * simply cannot pay — unlike [PutCountersOnSelf], which is always payable because it needs no
+     * selection.
+     */
+    @SerialName("AtomPutCountersOnPermanent")
+    @Serializable
+    data class PutCountersOnPermanent(
+        val counterType: String,
+        val count: Int = 1,
+        val filter: GameObjectFilter = GameObjectFilter.Permanent,
+    ) : CostAtom {
+        override val selectionCount: Int get() = 1
+        override val description: String get() = buildString {
+            append("put ")
+            append(quantify(count, "$counterType counter"))
+            append(" on ")
+            append(filter.indefiniteArticle)
+            append(" ")
+            append(filter.description)
+            append(" you control")
+        }
+
+        override fun applyTextReplacement(replacer: TextReplacer): CostAtom {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
      * Collect evidence [amount] — exile any number of cards from your graveyard with total mana
      * value [amount] or greater (CR 701.59a, Murders at Karlov Manor).
      *
@@ -411,6 +463,20 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
      * option must be *hidden*, not offered and refused. Every affordability check therefore fails
      * closed on "sum of available mana values < [amount]".
      *
+     * **[amount] is a [DynamicAmount], not an [Int]**, because one printed card prices the
+     * threshold off the spell it is paying for: Urgent Necropsy's "collect evidence X, where X is
+     * the total mana value of the permanents this spell targets". That X is a *derived* quantity —
+     * unlike [com.wingedsheep.sdk.scripting.effects.CollectEvidenceChosenAmountEffect]'s X, which
+     * is a player *decision* and so is deliberately its own effect rather than a `DynamicAmount`.
+     * The atom accepts only the three shapes the corpus prints, enforced below, so a cost can
+     * never carry an amount the cost-time evaluator has no context to read:
+     *
+     *  - [DynamicAmount.Fixed] — every literal "collect evidence 3";
+     *  - [DynamicAmount.XValue] — the cast's chosen X;
+     *  - [DynamicAmount.ContextProperty] of
+     *    [com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TARGETS_TOTAL_MANA_VALUE] — the
+     *    summed mana value of the targets, read from the announced targets at CR 601.2f.
+     *
      * @property amount The mana-value floor N — the total the exiled cards must meet or exceed.
      * @property linkToSource When true, the cards exiled to pay this cost join the *source
      *   permanent's* linked-exile pile
@@ -424,13 +490,41 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     @SerialName("AtomCollectEvidence")
     @Serializable
     data class CollectEvidence(
-        val amount: Int,
+        val amount: DynamicAmount,
         val linkToSource: Boolean = false,
     ) : CostAtom {
+        init {
+            require(amount is DynamicAmount.Fixed || amount is DynamicAmount.XValue || amount == TARGET_SUM) {
+                "CollectEvidence's amount must be a literal, XValue, or the summed mana value of " +
+                    "the spell's targets — the three shapes a cost can be priced from before it " +
+                    "is paid. Got ${amount::class.simpleName}: ${amount.description}"
+            }
+        }
+
+        /** Convenience for the overwhelmingly common literal "collect evidence N". */
+        constructor(amount: Int, linkToSource: Boolean = false) :
+            this(DynamicAmount.Fixed(amount), linkToSource)
+
         // Variable count: at least one card must be exiled, but the binding constraint is the
         // total mana value, carried separately to the picker.
         override val selectionCount: Int get() = 1
-        override val description: String get() = "collect evidence $amount"
+
+        // "Collect evidence 3" for a literal; "collect evidence X" for either derived shape —
+        // which is how both printed cards word it.
+        override val description: String get() =
+            if (amount is DynamicAmount.Fixed) "collect evidence ${amount.amount}"
+            else "collect evidence X"
+
+        companion object {
+            /**
+             * "X, where X is the total mana value of the permanents this spell targets" — the one
+             * derived threshold in print (Urgent Necropsy). Named here so a card never has to
+             * spell the `ContextProperty` out and the `init` guard has one thing to compare to.
+             */
+            val TARGET_SUM: DynamicAmount = DynamicAmount.ContextProperty(
+                com.wingedsheep.sdk.scripting.values.ContextPropertyKey.TARGETS_TOTAL_MANA_VALUE
+            )
+        }
     }
 
     /**
@@ -492,6 +586,35 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
             val newFilter = filter.applyTextReplacement(replacer)
             return if (newFilter !== filter) copy(filter = newFilter) else this
         }
+    }
+
+    /**
+     * "Reveal the creature type you chose" — turn the source permanent's *secret* noted creature
+     * type (see [com.wingedsheep.sdk.scripting.effects.NoteCreatureTypeEffect] with `secret = true`)
+     * into public information, and carry it into the resolution of the ability whose cost this is.
+     *
+     * This is the reveal half of the hidden-agenda pair (CR 702.106c-d — turning the face-down
+     * conspiracy face up reveals the chosen name, and the two abilities are linked per CR 607.2d).
+     * A Killer Among Us's "Sacrifice this enchantment, Reveal the creature type you chose:" is the
+     * shape it is named for.
+     *
+     * **Only the player who made the note can pay it.** A player who gained control of the
+     * permanent never saw the choice, so the cost is unpayable for them and the ability is not
+     * offered at all — the ruling that card spells out. A permanent with no secret note (nothing
+     * chosen, or already revealed) likewise can't pay.
+     *
+     * Paying it costs nothing material: it publishes the note and emits a `CreatureTypeRevealedEvent`.
+     * The revealed type reaches the ability's effect as
+     * `EffectContext.chosenValues["chosenCreatureType"]`, so a condition can test the ability's
+     * target against it with
+     * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtypeFromVariable] — the same
+     * read path a mid-pipeline `ChooseOption` write uses. The type is captured when the cost is
+     * paid, so a cost that also sacrifices the source (CR 113.7a) still resolves against it.
+     */
+    @SerialName("AtomRevealNotedCreatureType")
+    @Serializable
+    data object RevealNotedCreatureType : CostAtom {
+        override val description: String get() = "reveal the creature type you chose"
     }
 
     /** Reveal [count] cards matching [filter] from your hand (the cards stay in hand). */

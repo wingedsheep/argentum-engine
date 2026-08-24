@@ -201,6 +201,22 @@ data class RemoveAnyNumberOfCountersContinuation(
  * @property counterType The counter kind to place
  * @property sourceId Source emitting the effect (for the placement context)
  */
+/**
+ * Resume after the controller picks how much life to pay as a permanent enters
+ * ([com.wingedsheep.sdk.scripting.effects.PayAnyAmountOfLifeAsEntersEffect], Nameless Race). The
+ * chosen amount is paid and recorded on [permanentId] as its `EnteredWithValueComponent`, which is
+ * what the permanent's characteristic-defining P/T reads back.
+ *
+ * @property permanentId The permanent that is entering, and that carries the recorded amount
+ * @property controllerId The player paying the life and making the choice
+ */
+@Serializable
+data class PayAnyAmountOfLifeAsEntersContinuation(
+    override val decisionId: String,
+    val permanentId: EntityId,
+    val controllerId: EntityId
+) : ContinuationFrame
+
 @Serializable
 data class AddCountersUpToContinuation(
     override val decisionId: String,

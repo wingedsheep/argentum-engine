@@ -480,7 +480,24 @@ sealed interface SerializableModification {
         val redirectToId: EntityId,
         /** If set, only redirect up to this many damage. Null = redirect all (Glarecaster). */
         val amount: Int? = null,
-        val scope: RedirectScope = RedirectScope.NEXT_INSTANCE
+        val scope: RedirectScope = RedirectScope.NEXT_INSTANCE,
+        /**
+         * When true the shield protects **every creature** rather than a fixed list of entities —
+         * Blood of the Martyr's "if damage would be dealt to any creature". Checked against
+         * projected state at damage time, so a creature that entered after the shield was created
+         * is covered and a player never is. An empty `affectedEntities` otherwise means "anything",
+         * players included, which is not what this wants.
+         */
+        val creaturesOnly: Boolean = false,
+        /**
+         * "**you may** have that damage dealt to you instead" (Blood of the Martyr). The shield's
+         * controller is asked per damage instance before that damage is dealt; the answers live in
+         * [com.wingedsheep.engine.state.GameState.optionalDamageRedirectChoices] and are consumed by
+         * [com.wingedsheep.engine.handlers.effects.DamageUtils.checkDamageRedirection]. An
+         * unanswered instance is treated as **declined**, so a damage path that hasn't run the
+         * choice pre-pass never redirects on the controller's behalf.
+         */
+        val optional: Boolean = false
     ) : SerializableModification
 
     /**
@@ -659,10 +676,15 @@ sealed interface SerializableModification {
      * (persists all turn) and from [PreventNextDamage] (caps a fixed amount across instances).
      *
      * @property damageSourceId The chosen source whose next damage instance is prevented
+     * @property halveRoundedDown When true, only *half* the instance is prevented, rounded down
+     *   (Dark Sphere: "prevent half that damage, rounded down") — the rest is dealt, and the shield
+     *   is consumed either way. A 1-damage instance therefore prevents nothing and still spends the
+     *   shield, which is what the printed card does.
      */
     @Serializable
     data class PreventNextDamageInstanceFromSource(
-        val damageSourceId: EntityId
+        val damageSourceId: EntityId,
+        val halveRoundedDown: Boolean = false
     ) : SerializableModification
 
     /**

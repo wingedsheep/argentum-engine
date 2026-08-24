@@ -40,8 +40,16 @@ import com.wingedsheep.sdk.scripting.targets.TargetRequirement
  * is the zone.
  *
  * The noun ends in "card" rather than naming a permanent, which is Oracle's own distinction: an
- * object in a graveyard is a *card*, not a permanent, so the printed form is "{filter} card" and the
- * bare type nouns [Filters] spells are the modifier in front of it.
+ * object in a graveyard is a *card*, not a permanent, and the bare type nouns [Filters] spells are
+ * the modifier in front of it. That noun is [Filters.cardNoun] — a whole noun phrase, head word
+ * included — and not a `{filter}` slot with the word "card" after it in each template. The
+ * difference is what lets a suffix clause exist here at all: "return target creature card **with
+ * mana value 3 or less** from your graveyard" attaches behind the head noun, which a sentence-owned
+ * "card" left no room for.
+ *
+ * Its "target card" row is therefore the `Any` row of that vocabulary rather than a rule of its own.
+ * It was one until this band; a second rule for the value the general one now prints is the
+ * redundant-readings configuration this module gates on.
  */
 object Graveyard {
 
@@ -72,7 +80,7 @@ object Graveyard {
             targetRequirements = listOf(inYourGraveyard(filter)),
         )
         return phrase(template, name = name) {
-            slot("filter", Filters.filter)
+            slot("filter", Filters.cardNoun)
             build { scriptFor(it.value("filter")) }
             match { script ->
                 val requirement = script.targetRequirements.singleOrNull() ?: return@match null
@@ -80,24 +88,6 @@ object Graveyard {
                 if (script != scriptFor(filter)) return@match null
                 bind("filter" to filter)
             }
-        }
-    }
-
-    /**
-     * "Return target card from your graveyard to your hand." — Elven Cache.
-     *
-     * `GameObjectFilter.Any` is what "card" with no modifier means, and [Filters] has no noun for it
-     * on purpose: "card" is not a permanent type, and a row for it would let "destroy target card"
-     * parse. So the unqualified form is its own rule rather than a filter the general one slots.
-     */
-    private val returnAnyCardToHand: Phrase<CardScript> = run {
-        val script = CardScript(
-            spellEffect = Effects.Move(Targets.bound(), Zone.HAND),
-            targetRequirements = listOf(inYourGraveyard(GameObjectFilter.Any)),
-        )
-        phrase("return target card from your graveyard to your hand", name = "return any card from your graveyard") {
-            build { script }
-            match { if (it == script) bind() else null }
         }
     }
 
@@ -142,14 +132,14 @@ object Graveyard {
             ),
         )
         phrase(
-            "return up to {n} target {filter} cards from your graveyard to the battlefield",
+            "return up to {n} target {filter} from your graveyard to the battlefield",
             name = "return several cards from your graveyard to the battlefield",
         ) {
             slot("n", Cardinals.word)
-            // Singular, because the plural noun in "Bird and/or Cleric permanent **cards**" is
-            // "cards": Oracle inflects the word for the object and leaves the type phrase in front
-            // of it uninflected, which is the same split [graveyardStep] makes one card at a time.
-            slot("filter", Filters.filter)
+            // The plural card noun, which inflects only its head: "Bird and/or Cleric permanent
+            // **cards**". That split used to be made here by spelling the noun in the template; it
+            // belongs to [Filters.cardNoun], which is what lets the phrase carry a suffix clause.
+            slot("filter", Filters.pluralCards)
             build { scriptFor(it.int("n"), it.value("filter")) }
             match { script ->
                 val requirement = script.targetRequirements.singleOrNull() as? TargetObject ?: return@match null
@@ -282,17 +272,22 @@ object Graveyard {
         putTargetFromThatPlayersGraveyard,
         returnAllOfSubtypeFromAllGraveyards,
         graveyardStep(
-            "return target {filter} card from your graveyard to your hand",
+            "return target {filter} from your graveyard to your hand",
             "return a card from your graveyard to your hand",
+            // No `fromZone` guard here, unlike the battlefield row below — deliberate, not an
+            // oversight in the asymmetry. `Effects.Move(_, HAND)` is what the corpus writes: of the
+            // 198 hand-written cards whose oracle text says "from your graveyard to your hand",
+            // exactly two set `fromZone`, and both are self-returns (Redtooth Vanguard, Squee,
+            // Goblin Nabob) that this rule never generates — `Recursion.kt` owns those. The 113
+            // targeted returns this row does produce write no guard at all.
         ) { Effects.Move(it, Zone.HAND) },
         graveyardStep(
-            "return target {filter} card from your graveyard to the battlefield",
+            "return target {filter} from your graveyard to the battlefield",
             "return a card from your graveyard to the battlefield",
             // The guarded return: `fromZone = GRAVEYARD` skips the move if the card has left the
             // graveyard by resolution. Dropping it was tried, on the reading that the target
             // requirement's own `zone = GRAVEYARD` already decides legality — the differential
             // answered immediately, fixing three cards and breaking six. The corpus keeps the guard.
         ) { Effects.PutOntoBattlefieldFromGraveyard(it) },
-        returnAnyCardToHand,
     )
 }

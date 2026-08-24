@@ -117,6 +117,7 @@ import com.wingedsheep.sdk.scripting.effects.GainControlByRankEffect
 import com.wingedsheep.sdk.scripting.effects.PlayerRankDirection
 import com.wingedsheep.sdk.scripting.effects.PlayerRankMetric
 import com.wingedsheep.sdk.scripting.effects.RankTieBreak
+import com.wingedsheep.sdk.scripting.effects.ForagedEffect
 import com.wingedsheep.sdk.scripting.effects.GiftGivenEffect
 import com.wingedsheep.sdk.scripting.effects.GrantSpellKeywordEffect
 import com.wingedsheep.sdk.scripting.effects.GrantFlashToSpellsEffect
@@ -1448,16 +1449,38 @@ object Effects {
      * [PutOntoBattlefieldUnderYourControl] does; the two axes are independent, so a card wanting both
      * the graveyard guard and the control override says so here rather than reaching past the facade
      * for a raw `MoveToZoneEffect`.
+     *
+     * [tapped] is the third independent axis, and it was missing until Assay's recursion band went
+     * looking: "Return this card from your graveyard to the battlefield **tapped**" (Reassembling
+     * Skeleton, Haunted Dead, Persistent Specimen, Tunnel Rats, Teacher's Pest) had no way to say
+     * *both*, so five cards reached for [PutOntoBattlefield] and silently dropped the guard this
+     * facade exists to carry. A frozen parameter on a facade is a card's missing word.
      */
     fun PutOntoBattlefieldFromGraveyard(
         target: EffectTarget,
-        underYourControl: Boolean = false
+        underYourControl: Boolean = false,
+        tapped: Boolean = false
     ): Effect = MoveToZoneEffect(
         target,
         Zone.BATTLEFIELD,
+        placement = if (tapped) ZonePlacement.Tapped else ZonePlacement.Default,
         fromZone = Zone.GRAVEYARD,
         controllerOverride = if (underYourControl) EffectTarget.Controller else null
     )
+
+    /**
+     * "Return this card from your graveyard to your hand." — [ReturnToHand] with the graveyard guard,
+     * and [PutOntoBattlefieldFromGraveyard]'s sibling one destination over.
+     *
+     * The same `fromZone` and the same reason for it: the move is skipped if the card has left the
+     * graveyard by the time the ability resolves. `ActivateAbilityHandler` checks an ability's
+     * `activateFromZone` when it is *activated* and nothing re-checks it on resolution, so without
+     * the guard a card exiled from the graveyard in response to its own ability still comes back —
+     * from exile. Every card whose printed line names the graveyard should say so here; Argentum
+     * Assay builds this for the sentence, so one that does not shows up in the differential.
+     */
+    fun ReturnToHandFromGraveyard(target: EffectTarget): Effect =
+        MoveToZoneEffect(target, Zone.HAND, fromZone = Zone.GRAVEYARD)
 
     /**
      * Put onto the battlefield under your control (the effect controller's control).
@@ -1621,6 +1644,22 @@ object Effects {
         GrantKeywordEffect(keyword.name, target, duration, condition)
 
     /**
+     * Mark a permanent as unable to regenerate. Composed *before* a destroy for the "destroy it, it
+     * can't be regenerated" wording (see [Destroy]'s `noRegenerate`), but also useful on its own as
+     * a standing rider on a creature that was merely damaged — Runesword.
+     */
+    fun CantBeRegenerated(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        CantBeRegeneratedEffect(target)
+
+    /**
+     * "If it would die this turn, exile it instead." Marks a creature so its death is replaced by
+     * exile; a no-op on a non-creature. Composed after damage (Carbonize) or granted as a rider
+     * on a creature that deals damage (Runesword).
+     */
+    fun MarkExileOnDeath(target: EffectTarget = EffectTarget.ContextTarget(0)): Effect =
+        com.wingedsheep.sdk.scripting.effects.MarkExileOnDeathEffect(target)
+
+    /**
      * Grant an ability flag to a target.
      */
     fun GrantKeyword(
@@ -1653,6 +1692,24 @@ object Effects {
         target: EffectTarget = EffectTarget.ContextTarget(0),
         duration: Duration = Duration.EndOfTurn
     ): Effect = GrantStaticAbilityEffect(ability, target, duration)
+
+    /**
+     * "[target] gains all activated abilities of [donor] until end of turn" — Quicksilver Elemental.
+     *
+     * The abilities are **snapshotted as this resolves** and granted with [target] as their source
+     * (CR 113.7), so `{T}` and self-references inside a copied ability bind to the permanent that
+     * gained it. Only activated abilities activatable from the battlefield are copied, mana
+     * abilities included. Use the static
+     * [com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents] instead when the donors are
+     * a *filter* re-read continuously (Sharkey, Marvin) rather than a target picked on resolution.
+     */
+    fun GainAllActivatedAbilitiesOf(
+        donor: EffectTarget,
+        target: EffectTarget = EffectTarget.Self,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GainAllActivatedAbilitiesOfEffect(
+        donor = donor, target = target, duration = duration
+    )
 
     /**
      * Grant a replacement effect to a target for a duration — the runtime sibling of a printed
@@ -2619,6 +2676,7 @@ object Effects {
         controller: EffectTarget? = null,
         exceptions: com.wingedsheep.sdk.scripting.effects.CopyExceptions =
             com.wingedsheep.sdk.scripting.effects.CopyExceptions.None,
+        stampCreator: Boolean = false,
     ): Effect = CreateTokenCopyOfTargetEffect(
         target = target,
         count = DynamicAmount.Fixed(count),
@@ -2644,6 +2702,7 @@ object Effects {
         exileUnlessSourceIsRingBearer = exileUnlessSourceIsRingBearer,
         controller = controller,
         exceptions = exceptions,
+        stampCreator = stampCreator,
     )
 
     /**
@@ -3734,8 +3793,10 @@ object Effects {
     /**
      * Change the target of target spell or ability with a single target.
      */
-    fun ChangeTarget(): Effect =
-        ChangeTargetEffect
+    fun ChangeTarget(
+        newTargetMustBePlayer: Boolean = false,
+        onlyIfCurrentTargetIsController: Boolean = false,
+    ): Effect = ChangeTargetEffect(newTargetMustBePlayer, onlyIfCurrentTargetIsController)
 
     /**
      * Reselect the target of the triggering spell or ability at random.
@@ -4634,6 +4695,23 @@ object Effects {
         )
 
     /**
+     * The next time a source of your choice would deal damage to [target] this turn, prevent **half**
+     * that damage, rounded down (Dark Sphere). Single-instance shield like the Circle of Protection
+     * family: the unprevented half is still dealt, and the shield is spent either way — a 1-damage
+     * instance halves to 0 prevented and consumes it.
+     */
+    fun PreventHalfNextDamageFromChosenSource(
+        target: EffectTarget = EffectTarget.Controller
+    ): Effect =
+        PreventDamageEffect(
+            target = target,
+            amount = null,
+            sourceFilter = PreventionSourceFilter.ChosenSource,
+            nextInstanceOnly = true,
+            halvePreventedDamage = true
+        )
+
+    /**
      * Prevent all damage that would be dealt to a target this turn by a source of your choice.
      * If [gainLifeFromColors] is non-empty, whenever damage from a source of one of those colors is
      * prevented this way, the controller gains that much life (Samite Ministration).
@@ -5206,8 +5284,23 @@ object Effects {
      */
     fun NoteCreatureType(
         storeAs: String = "notedType",
+        prompt: String? = null,
+        options: List<String> = emptyList()
+    ): Effect = NoteCreatureTypeEffect(storeAs, prompt, options)
+
+    /**
+     * "Secretly choose Human, Merfolk, or Goblin." (A Killer Among Us)
+     *
+     * The hidden-information sibling of [NoteCreatureType]: the chosen type is noted on the source
+     * permanent the same way, but only the player who chose it can see it, and only they can later
+     * publish it by paying [Costs.RevealNotedCreatureType]. Pass [options] to narrow the choice to
+     * a named handful; leave it empty for "secretly choose a creature type".
+     */
+    fun SecretlyChooseCreatureType(
+        options: List<String> = emptyList(),
+        storeAs: String = "notedType",
         prompt: String? = null
-    ): Effect = NoteCreatureTypeEffect(storeAs, prompt)
+    ): Effect = NoteCreatureTypeEffect(storeAs, prompt, options, secret = true)
 
     /** The five basic land card names, excluded by "name a card other than a basic land card name" effects. */
     private val BASIC_LAND_CARD_NAMES = listOf("Plains", "Island", "Swamp", "Mountain", "Forest")
@@ -5372,6 +5465,19 @@ object Effects {
      * Add this to gift modes so that "whenever you give a gift" triggers fire.
      */
     fun GiftGiven(): Effect = GiftGivenEffect
+
+    // =========================================================================
+    // Forage
+    // =========================================================================
+
+    /**
+     * Signal that a forage was taken (CR 701.59a) so "Whenever you forage" triggers fire.
+     *
+     * `Patterns.Mechanic.forage` already appends this to each of its modes — a card writing the
+     * keyword action through that facade needs nothing. Reach for it directly only when spelling a
+     * forage some other way.
+     */
+    fun Foraged(): Effect = ForagedEffect
 
     // =========================================================================
     // Spell Keyword Grants

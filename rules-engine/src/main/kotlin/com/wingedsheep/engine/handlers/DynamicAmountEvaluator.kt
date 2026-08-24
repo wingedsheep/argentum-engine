@@ -431,6 +431,11 @@ class DynamicAmountEvaluator(
                 else evaluate(state, amount.ifFalse, context, projectedState)
             }
 
+            // "For each opponent" / "for each other player" — how many players the scope names.
+            // resolveUnifiedPlayerIds already yields only players still in the game, so a pod that
+            // has lost a player reports the live number (CR 800.4a).
+            is DynamicAmount.PlayerCount -> resolveUnifiedPlayerIds(state, amount.scope, context).size
+
             is DynamicAmount.CountPlayersWith -> {
                 val eval = conditionEvaluator ?: ConditionEvaluator()
                 val playerIds = resolveUnifiedPlayerIds(state, amount.scope, context)
@@ -857,6 +862,13 @@ class DynamicAmountEvaluator(
 
         ContextPropertyKey.TARGET_COUNT -> context.targets.size
 
+        // The summing sibling of TARGET_COUNT, over the same list. A cost carrying this key is
+        // priced before resolution by CostAtomAmounts instead — both read the announced targets,
+        // so the two paths agree by construction.
+        ContextPropertyKey.TARGETS_TOTAL_MANA_VALUE ->
+            com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                .totalManaValueOf(state, context.targets)
+
         ContextPropertyKey.MODES_CHOSEN_ON_TRIGGERING_SPELL -> context.triggerModesChosenCount ?: 0
 
         ContextPropertyKey.MANA_SPENT_ON_TRIGGERING_SPELL -> context.triggerManaSpentOnTriggeringSpell ?: 0
@@ -1158,6 +1170,10 @@ class DynamicAmountEvaluator(
     ): List<EntityId> {
         return when (player) {
             is Player.You -> listOf(context.controllerId)
+            // "its controller" inside a ForEach over entities — a single player, or none outside
+            // such a loop.
+            is Player.ControllerOfIterationEntity ->
+                listOfNotNull(TargetResolutionUtils.resolvePlayerRef(player, context, state))
             is Player.EachOpponent -> state.getOpponents(context.controllerId)
             is Player.TargetOpponent, is Player.TargetPlayer -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
@@ -1303,6 +1319,14 @@ class DynamicAmountEvaluator(
 
             is EntityNumericProperty.CounterCount ->
                 counterCountOf(state, entityId, property.counterType)
+
+            // The number chosen as the permanent entered (Nameless Race). Plain per-entity state
+            // with no projection dependency, so a CDA reading it resolves the same during layer
+            // projection as at resolution time.
+            is EntityNumericProperty.ValueChosenAsEntered ->
+                state.getEntity(entityId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.EnteredWithValueComponent>()
+                    ?.value ?: 0
 
             is EntityNumericProperty.AttachmentCount -> {
                 val attachedIds = state.getEntity(entityId)?.get<AttachmentsComponent>()?.attachedIds ?: emptyList()

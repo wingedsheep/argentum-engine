@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.costs
 
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
@@ -34,6 +35,31 @@ sealed interface PayCost : TextReplaceable<PayCost> {
         override fun applyTextReplacement(replacer: TextReplacer): PayCost {
             val newAtom = atom.applyTextReplacement(replacer)
             return if (newAtom !== atom) copy(atom = newAtom) else this
+        }
+    }
+
+    /**
+     * Pay a life amount computed when the cost is offered rather than written on the card as a
+     * number — "unless they pay life equal to its mana value" (Wand of Ith).
+     *
+     * The symbolic sibling of [Atom] wrapping [CostAtom.PayLife], and the same idea as
+     * [OwnManaCost]: the card names a *rule* for the amount, not the amount. It is lowered to a
+     * concrete `CostAtom.PayLife` at payment time by `PayOrSufferExecutor`, which is the one place
+     * that holds the `EffectContext` the amount may need — a pipeline-scoped amount such as
+     * `ManaValueSumOfCollection` can only be read there.
+     *
+     * Consequently this is a **PayOrSuffer-only** cost: it is not payable as a spell or ability
+     * cost, where affordability has to be known before any context exists, and the cost-payment
+     * service reports it unaffordable rather than guessing a number.
+     */
+    @SerialName("PayDynamicLife")
+    @Serializable
+    data class DynamicLife(val amount: DynamicAmount) : PayCost {
+        override val description: String get() = "pay life equal to ${amount.description}"
+
+        override fun applyTextReplacement(replacer: TextReplacer): PayCost {
+            val newAmount = amount.applyTextReplacement(replacer)
+            return if (newAmount !== amount) copy(amount = newAmount) else this
         }
     }
 

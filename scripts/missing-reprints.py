@@ -50,8 +50,17 @@ CACHE_TTL_DAYS = 30
 # Only `card(...)` declarations participate in the Printing-row reprint system.
 # Basic lands are defined per-set via `basicLand(...)` (each set scaffolds its
 # own art variants), never as shared `Printing(...)` rows — exclude them.
-CARD_DSL_RE = re.compile(r'\bcard\(\s*"([^"]+)"')
-PRINTING_NAME_RE = re.compile(r'\bname\s*=\s*"([^"]+)"')
+# The `(?:[^"\\]|\\.)*` body (rather than `[^"]+`) is load-bearing: a handful of real card
+# names embed escaped double quotes — `card("Kongming, \\"Sleeping Dragon\\"")` — and a naive
+# `[^"]+` truncates at the first `\\"`, so the card silently never matches its Scryfall name.
+# Captured values are Kotlin string literals; run them through [unescape_kotlin] before comparing.
+CARD_DSL_RE = re.compile(r'\bcard\(\s*"((?:[^"\\]|\\.)*)"')
+PRINTING_NAME_RE = re.compile(r'\bname\s*=\s*"((?:[^"\\]|\\.)*)"')
+
+
+def unescape_kotlin(literal: str) -> str:
+    """Turn the body of a Kotlin string literal back into the value it denotes."""
+    return re.sub(r'\\(.)', r'\1', literal)
 
 SCAFFOLDABLE_SET_TYPES = {
     "core", "expansion", "draft_innovation", "masters", "commander",
@@ -148,11 +157,12 @@ def scan_definitions() -> tuple[dict[str, str], dict[str, set[str]]]:
     for kt in iter_card_files():
         text = kt.read_text(encoding="utf-8")
         set_code = codes.get(kt.parts[-3], kt.parts[-3])
-        card_names = {m.group(1) for m in CARD_DSL_RE.finditer(text)}
+        card_names = {unescape_kotlin(m.group(1)) for m in CARD_DSL_RE.finditer(text)}
         for name in card_names:
             canonical[name] = set_code
         if "Printing(" in text:
-            for name in PRINTING_NAME_RE.findall(text):
+            for literal in PRINTING_NAME_RE.findall(text):
+                name = unescape_kotlin(literal)
                 if name not in card_names:  # reprint row, not the canonical file
                     reprints[name].add(set_code)
     return canonical, reprints

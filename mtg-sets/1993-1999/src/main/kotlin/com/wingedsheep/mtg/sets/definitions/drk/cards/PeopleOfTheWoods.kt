@@ -33,7 +33,7 @@ val PeopleOfTheWoods = card("People of the Woods") {
         rarity = Rarity.UNCOMMON
         collectorNumber = "83"
         artist = "Drew Tucker"
-        flavorText = "\"Their rain of arrows left only myself alive, cowering within a tree hollow. They did not even come out to loot the bodies.\" —Vervamon the Elder"
+        flavorText = "\"Their rain of arrows left only myself alive, cowering within a tree hollow. They did not even come out to loot the bodies.\"\n—Vervamon the Elder"
         imageUri = "https://cards.scryfall.io/normal/front/2/f/2fb5926f-9988-4bc0-b2b7-e286db208310.jpg?1783947930"
     }
 }

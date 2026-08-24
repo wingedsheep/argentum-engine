@@ -5,7 +5,7 @@ import { useStackCards, selectGameState } from '@/store/selectors.ts'
 import { seatColor } from '@/styles/seatColors'
 import type { EntityId } from '@/types'
 import type { ClientAbilityIdentity, ClientCard } from '@/types/gameState'
-import { getCardImageUrl } from '@/utils/cardImages.ts'
+import { getCardImageUrl, faceDownImageUrl } from '@/utils/cardImages.ts'
 import { ActiveEffectBadges } from '../card/CardOverlays'
 import { AbilityText, ManaCost } from '../../ui/ManaSymbols'
 import { useOpenCardMenuOnTap } from '@/hooks/useOpenCardMenuOnTap.ts'
@@ -220,10 +220,17 @@ export function StackDisplay() {
           const dimmed = card.sourceZone === 'GRAVEYARD'
             ? { opacity: 0.7, filter: 'saturate(0.6)' }
             : {}
+          // A spell cast face down (morph, disguise) is drawn as its mechanic's helper card on the
+          // stack, the same as the permanent it becomes — the morph helmet, or "A Mysterious
+          // Creature" for disguise. Its controller still sees the real card on hover, exactly as
+          // for their own face-down permanents.
+          const faceDown = card.isFaceDown === true
           const image = (
             <img
-              src={getCardImageUrl(card.name, card.imageUri, 'small')}
-              alt={card.name}
+              src={faceDown
+                ? faceDownImageUrl(card.faceDownMode)
+                : getCardImageUrl(card.name, card.imageUri, 'small')}
+              alt={faceDown ? 'Face-down spell' : card.name}
               style={{
                 ...styles.stackItemImage,
                 ...(isLandscape
@@ -239,8 +246,8 @@ export function StackDisplay() {
                 cursor: isValidTarget || opts.onClick ? 'pointer' : 'default',
                 ...dimmed,
               }}
-              title={card.name}
-              onError={(e) => handleImageError(e, card.name, 'small')}
+              title={faceDown ? undefined : card.name}
+              onError={(e) => { if (!faceDown) handleImageError(e, card.name, 'small') }}
             />
           )
           if (!isLandscape) return image

@@ -30,7 +30,7 @@ val LingeringPhantom = card("Lingering Phantom") {
         triggerZone = Zone.GRAVEYARD
         effect = MayPayManaEffect(
             cost = ManaCost.parse("{B}"),
-            effect = Effects.Move(EffectTarget.Self, Zone.HAND)
+            effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self)
         )
     }
 

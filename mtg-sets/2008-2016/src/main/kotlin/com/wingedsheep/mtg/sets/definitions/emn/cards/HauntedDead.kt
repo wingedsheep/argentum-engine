@@ -40,7 +40,7 @@ val HauntedDead = card("Haunted Dead") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}{B}"), Costs.Discard(count = 2))
-        effect = Effects.PutOntoBattlefield(EffectTarget.Self, tapped = true)
+        effect = Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.Self, tapped = true)
         activateFromZone = Zone.GRAVEYARD
     }
 

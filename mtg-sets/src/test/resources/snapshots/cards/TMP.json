@@ -1948,7 +1948,7 @@
                     "type": "GainLife",
                     "amount": {
                         "type": "AggregateBattlefield",
-                        "player": "EachOpponent",
+                        "player": "Each",
                         "filter": "creature attacking"
                     }
                 }

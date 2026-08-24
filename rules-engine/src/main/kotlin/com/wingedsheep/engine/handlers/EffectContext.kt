@@ -54,6 +54,14 @@ data class EffectContext(
      */
     val abilityIdentity: com.wingedsheep.sdk.scripting.AbilityIdentity? = null,
     /**
+     * The id of the *activated* ability currently resolving, as recorded in the source's
+     * `AbilityActivatedThisTurnComponent`. Lets an effect read back how many times its own ability
+     * has been activated this turn (`ThisAbilityActivatedThisTurnAtLeast` — Farrelite Priest).
+     * Null for spells, triggered abilities and any activation whose ability opted out of
+     * bookkeeping.
+     */
+    val activatedAbilityId: com.wingedsheep.sdk.scripting.AbilityId? = null,
+    /**
      * The player currently under consideration as a target, bound while evaluating a
      * `TargetPlayer.restriction` / `TargetOpponent.restriction` (CR 115). Resolves
      * [com.wingedsheep.sdk.scripting.references.Player.Candidate]. Null in every normal
@@ -161,6 +169,16 @@ data class EffectContext(
      * accumulates across activations.
      */
     val exiledAsCostCards: List<EntityId> = emptyList(),
+    /**
+     * LKI snapshots (Rule 113.7a) for the entries of [exiledAsCostCards] that were exiled **from
+     * the battlefield**, captured before the zone change. A permanent exiled as a cost may be a
+     * token — which ceases to exist and can't be read at resolution — or may have been a Thrull
+     * only through a continuous effect, so "the exiled creature was a Thrull" (Soul Exchange) has
+     * to read what it last was on the battlefield rather than what its card prints. Empty for
+     * exile costs paid from any other zone, where the card is still a real object in exile and its
+     * printed characteristics are the right answer.
+     */
+    val exiledAsCostSnapshots: List<EntitySnapshot> = emptyList(),
     /** LKI snapshots for [tappedPermanents] (Rule 113.7a). See [EntitySnapshot]. */
     val tappedEntitySnapshots: List<EntitySnapshot> = emptyList(),
     /**

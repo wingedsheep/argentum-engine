@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockedThisCombatComponent
+import com.wingedsheep.engine.state.components.combat.BlockedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -182,6 +183,7 @@ internal class BlockPhaseManager(
             newState = newState.updateEntity(blockerId) { container ->
                 container.with(BlockingComponent(attackerIds))
                     .with(BlockedThisCombatComponent)
+                    .with(BlockedThisTurnComponent)
             }
 
             // Mark attackers as blocked

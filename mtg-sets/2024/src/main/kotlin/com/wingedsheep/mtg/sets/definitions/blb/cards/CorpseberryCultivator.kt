@@ -1,5 +1,6 @@
 package com.wingedsheep.mtg.sets.definitions.blb.cards
 
+import com.wingedsheep.sdk.core.Counters
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -19,10 +20,9 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * Whenever you forage, put a +1/+1 counter on this creature.
  *
- * Note: The "whenever you forage" trigger is merged into the combat trigger
- * for simplicity. The +1/+1 counter is applied as part of the forage action.
- * This means foraging from other sources won't trigger the counter — a future
- * ForageEvent/trigger system would be needed for full support.
+ * Two printed abilities, and the second one is a real trigger on `Triggers.WheneverYouForage`
+ * (CR 701.59a) rather than a counter folded into this card's own forage — so a forage from *any*
+ * source grows it, which is what the card says and what a Food-heavy board actually does.
  */
 val CorpseberryCultivator = card("Corpseberry Cultivator") {
     manaCost = "{1}{B/G}{B/G}"
@@ -33,16 +33,21 @@ val CorpseberryCultivator = card("Corpseberry Cultivator") {
     oracleText = "At the beginning of combat on your turn, you may forage. (Exile three cards from your graveyard or sacrifice a Food.)\nWhenever you forage, put a +1/+1 counter on this creature."
 
     // At the beginning of combat on your turn, you may forage.
-    // If you do, put a +1/+1 counter on this creature.
     triggeredAbility {
         trigger = Triggers.BeginCombat
         effect = MayEffect(
-            effect = Patterns.Mechanic.forage(
-                afterEffect = Effects.AddCounters("PLUS_ONE_PLUS_ONE", 1, EffectTarget.Self)
-            ),
+            effect = Patterns.Mechanic.forage(),
             descriptionOverride = "You may forage",
             hint = "Exile three cards from your graveyard or sacrifice a Food"
         )
+    }
+
+    // Whenever you forage, put a +1/+1 counter on this creature. Fed by the ability above and by
+    // every other forage on the board — a forage paid as an ability cost (Camellia, the Seedmiser)
+    // or a cast-time additional cost (Feed the Cycle) counts.
+    triggeredAbility {
+        trigger = Triggers.WheneverYouForage
+        effect = Effects.AddCounters(Counters.PLUS_ONE_PLUS_ONE, 1, EffectTarget.Self)
     }
 
     metadata {

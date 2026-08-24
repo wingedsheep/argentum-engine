@@ -5,17 +5,25 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.FlippedCoinsThisTurnComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.FlipAdditionalCoins
 import com.wingedsheep.sdk.scripting.WinCoinFlips
 
 /**
- * Shared application path for coin-flip result replacement (CR 705.3, "An effect may state that a
- * coin flip has a certain result and/or that a certain player wins a coin flip … ignore the actual
- * results and use the indicated results instead"). Consulted from every coin-flip emission point —
- * `FlipCoinExecutor`, `FlipTwoCoinsExecutor`, and `FlipCoinsExecutor` — so any coin flip runs
- * through the same filter.
+ * Shared application path for coin-flip replacement, consulted from [CoinFlipService] — the single
+ * place a coin is actually flipped — so every coin in the game runs through the same filter.
  *
- * Currently the only source is [WinCoinFlips] (Edgar, King of Figaro's Two-Headed Coin). "Heads" is
- * modeled as a won flip throughout the coin plumbing, so a forced win is a forced heads.
+ * Two replacements live here:
+ *
+ * - [WinCoinFlips] (Edgar, King of Figaro's Two-Headed Coin) dictates the *result* (CR 705.3, "An
+ *   effect may state that a coin flip has a certain result and/or that a certain player wins a coin
+ *   flip … ignore the actual results and use the indicated results instead"). "Heads" is modeled as
+ *   a won flip throughout the coin plumbing, so a forced win is a forced heads.
+ * - [FlipAdditionalCoins] (Krark's Thumb) dictates *how many coins are flipped* in place of each one
+ *   (CR 614.1a — an "instead" effect is a replacement effect), leaving the flipper to ignore all but
+ *   one.
+ *
+ * The two compose without interacting: a forced win makes every coin in an enlarged batch heads, so
+ * there is nothing left to ignore and the flipper is never asked.
  */
 object CoinFlipModifiers {
 
@@ -48,4 +56,24 @@ object CoinFlipModifiers {
      */
     fun markFlipped(state: GameState, playerId: EntityId): GameState =
         state.updateEntity(playerId) { it.with(FlippedCoinsThisTurnComponent) }
+
+    /**
+     * How many coins [playerId] really flips in place of each single coin — 1 when they control no
+     * [FlipAdditionalCoins] source, 2 under one Krark's Thumb, 4 under two.
+     *
+     * Instances **multiply** rather than add: a second Thumb replaces each of the coins the first
+     * one produced, so two Thumbs are "flip four coins and ignore three", not "flip three and ignore
+     * two". A [FlipAdditionalCoins.coinsPerFlip] below 2 would flip fewer coins than the game asked
+     * for, which no replacement may do, so such a value is ignored rather than shrinking the batch.
+     *
+     * Uses projected controllers so a stolen Krark's Thumb helps its current controller.
+     */
+    fun coinsPerFlip(state: GameState, cardRegistry: CardRegistry, playerId: EntityId): Int =
+        state.projectedState.getBattlefieldControlledBy(playerId).fold(1) { coins, permanentId ->
+            val card = state.getEntity(permanentId)?.get<CardComponent>() ?: return@fold coins
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@fold coins
+            cardDef.script.staticAbilities
+                .filterIsInstance<FlipAdditionalCoins>()
+                .fold(coins) { running, ability -> running * ability.coinsPerFlip.coerceAtLeast(1) }
+        }
 }

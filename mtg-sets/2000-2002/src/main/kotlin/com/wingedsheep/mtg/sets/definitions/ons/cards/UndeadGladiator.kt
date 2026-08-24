@@ -28,7 +28,7 @@ val UndeadGladiator = card("Undead Gladiator") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{1}{B}"), Costs.DiscardCard)
-        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
+        effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self)
         activateFromZone = Zone.GRAVEYARD
         restrictions = listOf(
             ActivationRestriction.All(

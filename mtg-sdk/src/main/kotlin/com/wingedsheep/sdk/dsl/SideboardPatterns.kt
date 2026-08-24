@@ -23,9 +23,9 @@ import com.wingedsheep.sdk.scripting.values.DynamicAmount
  * private per-player [Zone.SIDEBOARD] (CR 100.4 / 400.11a) — into a zone in the game. Mechanically
  * it is the ordinary Gather → Select → Move pipeline (see `LibraryPatterns.searchLibrary`), pointed
  * at the sideboard instead of the library, with **no shuffle** (the sideboard is unordered and
- * stays outside the game) and **reveal on** (the chosen card is shown — CR 701.19j / the wish
- * cycle's "reveal that card"). The "may" and "a card" of "you may choose a [type] card" are both
- * expressed by `ChooseUpTo(1)`: declining or having no legal choice simply moves nothing.
+ * stays outside the game) and **reveal on** (the chosen card is shown — CR 701.20 / the wish
+ * cycle's "reveal that card"). The "may" of "you may choose a [type] card" is expressed by
+ * `ChooseUpTo(1)`: declining or having no legal choice simply moves nothing.
  *
  * The varying axis across the whole wish cycle is the [filter] (Burning Wish → sorcery, Cunning
  * Wish → instant, Living Wish → creature or land, Death Wish / Wish → any); the destination is
@@ -44,6 +44,13 @@ object SideboardPatterns {
      * No shuffle — the sideboard is not a library. [revealed] defaults on, per the wish cycle's
      * "reveal that card" clause and CR 701.20 (Reveal); pass `revealed = false` for the cards that simply
      * "put a card you own from outside the game into your hand" with no reveal (North Wind Avatar).
+     *
+     * [optional] carries the printed "you may". It defaults on because every card in the wish cycle
+     * proper is optional, and turns the selection into `ChooseExactly(count)` when off — for the
+     * wishes worded as a plain instruction (Ring of Ma'rûf: "instead put a card you own from
+     * outside the game into your hand"), which the controller must obey if able. Either way an
+     * empty or unmatched sideboard simply moves nothing: `ChooseExactly` auto-selects the empty
+     * set rather than stalling on an impossible choice (CR 609.3 — do as much as possible).
      */
     fun wish(
         filter: GameObjectFilter = GameObjectFilter.Any,
@@ -51,6 +58,7 @@ object SideboardPatterns {
         destination: SearchDestination = SearchDestination.HAND,
         storeAs: String = "wishable",
         revealed: Boolean = true,
+        optional: Boolean = true,
     ): CompositeEffect {
         val (zone, placement) = when (destination) {
             SearchDestination.HAND -> Zone.HAND to ZonePlacement.Default
@@ -67,7 +75,7 @@ object SideboardPatterns {
                 ),
                 SelectFromCollectionEffect(
                     from = storeAs,
-                    selection = SelectionMode.ChooseUpTo(count),
+                    selection = if (optional) SelectionMode.ChooseUpTo(count) else SelectionMode.ChooseExactly(count),
                     storeSelected = selected,
                 ),
                 MoveCollectionEffect(
@@ -85,5 +93,7 @@ object SideboardPatterns {
         count: Int,
         destination: SearchDestination = SearchDestination.HAND,
         revealed: Boolean = true,
-    ): CompositeEffect = wish(filter, DynamicAmount.Fixed(count), destination, revealed = revealed)
+        optional: Boolean = true,
+    ): CompositeEffect =
+        wish(filter, DynamicAmount.Fixed(count), destination, revealed = revealed, optional = optional)
 }

@@ -391,8 +391,12 @@ function processStateUpdate(
     won: boolean
     sourceId: EntityId
     sourceName: string
+    ignored?: boolean
   }[]
 
+  // Coins that were flipped together are shown together, fanned out across the screen rather than
+  // stacked on the centre — a Krark's Thumb flip is always at least two coins, and the point of
+  // showing the ignored ones is that the player can see what was really flipped.
   coinFlipEvents.forEach((event, index) => {
     const isOpponent = event.playerId !== playerId
     newCoinFlipAnimations.push({
@@ -401,6 +405,9 @@ function processStateUpdate(
       won: isOpponent ? !event.won : event.won,
       isOpponent,
       startTime: Date.now() + index * 200,
+      ignored: event.ignored ?? false,
+      laneIndex: index,
+      laneCount: coinFlipEvents.length,
     })
   })
 

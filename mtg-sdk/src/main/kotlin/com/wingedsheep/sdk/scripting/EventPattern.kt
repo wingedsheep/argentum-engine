@@ -520,7 +520,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     /**
      * Whenever [player] collects evidence (CR 701.59). Fires once per collection, after the chosen
      * cards have been exiled — and only then: a declined collection, and one that was impossible
-     * under CR 701.59b, never fire it, so "whenever you collect evidence" payoffs (Surveillance
+     * under CR 701.57b, never fire it, so "whenever you collect evidence" payoffs (Surveillance
      * Monitor's Thopter, Evidence Examiner's Clue) can trust that evidence genuinely changed hands.
      *
      * Fires for **every** context the mechanic appears in — an activated-ability cost (Cryptex), a
@@ -529,7 +529,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * Collector) — because all four share one payment implementation. That matters for the printed
      * cards: Surveillance Monitor's own ETB collection triggers its own payoff.
      *
-     * Note that this is a *different* fact from the CR 701.59c linkage: this pattern observes any
+     * Note that this is a *different* fact from the CR 701.57c linkage: this pattern observes any
      * collection by [player], while `Conditions.WasEvidenceCollected` asks only whether *this
      * object's own* optional cast cost was declared.
      */
@@ -539,6 +539,37 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val player: Player = Player.You
     ) : EventPattern {
         override val description: String = "${player.description} collects evidence"
+    }
+
+    /**
+     * Whenever [player] forages — CR 701.59a, "Exile three cards from your graveyard or sacrifice a
+     * Food."
+     *
+     * The sibling of [EvidenceCollectedEvent] in every respect that matters, and modelled on it
+     * deliberately. It fires only once the forage has actually been *taken*: forage has no
+     * "even if you can't" clause, so a declined or unpayable forage never fires it, and a
+     * "whenever you forage" payoff can trust that cards genuinely left the graveyard or a Food
+     * genuinely died.
+     *
+     * Fires for **every** context the keyword action appears in — an activated-ability cost
+     * (Camellia, the Seedmiser; Thornvault Forager), a cast-time additional cost (Feed the Cycle),
+     * the graveyard-cast permission (Osteomancer Adept) and the resolution-time effect form
+     * (`Patterns.Mechanic.forage`, on Bushy Bodyguard and Curious Forager). The three cost contexts
+     * share one payment implementation and the effect form carries a marker
+     * ([com.wingedsheep.sdk.scripting.effects.EmitForagedEventEffect]) inside each of its two modes,
+     * which is the same split waterbend uses: a keyword action that is sometimes a cost and
+     * sometimes an effect cannot be observed from one place.
+     *
+     * The forager is whoever *pays*, not the source's controller — Feed the Cycle can be cast by
+     * either player and Ygra's ward is paid by an opponent — so [player] is matched against the
+     * paying player carried on the engine event.
+     */
+    @SerialName("ForagedEvent")
+    @Serializable
+    data class ForagedEvent(
+        val player: Player = Player.You
+    ) : EventPattern {
+        override val description: String = "${player.description} forages"
     }
 
     /**
@@ -1000,14 +1031,27 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
     @SerialName("BlocksOrBecomesBlockedByEvent")
     @Serializable
     data class BlocksOrBecomesBlockedByEvent(
-        val partnerFilter: GameObjectFilter? = null
+        val partnerFilter: GameObjectFilter? = null,
+        /**
+         * When true, fire **once** for the whole combat instead of once per matching partner —
+         * the partner-less printed wording "whenever this creature blocks or becomes blocked"
+         * (Spitting Slug), which is a single trigger no matter how many creatures it is paired
+         * with. `TriggerContext.triggeringEntityId` is then the first matching partner, so a
+         * card that says "it" still has one; a card that says "each creature blocking or blocked
+         * by this creature" reads the whole set from live combat state instead
+         * (`GameObjectFilter.Creature.blockingOrBlockedBySource()`).
+         */
+        val oncePerCombat: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
-            append("this creature blocks or becomes blocked by ")
-            if (partnerFilter != null) {
-                append(describeObjectForEvent(partnerFilter))
-            } else {
-                append("a creature")
+            append("this creature blocks or becomes blocked")
+            if (!oncePerCombat || partnerFilter != null) {
+                append(" by ")
+                if (partnerFilter != null) {
+                    append(describeObjectForEvent(partnerFilter))
+                } else {
+                    append("a creature")
+                }
             }
         }
 
@@ -2147,6 +2191,14 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * Refueler) — which counts an exhaust *mana* ability too. [excludeManaAbilities] adds back the
      * "isn't a mana ability" clause for Pit Automaton, whose Oracle text was updated to
      * "an exhaust ability that isn't a mana ability" so its copy payoff can't grab a mana ability.
+     *
+     * [includeManaAbilities] drops the default "isn't a mana ability" gate entirely: the trigger
+     * fires for *every* activated ability, mana or not. This is the unqualified Oracle wording —
+     * Elrond, Moon-Reader's "whenever you activate an ability of a creature", whose ruling states
+     * that a creature's "{T}: Add {G}" does cause it to trigger. Note this is the opposite axis to
+     * [excludeManaAbilities], which subtracts mana abilities from the *exhaust* semantic; this one
+     * adds them to the default semantic. A trigger that sets it must not itself be able to produce
+     * mana, or CR 605.1b would make it a mana ability.
      */
     @SerialName("AbilityActivatedEvent")
     @Serializable
@@ -2157,27 +2209,33 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
         val requireNoTapInCost: Boolean = false,
         val requireExhaust: Boolean = false,
         val excludeManaAbilities: Boolean = false,
+        val includeManaAbilities: Boolean = false,
     ) : EventPattern {
         override val description: String = buildString {
+            // The clause that narrows *which* abilities count, appended after "...ability".
+            // Empty for the unqualified [includeManaAbilities] wording, where the source filter
+            // alone does the narrowing ("you activate a creature's ability" — Elrond).
+            val qualifier = when {
+                targetMatch != null -> "targets a " + targetMatch.description
+                requireExhaust && excludeManaAbilities ->
+                    "is an exhaust ability that isn't a mana ability"
+                requireExhaust -> "is an exhaust ability"
+                requireNoTapInCost -> "doesn't have {T} in its activation cost"
+                includeManaAbilities -> ""
+                else -> "isn't a mana ability"
+            }
             append(player.description)
             append(" activates ")
             if (sourceFilter != null) {
                 append("a ")
                 append(sourceFilter.description)
-                append("'s ability that ")
+                append("'s ability")
             } else {
-                append("an ability that ")
+                append("an ability")
             }
-            when {
-                targetMatch != null -> {
-                    append("targets a ")
-                    append(targetMatch.description)
-                }
-                requireExhaust && excludeManaAbilities ->
-                    append("is an exhaust ability that isn't a mana ability")
-                requireExhaust -> append("is an exhaust ability")
-                requireNoTapInCost -> append("doesn't have {T} in its activation cost")
-                else -> append("isn't a mana ability")
+            if (qualifier.isNotEmpty()) {
+                append(" that ")
+                append(qualifier)
             }
         }
 
@@ -2409,8 +2467,24 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * to a single player's zone: "from graveyards and/or the battlefield" means *any* graveyard and
      * *any* player's permanents, so every controller with this trigger sees the same batch.
      *
-     * Only cards fire it — tokens are not cards (CR 111.6), so a token exiled from the battlefield
-     * never satisfies it even though it briefly occupies the exile zone before CR 111.7 sweeps it.
+     * By default only cards fire it — tokens are not cards (CR 111.6), so a token exiled from the
+     * battlefield never satisfies it even though it briefly occupies the exile zone before CR 111.7
+     * sweeps it. [includeTokens] flips that for the wordings whose battlefield noun is *permanents*
+     * rather than *cards*; see its own doc.
+     *
+     * [filter]'s **controller predicate is honored**, so the batch can be narrowed to one player's
+     * objects: `GameObjectFilter.Creature.youControl()` reads as "creatures you control and/or
+     * creature cards in your graveyard", because ownership is what "your graveyard" means and
+     * control is what "you control" means. The detector tests the *last known* controller for a
+     * battlefield exit (the permanent is already in exile by then, CR 603.10) and the owner for a
+     * card leaving any other zone — a graveyard/hand/library card has no controller.
+     *
+     * The matching exiled objects are handed to the resolving ability as its captured collection
+     * ([com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION]), so a
+     * payoff can say "from among **them**". Note CR 111.7 has already swept any token out of that
+     * collection by the time the ability resolves, and a card that has since left exile is likewise
+     * no longer choosable (Kaya, Spirits' Justice's ruling) — filter the collection with
+     * `CollectionFilter.InZone(Zone.EXILE)` when the payoff must still find the card in exile.
      *
      * The common "during your turn" timing restriction is expressed on the card via
      * `triggerRestriction = Conditions.IsYourTurn` rather than baked into the event.
@@ -2419,12 +2493,23 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * - "Whenever one or more cards are put into exile from graveyards and/or the battlefield
      *   during your turn, …" → `CardsPutIntoExileEvent()` + `triggerRestriction = Conditions.IsYourTurn`
      *   (Ketramose, the New Dawn)
+     * - "Whenever one or more creatures you control and/or creature cards in your graveyard are put
+     *   into exile, …" → `CardsPutIntoExileEvent(filter = GameObjectFilter.Creature.youControl(),
+     *   includeTokens = true)` (Kaya, Spirits' Justice)
+     *
+     * @param includeTokens When true, a **token** put into exile satisfies the trigger too. The axis
+     *   is the printed noun, not a convenience: "one or more **cards** are put into exile" excludes
+     *   tokens outright (CR 111.6), while "one or more **creatures you control** … are put into
+     *   exile" counts a token creature like any other creature. CR 111.7's "applicable triggered
+     *   abilities will trigger before the token ceases to exist" is what makes the token-inclusive
+     *   reading detectable at all.
      */
     @SerialName("CardsPutIntoExileEvent")
     @Serializable
     data class CardsPutIntoExileEvent(
         val fromZones: Set<Zone> = setOf(Zone.GRAVEYARD, Zone.BATTLEFIELD),
-        val filter: GameObjectFilter = GameObjectFilter.Any
+        val filter: GameObjectFilter = GameObjectFilter.Any,
+        val includeTokens: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             append("one or more ")
@@ -2432,7 +2517,13 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 append(filter.cardPredicates.joinToString(" ") { it.description })
                 append(" ")
             }
-            append("cards are put into exile from ")
+            append(if (includeTokens) "permanents" else "cards")
+            val controllerClause = filter.controllerPredicate?.description.orEmpty()
+            if (controllerClause.isNotEmpty()) {
+                append(" ")
+                append(controllerClause)
+            }
+            append(" are put into exile from ")
             append(
                 fromZones.sortedBy { it.ordinal }.joinToString(" and/or ") { zone ->
                     when (zone) {

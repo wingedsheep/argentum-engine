@@ -178,6 +178,33 @@ sealed interface StatePredicate {
     }
 
     /**
+     * Creature that is blocking the effect's source **or** being blocked by it — the live CR 509
+     * pairing in either direction, read off the blocked-attacker sets rather than a snapshot.
+     * Source-relative; yields false with no source context or outside combat.
+     *
+     * The live counterpart of [com.wingedsheep.sdk.scripting.effects.CardSource].LastKnownCombatPairedWithSource,
+     * which answers the same question from a leaves-battlefield snapshot for a dies trigger. Use
+     * this one while the source is still on the battlefield — "each creature blocking or blocked by
+     * this creature" (Spitting Slug).
+     */
+    @SerialName("IsCombatPairedWithSource")
+    @Serializable
+    data object IsCombatPairedWithSource : Entity {
+        override val description: String = "blocking or blocked by this creature"
+    }
+
+    /**
+     * Blocking the entity an enclosing `ForEachInGroup` is iterating over — "creatures you control
+     * blocking **that creature**" (Tidal Flats), where "that creature" is the loop's current
+     * attacker rather than the effect's source. False outside such a loop.
+     */
+    @SerialName("IsBlockingIterationEntity")
+    @Serializable
+    data object IsBlockingIterationEntity : Entity {
+        override val description: String = "blocking that creature"
+    }
+
+    /**
      * A token that was *created by the effect's source permanent* — its provenance creator id (the
      * `CreatedByComponent` stamped when a `CreateTokenEffect` with `stampCreator = true` made it)
      * equals the source entity supplied in the evaluation context. Source-relative; yields false
@@ -403,6 +430,57 @@ sealed interface StatePredicate {
     }
 
     /**
+     * The creature **couldn't have been declared as an attacker** this turn — the "except for
+     * creatures that couldn't attack" clause of Season of the Witch, which spares a creature that
+     * had no choice in the matter rather than punishing it for staying home.
+     *
+     * The reasons a creature had no choice. Who may be declared, and by whom, is CR 508.1a:
+     *
+     *  - **its controller wasn't attacking this turn.** Only the active player declares attackers,
+     *    so every creature an opponent controls is spared — the sweep is one-sided in practice,
+     *    hitting only the creatures that skipped the turn's Declare Attackers Step. In a
+     *    shared-team-turns format the whole active team counts (CR 805.10b).
+     *  - **no Declare Attackers Step happened at all.** The clause above asks whose turn it is,
+     *    which is not the same question: an effect that skips the combat phase (False Peace,
+     *    Fatespinner) means nobody was ever offered the choice, so nobody stayed home by choice.
+     *  - **summoning sickness** — it entered this turn without haste.
+     *
+     * And the attack *restrictions*, CR 508.1c: **defender** (CR 702.3b) or a **"can't attack"**
+     * effect (Pacifism). All of these read from projected state where they can, so granted/removed
+     * keywords and effects count.
+     *
+     * It deliberately does *not* re-run the full declare-attackers legality check — that needs a
+     * chosen defending player and a `CardRestrictionsError`-style card registry, neither of which
+     * exists in predicate evaluation — so a creature kept home only by a card-specific "can't
+     * attack unless …" restriction is not spared, and neither is one that came under its
+     * controller's control this turn without entering the battlefield. Pair with [AttackedThisTurn]
+     * negated to get "didn't attack and could have".
+     */
+    @SerialName("CouldNotHaveAttackedThisTurn")
+    @Serializable
+    data object CouldNotHaveAttackedThisTurn : History {
+        override val description: String = "couldn't attack"
+    }
+
+    /**
+     * Was declared as an attacker during its controller's **most recent own turn** — "it attacked
+     * during your last turn". Backed by `PlayerAttackersLastTurnComponent`, which the cleanup step
+     * rolls over from the this-turn set on that player's own turn only, so an intervening
+     * opponent's turn can't blank it.
+     *
+     * Distinct from [AttackedThisTurn] in both direction and lifetime: this one is false on the
+     * turn the creature actually attacked and true on the next one. It is what gates the untap step
+     * for Goblin Rock Sled and Tangle Kelp ("doesn't untap during your untap step if it attacked
+     * during your last turn") — the untap step runs before that turn's cleanup, so the record it
+     * reads is genuinely the previous turn's.
+     */
+    @SerialName("AttackedLastTurn")
+    @Serializable
+    data object AttackedLastTurn : History {
+        override val description: String = "attacked during its controller's last turn"
+    }
+
+    /**
      * Was declared as an attacker at least once during the current combat (CR 508.1). Backed by the
      * per-entity `AttackedThisCombatComponent` marker, stamped at attacker-declaration time and
      * cleared when the combat phase ends. Resets between multiple combats in one turn, and survives
@@ -425,6 +503,20 @@ sealed interface StatePredicate {
     @Serializable
     data object BlockedThisCombat : History {
         override val description: String = "blocked this combat"
+    }
+
+    /**
+     * Was declared as a blocker at least once **this turn** (CR 509.1). Backed by the per-entity
+     * `BlockedThisTurnComponent`, stamped at blocker declaration and cleared at end of turn — so,
+     * unlike [BlockedThisCombat], it survives into the postcombat main phase and across a second
+     * combat in the same turn.
+     *
+     * Pairs with [AttackedThisTurn] for "unless it attacked or blocked this turn" (Lurker).
+     */
+    @SerialName("BlockedThisTurn")
+    @Serializable
+    data object BlockedThisTurn : History {
+        override val description: String = "blocked this turn"
     }
 
     /**
@@ -711,6 +803,21 @@ sealed interface StatePredicate {
     @Serializable
     data class AttachedTo(val filter: com.wingedsheep.sdk.scripting.GameObjectFilter) : Entity {
         override val description: String = "attached to ${filter.description}"
+    }
+
+    /**
+     * The candidate's *controller* controls at least one permanent matching [filter] — "target
+     * creature whose controller controls an Island" (Seasinger). The nested filter is evaluated
+     * against projected battlefield state, and its "you" is bound to the candidate's controller
+     * rather than to the ability's controller, which is the whole point: the constraint is about
+     * the creature's owner-of-the-moment, not about who is casting.
+     */
+    @SerialName("ControllerControls")
+    @Serializable
+    data class ControllerControls(
+        val filter: com.wingedsheep.sdk.scripting.GameObjectFilter
+    ) : Entity {
+        override val description: String = "whose controller controls ${filter.indefiniteArticle} ${filter.description}"
     }
 
     // =============================================================================

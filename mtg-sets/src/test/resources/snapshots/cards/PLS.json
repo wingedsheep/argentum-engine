@@ -134,6 +134,114 @@
     ]
 }
 
+// Crosis's Charm
+{
+    "name": "Crosis's Charm",
+    "manaCost": "{U}{B}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• Return target permanent to its owner's hand.\n• Destroy target nonblack creature. It can't be regenerated.\n• Destroy target artifact.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Hand"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "permanent"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Return target permanent to its owner's hand"
+                },
+                {
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "CantBeRegenerated",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target"
+                                }
+                            },
+                            {
+                                "type": "MoveToZone",
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "target"
+                                },
+                                "destination": "Graveyard",
+                                "byDestruction": true
+                            }
+                        ]
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature",
+                                        {
+                                            "type": "NotColor",
+                                            "color": "BLACK"
+                                        }
+                                    ]
+                                }
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Destroy target nonblack creature. It can't be regenerated"
+                },
+                {
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "artifact"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Destroy target artifact"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "UNCOMMON",
+        "artist": "David Martin",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/5/b59a9e75-9988-4040-a718-b1655fc20d11.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Daring Leap
 {
     "name": "Daring Leap",
@@ -402,6 +510,81 @@
         "imageUri": "https://cards.scryfall.io/normal/front/7/6/76d1b5c5-cc47-465f-8549-4fd1ca4280df.jpg"
     },
     "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Dromar's Charm
+{
+    "name": "Dromar's Charm",
+    "manaCost": "{W}{U}{B}",
+    "typeLine": "Instant",
+    "oracleText": "Choose one —\n• You gain 5 life.\n• Counter target spell.\n• Target creature gets -2/-2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Modal",
+            "modes": [
+                {
+                    "effect": {
+                        "type": "GainLife",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    }
+                },
+                {
+                    "effect": "Counter",
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {},
+                                "zone": "Stack"
+                            },
+                            "id": "target"
+                        }
+                    ]
+                },
+                {
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": -2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "target"
+                        }
+                    ],
+                    "description": "Target creature gets -2/-2 until end of turn"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "105",
+        "rarity": "UNCOMMON",
+        "artist": "David Martin",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7a1894c-af4e-4530-960f-2225916be8cb.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
         "BLACK"
     ]
 }

@@ -14,7 +14,9 @@ import com.wingedsheep.sdk.dsl.Conditions as SdkConditions
 import com.wingedsheep.sdk.scripting.AttackTax
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
 import com.wingedsheep.sdk.scripting.CantAttackUnless
+import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.CantBeBlockedBy
+import com.wingedsheep.sdk.scripting.CantBeBlockedByFewerThan
 import com.wingedsheep.sdk.scripting.CantBeBlockedByMoreThan
 import com.wingedsheep.sdk.scripting.CantBeBlockedExceptBy
 import com.wingedsheep.sdk.scripting.CantBlock
@@ -135,52 +137,189 @@ object Statics {
         }
 
     // ---------------------------------------------------------------------------------------
-    // Combat restrictions — the statics a creature has about its own attacking and blocking
+    // Combat restrictions — what a permanent may and may not do in combat
     // ---------------------------------------------------------------------------------------
 
     /**
-     * "~ can't block.", "~ can't be blocked by black and/or red creatures.", "~ can block only
-     * creatures with flying." — the evasion and restriction family, which is the second static
-     * family and the one that made [Statics] a file about the slot rather than about auras.
+     * Who a combat restriction is **about** — the one axis every member of the family shares.
      *
-     * All three are the same shape: a `StaticAbility` whose `filter` is the source itself (the
-     * `GroupFilter.source()` default every one of them declares) and whose only other content is a
-     * blocker filter, if it takes one. The shape is written as a function over that blocker filter
-     * for the reason the module states — three members is a family, and the fourth ("can't be
-     * blocked except by …") is a row rather than a rule.
+     * `mtg-sdk` factors this vocabulary the way English does. `CantBlock`, `CantBeBlocked`,
+     * `CantBeBlockedBy`, `CantBeBlockedExceptBy`, `CantBeBlockedByMoreThan`,
+     * `CantBeBlockedByFewerThan` and `CanOnlyBlockCreaturesWith` each carry the affected set as one
+     * `GroupFilter` field and differ only in what they forbid, so a printed line is a subject plus a
+     * restriction and the grammar is their **product**. It used to be one rule per sentence — five
+     * rules reaching three of the twenty-odd combinations Oracle prints, and the three that happened
+     * to be written were the three somebody had needed.
+     *
+     * Every combination below is printed. The three subjects, counted over "can't be blocked" alone:
+     * the source 279 times, the attached permanent 25, a plural noun phrase 10. And they take
+     * **disjoint model values** — `Scope.Self`, `Scope.AttachedTo`, and a battlefield scan which is
+     * the only one [Filters] can produce — so printing is decided by the model rather than by the
+     * alternation's order, the property every `oneOf` in this grammar is written to have.
+     *
+     * The one hole in the product is deliberate and is [Grammar.flagLine]'s: **the source's bare
+     * "~ can't be blocked." is an `AbilityFlag`, not a static.** 19 hand-written cards spell it that
+     * way against 6 that write `CantBeBlocked()`, so registering a source-scoped bare row here would
+     * be a second rule for one text — `AMBIGUOUS` by construction. The attached and group subjects
+     * have no such competitor: a card-level flag lands on the *Aura*, which is why Cloak of Mists,
+     * Whispersilk Cloak and My Precious were carrying an evasion that did nothing.
+     */
+    private enum class Subject(val surface: String, val label: String) {
+        SOURCE(Normalizer.SELF, "the source"),
+        ATTACHED("enchanted creature", "the attached permanent"),
+        GROUP("{group}", "a group"),
+    }
+
+    /** The `GroupFilter` a [Subject] denotes, reading its `{group}` slot where it has one. */
+    private fun Subject.groupOf(bindings: Bindings): GroupFilter = when (this) {
+        Subject.SOURCE -> GroupFilter.source()
+        Subject.ATTACHED -> GroupFilter.attachedCreature()
+        Subject.GROUP -> GroupFilter(bindings.value("group"))
+    }
+
+    /**
+     * The slot bindings this subject needs in order to print [group], or null when [group] is a
+     * value it does not spell.
+     *
+     * Fail-closed by round trip rather than by inspection: the candidate bindings go back through
+     * [groupOf] and the result is compared, so an `excludeSelf`, an `excludeTarget`, a
+     * `chosenSubtypeKey` or a `Scope.SoulbondPair` — every field a printed subject says nothing
+     * about — refuses to print instead of being quietly dropped. That is the same check
+     * [lordStatic] performs one field at a time, done once for the whole value.
+     */
+    private fun Subject.spelling(group: GroupFilter): List<Pair<String, Any?>>? {
+        val pairs = if (this == Subject.GROUP) listOf("group" to group.baseFilter) else emptyList()
+        return pairs.takeIf { groupOf(bind(*it.toTypedArray())) == group }
+    }
+
+    /**
+     * One restriction over every subject that prints it — the family's shape.
+     *
+     * [clause] is the sentence *after* the subject and without its full stop, so the subject's own
+     * spelling is the only thing that moves between the rows, and `{v}` inside it is the
+     * restriction's variable part. Which is a different type per row — a blocker filter for three of
+     * them and a count for two — so [parameter] is the slot phrase and the caller supplies the two
+     * halves of its meaning, exactly as [lordStatic] takes them.
+     *
+     * **[parameter] is nullable because two restrictions have no variable part at all**, and that is
+     * a property of their SDK types rather than of English: `CantBlock` and `CantBeBlocked` carry
+     * nothing but the group, and `CantBeBlockedByMoreThan(1)` spells its count as the word "one"
+     * inside a template English does not pluralize the same way ("more than one creature" against
+     * "more than two creatures"). A slot whose value space is empty is not a slot; writing the shape
+     * twice to avoid the null would be two copies of a fail-closed match that must not drift.
      *
      * The blocker filter is [Filters.plural] whole, so "creatures with flying", "black and/or red
-     * creatures" and "creatures with power 2 or greater" are rows in a filter list rather than three
-     * rules here. Plural because that is the number English uses after "blocked by": a restriction
-     * names a *class* of blocker, never one.
-     *
-     * `match` reconstructs and compares, so a copy of one of these carrying a real `GroupFilter` —
-     * "Creatures you control can't be blocked by …" is the same SDK type — refuses to print as a
-     * sentence about this creature.
+     * creatures" and "creatures with power 2 or greater" are rows in a filter list rather than rules
+     * here. Plural because that is the number English uses after "blocked by": a restriction names a
+     * *class* of blocker, never one.
      */
-    private fun blockerRestriction(
-        template: String,
+    private fun <V> restriction(
+        clause: String,
         name: String,
-        ability: (GameObjectFilter) -> StaticAbility,
-    ): Phrase<StaticAbility> = phrase(template, name = name) {
-        slot("blockers", Filters.plural)
-        build { ability(it.value("blockers")) }
-        match { value ->
-            val blockers = when (value) {
-                is CantBeBlockedBy -> value.blockerFilter
-                is CanOnlyBlockCreaturesWith -> value.blockerFilter
-                else -> return@match null
+        parameter: Phrase<V>?,
+        ability: (V?, GroupFilter) -> StaticAbility,
+        read: (StaticAbility) -> Pair<V?, GroupFilter>?,
+        subjects: List<Subject> = Subject.entries,
+    ): List<Phrase<StaticAbility>> = subjects.map { subject ->
+        phrase("${subject.surface} $clause.", name = "$name, ${subject.label}") {
+            if (subject == Subject.GROUP) slot("group", Filters.plural)
+            if (parameter != null) slot("v", parameter)
+            build { bindings ->
+                ability(parameter?.let { bindings.value<V>("v") }, subject.groupOf(bindings))
             }
-            if (value != ability(blockers)) return@match null
-            bind("blockers" to blockers)
+            match { value ->
+                val (parsed, group) = read(value) ?: return@match null
+                val subjectBindings = subject.spelling(group) ?: return@match null
+                if (value != ability(parsed, group)) return@match null
+                val valueBinding = if (parameter != null) listOf("v" to parsed) else emptyList()
+                bind(*(subjectBindings + valueBinding).toTypedArray())
+            }
         }
     }
 
-    private val cantBlock: Phrase<StaticAbility> =
-        phrase("${Normalizer.SELF} can't block.", name = "can't block") {
-            build { CantBlock() }
-            match { if (it == CantBlock()) Bindings.EMPTY else null }
-        }
+    /**
+     * Every combat restriction, over every subject that prints it.
+     *
+     * The count rows spell their number as a *word with its noun* ("one creature", "two creatures")
+     * rather than as a numeral, which is why they take [Cardinals.word] and why the singular is its
+     * own row — the two differ in both halves. `CantBeBlockedByMoreThan(1)` also has an
+     * `AbilityFlag` spelling (`CANT_BE_BLOCKED_BY_MORE_THAN_ONE`); the static is what 35
+     * hand-written cards carry against 4 for the flag, so the static is what the grammar reads and
+     * the flag is one more of the two-places-for-one-thing findings this file keeps recording.
+     */
+    private val combatRestrictions: List<Phrase<StaticAbility>> =
+        // "Enchanted creature can't be blocked." (Cloak of Mists, Hot Soup), "Creatures you control
+        // can't be blocked." (Jace, Arcane Strategist's static half, Detective of the Month). The
+        // source is absent on purpose — see [Subject].
+        restriction<Unit>(
+            "can't be blocked",
+            "can't be blocked",
+            parameter = null,
+            ability = { _, group -> CantBeBlocked(group) },
+            read = { (it as? CantBeBlocked)?.let { r -> null to r.filter } },
+            subjects = listOf(Subject.ATTACHED, Subject.GROUP),
+        ) + restriction(
+            "can't be blocked by {v}",
+            "can't be blocked by",
+            parameter = Filters.plural,
+            ability = { blockers, group -> CantBeBlockedBy(blockers!!, group) },
+            read = { (it as? CantBeBlockedBy)?.let { r -> r.blockerFilter to r.filter } },
+        ) + restriction(
+            "can't be blocked except by {v}",
+            "can't be blocked except by",
+            parameter = Filters.plural,
+            ability = { blockers, group -> CantBeBlockedExceptBy(blockers!!, group) },
+            read = { (it as? CantBeBlockedExceptBy)?.let { r -> r.blockerFilter to r.filter } },
+        ) + restriction<Unit>(
+            "can't be blocked by more than one creature",
+            "can't be blocked by more than one creature",
+            parameter = null,
+            ability = { _, group -> CantBeBlockedByMoreThan(1, group) },
+            read = {
+                (it as? CantBeBlockedByMoreThan)?.takeIf { r -> r.maxBlockers == 1 }
+                    ?.let { r -> null to r.filter }
+            },
+        ) + restriction(
+            "can't be blocked by more than {v} creatures",
+            "can't be blocked by more than several creatures",
+            parameter = Cardinals.word,
+            ability = { n, group -> CantBeBlockedByMoreThan(n!!, group) },
+            read = {
+                (it as? CantBeBlockedByMoreThan)
+                    ?.takeIf { r -> r.maxBlockers >= 2 && Cardinals.spellable(r.maxBlockers) }
+                    ?.let { r -> r.maxBlockers to r.filter }
+            },
+        ) + restriction(
+            // "~ can't be blocked except by three or more creatures." — Troll of Khazad-dûm, and
+            // menace generalized past two, which is exactly what `CantBeBlockedByFewerThan` says it
+            // is. The two-blocker case is the keyword and is spelled by [Keywords]; a rule that also
+            // printed `minBlockers = 2` would be a second spelling of menace, so the row's own
+            // guard is what keeps them apart.
+            "can't be blocked except by {v} or more creatures",
+            "can't be blocked except by several or more creatures",
+            parameter = Cardinals.word,
+            ability = { n, group -> CantBeBlockedByFewerThan(n!!, group) },
+            read = {
+                (it as? CantBeBlockedByFewerThan)
+                    ?.takeIf { r -> r.minBlockers >= 3 && Cardinals.spellable(r.minBlockers) }
+                    ?.let { r -> r.minBlockers to r.filter }
+            },
+        ) + restriction<Unit>(
+            // "Pirates can't block.", "Cowards can't block.", "Enchanted creature can't block."
+            "can't block",
+            "can't block",
+            parameter = null,
+            ability = { _, group -> CantBlock(group) },
+            read = { (it as? CantBlock)?.let { r -> null to r.filter } },
+        ) + restriction(
+            // "Creatures with flying can block only creatures with flying." — Dense Canopy, the
+            // group row; "Enchanted creature can block only creatures with flying." — Air Bladder.
+            "can block only {v}",
+            "can block only",
+            parameter = Filters.plural,
+            ability = { blockers, group -> CanOnlyBlockCreaturesWith(blockers!!, group) },
+            read = { (it as? CanOnlyBlockCreaturesWith)?.let { r -> r.blockerFilter to r.filter } },
+        )
 
     /**
      * "~ can't attack unless defending player controls an Island." — Deep-Sea Serpent, and the
@@ -220,26 +359,6 @@ object Statics {
         val subtype = landTypeOf(exists.filter) ?: return null
         return subtype.takeIf { condition == SdkConditions.DefendingPlayerControlsLandType(it) }
     }
-
-    /**
-     * "~ can't be blocked by more than one creature." — Charging Rhino, Stalking Tiger.
-     *
-     * The number is spelled as a *word with its noun* ("one creature", "two creatures") rather than
-     * as a numeral, which is why the count is [Cardinals.word]-shaped and the singular is its own
-     * template: "more than one creature" and "more than two creatures" differ in both.
-     */
-    private fun cantBeBlockedByMoreThan(template: String, name: String, count: Int?): Phrase<StaticAbility> =
-        phrase(template, name = name) {
-            if (count == null) slot("n", Cardinals.word)
-            build { bindings -> CantBeBlockedByMoreThan(maxBlockers = count ?: bindings.int("n")) }
-            match { value ->
-                val blockers = (value as? CantBeBlockedByMoreThan)?.maxBlockers ?: return@match null
-                if (count != null && blockers != count) return@match null
-                if (count == null && (blockers < 2 || !Cardinals.spellable(blockers))) return@match null
-                if (value != CantBeBlockedByMoreThan(maxBlockers = blockers)) return@match null
-                bind("n" to blockers)
-            }
-        }
 
     // ---------------------------------------------------------------------------------------
     // Lords — a whole group of permanents, named by a filter
@@ -332,44 +451,6 @@ object Statics {
         }
         return if (canonicalForm) inner else alternate(inner)
     }
-
-    /**
-     * "Beasts can't block." — Frenetic Raptor, and [cantBlock]'s group-scoped sibling.
-     *
-     * Two rules rather than one with an optional filter, because the two take disjoint models: the
-     * source form is `GroupFilter.source()`, a `Scope.Self` filter [Filters] can never produce, and
-     * this one is always a battlefield scan. The model therefore decides which prints.
-     */
-    private val groupCantBlock: Phrase<StaticAbility> =
-        phrase("{filter} can't block.", name = "a group can't block") {
-            slot("filter", Filters.plural)
-            build { CantBlock(GroupFilter(it.value("filter"))) }
-            match { value ->
-                val restriction = value as? CantBlock ?: return@match null
-                if (value != CantBlock(restriction.filter)) return@match null
-                bind("filter" to restriction.filter.baseFilter)
-            }
-        }
-
-    /** "Slivers can't be blocked except by Slivers." — Shifting Sliver. Two nouns, two fields. */
-    private val groupCantBeBlockedExceptBy: Phrase<StaticAbility> =
-        phrase("{filter} can't be blocked except by {blockers}.", name = "a group can't be blocked except by") {
-            slot("filter", Filters.plural)
-            slot("blockers", Filters.plural)
-            build {
-                CantBeBlockedExceptBy(
-                    blockerFilter = it.value("blockers"),
-                    filter = GroupFilter(it.value("filter")),
-                )
-            }
-            match { value ->
-                val restriction = value as? CantBeBlockedExceptBy ?: return@match null
-                if (value != CantBeBlockedExceptBy(restriction.blockerFilter, restriction.filter)) {
-                    return@match null
-                }
-                bind("filter" to restriction.filter.baseFilter, "blockers" to restriction.blockerFilter)
-            }
-        }
 
     // ---------------------------------------------------------------------------------------
     // Spell-affecting statics — the ones whose subject is a spell rather than a permanent
@@ -522,51 +603,91 @@ object Statics {
     }
 
     /**
-     * "This creature gets +2/+2 for each face-down creature on the battlefield." — Primal Whisperer.
+     * "This creature gets +2/+2 for each face-down creature on the battlefield." — Primal Whisperer;
+     * "~ gets +1/+0 for each artifact you control." — Nim Lasher, and twenty more.
      *
      * The dynamic sibling of [attachedPump]: the bonus is a multiple of a battlefield count rather
-     * than a number, which the SDK spells as a different static type. The multiplier and the count
-     * are both in the text — "+2/+2" is `Multiply(count, 2)` — and the rule refuses a pair whose two
-     * components disagree, since `GrantDynamicStatsEffect` carries them separately and the printed
-     * pair can only spell one multiplier.
+     * than a number, which the SDK spells as a different static type. Both numbers are in the text —
+     * "+2/+2" is a `Multiply(count, 2)` in each half, "+1/+0" is the bare tally beside a `Fixed(0)` —
+     * and `GrantDynamicStatsEffect` carries the halves separately, so [scaled] lowers each one on its
+     * own. The rule used to require the two to *agree*, on the reasoning that a printed pair can only
+     * spell one multiplier; "+1/+0" spells two, and eleven of the family's twenty-one lines are
+     * asymmetric, so it read none of them.
+     *
+     * The clause after the noun phrase is [Amounts.scopes] rather than the literal it used to be.
+     * Nim Lasher is what that literal cost: its line is this sentence with the *other* row of the
+     * layer on the end, and it died on the full stop where the frozen " on the battlefield" was
+     * expected. Note that the filter is scope-free here for [Amounts.Scope.narrowing]'s reason —
+     * "for each artifact you control" says who controls them once, in the row, and the noun phrase
+     * must not say it again.
      */
-    private val selfPumpPerCount: Phrase<StaticAbility> = run {
-        fun abilityFor(multiplier: Int, counted: GameObjectFilter): StaticAbility {
-            val amount = DynamicAmount.Multiply(DynamicAmount.AggregateBattlefield(Player.Each, counted), multiplier)
-            return GrantDynamicStatsEffect(GroupFilter.source(), amount, amount)
+    private fun selfPumpPerCount(scope: Amounts.Scope): Phrase<StaticAbility> {
+        fun abilityFor(mod: Pair<Int, Int>, counted: GameObjectFilter): StaticAbility {
+            val count = DynamicAmount.AggregateBattlefield(scope.player, counted)
+            return GrantDynamicStatsEffect(GroupFilter.source(), scaled(count, mod.first), scaled(count, mod.second))
         }
-        phrase(
-            "${Normalizer.SELF} gets {mod} for each {counted} on the battlefield.",
-            name = "the source gets a multiple of a battlefield count",
+        return phrase(
+            "${Normalizer.SELF} gets {mod} for each {counted}${scope.surface}.",
+            name = "the source gets a multiple of a count of ${scope.where}",
         ) {
             slot("mod", Primitives.statModifiers)
             slot("counted", Filters.filter)
             build { bindings ->
-                val (power, toughness) = bindings.value<Pair<Int, Int>>("mod")
-                if (power != toughness) return@build null
-                abilityFor(power, bindings.value("counted"))
+                val counted = scope.narrowing(bindings.value("counted")) ?: return@build null
+                val mod = bindings.value<Pair<Int, Int>>("mod")
+                if (mod.first == 0 && mod.second == 0) return@build null
+                abilityFor(mod, counted)
             }
             match { value ->
                 val stats = value as? GrantDynamicStatsEffect ?: return@match null
-                val product = stats.powerBonus as? DynamicAmount.Multiply ?: return@match null
-                val aggregate = product.amount as? DynamicAmount.AggregateBattlefield ?: return@match null
-                if (aggregate.player != Player.Each) return@match null
-                if (value != abilityFor(product.multiplier, aggregate.filter)) return@match null
-                bind("mod" to (product.multiplier to product.multiplier), "counted" to aggregate.filter)
+                val aggregate = countedIn(stats.powerBonus) ?: countedIn(stats.toughnessBonus) ?: return@match null
+                if (aggregate.player != scope.player) return@match null
+                val power = multiplierOf(stats.powerBonus, aggregate) ?: return@match null
+                val toughness = multiplierOf(stats.toughnessBonus, aggregate) ?: return@match null
+                val mod = power to toughness
+                if (value != abilityFor(mod, aggregate.filter)) return@match null
+                val counted = scope.narrowing(aggregate.filter) ?: return@match null
+                bind("mod" to mod, "counted" to counted)
             }
         }
+    }
+
+    /**
+     * One half of a printed modifier pair as a [DynamicAmount] over [count].
+     *
+     * Three cases and not one, because the SDK spells the three numbers three ways and the corpus is
+     * unanimous about which: "+1/+0" is the bare aggregate beside a `Fixed(0)` — Nim Lasher's golden,
+     * and every other card in the family — while "+2/+2" is a `Multiply`. Writing `Multiply(count, 1)`
+     * for the common half would be a model no hand-written card carries, which the differential would
+     * report on every card this rule reads.
+     */
+    private fun scaled(count: DynamicAmount, multiplier: Int): DynamicAmount = when (multiplier) {
+        0 -> DynamicAmount.Fixed(0)
+        1 -> count
+        else -> DynamicAmount.Multiply(count, multiplier)
+    }
+
+    /** The battlefield tally inside one half of a modifier pair, or null when that half is a constant. */
+    private fun countedIn(amount: DynamicAmount): DynamicAmount.AggregateBattlefield? = when (amount) {
+        is DynamicAmount.AggregateBattlefield -> amount
+        is DynamicAmount.Multiply -> amount.amount as? DynamicAmount.AggregateBattlefield
+        else -> null
+    }
+
+    /** [scaled]'s inverse against a known tally; null when this half is not that tally scaled at all. */
+    private fun multiplierOf(amount: DynamicAmount, count: DynamicAmount.AggregateBattlefield): Int? = when {
+        amount == DynamicAmount.Fixed(0) -> 0
+        amount == count -> 1
+        amount is DynamicAmount.Multiply && amount.amount == count -> amount.multiplier
+        else -> null
     }
 
     val all: List<Phrase<StaticAbility>> = listOf(
         attachedPump,
         attachedKeyword,
-        cantBlock,
-        groupCantBlock,
-        groupCantBeBlockedExceptBy,
         spellsCantBeCountered,
         spellsHaveFlash,
         attackTax,
-        selfPumpPerCount,
         chosenColourProtection("", canonicalForm = true),
         chosenColourProtection("all ", canonicalForm = false),
         // "Untap all permanents you control during each other player's untap step." — Seedborn Muse.
@@ -588,25 +709,7 @@ object Statics {
             CantBlockUnless(SdkConditions.ControlMoreCreatures),
         ),
         cantAttackUnlessLandType,
-        cantBeBlockedByMoreThan(
-            "${Normalizer.SELF} can't be blocked by more than one creature.",
-            "can't be blocked by more than one creature",
-            count = 1,
-        ),
-        cantBeBlockedByMoreThan(
-            "${Normalizer.SELF} can't be blocked by more than {n} creatures.",
-            "can't be blocked by more than several creatures",
-            count = null,
-        ),
-        blockerRestriction(
-            "${Normalizer.SELF} can't be blocked by {blockers}.",
-            "can't be blocked by",
-        ) { CantBeBlockedBy(blockerFilter = it) },
-        blockerRestriction(
-            "${Normalizer.SELF} can block only {blockers}.",
-            "can block only",
-        ) { CanOnlyBlockCreaturesWith(blockerFilter = it) },
-    ) + SpellCosts.all + lordStatic(
+    ) + combatRestrictions + Amounts.perScope(::selfPumpPerCount) + SpellCosts.all + lordStatic(
         "get", "a group gets",
         parameter = Primitives.statModifiers,
         ability = { (power, toughness), group -> ModifyStats(power, toughness, group) },

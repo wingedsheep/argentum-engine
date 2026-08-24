@@ -90,6 +90,7 @@ internal class EffectSorter {
             effectB.modification is Modification.SetCardTypes ||
             effectB.modification is Modification.SetAllSubtypes ||
             effectB.modification is Modification.SetCreatureSubtypes ||
+            effectB.modification is Modification.SetCreatureSubtypesFrom ||
             effectB.modification is Modification.AddSubtype) {
             return effectA.affectedEntities.any { it in effectB.affectedEntities }
         }

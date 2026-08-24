@@ -273,24 +273,24 @@ object TopOfLibrary {
      */
     private val lookAtTopRevealMatchingToHand: Phrase<CardScript> = run {
         fun scriptFor(count: DynamicAmount, filter: GameObjectFilter, rest: Disposition): CardScript? {
-            val noun = Filters.indefinite.unparse(filter) ?: return null
+            val noun = Filters.indefiniteCard.unparse(filter) ?: return null
             return CardScript(
                 spellEffect = Patterns.Library.lookAtTopRevealMatchingToHand(
                     count = count,
                     filter = filter,
-                    prompt = "You may reveal $noun card from among them and put it into your hand",
+                    prompt = "You may reveal $noun from among them and put it into your hand",
                     restDestination = rest.destination,
                     restOrder = rest.order,
                 ),
             )
         }
         phrase(
-            "look at {top} of your library. you may reveal {filter} card from among them and put " +
+            "look at {top} of your library. you may reveal {filter} from among them and put " +
                 "it into your hand. put the rest {rest}",
             name = "look at the top cards and take one matching card",
         ) {
             slot("top", topCards)
-            slot("filter", Filters.indefinite)
+            slot("filter", Filters.indefiniteCard)
             slot("rest", disposition)
             build { scriptFor(it.value("top"), it.value("filter"), it.value("rest")) }
             match { script ->

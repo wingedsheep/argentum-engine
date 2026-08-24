@@ -829,7 +829,7 @@
                 "type": "TargetObject",
                 "optional": true,
                 "filter": {
-                    "baseFilter": "creature Zombie ctrl:you"
+                    "baseFilter": "permanent Zombie ctrl:you"
                 },
                 "id": "Zombie you control"
             }
@@ -2712,7 +2712,7 @@
                 "targetRequirement": {
                     "type": "TargetObject",
                     "filter": {
-                        "baseFilter": "creature Vampire ctrl:you"
+                        "baseFilter": "permanent Vampire ctrl:you"
                     },
                     "id": "target Vampire you control"
                 },

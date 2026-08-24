@@ -21,6 +21,7 @@ import com.wingedsheep.sdk.scripting.effects.DelayedTriggerTiming
 import com.wingedsheep.sdk.scripting.effects.DealDamagePerEntityInZoneEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.DestroyAllEquipmentOnTargetEffect
+import com.wingedsheep.sdk.scripting.effects.FlipCoinEffect
 import com.wingedsheep.sdk.scripting.effects.Gate
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.SacrificeTargetEffect
@@ -401,6 +402,15 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
             }
             is CompositeEffect -> effect.copy(
                 effects = effect.effects.map { resolveContextTargets(it, context, state) }
+            )
+            // "Flip a coin at the beginning of the next end step. If you lose the flip, sacrifice
+            // that creature" (Goblin Kites) — the flip happens when the delayed trigger fires, but
+            // "that creature" was chosen now, so each branch needs the same baking the top-level
+            // effect gets. Without this the branch keeps an unresolvable ContextTarget and does
+            // nothing when the trigger resolves.
+            is FlipCoinEffect -> effect.copy(
+                wonEffect = effect.wonEffect?.let { resolveContextTargets(it, context, state) },
+                lostEffect = effect.lostEffect?.let { resolveContextTargets(it, context, state) },
             )
             is GatedEffect -> {
                 // Former MayEffect shape: resolve ContextTargets inside the optional `then` payoff,

@@ -196,6 +196,10 @@ class EffectAndTriggerContinuationResumer(
             triggerXValueOfTriggeringSpell = continuation.triggerXValueOfTriggeringSpell,
             xValue = continuation.xValue,
             carriedPipeline = continuation.carriedPipeline,
+            // A batch trigger's captured objects survive the target-selection pause, so a payoff
+            // that says "from among them" still finds them (CR 603.2c) — Kaya, Spirits' Justice
+            // is a batch trigger that also targets.
+            capturedEntityIds = continuation.capturedEntityIds,
             interveningIf = continuation.interveningIf
         )
 
@@ -269,6 +273,7 @@ class EffectAndTriggerContinuationResumer(
             selectedTargets = selectedTargets,
             targetRequirements = continuation.targetRequirements,
             totalDamage = totalDamage,
+            capturedEntityIds = continuation.capturedEntityIds,
             interveningIf = continuation.interveningIf
         )
 
@@ -322,6 +327,7 @@ class EffectAndTriggerContinuationResumer(
             lastKnownPower = continuation.lastKnownPower,
             lastKnownToughness = continuation.lastKnownToughness,
             damageDistribution = response.distribution,
+            capturedEntityIds = continuation.capturedEntityIds,
             interveningIf = continuation.interveningIf
         )
 

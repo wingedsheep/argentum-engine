@@ -68,3 +68,20 @@ Confirm with `just coverage-verify --set <SET>`. If the mechanic is genuinely to
 exactly, return `null` from the emitter (the SCAFFOLD tier) but **still add the bridge entry** so coverage
 scoring stays correct. See [`mtgish-tooling/README.md`](../../../mtgish-tooling/README.md)
 §"Adding a handler".
+
+## Assay will want to spell it too — name it, don't build it here
+
+[Argentum Assay](../../../oracle-assay/README.md) parses Oracle text into these same SDK types, so new
+vocabulary widens what the grammar *could* read. Teaching it is deliberately **not** part of this change:
+an Assay rule is written in both directions and lands as a measured family — a *band*, with its own probe,
+ranking and PR (see [`docs/oracle-assay.md`](../../../docs/oracle-assay.md)). Bolting one onto a card PR
+gets you a rule nobody measured.
+
+What does belong here:
+
+- **If you changed or renamed an existing SDK type** rather than adding one, `:oracle-assay` is a
+  compile-time consumer of `mtg-sdk`. Update the grammar rules that construct it in the *same* change and
+  re-run `just assay-gate --limit 2000`, so the touchstone still round-trips.
+- **If you added one**, say so in the commit or PR body and leave it there.
+  `just assay-report --rank tail` is the ranked backlog of what the grammar can't read yet; new SDK
+  vocabulary is how a row on it becomes reachable, and naming it is what lets the next band pick it up.

@@ -13,6 +13,7 @@ import com.wingedsheep.sdk.core.ManaSymbol
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AttackTax
 import com.wingedsheep.sdk.scripting.BlockTax
+import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.sdk.scripting.CantAttackOrBlockUnlessPay
 
 /**
@@ -86,7 +87,7 @@ object CombatTaxes {
         }
 
         return totalGenericTax + perCreatureTax(state, attackers.keys, projected) +
-            selfTax(state, cardRegistry, attackers.keys, projected)
+            selfTax(state, cardRegistry, attackers.keys, projected, taxingBlockers = false)
     }
 
     /**
@@ -122,7 +123,7 @@ object CombatTaxes {
             }
         }
         return totalTax + perCreatureTax(state, blockerIds, projected) +
-            selfTax(state, cardRegistry, blockerIds, projected)
+            selfTax(state, cardRegistry, blockerIds, projected, taxingBlockers = true)
     }
 
     /**
@@ -142,15 +143,35 @@ object CombatTaxes {
         cardRegistry: CardRegistry,
         creatureIds: Set<EntityId>,
         projected: ProjectedState,
+        taxingBlockers: Boolean,
     ): Int {
         var totalTax = 0
         for (creatureId in creatureIds) {
             val container = state.getEntity(creatureId) ?: continue
-            val cardComponent = container.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
             val controllerId = projected.getController(creatureId) ?: continue
-            for (ability in cardDef.staticAbilities) {
+
+            // The creature's own printed statics, plus those on the Auras/Equipment attached to it —
+            // Brainwash charges for its host, not for itself. Walking the creature's *own*
+            // attachments (rather than scanning the battlefield) is what keeps this whole tax
+            // monotone in the declared set: the charge still depends only on the creature being
+            // declared, so dropping a creature drops exactly its own charge.
+            val ownStatics = container.get<CardComponent>()
+                ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+                ?.staticAbilities
+                .orEmpty()
+            val attachedStatics = container.get<AttachmentsComponent>()?.attachedIds.orEmpty()
+                .flatMap { attachmentId ->
+                    state.getEntity(attachmentId)
+                        ?.get<CardComponent>()
+                        ?.let { cardRegistry.getCard(it.cardDefinitionId) }
+                        ?.staticAbilities
+                        .orEmpty()
+                }
+
+            for (ability in ownStatics + attachedStatics) {
                 if (ability !is CantAttackOrBlockUnlessPay) continue
+                // "Can't attack unless …" (Brainwash) charges nothing to block.
+                if (taxingBlockers && !ability.appliesToBlocking) continue
                 val ctx = EffectContext(sourceId = creatureId, controllerId = controllerId)
                 totalTax += maxOf(0, dynamicAmountEvaluator.evaluate(state, ability.amount, ctx, projected))
             }

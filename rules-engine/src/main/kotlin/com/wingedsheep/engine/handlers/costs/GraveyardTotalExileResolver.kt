@@ -102,10 +102,18 @@ object GraveyardTotalExileResolver {
     ): Boolean = candidates(state, playerId, measure, filter, excludeCardId).canReach(minTotal)
 
     /**
-     * Whether [chosenCards] is a legal payment: a non-empty selection drawn entirely from
-     * [candidates] whose weights sum to at least [minTotal]. A deliberately *overpaying* selection
-     * is legal — exiling more than needed is the payer's right. Every `GameAction` field is
-     * client-supplied, so this runs on the server before anything is exiled.
+     * Whether [chosenCards] is a legal payment: a selection drawn entirely from [candidates] whose
+     * weights sum to at least [minTotal]. A deliberately *overpaying* selection is legal — exiling
+     * more than needed is the payer's right. Every `GameAction` field is client-supplied, so this
+     * runs on the server before anything is exiled.
+     *
+     * **The empty selection is legal exactly when [minTotal] is 0**, which the sum test decides on
+     * its own: "any number of cards" includes none, and their total of 0 meets a threshold of 0.
+     * Only collect evidence can reach here with a threshold of 0 — the filtered form requires a
+     * floor of at least 1 — and it does so for two printed shapes, Incinerator of the Guilty's
+     * chosen X and Urgent Necropsy cast with no targets. Both still *count* as having collected
+     * evidence per the 2024-02-02 ruling, which is why the payment must succeed rather than be
+     * refused as an empty one.
      */
     fun isLegalSelection(
         candidates: Candidates,
@@ -113,8 +121,7 @@ object GraveyardTotalExileResolver {
         chosenCards: List<EntityId>,
     ): Boolean {
         val distinct = chosenCards.distinct()
-        return distinct.isNotEmpty() &&
-            distinct.all { it in candidates.weightById } &&
+        return distinct.all { it in candidates.weightById } &&
             distinct.sumOf { candidates.weightById.getValue(it) } >= minTotal
     }
 

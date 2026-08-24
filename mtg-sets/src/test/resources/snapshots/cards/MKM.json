@@ -1,3 +1,169 @@
+// A Killer Among Us
+{
+    "name": "A Killer Among Us",
+    "manaCost": "{4}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, create a 1/1 white Human creature token, a 1/1 blue Merfolk creature token, and a 1/1 red Goblin creature token. Then secretly choose Human, Merfolk, or Goblin.\nSacrifice this enchantment, Reveal the creature type you chose: If target attacking creature token is the chosen type, put three +1/+1 counters on it and it gains deathtouch until end of turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Human"
+                            ],
+                            "name": "Human",
+                            "imageUri": "https://cards.scryfall.io/normal/front/d/7/d7cd1de1-9657-4262-be11-8279b3408e54.jpg?1783912610"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Merfolk"
+                            ],
+                            "name": "Merfolk",
+                            "imageUri": "https://cards.scryfall.io/normal/front/c/6/c63ce61b-480a-4da6-80f6-63e096902ae6.jpg?1783912609"
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "RED"
+                            ],
+                            "creatureTypes": [
+                                "Goblin"
+                            ],
+                            "name": "Goblin",
+                            "imageUri": "https://cards.scryfall.io/normal/front/c/d/cd6cd0d3-7973-49e6-9c1c-6f516a5d5fe5.jpg?1783912608"
+                        },
+                        {
+                            "type": "NoteCreatureType",
+                            "prompt": "Secretly choose Human, Merfolk, or Goblin",
+                            "options": [
+                                "Human",
+                                "Merfolk",
+                                "Goblin"
+                            ],
+                            "secret": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this enchantment enters, create a 1/1 white Human creature token, a 1/1 blue Merfolk creature token, and a 1/1 red Goblin creature token. Then secretly choose Human, Merfolk, or Goblin."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostSacrificeSelf",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomRevealNotedCreatureType"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    {
+                                        "type": "HasSubtypeFromVariable",
+                                        "variableName": "chosenCreatureType"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "AddCounters",
+                                "counterType": "+1/+1",
+                                "count": 3,
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "DEATHTOUCH",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature token attacking"
+                        },
+                        "id": "target attacking creature token"
+                    }
+                ],
+                "descriptionOverride": "Sacrifice this enchantment, Reveal the creature type you chose: If target attacking creature token is the chosen type, put three +1/+1 counters on it and it gains deathtouch until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "rarity": "UNCOMMON",
+        "artist": "Leesha Hannigan",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c1392c5-91a5-4e6e-803d-ed032e4d594b.jpg?1783912865",
+        "rulings": [
+            {
+                "date": "2024-02-09",
+                "text": "A Killer Among Us's last ability can target any attacking creature token, not just one of the tokens created by its first ability, and not just one of the chosen type. Only a token of the chosen type will get the bonuses, though."
+            },
+            {
+                "date": "2024-02-09",
+                "text": "Only the player who secretly chose the creature type can reveal the creature type they chose. If another player gains control of A Killer Among Us, they will be unable to activate its last ability."
+            },
+            {
+                "date": "2024-02-09",
+                "text": "If you control multiple copies of A Killer Among Us, you may choose the same or different creature types for each one."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Absolving Lammasu
 {
     "name": "Absolving Lammasu",
@@ -59,34 +225,11 @@
                             }
                         },
                         {
-                            "type": "Composite",
-                            "effects": [
-                                {
-                                    "type": "SetSuspected",
-                                    "target": {
-                                        "type": "BoundVariable",
-                                        "name": "up to one target creature an opponent controls"
-                                    }
-                                },
-                                {
-                                    "type": "GrantKeyword",
-                                    "keyword": "MENACE",
-                                    "target": {
-                                        "type": "BoundVariable",
-                                        "name": "up to one target creature an opponent controls"
-                                    },
-                                    "duration": "Permanent"
-                                },
-                                {
-                                    "type": "CantBlockTargetCreatures",
-                                    "target": {
-                                        "type": "BoundVariable",
-                                        "name": "up to one target creature an opponent controls"
-                                    },
-                                    "duration": "Permanent"
-                                }
-                            ],
-                            "descriptionOverride": "target becomes suspected"
+                            "type": "Suspect",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "up to one target creature an opponent controls"
+                            }
                         }
                     ]
                 },
@@ -474,34 +617,11 @@
                         "destination": "Exile"
                     },
                     "otherwise": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "SetSuspected",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "up to one target creature"
-                                }
-                            },
-                            {
-                                "type": "GrantKeyword",
-                                "keyword": "MENACE",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "up to one target creature"
-                                },
-                                "duration": "Permanent"
-                            },
-                            {
-                                "type": "CantBlockTargetCreatures",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "up to one target creature"
-                                },
-                                "duration": "Permanent"
-                            }
-                        ],
-                        "descriptionOverride": "target becomes suspected"
+                        "type": "Suspect",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "up to one target creature"
+                        }
                     }
                 },
                 "targetRequirement": {
@@ -546,34 +666,11 @@
                         "destination": "Exile"
                     },
                     "otherwise": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "SetSuspected",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "up to one target creature"
-                                }
-                            },
-                            {
-                                "type": "GrantKeyword",
-                                "keyword": "MENACE",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "up to one target creature"
-                                },
-                                "duration": "Permanent"
-                            },
-                            {
-                                "type": "CantBlockTargetCreatures",
-                                "target": {
-                                    "type": "BoundVariable",
-                                    "name": "up to one target creature"
-                                },
-                                "duration": "Permanent"
-                            }
-                        ],
-                        "descriptionOverride": "target becomes suspected"
+                        "type": "Suspect",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "up to one target creature"
+                        }
                     }
                 },
                 "targetRequirement": {
@@ -620,6 +717,95 @@
     "colorIdentityOverride": [
         "RED",
         "WHITE"
+    ]
+}
+
+// Airtight Alibi
+{
+    "name": "Airtight Alibi",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nWhen this Aura enters, untap enchanted creature. It gains hexproof until end of turn. If it's suspected, it's no longer suspected.\nEnchanted creature gets +2/+2 and can't become suspected.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "EnchantedCreature",
+                            "tap": false
+                        },
+                        {
+                            "type": "GrantEvasionKeyword",
+                            "keyword": "HEXPROOF",
+                            "target": "EnchantedCreature"
+                        },
+                        {
+                            "type": "RemoveSuspected",
+                            "target": "EnchantedCreature"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Aura enters, untap enchanted creature. It gains hexproof until end of turn. If it's suspected, it's no longer suspected."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 2,
+                "toughnessBonus": 2
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "CANT_BECOME_SUSPECTED"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "149",
+        "artist": "Jeremy Wilson",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/f/bffbbe21-0a1d-48b9-903e-81c109aa11de.jpg?1783912873",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "When an effect suspects a creature, it becomes suspected. It gains menace and \"This creature can't block\" for as long as it's suspected. It stays suspected until it leaves the battlefield or another effect causes it to no longer be suspected."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If a suspected creature loses all abilities, it will lose menace and \"This creature can't block\", but it won't stop being suspected."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Being suspected isn't a copiable value. If a permanent becomes a copy of a suspected creature, it won't be suspected."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If a creature is already suspected, suspecting it again won't have any effect."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "There's no limit to the number of creatures that can be suspected simultaneously. Suspecting a new creature doesn't cause other creatures to stop being suspected."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -811,7 +997,10 @@
                 "type": "AdditionalAtom",
                 "atom": {
                     "type": "AtomCollectEvidence",
-                    "amount": 8
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 8
+                    }
                 }
             },
             "declaredSlot": "EVIDENCE_COLLECTED"
@@ -925,6 +1114,119 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Anzrag's Rampage
+{
+    "name": "Anzrag's Rampage",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy all artifacts you don't control, then exile the top X cards of your library, where X is the number of artifacts that were put into graveyards from the battlefield this turn. You may put a creature card exiled this way onto the battlefield. It gains haste. Return it to your hand at the beginning of the next end step.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "artifact ctrl:opponent"
+                    },
+                    "storeAs": "theirArtifacts"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "theirArtifacts",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "TurnTracking",
+                            "player": "Each",
+                            "tracker": "ARTIFACTS_DIED"
+                        }
+                    },
+                    "storeAs": "exiledThisWay"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "exiledThisWay",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Exile"
+                    }
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "exiledThisWay",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "creature",
+                    "storeSelected": "chosenCreature",
+                    "prompt": "You may put a creature card exiled this way onto the battlefield",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "chosenCreature",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    },
+                    "storeMovedAs": "entered",
+                    "markEnteredViaSourceAbility": true
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "entered"
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "Self",
+                                "duration": "Permanent"
+                            },
+                            {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "MoveToZone",
+                                    "target": "Self",
+                                    "destination": "Hand"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "rarity": "RARE",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9dc52b53-3e4f-4d7d-851f-86c6e0ac67b2.jpg?1783912887"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1258,6 +1560,139 @@
     ]
 }
 
+// Aurelia's Vindicator
+{
+    "name": "Aurelia's Vindicator",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Angel",
+    "oracleText": "Flying, lifelink, ward {2}\nDisguise {X}{3}{W} (You may cast this card face down for {3} as a 2/2 creature with ward {2}. Turn it face up any time for its disguise cost.)\nWhen this creature is turned face up, exile up to X other target creatures from the battlefield and/or creature cards from graveyards.\nWhen this creature leaves the battlefield, return the exiled cards to their owners' hands.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "LIFELINK",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        },
+        {
+            "type": "Disguise",
+            "disguiseCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{X}{3}{W}"
+                }
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "vindicated"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "vindicated",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature",
+                        "excludeSelf": true,
+                        "alternatives": [
+                            {
+                                "baseFilter": "creature",
+                                "zone": "Graveyard"
+                            }
+                        ]
+                    },
+                    "id": "up to X other target creatures from the battlefield and/or creature cards from graveyards",
+                    "dynamicMaxCount": "XValue"
+                },
+                "descriptionOverride": "When this creature is turned face up, exile up to X other target creatures from the battlefield and/or creature cards from graveyards."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "linked_return_hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "linked_return_hand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature leaves the battlefield, return the exiled cards to their owners' hands."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "4",
+        "rarity": "MYTHIC",
+        "artist": "Victor Adame Minguez",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/5901dff4-e09b-4747-9297-797a1a057cd5.jpg?1783912930",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "If Aurelia's Vindicator leaves the battlefield before its \"turned face up\" ability has resolved, its leaves the battlefield ability will trigger and do nothing. Then the \"turned face up\" ability will resolve and exile the targeted creatures and/or creature cards indefinitely."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If a creature targeted by the \"turned face up\" ability dies before that ability resolves, it will become an illegal target even though it may be a creature card in a graveyard when the ability resolves. It won't be exiled."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Any time you have priority, you may turn the face-down creature face up by revealing what its disguise cost is and paying that cost. This is a special action. It doesn't use the stack and can't be responded to."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Because the permanent is on the battlefield both before and after it's turned face up, turning a permanent face up doesn't cause any enters-the-battlefield abilities to trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Aurelia, the Law Above
 {
     "name": "Aurelia, the Law Above",
@@ -1473,25 +1908,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "SetSuspected",
-                            "target": "Self"
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "MENACE",
-                            "target": "Self",
-                            "duration": "Permanent"
-                        },
-                        {
-                            "type": "CantBlockTargetCreatures",
-                            "target": "Self",
-                            "duration": "Permanent"
-                        }
-                    ],
-                    "descriptionOverride": "this creature becomes suspected"
+                    "type": "Suspect",
+                    "target": "Self"
                 },
                 "descriptionOverride": "When this creature enters, suspect it."
             },
@@ -1658,7 +2076,10 @@
                 "type": "AdditionalAtom",
                 "atom": {
                     "type": "AtomCollectEvidence",
-                    "amount": 6
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
                 }
             },
             "declaredSlot": "EVIDENCE_COLLECTED"
@@ -1826,7 +2247,10 @@
                 "type": "AdditionalAtom",
                 "atom": {
                     "type": "AtomCollectEvidence",
-                    "amount": 6
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
                 }
             },
             "declaredSlot": "EVIDENCE_COLLECTED"
@@ -4198,34 +4622,11 @@
                             "imageUri": "https://cards.scryfall.io/normal/front/0/2/02404852-5788-4adb-b2dc-98bf705d8d96.jpg?1783912608"
                         },
                         {
-                            "type": "Composite",
-                            "effects": [
-                                {
-                                    "type": "SetSuspected",
-                                    "target": {
-                                        "type": "PipelineTarget",
-                                        "collectionName": "createdTokens"
-                                    }
-                                },
-                                {
-                                    "type": "GrantKeyword",
-                                    "keyword": "MENACE",
-                                    "target": {
-                                        "type": "PipelineTarget",
-                                        "collectionName": "createdTokens"
-                                    },
-                                    "duration": "Permanent"
-                                },
-                                {
-                                    "type": "CantBlockTargetCreatures",
-                                    "target": {
-                                        "type": "PipelineTarget",
-                                        "collectionName": "createdTokens"
-                                    },
-                                    "duration": "Permanent"
-                                }
-                            ],
-                            "descriptionOverride": "the chosen target becomes suspected"
+                            "type": "Suspect",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
                         }
                     ]
                 },
@@ -4663,34 +5064,11 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "SetSuspected",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "target creature"
-                            }
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "MENACE",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "target creature"
-                            },
-                            "duration": "Permanent"
-                        },
-                        {
-                            "type": "CantBlockTargetCreatures",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "target creature"
-                            },
-                            "duration": "Permanent"
-                        }
-                    ],
-                    "descriptionOverride": "target becomes suspected"
+                    "type": "Suspect",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
                 }
             ]
         },
@@ -5069,34 +5447,11 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "SetSuspected",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one other target creature you control"
-                            }
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "MENACE",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one other target creature you control"
-                            },
-                            "duration": "Permanent"
-                        },
-                        {
-                            "type": "CantBlockTargetCreatures",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one other target creature you control"
-                            },
-                            "duration": "Permanent"
-                        }
-                    ],
-                    "descriptionOverride": "target becomes suspected"
+                    "type": "Suspect",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "up to one other target creature you control"
+                    }
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -5485,6 +5840,77 @@
     ]
 }
 
+// Conspiracy Unraveler
+{
+    "name": "Conspiracy Unraveler",
+    "manaCost": "{5}{U}{U}",
+    "typeLine": "Creature — Sphinx Detective",
+    "oracleText": "Flying\nYou may collect evidence 10 rather than pay the mana cost for spells you cast. (To collect evidence 10, exile cards with total mana value 10 or greater from your graveyard.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantAlternativeCastingCost",
+                "cost": "{0}",
+                "additionalCosts": [
+                    {
+                        "type": "AdditionalAtom",
+                        "atom": {
+                            "type": "AtomCollectEvidence",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 10
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "47",
+        "rarity": "MYTHIC",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"There can be many motives and opportunities, but there is always only one truth.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88e791fc-bf9f-49b6-b5f2-a24d4b3e360e.jpg?1783912913",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "If a spell has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If you cast a spell for another cost \"rather than pay its mana cost\", you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the spell has any mandatory additional costs, such as that of Demand Answers, those must be paid to cast the card."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If you are casting a spell from your graveyard (for example, a spell with flashback) you can't also exile that card to pay the alternative collect evidence cost offered by Conspiracy Unraveler."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If you cast a spell with the alternative collect evidence cost offered by Conspiracy Unraveler and you also collect evidence as an additional cost to cast that spell, abilities of permanents that trigger \"whenever you collect evidence\" will trigger twice. This is also true for abilities that trigger \"whenever one or more cards leave your graveyard.\""
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If a spell has an additional cost that includes collecting evidence, such as that of Analyze the Pollen, any additional effects that occur \"if evidence was collected\" will occur only if that additional cost was paid. Using the alternative cost from Conspiracy Unraveler will not cause those additional effects to occur."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If you can't exile enough cards to meet or exceed the required mana value, you can't choose to collect evidence at all."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Convenient Target
 {
     "name": "Convenient Target",
@@ -5500,25 +5926,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "SetSuspected",
-                            "target": "EnchantedCreature"
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "MENACE",
-                            "target": "EnchantedCreature",
-                            "duration": "Permanent"
-                        },
-                        {
-                            "type": "CantBlockTargetCreatures",
-                            "target": "EnchantedCreature",
-                            "duration": "Permanent"
-                        }
-                    ],
-                    "descriptionOverride": "enchanted creature becomes suspected"
+                    "type": "Suspect",
+                    "target": "EnchantedCreature"
                 },
                 "descriptionOverride": "When this Aura enters, suspect enchanted creature."
             }
@@ -5664,6 +6073,155 @@
     ]
 }
 
+// Coveted Falcon
+{
+    "name": "Coveted Falcon",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Artifact Creature — Bird",
+    "oracleText": "Flying\nWhenever this creature attacks, gain control of target permanent you own but don't control.\nDisguise {1}{U} (You may cast this card face down for {3} as a 2/2 creature with ward {2}. Turn it face up any time for its disguise cost.)\nWhen this creature is turned face up, target opponent gains control of any number of target permanents you control. Draw a card for each one they gained control of this way.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disguise",
+            "disguiseCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{1}{U}"
+                }
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target permanent you own but don't control"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsPermanent"
+                            ],
+                            "controllerPredicate": {
+                                "type": "ControllerAnd",
+                                "predicates": [
+                                    "OwnedByYou",
+                                    {
+                                        "type": "ControllerNot",
+                                        "predicate": "ControlledByYou"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "id": "target permanent you own but don't control"
+                },
+                "descriptionOverride": "Whenever this creature attacks, gain control of target permanent you own but don't control."
+            },
+            {
+                "id": "ability_2",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "ChosenTargets",
+                            "storeAs": "falconGifts"
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Collection",
+                                "collection": "falconGifts"
+                            },
+                            "body": {
+                                "type": "Gated",
+                                "gate": {
+                                    "type": "Gate.DoAction",
+                                    "action": {
+                                        "type": "GiveControlToTargetPlayer",
+                                        "permanent": "Self",
+                                        "newController": {
+                                            "type": "BoundVariable",
+                                            "name": "target opponent"
+                                        }
+                                    },
+                                    "successCriterion": "SuccessCriterion.ControlChanged"
+                                },
+                                "then": {
+                                    "type": "DrawCards",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "target opponent"
+                },
+                "additionalTargetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "unlimited": true,
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        },
+                        "id": "any number of target permanents you control"
+                    }
+                ],
+                "descriptionOverride": "When this creature is turned face up, target opponent gains control of any number of target permanents you control. Draw a card for each one they gained control of this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Madeline Boni",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc936987-d58b-4e7c-870f-379bcae77727.jpg?1783912913",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "A token's owner is the player who created it."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Any time you have priority, you may turn the face-down creature face up by revealing what its disguise cost is and paying that cost. This is a special action. It doesn't use the stack and can't be responded to. Only a face-down permanent can be turned face up this way; a face-down spell cannot."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Because the permanent is on the battlefield both before and after it's turned face up, turning a permanent face up doesn't cause any enters-the-battlefield abilities to trigger."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "A permanent that turns face up or face down changes characteristics but is otherwise the same permanent. Spells and abilities that were targeting that permanent and Auras and Equipment that were attached to that permanent aren't affected unless the new characteristics of the object change the legality of those targets or attachments."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Crime Novelist
 {
     "name": "Crime Novelist",
@@ -5735,7 +6293,10 @@
                 "type": "AdditionalAtom",
                 "atom": {
                     "type": "AtomCollectEvidence",
-                    "amount": 6
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
                 }
             },
             "declaredSlot": "EVIDENCE_COLLECTED"
@@ -5889,7 +6450,10 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomCollectEvidence",
-                                "amount": 3
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
                             }
                         }
                     ]
@@ -6368,7 +6932,10 @@
                 "type": "AdditionalAtom",
                 "atom": {
                     "type": "AtomCollectEvidence",
-                    "amount": 6
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
                 }
             },
             "declaredSlot": "EVIDENCE_COLLECTED"
@@ -7521,6 +8088,166 @@
     ]
 }
 
+// Etrata, Deadly Fugitive
+{
+    "name": "Etrata, Deadly Fugitive",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Legendary Creature — Vampire Assassin",
+    "oracleText": "Deathtouch\nFace-down creatures you control have \"{2}{U}{B}: Turn this creature face up. If you can't, exile it, then you may cast the exiled card without paying its mana cost.\"\nWhenever an Assassin you control deals combat damage to an opponent, cloak the top card of that player's library. (To cloak a card, put it onto the battlefield face down as a 2/2 creature with ward {2}. Turn it face up any time for its mana cost if it's a creature card.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "DEATHTOUCH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "RecipientOpponent",
+                    "sourceFilter": "creature Assassin ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "player": "TriggeringPlayer"
+                            },
+                            "storeAs": "etrataCloaked",
+                            "lookAudience": "None"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "etrataCloaked",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            },
+                            "faceDown": "CLOAK"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever an Assassin you control deals combat damage to an opponent, cloak the top card of that player's library."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "ability_2",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{2}{U}{B}"
+                        }
+                    },
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "TurnFaceUp",
+                                "target": "Self"
+                            },
+                            "successCriterion": "SuccessCriterion.TurnedFaceUp"
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": []
+                        },
+                        "otherwise": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": "Self",
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "gathered0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Exile"
+                                    },
+                                    "storeMovedAs": "etrataExiled"
+                                },
+                                {
+                                    "type": "Gated",
+                                    "gate": "Gate.MayDecide",
+                                    "then": {
+                                        "type": "CastFromCollectionWithoutPayingCost",
+                                        "from": "etrataExiled"
+                                    },
+                                    "descriptionOverride": "You may cast the exiled card without paying its mana cost."
+                                }
+                            ]
+                        },
+                        "descriptionOverride": "Turn this creature face up. If you can't, exile it, then you may cast the exiled card without paying its mana cost."
+                    },
+                    "descriptionOverride": "Turn this creature face up. If you can't, exile it, then you may cast the exiled card without paying its mana cost."
+                },
+                "filter": {
+                    "baseFilter": "creature facedown ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "MYTHIC",
+        "artist": "Livia Prima",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/4410db5a-62af-43ac-979d-88a7c975f7bd.jpg?1783912850",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "You might be unable to turn a face-down creature face up because it's an instant or sorcery. Alternatively, abilities such as that of Karlov Watchdog might prevent you from turning face-down creatures face up altogether. In those cases, you'll exile that creature, and then you'll choose whether or not to cast that card without paying its mana cost."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If you cast a spell \"without paying its mana cost\", you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, such as that of Demand Answers, those must be paid to cast the spell."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If the spell you cast has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Your opponents can't look at cards they own that you cloaked."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "In a multiplayer game, if an opponent leaves the game, all of the cards they own that you cloaked leave as well. If you leave the game, the creatures you cloaked with Etrata, Deadly Fugitive's triggered ability are exiled."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "To cloak a card, put it onto the battlefield face down. It becomes a 2/2 face-down creature card with ward {2} and no name, mana cost, or creature types. It's colorless and has a mana value of 0. Other effects that apply to the permanent can still grant it any characteristics it doesn't have or change the characteristics it does have."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If something tries to turn a face-down instant or sorcery card on the battlefield face up, reveal that card to show all players it's an instant or sorcery card. The permanent remains on the battlefield face down. Abilities that trigger when a permanent turns face up won't trigger, because even though you revealed the card, it never turned face up."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Evidence Examiner
 {
     "name": "Evidence Examiner",
@@ -7877,7 +8604,10 @@
                 "type": "AdditionalAtom",
                 "atom": {
                     "type": "AtomCollectEvidence",
-                    "amount": 6
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
                 }
             },
             "declaredSlot": "EVIDENCE_COLLECTED"
@@ -8433,6 +9163,170 @@
     ]
 }
 
+// Flotsam // Jetsam
+{
+    "name": "Flotsam // Jetsam",
+    "manaCost": "",
+    "typeLine": "Instant",
+    "oracleText": "Mill three cards. Investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\n//\nEach opponent mills three cards, then you may cast a spell from each opponent's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it instead.",
+    "metadata": {
+        "collectorNumber": "247",
+        "rarity": "UNCOMMON",
+        "artist": "Anastasia Ovchinnikova",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1500cbf-5619-465e-a97b-75e676ce789b.jpg?1783912830",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "You choose whether to cast spells from opponents' graveyards as Jetsam resolves. If you do, you do so as part of the resolution of Jetsam. You can't wait to cast them later in the turn. Timing restrictions based on the cards' types are ignored."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If you cast a spell \"without paying its mana cost\", you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, those must be paid to cast the spell."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If a spell you cast has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "To cast a split card, choose one of its halves to cast. There's no way to cast both halves of any of the split cards featured in this set."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE",
+        "BLACK"
+    ],
+    "layout": "SPLIT",
+    "cardFaces": [
+        {
+            "name": "Flotsam",
+            "manaCost": "{1}{G/U}",
+            "typeLine": "Instant",
+            "oracleText": "Mill three cards. Investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        },
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Clue"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "Jetsam",
+            "manaCost": "{4}{U/B}{U/B}",
+            "typeLine": "Sorcery",
+            "oracleText": "Each opponent mills three cards, then you may cast a spell from each opponent's graveyard without paying its mana cost. If a spell cast this way would be put into a graveyard, exile it instead.",
+            "script": {
+                "spellEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "TopOfLibrary",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 3
+                                        },
+                                        "player": "EachOpponent",
+                                        "isMill": true
+                                    },
+                                    "storeAs": "milled"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "milled",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard",
+                                        "player": "EachOpponent"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Players",
+                                "players": "EachOpponent"
+                            },
+                            "body": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "GatherCards",
+                                        "source": {
+                                            "type": "FromZone",
+                                            "zone": "Graveyard",
+                                            "filter": "nonland"
+                                        },
+                                        "storeAs": "theirGraveyard"
+                                    },
+                                    {
+                                        "type": "SelectFromCollection",
+                                        "from": "theirGraveyard",
+                                        "selection": {
+                                            "type": "ChooseUpTo",
+                                            "count": {
+                                                "type": "Fixed",
+                                                "amount": 1
+                                            }
+                                        },
+                                        "chooser": "SourceController",
+                                        "storeSelected": "toCast",
+                                        "prompt": "Cast a spell from that opponent's graveyard?"
+                                    },
+                                    {
+                                        "type": "CastFromCollectionWithoutPayingCost",
+                                        "from": "toCast",
+                                        "insteadOfGraveyard": "EXILE",
+                                        "caster": "SourceController"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    ],
+    "hasNoManaCost": true
+}
+
 // Flourishing Bloom-Kin
 {
     "name": "Flourishing Bloom-Kin",
@@ -8682,7 +9576,10 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomCollectEvidence",
-                                "amount": 3
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
                             }
                         }
                     ]
@@ -8819,25 +9716,8 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "SetSuspected",
-                            "target": "Self"
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "MENACE",
-                            "target": "Self",
-                            "duration": "Permanent"
-                        },
-                        {
-                            "type": "CantBlockTargetCreatures",
-                            "target": "Self",
-                            "duration": "Permanent"
-                        }
-                    ],
-                    "descriptionOverride": "this creature becomes suspected"
+                    "type": "Suspect",
+                    "target": "Self"
                 },
                 "descriptionOverride": "When this creature enters, suspect it."
             },
@@ -8873,25 +9753,8 @@
                                 "collection": "scapegoated"
                             },
                             "body": {
-                                "type": "Composite",
-                                "effects": [
-                                    {
-                                        "type": "SetSuspected",
-                                        "target": "Self"
-                                    },
-                                    {
-                                        "type": "GrantKeyword",
-                                        "keyword": "MENACE",
-                                        "target": "Self",
-                                        "duration": "Permanent"
-                                    },
-                                    {
-                                        "type": "CantBlockTargetCreatures",
-                                        "target": "Self",
-                                        "duration": "Permanent"
-                                    }
-                                ],
-                                "descriptionOverride": "this creature becomes suspected"
+                                "type": "Suspect",
+                                "target": "Self"
                             }
                         },
                         {
@@ -8944,6 +9807,108 @@
             {
                 "date": "2024-02-02",
                 "text": "There's no limit to the number of creatures that can be suspected simultaneously. Suspecting a new creature doesn't cause other creatures to stop being suspected."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Fugitive Codebreaker
+{
+    "name": "Fugitive Codebreaker",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Goblin Rogue",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nHaste\nDisguise {5}{R}. This cost is reduced by {1} for each instant and sorcery card in your graveyard. (You may cast this card face down for {3} as a 2/2 creature with ward {2}. Turn it face up any time for its disguise cost.)\nWhen this creature is turned face up, discard your hand, then draw three cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "PROWESS",
+        "HASTE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Disguise",
+            "disguiseCost": {
+                "type": "PayAtom",
+                "atom": {
+                    "type": "AtomMana",
+                    "cost": "{5}{R}"
+                }
+            },
+            "costReduction": {
+                "type": "CardsInGraveyardMatchingFilter",
+                "filter": "instant|sorcery"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "TurnFaceUpEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand"
+                                    },
+                                    "storeAs": "discardedHand"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discardedHand",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 3
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this creature is turned face up, discard your hand, then draw three cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "RARE",
+        "artist": "Joseph Weston",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/6/b682bf8a-06dc-4828-bc46-9e1427bf981f.jpg?1783912881",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "If you have no cards in hand when Fugitive Codebreaker's last ability resolves, you won't discard any cards, but you'll still draw three cards."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Any time you have priority, you may turn the face-down creature face up by revealing what its disguise cost is and paying that cost. This is a special action. It doesn't use the stack and can't be responded to. Only a face-down permanent can be turned face up this way; a face-down spell cannot."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Because the permanent is on the battlefield both before and after it's turned face up, turning a permanent face up doesn't cause any enters-the-battlefield abilities to trigger."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If a face-down creature loses its abilities, it can't be turned face up with a disguise ability because it will no longer have a disguise ability (or a disguise cost) once face up."
             }
         ]
     },
@@ -10126,7 +11091,10 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomCollectEvidence",
-                                "amount": 4
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
                             }
                         }
                     ]
@@ -10840,6 +11808,69 @@
     ]
 }
 
+// Incinerator of the Guilty
+{
+    "name": "Incinerator of the Guilty",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Creature — Dragon",
+    "oracleText": "Flying, trample\nWhenever this creature deals combat damage to a player, you may collect evidence X. When you do, this creature deals X damage to each creature and planeswalker that player controls. (To collect evidence X, exile cards with total mana value X or greater from your graveyard.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "FLYING",
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "ReflexiveTrigger",
+                    "action": {
+                        "type": "CollectEvidenceChosenAmount",
+                        "storeAmountAs": "incineratorEvidenceX"
+                    },
+                    "reflexiveEffect": {
+                        "type": "ForEach",
+                        "space": {
+                            "type": "IterationSpace.Group",
+                            "filter": {
+                                "baseFilter": "creature|planeswalker ctrl:triggering-player"
+                            }
+                        },
+                        "body": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "VariableReference",
+                                "variableName": "incineratorEvidenceX"
+                            },
+                            "target": "Self"
+                        }
+                    },
+                    "descriptionOverride": "You may collect evidence X. When you do, this creature deals X damage to each creature and planeswalker that player controls."
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, you may collect evidence X. When you do, this creature deals X damage to each creature and planeswalker that player controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "MYTHIC",
+        "artist": "Lucas Graciano",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/c/0c6aca64-a554-45c1-9f23-4f7878abeda5.jpg?1783912888"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Innocent Bystander
 {
     "name": "Innocent Bystander",
@@ -11209,34 +12240,11 @@
                     "fromZone": "Graveyard"
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "SetSuspected",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "target creature card from your graveyard"
-                            }
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "MENACE",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "target creature card from your graveyard"
-                            },
-                            "duration": "Permanent"
-                        },
-                        {
-                            "type": "CantBlockTargetCreatures",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "target creature card from your graveyard"
-                            },
-                            "duration": "Permanent"
-                        }
-                    ],
-                    "descriptionOverride": "target becomes suspected"
+                    "type": "Suspect",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature card from your graveyard"
+                    }
                 }
             ]
         },
@@ -11661,6 +12669,244 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Kaya, Spirits' Justice
+{
+    "name": "Kaya, Spirits' Justice",
+    "manaCost": "{2}{W}{B}",
+    "typeLine": "Legendary Planeswalker — Kaya",
+    "oracleText": "Whenever one or more creatures you control and/or creature cards in your graveyard are put into exile, you may choose a creature card from among them. Until end of turn, target token you control becomes a copy of it, except it has flying.\n+2: Surveil 2, then exile a card from a graveyard.\n+1: Create a 1/1 white and black Spirit creature token with flying.\n−2: Exile target creature you control. For each other player, exile up to one target creature that player controls.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "CardsPutIntoExileEvent",
+                    "filter": "creature ctrl:you",
+                    "includeTokens": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "FilterCollection",
+                            "from": "trigger.captured",
+                            "filter": {
+                                "type": "MatchesFilter",
+                                "filter": "creature nontoken"
+                            },
+                            "storeMatching": "kayaExiledCreatures"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "kayaExiledCreatures",
+                            "filter": {
+                                "type": "InZone",
+                                "zone": "Exile"
+                            },
+                            "storeMatching": "kayaChoosable"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "kayaChoosable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kayaCopySource",
+                            "prompt": "You may choose a creature card from among the exiled cards",
+                            "selectedLabel": "Copy"
+                        },
+                        {
+                            "type": "EachPermanentBecomesCopyOfTarget",
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "kayaCopySource"
+                            },
+                            "duration": "EndOfTurn",
+                            "affected": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "sourceFromAnyZone": true,
+                            "exceptions": {
+                                "addedKeywords": [
+                                    "FLYING"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent token ctrl:you"
+                    },
+                    "id": "token you control"
+                },
+                "descriptionOverride": "Whenever one or more creatures you control and/or creature cards in your graveyard are put into exile, you may choose a creature card from among them. Until end of turn, target token you control becomes a copy of it, except it has flying."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Surveil",
+                            "count": 2
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            },
+                            "storeAs": "gathered1"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered1",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kayaGraveyardExile",
+                            "prompt": "Exile a card from a graveyard",
+                            "selectedLabel": "Exile",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kayaGraveyardExile",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        }
+                    ]
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Surveil 2, then exile a card from a graveyard."
+            },
+            {
+                "id": "ability_3",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": 1
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "WHITE",
+                        "BLACK"
+                    ],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "keywords": [
+                        "FLYING"
+                    ],
+                    "name": "Spirit",
+                    "imageUri": "https://cards.scryfall.io/normal/front/f/4/f4588570-bde4-4c2f-8469-81a3e15fb57b.jpg?1783912607"
+                },
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true
+            },
+            {
+                "id": "ability_4",
+                "cost": {
+                    "type": "CostLoyalty",
+                    "change": -2
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 0
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "ContextTarget",
+                                "index": 1
+                            },
+                            "destination": "Exile"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    },
+                    {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature ctrl:opponent"
+                        },
+                        "id": "creature that player controls",
+                        "dynamicMaxCount": "PlayerCount",
+                        "differentControllers": true
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isPlaneswalkerAbility": true,
+                "descriptionOverride": "Exile target creature you control. For each other player, exile up to one target creature that player controls."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "MYTHIC",
+        "artist": "Magali Villeneuve",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2827593-4951-4ba7-b73e-c27de56f2606.jpg?1783912848",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "The target token copies the printed values of the card in exile, with the noted exception. It doesn't matter if that card was a copy of something else when it was on the battlefield."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If a creature card that was exiled is no longer in exile when Kaya, Spirits' Justice's first ability resolves (perhaps because of Pull from Eternity or a similar effect), you can't choose that creature card with that ability."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "You choose all targets for Kaya, Spirits' Justice's last ability."
+            }
+        ]
+    },
+    "startingLoyalty": 3,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -12320,6 +13566,222 @@
     ]
 }
 
+// Kylox's Voltstrider
+{
+    "name": "Kylox's Voltstrider",
+    "manaCost": "{1}{U}{R}",
+    "typeLine": "Artifact — Vehicle",
+    "oracleText": "Collect evidence 6: This Vehicle becomes an artifact creature until end of turn.\nWhenever this Vehicle attacks, you may cast an instant or sorcery spell from among cards exiled with it. If that spell would be put into a graveyard, put it on the bottom of its owner's library instead.\nCrew 2",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "CREW"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "CREW",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "exiledWithIt"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "exiledWithIt",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "filter": "instant|sorcery",
+                            "storeSelected": "toCast",
+                            "prompt": "Cast an instant or sorcery exiled with Kylox's Voltstrider?"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "toCast",
+                            "payManaCost": true,
+                            "insteadOfGraveyard": "BOTTOM_OF_LIBRARY"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever this Vehicle attacks, you may cast an instant or sorcery spell from among cards exiled with it. If that spell would be put into a graveyard, put it on the bottom of its owner's library instead."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomCollectEvidence",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 6
+                        },
+                        "linkToSource": true
+                    }
+                },
+                "effect": {
+                    "type": "BecomeCreature",
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 4
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 4
+                    }
+                },
+                "descriptionOverride": "This Vehicle becomes an artifact creature until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "MYTHIC",
+        "artist": "Volkan Baǵa",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/86a8a1af-b1cf-47fc-ab42-7efa07a1c95b.jpg?1783912844",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "You choose whether or not to cast a spell from among the exiled cards as Kylox's Voltstrider's triggered ability resolves. If you do, you do so as part of the resolution of that ability. You can't wait to cast it later in the turn. Timing restrictions based on the card's type are ignored."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If you can't exile enough cards to meet or exceed the required mana value, you can't choose to collect evidence at all."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Once you've announced that you're casting a spell, players can't take actions until you've finished doing so. Notably, opponents can't try to remove cards from your graveyard to stop you from collecting evidence."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
+// Kylox, Visionary Inventor
+{
+    "name": "Kylox, Visionary Inventor",
+    "manaCost": "{5}{U}{R}",
+    "typeLine": "Legendary Creature — Lizard Artificer",
+    "oracleText": "Menace, ward {2}, haste\nWhenever Kylox attacks, sacrifice any number of other creatures, then exile the top X cards of your library, where X is their total power. You may cast any number of instant and/or sorcery spells from among the exiled cards without paying their mana costs.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE",
+        "HASTE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Sacrifice",
+                            "filter": "creature",
+                            "any": true,
+                            "excludeSource": true
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": "TotalPowerSacrificedThisWay"
+                            },
+                            "storeAs": "exiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "exiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "exiled",
+                            "filter": {
+                                "type": "MatchesFilter",
+                                "filter": "instant|sorcery"
+                            },
+                            "storeMatching": "castable"
+                        },
+                        {
+                            "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                            "from": "castable"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever Kylox attacks, sacrifice any number of other creatures, then exile the top X cards of your library, where X is their total power. You may cast any number of instant and/or sorcery spells from among the exiled cards without paying their mana costs."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00faa272-91ad-407b-9175-8fa1d02585b8.jpg?1783912845",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "Use the power of the sacrificed creatures as they last existed on the battlefield to determine the value of X."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "You choose which spells to cast (if any) as Kylox, Visionary Inventor's last ability resolves. If you choose to cast any spells, you do so as part of the resolution of that ability. You can't wait to cast them later in the turn. Timing restrictions based on the cards' types are ignored."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If you cast a spell \"without paying its mana cost\", you can't choose to cast it for any alternative costs. You can, however, pay additional costs, such as kicker costs. If the card has any mandatory additional costs, those must be paid to cast the spell."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If the spell you cast has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED"
+    ]
+}
+
 // Lamplight Phoenix
 {
     "name": "Lamplight Phoenix",
@@ -12395,6 +13857,144 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Lazav, Wearer of Faces
+{
+    "name": "Lazav, Wearer of Faces",
+    "manaCost": "{U}{B}",
+    "typeLine": "Legendary Creature — Shapeshifter Detective",
+    "oracleText": "Whenever Lazav attacks, exile target card from a graveyard, then investigate. (Create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")\nWhenever you sacrifice a Clue, you may have Lazav become a copy of a creature card exiled with it until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target card from a graveyard"
+                            },
+                            "destination": "Exile",
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Clue"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {},
+                        "zone": "Graveyard"
+                    },
+                    "id": "target card from a graveyard"
+                },
+                "descriptionOverride": "Whenever Lazav attacks, exile target card from a graveyard, then investigate."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "PermanentsSacrificedEvent",
+                    "filter": "artifact Clue",
+                    "perPermanent": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "gathered0",
+                            "filter": {
+                                "type": "MatchesFilter",
+                                "filter": "creature"
+                            },
+                            "storeMatching": "lazavCreatureCards"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "lazavCreatureCards",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "lazavCopySource",
+                            "prompt": "You may have Lazav become a copy of a creature card exiled with it",
+                            "selectedLabel": "Become a copy"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "lazavCopySource"
+                                }
+                            },
+                            "then": {
+                                "type": "EachPermanentBecomesCopyOfTarget",
+                                "target": {
+                                    "type": "PipelineTarget",
+                                    "collectionName": "lazavCopySource"
+                                },
+                                "duration": "EndOfTurn",
+                                "affected": "Self",
+                                "sourceFromAnyZone": true
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever you sacrifice a Clue, you may have Lazav become a copy of a creature card exiled with it until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "216",
+        "rarity": "RARE",
+        "artist": "Wisnu Tan",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/c/cc264d1d-689d-41ac-b624-3fc7bb890e58.jpg?1783912843",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "If the target of Lazav, Wearer of Faces's first ability is illegal as the ability tries to resolve, it won't resolve and none of its effects will happen. You won't investigate."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Some abilities trigger \"whenever you sacrifice a Clue\". Those abilities trigger whenever you sacrifice a Clue for any reason, not just to activate a Clue's activated ability."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If an effect refers to a Clue, it means any Clue artifact, not just a Clue artifact token. For example, you can sacrifice Wrench to pay for Alquist Proft, Master Sleuth's activated ability."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "You can't sacrifice a Clue to pay multiple costs. For example, you can't sacrifice a Clue token to activate its own ability and also to activate Alquist Proft, Master Sleuth's ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
@@ -14351,6 +15951,72 @@
     ]
 }
 
+// Officious Interrogation
+{
+    "name": "Officious Interrogation",
+    "manaCost": "{W}{U}",
+    "typeLine": "Instant",
+    "oracleText": "This spell costs {W}{U} more to cast for each target beyond the first.\nChoose any number of target players. Investigate X times, where X is the total number of creatures those players control. (To investigate, create a Clue token. It's an artifact with \"{2}, Sacrifice this token: Draw a card.\")",
+    "script": {
+        "spellEffect": {
+            "type": "CreatePredefinedToken",
+            "tokenType": "Clue",
+            "dynamicCount": {
+                "type": "Count",
+                "player": "EachTargetedPlayer",
+                "zone": "Battlefield",
+                "filter": "creature"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "unlimited": true,
+                "id": "targets"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": "SelfCast",
+                "modification": {
+                    "type": "IncreaseColoredPerUnit",
+                    "symbols": "{W}{U}",
+                    "countSource": "ChosenTargetsBeyondTheFirst"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "222",
+        "rarity": "RARE",
+        "artist": "Borja Pindado",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a433ca4c-82d0-4e49-bc8e-98e18dd174e9.jpg?1783912842",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "Any target players that are no longer legal targets by the time Officious Interrogation resolves won't have their creatures counted when determining how many tokens you create."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "You choose how many targets Officious Interrogation has and what those targets are as you cast it. You can't choose the same target more than once. It's legal to cast Officious Interrogation with no targets, although this particular option should be placed under some serious scrutiny."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "Officious Interrogation's mana value doesn't change no matter how many targets it has."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If a spell or ability allows you to cast Officious Interrogation without paying its mana cost, you must still pay the additional cost for any targets beyond the first."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // On the Job
 {
     "name": "On the Job",
@@ -14640,25 +16306,8 @@
                     "type": "Composite",
                     "effects": [
                         {
-                            "type": "Composite",
-                            "effects": [
-                                {
-                                    "type": "SetSuspected",
-                                    "target": "Self"
-                                },
-                                {
-                                    "type": "GrantKeyword",
-                                    "keyword": "MENACE",
-                                    "target": "Self",
-                                    "duration": "Permanent"
-                                },
-                                {
-                                    "type": "CantBlockTargetCreatures",
-                                    "target": "Self",
-                                    "duration": "Permanent"
-                                }
-                            ],
-                            "descriptionOverride": "this creature becomes suspected"
+                            "type": "Suspect",
+                            "target": "Self"
                         },
                         {
                             "type": "CreateToken",
@@ -14924,7 +16573,10 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomCollectEvidence",
-                                "amount": 3
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
                             }
                         }
                     ]
@@ -15142,25 +16794,8 @@
                                     "fromZone": "Graveyard"
                                 },
                                 {
-                                    "type": "Composite",
-                                    "effects": [
-                                        {
-                                            "type": "SetSuspected",
-                                            "target": "Self"
-                                        },
-                                        {
-                                            "type": "GrantKeyword",
-                                            "keyword": "MENACE",
-                                            "target": "Self",
-                                            "duration": "Permanent"
-                                        },
-                                        {
-                                            "type": "CantBlockTargetCreatures",
-                                            "target": "Self",
-                                            "duration": "Permanent"
-                                        }
-                                    ],
-                                    "descriptionOverride": "this creature becomes suspected"
+                                    "type": "Suspect",
+                                    "target": "Self"
                                 }
                             ]
                         },
@@ -15954,34 +17589,11 @@
                     }
                 },
                 {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "SetSuspected",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one target creature"
-                            }
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "MENACE",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one target creature"
-                            },
-                            "duration": "Permanent"
-                        },
-                        {
-                            "type": "CantBlockTargetCreatures",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one target creature"
-                            },
-                            "duration": "Permanent"
-                        }
-                    ],
-                    "descriptionOverride": "target becomes suspected"
+                    "type": "Suspect",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "up to one target creature"
+                    }
                 }
             ]
         },
@@ -16545,25 +18157,8 @@
                         "target": "Self"
                     },
                     "otherwise": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "SetSuspected",
-                                "target": "Self"
-                            },
-                            {
-                                "type": "GrantKeyword",
-                                "keyword": "MENACE",
-                                "target": "Self",
-                                "duration": "Permanent"
-                            },
-                            {
-                                "type": "CantBlockTargetCreatures",
-                                "target": "Self",
-                                "duration": "Permanent"
-                            }
-                        ],
-                        "descriptionOverride": "this creature becomes suspected"
+                        "type": "Suspect",
+                        "target": "Self"
                     }
                 },
                 "descriptionOverride": "If this creature is suspected, put a +1/+1 counter on it. Otherwise, suspect it."
@@ -16878,25 +18473,8 @@
                     "type": "Gated",
                     "gate": "Gate.MayDecide",
                     "then": {
-                        "type": "Composite",
-                        "effects": [
-                            {
-                                "type": "SetSuspected",
-                                "target": "Self"
-                            },
-                            {
-                                "type": "GrantKeyword",
-                                "keyword": "MENACE",
-                                "target": "Self",
-                                "duration": "Permanent"
-                            },
-                            {
-                                "type": "CantBlockTargetCreatures",
-                                "target": "Self",
-                                "duration": "Permanent"
-                            }
-                        ],
-                        "descriptionOverride": "this creature becomes suspected"
+                        "type": "Suspect",
+                        "target": "Self"
                     },
                     "descriptionOverride": "Suspect Rubblebelt Braggart? (It gains menace but can't block.)"
                 },
@@ -17033,34 +18611,11 @@
                     "to": "Battlefield"
                 },
                 "effect": {
-                    "type": "Composite",
-                    "effects": [
-                        {
-                            "type": "SetSuspected",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one other target creature you control"
-                            }
-                        },
-                        {
-                            "type": "GrantKeyword",
-                            "keyword": "MENACE",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one other target creature you control"
-                            },
-                            "duration": "Permanent"
-                        },
-                        {
-                            "type": "CantBlockTargetCreatures",
-                            "target": {
-                                "type": "BoundVariable",
-                                "name": "up to one other target creature you control"
-                            },
-                            "duration": "Permanent"
-                        }
-                    ],
-                    "descriptionOverride": "target becomes suspected"
+                    "type": "Suspect",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "up to one other target creature you control"
+                    }
                 },
                 "targetRequirement": {
                     "type": "TargetObject",
@@ -18592,7 +20147,10 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomCollectEvidence",
-                                "amount": 2
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                }
                             }
                         }
                     ]
@@ -18634,7 +20192,10 @@
                             "type": "CostAtomWrapper",
                             "atom": {
                                 "type": "AtomCollectEvidence",
-                                "amount": 4
+                                "amount": {
+                                    "type": "Fixed",
+                                    "amount": 4
+                                }
                             }
                         }
                     ]
@@ -19320,6 +20881,96 @@
     "colorIdentityOverride": [
         "GREEN",
         "WHITE"
+    ]
+}
+
+// Tomik, Wielder of Law
+{
+    "name": "Tomik, Wielder of Law",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Affinity for planeswalkers (This spell costs {1} less to cast for each planeswalker you control.)\nFlying, vigilance\nWhenever an opponent attacks with creatures, if two or more of those creatures are attacking you and/or planeswalkers you control, that opponent loses 3 life and you draw a card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE",
+        "AFFINITY"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Affinity",
+            "forType": "PLANESWALKER"
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "CreaturesAttackYouEvent",
+                    "minAttackers": 2,
+                    "includePlaneswalkersYouControl": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 3
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "AggregateBattlefield",
+                        "player": "Each",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsCreature"
+                            ],
+                            "statePredicates": [
+                                "IsAttackingYouOrYourPlaneswalkers"
+                            ]
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                "descriptionOverride": "Whenever an opponent attacks with creatures, if two or more of those creatures are attacking you and/or planeswalkers you control, that opponent loses 3 life and you draw a card."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "431",
+        "rarity": "MYTHIC",
+        "artist": "Valera Lutfullina",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/c/2c5a7550-fe1a-4797-9583-70ab56cfac0d.jpg?1783912763"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLACK"
     ]
 }
 
@@ -20223,6 +21874,92 @@
     ]
 }
 
+// Urgent Necropsy
+{
+    "name": "Urgent Necropsy",
+    "manaCost": "{2}{B}{G}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, collect evidence X, where X is the total mana value of the permanents this spell targets.\nDestroy up to one target artifact, up to one target creature, up to one target enchantment, and up to one target planeswalker.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Destroy"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "artifact"
+                },
+                "id": "up to one target artifact"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "up to one target creature"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "enchantment"
+                },
+                "id": "up to one target enchantment"
+            },
+            {
+                "type": "TargetObject",
+                "optional": true,
+                "filter": {
+                    "baseFilter": "planeswalker"
+                },
+                "id": "up to one target planeswalker"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomCollectEvidence",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TARGETS_TOTAL_MANA_VALUE"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "MYTHIC",
+        "artist": "Uriah Voth",
+        "flavorText": "\"The Golgari can read the dead like a newspaper.\"\n—Taboro of the Foundway Associates",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2ac346a-fc46-4023-aa60-4d55170697dc.jpg?1783912833"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Vannifar, Evolved Enigma
 {
     "name": "Vannifar, Evolved Enigma",
@@ -20519,7 +22256,10 @@
                 "type": "AdditionalAtom",
                 "atom": {
                     "type": "AtomCollectEvidence",
-                    "amount": 6
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 6
+                    }
                 }
             },
             "declaredSlot": "EVIDENCE_COLLECTED"
@@ -21053,5 +22793,113 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Yarus, Roar of the Old Gods
+{
+    "name": "Yarus, Roar of the Old Gods",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Legendary Creature — Centaur Druid",
+    "oracleText": "Other creatures you control have haste.\nWhenever one or more face-down creatures you control deal combat damage to a player, draw a card.\nWhenever a face-down creature you control dies, return it to the battlefield face down under its owner's control if it's a permanent card, then turn it face up.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "creature facedown"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "descriptionOverride": "Whenever one or more face-down creatures you control deal combat damage to a player, draw a card."
+            },
+            {
+                "id": "ability_2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "facedown ctrl:you",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "TriggeringEntity",
+                            "filter": "permanent"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": "TriggeringEntity",
+                                "destination": "Battlefield",
+                                "fromZone": "Graveyard",
+                                "faceDown": "HIDDEN"
+                            },
+                            {
+                                "type": "TurnFaceUp",
+                                "target": "TriggeringEntity"
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever a face-down creature you control dies, return it to the battlefield face down under its owner's control if it's a permanent card, then turn it face up."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "HASTE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "245",
+        "rarity": "RARE",
+        "artist": "Dmitry Burmak",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/326845a7-7502-4dc3-8f3e-867d6c84e931.jpg?1783912832",
+        "rulings": [
+            {
+                "date": "2024-02-02",
+                "text": "Normally, combat damage is dealt all at the same time. In that case, Yarus, Roar of the Old Gods's last ability triggers once for each player that face-down creatures you control dealt combat damage to, regardless of how many creatures were dealing that damage. If any of those face-down creatures have double strike or first strike, the ability will trigger once for each player dealt damage in each combat damage step."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If Yarus, Roar of the Old Gods dies at the same time as one or more face-down creatures you control, its last ability triggers for each of those creatures."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If a face-down creature dies but the permanent card it becomes in the graveyard leaves the graveyard before Yarus, Roar of the Old Gods's last ability resolves, it will not return to the battlefield."
+            },
+            {
+                "date": "2024-02-02",
+                "text": "If a permanent card that would be returned to the battlefield face down by Yarus, Roar of the Old Gods's last ability can't be turned face up for some reason, it'll still be returned to the battlefield, but it will stay face down. In that case, it will be a 2/2 creature with no name, mana cost, or creature types. Since it isn't disguised or cloaked, it won't have ward {2}."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }

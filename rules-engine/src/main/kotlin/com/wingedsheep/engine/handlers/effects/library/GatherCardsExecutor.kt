@@ -47,7 +47,7 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
         effect: GatherCardsEffect,
         context: EffectContext
     ): EffectResult {
-        val cards = when (val source = effect.source) {
+        val gathered = when (val source = effect.source) {
             is CardSource.TopOfLibrary -> {
                 val count = amountEvaluator.evaluate(state, source.count, context)
                 val playerIds = resolvePlayers(source.player, context, state)
@@ -331,6 +331,8 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
                 }
             }
         }
+
+        val cards = gathered
 
         if (cards.isEmpty()) {
             return EffectResult.success(state).copy(

@@ -9,6 +9,7 @@ import io.kotest.matchers.doubles.shouldBeGreaterThan
 import io.kotest.matchers.ints.shouldBeGreaterThan
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import kotlinx.serialization.json.Json
 
 /**
  * Stage 1 of the Draftsim port: name-key normalization, the data loaders (ratings/removal/
@@ -83,11 +84,37 @@ class DraftsimDataTest : FunSpec({
         a.removal shouldContainAll ltr.removal
     }
 
+    // ----- the manifest -----
+
+    // `ratedSetCodes()` is what the whole-catalog consumers (LimitedCardRater, ConstructedRatings)
+    // load, so a code listed there with no usable table silently claims coverage it doesn't have —
+    // AFR sat in the manifest with an empty `{}` file for exactly that reason.
+    test("every manifest code has a non-empty ratings table") {
+        val empty = DraftsimData.ratedSetCodes().filter { DraftsimData.tablesFor(listOf(it)).ratings.isEmpty() }
+        withClue("manifest codes with no ratings: $empty") { empty.isEmpty() shouldBe true }
+    }
+
+    // The loader re-keys through `nameKey` defensively, so this reads the resources themselves:
+    // a table whose keys aren't already normalized still joins, but it hides a typo'd card name.
+    test("every ratings resource is already keyed by nameKey") {
+        val json = Json { ignoreUnknownKeys = true }
+        val offenders = DraftsimData.ratedSetCodes().associateWith { code ->
+            val text = DraftsimData::class.java.getResourceAsStream("/draftai/ratings/$code.json")
+                ?.bufferedReader()?.use { it.readText() } ?: ""
+            json.decodeFromString<Map<String, Double>>(text).keys
+                .filter { it != DraftsimData.nameKey(it) }
+        }.filterValues { it.isNotEmpty() }
+        withClue("unnormalized keys: $offenders") { offenders.isEmpty() shouldBe true }
+    }
+
     // ----- the join against our real card DB -----
 
-    // The vendored tables cover each whole set, so our implemented subset should land almost
-    // entirely in them. A low rate would mean the normalization is misaligned.
-    listOf("LTR", "MSH", "HOB").forEach { code ->
+    // Every table covers a whole set's booster pool, so our implemented subset should land almost
+    // entirely in it. A low rate would mean the normalization is misaligned. The first three are
+    // vendored Draftsim tables; the rest are the first-party tables written for the pre-Draftsim
+    // sets (see `DraftsimData`'s class doc), where the join is against names we authored ourselves
+    // and so should be near-total.
+    listOf("LTR", "MSH", "HOB", "ATQ", "SCG", "LGN", "POR", "DOM", "MRD", "ONS", "INV").forEach { code ->
         test("most $code cards in our registry resolve a Draftsim rating (name join works)") {
             val set = MtgSetCatalog.all.first { it.code == code }
             val ratings = DraftsimData.tablesFor(listOf(code)).ratings

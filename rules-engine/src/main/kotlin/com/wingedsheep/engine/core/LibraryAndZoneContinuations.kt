@@ -124,6 +124,8 @@ data class ChooseOptionPipelineContinuation(
  *
  * @property storeAs Key under which the chosen value is stored in `chosenValues`.
  * @property options The option strings, indexed by `OptionChosenResponse.optionIndex`.
+ * @property secret Whether the note is hidden information — see
+ *   `NotedCreatureTypesComponent.secretTo`, which the resumer stamps with [controllerId].
  */
 @Serializable
 data class NoteCreatureTypePipelineContinuation(
@@ -132,7 +134,8 @@ data class NoteCreatureTypePipelineContinuation(
     val sourceId: EntityId,
     val sourceName: String?,
     val storeAs: String,
-    val options: List<String>
+    val options: List<String>,
+    val secret: Boolean = false
 ) : ContinuationFrame
 
 /**

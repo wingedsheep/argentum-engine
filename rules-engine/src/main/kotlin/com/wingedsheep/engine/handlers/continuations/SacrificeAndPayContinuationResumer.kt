@@ -5,6 +5,9 @@ import com.wingedsheep.engine.handlers.effects.life.LifePaymentService
 import com.wingedsheep.engine.handlers.effects.zones.ForceExileMultiZoneExecutor
 import com.wingedsheep.engine.handlers.effects.zones.ForceSacrificeExecutor
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
+import com.wingedsheep.engine.handlers.effects.DamageUtils
+import com.wingedsheep.engine.handlers.effects.library.MillAmountModifier
 import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PipelineState
@@ -172,9 +175,11 @@ class SacrificeAndPayContinuationResumer(
             }
             PayOrSufferCostType.SACRIFICE -> resumePayOrSufferSacrifice(state, continuation, response, checkForMore)
             PayOrSufferCostType.PAY_LIFE -> resumePayOrSufferPayLife(state, continuation, response, checkForMore)
+            PayOrSufferCostType.MILL -> resumePayOrSufferMill(state, continuation, response, checkForMore)
             PayOrSufferCostType.MANA -> resumePayOrSufferMana(state, continuation, response, checkForMore)
             PayOrSufferCostType.EXILE -> resumePayOrSufferExile(state, continuation, response, checkForMore)
             PayOrSufferCostType.TAP -> resumePayOrSufferTap(state, continuation, response, checkForMore)
+            PayOrSufferCostType.PUT_COUNTERS -> resumePayOrSufferPutCounters(state, continuation, response, checkForMore)
             PayOrSufferCostType.REMOVE_COUNTERS, PayOrSufferCostType.CHOICE -> ExecutionResult.error(state, "Choice cost type should be handled by PayOrSufferChoiceContinuation, not PayOrSufferContinuation")
         }
     }
@@ -202,7 +207,14 @@ class SacrificeAndPayContinuationResumer(
                 sourceId = continuation.sourceId,
                 controllerId = continuation.abilityControllerId ?: continuation.playerId,
                 targets = continuation.targets,
-                pipeline = PipelineState(namedTargets = continuation.namedTargets),
+                pipeline = PipelineState(
+                    namedTargets = continuation.namedTargets,
+                    storedCollections = continuation.storedCollections,
+                    // Rebind the enclosing ForEach loop's entity: the consequence may refer back to it
+                    // (Tidal Flats' "creatures you control blocking *that creature*"), and a null here
+                    // matches nothing at all rather than failing loudly.
+                    iterationTarget = continuation.iterationEntityId
+                ),
                 triggeringEntityId = continuation.triggeringEntityId,
                 triggeringPlayerId = continuation.triggeringPlayerId
             )
@@ -214,13 +226,21 @@ class SacrificeAndPayContinuationResumer(
         val chosenCost = continuation.options[chosenIndex]
         val singleCostEffect = PayOrSufferEffect(
             cost = chosenCost,
-            suffer = continuation.sufferEffect
+            suffer = continuation.sufferEffect,
+            consequenceDescription = continuation.consequenceDescription
         )
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.playerId,
             targets = continuation.targets,
-            pipeline = PipelineState(namedTargets = continuation.namedTargets),
+            pipeline = PipelineState(
+                namedTargets = continuation.namedTargets,
+                storedCollections = continuation.storedCollections,
+                // Rebind the enclosing ForEach loop's entity: the consequence may refer back to it
+                // (Tidal Flats' "creatures you control blocking *that creature*"), and a null here
+                // matches nothing at all rather than failing loudly.
+                iterationTarget = continuation.iterationEntityId
+            ),
             triggeringEntityId = continuation.triggeringEntityId,
             triggeringPlayerId = continuation.triggeringPlayerId
         )
@@ -279,7 +299,8 @@ class SacrificeAndPayContinuationResumer(
             state,
             continuation.playerId,
             continuation.filter,
-            continuation.requiredCount
+            continuation.requiredCount,
+            continuation.sourceId
         )
         return checkForMore(result.state, result.events.toList())
     }
@@ -361,6 +382,72 @@ class SacrificeAndPayContinuationResumer(
     }
 
     /**
+     * Handle the put-counters payment for pay or suffer (Tourach's Chant, Thelon's Chant).
+     *
+     * Selecting nothing is a decline, exactly as it is for the sacrifice and tap payments.
+     */
+    private fun resumePayOrSufferPutCounters(
+        state: GameState,
+        continuation: PayOrSufferContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection response for pay or suffer put counters")
+        }
+
+        val selected = response.selectedCards
+        if (selected.size < continuation.requiredCount) {
+            return executePayOrSufferConsequence(state, continuation, checkForMore)
+        }
+
+        val counterName = continuation.counterType
+            ?: return ExecutionResult.error(state, "Put-counters payment has no counter type")
+        val counterType = com.wingedsheep.engine.handlers.effects.permanent.counters
+            .resolveCounterType(counterName)
+
+        // Counters put on to pay a cost are an ordinary counter placement (CR 121.6), so this runs
+        // the same four-step chokepoint as CostHandler's PutCountersOnSelf and AddCountersExecutor:
+        // the "can't have counters put on it" gate (Solemnity), the placement replacements
+        // (Hardened Scales, Doubling Season), the first-placement-this-turn marker, and a
+        // CountersAddedEvent that names its placer. Skipping any of them is silent — a placer-less
+        // event makes every placer-restricted trigger decline, and nothing fails.
+        val placerId = continuation.playerId
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+        for (permanentId in selected) {
+            val container = newState.getEntity(permanentId) ?: continue
+            if (!newState.projectedState.canReceiveCounters(permanentId)) continue
+            val counters = container.get<CountersComponent>() ?: CountersComponent()
+            val modifiedCount = ReplacementEffectUtils.applyCounterPlacementModifiers(
+                newState, permanentId, counterType, continuation.requiredCounters, placerId = placerId
+            )
+            val firstThisTurn = DamageUtils.isFirstCounterThisTurn(newState, permanentId)
+            newState = newState.updateEntity(permanentId) { c ->
+                c.with(counters.withAdded(counterType, modifiedCount))
+            }.let {
+                DamageUtils.markCounterPlacedOnCreature(
+                    it, placerId, permanentId,
+                    com.wingedsheep.engine.handlers.effects.permanent.counters
+                        .counterTypeToString(counterType)
+                )
+            }
+            events.add(
+                CountersAddedEvent(
+                    permanentId,
+                    counterName,
+                    modifiedCount,
+                    container.get<CardComponent>()?.name ?: "Permanent",
+                    firstThisTurn,
+                    placedBy = placerId,
+                )
+            )
+        }
+
+        return checkForMore(newState, events)
+    }
+
+    /**
      * Handle pay life yes/no choice for pay or suffer.
      */
     private fun resumePayOrSufferPayLife(
@@ -384,6 +471,35 @@ class SacrificeAndPayContinuationResumer(
             ?: return ExecutionResult.error(state, "Player has no life total")
 
         return checkForMore(newState, events)
+    }
+
+    /**
+     * Resume the [CostAtom.Mill] payment for pay-or-suffer (Deep Spawn).
+     *
+     * Affordability was settled before the prompt — CR 701.17b forbids paying a mill cost deeper
+     * than the library — so a yes here always pays. Mill *replacement* effects apply now, which is
+     * why the count goes through [MillAmountModifier] rather than being taken literally.
+     */
+    private fun resumePayOrSufferMill(
+        state: GameState,
+        continuation: PayOrSufferContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for pay or suffer mill")
+        }
+
+        if (!response.choice) {
+            return executePayOrSufferConsequence(state, continuation, checkForMore)
+        }
+
+        val playerId = continuation.playerId
+        val count = MillAmountModifier.apply(state, playerId, continuation.requiredCount)
+        val milled = state.getZone(ZoneKey(playerId, Zone.LIBRARY)).take(count)
+        val result = ZoneTransitionService.moveToZoneBatch(state, milled, Zone.GRAVEYARD)
+
+        return checkForMore(result.state, result.events)
     }
 
     /**
@@ -610,7 +726,16 @@ class SacrificeAndPayContinuationResumer(
             sourceId = sourceId,
             controllerId = continuation.abilityControllerId ?: continuation.playerId,
             targets = continuation.targets,
-            pipeline = PipelineState(namedTargets = continuation.namedTargets),
+            pipeline = PipelineState(
+                namedTargets = continuation.namedTargets,
+                // Carried across the pause so a collection-reading suffer effect still resolves —
+                // Wand of Ith discards "the card revealed this way".
+                storedCollections = continuation.storedCollections,
+                // Rebind the enclosing ForEach loop's entity: the consequence may refer back to it
+                // (Tidal Flats' "creatures you control blocking *that creature*"), and a null here
+                // matches nothing at all rather than failing loudly.
+                iterationTarget = continuation.iterationEntityId
+            ),
             triggeringEntityId = continuation.triggeringEntityId,
             triggeringPlayerId = continuation.triggeringPlayerId
         )
@@ -703,7 +828,13 @@ class SacrificeAndPayContinuationResumer(
         val context = EffectContext(
             sourceId = continuation.sourceId,
             controllerId = continuation.controllerId,
-            pipeline = PipelineState(storedCollections = continuation.storedCollections),
+            pipeline = PipelineState(
+                storedCollections = continuation.storedCollections,
+                // The enclosing per-permanent loop's current entity, so a consequence written as
+                // `EffectTarget.Self` still means that permanent after the pay-or-decline pause
+                // (Cleansing: "for each land, destroy that land unless any player pays 1 life").
+                iterationTarget = continuation.iterationTarget
+            ),
             triggeringEntityId = continuation.triggeringEntityId,
             triggeringPlayerId = continuation.triggeringPlayerId
         )

@@ -33,8 +33,16 @@ class ReplayCheckpointFlusher(
 ) {
     private val logger = LoggerFactory.getLogger(ReplayCheckpointFlusher::class.java)
 
-    /** sessionId -> action count at last flush, so an idle game isn't rewritten every sweep. */
-    private val flushed = ConcurrentHashMap<String, Int>()
+    /** sessionId -> what the last flush wrote, so an idle game isn't rewritten every sweep. */
+    private val flushed = ConcurrentHashMap<String, Flushed>()
+
+    /**
+     * The action count is what normally moves; [truncated] is here because it can flip *without*
+     * the count moving — a recording frozen by the size cap stops appending, so a game that was
+     * flushed at exactly the cap would otherwise keep a stored record that claims to be the whole
+     * game right up until game over.
+     */
+    private data class Flushed(val actions: Int, val truncated: Boolean)
 
     /** Guards the one-time startup reconciliation in [adoptRecordsLeftByAPreviousRun]. */
     private val reconciled = AtomicBoolean(false)
@@ -81,7 +89,7 @@ class ReplayCheckpointFlusher(
         for (record in stranded) {
             val gameId = record.replay.gameId
             if (gameId in liveIds) {
-                flushed[gameId] = record.replay.actions.size
+                flushed[gameId] = Flushed(record.replay.actions.size, record.replay.truncated)
             } else {
                 runCatching { replayService.finalizePartial(gameId) }
                     .onFailure { logger.warn("Failed to finalize stranded replay $gameId: ${it.message}") }
@@ -109,7 +117,7 @@ class ReplayCheckpointFlusher(
         // live and still recorded; there is nothing left to checkpoint, and [ReplayService] would
         // refuse the write anyway. Skip before paying for the encode.
         if (snapshot.gameOver) return
-        if (flushed[session.sessionId] == snapshot.actions.size) return
+        if (flushed[session.sessionId] == Flushed(snapshot.actions.size, snapshot.truncated)) return
 
         replayService.saveInProgress(
             replay = CompactReplay(
@@ -125,10 +133,11 @@ class ReplayCheckpointFlusher(
                 // Independent of the action count — derived from the decklists, which never change.
                 pinnedCards = session.getPinnedCards(),
                 checkpoints = snapshot.checkpoints,
+                truncated = snapshot.truncated,
             ),
             resumeFingerprint = snapshot.fingerprint,
         )
-        flushed[session.sessionId] = snapshot.actions.size
+        flushed[session.sessionId] = Flushed(snapshot.actions.size, snapshot.truncated)
     }
 
     private companion object {

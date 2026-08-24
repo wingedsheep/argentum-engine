@@ -1,7 +1,7 @@
 package com.wingedsheep.mtg.sets.definitions.mrd.cards
 
-import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.dsl.Costs
+import com.wingedsheep.sdk.dsl.DynamicAmounts
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -41,11 +41,7 @@ val NimShambler = card("Nim Shambler") {
     staticAbility {
         ability = GrantDynamicStatsEffect(
             filter = GroupFilter.source(),
-            powerBonus = DynamicAmount.Count(
-                player = Player.You,
-                zone = Zone.BATTLEFIELD,
-                filter = GameObjectFilter.Artifact
-            ),
+            powerBonus = DynamicAmounts.battlefield(Player.You, GameObjectFilter.Artifact).count(),
             toughnessBonus = DynamicAmount.Fixed(0)
         )
     }

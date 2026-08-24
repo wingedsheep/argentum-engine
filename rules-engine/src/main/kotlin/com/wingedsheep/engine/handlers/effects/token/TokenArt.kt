@@ -37,6 +37,10 @@ object TokenArt {
             "Beast" to "https://cards.scryfall.io/art_crop/front/c/e/ce45e037-5efb-4735-afee-12d7dc3127d1.jpg?1561758106",
             "Bird" to "https://cards.scryfall.io/art_crop/front/2/6/26e0e196-36e6-4d7a-a76b-1c2a18270267.jpg?1561756807",
             "Boar" to "https://cards.scryfall.io/art_crop/front/a/f/afb796a0-4eb0-4fc5-bf84-92a71bec4466.jpg?1675455830",
+            // Camarid (FEM — Homarid Spawning Bed). Wizards never printed a Camarid token card, so
+            // Scryfall has no art for one at all; the closest real image is Fallen Empires' own
+            // Homarid, the crustacean that breeds them.
+            "Camarid" to "https://cards.scryfall.io/art_crop/front/d/6/d6ffeab4-83b1-4414-ae72-e59a2354ea15.jpg?1783947913",
             "Cat" to "https://cards.scryfall.io/art_crop/front/5/2/5252ab51-43e8-4b24-9830-de0ad9b9d3dc.jpg?1562164858",
             "Centaur" to "https://cards.scryfall.io/art_crop/front/d/c/dcd41697-6fe6-423c-a04a-035a3d4f8fd2.jpg?1675456051",
             "Citizen" to "https://cards.scryfall.io/art_crop/front/1/6/165164e7-5693-4d65-b789-8ed8a222365b.jpg?1547509191",

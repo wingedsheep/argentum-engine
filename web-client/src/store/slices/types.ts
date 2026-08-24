@@ -773,6 +773,15 @@ export interface CoinFlipAnimation {
   won: boolean
   isOpponent: boolean
   startTime: number
+  /** This coin was flipped but ignored by a Krark's Thumb-style replacement. */
+  ignored?: boolean
+  /**
+   * Position of this coin among the ones showing at the same moment, used to fan a batch out
+   * horizontally instead of stacking every coin on the centre of the screen.
+   */
+  laneIndex?: number
+  /** How many coins are showing at the same moment, so each can be placed within the fan. */
+  laneCount?: number
 }
 
 /**

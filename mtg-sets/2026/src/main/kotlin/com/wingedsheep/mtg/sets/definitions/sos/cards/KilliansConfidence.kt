@@ -41,15 +41,13 @@ val KilliansConfidence = card("Killian's Confidence") {
 
     triggeredAbility {
         triggerZone = Zone.GRAVEYARD
-        trigger = TriggerSpec(
-            OneOrMoreDealCombatDamageToPlayerEvent(
-                sourceFilter = GameObjectFilter.Creature.youControl()
-            ),
-            TriggerBinding.ANY
-        )
+        // "you control" is the event's own, not the filter's: `OneOrMoreDealCombatDamageToPlayerEvent`
+        // reads "one or more creatures matching sourceFilter **you control**", so a controller
+        // predicate here would say it twice.
+        trigger = TriggerSpec(OneOrMoreDealCombatDamageToPlayerEvent(), TriggerBinding.ANY)
         effect = MayPayManaEffect(
             cost = ManaCost.parse("{W/B}"),
-            effect = Effects.Move(EffectTarget.Self, Zone.HAND)
+            effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self)
         )
         description = "Whenever one or more creatures you control deal combat damage to a player, " +
             "you may pay {W/B}. If you do, return this card from your graveyard to your hand."

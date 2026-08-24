@@ -79,6 +79,17 @@ sealed interface EntityNumericProperty {
         override val description: String = "the amount of mana spent to cast it"
     }
 
+    /**
+     * The number the entity's controller chose as it entered the battlefield — Nameless Race's
+     * "the life paid as it entered", read back by its characteristic-defining power and toughness.
+     * Zero for a permanent that recorded no such choice.
+     */
+    @SerialName("ValueChosenAsEntered")
+    @Serializable
+    data object ValueChosenAsEntered : EntityNumericProperty {
+        override val description: String = "the amount chosen as it entered"
+    }
+
     @SerialName("CounterCount")
     @Serializable
     data class CounterCount(val counterType: CounterTypeFilter) : EntityNumericProperty {

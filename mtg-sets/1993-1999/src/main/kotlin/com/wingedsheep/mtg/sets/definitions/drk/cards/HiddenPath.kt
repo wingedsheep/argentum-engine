@@ -35,7 +35,7 @@ val HiddenPath = card("Hidden Path") {
         rarity = Rarity.RARE
         collectorNumber = "78"
         artist = "Rob Alexander"
-        flavorText = "\"Where moments before we were lost beyond hope, the strange, floating lights showed us the way and restored our morale.\" —Vervamon the Elder"
+        flavorText = "\"Where moments before we were lost beyond hope, the strange, floating lights showed us the way and restored our morale.\"\n—Vervamon the Elder"
         imageUri = "https://cards.scryfall.io/normal/front/c/b/cbc93c0b-0ac8-4b8f-b2f6-96887d1acd77.jpg?1783947932"
     }
 }

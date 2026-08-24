@@ -32,9 +32,28 @@ class GrantStaticAbilityExecutor : EffectExecutor<GrantStaticAbilityEffect> {
         val targetId = context.resolveTarget(effect.target)
             ?: return EffectResult.error(state, "No valid target for static ability grant")
 
-        val targetContainer = state.getEntity(targetId)
+        state.getEntity(targetId)
             ?: return EffectResult.error(state, "Target no longer exists")
-        targetContainer.get<CardComponent>()
+
+        // A *player* may hold a grant. Some static abilities describe a rule about the game rather
+        // than about an object — High Tide's "until end of turn, whenever a player taps an Island
+        // for mana, that player adds an additional {U}" — and a spell has no permanent to anchor
+        // one to. The holder then only supplies the "you" of any controller predicate in the
+        // static's own filters; it is not the thing the static acts on.
+        if (state.turnOrder.contains(targetId)) {
+            return EffectResult.success(
+                state.copy(
+                    grantedStaticAbilities = state.grantedStaticAbilities + GrantedStaticAbility(
+                        entityId = targetId,
+                        ability = effect.ability,
+                        duration = effect.duration,
+                        sourceId = context.sourceId
+                    )
+                )
+            )
+        }
+
+        state.getEntity(targetId)?.get<CardComponent>()
             ?: return EffectResult.error(state, "Target is not a card")
         // Battlefield permanents are the common case, but a static ability can also be handed to a
         // *card* — "creature cards in your graveyard gain 'You may cast this card from your

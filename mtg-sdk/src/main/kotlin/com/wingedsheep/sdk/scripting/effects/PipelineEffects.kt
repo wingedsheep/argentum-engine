@@ -443,6 +443,15 @@ sealed interface SelectionMode {
 
     /**
      * Player must choose exactly N cards.
+     *
+     * **N is a ceiling, not a contract.** When the collection holds fewer than N eligible cards the
+     * executor clamps to what is there and selects them all, rather than failing — which is right
+     * for "discard two cards" with one card in hand, and wrong for a card whose text is
+     * all-or-nothing. If "if you can't, …" is printed on the card (Frankenstein's Monster: "exile X
+     * creature cards from your graveyard. If you can't, put this creature into its owner's
+     * graveyard instead"), gate the whole selection on a `Conditions.CompareAmounts` count of the
+     * source zone *before* anything moves and put the failure in the else branch; leaving it to
+     * this mode silently builds the smaller outcome instead of none.
      */
     @SerialName("ChooseExactly")
     @Serializable
@@ -744,7 +753,20 @@ enum class Chooser {
      * library…"-style effects (Magmatic Hellkite), where the destroyed permanent's
      * controller performs a follow-up search/choice.
      */
-    ControllerOfTarget
+    ControllerOfTarget,
+
+    /**
+     * The defending player (CR 802.2a) decides — the player, or the controller/protector of the
+     * planeswalker or battle, that the source of the ability is attacking. For an attack trigger
+     * whose payoff acts on that player's own cards, they are the one who chooses: "defending player
+     * discards three cards" (Mindstab Thrull) is their choice from their own hand, not the
+     * attacker's.
+     *
+     * Resolves through the same combat read as [com.wingedsheep.sdk.scripting.references.Player]
+     * `.DefendingPlayer`, including its removed-from-combat leg — so it still answers after an
+     * ability has sacrificed its own attacking source on the way to the choice.
+     */
+    DefendingPlayer
 }
 
 /**
@@ -806,7 +828,7 @@ data class GatherCardsEffect(
     val source: CardSource,
     val storeAs: String,
     val revealed: Boolean = false,
-    val lookAudience: LookAudience = LookAudience.Controller
+    val lookAudience: LookAudience = LookAudience.Controller,
 ) : Effect {
     override val description: String = buildString {
         if (revealed) append("Reveal ") else append("Look at ")
@@ -1175,6 +1197,10 @@ data class MoveCollectionEffect(
         // `from` is an internal pipeline-collection key — never surface it to players.
         append(if ((destination as? CardDestination.ToZone)?.zone == Zone.BATTLEFIELD) "onto " else "into ")
         append(destination.description)
+        // "under its owner's control" is a printed clause on every card that sets this flag
+        // (Safe Haven, Oblivion Ring's cousins). Dropping it from the generated text loses the
+        // one detail that distinguishes it from a plain return to the battlefield.
+        if (underOwnersControl) append(" under its owner's control")
     }
 }
 
@@ -1268,17 +1294,43 @@ data class ChooseOptionEffect(
  * The source permanent's `NotedCreatureTypesComponent` is permanent-scoped state, so it disappears
  * with the permanent when it leaves play — no explicit cleanup needed.
  *
+ * **Secret notes.** With [secret] set the note is hidden information: only the player who made it
+ * may see it, and only they may later reveal it with
+ * [com.wingedsheep.sdk.scripting.costs.CostAtom.RevealNotedCreatureType]. This is the
+ * hidden-agenda shape (CR 702.106a-b — "secretly choose", noted on a piece of paper kept with the
+ * object) applied to a permanent: A Killer Among Us's "Then secretly choose Human, Merfolk, or
+ * Goblin". The secrecy rides the *note*, not the permanent, so a change of control does not hand
+ * the new controller the answer — and, per that card's ruling, does not let them reveal it either.
+ *
  * @property storeAs Key under which the chosen type is stored in `EffectContext.chosenValues`.
  *   Default `"notedType"`.
  * @property prompt Custom prompt text. Defaults to `"Note a creature type"`.
+ * @property options The creature types offered. Empty (the default) offers every creature type;
+ *   a non-empty list narrows the choice to exactly those ("secretly choose Human, Merfolk, or
+ *   Goblin"). Already-noted types are excluded from whichever set this names.
+ * @property secret Hide the note from every player but the one who made it, and restrict the
+ *   reveal cost to that player. Default false — an ordinary note is public information.
  */
 @SerialName("NoteCreatureType")
 @Serializable
 data class NoteCreatureTypeEffect(
     val storeAs: String = "notedType",
-    val prompt: String? = null
+    val prompt: String? = null,
+    val options: List<String> = emptyList(),
+    val secret: Boolean = false
 ) : Effect {
-    override val description: String = "Note a creature type"
+    override val description: String = when {
+        options.isEmpty() && !secret -> "Note a creature type"
+        options.isEmpty() -> "Secretly choose a creature type"
+        else -> {
+            val verb = if (secret) "Secretly choose " else "Note "
+            verb + when (options.size) {
+                1 -> options.single()
+                2 -> "${options[0]} or ${options[1]}"
+                else -> options.dropLast(1).joinToString(", ") + ", or " + options.last()
+            }
+        }
+    }
 }
 
 /**

@@ -164,7 +164,8 @@ class PreventDamageExecutor(
                 gainLifeFromColors = effect.gainLifeFromColors.map { it.name }.toSet(),
                 sourceId = context.sourceId,
                 sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
-                nextInstanceOnly = effect.nextInstanceOnly
+                nextInstanceOnly = effect.nextInstanceOnly,
+                halvePreventedDamage = effect.halvePreventedDamage
             )
             val newState = state.withPendingDecision(decision).pushContinuation(continuation)
             return EffectResult.paused(newState, decision)

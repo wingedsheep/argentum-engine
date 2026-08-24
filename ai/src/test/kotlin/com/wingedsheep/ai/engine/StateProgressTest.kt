@@ -2,6 +2,7 @@ package com.wingedsheep.ai.engine
 
 import com.wingedsheep.engine.state.components.battlefield.HasBecomeTappedComponent
 import com.wingedsheep.engine.state.components.battlefield.TargetedByControllerThisTurnComponent
+import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.DayNight
@@ -103,6 +104,25 @@ class StateProgressTest : FunSpec({
             }
             StateProgress.digest(targeted) shouldBe here
         }
+    }
+
+    test("the equip tally counts its first activation and then stops counting") {
+        // The one component that is neither read in full nor ignored wholesale, because its
+        // readers only ask "any yet?": `CastPermissionUtils.applyFreeFirstEquipDiscount` tests
+        // `count == 0`, so 0 -> 1 spends Forge Anew's free equip for the turn and is a game fact,
+        // while 1 -> 2 -> 3 is bookkeeping no card can see. Reading the raw count is what let a
+        // free equip aimed at the creature the Equipment was already on hash as a fresh position
+        // every time round, which is the loop `saturated` exists to close.
+        val base = state()
+        val you = base.turnOrder[0]
+        fun withEquips(count: Int) =
+            base.updateEntity(you) { it.with(EquipActivationsThisTurnComponent(count)) }
+
+        val none = StateProgress.digest(withEquips(0))
+        val once = StateProgress.digest(withEquips(1))
+        withClue("spending the turn's first equip is a change") { once shouldNotBe none }
+        withClue("a second equip activation is not") { StateProgress.digest(withEquips(2)) shouldBe once }
+        withClue("nor a third") { StateProgress.digest(withEquips(3)) shouldBe once }
     }
 
     test("turn and step are part of the position, so a digest can only recur inside one window") {

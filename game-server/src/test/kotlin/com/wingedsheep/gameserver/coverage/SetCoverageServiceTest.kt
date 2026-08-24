@@ -154,11 +154,11 @@ class SetCoverageServiceTest : FunSpec({
 
         test("only excuse cards that are actually still missing — Arabian Nights keeps its real gaps") {
             // ARN's holes are two policy exclusions (Jeweled Bird = ante, Shahrazad = subgame) and
-            // cards we could still build (City in a Bottle, Ring of Ma'rûf). Excluding the first
-            // pair must not paper over the second, so the set stays short of 100%.
+            // the cards we could still build — City in a Bottle, now that Ring of Ma'rûf is done.
+            // Excluding the first pair must not paper over the second, so the set stays short of 100%.
             val arn = coverage.find { it.code == "ARN" }.shouldNotBeNull()
             arn.notPlanned shouldBe 2
-            arn.total - arn.implemented shouldBeGreaterThanOrEqualTo 2
+            arn.total - arn.implemented shouldBeGreaterThanOrEqualTo 1
             arn.percent shouldBeLessThan 100.0
             val detail = service.detail("ARN").shouldNotBeNull()
             detail.draft.filter { it.notPlanned != null }.map { it.name } shouldBe
@@ -185,6 +185,33 @@ class SetCoverageServiceTest : FunSpec({
             // it shows up in Alpha, Beta or Unlimited.
             summary.distinctNotPlanned shouldBeGreaterThanOrEqualTo 1
             summary.setsComplete shouldBe coverage.count { it.percent >= 100.0 }
+        }
+    }
+
+    test("tokens are not cards and never enter a denominator") {
+        // Most sets file their tokens under a separate `t<code>` set, which `scripts/card-status`
+        // never fetches. A few number them inside the main set — Duel Decks: Blessed vs. Cursed
+        // (#77–80) and Global Series (double-faced Mowu) — and those rows sat in the denominator
+        // forever, so DDQ read 67/71 with every card it prints authored. A token has no
+        // `CardDefinition` and no `Printing` row *by design* (its art is a `TokenPrinting` in its
+        // set's `tokenArt`), so it can never be "implemented" in the sense the count means.
+        //
+        // The invariant is deliberately narrow, because a real card may legitimately share a name
+        // with a token: a name only fails if the catalog knows it *solely* as token art. That is
+        // exactly the shape of the five rows this caught, and it stays quiet for the rest.
+        val tokenNames = MtgSetCatalog.all.flatMap { set -> set.tokenArt.map { it.name } }.toSet()
+        val realCardNames = MtgSetCatalog.all
+            .flatMap { set -> set.cards.map { it.name } + set.printings.map { it.name } }
+            .toSet()
+        val tokensOnly = tokenNames - realCardNames
+
+        val offenders = coverage.flatMap { row ->
+            val detail = service.detail(row.code) ?: return@flatMap emptyList<String>()
+            val names = detail.draft.map { it.name } + detail.extraGroups.flatMap { g -> g.cards.map { it.name } }
+            names.filter { it in tokensOnly }.map { "${row.code}/$it" }
+        }
+        withClue("token rows in the canonical totals — re-run `scripts/gen-set-totals`: $offenders") {
+            offenders shouldBe emptyList()
         }
     }
 

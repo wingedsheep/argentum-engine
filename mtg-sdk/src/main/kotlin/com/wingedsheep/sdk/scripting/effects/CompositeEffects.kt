@@ -539,6 +539,27 @@ sealed interface SuccessCriterion {
     @SerialName("SuccessCriterion.PermanentsSacrificed")
     @Serializable
     data object PermanentsSacrificed : SuccessCriterion
+
+    /**
+     * Action succeeded iff the gated action actually *turned a permanent face up* — a
+     * `TurnFaceUpEvent` was emitted during the action. Turning face up is not a zone move, so
+     * [Auto] can't infer it, and [Always] would wrongly report success for the cases the rules
+     * single out as failures.
+     *
+     * A `TurnFaceUpEffect` deliberately produces no such event when it can't do its work:
+     * a manifested or cloaked permanent represented by an instant or sorcery card is revealed and
+     * left face down (CR 701.40g / 701.58g), and a permanent that is already face up has nothing
+     * to turn. Both are exactly the "you can't" the gate must catch.
+     *
+     * Etrata, Deadly Fugitive grants face-down creatures "{2}{U}{B}: Turn this creature face up.
+     * **If you can't**, exile it, then you may cast the exiled card without paying its mana cost."
+     * — the fallback lives in [GatedEffect.otherwise], so the primary instruction stays the gated
+     * action rather than being re-encoded as a condition that would have to re-derive the engine's
+     * own turn-up legality.
+     */
+    @SerialName("SuccessCriterion.TurnedFaceUp")
+    @Serializable
+    data object TurnedFaceUp : SuccessCriterion
 }
 
 /**
@@ -649,13 +670,31 @@ data class ReflexiveTriggerEffect(
  * @property cost The cost that can be paid to avoid the consequence
  * @property suffer The consequence if the cost is not paid
  * @property player Who must make the choice (defaults to controller)
+ * @property consequenceDescription The prompt's words for what happens if the cost isn't paid
  */
 @SerialName("PayOrSuffer")
 @Serializable
 data class PayOrSufferEffect(
     val cost: PayCost,
     val suffer: Effect,
-    val player: EffectTarget = EffectTarget.Controller
+    val player: EffectTarget = EffectTarget.Controller,
+    /**
+     * The consequence clause of the player-facing prompt ("Pay {2} or **…**?"), in the card's own
+     * words. Null generates it from [suffer], which is right for the common case where the payer is
+     * the ability's controller.
+     *
+     * It stops being right as soon as [player] routes the question elsewhere. An effect description
+     * is an imperative fragment addressed to the ability's controller — [GainControlEffect] renders
+     * "gain control of target" — so asking an *opponent* that question inverts who does what:
+     * Scarwood Bandits asked its victim "Pay {2} or gain control of target for as long as this
+     * creature remains on the battlefield?", offering them the theft they were the subject of.
+     * The unresolved "target" and "this creature" are the same fragment's other half — placeholders
+     * that read as the card's text, not as this game's board.
+     *
+     * Write this out whenever [player] is not the controller, and whenever the generated text would
+     * name a placeholder the player can't resolve.
+     */
+    val consequenceDescription: String? = null
 ) : Effect {
     override val description: String = "${suffer.description} unless you ${cost.description}"
 
@@ -872,6 +911,22 @@ sealed interface DelayedTriggerExpiry {
     @SerialName("DelayedTriggerExpiry.UntilControllersNextTurn")
     @Serializable
     data object UntilControllersNextTurn : DelayedTriggerExpiry
+
+    /**
+     * Remove the delayed trigger when the current combat phase ends — the scope of a "this combat"
+     * rider, which [EndOfTurn] is too coarse for once a turn has more than one combat phase.
+     *
+     * Goblin Flotilla (FEM) installs one per combat: "At the beginning of each combat, unless you
+     * pay {R}, whenever this creature blocks or becomes blocked by a creature *this combat*, that
+     * creature gains first strike until end of turn." Paying in the second combat must not leave
+     * the first combat's unpaid watcher running.
+     *
+     * Expired alongside the removal of creatures from combat, on entry to the postcombat main
+     * phase — the same moment the engine considers the combat phase over.
+     */
+    @SerialName("DelayedTriggerExpiry.EndOfCombat")
+    @Serializable
+    data object EndOfCombat : DelayedTriggerExpiry
 }
 
 /**

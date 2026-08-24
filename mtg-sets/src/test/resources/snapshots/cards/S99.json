@@ -139,6 +139,42 @@
     ]
 }
 
+// Squall
+{
+    "name": "Squall",
+    "manaCost": "{2}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Squall deals 2 damage to each creature with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature kw:flying"
+                }
+            },
+            "body": {
+                "type": "DealDamage",
+                "amount": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": "Self"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "artist": "Carl Critchlow",
+        "flavorText": "\"To-night the winds begin to rise . . . The rooks are blown about the skies . . . .\"\n—Alfred, Lord Tennyson, *In Memoriam*",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63c1b2f6-e47f-4f18-a94a-1d08eb009ef3.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Thunder Dragon
 {
     "name": "Thunder Dragon",

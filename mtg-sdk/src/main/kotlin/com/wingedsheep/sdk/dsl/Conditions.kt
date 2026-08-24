@@ -260,6 +260,15 @@ object Conditions {
         Exists(Player.Each, Zone.BATTLEFIELD, GameObjectFilter.Creature, negate = true)
 
     /**
+     * If there are no lands anywhere on the battlefield (either player). The land sibling of
+     * [NoCreaturesOnBattlefield], same global `Player.Each` + negate shape. Used by Mana Vortex's
+     * "when there are no lands on the battlefield, sacrifice this enchantment" — the clause that
+     * ends the card once it has eaten every land in play.
+     */
+    val NoLandsOnBattlefield: ConditionInterface =
+        Exists(Player.Each, Zone.BATTLEFIELD, GameObjectFilter.Land, negate = true)
+
+    /**
      * If you control at least one permanent matching [filter].
      * General-purpose battlefield existence check — pass any [GameObjectFilter]
      * (e.g. `GameObjectFilter.Creature.copy(statePredicates = listOf(StatePredicate.HasAnyCounter))`
@@ -1181,6 +1190,34 @@ object Conditions {
         SourceMatches(com.wingedsheep.sdk.scripting.GameObjectFilter.Any.attackedThisTurn())
 
     /**
+     * If this permanent was declared as a blocker at least once **this turn** (CR 509.1) — the
+     * turn-scoped sibling of [SourceBlockedThisCombat], so it survives into the postcombat main
+     * phase and across a second combat in the same turn.
+     */
+    val SourceBlockedThisTurn: ConditionInterface =
+        SourceMatches(com.wingedsheep.sdk.scripting.GameObjectFilter.Any.blockedThisTurn())
+
+    /**
+     * If this permanent attacked **or** blocked this turn — the pair Lurker gates on
+     * ("can't be the target of spells unless it attacked or blocked this turn").
+     */
+    val SourceAttackedOrBlockedThisTurn: ConditionInterface =
+        Any(SourceAttackedThisTurn, SourceBlockedThisTurn)
+
+    /**
+     * If this permanent was declared as an attacker during its controller's **most recent own
+     * turn** — "if it attacked during your last turn". The one-turn-back sibling of
+     * [SourceAttackedThisTurn]: false on the turn it actually attacked, true on the next one.
+     *
+     * Gates the untap step for Goblin Rock Sled, wrapped in a `ConditionalStaticAbility` around a
+     * `GrantKeyword(DOESNT_UNTAP)`. An Aura granting the same clause to its host (Tangle Kelp)
+     * wants `EnchantedPermanentMatches(GameObjectFilter.Any.attackedLastTurn())` instead — the Aura
+     * itself never attacks, so a source-scoped condition would always read false there.
+     */
+    val SourceAttackedLastTurn: ConditionInterface =
+        SourceMatches(com.wingedsheep.sdk.scripting.GameObjectFilter.Any.attackedLastTurn())
+
+    /**
      * If this creature was declared as an attacker at least once during the current combat (CR 508.1).
      * Backed by the per-entity `AttackedThisCombatComponent` marker, stamped at attacker-declaration
      * time and cleared when the combat phase ends — so, unlike [SourceAttackedThisTurn], it resets
@@ -1325,6 +1362,20 @@ object Conditions {
      */
     fun SacrificedHadSubtype(subtype: String): ConditionInterface =
         com.wingedsheep.sdk.scripting.conditions.SacrificedPermanentHadSubtype(subtype)
+
+    /**
+     * A permanent exiled to pay this spell or ability's cost had [subtype] — the exile counterpart
+     * of [SacrificedHadSubtype] (Soul Exchange's "if the exiled creature was a Thrull").
+     */
+    fun ExiledAsCostHadSubtype(subtype: String): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.ExiledAsCostHadSubtype(subtype)
+
+    /**
+     * The activated ability currently resolving has been activated at least [count] times this
+     * turn, this activation included. Requires the ability to set `trackActivations = true`.
+     */
+    fun ThisAbilityActivatedThisTurnAtLeast(count: Int): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.ThisAbilityActivatedThisTurnAtLeast(count)
 
     /**
      * If at least one permanent sacrificed as part of the cost was legendary at the
@@ -2148,6 +2199,26 @@ object Conditions {
         index: Int = 0
     ): ConditionInterface =
         EntityMatches(EffectTarget.DiscardedAsCost(index), filter)
+
+    /**
+     * If the card exiled *with* this permanent — its imprint / "exiled with this" pile — matches
+     * [filter]. The card is in exile, so the filter is checked against its printed characteristics.
+     *
+     * **Dual-mode**: it answers the same at resolution and during static-ability projection, so it
+     * is the gate for a [com.wingedsheep.sdk.scripting.ConditionalStaticAbility] whose payoff reads
+     * the imprinted card — Duplicant's "as long as a card exiled with this creature is a creature
+     * card, this creature has the power, toughness, and creature types of it".
+     *
+     * False when nothing is exiled at [index]: the imprint was declined, or the card has since left
+     * exile. A gated static therefore stops applying on its own, with no card-level bookkeeping.
+     *
+     * @param index Which exiled card to test (defaults to the first/only one — Imprint exiles one).
+     */
+    fun LinkedExiledCardMatches(
+        filter: com.wingedsheep.sdk.scripting.GameObjectFilter,
+        index: Int = 0
+    ): ConditionInterface =
+        EntityMatches(EffectTarget.LinkedExiledCard(index), filter)
 
     /**
      * If the spell that triggered this ability is the first spell matching [filter] you've cast

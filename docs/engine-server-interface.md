@@ -249,6 +249,39 @@ data class GameOver(
 
 ```
 
+#### The server's own game over: a game that stopped progressing
+
+Every terminal state above is the engine's. The server adds exactly one of its own, in
+`GameSession` (`GameStallGuard`): a game that is applying actions but going nowhere is ended as a
+draw, with a player-facing explanation (`GameSession.stallMessage()`, preferred over the stock
+reason text by `GamePlayHandler.handleGameOver`).
+
+This is a backstop, not a rules feature. The AI chooses by scoring the position each candidate move
+leads to, so a free ability that resolves back onto the board it started from can outscore passing —
+forever. `StateProgress` (in the `ai` module) refuses those candidates, but it recognises *shapes* of
+loop and new shapes keep appearing, and every one of them wedges a live game the same way: the
+WebSocket ping-pong never stops, the session is never swept, the replay grows without limit, and a
+tournament round blocks on a match that cannot finish. CR 104.4b agrees with the verdict — a loop of
+mandatory actions with no way to stop **is** a draw.
+
+Three clocks, all reset by progress, all far above any real game (a whole game measures a few
+hundred to ~1,650 actions across ~32 player turns):
+
+| Clock | Default | Catches |
+|---|---|---|
+| actions since the turn last changed hands | 2,000 | a loop inside one turn — the AI shape above |
+| player turns | 400 | a soft lock where turns keep passing and nobody can close the game |
+| actions in the game | 50,000 | anything that satisfies both of the above and is still pathological |
+
+A fourth counter covers the case where *nothing* is applied: when an AI's chosen action is rejected
+and no safe fallback applies either, the server re-broadcasts the state so the AI can try again —
+which, given the same state, produces the same rejected action. That loop applies no actions, so the
+clocks above cannot see it; after 10 consecutive rejections with no fallback the seat is conceded
+instead (`GameStallGuard.onActionRejected`).
+
+Every threshold is a constructor parameter on the guard, so tests reach them in a handful of actions
+(`GameStallGuardTest`, `GameSessionBackstopTest`) rather than by playing tens of thousands.
+
 ---
 
 ## 5. Side Effects: Game Events

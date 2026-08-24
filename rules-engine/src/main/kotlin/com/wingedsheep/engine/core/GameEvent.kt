@@ -387,8 +387,8 @@ data class SurveiledEvent(
 ) : GameEvent
 
 /**
- * A player just finished a `discover N` (CR 701.57). Fires once per discover, after the whole
- * process — including the "cast for free or put into hand" decision — resolves (CR 701.57b). Drives
+ * A player just finished a `discover N` (CR 701.55). Fires once per discover, after the whole
+ * process — including the "cast for free or put into hand" decision — resolves (CR 701.55b). Drives
  * "Whenever you discover" triggers; see [com.wingedsheep.sdk.scripting.EventPattern.DiscoveredEvent].
  *
  * @property playerId The player who discovered.
@@ -405,8 +405,8 @@ data class DiscoveredEvent(
 ) : GameEvent
 
 /**
- * A player just collected evidence (CR 701.59). Fires once per collection, after the chosen cards
- * have all been exiled — never when the collection was declined or was impossible (CR 701.59b), so
+ * A player just collected evidence (CR 701.57). Fires once per collection, after the chosen cards
+ * have all been exiled — never when the collection was declined or was impossible (CR 701.57b), so
  * a payoff can trust that evidence genuinely changed hands. Drives "Whenever you collect evidence"
  * triggers (Surveillance Monitor, Evidence Examiner); see
  * [com.wingedsheep.sdk.scripting.EventPattern.EvidenceCollectedEvent].
@@ -418,7 +418,7 @@ data class DiscoveredEvent(
  *
  * @property playerId The player who collected evidence (and whose graveyard was spent).
  * @property value The threshold N that was met — the *required* total, not the total actually
- *   exiled, which may be higher since the player may exile more than needed (CR 701.59a).
+ *   exiled, which may be higher since the player may exile more than needed (CR 701.57a).
  * @property exiledCards The cards exiled to collect, in selection order.
  * @property totalManaValue The combined mana value actually exiled; always >= [value].
  * @property sourceName The card/ability that caused the collection (for display).
@@ -431,6 +431,31 @@ data class EvidenceCollectedEvent(
     val exiledCards: List<EntityId>,
     val totalManaValue: Int,
     val sourceName: String
+) : GameEvent
+
+/**
+ * A player just foraged (CR 701.59a — "Exile three cards from your graveyard or sacrifice a Food").
+ * Fires once per forage, after the three cards are exiled or the Food is sacrificed — never for a
+ * declined forage and never for one no mode was feasible for, since forage has no "even if you
+ * can't" clause. Drives "Whenever you forage" triggers (Corpseberry Cultivator); see
+ * [com.wingedsheep.sdk.scripting.EventPattern.ForagedEvent].
+ *
+ * Emitted from **two** places, which is one more than [EvidenceCollectedEvent] needs and the reason
+ * worth recording: forage's three *cost* contexts share one payment implementation
+ * (`ForageCostResolver.pay`) and emit it there, while its *effect* form lowers to generic
+ * gather/select/move and sacrifice effects with no forage-shaped executor to emit from — so that one
+ * carries the [com.wingedsheep.sdk.scripting.effects.ForagedEffect] marker instead. Waterbend is
+ * split the same way. A third path added later must pick one of the two.
+ *
+ * @property playerId The player who foraged — whoever *paid*, which need not be the source's
+ *   controller: Feed the Cycle can be cast by either player and a ward cost is paid by an opponent.
+ * @property sourceName The card/ability that caused the forage (for display), null when unknown.
+ */
+@Serializable
+@SerialName("ForagedEvent")
+data class ForagedEvent(
+    val playerId: EntityId,
+    val sourceName: String? = null
 ) : GameEvent
 
 /**
@@ -546,6 +571,22 @@ data class CreatureTypeChosenEvent(
     val playerId: EntityId,
     val chosenType: String,
     val sourceName: String?
+) : GameEvent
+
+/**
+ * A creature type that had been chosen secretly is now public information — "Reveal the creature
+ * type you chose" (A Killer Among Us), the reveal half of the hidden-agenda pair (CR 702.106c).
+ *
+ * Distinct from [CreatureTypeChosenEvent], which announces that a choice happened; this one
+ * announces *what* the choice was, and fires once, when the reveal cost is paid.
+ */
+@Serializable
+@SerialName("CreatureTypeRevealedEvent")
+data class CreatureTypeRevealedEvent(
+    val playerId: EntityId,
+    val sourceId: EntityId,
+    val sourceName: String,
+    val revealedType: String
 ) : GameEvent
 
 /**
@@ -1925,10 +1966,19 @@ data class GiftGivenEvent(
 /**
  * A player flipped a coin.
  *
+ * One event per coin that was actually flipped. Under a
+ * [com.wingedsheep.sdk.scripting.FlipAdditionalCoins] replacement (Krark's Thumb) a single coin the
+ * game asked for becomes several real flips, all of which are reported — only one of them decides
+ * the outcome and the rest carry [ignored].
+ *
  * @property playerId The player who flipped the coin
  * @property won Whether the player won the flip
  * @property sourceId The entity that caused the coin flip
  * @property sourceName The name of the card/ability that caused the coin flip
+ * @property ignored True when this coin was flipped but then discarded by a "flip N coins and
+ *   ignore all but one" replacement, so its result had no effect. The flip still happened — it is
+ *   reported so the log and the animation show what was really flipped — but nothing reads its
+ *   [won] value.
  */
 @Serializable
 @SerialName("CoinFlipEvent")
@@ -1936,7 +1986,8 @@ data class CoinFlipEvent(
     val playerId: EntityId,
     val won: Boolean,
     val sourceId: EntityId,
-    val sourceName: String
+    val sourceName: String,
+    val ignored: Boolean = false
 ) : GameEvent
 
 /**

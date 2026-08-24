@@ -28,7 +28,10 @@ val BrambleguardVeteran = card("Brambleguard Veteran") {
     toughness = 4
     oracleText = "Whenever you expend 4, Raccoons you control get +1/+1 and gain vigilance until end of turn. (You expend 4 as you spend your fourth total mana to cast spells during a turn.)"
 
-    val raccoonsYouControl = GroupFilter(GameObjectFilter.Creature.withSubtype("Raccoon").youControl())
+    // A bare tribal noun names *permanents* of that tribe, not creatures of it — the
+    // reading the Assay differential settled across the corpus. Unobservable today, since every
+    // printed Raccoon is a creature.
+    val raccoonsYouControl = GroupFilter(GameObjectFilter.Permanent.withSubtype("Raccoon").youControl())
 
     triggeredAbility {
         trigger = Triggers.Expend(4)

@@ -688,6 +688,12 @@ object CardLinter {
         when {
             type == "ChooseCreatureType" ->
                 listOf(Kind.WRITE to (Space.CHOSEN to "chosenCreatureType"))
+            // Paying "Reveal the creature type you chose" publishes the source's secret note into
+            // the ability's own resolution under the well-known key, so the ability's effect can
+            // test its target against it (A Killer Among Us). The write lives on the *cost*, not on
+            // any effect step, which is why it has to be declared here.
+            type == "AtomRevealNotedCreatureType" ->
+                listOf(Kind.WRITE to (Space.CHOSEN to "chosenCreatureType"))
             type == "SelectFromCollection" &&
                 (obj["matchChosenCreatureType"] as? JsonPrimitive)?.contentOrNull == "true" ->
                 listOf(Kind.READ to (Space.CHOSEN to "chosenCreatureType"))
@@ -1168,6 +1174,7 @@ object CardLinter {
         "ContextTarget",
         "TriggeringEntity",
         "DiscardedAsCost",
+        "LinkedExiledCard",
     )
 
     /** Records this node's dataflow accesses and target references (not its children). */

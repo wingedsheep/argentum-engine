@@ -2,7 +2,14 @@ package com.wingedsheep.engine.handlers.continuations
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.effects.CoinFlipService
 import com.wingedsheep.engine.handlers.effects.ReplacementEffectUtils
+import com.wingedsheep.engine.handlers.effects.composite.FlipCoinExecutor
+import com.wingedsheep.engine.handlers.effects.composite.FlipTwoCoinsExecutor
+import com.wingedsheep.sdk.scripting.effects.FlipCoinEffect
+import com.wingedsheep.sdk.scripting.effects.FlipCoinsEffect
+import com.wingedsheep.sdk.scripting.effects.FlipCoinsUntilLossEffect
+import com.wingedsheep.sdk.scripting.effects.FlipTwoCoinsEffect
 import com.wingedsheep.engine.handlers.effects.permanent.counters.ProliferateExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.counters.RemoveAnyNumberOfCountersFlow
 import com.wingedsheep.engine.state.GameState
@@ -26,6 +33,7 @@ class MiscContinuationResumer(
         resumer(DrawUpToContinuation::class, ::resumeDrawUpTo),
         resumer(RepeatWhileContinuation::class, ::resumeRepeatWhile),
         resumer(FlipCoinsUntilLossContinuation::class, ::resumeFlipCoinsUntilLoss),
+        resumer(CoinFlipChoiceContinuation::class, ::resumeCoinFlipChoice),
         resumer(StormCopyTargetContinuation::class, ::resumeStormCopyTarget),
         resumer(StormCopyModalTargetContinuation::class, ::resumeStormCopyModalTarget),
         resumer(CopyEachSpellContinuation::class, ::resumeCopyEachSpell),
@@ -35,6 +43,7 @@ class MiscContinuationResumer(
         resumer(DistributeCountersContinuation::class, ::resumeDistributeCounters),
         resumer(RemoveAnyNumberOfCountersContinuation::class, ::resumeRemoveAnyNumberOfCounters),
         resumer(AddCountersUpToContinuation::class, ::resumeAddCountersUpTo),
+        resumer(com.wingedsheep.engine.core.PayAnyAmountOfLifeAsEntersContinuation::class, ::resumePayAnyAmountOfLifeAsEnters),
         resumer(PayCountersContinuation::class, ::resumePayCounters),
         resumer(ConvertCountersToTokensContinuation::class, ::resumeConvertCountersToTokens),
         resumer(MoveChosenCountersToTargetContinuation::class, ::resumeMoveChosenCountersToTarget),
@@ -203,6 +212,40 @@ class MiscContinuationResumer(
         return checkForMore(result.state, result.events.toList())
     }
 
+    /**
+     * Pay the chosen amount of life and stamp it on the entering permanent (Nameless Race). The
+     * stamp happens even when the player chose 0, because "entered having paid 0" is a real answer
+     * its characteristic-defining P/T has to read as 0/0 rather than as "no record".
+     */
+    private fun resumePayAnyAmountOfLifeAsEnters(
+        state: GameState,
+        continuation: com.wingedsheep.engine.core.PayAnyAmountOfLifeAsEntersContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is NumberChosenResponse) {
+            return ExecutionResult.error(state, "Expected number response for pay-any-amount-of-life")
+        }
+        val chosen = response.number.coerceAtLeast(0)
+
+        var newState = com.wingedsheep.engine.handlers.effects.player
+            .PayAnyAmountOfLifeAsEntersExecutor.recordValue(state, continuation.permanentId, chosen)
+
+        if (chosen > 0) {
+            val payEffect = com.wingedsheep.sdk.scripting.effects.PayLifeEffect(amount = chosen)
+            val payContext = EffectContext(
+                sourceId = continuation.permanentId,
+                controllerId = continuation.controllerId,
+            )
+            val result = services.effectExecutorRegistry.execute(newState, payEffect, payContext)
+                .toExecutionResult()
+            if (result.isPaused) return result
+            return checkForMore(result.state, result.events.toList())
+        }
+
+        return checkForMore(newState, emptyList())
+    }
+
     private fun resumePayCounters(
         state: GameState,
         continuation: PayCountersContinuation,
@@ -359,10 +402,10 @@ class MiscContinuationResumer(
 
         val result = com.wingedsheep.engine.handlers.effects.composite.FlipCoinsUntilLossExecutor.flipOnce(
             state = state,
-            flipperId = continuation.flipperId,
-            storeWinsAs = continuation.storeWinsAs,
+            effect = com.wingedsheep.sdk.scripting.effects.FlipCoinsUntilLossEffect(continuation.storeWinsAs),
+            context = com.wingedsheep.engine.handlers.effects.composite.FlipCoinsUntilLossExecutor
+                .contextFor(continuation.flipperId, continuation.sourceId),
             winsSoFar = continuation.winsSoFar,
-            sourceId = continuation.sourceId,
             cardRegistry = services.cardRegistry,
             decisionHandler = com.wingedsheep.engine.handlers.DecisionHandler(),
             priorEvents = emptyList()
@@ -376,6 +419,126 @@ class MiscContinuationResumer(
             numbers = result.updatedStoredNumbers
         )
         return checkForMore(published, result.events.toList())
+    }
+
+    /**
+     * Resume a coin flip after the flipper says which coin to keep — the pause a
+     * [com.wingedsheep.sdk.scripting.FlipAdditionalCoins] replacement (Krark's Thumb) puts inside
+     * every flip.
+     *
+     * A batch can owe more than one answer (one per coin that came up mixed), so
+     * [CoinFlipService.advanceAfterAnswer] may hand back another question; only once it reports the
+     * whole batch settled does the flip effect get to act on its results. What "act on its results"
+     * means is read off the frame's own [CoinFlipChoiceContinuation.effect], which is why all four
+     * flip effects share this one resumer.
+     */
+    private fun resumeCoinFlipChoice(
+        state: GameState,
+        continuation: CoinFlipChoiceContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected keep-heads/keep-tails response for a coin flip")
+        }
+
+        val decisionHandler = com.wingedsheep.engine.handlers.DecisionHandler()
+        val resolution = CoinFlipService.advanceAfterAnswer(
+            state = state,
+            pending = continuation.pending,
+            keepHeads = response.choice,
+            decisionHandler = decisionHandler
+        )
+
+        // Still coins left to choose between: park the same frame again with the batch advanced.
+        if (resolution is CoinFlipService.Resolution.NeedsChoice) {
+            return ExecutionResult.paused(
+                resolution.state.pushContinuation(
+                    continuation.copy(
+                        decisionId = resolution.decision.id,
+                        pending = resolution.pending
+                    )
+                ),
+                resolution.decision,
+                resolution.events
+            )
+        }
+
+        val settled = resolution as CoinFlipService.Resolution.Resolved
+        val context = continuation.effectContext
+
+        return when (val effect = continuation.effect) {
+            is FlipCoinEffect -> {
+                val subEffect = FlipCoinExecutor.subEffectFor(effect, settled.results)
+                runSubEffect(settled.state, subEffect, context, settled.events, checkForMore)
+            }
+
+            is FlipTwoCoinsEffect -> {
+                val subEffect = FlipTwoCoinsExecutor.subEffectFor(effect, settled.results)
+                runSubEffect(settled.state, subEffect, context, settled.events, checkForMore)
+            }
+
+            is FlipCoinsEffect -> {
+                // The heads tally goes to the frame beneath, not this resumer's return value: its
+                // consumer is the sibling effect in the same composite, and that is where a pipeline
+                // number has to land to survive the stack round-trip.
+                val published = exposeCollectionsToNextFrame(
+                    settled.state,
+                    collections = emptyMap(),
+                    numbers = mapOf(effect.storeHeadsAs to settled.results.count { it })
+                )
+                checkForMore(published, settled.events)
+            }
+
+            is FlipCoinsUntilLossEffect -> {
+                val result = com.wingedsheep.engine.handlers.effects.composite.FlipCoinsUntilLossExecutor
+                    .afterFlip(
+                        state = settled.state,
+                        effect = effect,
+                        context = context,
+                        won = settled.results.firstOrNull() == true,
+                        winsSoFar = continuation.winsSoFar,
+                        decisionHandler = decisionHandler,
+                        priorEvents = settled.events
+                    )
+                if (result.isPaused) return result.toExecutionResult()
+                val published = exposeCollectionsToNextFrame(
+                    result.state,
+                    collections = emptyMap(),
+                    numbers = result.updatedStoredNumbers
+                )
+                checkForMore(published, result.events.toList())
+            }
+
+            else -> ExecutionResult.error(
+                settled.state,
+                "Coin-flip choice resumed for an effect that does not flip coins: " +
+                    effect::class.simpleName
+            )
+        }
+    }
+
+    /**
+     * Run the branch a settled flip selected, or finish with just the flip events when that branch
+     * is empty ("flip a coin. If you win the flip, …" with no losing half).
+     */
+    private fun runSubEffect(
+        state: GameState,
+        subEffect: com.wingedsheep.sdk.scripting.effects.Effect?,
+        context: EffectContext,
+        flipEvents: List<com.wingedsheep.engine.core.GameEvent>,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (subEffect == null) return checkForMore(state, flipEvents)
+        val result = effectRunner.executeRemainingEffects(state, listOf(subEffect), context)
+        if (result.isPaused) {
+            return ExecutionResult.paused(
+                result.state,
+                result.pendingDecision!!,
+                flipEvents + result.events
+            )
+        }
+        return checkForMore(result.state, flipEvents + result.events)
     }
 
     private fun resumeCopyEachSpell(

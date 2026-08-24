@@ -122,6 +122,10 @@ class CostPaymentService(private val services: EngineServices) {
             is PayCost.Choice -> choicePrompt(state, payerId, resolved, sourceId, sourceName, ctx)
             // resolve() only yields OwnManaCost when unresolvable, and canAfford already rejected it.
             is PayCost.OwnManaCost -> PaymentResult.Unaffordable(state)
+            // Lowered to a concrete PayLife by PayOrSufferExecutor, the only caller that holds the
+            // EffectContext its amount may need. Reaching the generic cost-payment service means it
+            // was used as a spell/ability cost, where no such context exists.
+            is PayCost.DynamicLife -> PaymentResult.Unaffordable(state)
             is PayCost.Atom -> when (val atom = resolved.atom) {
                 is CostAtom.Mana ->
                     yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "Pay ${atom.cost}?", "Pay ${atom.cost}")
@@ -138,10 +142,17 @@ class CostPaymentService(private val services: EngineServices) {
                     selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, candidates, atom.count, useTargetingUI = atom.zone == Zone.BATTLEFIELD)
                 // Collect evidence N (CR 701.59a) — the whole graveyard is selectable and the gate
                 // is the summed mana value, so the count cap is simply "all of them".
+                //
+                // This is the resolution-time `PayCost` rail (ward, "unless you …"): it has no
+                // target list of its own, so a target-derived threshold would read 0 here. Nothing
+                // prints one on this rail — the derived shape is a cast-time additional cost, where
+                // `CastSpellHandler` prices it from the announced targets.
                 is CostAtom.CollectEvidence ->
                     selectionPrompt(
                         state, payerId, resolved, sourceId, sourceName, ctx, candidates, candidates.size,
-                        useTargetingUI = false, minTotalManaValue = atom.amount
+                        useTargetingUI = false,
+                        minTotalManaValue = com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                            .evaluate(state, atom.amount),
                     )
                 // Milling takes no selection — the cards are the top of the library — so this is a
                 // plain yes/no like paying life.
@@ -163,6 +174,10 @@ class CostPaymentService(private val services: EngineServices) {
                 // PayCost) — unreachable, but a yes/no is its shape if it is ever wired up.
                 is CostAtom.PutCountersOnSelf ->
                     yesNoPrompt(state, payerId, resolved, sourceId, sourceName, ctx, "${atom.description}?", atom.description)
+                // Tourach's Chant / Thelon's Chant — the payer picks which of their permanents
+                // takes the counter, on the battlefield rather than in an overlay.
+                is CostAtom.PutCountersOnPermanent ->
+                    selectionPrompt(state, payerId, resolved, sourceId, sourceName, ctx, candidates, 1, useTargetingUI = true)
                 is CostAtom.RemoveCounters -> {
                     val count = when (val c = atom.count) {
                         is com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed -> c.amount
@@ -187,6 +202,9 @@ class CostPaymentService(private val services: EngineServices) {
                         }
                     }
                 }
+                // Reading a secret note off the source permanent is activated-ability-only; as a
+                // PayCost there is no such source, so it fails closed like the two below.
+                is CostAtom.RevealNotedCreatureType -> PaymentResult.Unaffordable(state)
                 // VariablePermanents is an activated-ability-only cost, never a PayCost.
                 is CostAtom.VariablePermanents -> PaymentResult.Unaffordable(state)
                 // Likewise ExileFromGraveyardForTotal: canAfford reports it unaffordable as a
@@ -330,6 +348,8 @@ class CostPaymentService(private val services: EngineServices) {
     ): CostPaymentExecution = when (cost) {
         is PayCost.OwnManaCost -> CostPaymentExecution(state, emptyList(), success = false)
         is PayCost.Choice -> CostPaymentExecution(state, emptyList(), success = false)
+        // See pay(): only reachable when used outside PayOrSuffer, where the amount is unknowable.
+        is PayCost.DynamicLife -> CostPaymentExecution(state, emptyList(), success = false)
         is PayCost.Atom -> when (val atom = cost.atom) {
             is CostAtom.Mana -> payMana(state, payerId, atom.cost, sourceId)
             is CostAtom.PayLife -> payLife(state, payerId, atom.amount)
@@ -340,7 +360,10 @@ class CostPaymentService(private val services: EngineServices) {
             is CostAtom.CollectEvidence ->
                 when (
                     val result = com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver.collect(
-                        state, payerId, atom.amount, selected.keys.toList(),
+                        state, payerId,
+                        com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                            .evaluate(state, atom.amount),
+                        selected.keys.toList(),
                         state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Collect evidence",
                         linkToSourceId = sourceId.takeIf { atom.linkToSource },
                     )
@@ -359,7 +382,11 @@ class CostPaymentService(private val services: EngineServices) {
             // Not offered as a PayCost (canAfford reports it unaffordable) — an activated-ability
             // cost is paid through CostHandler.payAtom, which owns the counter-placement path.
             is CostAtom.PutCountersOnSelf -> CostPaymentExecution(state, emptyList(), success = false)
+            is CostAtom.PutCountersOnPermanent ->
+                putCountersOnSelected(state, selected.keys.toList(), atom.counterType, atom.count)
             is CostAtom.RemoveCounters -> performRemoveCounters(state, payerId, atom, sourceId, selected)
+            // Likewise activated-ability-only — see the prompt branch above.
+            is CostAtom.RevealNotedCreatureType -> CostPaymentExecution(state, emptyList(), success = false)
             // VariablePermanents is an activated-ability-only cost, never a PayCost.
             is CostAtom.VariablePermanents -> CostPaymentExecution(state, emptyList(), success = false)
             // Likewise ExileFromGraveyardForTotal — see the prompt branch above.
@@ -630,6 +657,41 @@ class CostPaymentService(private val services: EngineServices) {
         return CostPaymentExecution(newState, events, success = true)
     }
 
+    /**
+     * Put [count] counters of [counterType] on each selected permanent — the payment half of
+     * [CostAtom.PutCountersOnPermanent]. Selection is a single permanent in every printed use, but
+     * the loop costs nothing and keeps the shape uniform with the other selection payments.
+     */
+    private fun putCountersOnSelected(
+        state: GameState,
+        selected: List<EntityId>,
+        counterType: String,
+        count: Int
+    ): CostPaymentExecution {
+        if (selected.isEmpty()) return CostPaymentExecution(state, emptyList(), success = false)
+        val resolved = resolveCounterType(counterType)
+        var newState = state
+        val events = mutableListOf<GameEvent>()
+        for (permanentId in selected) {
+            val container = newState.getEntity(permanentId) ?: continue
+            // Read the counters inside the update so a repeated id accumulates rather than
+            // clobbering — no printed cost selects the same permanent twice, but the loop shouldn't
+            // depend on that.
+            newState = newState.updateEntity(permanentId) { c ->
+                c.with((c.get<CountersComponent>() ?: CountersComponent()).withAdded(resolved, count))
+            }
+            events.add(
+                com.wingedsheep.engine.core.CountersAddedEvent(
+                    permanentId,
+                    counterType,
+                    count,
+                    container.get<CardComponent>()?.name ?: "Permanent"
+                )
+            )
+        }
+        return CostPaymentExecution(newState, events, success = true)
+    }
+
     private fun tapSelected(state: GameState, selected: List<EntityId>): CostPaymentExecution {
         var newState = state
         val events = mutableListOf<GameEvent>()
@@ -648,7 +710,8 @@ class CostPaymentService(private val services: EngineServices) {
     /** How many entities a selection cost requires; 0 for non-selection costs. */
     fun requiredCount(cost: PayCost): Int = when (cost) {
         is PayCost.Atom -> cost.atom.selectionCount
-        is PayCost.OwnManaCost, is PayCost.Choice -> 0
+        // A life payment selects nothing, dynamic amount or not.
+        is PayCost.OwnManaCost, is PayCost.Choice, is PayCost.DynamicLife -> 0
     }
 
     /**
@@ -674,6 +737,8 @@ class CostPaymentService(private val services: EngineServices) {
             return when (val c = resolve(state, cost, sourceId)) {
                 // Only unresolvable own-mana-costs reach here (missing source/card component) — unpayable.
                 is PayCost.OwnManaCost -> false
+                // Unknowable without the resolving effect's context; see pay().
+                is PayCost.DynamicLife -> false
                 is PayCost.Choice -> c.options.any { canAfford(state, payerId, it, sourceId, manaSolver) }
                 is PayCost.Atom -> when (val atom = c.atom) {
                     is CostAtom.Mana -> manaSolver.canPay(state, payerId, atom.cost)
@@ -686,7 +751,11 @@ class CostPaymentService(private val services: EngineServices) {
                     // Card count says nothing here: five lands total 0 and pay nothing.
                     is CostAtom.CollectEvidence ->
                         com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
-                            .canCollect(state, payerId, atom.amount)
+                            .canCollect(
+                                state, payerId,
+                                com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                                    .evaluate(state, atom.amount),
+                            )
                     // Activated-ability-only; nothing prompts or pays it as a PayCost, so it is
                     // reported unaffordable rather than offered into a dead payment path.
                     is CostAtom.ExileFromGraveyardForTotal -> false
@@ -706,6 +775,11 @@ class CostPaymentService(private val services: EngineServices) {
                     // Activated-ability cost only: no printed morph / "unless you …" cost puts
                     // counters on a permanent, and CostHandler owns the placement path.
                     is CostAtom.PutCountersOnSelf -> false
+                    // Unpayable with nothing to put the counter on — which is the whole point of
+                    // the punisher clause it backs.
+                    is CostAtom.PutCountersOnPermanent -> domain(state, payerId, c, sourceId).isNotEmpty()
+                    // Activated-ability cost only (it reads a note on the source permanent).
+                    is CostAtom.RevealNotedCreatureType -> false
                     is CostAtom.RemoveCounters -> {
                         val needed = when (val c = atom.count) {
                             is com.wingedsheep.sdk.scripting.values.DynamicAmount.Fixed -> c.amount
@@ -757,7 +831,7 @@ class CostPaymentService(private val services: EngineServices) {
             cost: PayCost,
             sourceId: EntityId
         ): List<EntityId>? = when (val c = resolve(state, cost, sourceId)) {
-            is PayCost.OwnManaCost, is PayCost.Choice -> null
+            is PayCost.OwnManaCost, is PayCost.Choice, is PayCost.DynamicLife -> null
             is PayCost.Atom -> when (val atom = c.atom) {
                 is CostAtom.Discard -> cardsInHand(state, payerId, atom.filter)
                 is CostAtom.RevealFromHand -> cardsInHand(state, payerId, atom.filter)
@@ -780,9 +854,12 @@ class CostPaymentService(private val services: EngineServices) {
                 // ExileFromGraveyardForTotal does pick objects, but only ever as an activated-ability
                 // cost — CostHandler owns its selection, and [canAfford] already reports it
                 // unaffordable as a PayCost, so it has no domain on this path.
+                is CostAtom.PutCountersOnPermanent ->
+                    controlledMatching(state, payerId, atom.filter)
                 is CostAtom.Mana, is CostAtom.PayLife, is CostAtom.Mill,
                 is CostAtom.ExileTopOfLibrary,
                 is CostAtom.PutCountersOnSelf, is CostAtom.VariablePermanents,
+                is CostAtom.RevealNotedCreatureType,
                 is CostAtom.ExileFromGraveyardForTotal -> null
             }
         }

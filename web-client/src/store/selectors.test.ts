@@ -112,6 +112,13 @@ describe('isHighlightable', () => {
     ))).toBe(false)
   })
 
+  it('is highlightable for a mana ability with an X the player must choose (storage lands)', () => {
+    expect(isHighlightable(actionInfo(
+      { type: 'ActivateAbility', playerId: PLAYER, sourceId: SOURCE, abilityId: 'tap', targets: [] },
+      { isManaAbility: true, hasXCost: true, maxAffordableX: 3 },
+    ))).toBe(true)
+  })
+
   it('is highlightable for a mana ability that carries a mana cost (e.g. a filter land)', () => {
     expect(isHighlightable(actionInfo(
       { type: 'ActivateAbility', playerId: PLAYER, sourceId: SOURCE, abilityId: 'tap', targets: [] },

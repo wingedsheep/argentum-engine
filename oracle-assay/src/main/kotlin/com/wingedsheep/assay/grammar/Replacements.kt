@@ -11,9 +11,11 @@ import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.EntersWithCounters
+import com.wingedsheep.sdk.scripting.EntersWithDynamicCounters
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.events.CounterTypeFilter
 import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * "This land enters tapped." — the self-replacements a permanent applies to its own entry.
@@ -285,6 +287,76 @@ object Replacements {
         )
     }
 
+    /**
+     * "~ enters with **X** +1/+1 counters on it.", "~ enters with X charge counters on it." — the
+     * announced X, as the count a permanent brings onto the battlefield with it.
+     *
+     * ### Why this is the one position that may read a bare `X`
+     *
+     * [Amounts.namesX]'s KDoc carries the argument and the evidence; the short form is that the
+     * reading is only legal where the resolution context is live, and here it provably is.
+     * `EntersWithReplacements` builds `EffectContext(xValue = spellComponent.xValue)` on the self
+     * path, inside the permanent spell's own resolution, so [DynamicAmount.XValue] is the value the
+     * text names. A *step* cannot know that — [Triggers] lifts steps — which is why
+     * [Amounts.definedByCount]'s two positions take the defined clauses and not this row.
+     *
+     * ### `EntersWithDynamicCounters` spells self the opposite way round from its fixed sibling
+     *
+     * A finding rather than a rule: [EntersWithCounters] says self with `selfOnly = true` and
+     * [EntersWithDynamicCounters] has no such flag — it is self by *default*, and the global scan
+     * that walks the battlefield skips it unless `otherOnly` is set. Its `appliesTo` default
+     * therefore says `Creature.youControl()` on a value that never consults it, which reads like a
+     * group effect and is not one. Nothing here can fix that; what it can do is refuse to depend on
+     * it, so the reconstruct-and-compare below rebuilds the whole value and a golden carrying a
+     * non-default `appliesTo`, an `otherOnly` or a condition declines rather than losing the field.
+     */
+    private val entersWithDynamicCounters: List<Phrase<ReplacementEffect>> = run {
+        fun effectFor(kind: String, amount: DynamicAmount): ReplacementEffect = EntersWithDynamicCounters(
+            counterType = Primitives.counterFilter(kind),
+            count = amount,
+        )
+        /** The shared reader: the kind and the amount, or null on any value this family cannot say. */
+        fun readAmount(effect: ReplacementEffect, allows: (DynamicAmount) -> Boolean): Pair<String, DynamicAmount>? {
+            val enters = effect as? EntersWithDynamicCounters ?: return null
+            val kind = Primitives.counterKindOf(enters.counterType) ?: return null
+            if (!allows(enters.count)) return null
+            if (enters != effectFor(kind, enters.count)) return null
+            return kind to enters.count
+        }
+        val announced = phrase<ReplacementEffect>(
+            "{self} enters with X {kind} counters on it.",
+            name = "enters with the announced X in counters",
+        ) {
+            slot("self", Primitives.self)
+            slot("kind", Primitives.counterKind)
+            build { effectFor(it.value("kind"), DynamicAmount.XValue) }
+            match { effect ->
+                val (kind, _) = readAmount(effect) { it == DynamicAmount.XValue } ?: return@match null
+                bind("self" to Unit, "kind" to kind)
+            }
+        }
+        val defined = phrase<ReplacementEffect>(
+            "{self} enters with X {kind} counters on it${Amounts.WHERE_X}.",
+            name = "enters with a counted number of counters",
+        ) {
+            definedByCount()
+            slot("self", Primitives.self)
+            slot("kind", Primitives.counterKind)
+            slot("amount", Amounts.count)
+            // The domain is checked here as well as in `match`: returning null drops the reading,
+            // which is how a clause the model cannot hold declines instead of parsing.
+            build {
+                val amount = it.value<DynamicAmount>("amount")
+                if (Amounts.namesX(amount)) effectFor(it.value("kind"), amount) else null
+            }
+            match { effect ->
+                val (kind, amount) = readAmount(effect, Amounts::namesX) ?: return@match null
+                bind("self" to Unit, "kind" to kind, "amount" to amount)
+            }
+        }
+        listOf(announced, defined)
+    }
+
     val replacement: Phrase<ReplacementEffect> = oneOf(
         "a replacement effect",
         listOf(
@@ -293,6 +365,7 @@ object Replacements {
             shockLand,
             entersWithChosenNumber,
             entersWithLookedUpCardName,
-        ) + choiceNouns.map { (noun, value) -> entersWithChoice(noun, value) } + entersWithCounters,
+        ) + choiceNouns.map { (noun, value) -> entersWithChoice(noun, value) } +
+            entersWithCounters + entersWithDynamicCounters,
     )
 }

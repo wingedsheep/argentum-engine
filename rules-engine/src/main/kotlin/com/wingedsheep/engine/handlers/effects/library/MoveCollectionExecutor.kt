@@ -807,7 +807,12 @@ class MoveCollectionExecutor(
                 faceDown = isBattlefieldFaceDown,
                 morphData = morphData,
                 faceDownMode = if (isBattlefieldFaceDown) faceDown else null,
-                faceDownExile = faceDown != null && destZone == Zone.EXILE
+                faceDownExile = faceDown != null && destZone == Zone.EXILE,
+                // Who may keep seeing this card once it is in the library. The policy lives in
+                // LibraryRevealUtils.placementAudience — this only names the mover and whether the
+                // move was public.
+                libraryMoverId = context.controllerId,
+                libraryMovePublic = revealed
             )
 
             // Delegate to ZoneTransitionService for full cleanup + entry
@@ -857,18 +862,6 @@ class MoveCollectionExecutor(
                 newState = shuffledState.copy(zones = shuffledState.zones + (destZoneKey to shuffledLibrary))
                 events.add(LibraryShuffledEvent(libraryOwnerId))
             }
-        }
-
-        // Persist reveals when cards are moved into a library at a known position.
-        // The mover knows where each card landed; if revealed=true, everyone knows.
-        // (Shuffled placement is handled above and intentionally does NOT mark.)
-        if (destZone == Zone.LIBRARY && destination.placement != ZonePlacement.Shuffled && movedIds.isNotEmpty()) {
-            val audience: Set<EntityId> = if (revealed) {
-                newState.turnOrder.toSet()
-            } else {
-                setOf(context.controllerId)
-            }
-            newState = LibraryRevealUtils.markRevealed(newState, movedIds, audience)
         }
 
         // Emit discard event if configured

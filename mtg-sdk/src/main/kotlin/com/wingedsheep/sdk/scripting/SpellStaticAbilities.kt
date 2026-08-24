@@ -769,6 +769,54 @@ data class MayCastWithoutPayingManaCost(
  * @property spellFilter Which spells are forbidden (matched against the card being cast).
  * @property condition Optional timing/state gate, evaluated in the controller's context; null = always.
  */
+/**
+ * Players matching [affected] can't play lands (CR 305.1) — Worms of the Earth's "players can't
+ * play lands", with [Player.Each] the printed form.
+ *
+ * The land-play sibling of [PlayersCantCastSpells], and deliberately separate from it: playing a
+ * land is a special action, not casting a spell, so a card that stops one says nothing about the
+ * other. Enforced both in `PlayLandHandler` (rejecting the action) and in `EnumerationContext`
+ * (never advertising it), because a legal-action list that offers a land drop the handler will
+ * refuse is worse than either alone.
+ *
+ * This stops the *play*. A land put onto the battlefield by an effect is a different event and
+ * needs [LandsCantEnterTheBattlefield]; Worms of the Earth prints both lines for exactly that
+ * reason.
+ */
+/**
+ * Lands can't enter the battlefield — Worms of the Earth's second lock line.
+ *
+ * Separate from [PlayersCantPlayLands] because it catches a different event: that one stops the
+ * *special action* of playing a land, this one stops a land arriving by any other route (a search
+ * effect, a reanimation, a blink). Worms of the Earth prints both lines precisely because neither
+ * subsumes the other, and a card that printed only this one would still let a land be played.
+ *
+ * The land simply does not enter (CR 614.12-style prohibition): the move is a no-op and the card
+ * stays where it was.
+ */
+@SerialName("LandsCantEnterTheBattlefield")
+@Serializable
+data object LandsCantEnterTheBattlefield : StaticAbility {
+    override val description: String = "Lands can't enter the battlefield"
+}
+
+@SerialName("PlayersCantPlayLands")
+@Serializable
+data class PlayersCantPlayLands(
+    val affected: Player = Player.Each,
+    val condition: Condition? = null
+) : StaticAbility {
+    override val description: String = buildString {
+        when (affected) {
+            is Player.You -> append("You can't play lands")
+            is Player.EachOpponent -> append("Your opponents can't play lands")
+            is Player.Each -> append("Players can't play lands")
+            else -> append("${affected.description.replaceFirstChar { it.uppercase() }} can't play lands")
+        }
+        condition?.let { append(" ${it.description}") }
+    }
+}
+
 @SerialName("PlayersCantCastSpells")
 @Serializable
 data class PlayersCantCastSpells(

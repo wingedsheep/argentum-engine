@@ -163,7 +163,32 @@ object Triggers {
             // Chromeshell Crab's exchange. The split is the SDK's; nothing in the text says it.
             targetRequirement = script.targetRequirements.firstOrNull(),
             additionalTargetRequirements = script.targetRequirements.drop(1),
+            // CR 113.6m, the same derivation [Activated.abilityFor] makes: a trigger whose payoff
+            // returns the source from a zone functions in that zone. `putsSourceInto` is the rule's
+            // own "unless" — see [sourceLandsIn].
+            activeZones = Recursion.functionsIn(effect, putsSourceInto = sourceLandsIn(spec))
+                ?.let { setOf(it) }
+                ?: setOf(Zone.BATTLEFIELD),
         )
+    }
+
+    /**
+     * The zone this trigger's *event* puts the source into, or null when it does not move the source
+     * at all — CR 113.6m's "unless its trigger condition … specifies that the object is put into
+     * that zone".
+     *
+     * The rule without this clause reads the Ojer cycle backwards. "When Ojer Taq dies, return it to
+     * the battlefield transformed" carries the same graveyard source as Bloodghast's landfall trigger
+     * and functions on the battlefield, because the dies trigger is what put the card in the
+     * graveyard; a derivation that ignored the event would make the ability wait in a graveyard it
+     * can only reach by having already fired.
+     *
+     * Only a zone change *of the source* counts, which is what the binding decides: Bloodghast's
+     * event is a land entering (`TriggerBinding.ANY`), so it says nothing about where this card is.
+     */
+    private fun sourceLandsIn(spec: TriggerSpec): Zone? {
+        val zoneChange = spec.event as? EventPattern.ZoneChangeEvent ?: return null
+        return zoneChange.to?.takeIf { spec.binding == TriggerBinding.SELF }
     }
 
     /**
@@ -762,6 +787,33 @@ object Triggers {
         // one with a player field — which is what the SDK says too.
         triggerRule("when you cycle ${Normalizer.SELF}", SdkTriggers.YouCycleThis),
         triggerRule("whenever a player cycles a card", SdkTriggers.AnyPlayerCycles),
+        // Gift's payoff trigger (CR 702.174c) — Jolly Gerbils. `YouGiveAGift` is a whole
+        // `TriggerSpec` the SDK publishes, so there is nothing to slot; the giver is baked into the
+        // event as `Player.You` and no card prints another one.
+        triggerRule("whenever you give a gift", SdkTriggers.YouGiveAGift),
+        // The life-change triggers. `YouGainLife` / `YouLoseLife` are whole specs the SDK publishes,
+        // so these are constants beside the events above rather than a shape over a player field —
+        // "whenever an opponent gains life" is a different event and becomes its own row when a card
+        // needs one. Their "during your turn" siblings (Wax-Wane Witness, Moonstone Harbinger) are
+        // *not* here: that clause is a `triggerRestriction`, which [abilityFor] deliberately never
+        // writes, and reading it as an intervening-if would mean a different card.
+        triggerRule("whenever you gain life", SdkTriggers.YouGainLife),
+        triggerRule("whenever you lose life", SdkTriggers.YouLoseLife),
+        // Expend — "you spend your Nth total mana to cast spells this turn". A trigger event with
+        // a number in it, so it is the [slottedTriggerRule] shape rather than a constant per
+        // threshold: the corpus prints 4 and 8 and nothing in the sentence says those are the only
+        // two. `Triggers.Expend(n)` freezes the watched player at `Player.You`, which is the only
+        // subject Oracle prints, so the threshold is the rule's one slot — and it is [Primitives.cardinal] rather than
+        // [Cardinals.word] because Oracle writes it as a numeral: "Whenever you expend **4**".
+        slottedTriggerRule(
+            surface = "whenever you expend {n}",
+            name = "whenever you expend a number of mana",
+            noun = Primitives.cardinal,
+            effect = Steps.step,
+            valueOf = { (it.event as? EventPattern.ExpendEvent)?.threshold },
+            spec = { SdkTriggers.Expend(it) },
+            slotName = "n",
+        ),
         filteredTriggerRule(
             "whenever {filter} enters", "whenever a permanent enters", Filters.indefinite,
         ) { SdkTriggers.entersBattlefield(it, TriggerBinding.ANY) },

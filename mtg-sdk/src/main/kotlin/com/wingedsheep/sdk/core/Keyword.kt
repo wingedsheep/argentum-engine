@@ -78,6 +78,28 @@ enum class Keyword(val displayName: String) {
     FLURRY("Flurry"),
     CHANGELING("Changeling"),
 
+    /**
+     * Devoid (CR 702.114). "Devoid" means "This object is colorless." — a
+     * *characteristic-defining* ability (CR 604.3), not a continuous effect, so it functions in
+     * every zone and even outside the game, and it applies before any other layer-5 effect
+     * (CR 613.3).
+     *
+     * Because of that, the SDK models it where an object's colors are *derived* rather than as a
+     * static ability: [com.wingedsheep.sdk.model.CardDefinition.colors] reads empty for a card
+     * carrying this keyword, so every zone-agnostic reader (the engine's `CardComponent.colors`,
+     * projection's layer-5 base row, protection and evasion checks, the client's card view, search)
+     * sees a colorless object with no wiring of its own. A later "becomes blue" effect still wins,
+     * exactly as CR 613.3 orders it.
+     *
+     * Devoid does **not** touch color *identity* (CR 903.4): an Eldrazi with devoid and a {2}{U}{U}
+     * mana cost is colorless but still blue-identity for Commander, which is why
+     * [com.wingedsheep.sdk.model.CardDefinition.colorIdentity] reads the mana cost directly.
+     *
+     * Multiple instances are redundant, and nothing prints a *granted* devoid — it is a printed CDA
+     * only.
+     */
+    DEVOID("Devoid"),
+
     // ── ETB modification ──────────────────────────────────────
     AMPLIFY("Amplify"),
 

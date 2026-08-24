@@ -3,6 +3,7 @@ package com.wingedsheep.engine.legalactions.utils
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.costs.CollectEvidenceResolver
+import com.wingedsheep.engine.handlers.costs.CostAtomAmounts
 import com.wingedsheep.engine.handlers.costs.GraveyardTotalExileResolver
 import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.state.GameState
@@ -115,7 +116,11 @@ object SelectionCostPresentation {
         val atom = (cost as? AdditionalCost.Atom)?.atom
         return when (atom) {
             is CostAtom.CollectEvidence ->
-                CollectEvidenceResolver.canCollect(state, playerId, atom.amount, excludeCardId = castCardId)
+                CollectEvidenceResolver.canCollect(
+                    state, playerId,
+                    CostAtomAmounts.evaluate(state, atom.amount),
+                    excludeCardId = castCardId,
+                )
             is CostAtom.ExileFromGraveyardForTotal -> GraveyardTotalExileResolver
                 .canPay(state, playerId, atom.measure, atom.minTotal, atom.filter, excludeCardId = castCardId)
             else -> {
@@ -197,9 +202,18 @@ object SelectionCostPresentation {
                 // "Collect evidence" would not (CR 701.59).
                 is CostAtom.CollectEvidence -> {
                     val info = CollectEvidenceResolver
-                        .costInfo(state, playerId, atom.amount, excludeCardId = castCardId)
+                        .costInfo(
+                            state, playerId,
+                            CostAtomAmounts.evaluate(state, atom.amount),
+                            excludeCardId = castCardId,
+                        )
                         ?: return null
-                    "Collect evidence ${atom.amount}" to info
+                    // This rail is an *alternative* cast cost (Conspiracy Unraveler), enumerated
+                    // before any target is announced, so a target-derived threshold would price at
+                    // 0 here. Nothing prints one on this rail; the atom's own description is used
+                    // so that if something ever does, the label reads "Collect evidence X" rather
+                    // than a fabricated number.
+                    atom.description.replaceFirstChar { it.uppercase() } to info
                 }
                 is CostAtom.ExileFromGraveyardForTotal -> {
                     val info = GraveyardTotalExileResolver

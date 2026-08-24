@@ -104,7 +104,8 @@ class AnyPlayerMayPayExecutor(
                 sourceId,
                 context.pipeline.storedCollections,
                 context.triggeringEntityId,
-                context.triggeringPlayerId
+                context.triggeringPlayerId,
+                context.pipeline.iterationTarget
             )
         }
 
@@ -270,7 +271,8 @@ class AnyPlayerMayPayExecutor(
         filter = filter,
         storedCollections = context.pipeline.storedCollections,
         triggeringEntityId = context.triggeringEntityId,
-        triggeringPlayerId = context.triggeringPlayerId
+        triggeringPlayerId = context.triggeringPlayerId,
+        iterationTarget = context.pipeline.iterationTarget
     )
 
     /**
@@ -284,14 +286,18 @@ class AnyPlayerMayPayExecutor(
         sourceId: EntityId,
         storedCollections: Map<String, List<EntityId>>,
         triggeringEntityId: EntityId? = null,
-        triggeringPlayerId: EntityId? = null
+        triggeringPlayerId: EntityId? = null,
+        iterationTarget: EntityId? = null
     ): EffectResult {
         if (consequence == null) return EffectResult.success(state)
         val executor = executeEffect ?: return EffectResult.success(state)
         val context = EffectContext(
             sourceId = sourceId,
             controllerId = controllerId,
-            pipeline = PipelineState(storedCollections = storedCollections),
+            pipeline = PipelineState(
+                storedCollections = storedCollections,
+                iterationTarget = iterationTarget
+            ),
             triggeringEntityId = triggeringEntityId,
             triggeringPlayerId = triggeringPlayerId
         )

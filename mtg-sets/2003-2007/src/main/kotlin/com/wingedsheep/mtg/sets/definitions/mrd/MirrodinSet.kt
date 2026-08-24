@@ -23,7 +23,8 @@ object MirrodinSet : MtgSet {
     override val displayName = "Mirrodin"
     override val releaseDate = "2003-10-02"
     override val block = "Mirrodin"
-    override val incomplete = true
+    // Complete as of Soul Foundry (291/291) — the flag is what gates `fullyImplemented`, so
+    // leaving it set would keep a finished set out of the lobby's set picker.
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

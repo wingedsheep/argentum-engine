@@ -2,6 +2,10 @@ package com.wingedsheep.sdk.scripting.costs
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.references.Player
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -35,7 +39,25 @@ class CostAtomRepeatedTest : FunSpec({
 
     test("collecting evidence N twice is collecting evidence 2N") {
         (CostAtom.CollectEvidence(amount = 3).repeated(2) as CostAtom.CollectEvidence)
-            .amount shouldBe 6
+            .amount shouldBe DynamicAmount.Fixed(6)
+    }
+
+    test("a derived collect-evidence threshold can't be repeated — there is no number to double") {
+        shouldThrow<IllegalArgumentException> {
+            CostAtom.CollectEvidence(CostAtom.CollectEvidence.TARGET_SUM).repeated(2)
+        }
+    }
+
+    test("the atom rejects an amount no cost-time evaluator could price") {
+        shouldThrow<IllegalArgumentException> {
+            CostAtom.CollectEvidence(DynamicAmount.Count(Player.You, Zone.HAND))
+        }
+    }
+
+    test("a literal threshold prints its number; a derived one prints X, as both cards are worded") {
+        CostAtom.CollectEvidence(6).description shouldBe "collect evidence 6"
+        CostAtom.CollectEvidence(CostAtom.CollectEvidence.TARGET_SUM)
+            .description shouldBe "collect evidence X"
     }
 
     test("repeating once returns the atom unchanged") {

@@ -3303,6 +3303,85 @@
     ]
 }
 
+// Ring of Ma'rûf
+{
+    "name": "Ring of Ma'rûf",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "{5}, {T}, Exile this artifact: The next time you would draw a card this turn, instead put a card you own from outside the game into your hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap",
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "ReplaceNextDrawWith",
+                    "replacementEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Sideboard"
+                                },
+                                "storeAs": "wishable"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "wishable",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "wishableFound"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "wishableFound",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "{5}, {T}, Exile this artifact: The next time you would draw a card this turn, instead put a card you own from outside the game into your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "rarity": "RARE",
+        "artist": "Dan Frazier",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fcc1004f-7cee-420a-9f0e-2986ed3ab852.jpg?1783948377",
+        "rulings": [
+            {
+                "date": "2007-09-16",
+                "text": "Ring of Ma'rûf works a little differently than the Wishes from others sets. Rather than letting you simply put a card into your hand from outside the game, this ability replaces your next draw. If you wouldn't draw a card during the rest of the turn, the ability won't have any effect."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Rukh Egg
 {
     "name": "Rukh Egg",

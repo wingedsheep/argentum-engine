@@ -57,11 +57,15 @@ class TriggerMatcher(
         state: GameState
     ): Boolean {
         // ATTACHED triggers are generally handled by AttachmentTriggerDetector, not the main loop.
-        // Exception: BlocksOrBecomesBlockedByEvent ATTACHED is handled in the main loop, since it
-        // needs the full BlockersDeclaredEvent block map to find the equipped creature's combat
-        // partner (Barrow-Blade).
+        // Two exceptions, both needing the full BlockersDeclaredEvent block map that the per-entity
+        // attachment path never sees:
+        //   - BlocksOrBecomesBlockedByEvent, to find the equipped creature's combat partner
+        //     (Barrow-Blade)
+        //   - BecomesUnblockedEvent, whose "isn't blocked" is a negative over the whole map
+        //     (Farrel's Mantle)
         if (binding == TriggerBinding.ATTACHED &&
-            trigger !is EventPattern.BlocksOrBecomesBlockedByEvent
+            trigger !is EventPattern.BlocksOrBecomesBlockedByEvent &&
+            trigger !is EventPattern.BecomesUnblockedEvent
         ) return false
 
         return when (trigger) {
@@ -187,10 +191,17 @@ class TriggerMatcher(
                 // declare-blockers): SELF matches when sourceId is an attacker this combat
                 // AND is absent from every blocker's blocked-attackers list.
                 if (event !is BlockersDeclaredEvent) return false
-                if (binding != TriggerBinding.SELF) return false
-                val isAttacking = state.getEntity(sourceId)
+                if (binding != TriggerBinding.SELF && binding != TriggerBinding.ATTACHED) return false
+                // ATTACHED reads the combat relationships against the enchanted/equipped creature
+                // (Farrel's Mantle); the trigger's source stays the Aura/Equipment.
+                val combatCreatureId = if (binding == TriggerBinding.ATTACHED) {
+                    state.getEntity(sourceId)
+                        ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                        ?.targetId ?: return false
+                } else sourceId
+                val isAttacking = state.getEntity(combatCreatureId)
                     ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>() != null
-                isAttacking && event.blockers.values.none { it.contains(sourceId) }
+                isAttacking && event.blockers.values.none { it.contains(combatCreatureId) }
             }
             is EventPattern.StateConditionMetEvent -> {
                 // Synthetic — never matched against real events. State triggers fire via
@@ -299,12 +310,13 @@ class TriggerMatcher(
                     // (Haunting Wind / Powerleech / Artifact Possession). Match any activated
                     // ability whose cost lacks {T} — mana abilities without {T} count too.
                     if (event.costsTap) return false
-                } else {
+                } else if (!trigger.includeManaAbilities) {
                     // Default "activates an ability that isn't a mana ability" (Flamescroll
-                    // Celebrant): the engine emits AbilityActivatedEvent for non-mana abilities
-                    // (which use the stack) and, for the {T}-cost template above, for non-{T} mana
-                    // abilities — so explicitly reject the mana-ability ones here. Loyalty
-                    // abilities qualify (they aren't mana abilities).
+                    // Celebrant): the engine emits AbilityActivatedEvent for every activated
+                    // ability, mana or not, so explicitly reject the mana-ability ones here.
+                    // Loyalty abilities qualify (they aren't mana abilities). The
+                    // includeManaAbilities branch is the unqualified wording (Elrond,
+                    // Moon-Reader) and skips this gate, accepting mana abilities too.
                     if (event.isManaAbility) return false
                 }
                 // SELF/ATTACHED binding: the ability's source must be this permanent (Artifact
@@ -591,6 +603,12 @@ class TriggerMatcher(
             }
             is EventPattern.EvidenceCollectedEvent -> {
                 event is com.wingedsheep.engine.core.EvidenceCollectedEvent &&
+                    matchesPlayer(trigger.player, event.playerId, controllerId)
+            }
+            is EventPattern.ForagedEvent -> {
+                // The forager rides the event rather than being read off the source: a forage paid
+                // as a cost belongs to whoever paid, which need not be the source's controller.
+                event is com.wingedsheep.engine.core.ForagedEvent &&
                     matchesPlayer(trigger.player, event.playerId, controllerId)
             }
             is EventPattern.CaseSolvedEvent -> {
@@ -1126,7 +1144,7 @@ class TriggerMatcher(
             }
             // Check state predicates (face-down, tapped, etc.)
             for (predicate in trigger.filter.statePredicates) {
-                if (!matchesStatePredicateForZoneChangeTrigger(predicate, state, event)) return false
+                if (!matchesStatePredicateForZoneChangeTrigger(predicate, state, event, sourceId)) return false
             }
             // Check controller predicate. Control predicates (youControl) prefer the dying
             // creature's last-known controller over its owner so stolen creatures (Threaten /
@@ -2008,8 +2026,21 @@ class TriggerMatcher(
     private fun matchesStatePredicateForZoneChangeTrigger(
         predicate: com.wingedsheep.sdk.scripting.predicates.StatePredicate,
         state: GameState,
-        event: ZoneChangeEvent
+        event: ZoneChangeEvent,
+        /** The permanent whose triggered ability is being gated — the "source" of `createdBySource()`. */
+        sourceId: EntityId
     ): Boolean = when (predicate) {
+        // "the token" — this source's own token, not any token (Dance of Many, Tetravus). A token is
+        // swept out of existence before this gate runs (CR 704.5d), so the creator stamp is read
+        // from the event's last-known info, with a live read for a permanent that is still around
+        // (a nontoken permanent minted by an effect, or a non-battlefield zone change).
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.CreatedBySource -> {
+            val stamped = event.lastKnown?.createdBy
+                ?: state.getEntity(event.entityId)
+                    ?.get<com.wingedsheep.engine.state.components.identity.CreatedByComponent>()
+                    ?.creatorId
+            stamped == sourceId
+        }
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasGreatestPower -> {
             // For permanents leaving the battlefield we need the dying entity's power +
             // controller from the event's last-known info (the entity is no longer on the
@@ -2093,11 +2124,11 @@ class TriggerMatcher(
             else hasAttachmentOfKind(state, event.entityId, equipment = false)
         }
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Or ->
-            predicate.predicates.any { matchesStatePredicateForZoneChangeTrigger(it, state, event) }
+            predicate.predicates.any { matchesStatePredicateForZoneChangeTrigger(it, state, event, sourceId) }
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.And ->
-            predicate.predicates.all { matchesStatePredicateForZoneChangeTrigger(it, state, event) }
+            predicate.predicates.all { matchesStatePredicateForZoneChangeTrigger(it, state, event, sourceId) }
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Not ->
-            !matchesStatePredicateForZoneChangeTrigger(predicate.predicate, state, event)
+            !matchesStatePredicateForZoneChangeTrigger(predicate.predicate, state, event, sourceId)
         else -> matchesStatePredicateForTrigger(predicate, state, event.entityId)
     }
 
@@ -2188,6 +2219,11 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsUnblocked,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.InSameBandAsSource,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockingSource,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsCombatPairedWithSource,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlockingIterationEntity,
+        // CreatedBySource stays in the fail-open bucket only for the paths that reach here without a
+        // source: the zone-change gate — the one path any card uses it from — intercepts it above
+        // and answers exactly.
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.CreatedBySource,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.EnteredThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasDealtDamageThisTurn,
@@ -2195,8 +2231,11 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.DealtCombatDamageToSourceControllerThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.ControllerDealtCombatDamageBySourceThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttackedThisTurn,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.CouldNotHaveAttackedThisTurn,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttackedLastTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttackedThisCombat,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedThisCombat,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedOrWasBlockedByLegendaryThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsFaceUp,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.HasMorphAbility,
@@ -2221,6 +2260,7 @@ class TriggerMatcher(
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasCastFromZone,
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttachedToCardType -> true
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttachedTo -> true
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.ControllerControls -> true
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsEnchantedByAura -> true
         // Counter predicates require last-known-info to evaluate a creature that has already left
         // the battlefield; the zone-change path ([matchesStatePredicateForZoneChangeTrigger])

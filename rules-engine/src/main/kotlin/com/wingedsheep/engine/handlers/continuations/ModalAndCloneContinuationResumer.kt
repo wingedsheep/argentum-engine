@@ -75,7 +75,11 @@ class ModalAndCloneContinuationResumer(
         }
         val originalModeIndex = availableIndices[optionIndex]
         val newSelectedIndices = continuation.selectedModeIndices + originalModeIndex
-        val newAvailableIndices = availableIndices.toMutableList().also { it.removeAt(optionIndex) }
+        // With allowRepeat the same mode stays on the menu for every remaining pick; without it
+        // each mode is offered once (the "choose two different modes" default).
+        val newAvailableIndices =
+            if (continuation.allowRepeat) availableIndices
+            else availableIndices.toMutableList().also { it.removeAt(optionIndex) }
 
         // "Choose one that hasn't been chosen" (Gandalf the Grey): record the chosen mode
         // on the source so later triggers exclude it. Persists for the source's lifetime.

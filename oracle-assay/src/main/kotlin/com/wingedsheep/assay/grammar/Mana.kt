@@ -14,6 +14,7 @@ import com.wingedsheep.sdk.scripting.effects.AddDynamicManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
@@ -93,11 +94,31 @@ object Mana {
      * quantity of mana in prose as opposed to in symbols — so this takes [Cardinals.word] and the
      * singular is a rule of its own, the same split every counting rule in the grammar makes. There
      * is no plural of "mana", which is why only the noun before it changes.
+     *
+     * ### The plural spells "any **one** color", and reading only "any color" was a frozen word
+     *
+     * `AddAnyColorMana(n)` is *n* mana of a single colour the player picks, and above one that is
+     * exactly what English has to say out loud: Oracle prints "add two mana of any **one** color" 63
+     * times in the corpus against "add two mana of any color" 3 times. The rule spelled only the
+     * second, so it read the three oddities and declined the sixty-three cards — the same defect
+     * shape as [Filters]' controller layer sitting outside the mana-value qualifier, a modifier
+     * frozen at the spelling whichever card came first happened to use.
+     *
+     * The two spellings are one rule via [com.wingedsheep.assay.syntax.PhraseBuilder.alsoSpelled],
+     * with the common one canonical. The singular takes the pair the other way round — "add one mana
+     * of any color" is what 625 cards print and "of any one color" is the single oddity — which is
+     * why the canonical [template] is a parameter rather than a suffix rule.
      */
-    private fun addAnyColour(template: String, name: String, fixed: Int?): Phrase<CardScript> {
+    private fun addAnyColour(
+        template: String,
+        name: String,
+        fixed: Int?,
+        alsoSpelledAs: String,
+    ): Phrase<CardScript> {
         fun scriptFor(count: Int) = CardScript(spellEffect = Effects.AddAnyColorMana(count))
         return phrase(template, name = name) {
             if (fixed == null) slot("n", Cardinals.word)
+            alsoSpelled(alsoSpelledAs, "$name (alternate)")
             build { scriptFor(fixed ?: it.int("n")) }
             match { script ->
                 val amount = (script.spellEffect as? AddManaOfChoiceEffect)?.amount
@@ -143,15 +164,54 @@ object Mana {
     }
 
     /**
+     * "Add two mana in any combination of colors." — Chromatic Orrery, and the fourteen lines the
+     * decline table keyed on "colors. Spend this …".
+     *
+     * The same effect [addCombination] builds with the colour set left implicit, which is what
+     * `Effects.AddManaInAnyCombination`'s own default says it is: all five. A separate rule rather
+     * than a colour-set slot over both, because "colors" is not a spelling of "{R} and/or {G}" — the
+     * enumerated form names its colours and this one declines to, so there is nothing for a shared
+     * slot to bind.
+     */
+    private val addAllColourCombination: Phrase<CardScript> = run {
+        val everyColour = Color.entries.toSet()
+        fun scriptFor(count: Int) = CardScript(
+            spellEffect = Effects.AddDynamicMana(DynamicAmount.Fixed(count), everyColour)
+        )
+        phrase("add {n} mana in any combination of colors", name = "add mana in any combination of colours") {
+            slot("n", Cardinals.word)
+            build { scriptFor(it.int("n")) }
+            match { script ->
+                val effect = script.spellEffect as? AddDynamicManaEffect ?: return@match null
+                val amount = (effect.amountSource as? DynamicAmount.Fixed)?.amount ?: return@match null
+                if (effect.allowedColors != everyColour || !Cardinals.spellable(amount)) return@match null
+                if (script != scriptFor(amount)) return@match null
+                bind("n" to amount)
+            }
+        }
+    }
+
+    /**
      * Every "add …" clause a spell or an ability can print, other than the symbol form above.
      *
      * Declared after the rules it lists — object initializers run in declaration order, and a `val`
      * reaching a later one reads a null out of a half-initialized object.
      */
     val addClauses: List<Phrase<CardScript>> = listOf(
-        addAnyColour("add one mana of any color", "add one mana of any colour", fixed = 1),
-        addAnyColour("add {n} mana of any color", "add several mana of any colour", fixed = null),
+        addAnyColour(
+            "add one mana of any color",
+            "add one mana of any colour",
+            fixed = 1,
+            alsoSpelledAs = "add one mana of any one color",
+        ),
+        addAnyColour(
+            "add {n} mana of any one color",
+            "add several mana of any colour",
+            fixed = null,
+            alsoSpelledAs = "add {n} mana of any color",
+        ),
         addCombination,
+        addAllColourCombination,
     )
 
     /** "{B} or {G}" — exactly two, which is every dual land. */
@@ -195,6 +255,109 @@ object Mana {
             if (effects.any { writeProduction(it) == null }) return@match null
             bind("alternatives" to effects)
         }
+    }
+
+    // -------------------------------------------------------------------------------------------
+    // …and what the mana it produces may be spent on
+    // -------------------------------------------------------------------------------------------
+
+    /** Every "add …" clause, as the one slot a trailing spend restriction attaches behind. */
+    private val anyAddClause: Phrase<CardScript> =
+        oneOf("an add-mana clause", listOf(addClause) + addClauses)
+
+    /**
+     * "Add {G}. Spend this mana only to cast creature spells." — **one clause spanning two printed
+     * sentences**, because the second one fills a field on the first one's effect.
+     *
+     * `restriction` is a field on all four `Add*ManaEffect`s, so the restriction sentence is not an
+     * effect and has nowhere to go in a [Steps] run — a run member is a `CompositeEffect` element.
+     * A rule spanning both sentences is the only shape that can hold it, which is
+     * [Grammar.amplifyLine]'s argument one slot in: the fragment is the only place a line's two
+     * contributions can meet, and here the clause is the only place a sentence pair's can.
+     *
+     * Being a clause rather than a rule in [Activated] is what makes it cheap. The same two sentences
+     * are printed after an activated ability's colon, after a trigger's comma, after a loyalty
+     * ability's "+1:", as a bare spell effect, and inside a granted ability's quotation marks — five
+     * positions, all of which slot [Steps.step] and therefore inherit this without being told.
+     *
+     * The restriction is stripped before the inner clause is asked to print, which is what lets
+     * every "add" rule stay unaware of the field: [Mana.production]'s leaf re-reads what it writes
+     * and would refuse a restricted effect (see its note), and the any-colour and combination rules
+     * refuse one by reconstructing the whole script. That fail-closed behaviour is now load-bearing
+     * in both directions — it is what keeps a restricted effect from printing as a bare "Add {G}."
+     */
+    val restricted: Phrase<CardScript> =
+        phrase("{add}. {spend}", name = "add mana with a spend restriction") {
+            slot("add", anyAddClause)
+            slot("spend", ManaSpending.restriction)
+            build { bindings ->
+                val inner = bindings.value<CardScript>("add")
+                val effect = inner.spellEffect ?: return@build null
+                if (inner != CardScript(spellEffect = effect)) return@build null
+                withRestriction(effect, bindings.value("spend"))?.let { CardScript(spellEffect = it) }
+            }
+            match { script ->
+                val effect = script.spellEffect ?: return@match null
+                if (script != CardScript(spellEffect = effect)) return@match null
+                val restriction = restrictionOf(effect) ?: return@match null
+                val bare = withRestriction(effect, null) ?: return@match null
+                bind("add" to CardScript(spellEffect = bare), "spend" to restriction)
+            }
+        }
+
+    /**
+     * "Add {U} or {R}. Spend this mana only to cast a noncreature spell." — The Emperor of Palamecia.
+     *
+     * [restricted] one shape over, for the reason [addedAlternatives] is beside [addClause]: the
+     * choice form denotes several abilities rather than one effect, so the restriction lands on each
+     * of them. It has to be *the same* restriction on all of them — the sentence is one sentence —
+     * which is what `match` checks by reading one and reconstructing the rest.
+     */
+    val addedAlternativesRestricted: Phrase<List<Effect>> =
+        phrase("add {alternatives}. {spend}.", name = "add one of several kinds of restricted mana") {
+            slot("alternatives", alternatives)
+            slot("spend", ManaSpending.restriction)
+            build { bindings ->
+                val restriction = bindings.value<ManaRestriction>("spend")
+                val built = bindings.value<List<Effect>>("alternatives")
+                    .map { withRestriction(it, restriction) }
+                if (built.any { it == null }) null else built.filterNotNull()
+            }
+            match { effects ->
+                if (effects.size < 2) return@match null
+                val restriction = restrictionOf(effects.first()) ?: return@match null
+                val bare = effects.map { effect ->
+                    if (restrictionOf(effect) != restriction) return@match null
+                    withRestriction(effect, null) ?: return@match null
+                }
+                if (bare.any { writeProduction(it) == null }) return@match null
+                bind("alternatives" to bare, "spend" to restriction)
+            }
+        }
+
+    /** The restriction [effect] carries, or null when it is not a mana effect or carries none. */
+    private fun restrictionOf(effect: Effect): ManaRestriction? = when (effect) {
+        is AddManaEffect -> effect.restriction
+        is AddColorlessManaEffect -> effect.restriction
+        is AddManaOfChoiceEffect -> effect.restriction
+        is AddDynamicManaEffect -> effect.restriction
+        else -> null
+    }
+
+    /**
+     * [effect] with its restriction set to [restriction], or null when it has no such field.
+     *
+     * One function for both directions and for both of [restricted]'s halves, so "which effects have
+     * a restriction" is answered in exactly one place. Nothing else on the effect is touched: a rider
+     * set or a non-default expiry survives the round trip into the inner clause, which then refuses
+     * to print it — the fail-closed path the field list would otherwise have to remember.
+     */
+    private fun withRestriction(effect: Effect, restriction: ManaRestriction?): Effect? = when (effect) {
+        is AddManaEffect -> effect.copy(restriction = restriction)
+        is AddColorlessManaEffect -> effect.copy(restriction = restriction)
+        is AddManaOfChoiceEffect -> effect.copy(restriction = restriction)
+        is AddDynamicManaEffect -> effect.copy(restriction = restriction)
+        else -> null
     }
 
     // -------------------------------------------------------------------------------------------

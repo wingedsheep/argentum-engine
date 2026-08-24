@@ -163,6 +163,28 @@ data object DamageCantBePreventedThisTurnEffect : Effect {
 }
 
 /**
+ * "Damage that would be dealt to [target] this turn can't be prevented or dealt instead to another
+ * permanent or player." — the *per-recipient* form of [DamageCantBePreventedThisTurnEffect]
+ * (Whippoorwill).
+ *
+ * Both halves of the printed clause come from one marker on the recipient: prevention shields,
+ * prevention replacements and protection's prevention clause stop applying to damage aimed at it,
+ * and redirection ("dealt instead to another permanent or player") is skipped for it too.
+ *
+ * Scoped rather than global on purpose — the global effect would blank every prevention effect in
+ * the game for the turn, which is a very different card.
+ */
+@SerialName("DamageToTargetCantBePreventedThisTurn")
+@Serializable
+data class DamageToTargetCantBePreventedThisTurnEffect(
+    val target: EffectTarget = EffectTarget.ContextTarget(0)
+) : Effect {
+    override val description: String =
+        "Damage that would be dealt to ${target.description} this turn can't be prevented or " +
+            "dealt instead to another permanent or player"
+}
+
+/**
  * Deal damage to multiple targets, dividing the total as you choose.
  * Used for cards like Forked Lightning ("4 damage divided among 1-3 targets").
  *

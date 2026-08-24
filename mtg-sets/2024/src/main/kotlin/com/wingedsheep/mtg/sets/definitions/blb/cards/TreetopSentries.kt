@@ -6,7 +6,7 @@ import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.dsl.Patterns
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.ReflexiveTriggerEffect
+import com.wingedsheep.sdk.scripting.effects.MayEffect
 
 /**
  * Treetop Sentries
@@ -28,12 +28,18 @@ val TreetopSentries = card("Treetop Sentries") {
 
     keywords(Keyword.REACH)
 
+    // "you may forage. **If you do**, draw a card." — one resolution, so a `MayEffect` over
+    // `forage(afterEffect = …)`. It is deliberately *not* a `ReflexiveTriggerEffect`: that type is
+    // CR 603.12's "**When** you do, …", which puts the payoff on the stack as a second object with
+    // its own priority window (Curious Forager, three cards over, is the printing that wants it).
+    // This card creates no such object, and the reflexive spelling also rendered its own prompt as
+    // "… When you do, draw a card".
     triggeredAbility {
         trigger = Triggers.EntersBattlefield
-        effect = ReflexiveTriggerEffect(
-            action = Patterns.Mechanic.forage(),
-            optional = true,
-            reflexiveEffect = Effects.DrawCards(1)
+        effect = MayEffect(
+            effect = Patterns.Mechanic.forage(afterEffect = Effects.DrawCards(1)),
+            descriptionOverride = "You may forage",
+            hint = "Exile three cards from your graveyard or sacrifice a Food"
         )
     }
 

@@ -57,6 +57,14 @@ data class ModalContinuation(
     val minChooseCount: Int = chooseCount,
     val selectedModeIndices: List<Int> = emptyList(),
     val availableIndices: List<Int>? = null,
+    /**
+     * Whether the same mode may be chosen more than once ([ModalEffect.allowRepeat]). The cast-time
+     * path has always honoured it; the resolution-time path used to narrow the option list after
+     * every pick regardless, which silently turned "choose X, you may repeat" into "choose X
+     * different" — and, once the caller ran out of distinct modes, dropped picks entirely
+     * (Frankenstein's Monster: X counters, each independently one of the same three).
+     */
+    val allowRepeat: Boolean = false,
     val outerTargets: List<ChosenTarget> = emptyList(),
     val outerNamedTargets: Map<String, ChosenTarget> = emptyMap(),
     /**

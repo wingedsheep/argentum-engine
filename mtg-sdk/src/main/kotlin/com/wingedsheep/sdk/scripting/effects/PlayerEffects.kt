@@ -59,6 +59,32 @@ data class SkipUntapEffect(
  * it would occur (the same turn when applied during that turn's upkeep, or the player's
  * next turn otherwise).
  */
+/**
+ * "Pay any amount of life" up to [maxAmount], as a permanent enters — Nameless Race. The chosen
+ * amount is both paid and **recorded on the entering permanent**, so a characteristic-defining
+ * ability can read it back later through
+ * [com.wingedsheep.sdk.scripting.values.EntityNumericProperty.ValueChosenAsEntered].
+ *
+ * Recording it on the permanent rather than in the effect pipeline is the whole point: the CDA is
+ * consulted during layer projection, long after the resolution that made the choice is gone.
+ *
+ * The ceiling is a [DynamicAmount] because the printed bound is usually a count of something
+ * ("can't be more than the total number of white nontoken permanents your opponents control plus
+ * the total number of white cards in their graveyards"). A ceiling of 0 pays nothing and records 0
+ * without prompting. The controller may always choose 0, and cannot choose more life than they
+ * have.
+ */
+@SerialName("PayAnyAmountOfLifeAsEnters")
+@Serializable
+data class PayAnyAmountOfLifeAsEntersEffect(
+    val maxAmount: DynamicAmount
+) : Effect {
+    override val description: String =
+        "pay any amount of life, no more than ${maxAmount.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect = this
+}
+
 @SerialName("SkipNextDrawStep")
 @Serializable
 data class SkipNextDrawStepEffect(
@@ -633,6 +659,25 @@ data class GrantDamageBonusEffect(
 @Serializable
 data object GiftGivenEffect : Effect {
     override val description: String = "Give a gift"
+}
+
+// =============================================================================
+// Forage Effects
+// =============================================================================
+
+/**
+ * Signals that a forage was taken (CR 701.59a) so that "Whenever you forage" triggers fire.
+ *
+ * A marker with no state change of its own, exactly like [GiftGivenEffect] — and it exists for the
+ * same reason: the keyword action's *effect* form lowers to generic gather/select/move and sacrifice
+ * effects, so there is no forage-shaped executor for the event to come out of.
+ * `Patterns.Mechanic.forage` appends this to each of its two modes; the three *cost* contexts emit
+ * the event from their shared payment implementation instead, and never reach this.
+ */
+@SerialName("Foraged")
+@Serializable
+data object ForagedEffect : Effect {
+    override val description: String = "Forage"
 }
 
 /**

@@ -462,6 +462,18 @@ data class GameObjectFilter(
         cardPredicates = cardPredicates + CardPredicate.ManaValueAtMostDynamic(amount)
     )
 
+    /**
+     * Mana value **exactly** a resolved [DynamicAmount] — "a creature card with mana value equal to
+     * the number of harmony counters on this artifact" (Instrument of the Bards).
+     *
+     * The equality sibling of [manaValueAtMostDynamic]. Oracle marks the difference with the word in
+     * front of the clause rather than after it: "equal to …" is this, "less than or equal to …" is
+     * the cap.
+     */
+    fun manaValueEqualsDynamic(amount: DynamicAmount) = copy(
+        cardPredicates = cardPredicates + CardPredicate.ManaValueEqualsDynamic(amount)
+    )
+
     /** Mana value is even (zero is even). */
     fun manaValueIsEven() = copy(
         cardPredicates = cardPredicates + CardPredicate.ManaValueIsEven
@@ -796,6 +808,39 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.AttackedThisTurn
     )
 
+    /** Was **not** declared as an attacker at any point this turn. Negation of [attackedThisTurn]. */
+    fun didntAttackThisTurn() = copy(
+        statePredicates = statePredicates + StatePredicate.Not(StatePredicate.AttackedThisTurn)
+    )
+
+    /**
+     * Could **not** have been declared as an attacker this turn — its controller wasn't the one
+     * declaring attackers, no Declare Attackers Step happened at all, or it has defender, can't
+     * attack, or is summoning sick. "Except for creatures that couldn't attack" (Season of the
+     * Witch). See [StatePredicate.CouldNotHaveAttackedThisTurn] for exactly what it covers.
+     */
+    fun couldNotHaveAttackedThisTurn() = copy(
+        statePredicates = statePredicates + StatePredicate.CouldNotHaveAttackedThisTurn
+    )
+
+    /** The complement: the creature *could* have been declared as an attacker this turn. */
+    fun couldHaveAttackedThisTurn() = copy(
+        statePredicates = statePredicates + StatePredicate.Not(StatePredicate.CouldNotHaveAttackedThisTurn)
+    )
+
+    /**
+     * Was declared as an attacker during its controller's **most recent own turn** — the one-turn-back
+     * sibling of [attackedThisTurn]. False on the turn it actually attacked, true on the next one.
+     */
+    fun attackedLastTurn() = copy(
+        statePredicates = statePredicates + StatePredicate.AttackedLastTurn
+    )
+
+    /** Was declared as a blocker at least once this turn (CR 509.1). */
+    fun blockedThisTurn() = copy(
+        statePredicates = statePredicates + StatePredicate.BlockedThisTurn
+    )
+
     /**
      * Was declared as an attacker at least once during the current combat (CR 508.1). Backed by a
      * per-entity marker stamped at attacker-declaration time; cleared when the combat phase ends.
@@ -908,6 +953,15 @@ data class GameObjectFilter(
         statePredicates = statePredicates + StatePredicate.ControllerDealtCombatDamageBySourceThisTurn
     )
 
+    /**
+     * The candidate's controller controls at least one permanent matching [subfilter] — Seasinger's
+     * "target creature whose controller controls an Island". The subfilter's "you" is the
+     * *candidate's* controller, not the ability's.
+     */
+    fun controllerControls(subfilter: GameObjectFilter) = copy(
+        statePredicates = statePredicates + StatePredicate.ControllerControls(subfilter)
+    )
+
     /** Must be blocking */
     fun blocking() = copy(
         statePredicates = statePredicates + StatePredicate.IsBlocking
@@ -919,6 +973,22 @@ data class GameObjectFilter(
      */
     fun blockingSource() = copy(
         statePredicates = statePredicates + StatePredicate.IsBlockingSource
+    )
+
+    /**
+     * Must be blocking the effect's source **or** blocked by it (CR 509), read live from combat
+     * state. Source-relative. "Each creature blocking or blocked by this creature" (Spitting Slug).
+     */
+    fun blockingOrBlockedBySource() = copy(
+        statePredicates = statePredicates + StatePredicate.IsCombatPairedWithSource
+    )
+
+    /**
+     * Blocking the entity the enclosing `ForEachInGroup` is iterating over — Tidal Flats'
+     * "creatures you control blocking that creature".
+     */
+    fun blockingIterationEntity() = copy(
+        statePredicates = statePredicates + StatePredicate.IsBlockingIterationEntity
     )
 
     /**

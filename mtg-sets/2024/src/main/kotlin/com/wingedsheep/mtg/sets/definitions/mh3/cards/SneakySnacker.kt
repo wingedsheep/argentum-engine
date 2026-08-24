@@ -2,11 +2,10 @@ package com.wingedsheep.mtg.sets.definitions.mh3.cards
 
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
-import com.wingedsheep.sdk.scripting.effects.MoveToZoneEffect
-import com.wingedsheep.sdk.scripting.effects.ZonePlacement
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
@@ -19,8 +18,13 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * When you draw your third card in a turn, return this card from your graveyard to the battlefield tapped.
  *
  * Uses [Triggers.NthCardDrawn]`(3)` (CR 121.2) for the third-draw trigger, and
- * [MoveToZoneEffect] with `fromZone = GRAVEYARD` and `placement = TAPPED` — the effect only
- * fires when the card is in the graveyard, so it cannot tap itself while on the battlefield.
+ * [Effects.PutOntoBattlefieldFromGraveyard]`(Self, tapped = true)` for the recursion — the same
+ * facade as Persistent Specimen / Reassembling Skeleton / Teacher's Pest, but triggered rather than
+ * activated. The facade's `fromZone = GRAVEYARD` is the guard the printed line names: a Snacker
+ * that has left the graveyard by the time the trigger resolves stays where it is.
+ *
+ * `triggerZones = {GRAVEYARD}` because the ability's effect moves the card out of the graveyard, so
+ * it functions only there (CR 113.6m) — a Snacker on the battlefield doesn't see your third draw.
  */
 val SneakySnacker = card("Sneaky Snacker") {
     manaCost = "{U}{B}"
@@ -34,13 +38,8 @@ val SneakySnacker = card("Sneaky Snacker") {
 
     triggeredAbility {
         trigger = Triggers.NthCardDrawn(3)
-        effect = MoveToZoneEffect(
-            target = EffectTarget.Self,
-            destination = Zone.BATTLEFIELD,
-            placement = ZonePlacement.Tapped,
-            fromZone = Zone.GRAVEYARD
-        )
-        triggerZones = setOf(Zone.BATTLEFIELD, Zone.GRAVEYARD)
+        effect = Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.Self, tapped = true)
+        triggerZones = setOf(Zone.GRAVEYARD)
         description = "When you draw your third card in a turn, return this card from your graveyard to the battlefield tapped."
     }
 

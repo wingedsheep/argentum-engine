@@ -372,6 +372,25 @@ sealed interface Modification {
     }
 
     /**
+     * Replace all creature subtypes with **the creature types of the object [source] names**,
+     * plus [retainedTypes]. The dynamic sibling of [SetCreatureSubtypes]: the set is resolved
+     * against live state on every projection pass rather than baked in at conversion time, so a
+     * "has the creature types of X" static (Duplicant) tracks X. Lowered from
+     * [com.wingedsheep.sdk.scripting.HasCreatureTypesOf].
+     *
+     * When [source] resolves to nothing, only [retainedTypes] is applied — the gainer keeps the
+     * types its own card names it should keep and loses the rest, which is the correct reading of
+     * "has the creature types of [something that isn't there]".
+     */
+    @Serializable
+    data class SetCreatureSubtypesFrom(
+        val source: com.wingedsheep.sdk.scripting.values.EntityReference,
+        val retainedTypes: Set<String> = emptySet()
+    ) : Modification {
+        override val layer get() = Layer.TYPE
+    }
+
+    /**
      * Replace all basic land subtypes with the given set (Rule 305.7).
      * Used by "is an Island" effects that change a land's basic land types.
      * Removes existing basic land subtypes (Plains, Island, Swamp, Mountain, Forest)

@@ -4,7 +4,7 @@ import { useGameStore } from '@/store/gameStore.ts'
 import { selectGameState, selectViewingPlayerId, useCardLegalActions } from '@/store/selectors.ts'
 import { AbilityFlagDisplayNames, ZoneType, zoneIdEquals } from '@/types'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
-import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStatCounters, getTokenFrameGradient, getTokenFrameTextColor, getPTColor } from '../board/shared'
+import { useResponsiveContext, handleImageError, getCounterStatModifier, hasStatCounters, listCardCounters, getTokenFrameGradient, getTokenFrameTextColor, getPTColor } from '../board/shared'
 import { styles } from '../board/styles'
 import { counterManaClass } from '@/assets/icons/keywords'
 import { HoverCardPreview } from '../../ui/HoverCardPreview'
@@ -126,6 +126,10 @@ export function CardPreview() {
 
   const counterModifier = getCounterStatModifier(card)
   const hasCounters = hasStatCounters(card)
+  // Every counter type on the card, not just the ones that move P/T. The stats box below is gated
+  // on the card having power/toughness at all, so a land's counters (City of Shadows' storage)
+  // could never appear there — this panel is independent of it.
+  const allCounters = listCardCounters(card)
   const effectPowerMod = card.power !== null && card.basePower !== null
     ? (card.power - card.basePower) - counterModifier : 0
   const effectToughnessMod = card.toughness !== null && card.baseToughness !== null
@@ -378,6 +382,24 @@ export function CardPreview() {
         </div>
       )}
 
+      {/* Counters panel — the card's full counter inventory, whatever its card type. */}
+      {allCounters.length > 0 && (
+        <div style={styles.cardPreviewCounters}>
+          <div style={styles.cardPreviewCountersHeading}>Counters</div>
+          {allCounters.map(({ type, label, count }) => (
+            <div key={type} style={styles.cardPreviewCounterRow}>
+              <span style={styles.cardPreviewCounterLabel}>
+                {counterManaClass[type] && (
+                  <i className={`ms ms-${counterManaClass[type]}`} style={{ fontSize: 11 }} />
+                )}
+                {label}
+              </span>
+              <span style={styles.cardPreviewCounterValue}>{count}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Keywords/abilities info panel */}
       {(card.keywords.length > 0 || (card.abilityFlags && card.abilityFlags.length > 0)) && (
         <div style={styles.cardPreviewKeywords}>
@@ -516,6 +538,18 @@ function MobileCardPreview({ card, dismissible = false }: { card: import('@/type
               style={styles.cardPreviewImage}
               onError={(e) => handleImageError(e, isRevealedFaceDown ? card.revealedName! : card.name, 'large')}
             />
+          )}
+          {/* Same marker as on the battlefield card: a token that copies a real card shows that
+              card's image, so only this says it is a token. */}
+          {card.isToken && !card.imageUri?.includes('/art_crop/') && (
+            <div style={{
+              position: 'absolute', top: 8, left: 8,
+              backgroundColor: 'rgba(0, 0, 0, 0.78)', color: '#f0f0f0',
+              fontSize: 11, fontWeight: 700, letterSpacing: 0.5, padding: '2px 8px', borderRadius: 4,
+              border: '1px solid rgba(255, 255, 255, 0.55)', pointerEvents: 'none', whiteSpace: 'nowrap',
+            }}>
+              TOKEN
+            </div>
           )}
           {isRevealedFaceDown && (
             <div style={{

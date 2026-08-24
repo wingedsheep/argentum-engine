@@ -9,6 +9,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.mechanics.combat.AttackSacrificeCosts
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.player.InAdditionalCombatPhaseComponent
@@ -316,6 +317,32 @@ private fun findDefendingPlayer(ctx: AttackCheckContext, defenderId: EntityId): 
 // Default rule lists
 // =========================================================================
 
+/**
+ * [com.wingedsheep.sdk.scripting.CantAttackUnlessSacrifice]: the creature carries a sacrifice cost
+ * for attacking (Leviathan — "can't attack unless you sacrifice two Islands"). This rule only
+ * enforces the half that can be decided up front: a cost you *cannot* pay makes the declaration
+ * illegal, so the creature can't attack when its controller doesn't control enough matching
+ * permanents. Actually paying it is a pause in the declare-attackers step, in the same window the
+ * generic-mana attack tax is paid — see `AttackPhaseManager.pauseForAttackSacrifice`.
+ *
+ * The cost is per *creature*, so two Leviathans attacking together owe two sacrifices of two
+ * Islands each; the affordability check totals them.
+ */
+class CantAttackUnlessSacrificeRule : AttackRestrictionRule {
+    override fun check(ctx: AttackCheckContext): String? {
+        val requirement = AttackSacrificeCosts.requirementFor(ctx.state, ctx.attackerId, ctx.cardRegistry)
+            ?: return null
+        val available = AttackSacrificeCosts.eligiblePermanents(
+            ctx.state, ctx.attackingPlayer, ctx.attackerId, requirement
+        )
+        if (available.size < requirement.count) {
+            val name = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
+            return "$name ${requirement.description}"
+        }
+        return null
+    }
+}
+
 fun defaultAttackRestrictionRules(): List<AttackRestrictionRule> = listOf(
     MustBeCreatureAttackRule(),
     ControlledByAttackerRule(),
@@ -323,6 +350,7 @@ fun defaultAttackRestrictionRules(): List<AttackRestrictionRule> = listOf(
     SummoningSicknessAttackRule(),
     DefenderAttackRule(),
     CantAttackProjectedRule(),
+    CantAttackUnlessSacrificeRule(),
     AdditionalCombatPhaseAttackerRule(),
     NotAlreadyAttackingRule()
 )

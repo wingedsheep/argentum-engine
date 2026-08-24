@@ -21,6 +21,9 @@ import com.wingedsheep.sdk.scripting.targets.TargetObject
  * Two targets: a creature card in your graveyard (required) and — "up to one" — a Zombie you
  * control (optional). The optional counter target is skipped when nothing is chosen (Cruel Revival
  * shape). Flashback is the standard [KeywordAbility.flashback] special action.
+ *
+ * The second target is a **Zombie permanent**, not a Zombie creature: Oracle's bare tribal noun
+ * means every permanent of that type, so a Zombie enchantment or a Zombie land is a legal choice.
  */
 val CrawlFromTheCellar = card("Crawl from the Cellar") {
     manaCost = "{B}"
@@ -40,7 +43,7 @@ val CrawlFromTheCellar = card("Crawl from the Cellar") {
             "Zombie you control",
             TargetObject(
                 optional = true,
-                filter = TargetFilter(GameObjectFilter.Creature.withSubtype("Zombie").youControl())
+                filter = TargetFilter(GameObjectFilter.Permanent.withSubtype("Zombie").youControl())
             )
         )
 

@@ -16,10 +16,13 @@ import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageT
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.AttackedThisCombatComponent
+import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedThisCombatComponent
+import com.wingedsheep.engine.state.components.combat.BlockedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent
+import com.wingedsheep.engine.state.components.combat.PlayerAttackersLastTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -450,6 +453,10 @@ internal class AffectsFilterResolver {
         // group-static projection. Only meaningful in target/group-damage contexts via
         // PredicateEvaluator. Never match here.
         StatePredicate.IsBlockingSource -> false
+        // Same reasoning for the both-directions live pairing — no source permanent here.
+        StatePredicate.IsCombatPairedWithSource -> false
+        // Loop-relative; only meaningful inside a ForEach at resolution, never in projection.
+        StatePredicate.IsBlockingIterationEntity -> false
         // Source-relative: "created with the source" needs the ability's source permanent, absent
         // in group-static projection. Only meaningful in target/gather-filter contexts via
         // PredicateEvaluator. Never match here.
@@ -506,8 +513,12 @@ internal class AffectsFilterResolver {
         is StatePredicate.HasDealtDamage ->
             hasDealtDamage(container, state.turnNumber, predicate)
         StatePredicate.HasDealtCombatDamageToPlayer -> container.has<HasDealtCombatDamageToPlayerComponent>()
+        // Controller comes from the in-progress projection first: an effect that changed control
+        // this turn (Act of Treason) makes the base ControllerComponent the wrong player to ask,
+        // and PredicateEvaluator reads the projected one. Falls back to base for an entity the
+        // projection hasn't reached yet, which is the same shape the keyword reads below use.
         StatePredicate.AttackedThisTurn -> {
-            val controllerId = container.get<ControllerComponent>()?.playerId
+            val controllerId = projectedController(state, entityId, projectedValues)
             val attackerSet = controllerId?.let {
                 state.getEntity(it)
                     ?.get<PlayerAttackersThisTurnComponent>()
@@ -515,8 +526,42 @@ internal class AffectsFilterResolver {
             } ?: emptySet()
             entityId in attackerSet
         }
+        // "Couldn't attack" — controlled by someone whose turn it isn't so they never declared
+        // attackers (CR 508.1a), or controlled by someone who did have the turn but never reached a
+        // Declare Attackers Step (False Peace, Fatespinner), or defender (CR 702.3b) / a projected
+        // "can't attack" — the CR 508.1c restrictions — or summoning sick (entered this turn without
+        // haste). Keywords come from the in-progress projection when this entity already has one,
+        // falling back to base keywords + flags, the same read line 340 uses for card predicates;
+        // that keeps this branch in step with PredicateEvaluator's without re-entering the projector.
+        StatePredicate.CouldNotHaveAttackedThisTurn -> {
+            val card = container.get<CardComponent>()
+            val inProjection = projectedValues[entityId]
+            val keywords = inProjection?.keywords
+                ?: card?.let { (it.baseKeywords.map { k -> k.name } + it.baseFlags.map { f -> f.name }).toSet() }
+                ?: emptySet()
+            val controllerId = projectedController(state, entityId, projectedValues)
+            controllerId == null ||
+                !state.isActiveTurnFor(controllerId) ||
+                state.getEntity(controllerId)?.has<AttackersDeclaredThisTurnComponent>() != true ||
+                Keyword.DEFENDER.name in keywords ||
+                inProjection?.cantAttack == true ||
+                (container.has<EnteredThisTurnComponent>() && Keyword.HASTE.name !in keywords)
+        }
+        // The same read one turn back — see PlayerAttackersLastTurnComponent. Kept in step with
+        // PredicateEvaluator's branch so projection and resolution agree.
+        StatePredicate.AttackedLastTurn -> {
+            val controllerId = projectedController(state, entityId, projectedValues)
+            val attackerSet = controllerId?.let {
+                state.getEntity(it)
+                    ?.get<PlayerAttackersLastTurnComponent>()
+                    ?.attackerIds
+            } ?: emptySet()
+            entityId in attackerSet
+        }
         StatePredicate.AttackedThisCombat ->
             container.has<AttackedThisCombatComponent>()
+        StatePredicate.BlockedThisTurn ->
+            container.has<BlockedThisTurnComponent>()
         StatePredicate.BlockedThisCombat ->
             container.has<BlockedThisCombatComponent>()
         // Graveyard-zone-only predicates (Abyssal Harvester; Samwise/Lobelia). Battlefield
@@ -590,6 +635,10 @@ internal class AffectsFilterResolver {
         // resolve that "you", so this predicate is only meaningful in target/condition contexts via
         // PredicateEvaluator (where the controllerId is supplied). Never match in projection.
         is StatePredicate.AttachedTo -> false
+        // "whose controller controls <filter>" needs a battlefield scan bound to the
+        // candidate's controller, which the group-static projection pass cannot do here.
+        // Only meaningful in target/condition contexts via PredicateEvaluator.
+        is StatePredicate.ControllerControls -> false
         is StatePredicate.AttachedToCardType -> {
             val attached = container.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
             attached != null &&

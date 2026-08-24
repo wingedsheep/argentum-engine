@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects
 
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
+import com.wingedsheep.engine.core.applyPreventByRemovingCounterToDamage
 import com.wingedsheep.engine.core.applyShieldCounterToDamage
 import com.wingedsheep.engine.core.DamagePreventedEvent
 import com.wingedsheep.engine.core.EffectResult
@@ -14,6 +15,7 @@ import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.state.GameState
@@ -22,14 +24,17 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
+import com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtByPlayersThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageSourceLki
 import com.wingedsheep.engine.state.components.battlefield.DamagedBySourcesThisTurnComponent
+import com.wingedsheep.engine.state.components.battlefield.DamageUnpreventableThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.ReplacementEffectSourceComponent
 import com.wingedsheep.engine.state.components.stack.SpellGrantedKeywordsComponent
+import com.wingedsheep.engine.handlers.effects.damage.OptionalDamageRedirect
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TargetsComponent
@@ -44,7 +49,9 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.player.DamageBonusComponent
+import com.wingedsheep.engine.mechanics.layers.Layer
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.sdk.scripting.NoncombatDamageBonus
@@ -157,10 +164,17 @@ object DamageUtils {
 
         // Check for global "damage can't be prevented" effects (Sunspine Lynx, Leyline of Punishment)
         @Suppress("NAME_SHADOWING")
-        val cantBePrevented = cantBePrevented || isDamagePreventionDisabled(state)
+        val cantBePrevented = cantBePrevented || isDamagePreventionDisabled(state, targetId)
 
-        // Check for damage redirection (Glarecaster, Zealous Inquisitor)
-        val (redirectState, redirectTargetId, redirectAmount) = checkDamageRedirection(state, targetId, amount)
+        // Check for damage redirection (Glarecaster, Zealous Inquisitor). Whippoorwill's clause
+        // shuts this half off too — "…or dealt instead to another permanent or player" — so a
+        // recipient marked unpreventable is never redirected away from.
+        val (redirectState, redirectTargetId, redirectAmount) =
+            if (state.getEntity(targetId)?.has<DamageUnpreventableThisTurnComponent>() == true) {
+                Triple(state, null, 0)
+            } else {
+                checkDamageRedirection(state, targetId, amount, sourceId = sourceId)
+            }
         if (redirectTargetId != null) {
             val redirectResult = dealDamageToTarget(redirectState, redirectTargetId, redirectAmount, sourceId, cantBePrevented, isCombatDamage, appliedRedirects)
             val remainingDamage = amount - redirectAmount
@@ -281,6 +295,24 @@ object DamageUtils {
             }
         }
 
+        // The printed sibling of the rule above: "If this creature would be dealt damage, prevent
+        // that damage and remove a +1/+1 counter from it" (Unbreathing Horde). Same one-counter-per-
+        // event scoping, same position in the CR 616.1 ordering, but it prevents even with no
+        // counter left to spend.
+        if (!isPlayer) {
+            val counterShield = applyPreventByRemovingCounterToDamage(
+                newState, targetId, isCombatDamage = isCombatDamage, cantBePrevented = cantBePrevented
+            )
+            if (counterShield != null) {
+                newState = counterShield.state
+                val counterEvents = listOfNotNull(counterShield.event)
+                if (counterShield.damagePrevented) {
+                    return EffectResult.success(newState, shieldCounterEvents + counterEvents)
+                }
+                shieldCounterEvents = shieldCounterEvents + counterEvents
+            }
+        }
+
         // Events from a reflect shield (Eye for an Eye) that fired but let the damage proceed.
         var reflectEvents: List<EngineGameEvent> = emptyList()
         if (!cantBePrevented) {
@@ -333,6 +365,7 @@ object DamageUtils {
             events.add(LifeChangedEvent(targetId, currentLife, newLife, LifeChangeReason.DAMAGE))
         } else if (projected.isPlaneswalker(targetId)) {
             // It's a planeswalker - remove loyalty counters equal to damage dealt
+            if (sourceId != null) newState = markDealtDamageToThisGame(newState, sourceId, targetId)
             val counters = newState.getEntity(targetId)?.get<CountersComponent>() ?: CountersComponent()
             val currentLoyalty = counters.getCount(CounterType.LOYALTY)
             newState = newState.updateEntity(targetId) { container ->
@@ -432,6 +465,7 @@ object DamageUtils {
             if (sourceId != null) {
                 newState = trackDamageDealtToCreature(newState, sourceId, targetId)
                 newState = trackDamageSourceLki(newState, sourceId, targetId)
+                newState = applyDoomedRidersToDamagedCreature(newState, sourceId, targetId)
             }
             // Track per-player damage dealt to this entity this turn (Grothama LTB).
             if (sourceId != null) {
@@ -568,19 +602,24 @@ object DamageUtils {
      */
     fun trackDamageReceivedByPlayer(state: GameState, playerId: EntityId, amount: Int, sourceId: EntityId? = null): GameState {
         if (amount <= 0) return state
+        // Every path that deals damage to a player — combat and noncombat alike — funnels through
+        // here, so it is the one place to record the source's "has dealt damage to this player this
+        // game" memory (The Fallen). Planeswalkers are recorded separately, at their own two
+        // loyalty-removal sites.
+        val marked = sourceId?.let { markDealtDamageToThisGame(state, it, playerId) } ?: state
         // Is the source an artifact at the moment it dealt the damage? For a source still on the
         // battlefield, its projected types are authoritative (a continuous effect may have added or
         // stripped artifact-ness). Only for a source that has already left do we fall back to its
         // base card types as last-known information. Powers the artifact-source damage accumulator
         // (Reverse Polarity).
         val sourceIsArtifact = sourceId?.let { sid ->
-            if (sid in state.getBattlefield()) {
-                state.projectedState.hasType(sid, "ARTIFACT")
+            if (sid in marked.getBattlefield()) {
+                marked.projectedState.hasType(sid, "ARTIFACT")
             } else {
-                state.getEntity(sid)?.get<CardComponent>()?.typeLine?.isArtifact == true
+                marked.getEntity(sid)?.get<CardComponent>()?.typeLine?.isArtifact == true
             }
         } ?: false
-        return state.updateEntity(playerId) { container ->
+        return marked.updateEntity(playerId) { container ->
             val existing = container.get<com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent>()
                 ?: com.wingedsheep.engine.state.components.player.DamageReceivedThisTurnComponent()
             val existingLifeLost = container.get<com.wingedsheep.engine.state.components.player.LifeLostAmountThisTurnComponent>()
@@ -932,6 +971,25 @@ object DamageUtils {
      * new object it is (CR 400.7). A source that isn't a permanent — a spell resolving off the
      * stack — carries no timestamp and is identified by its entity alone.
      */
+    /**
+     * Record on [sourceId] that it has dealt damage to [recipientId] at some point this game — the
+     * accumulating memory behind The Fallen. [recipientId] is a player or a planeswalker; the
+     * consumer decides which of them the printed line cares about.
+     *
+     * A no-op when the source entity is gone (a spell that has already left the stack). The set is
+     * never cleared per turn and is stripped on a zone change with the rest of the damage memory,
+     * so a permanent that leaves and returns starts over (CR 400.7).
+     */
+    fun markDealtDamageToThisGame(state: GameState, sourceId: EntityId, recipientId: EntityId): GameState {
+        val container = state.getEntity(sourceId) ?: return state
+        val existing = container.get<DealtDamageToThisGameComponent>()
+        if (existing != null && recipientId in existing.recipientIds) return state
+        return state.updateEntity(sourceId) { c ->
+            val current = c.get<DealtDamageToThisGameComponent>() ?: DealtDamageToThisGameComponent()
+            c.with(DealtDamageToThisGameComponent(current.recipientIds + recipientId))
+        }
+    }
+
     fun trackDamageSourceForController(state: GameState, sourceId: EntityId): GameState {
         val container = state.getEntity(sourceId) ?: return state
         val controllerId = state.projectedState.getController(sourceId)
@@ -982,6 +1040,61 @@ object DamageUtils {
                 ?: DamagedBySourcesThisTurnComponent()
             container.with(existing.adding(snapshot))
         }
+    }
+
+    /**
+     * Apply the damage-time riders of [com.wingedsheep.sdk.scripting.CreaturesDamagedBySourceAreDoomed]
+     * carried by [sourceId] to the creature it just damaged — "can't be regenerated" and "if it
+     * would die this turn, exile it instead" (Runesword).
+     *
+     * This runs *inside* damage application rather than from a trigger because a trigger for
+     * "whenever this deals damage to a creature" resolves only after state-based actions have
+     * already binned the dying creature (CR 704.3), far too late to change where it went. The marks
+     * themselves are the same floating effects `MarkExileOnDeathExecutor` and
+     * `CantBeRegeneratedExecutor` place.
+     *
+     * Reads **granted** statics only ([GameState.grantedStaticAbilities]), the point-of-use shape
+     * `CombatDamageUtils` documents. No card prints this ability — Runesword grants it for a turn —
+     * and reading printed ones here would need a `CardRegistry` this helper doesn't have. Give this
+     * reader a registry when a card prints it.
+     */
+    fun applyDoomedRidersToDamagedCreature(
+        state: GameState,
+        sourceId: EntityId,
+        targetCreatureId: EntityId
+    ): GameState {
+        if (targetCreatureId !in state.getBattlefield()) return state
+        val riders = state.grantedStaticAbilities
+            .filter { it.entityId == sourceId }
+            .mapNotNull { it.ability as? com.wingedsheep.sdk.scripting.CreaturesDamagedBySourceAreDoomed }
+        if (riders.isEmpty()) return state
+
+        val controllerId = state.projectedState.getController(sourceId)
+            ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
+            ?: state.getEntity(sourceId)?.get<CardComponent>()?.ownerId
+            ?: return state
+        val context = EffectContext(sourceId = sourceId, controllerId = controllerId)
+
+        var newState = state
+        if (riders.any { it.cantBeRegenerated }) {
+            newState = newState.addFloatingEffect(
+                layer = Layer.ABILITY,
+                modification = SerializableModification.CantBeRegenerated,
+                affectedEntities = setOf(targetCreatureId),
+                duration = Duration.EndOfTurn,
+                context = context
+            )
+        }
+        if (riders.any { it.exileInsteadOfDying }) {
+            newState = newState.addFloatingEffect(
+                layer = Layer.ABILITY,
+                modification = SerializableModification.ExileOnDeath,
+                affectedEntities = setOf(targetCreatureId),
+                duration = Duration.EndOfTurn,
+                context = context
+            )
+        }
+        return newState
     }
 
     /**
@@ -1056,9 +1169,17 @@ object DamageUtils {
      * Check if damage prevention is globally disabled by any DamageCantBePrevented replacement effect
      * on the battlefield (e.g., Sunspine Lynx, Leyline of Punishment).
      */
-    fun isDamagePreventionDisabled(state: GameState): Boolean {
+    fun isDamagePreventionDisabled(state: GameState, recipientId: EntityId? = null): Boolean {
         // Turn-scoped "Damage can't be prevented this turn" (Fear, Fire, Foes!).
         if (state.damageCantBePreventedThisTurn) return true
+        // Per-recipient: "damage that would be dealt to that creature this turn can't be prevented"
+        // (Whippoorwill). Callers that know who is being damaged pass it; those that don't fall back
+        // to the global-only answer they gave before.
+        if (recipientId != null &&
+            state.getEntity(recipientId)?.has<DamageUnpreventableThisTurnComponent>() == true
+        ) {
+            return true
+        }
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
@@ -1091,7 +1212,7 @@ object DamageUtils {
         // CR 615.12 — when damage can't be prevented, prevention shields aren't reduced and prevent
         // nothing. When any battlefield "damage can't be prevented" (Spider-Punk) or the "this turn"
         // one-shot (Fear, Fire, Foes!) is active, no shield applies and the damage passes through in full.
-        if (isDamagePreventionDisabled(state)) return state to amount
+        if (isDamagePreventionDisabled(state, targetId)) return state to amount
 
         var remainingDamage = amount
         val updatedEffects = state.floatingEffects.toMutableList()
@@ -1205,7 +1326,11 @@ object DamageUtils {
                     targetId in effect.effect.affectedEntities &&
                     mod.damageSourceId == sourceId
                 ) {
-                    remainingDamage = 0
+                    // Dark Sphere prevents only half the instance, rounded down; the Circle of
+                    // Protection family prevents all of it. Either way this is a *next instance*
+                    // shield, so it is consumed even when it prevents nothing (a 1-damage hit
+                    // halves to 0 and still spends the Sphere).
+                    remainingDamage = if (mod.halveRoundedDown) remainingDamage - remainingDamage / 2 else 0
                     toRemove.add(i)
                 }
             }
@@ -1236,35 +1361,62 @@ object DamageUtils {
     }
 
     /**
-     * Check for damage redirection shields (Glarecaster, Zealous Inquisitor).
+     * Check for damage redirection shields (Glarecaster, Zealous Inquisitor, Blood of the Martyr).
      *
-     * Scans floating effects for RedirectNextDamage targeting the entity.
+     * Scans floating effects for RedirectNextDamage covering the entity.
      * If found, consumes (or decrements) the shield and returns the redirect target ID
      * and the amount to redirect.
+     *
+     * An **optional** shield ("you may have that damage dealt to you instead") only applies when its
+     * controller has already said yes to *this* damage instance — the answer is recorded by
+     * [OptionalDamageRedirect]'s pre-pass and consumed here. A declined or never-asked instance falls
+     * through to the next covering shield, so declining Blood of the Martyr doesn't shut off a
+     * mandatory Glarecaster underneath it.
      *
      * @param state The current game state
      * @param targetId The entity about to receive damage
      * @param damageAmount The amount of damage about to be dealt
+     * @param sourceId The source of the damage — identifies the instance an optional shield was
+     *   answered for; a null source can never match a recorded answer
      * @return Triple of (updated state with consumed/decremented shield, redirect target ID or null, amount to redirect)
      */
     fun checkDamageRedirection(
         state: GameState,
         targetId: EntityId,
         damageAmount: Int,
-        inBatch: Boolean = false
+        inBatch: Boolean = false,
+        sourceId: EntityId? = null
     ): Triple<GameState, EntityId?, Int> {
-        val shieldIndex = state.floatingEffects.indexOfFirst { effect ->
-            effect.effect.modification is SerializableModification.RedirectNextDamage &&
-                (effect.effect.affectedEntities.isEmpty() || targetId in effect.effect.affectedEntities)
+        var workingState = state
+        var shieldIndex = -1
+        for ((index, effect) in state.floatingEffects.withIndex()) {
+            val modification = effect.effect.modification
+            if (modification !is SerializableModification.RedirectNextDamage) continue
+            if (!OptionalDamageRedirect.redirectShieldCovers(workingState, effect, modification, targetId)) continue
+            if (!modification.optional) {
+                shieldIndex = index
+                break
+            }
+            // "You may…" — this instance redirects only if its controller already said so. The
+            // answer is spent either way, so the same shield asks again for the next instance.
+            val (consumedState, choice) = OptionalDamageRedirect.consume(
+                workingState,
+                OptionalDamageRedirect.choiceKey(effect.id, sourceId, targetId)
+            )
+            workingState = consumedState
+            if (choice == true) {
+                shieldIndex = index
+                break
+            }
         }
-        if (shieldIndex == -1) return Triple(state, null, 0)
+        if (shieldIndex == -1) return Triple(workingState, null, 0)
 
-        val shield = state.floatingEffects[shieldIndex]
+        val shield = workingState.floatingEffects[shieldIndex]
         val mod = shield.effect.modification as SerializableModification.RedirectNextDamage
 
         val redirectAmount = if (mod.amount != null) minOf(mod.amount, damageAmount) else damageAmount
 
-        val updatedEffects = state.floatingEffects.toMutableList()
+        val updatedEffects = workingState.floatingEffects.toMutableList()
         if (mod.amount != null) {
             // Capacity shield (CR 615.7) — decrement; remove once the capacity is used up.
             val remaining = mod.amount - redirectAmount
@@ -1290,7 +1442,7 @@ object DamageUtils {
             }
         }
 
-        return Triple(state.copy(floatingEffects = updatedEffects), mod.redirectToId, redirectAmount)
+        return Triple(workingState.copy(floatingEffects = updatedEffects), mod.redirectToId, redirectAmount)
     }
 
     /**

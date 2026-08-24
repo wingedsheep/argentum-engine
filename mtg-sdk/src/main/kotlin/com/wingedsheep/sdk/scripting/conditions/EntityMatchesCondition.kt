@@ -38,6 +38,11 @@ import kotlinx.serialization.Serializable
  * - [EffectTarget.DiscardedAsCost] — a card discarded to pay this spell's additional discard cost;
  *   **resolution-only**, matched against that card's graveyard characteristics (CR 608.2), where it
  *   lives by the time the spell resolves (Grab the Prize, via `Conditions.DiscardedCardMatches`).
+ * - [EffectTarget.LinkedExiledCard] — a card exiled with the source (its imprint / "exiled with
+ *   this" pile); **dual-mode**, matched against that card's printed characteristics in exile. This
+ *   is what lets a [com.wingedsheep.sdk.scripting.ConditionalStaticAbility] be gated on the
+ *   imprinted card ("as long as a card exiled with this creature is a creature card" — Duplicant,
+ *   via `Conditions.LinkedExiledCardMatches`).
  *
  * Deliberately **not**: a player check (use `Conditions.TargetIsPlayer`) nor a numeric/tracker
  * check (use `Compare` over a `DynamicAmount`). Entity roles other than those listed above are
@@ -63,6 +68,8 @@ data class EntityMatches(
             "if it's ${filter.description.ifEmpty { "a matching" }} spell"
         is EffectTarget.DiscardedAsCost ->
             "if the discarded card is ${filter.description}"
+        is EffectTarget.LinkedExiledCard ->
+            "as long as the exiled card is ${filter.description}"
         else -> "if ${entity.description} matches ${filter.description}"
     }
 

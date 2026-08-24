@@ -63,7 +63,17 @@ class DividedDamageExecutor(
             // the survivors keep exactly what they were assigned. This is why the assigned shares
             // can sum to less than [total] and must not be recomputed from the surviving count.
             val stillLegal = targets.toSet()
-            var currentState = state
+            val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
+                state,
+                distribution
+                    .filter { (targetId, amount) -> amount > 0 && targetId in stillLegal }
+                    .map { (targetId, amount) -> OptionalDamageRedirect.Instance(context.sourceId, targetId, amount) },
+                effect,
+                context
+            )
+            if (pause != null) return pause
+
+            var currentState = readyState
             val events = mutableListOf<com.wingedsheep.engine.core.GameEvent>()
 
             for ((targetId, amount) in distribution) {
@@ -83,7 +93,14 @@ class DividedDamageExecutor(
         // otherwise fall back to asking for the division now (the path non-interactive controllers
         // and engine-direct actions take).
         if (targets.size == 1) {
-            return dealDamageToTarget(state, targets.first(), total, context.sourceId)
+            val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
+                state,
+                listOf(OptionalDamageRedirect.Instance(context.sourceId, targets.first(), total)),
+                effect,
+                context
+            )
+            if (pause != null) return pause
+            return dealDamageToTarget(readyState, targets.first(), total, context.sourceId)
         }
         return createDistributionDecision(state, effect, context, targets, total)
     }

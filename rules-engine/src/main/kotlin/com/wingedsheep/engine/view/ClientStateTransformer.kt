@@ -37,11 +37,13 @@ import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.composite.asConditional
 import com.wingedsheep.sdk.scripting.events.DamageType
 import com.wingedsheep.engine.state.permissions.hasMayPlayFor
+import com.wingedsheep.engine.handlers.effects.FaceDownTurnUp
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
 import com.wingedsheep.sdk.scripting.effects.GiftGivenEffect
 import com.wingedsheep.sdk.scripting.effects.GatedEffect
 import com.wingedsheep.sdk.scripting.effects.ModalEffect
+import com.wingedsheep.sdk.scripting.effects.MORPH_HELPER_CARD_IMAGE_URI
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.imageOverrideFor
@@ -777,6 +779,16 @@ class ClientStateTransformer(
             ?.mapNotNull { try { Color.valueOf(it.removePrefix(protectionPrefix)) } catch (_: Exception) { null } }
             ?: emptyList()
         val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        // Which face-down mechanic this object is *drawn* as: it decides the helper card every
+        // surface shows in place of the hidden art (morph's helmet, the Manifest token, "A
+        // Mysterious Creature" for disguise/cloak). A permanent carries the mode as a component
+        // from the moment it enters, but a spell still on the stack does not — it is stamped when
+        // it resolves — so derive that one from the keyword it was cast under. Without the
+        // fallback a creature *being cast* with disguise would be drawn as a morph.
+        val faceDownDisplayMode = container.get<FaceDownModeComponent>()?.mode
+            ?: if (spellOnStack?.castFaceDown == true) FaceDownTurnUp.castMode(cardDef) else null
+        val faceDownHelperCardImageUri =
+            faceDownDisplayMode?.helperCardImageUri ?: MORPH_HELPER_CARD_IMAGE_URI
         val staticProtections = cardDef?.keywordAbilities
             ?.filterIsInstance<KeywordAbility.Protection>()
             ?.mapNotNull { (it.scope as? ProtectionScope.Color)?.color }
@@ -872,8 +884,9 @@ class ClientStateTransformer(
                     attachedTo = null,
                     attachments = emptyList(),
                     isFaceDown = true,
+                    faceDownMode = faceDownDisplayMode?.name,
                     morphCost = null,
-                    imageUri = "https://cards.scryfall.io/normal/front/e/9/e9375cbe-93c0-41a5-a6e3-fb4416f54a69.jpg",
+                    imageUri = faceDownHelperCardImageUri,
                     activeEffects = emptyList(),
                     revealedName = if (isRevealedToViewer) cardComponent.name else null,
                     revealedImageUri = if (isRevealedToViewer) (cardComponent.imageUri ?: cardDef?.metadata?.imageUri) else null
@@ -938,9 +951,9 @@ class ClientStateTransformer(
                 },
                 linkedExile = container.get<LinkedExileComponent>()?.exiledIds ?: emptyList(),
                 isFaceDown = true,
-                faceDownMode = container.get<FaceDownModeComponent>()?.mode?.name,
+                faceDownMode = faceDownDisplayMode?.name,
                 morphCost = null, // Opponent can't see morph cost
-                imageUri = "https://cards.scryfall.io/normal/front/e/9/e9375cbe-93c0-41a5-a6e3-fb4416f54a69.jpg", // Morph token from Commander 2019
+                imageUri = faceDownHelperCardImageUri,
                 activeEffects = buildCardActiveEffects(state, entityId),
                 revealedName = if (isRevealedToViewer) cardComponent.name else null,
                 revealedImageUri = if (isRevealedToViewer) (cardComponent.imageUri ?: cardDef?.metadata?.imageUri) else null
@@ -1211,7 +1224,8 @@ class ClientStateTransformer(
         }
 
         // Build active effects from floating effects
-        val activeEffects = buildCardActiveEffects(state, entityId, projectedState)
+        val activeEffects = buildCardActiveEffects(state, entityId, projectedState) +
+            notedCreatureTypeBadges(container, viewingPlayerId, isSpectator)
 
         // Check if this card is playable from exile (impulse draw like Mind's Desire,
         // or cast-from-linked-exile like Rona / Dawnhand Dissident).
@@ -1366,7 +1380,7 @@ class ClientStateTransformer(
             attachments = attachments,
             linkedExile = linkedExile,
             isFaceDown = isFaceDown,
-            faceDownMode = if (isFaceDown) container.get<FaceDownModeComponent>()?.mode?.name else null,
+            faceDownMode = if (isFaceDown) faceDownDisplayMode?.name else null,
             isSuspected = projectedValues?.isSuspected == true,
             isSolved = container.has<com.wingedsheep.engine.state.components.battlefield.SolvedComponent>(),
             saddleRequirement = saddleRequirement,
@@ -2058,8 +2072,15 @@ class ClientStateTransformer(
         // Check floating effects for damage prevention shields on this player
         var preventDamageTotal = 0
         var preventsAllDamage = false
+        var preventsAllCombatDamage = false
+        var preventsAttackingCreatureDamage = false
         val preventedCreatureTypes = mutableSetOf<String>()
+        val preventedCombatDamageSources = mutableSetOf<String>()
         val preventedFromSources = mutableSetOf<EntityId>()
+        // Single-instance chosen-source shields, kept separate from the all-damage ones above
+        // because they read differently: "the next time" rather than "all damage", and Dark Sphere
+        // halves rather than prevents. Pair = (source, halved).
+        val preventedNextInstanceFromSources = mutableListOf<Pair<EntityId, Boolean>>()
         for (floatingEffect in state.floatingEffects) {
             val modification = floatingEffect.effect.modification
             if (
@@ -2079,10 +2100,26 @@ class ClientStateTransformer(
                     )
                 )
             }
+            // Board-wide combat-damage prevention (Fog, Holy Day, Spore Flower's ability). These
+            // shields name neither a permanent nor a player, so they carry no affected entity to
+            // hang a card badge on — and without a player badge the only trace that one resolved is
+            // a line in the log. They apply to every creature's combat damage, so both players
+            // carry the badge.
+            when (modification) {
+                is SerializableModification.PreventAllCombatDamage -> preventsAllCombatDamage = true
+                is SerializableModification.PreventCombatDamageFromGroup ->
+                    preventedCombatDamageSources.add(modification.filter.description)
+                else -> {}
+            }
             if (playerId !in floatingEffect.effect.affectedEntities) continue
             when (modification) {
                 is SerializableModification.PreventAllDamageTo -> {
                     preventsAllDamage = true
+                }
+                // Deep Wood. Unlike the two above this one is scoped to the shield's controller,
+                // so it badges only the protected player.
+                is SerializableModification.PreventDamageFromAttackingCreatures -> {
+                    preventsAttackingCreatureDamage = true
                 }
                 is SerializableModification.PreventNextDamage -> {
                     preventDamageTotal += modification.remainingAmount
@@ -2093,6 +2130,11 @@ class ClientStateTransformer(
                 is SerializableModification.PreventAllDamageFromSource -> {
                     preventedFromSources.add(modification.damageSourceId)
                 }
+                is SerializableModification.PreventNextDamageInstanceFromSource -> {
+                    preventedNextInstanceFromSources.add(
+                        modification.damageSourceId to modification.halveRoundedDown
+                    )
+                }
                 else -> {}
             }
         }
@@ -2102,6 +2144,36 @@ class ClientStateTransformer(
                     effectId = "prevent_all_damage",
                     name = "Prevent All Damage",
                     description = "All damage that would be dealt to you is prevented",
+                    icon = "prevent-damage"
+                )
+            )
+        }
+        if (preventsAllCombatDamage) {
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "prevent_all_combat_damage",
+                    name = "No Combat Damage",
+                    description = "All combat damage that would be dealt this turn is prevented",
+                    icon = "prevent-damage"
+                )
+            )
+        }
+        if (preventsAttackingCreatureDamage) {
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "prevent_damage_from_attackers",
+                    name = "No Attacker Damage",
+                    description = "Damage that attacking creatures would deal to you this turn is prevented",
+                    icon = "prevent-damage"
+                )
+            )
+        }
+        for (sourceDescription in preventedCombatDamageSources) {
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "prevent_combat_damage_from_${sourceDescription.lowercase().replace(' ', '_')}",
+                    name = "No Combat Damage",
+                    description = "Combat damage that would be dealt by $sourceDescription this turn is prevented",
                     icon = "prevent-damage"
                 )
             )
@@ -2133,6 +2205,27 @@ class ClientStateTransformer(
                     effectId = "prevent_damage_from_source_${sourceId.value}",
                     name = "Prevent from $sourceName",
                     description = "All damage that would be dealt to you by $sourceName this turn is prevented",
+                    icon = "prevent-damage"
+                )
+            )
+        }
+
+        // The Circle of Protection family and Dark Sphere: one instance from one chosen source.
+        // Listed per shield rather than deduplicated by source — two Circles pointed at the same
+        // source are two separate shields, each spent by its own damage instance.
+        for ((sourceId, halved) in preventedNextInstanceFromSources) {
+            val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "a chosen source"
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "prevent_next_damage_instance_from_source_${sourceId.value}" +
+                        if (halved) "_halved" else "",
+                    name = if (halved) "Halve from $sourceName" else "Prevent from $sourceName",
+                    description = if (halved) {
+                        "The next time $sourceName would deal damage to you this turn, " +
+                            "prevent half that damage, rounded down"
+                    } else {
+                        "The next time $sourceName would deal damage to you this turn, prevent that damage"
+                    },
                     icon = "prevent-damage"
                 )
             )
@@ -2530,6 +2623,39 @@ class ClientStateTransformer(
     }
 
     /**
+     * Badge the creature types this permanent has noted — Long List of the Ents' running list, and
+     * A Killer Among Us's single secret choice.
+     *
+     * A *secret* note (`NotedCreatureTypesComponent.secretTo`) is hidden information: only the
+     * player who made it gets the badge, so an opponent's view of the permanent looks exactly the
+     * same whichever type was chosen. A spectator sees neither, since they'd otherwise leak the
+     * answer to anyone watching. Paying the reveal cost clears `secretTo`, and the badge becomes
+     * public in the same update.
+     *
+     * Without this the chooser has no way to remember what they picked — the whole point of the
+     * note is that the *engine* keeps track of the piece of paper (CR 702.106b) for them.
+     */
+    private fun notedCreatureTypeBadges(
+        container: com.wingedsheep.engine.state.ComponentContainer,
+        viewingPlayerId: EntityId,
+        isSpectator: Boolean
+    ): List<ClientCardEffect> {
+        val noted = container.get<NotedCreatureTypesComponent>() ?: return emptyList()
+        if (noted.types.isEmpty()) return emptyList()
+        val secret = noted.secretTo != null
+        if (secret && (isSpectator || !noted.isVisibleTo(viewingPlayerId))) return emptyList()
+        return listOf(
+            ClientCardEffect(
+                effectId = "noted_creature_types_${noted.types.sorted().joinToString("_")}",
+                name = if (secret) "Chosen (secret)" else "Noted",
+                description = noted.types.sorted().joinToString(", ") +
+                    if (secret) " — only you can see this" else "",
+                icon = "creature-type"
+            )
+        )
+    }
+
+    /**
      * Build a list of active effects on a card for display as badges.
      * These come from floating effects that target this specific card.
      */
@@ -2732,42 +2858,16 @@ class ClientStateTransformer(
                         )
                     )
                 }
-                is SerializableModification.PreventAllCombatDamage -> {
-                    effects.add(
-                        ClientCardEffect(
-                            effectId = "prevent_all_combat_damage",
-                            name = "No Combat Dmg",
-                            description = "All combat damage is prevented",
-                            icon = "prevent-damage"
-                        )
-                    )
-                }
+                // PreventAllCombatDamage, PreventCombatDamageFromGroup and
+                // PreventDamageFromAttackingCreatures are not card-scoped — the first two hold no
+                // affected entity at all and the third holds a player — so they are badged on the
+                // player in buildActiveEffects instead.
                 is SerializableModification.PreventCombatDamageToAndBy -> {
                     effects.add(
                         ClientCardEffect(
                             effectId = "prevent_combat_damage_to_and_by",
                             name = "No Combat Dmg",
                             description = "All combat damage dealt to and dealt by this creature is prevented",
-                            icon = "prevent-damage"
-                        )
-                    )
-                }
-                is SerializableModification.PreventCombatDamageFromGroup -> {
-                    effects.add(
-                        ClientCardEffect(
-                            effectId = "prevent_combat_damage_from_group",
-                            name = "No Combat Dmg",
-                            description = "Combat damage from this creature is prevented",
-                            icon = "prevent-damage"
-                        )
-                    )
-                }
-                is SerializableModification.PreventDamageFromAttackingCreatures -> {
-                    effects.add(
-                        ClientCardEffect(
-                            effectId = "prevent_damage_from_attackers",
-                            name = "Fog",
-                            description = "Damage from attacking creatures is prevented",
                             icon = "prevent-damage"
                         )
                     )

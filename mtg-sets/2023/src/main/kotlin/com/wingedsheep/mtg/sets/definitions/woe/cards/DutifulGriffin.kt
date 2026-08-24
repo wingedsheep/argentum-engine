@@ -32,7 +32,7 @@ val DutifulGriffin = card("Dutiful Griffin") {
     keywords(Keyword.FLYING)
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}{W}"), Costs.SacrificeMultiple(2, GameObjectFilter.Enchantment))
-        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
+        effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self)
         activateFromZone = Zone.GRAVEYARD
     }
     metadata {

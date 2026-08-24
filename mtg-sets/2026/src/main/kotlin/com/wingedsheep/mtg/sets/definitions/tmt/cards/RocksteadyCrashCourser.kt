@@ -32,7 +32,7 @@ val RocksteadyCrashCourser = card("Rocksteady, Crash Courser") {
     staticAbility {
         ability = CantBeBlockedByMoreThan(
             maxBlockers = 1,
-            filter = GroupFilter(GameObjectFilter.Creature.withSubtype("Boar").youControl())
+            filter = GroupFilter(GameObjectFilter.Permanent.withSubtype("Boar").youControl())
         )
     }
 

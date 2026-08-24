@@ -155,8 +155,18 @@ class ManaStaticsIndex private constructor(
                 }
 
                 // Buckets 2–5 — read the printed static list, face-down permanents included, as the
-                // helpers being replaced did.
-                for (static in cardDef.script.staticAbilities) {
+                // helpers being replaced did, plus any statics *granted* to this permanent at
+                // runtime and recorded in `GameState.grantedStaticAbilities`. That is the same
+                // point-of-use read the combat checks do, and it is what lets a durational grant
+                // reach the mana path at all: the layer projector does not carry granted statics,
+                // so a `{U}: … until end of turn` mana rule (Deep Water) has nowhere else to live.
+                val grantedHere = state.grantedStaticAbilities
+                    .filter { it.entityId == permanentId }
+                    .map { it.ability }
+                val staticsHere =
+                    if (grantedHere.isEmpty()) cardDef.script.staticAbilities
+                    else cardDef.script.staticAbilities + grantedHere
+                for (static in staticsHere) {
                     when (static) {
                         is OverrideEnchantedLandManaColor -> {
                             if (attachedTo == null) continue
@@ -194,6 +204,31 @@ class ManaStaticsIndex private constructor(
 
                         else -> {}
                     }
+                }
+            }
+
+            // Granted statics, not just printed ones. A *spell* can create a mana bonus that no
+            // permanent carries — High Tide's "until end of turn, whenever a player taps an Island
+            // for mana, that player adds an additional {U}" — by granting the static to its own
+            // controller for the turn. Only the battlefield-wide bonus shapes are read here; the
+            // attachment-scoped ones (AdditionalManaOnTap) need a host to be attached to.
+            for (granted in state.grantedStaticAbilities) {
+                when (val static = granted.ability) {
+                    is AdditionalManaOnSourceTap -> {
+                        // The filter's "you" is the grant holder — a player entity for a
+                        // spell-created grant, a permanent's controller otherwise.
+                        val controller = projected.getController(granted.entityId) ?: granted.entityId
+                        (sourceTapBonuses ?: mutableListOf<SourceTapBonus>().also { sourceTapBonuses = it })
+                            .add(SourceTapBonus(granted.entityId, static, controller))
+                    }
+                    is MultiplyManaOnSourceTap -> {
+                        val controller = projected.getController(granted.entityId) ?: granted.entityId
+                        (
+                            sourceTapMultipliers
+                                ?: mutableListOf<SourceTapMultiplier>().also { sourceTapMultipliers = it }
+                            ).add(SourceTapMultiplier(granted.entityId, static, controller))
+                    }
+                    else -> {}
                 }
             }
 

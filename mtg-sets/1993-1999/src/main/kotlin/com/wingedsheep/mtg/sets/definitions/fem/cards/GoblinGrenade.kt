@@ -34,7 +34,7 @@ val GoblinGrenade = card("Goblin Grenade") {
         rarity = Rarity.COMMON
         collectorNumber = "56a"
         artist = "Ron Spencer"
-        flavorText = "\"According to accepted theory, the Grenade held some kind of flammable mixture and was carried to its target by a hapless Goblin.\" —*Sarpadian Empires, vol. IV*"
+        flavorText = "\"According to accepted theory, the Grenade held some kind of flammable mixture and was carried to its target by a hapless Goblin.\"\n—*Sarpadian Empires, vol. IV*"
         imageUri = "https://cards.scryfall.io/normal/front/8/8/8837eaba-9602-4f63-9897-85583fcdcf51.jpg?1783947894"
         ruling("2011-09-22", "Players can only respond once Goblin Grenade has been cast and all its costs have been paid. No one can try and destroy the Goblin to prevent you from casting Goblin Grenade.")
         ruling("2011-09-22", "The Goblin you sacrifice to cast Goblin Grenade doesn't have to be a creature. For example, you could sacrifice Boggart Shenanigans (a kindred enchantment with the subtype Goblin).")

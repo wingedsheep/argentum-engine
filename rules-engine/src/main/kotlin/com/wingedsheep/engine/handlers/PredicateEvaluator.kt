@@ -4,6 +4,7 @@ import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.predicates.becameTappedOnlyOnceThisTurn
 import com.wingedsheep.engine.handlers.predicates.hasDealtDamage
 import com.wingedsheep.engine.handlers.predicates.receivedCounterThisTurn
@@ -22,10 +23,13 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.SaddledComponent
 import com.wingedsheep.engine.state.components.battlefield.SolvedComponent
 import com.wingedsheep.engine.state.components.combat.AttackedThisCombatComponent
+import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedThisCombatComponent
+import com.wingedsheep.engine.state.components.combat.BlockedThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent
+import com.wingedsheep.engine.state.components.combat.PlayerAttackersLastTurnComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
@@ -1152,9 +1156,9 @@ class PredicateEvaluator {
 
     /**
      * Resolve an [EffectTarget] player reference that needs [GameState] (so it can't be
-     * answered by [PredicateContext.resolvePlayerTarget] alone). Currently covers
-     * [EffectTarget.ControllerOfTriggeringEntity] — the controller of the entity that
-     * caused the trigger (e.g. Tectonic Instability: "tap all lands its controller controls").
+     * answered by [PredicateContext.resolvePlayerTarget] alone): the controller of the entity that
+     * caused the trigger (e.g. Tectonic Instability: "tap all lands its controller controls"), the
+     * controller of the first chosen target, and the defending player of an attacking source.
      */
     private fun resolveReferencedPlayerFromState(
         state: GameState,
@@ -1183,6 +1187,17 @@ class PredicateEvaluator {
                 ?: state.getEntity(targetId)?.get<ControllerComponent>()?.playerId
                 ?: state.getEntity(targetId)
                     ?.get<LastKnownPermanentComponent>()?.snapshot?.controllerId
+        }
+        // "target creature defending player controls" (Necrite) — the filter is evaluated while the
+        // trigger is choosing targets, so the defending player has to be resolvable *here* and not
+        // only at resolution. Without it every candidate fails the controller predicate, the
+        // trigger finds no legal targets, and it is removed from the stack without ever asking its
+        // "you may" question. Reads combat off the source, with the same removed-from-combat
+        // fallback the resolution-time path uses (CR 802.2a).
+        is EffectTarget.PlayerRef -> when (target.player) {
+            Player.DefendingPlayer -> TargetResolutionUtils
+                .defendingPlayerOfAttacker(state, context.sourceId)
+            else -> null
         }
         else -> null
     }
@@ -1366,6 +1381,27 @@ class PredicateEvaluator {
                     container.get<BlockingComponent>()?.blockedAttackerIds?.contains(sourceId) == true
             }
 
+            // Creature blocking the effect's source OR blocked by it (CR 509), read live from
+            // combat state in both directions: either the candidate blocks the source, or the
+            // source blocks the candidate. Source-relative; inert with no source.
+            StatePredicate.IsCombatPairedWithSource -> {
+                val sourceId = context?.sourceId
+                sourceId != null && (
+                    container.get<BlockingComponent>()?.blockedAttackerIds?.contains(sourceId) == true ||
+                        state.getEntity(sourceId)?.get<BlockingComponent>()
+                            ?.blockedAttackerIds?.contains(entityId) == true
+                    )
+            }
+
+            // "…creatures you control blocking *that creature*" (Tidal Flats) — the same check as
+            // IsBlockingSource but against the ForEach loop's current entity, which is what "that
+            // creature" refers to inside the loop.
+            StatePredicate.IsBlockingIterationEntity -> {
+                val iterated = context?.iterationEntityId
+                iterated != null &&
+                    container.get<BlockingComponent>()?.blockedAttackerIds?.contains(iterated) == true
+            }
+
             // Token created by the effect's source permanent (CR 111). Source-relative: the
             // candidate's stamped CreatedByComponent.creatorId equals context.sourceId. Inert with
             // no source context or for tokens with no recorded creator.
@@ -1488,11 +1524,66 @@ class PredicateEvaluator {
             // Whether this creature has been declared as an attacker this turn — derived
             // from the controller's PlayerAttackersThisTurnComponent, the same set that
             // backs raid / "you attacked with N creatures this turn" tribal triggers.
+            //
+            // Controller comes from projection first: after an Act of Treason the base
+            // ControllerComponent names the player who no longer controls it, and the attacker set
+            // lives on the player who declared. AffectsFilterResolver reads it the same way.
             StatePredicate.AttackedThisTurn -> {
-                val controllerId = container.get<ControllerComponent>()?.playerId
+                val controllerId = projected.getController(entityId)
+                    ?: container.get<ControllerComponent>()?.playerId
                     ?: return false
                 val attackerSet = state.getEntity(controllerId)
                     ?.get<PlayerAttackersThisTurnComponent>()
+                    ?.attackerIds ?: emptySet()
+                entityId in attackerSet
+            }
+
+            // "Creatures that couldn't attack" (Season of the Witch). The clause spares a creature
+            // that had no say in staying home, so it asks a cut-down version of the declare-attackers
+            // checks. Two of the three come from CR 508.1a — who may be declared, and by whom:
+            //  - only the active player declares attackers, so a creature its controller couldn't
+            //    have attacked *with* — anything an opponent controls on this turn — is spared.
+            //    Asked through `isActiveTurnFor`, so a shared team turn (CR 805.10b) counts both
+            //    teammates' creatures as able to attack;
+            //  - summoning sickness (entered this turn without haste);
+            // and the third from CR 508.1c, the attack *restrictions*: defender (CR 702.3b) or a
+            // projected "can't attack" (Pacifism). All of them read from projection where they can,
+            // so granted/removed keywords count.
+            //
+            // The controller clause asks whose turn it is, which answers "was this player the one
+            // declaring?" but not "did a declaration happen at all". AttackersDeclaredThisTurn is
+            // the second half: an effect that skips the combat phase (False Peace, Fatespinner)
+            // means nobody reached a Declare Attackers Step, so no creature stayed home by choice.
+            //
+            // Not the full declare-attackers legality check — that needs a chosen defending player
+            // and a card registry, neither of which predicate evaluation has — so a creature kept
+            // home only by a "can't attack unless …" restriction is still destroyed, as is one that
+            // came under its controller's control this turn without entering the battlefield (the
+            // sickness half reads EnteredThisTurn, not the sickness marker itself).
+            StatePredicate.CouldNotHaveAttackedThisTurn -> {
+                val controllerId = projected.getController(entityId)
+                    ?: container.get<ControllerComponent>()?.playerId
+                controllerId == null ||
+                    !state.isActiveTurnFor(controllerId) ||
+                    state.getEntity(controllerId)
+                        ?.has<AttackersDeclaredThisTurnComponent>() != true ||
+                    projected.hasKeyword(entityId, Keyword.DEFENDER) ||
+                    projected.cantAttack(entityId) ||
+                    (
+                        container.has<EnteredThisTurnComponent>() &&
+                            !projected.hasKeyword(entityId, Keyword.HASTE)
+                        )
+            }
+
+            // The same read one turn back: PlayerAttackersLastTurnComponent is the this-turn set as
+            // it stood at the end of the controller's own most recent turn. Controller read as
+            // above, so the two attack-history predicates agree with each other and with projection.
+            StatePredicate.AttackedLastTurn -> {
+                val controllerId = projected.getController(entityId)
+                    ?: container.get<ControllerComponent>()?.playerId
+                    ?: return false
+                val attackerSet = state.getEntity(controllerId)
+                    ?.get<PlayerAttackersLastTurnComponent>()
                     ?.attackerIds ?: emptySet()
                 entityId in attackerSet
             }
@@ -1503,6 +1594,10 @@ class PredicateEvaluator {
             // removal-from-combat that clear the live AttackingComponent/BlockingComponent).
             StatePredicate.AttackedThisCombat -> {
                 container.has<AttackedThisCombatComponent>()
+            }
+
+            StatePredicate.BlockedThisTurn -> {
+                container.has<BlockedThisTurnComponent>()
             }
 
             StatePredicate.BlockedThisCombat -> {
@@ -1657,6 +1752,23 @@ class PredicateEvaluator {
                         ?: return false
                 )
                 matches(state, projected, attached.targetId, predicate.filter, ctx)
+            }
+
+            // "whose controller controls an Island" (Seasinger). The nested filter is scanned
+            // over the candidate's controller's battlefield, and its "you" is rebound to that
+            // controller — not to the ability's controller — because the clause describes the
+            // creature's own side of the table.
+            is StatePredicate.ControllerControls -> {
+                val ownerId = projected.getController(entityId)
+                    ?: container.get<ControllerComponent>()?.playerId
+                    ?: return false
+                val ctx = PredicateContext(
+                    controllerId = ownerId,
+                    sourceId = context?.sourceId,
+                )
+                state.getBattlefield().any { candidate ->
+                    matches(state, projected, candidate, predicate.filter, ctx)
+                }
             }
 
             // Source-relative — the candidate IS the effect's source permanent itself
@@ -2006,6 +2118,12 @@ data class PredicateContext(
      */
     val triggeringPlayerId: EntityId? = null,
     /**
+     * The entity an enclosing `ForEachInGroup` is currently iterating over. Lets a filter inside
+     * such a loop talk about *that* creature — Tidal Flats' "creatures you control blocking that
+     * creature" — where a source-relative predicate would read the enchantment instead.
+     */
+    val iterationEntityId: EntityId? = null,
+    /**
      * The entity a continuous effect is being applied to during projection (e.g. the creature an
      * Aura is enchanting). Lets filters resolve [EntityReference.AffectedEntity] — needed by
      * `AggregateBattlefield(filter = ...sharingCreatureTypeWith(AffectedEntity))` for Alpha Status.
@@ -2115,7 +2233,8 @@ data class PredicateContext(
                 targets = context.targets,
                 namedTargets = context.pipeline.namedTargets,
                 xValue = context.xValue,
-                chosenColor = context.chosenColor
+                chosenColor = context.chosenColor,
+                iterationEntityId = context.pipeline.iterationTarget
             )
         }
     }

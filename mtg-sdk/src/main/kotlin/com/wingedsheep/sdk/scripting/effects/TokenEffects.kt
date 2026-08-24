@@ -525,6 +525,14 @@ data class CreateTokenCopyOfTargetEffect(
      * shape); **new copy exceptions go here.**
      */
     val exceptions: CopyExceptions = CopyExceptions.None,
+    /**
+     * Stamp each created token with a `CreatedByComponent` naming the effect's source permanent, so
+     * `StatePredicate.CreatedBySource` / `GameObjectFilter.createdBySource()` can recognize *these*
+     * tokens later even when several sources mint same-named ones. The copy-token sibling of
+     * [CreateTokenEffect.stampCreator], and needed for the same reason: Dance of Many's "when this
+     * enchantment leaves the battlefield, exile the token" has to find the one token it made.
+     */
+    val stampCreator: Boolean = false,
 ) : Effect {
     /**
      * This effect's copy exceptions (CR 707.9) in the shared [CopyExceptions] vocabulary — the same

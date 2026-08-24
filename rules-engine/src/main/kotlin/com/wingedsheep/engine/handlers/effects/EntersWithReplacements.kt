@@ -132,7 +132,7 @@ object EntersWithReplacements {
         events.addAll(ownEvents)
 
         val (globalState, globalEvents) = applyGlobal(
-            newState, enteringEntityId, enteringControllerId
+            newState, enteringEntityId, enteringControllerId, cardRegistry
         )
         newState = globalState
         events.addAll(globalEvents)
@@ -166,6 +166,11 @@ object EntersWithReplacements {
         val replacementEffects = cardDef.script.replacementEffects + listOfNotNull(vanishingEntry)
 
         for (effect in replacementEffects) {
+            // A replacement effect that functions only from another zone (Dearly Departed's
+            // graveyard-scoped grant, CR 113.6) is not live as its own card enters the battlefield —
+            // entering *is* leaving the zone it works from. Guarded here as well as in the
+            // [applyGlobal] sweeps so no entry path can fire it against the source itself.
+            if (Zone.BATTLEFIELD !in effect.activeZones) continue
             when (effect) {
                 is EntersWithCounters -> {
                     // Skip "other only" effects when applying to self (Metallic Mimic's "each other
@@ -263,29 +268,70 @@ object EntersWithReplacements {
     }
 
     /**
-     * Scan battlefield permanents for enters-with replacement effects that apply to the
-     * entering entity, and apply them (counters added / keywords granted).
+     * Scan every source of enters-with replacement effects that apply to the entering entity and
+     * apply them (counters added / keywords granted).
+     *
+     * Two sweeps, split by [com.wingedsheep.sdk.scripting.ReplacementEffect.activeZones]:
+     *
+     * - the **battlefield**, for the ordinary `{BATTLEFIELD}` case (Gev, Scaled Scorch granting
+     *   +1/+1 counters to creatures you control that enter), and
+     * - **every player's graveyard**, for the `{GRAVEYARD}` case — a card whose printed line says
+     *   "As long as this creature is in your graveyard, …" (Dearly Departed, CR 113.6). Graveyard
+     *   cards carry no [ReplacementEffectSourceComponent] (that component is stamped only at
+     *   battlefield-entry sites), so this sweep reads the definition out of [cardRegistry] instead.
+     *   The sweep is naturally cumulative: two Dearly Departeds in one graveyard are two sources
+     *   and hand out two counters, which is the printed ruling.
+     *
+     * The `activeZones` filter runs on *both* sweeps, so declaring `{GRAVEYARD}` also switches the
+     * effect off on the battlefield.
      *
      * @param state The game state after the entering entity has been added to the battlefield.
      * @param enteringEntityId The entity that just entered the battlefield.
      * @param enteringControllerId The controller of the entering entity.
+     * @param cardRegistry Needed only for the graveyard sweep — a graveyard card's effects live on
+     *   its [CardDefinition], not on a component. Callers that have no registry (the token
+     *   executors, which cannot resolve a token's own definition either) skip that sweep; the
+     *   battlefield sweep is unaffected.
      */
     fun applyGlobal(
         state: GameState,
         enteringEntityId: EntityId,
         enteringControllerId: EntityId,
+        cardRegistry: CardRegistry? = null,
     ): Pair<GameState, List<GameEvent>> {
         var newState = state
         val events = mutableListOf<GameEvent>()
         val entityName = newState.getEntity(enteringEntityId)?.get<CardComponent>()?.name ?: ""
 
+        val sources = mutableListOf<GlobalReplacementSource>()
         for (sourceId in newState.getBattlefield()) {
             if (sourceId == enteringEntityId) continue
             val container = newState.getEntity(sourceId) ?: continue
             val replacementComponent = container.get<ReplacementEffectSourceComponent>() ?: continue
             val sourceControllerId = container.get<ControllerComponent>()?.playerId ?: continue
+            val effects = replacementComponent.replacementEffects
+                .filter { Zone.BATTLEFIELD in it.activeZones }
+            if (effects.isEmpty()) continue
+            sources.add(GlobalReplacementSource(sourceId, sourceControllerId, effects))
+        }
+        if (cardRegistry != null) {
+            for (playerId in newState.turnOrder) {
+                for (sourceId in newState.getGraveyard(playerId)) {
+                    if (sourceId == enteringEntityId) continue
+                    val cardComponent = newState.getEntity(sourceId)?.get<CardComponent>() ?: continue
+                    val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
+                    val effects = cardDef.script.replacementEffects
+                        .filter { Zone.GRAVEYARD in it.activeZones }
+                    if (effects.isEmpty()) continue
+                    // A card outside the battlefield has no controller — "you control" on a
+                    // graveyard-scoped effect means the graveyard's owner (CR 108.3).
+                    sources.add(GlobalReplacementSource(sourceId, playerId, effects))
+                }
+            }
+        }
 
-            for (effect in replacementComponent.replacementEffects) {
+        for ((sourceId, sourceControllerId, effects) in sources) {
+            for (effect in effects) {
                 when (effect) {
                     is EntersWithCounters -> {
                         if (effect.selfOnly) continue
@@ -379,6 +425,20 @@ object EntersWithReplacements {
         }
         return newState to events
     }
+
+    /**
+     * One source of global enters-with replacement effects, already resolved to (source entity,
+     * the player its "you" resolves to, the effects live in that source's zone).
+     *
+     * The indirection is what lets the battlefield sweep and the graveyard sweep share a single
+     * application loop: the two differ only in where the effects come from (a component vs. the
+     * card definition) and in how "you" is derived (controller vs. owner).
+     */
+    private data class GlobalReplacementSource(
+        val sourceId: EntityId,
+        val sourceControllerId: EntityId,
+        val effects: List<com.wingedsheep.sdk.scripting.ReplacementEffect>,
+    )
 
     /**
      * Grant [effect]'s keywords to [enteringEntityId] as permanent floating effects. The grant

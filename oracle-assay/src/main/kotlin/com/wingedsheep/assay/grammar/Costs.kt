@@ -161,23 +161,22 @@ object Costs {
             }
 
         /**
-         * "Discard a card" — the single commonest non-mana cost in the corpus, and the one shape
-         * where the noun is not a filter at all.
+         * "Discard a card", "Discard a creature card" — the single commonest non-mana cost in the
+         * corpus, over one noun phrase.
          *
-         * `GameObjectFilter.Any` is what an unqualified "card" means, and [Filters] deliberately has
-         * no noun for it — "card" is not a permanent type. So this is a constant rather than the
-         * `Any` case of the filtered rule below, which is also what keeps the two disjoint: the
-         * filtered rule cannot print `Any` because [Filters.indefinite] cannot.
+         * The unqualified form used to be a `constant` beside this rule, because [Filters] had no
+         * noun for `GameObjectFilter.Any` — and `Costs.DiscardCard` is *definitionally*
+         * `Discard(Any, 1)`, so the two rules printed one model the moment either could reach it.
+         * The bare word is now the `Any` row of [Filters.indefiniteCard], which is where it belongs:
+         * one printed form per model, and the qualified form gains every suffix the noun phrase can
+         * carry.
          */
-        val discardCard = constant("${lead("discard")} a card", atomOf(SdkCosts.DiscardCard))
-
-        /** "Discard a creature card" — Vampire Hounds. The noun a graveyard-facing filter spells. */
-        val discardFiltered = phrase("${lead("discard")} {filter} card", name = "discard a card of a kind") {
-            slot("filter", Filters.indefinite)
+        val discardFiltered = phrase("${lead("discard")} {filter}", name = "discard a card of a kind") {
+            slot("filter", Filters.indefiniteCard)
             build { atomOf(SdkCosts.Discard(it.value("filter"))) }
             match { atom ->
                 val discard = atom as? CostAtom.Discard ?: return@match null
-                if (discard.count != 1 || discard.filter == GameObjectFilter.Any) return@match null
+                if (discard.count != 1) return@match null
                 if (atom != atomOf(SdkCosts.Discard(discard.filter))) return@match null
                 bind("filter" to discard.filter)
             }
@@ -225,37 +224,30 @@ object Costs {
          * prints one.
          */
         val exileFromGraveyard =
-            phrase("${lead("exile")} {filter} card from your graveyard", name = "exile a card from your graveyard") {
-                slot("filter", Filters.indefinite)
+            phrase("${lead("exile")} {filter} from your graveyard", name = "exile a card from your graveyard") {
+                slot("filter", Filters.indefiniteCard)
                 build { atomOf(SdkCosts.ExileFromGraveyard(1, it.value("filter"))) }
                 match { atom ->
                     val exile = atom as? CostAtom.ExileFrom ?: return@match null
-                    if (exile.count != 1 || exile.filter == GameObjectFilter.Any) return@match null
+                    if (exile.count != 1) return@match null
                     if (atom != atomOf(SdkCosts.ExileFromGraveyard(1, exile.filter))) return@match null
                     bind("filter" to exile.filter)
                 }
             }
 
-        /** "Exile a card from your graveyard" — the unqualified noun, for [discardCard]'s reason. */
-        val exileAnyFromGraveyard = constant(
-            "${lead("exile")} a card from your graveyard",
-            atomOf(SdkCosts.ExileFromGraveyard(1)),
-        )
-
         /**
          * "Exile two creature cards from your graveyard" — the counted form.
          *
-         * The filter slot is the **singular** noun phrase even though the count is two, because
-         * Oracle pluralizes the head noun and leaves the qualifier alone: it is "two *creature*
-         * cards", not "two creatures cards". [Filters.plural] belongs where the noun phrase is the
-         * head; here "cards" is, and the filter is an adjective in front of it.
+         * The filter slot is the plural *card* noun, which inflects only its head: it is "two
+         * *creature* cards", not "two creatures cards". [Filters.plural] belongs where the noun
+         * phrase is the head; here "cards" is, and [Filters.pluralCards] owns the word.
          */
         val exileSeveralFromGraveyard = phrase(
-            "${lead("exile")} {n} {filter} cards from your graveyard",
+            "${lead("exile")} {n} {filter} from your graveyard",
             name = "exile several cards from your graveyard",
         ) {
             slot("n", Cardinals.word)
-            slot("filter", Filters.filter)
+            slot("filter", Filters.pluralCards)
             build { atomOf(SdkCosts.ExileFromGraveyard(it.int("n"), it.value("filter"))) }
             match { atom ->
                 val exile = atom as? CostAtom.ExileFrom ?: return@match null
@@ -384,11 +376,34 @@ object Costs {
             }
         }
 
-        /** "Remove X storage counters from ~" — Calciform Pools. The count is the ability's X. */
+        /**
+         * "Remove X charge counters from ~" — Calciform Pools. The count is the ability's X.
+         *
+         * ### Two printed forms, one cost value — a finding, and why it is an [alsoSpelled]
+         *
+         * "Remove **any number of** charge counters from ~" (the mana batteries, the storage lands,
+         * Geistflame Reservoir) is the *same* `CostAtom.RemoveCounters(count = XValue, self = true)`
+         * as "Remove **X** …": both are CR 601.2b counts announced by the payer as the ability is
+         * activated, and the SDK has one value for them. What differs is only how the rest of the
+         * ability refers back to the number — "Add X mana …" against "…for each charge counter
+         * removed this way" — and that is a property of the *effect*, which is a different slot of
+         * the script.
+         *
+         * So this is one rule with two surfaces rather than two rules: registering a sibling would
+         * be a second printer for one model, which invariant 2 forbids and the ambiguity gate
+         * catches. "Remove X" stays canonical because it is the majority and because it is the form
+         * whose payoff sentence the grammar can already read; the batteries' spelling parses and is
+         * reported as a normalized alternate, which is the honest verdict for a form the model
+         * cannot distinguish.
+         */
         val removeXCountersFromSelf = phrase(
             "${lead("remove")} X {kind} counters from ${Normalizer.SELF}",
             name = "remove X counters from this permanent",
         ) {
+            alsoSpelled(
+                "${lead("remove")} any number of {kind} counters from ${Normalizer.SELF}",
+                name = "remove a chosen number of counters from this permanent",
+            )
             slot("kind", Primitives.counterKind)
             build { atomOf(SdkCosts.RemoveXCounters(counterType = it.text("kind"), self = true)) }
             match { atom ->
@@ -413,17 +428,16 @@ object Costs {
 
         return oneOf(
             "a cost atom",
+            *VariableCosts.rows(lead).toTypedArray(),
             sacrificeFiltered,
             sacrificeAnother,
             sacrificeSeveral,
-            discardCard,
             discardFiltered,
             discardSeveral,
             discardAtRandom,
             millCard,
             millSeveral,
             exileFromGraveyard,
-            exileAnyFromGraveyard,
             exileSeveralFromGraveyard,
             tapPermanent,
             tapAnotherPermanent,

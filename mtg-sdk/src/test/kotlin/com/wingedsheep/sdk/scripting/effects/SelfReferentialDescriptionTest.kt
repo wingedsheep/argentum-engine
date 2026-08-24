@@ -49,6 +49,20 @@ class SelfReferentialDescriptionTest : FunSpec({
             "Exile this creature, then return it to the battlefield transformed"
     }
 
+    test("a self-sacrifice adapts its noun instead of calling a land a creature") {
+        // Safe Haven is a Land whose upkeep trigger sacrifices itself. `EffectTarget.Self`'s own
+        // description is the legacy "this creature", so the generated prompt read "you may
+        // sacrifice this creature" on a land.
+        val effect = SacrificeTargetEffect(EffectTarget.Self)
+        effect.descriptionTemplate shouldBe "sacrifice $SELF_NOUN_TOKEN"
+        effect.description shouldBe "sacrifice this permanent"
+        resolveSelfNoun(effect.descriptionTemplate, "this land") shouldBe "sacrifice this land"
+    }
+
+    test("sacrificing a chosen target keeps that target's own wording") {
+        SacrificeTargetEffect(EffectTarget.ContextTarget(0)).description shouldNotContain SELF_NOUN_TOKEN
+    }
+
     test("serialization round-trips the effect; description recomputes (template is not serialized)") {
         val original: Effect = TransformEffect(EffectTarget.Self)
         val json = CardSerialization.json

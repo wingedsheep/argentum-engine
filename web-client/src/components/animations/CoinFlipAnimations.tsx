@@ -64,11 +64,33 @@ function CoinFlipAnimationCard({
   }
 
   const won = animation.won
-  const glowColor = won ? 'rgba(34, 197, 94, 0.5)' : 'rgba(239, 68, 68, 0.5)'
-  const borderColor = won ? '#22c55e' : '#ef4444'
-  const bgColor = won ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)'
-  const textColor = won ? '#4ade80' : '#f87171'
-  const resultText = won ? 'WON' : 'LOST'
+  const ignored = animation.ignored === true
+
+  // An ignored coin is shown greyed out: it was really flipped, but nothing read its result, so it
+  // must not read as a win or a loss the player actually got.
+  const glowColor = ignored
+    ? 'rgba(148, 163, 184, 0.35)'
+    : won
+      ? 'rgba(34, 197, 94, 0.5)'
+      : 'rgba(239, 68, 68, 0.5)'
+  const borderColor = ignored ? '#64748b' : won ? '#22c55e' : '#ef4444'
+  const bgColor = ignored
+    ? 'rgba(100, 116, 139, 0.12)'
+    : won
+      ? 'rgba(34, 197, 94, 0.15)'
+      : 'rgba(239, 68, 68, 0.15)'
+  const textColor = ignored ? '#94a3b8' : won ? '#4ade80' : '#f87171'
+  const resultText = ignored ? (won ? 'HEADS' : 'TAILS') : won ? 'WON' : 'LOST'
+  const label = ignored
+    ? `${animation.sourceName} — Ignored`
+    : `${animation.sourceName} — Coin flip ${won ? 'won' : 'lost'}`
+
+  // Fan a simultaneous batch out horizontally so two coins from one Krark's Thumb flip do not land
+  // on top of each other. A lone coin keeps the centred position it has always had.
+  const laneCount = animation.laneCount ?? 1
+  const laneIndex = animation.laneIndex ?? 0
+  const laneSpacing = 170
+  const laneOffset = (laneIndex - (laneCount - 1) / 2) * laneSpacing
 
   return (
     <div
@@ -76,8 +98,8 @@ function CoinFlipAnimationCard({
         position: 'fixed',
         left: '50%',
         top: '50%',
-        transform: `translate(-50%, -50%) scale(${scale})`,
-        opacity,
+        transform: `translate(calc(-50% + ${laneOffset}px), -50%) scale(${scale})`,
+        opacity: ignored ? opacity * 0.75 : opacity,
         zIndex: 10002,
         pointerEvents: 'none',
         display: 'flex',
@@ -114,7 +136,7 @@ function CoinFlipAnimationCard({
         <span
           style={{
             color: textColor,
-            fontSize: 28,
+            fontSize: ignored ? 22 : 28,
             fontWeight: 800,
             fontFamily: 'Impact, sans-serif',
             letterSpacing: 2,
@@ -138,7 +160,7 @@ function CoinFlipAnimationCard({
           boxShadow: '0 2px 8px rgba(0, 0, 0, 0.5)',
         }}
       >
-        {animation.sourceName} — Coin flip {won ? 'won' : 'lost'}
+        {label}
       </div>
     </div>
   )

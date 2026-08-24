@@ -635,8 +635,11 @@ class GamePlayHandler(
     fun handleGameOver(gameSession: GameSession, reason: GameOverReason? = null, events: List<GameEvent> = emptyList()) {
         val winnerId = gameSession.getWinnerId()
         val gameOverReason = reason ?: gameSession.getGameOverReason() ?: GameOverReason.LIFE_ZERO
-        // Extract custom message from PlayerLostEvent if present
-        val customMessage = events.filterIsInstance<PlayerLostEvent>().firstOrNull()?.message
+        // Extract custom message from PlayerLostEvent if present. A game the server abandoned for
+        // lack of progress explains itself first — its stock reason is a bare "Draw", which reads
+        // like a rules outcome the players brought about rather than a loop nobody could break.
+        val customMessage = gameSession.stallMessage()
+            ?: events.filterIsInstance<PlayerLostEvent>().firstOrNull()?.message
         val message = ServerMessage.GameOver(winnerId, gameOverReason, customMessage, gameSession.sessionId)
 
         gameSession.getPlayers().forEach { sender.send(it.webSocketSession, message) }
@@ -719,6 +722,7 @@ class GamePlayHandler(
                 engineVersion = engineVersion.value,
                 pinnedCards = gameSession.getPinnedCards(),
                 checkpoints = gameSession.getReplayCheckpoints(),
+                truncated = gameSession.isReplayTruncated(),
             )
             // AI-only games (e.g. the LLM tournament) are stored — that page links straight at their
             // replays — but skip the archived frame stream, which is orders of magnitude larger than
@@ -1296,8 +1300,28 @@ class GamePlayHandler(
                         if (recovered) break
                     }
                     if (!recovered) {
-                        // Last resort: broadcast current state so the AI gets another chance.
-                        broadcastStateUpdate(gameSession, emptyList())
+                        // Last resort: broadcast current state so the AI gets another chance. That
+                        // is a loop with nothing bounding it — the AI is handed the same state, so
+                        // it re-chooses the same rejected action, and nothing was applied for the
+                        // stall guard to notice — so the seat gets a bounded number of chances and
+                        // is then conceded. See [GameStallGuard.onActionRejected].
+                        if (gameSession.noteActionRejected(aiPlayerId)) {
+                            logger.error(
+                                "AI seat {} has had {} actions in a row rejected with no legal " +
+                                    "fallback in game {} — conceding the seat rather than " +
+                                    "re-broadcasting forever",
+                                aiPlayerId.value,
+                                com.wingedsheep.gameserver.session.GameStallGuard.MAX_CONSECUTIVE_REJECTIONS,
+                                gameSession.sessionId,
+                            )
+                            gameSession.playerConcedes(aiPlayerId)
+                            broadcastStateUpdate(gameSession, emptyList())
+                            if (gameSession.isGameOver()) {
+                                handleGameOver(gameSession, GameOverReason.CONCESSION)
+                            }
+                        } else {
+                            broadcastStateUpdate(gameSession, emptyList())
+                        }
                     }
                 }
             }

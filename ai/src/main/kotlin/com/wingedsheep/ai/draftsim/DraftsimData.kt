@@ -46,6 +46,17 @@ data class DraftsimSetTables(
  *
  * Ported pieces: `gt` (nameKey), the removal resolver `j$`/`WU` (lowercase + split-card alias +
  * `_overrides.json` merge), and the ratings/archetype loaders (`oA`/`iA`).
+ *
+ * **Provenance.** Most tables are vendored from the Draftsim bundle, but not all of them are:
+ * Draftsim's simulator never covered the pre-2004 sets or original Dominaria, so `ATQ`, `SCG`,
+ * `LGN`, `POR`, `DOM`, `MRD`, `ONS` and `INV` are **first-party**, hand-curated on the same 0–5
+ * scale — a card already rated in some other set's vendored table carries that value, and the rest
+ * were rated for their own limited environment against the vendored sets' distributions (median
+ * ≈2.2–2.6, bombs ≥3.9, unplayables ≈0.7–1.0), because the scorer's cutoffs (`QJ = 2`,
+ * `BOMB = 3.9`) are absolute rather than per-set. `BIG` is an extension set whose 30 cards are
+ * copied from `OTJ.json`, where the bundle already rated them. Their format is identical and
+ * nothing reads the difference; the distinction matters only when judging how much to trust a
+ * number, and when refreshing from upstream — a data refresh must not clobber them.
  */
 object DraftsimData {
 

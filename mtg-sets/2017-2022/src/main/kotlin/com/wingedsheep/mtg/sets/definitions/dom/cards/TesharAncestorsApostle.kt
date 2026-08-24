@@ -38,10 +38,9 @@ val TesharAncestorsApostle = card("Teshar, Ancestor's Apostle") {
                 zone = Zone.GRAVEYARD
             )
         ))
-        effect = Effects.Move(
-            target = t,
-            destination = Zone.BATTLEFIELD
-        )
+        // The graveyard guard: the move is skipped if the card has left the graveyard by the time
+        // this resolves. The target requirement's own `zone` decides legality on announcement only.
+        effect = Effects.PutOntoBattlefieldFromGraveyard(t)
     }
 
     metadata {

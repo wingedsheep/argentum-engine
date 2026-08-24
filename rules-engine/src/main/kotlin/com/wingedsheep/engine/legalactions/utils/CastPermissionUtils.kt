@@ -729,6 +729,52 @@ class CastPermissionUtils(
     }
 
     /**
+     * The value of an ability's `{X}` when its own text defines it (CR 107.3c) — Soul Foundry's
+     * "X is the mana value of that card." — or null when X is the controller's choice (CR 107.3a),
+     * which is every other ability.
+     *
+     * Evaluated against the source permanent, so a [DynamicAmount] that reads the source's
+     * linked-exile pile, its counters, or the board resolves the way it would inside the ability's
+     * effect. A negative amount is clamped to 0: `{X}` can never be a refund.
+     */
+    fun definedXValue(
+        state: GameState,
+        ability: ActivatedAbility,
+        sourceId: EntityId?,
+        controllerId: EntityId
+    ): Int? {
+        val amount = ability.xDefinedAs ?: return null
+        val context = EffectContext(sourceId = sourceId, controllerId = controllerId)
+        return DynamicAmountEvaluator().evaluate(state, amount, context).coerceAtLeast(0)
+    }
+
+    /**
+     * Substitute an ability's *defined* X (CR 107.3c) into the `{X}` symbols of its [cost], turning
+     * `{X}, {T}` into `{3}, {T}` for an imprinted three-drop.
+     *
+     * This is the first step of the shared effective-cost pipeline — before the generic reductions,
+     * the equip discounts and the colour relaxation — for two reasons. It has to run before them so
+     * a reduction or a tax applies to the *resolved* total the way CR 601.2f expects (CR 602.2b
+     * routes an activation cost through that same total-cost step), and it has to
+     * run before anything reads the cost so that the X-choice pause, the affordability check and
+     * the payment all see an ordinary fixed cost. That is what keeps a defined X out of the ~70
+     * `CostAtom.Mana` read sites: none of them ever meets one.
+     *
+     * A cost with no mana component is returned unchanged — there are no `{X}` symbols to define,
+     * and unlike a tax ([applyActivatedAbilityCostReduction]) a definition has nothing to add.
+     */
+    fun applyDefinedXValue(
+        cost: AbilityCost,
+        ability: ActivatedAbility,
+        state: GameState,
+        sourceId: EntityId?,
+        controllerId: EntityId
+    ): AbilityCost {
+        val x = definedXValue(state, ability, sourceId, controllerId) ?: return cost
+        return mapFirstManaComponent(cost) { it.withXAs(x) } ?: cost
+    }
+
+    /**
      * Reduce the generic portion of an activated ability's [cost] by any [ReduceActivatedAbilityCost]
      * static on the battlefield whose [filter] matches the ability's source ([sourceId]) — e.g.
      * Power Artifact reducing the enchanted artifact's activated abilities by {2} (floored so the
@@ -1418,13 +1464,18 @@ class CastPermissionUtils(
     }
 
     /**
-     * True when a [com.wingedsheep.sdk.scripting.SpendAnyManaTypeForActivatedAbilities] static on
-     * the battlefield applies to [sourceId] — i.e. mana of any type may be spent to pay the mana
-     * portion of [sourceId]'s activated-ability costs (Sharkey, Tyrant of the Shire). Callers
-     * relax the colored/colorless requirements of the ability's mana cost via
-     * [com.wingedsheep.sdk.core.ManaCost.relaxColors] when this returns true (CR 118.14 / 609.4b).
+     * Every [com.wingedsheep.sdk.scripting.SpendAnyManaTypeForActivatedAbilities] static on the
+     * battlefield that applies to [sourceId] — i.e. that relaxes the mana portion of [sourceId]'s
+     * activated-ability costs (CR 118.14 / 609.4b). The list, rather than a boolean, because the
+     * static has two strengths: `substituteColor == null` is Sharkey's "mana of any type can be
+     * spent", and a color is Quicksilver Elemental's narrower "you may spend blue mana as though it
+     * were mana of any color". [relaxAbilityCostColorsIfAny] picks the strongest that applies.
      */
-    fun canSpendAnyManaTypeForAbilities(state: GameState, sourceId: EntityId): Boolean {
+    fun spendRelaxationsForAbilities(
+        state: GameState,
+        sourceId: EntityId
+    ): List<com.wingedsheep.sdk.scripting.SpendAnyManaTypeForActivatedAbilities> {
+        val result = mutableListOf<com.wingedsheep.sdk.scripting.SpendAnyManaTypeForActivatedAbilities>()
         val projected = state.projectedState
         for (granterId in state.getBattlefield()) {
             val granter = state.getEntity(granterId) ?: continue
@@ -1450,32 +1501,73 @@ class CastPermissionUtils(
                         )
                     }
                 }
-                if (applies) return true
+                if (applies) result.add(any)
             }
         }
-        return false
+        return result
     }
 
     /**
      * If [sourceId] is under a [com.wingedsheep.sdk.scripting.SpendAnyManaTypeForActivatedAbilities]
-     * static, return [cost] with the colored/hybrid/Phyrexian/colorless requirements of its mana
-     * portion relaxed to generic ("mana of any type"); otherwise return [cost] unchanged. Non-mana
-     * cost components (tap, sacrifice, …) are left intact.
+     * static, return [cost] with the mana portion relaxed accordingly; otherwise return [cost]
+     * unchanged. Non-mana cost components (tap, sacrifice, …) are left intact.
+     *
+     * When several statics apply, the strongest wins: one "mana of any type" static relaxes
+     * everything to generic ([com.wingedsheep.sdk.core.ManaCost.relaxColors]) and there is nothing a
+     * single-color substitution could add on top. Otherwise each substitute color is applied in turn
+     * ([com.wingedsheep.sdk.core.ManaCost.relaxColorsTo]), which composes correctly because each
+     * pass only widens colored pips into hybrids.
      */
+    /**
+     * Lower [AbilityCost.AttachedPermanentManaCost] to a concrete mana cost read off the permanent
+     * the source is attached to (Merseine's "Pay enchanted creature's mana cost"), so every path
+     * that prices, displays or pays the cost sees a plain [CostAtom.Mana]. Mirrors
+     * `CostPaymentService.resolve`'s treatment of `PayCost.OwnManaCost`.
+     *
+     * An unattached source — or one attached to a permanent with no mana cost, such as a land —
+     * lowers to an empty cost, which is {0} and trivially payable.
+     */
+    fun lowerAttachedManaCost(
+        state: GameState,
+        sourceId: EntityId,
+        cost: AbilityCost
+    ): AbilityCost {
+        fun lower(c: AbilityCost): AbilityCost = when (c) {
+            is AbilityCost.AttachedPermanentManaCost -> {
+                val attachedTo = state.getEntity(sourceId)
+                    ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                    ?.targetId
+                val manaCost = attachedTo
+                    ?.let { state.getEntity(it)?.get<CardComponent>()?.manaCost }
+                    ?: com.wingedsheep.sdk.core.ManaCost(emptyList())
+                AbilityCost.Atom(CostAtom.Mana(manaCost))
+            }
+            is AbilityCost.Composite -> AbilityCost.Composite(c.costs.map { lower(it) })
+            else -> c
+        }
+        return lower(cost)
+    }
+
     fun relaxAbilityCostColorsIfAny(
         state: GameState,
         sourceId: EntityId,
         cost: AbilityCost
     ): AbilityCost {
-        if (!canSpendAnyManaTypeForAbilities(state, sourceId)) return cost
+        val relaxations = spendRelaxationsForAbilities(state, sourceId)
+        if (relaxations.isEmpty()) return cost
+        val anyType = relaxations.any { it.substituteColor == null }
+        val substitutes = relaxations.mapNotNull { it.substituteColor }.distinct()
+        fun relax(mana: com.wingedsheep.sdk.core.ManaCost): com.wingedsheep.sdk.core.ManaCost =
+            if (anyType) mana.relaxColors()
+            else substitutes.fold(mana) { acc, color -> acc.relaxColorsTo(color) }
         return when (cost) {
             is AbilityCost.Atom -> {
                 val mana = cost.manaCostOrNull ?: return cost
-                AbilityCost.Atom(CostAtom.Mana(mana.relaxColors()))
+                AbilityCost.Atom(CostAtom.Mana(relax(mana)))
             }
             is AbilityCost.Composite -> AbilityCost.Composite(cost.costs.map { sub ->
                 val mana = sub.manaCostOrNull
-                if (mana != null) AbilityCost.Atom(CostAtom.Mana(mana.relaxColors())) else sub
+                if (mana != null) AbilityCost.Atom(CostAtom.Mana(relax(mana))) else sub
             })
             else -> cost
         }

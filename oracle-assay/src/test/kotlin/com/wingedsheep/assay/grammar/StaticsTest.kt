@@ -3,7 +3,6 @@ package com.wingedsheep.assay.grammar
 import com.wingedsheep.assay.syntax.ParseOutcome
 import com.wingedsheep.assay.syntax.parseLine
 import com.wingedsheep.assay.syntax.printLine
-import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CardScript
@@ -132,25 +131,15 @@ class StaticsTest : StringSpec({
             .shouldBeInstanceOf<ParseOutcome.Declined>()
     }
 
-    // The second static family: what a creature may and may not do in combat. The blocker filter is
-    // the whole of Filters slotted in, so the three sentences below are one shape and a filter list.
-    "the combat restrictions are the source's own statics" {
+    // The second static family: what a permanent may and may not do in combat. It is a *product* of a
+    // subject and a restriction and it reaches the durational slot too, so it has a test file of its
+    // own — see [CombatRestrictionsTest]. What stays here is the one sentence that is not part of
+    // that product, because its variable part is a condition rather than a blocker.
+    "the attack restriction reads its land type through the filter cascade" {
         fragment("~ can't block.") shouldBe
             CardFragment(script = CardScript(staticAbilities = listOf(CantBlock())))
-        roundTrips("~ can't block.")
-        roundTrips("~ can't be blocked by creatures with power 2 or greater.")
-        roundTrips("~ can't be blocked by black and/or red creatures.")
-        roundTrips("~ can block only creatures with flying.")
-        roundTrips("~ can't be blocked by more than one creature.")
         roundTrips("~ can't attack unless defending player controls an Island.")
-    }
-
-    // "Can't be blocked" with no filter at all is an `AbilityFlag` rather than a static — two SDK
-    // places for one kind of thing, which is why the fragment holds both and the differential can
-    // see the difference.
-    "the unfiltered form is a flag, not a static" {
-        fragment("~ can't be blocked.") shouldBe CardFragment(flags = setOf(AbilityFlag.CANT_BE_BLOCKED))
-        roundTrips("~ can't be blocked.")
+        roundTrips("~ can't attack unless defending player controls a Swamp.")
     }
 
     // Threshold's condition, and the shape the hand-size comparison became when it got a second
@@ -178,10 +167,6 @@ class StaticsTest : StringSpec({
             "Enchanted creature gets +1/+2.",
             "Enchanted creature has flying.",
             "Enchanted creature gets +2/+2 and has flying.",
-            "~ can't block.",
-            "~ can't be blocked by creatures with power 2 or greater.",
-            "~ can block only creatures with flying.",
-            "~ can't be blocked by more than one creature.",
             "~ can't attack unless defending player controls an Island.",
         )
         lines.forEach { line -> Grammar.abilityLine.printLine(fragment(line)) shouldBe line }

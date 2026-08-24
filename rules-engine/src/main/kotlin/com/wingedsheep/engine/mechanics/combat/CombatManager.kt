@@ -6,6 +6,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.combat.*
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.effects.ManaExpiry
 import com.wingedsheep.engine.mechanics.combat.rules.AttackDefenderRule
 import com.wingedsheep.engine.mechanics.combat.rules.AttackRestrictionRule
@@ -145,6 +146,23 @@ class CombatManager(
                     .without<AttackedThisCombatComponent>()
                     .without<BlockedThisCombatComponent>()
             }
+        }
+
+        // Expire "until end of combat" effects (CR 511.2: they expire at the end of the combat
+        // phase, which per CR 511.3 is once the end of combat step has ended — i.e. here, the same
+        // point creatures leave combat). Nothing swept these before: `CleanupPhaseManager` dropped
+        // them at end of turn with a "should already be removed" note, and no step ever removed
+        // them, so a Murk Dwellers "+2/+0 until end of combat" stayed on through the postcombat
+        // main phase. The counter-placement modifiers keep the same lifetime as the floating
+        // effects, so both are swept together and the cleanup pass stays a safety net.
+        val survivingFloating = newState.floatingEffects.filter { it.duration !is Duration.EndOfCombat }
+        if (survivingFloating.size != newState.floatingEffects.size) {
+            newState = newState.copy(floatingEffects = survivingFloating)
+        }
+        val survivingCounterModifiers = newState.activeCounterPlacementModifiers
+            .filter { it.duration !is Duration.EndOfCombat }
+        if (survivingCounterModifiers.size != newState.activeCounterPlacementModifiers.size) {
+            newState = newState.copy(activeCounterPlacementModifiers = survivingCounterModifiers)
         }
 
         // Discard combat-duration mana (firebending, CR 702.189): "Any of this mana you still

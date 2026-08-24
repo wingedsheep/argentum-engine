@@ -476,12 +476,32 @@ object Triggers {
      * When this creature blocks or becomes blocked by a creature matching the filter.
      * TriggerContext.triggeringEntityId = the combat partner.
      * Sole consumer of [BlocksOrBecomesBlockedByEvent].
+     *
+     * Fires **once per matching partner** by default, which is what the singular printed wording
+     * ("blocks or becomes blocked by *a* creature", Corrosive Ooze) asks for. Set [oncePerCombat]
+     * for the "by **one or more** Orcs" wording (Dwarven Soldier), which is a single trigger
+     * however many partners match — the same distinction [BlocksOrBecomesBlocked] draws for the
+     * partner-less wording, but with a filter.
      */
     fun BlocksOrBecomesBlockedBy(
         filter: GameObjectFilter,
+        binding: TriggerBinding = TriggerBinding.SELF,
+        oncePerCombat: Boolean = false
+    ): TriggerSpec = TriggerSpec(
+        event = BlocksOrBecomesBlockedByEvent(partnerFilter = filter, oncePerCombat = oncePerCombat),
+        binding = binding
+    )
+
+    /**
+     * When this creature blocks or becomes blocked — the partner-less printed wording, which is a
+     * *single* trigger however many creatures it ends up paired with (Spitting Slug), unlike
+     * [BlocksOrBecomesBlockedBy] which fires once per matching partner.
+     * TriggerContext.triggeringEntityId = the first combat partner.
+     */
+    fun BlocksOrBecomesBlocked(
         binding: TriggerBinding = TriggerBinding.SELF
     ): TriggerSpec = TriggerSpec(
-        event = BlocksOrBecomesBlockedByEvent(partnerFilter = filter),
+        event = BlocksOrBecomesBlockedByEvent(oncePerCombat = true),
         binding = binding
     )
 
@@ -866,17 +886,31 @@ object Triggers {
     /**
      * Whenever one or more cards matching [filter] are put into exile from [fromZones].
      * Batching trigger — fires at most once per event batch regardless of how many cards were
-     * exiled or which of the watched zones each came from, and it is *not* scoped to one player's
-     * zones ("graveyards", plural, and anyone's battlefield permanents).
+     * exiled or which of the watched zones each came from. Unfiltered it is *not* scoped to one
+     * player's zones ("graveyards", plural, and anyone's battlefield permanents); give [filter] a
+     * controller predicate to narrow it ("creatures **you control** and/or creature cards in
+     * **your** graveyard" — Kaya, Spirits' Justice).
+     *
+     * The matching objects reach the payoff as the ability's captured collection
+     * ([com.wingedsheep.sdk.scripting.effects.IterationSpace.TRIGGER_CAPTURED_COLLECTION]), which is
+     * what "from among them" refers to.
+     *
+     * Pass [includeTokens] for a wording whose battlefield noun is *permanents* rather than *cards*
+     * — see [CardsPutIntoExileEvent.includeTokens].
      *
      * Pair with `triggerRestriction = Conditions.IsYourTurn` for the common "during your turn"
      * wording (Ketramose, the New Dawn).
      */
     fun CardsPutIntoExile(
         fromZones: Set<Zone> = setOf(Zone.GRAVEYARD, Zone.BATTLEFIELD),
-        filter: GameObjectFilter = GameObjectFilter.Any
+        filter: GameObjectFilter = GameObjectFilter.Any,
+        includeTokens: Boolean = false
     ): TriggerSpec = TriggerSpec(
-        event = CardsPutIntoExileEvent(fromZones = fromZones, filter = filter),
+        event = CardsPutIntoExileEvent(
+            fromZones = fromZones,
+            filter = filter,
+            includeTokens = includeTokens
+        ),
         binding = TriggerBinding.ANY
     )
 
@@ -1241,20 +1275,28 @@ object Triggers {
     )
 
     /**
-     * Whenever [player] activates an ability *of a permanent matching [sourceFilter]* that isn't a
-     * mana ability — Elrond, Moon-Reader's "whenever you activate an ability of a creature".
+     * Whenever [player] activates an ability *of a permanent matching [sourceFilter]* — the
+     * source-scoped sibling of [YouActivateAbility].
      *
-     * The source-scoped sibling of [YouActivateAbility]: same "isn't a mana ability" gate (CR 605 /
-     * 606), plus the activated ability's source permanent must match. Unlike
-     * [activatesAbilityWithoutTap], which keys on the literal "{T} in its activation cost" wording,
-     * this leaves the tap cost alone — a {T} ability of a creature fires it just as a costless one
-     * does.
+     * By default this keeps that trigger's "isn't a mana ability" gate (CR 605 / 606) and only adds
+     * the requirement that the activated ability's source permanent match. Set
+     * [includeManaAbilities] for the unqualified Oracle wording — Elrond, Moon-Reader's "whenever
+     * you activate an ability of a creature", whose ruling confirms a creature's "{T}: Add {G}"
+     * triggers it, since a mana ability is still an activated ability (CR 605.3).
+     *
+     * Unlike [activatesAbilityWithoutTap], which keys on the literal "{T} in its activation cost"
+     * wording, this leaves the tap cost alone — a {T} ability fires it just as a costless one does.
      */
     fun activatesAbilityOf(
         sourceFilter: GameObjectFilter,
-        player: Player = Player.You
+        player: Player = Player.You,
+        includeManaAbilities: Boolean = false
     ): TriggerSpec = TriggerSpec(
-        event = AbilityActivatedEvent(player = player, sourceFilter = sourceFilter),
+        event = AbilityActivatedEvent(
+            player = player,
+            sourceFilter = sourceFilter,
+            includeManaAbilities = includeManaAbilities
+        ),
         binding = TriggerBinding.ANY
     )
 
@@ -2454,8 +2496,8 @@ object Triggers {
     )
 
     /**
-     * Whenever you collect evidence (CR 701.59). Fires once per collection, after the cards are
-     * exiled — never for a declined collection, nor for one CR 701.59b made impossible.
+     * Whenever you collect evidence (CR 701.57). Fires once per collection, after the cards are
+     * exiled — never for a declined collection, nor for one CR 701.57b made impossible.
      *
      * Fires for a collection made in *any* context, including this permanent's own: Surveillance
      * Monitor's "when this creature enters, you may collect evidence 4" feeds its own "whenever you
@@ -2463,6 +2505,21 @@ object Triggers {
      */
     val WheneverYouCollectEvidence: TriggerSpec = TriggerSpec(
         event = EvidenceCollectedEvent(Player.You),
+        binding = TriggerBinding.ANY
+    )
+
+    /**
+     * Whenever you forage (CR 701.59a). Fires once per forage, after the three cards are exiled or
+     * the Food is sacrificed — never for a declined forage, and never for one no mode was feasible
+     * for, since forage has no "even if you can't" clause.
+     *
+     * Fires for a forage taken in *any* context, including this permanent's own: Corpseberry
+     * Cultivator's "at the beginning of combat on your turn, you may forage" feeds its own "whenever
+     * you forage, put a +1/+1 counter on this creature", and so does a forage paid as somebody
+     * else's ability cost.
+     */
+    val WheneverYouForage: TriggerSpec = TriggerSpec(
+        event = ForagedEvent(Player.You),
         binding = TriggerBinding.ANY
     )
 

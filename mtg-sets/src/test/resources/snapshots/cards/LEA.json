@@ -139,6 +139,62 @@
     ]
 }
 
+// Basalt Monolith
+{
+    "name": "Basalt Monolith",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact doesn't untap during your untap step.\n{T}: Add {C}{C}{C}.\n{3}: Untap this artifact.",
+    "flags": [
+        "DOESNT_UNTAP"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "UNCOMMON",
+        "artist": "Jesper Myrfors",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/6/66a74c89-6f86-4ec8-af17-391cd5026054.jpg",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "Basalt Monolith's last ability can untap it as often as you can pay for it. If you believe you've found a way to generate an unbounded amount of mana with it, you're probably right."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Bayou
 {
     "name": "Bayou",
@@ -2108,7 +2164,7 @@
                 "type": "CantBeBlockedExceptBy",
                 "blockerFilter": {
                     "cardPredicates": [
-                        "IsCreature",
+                        "IsPermanent",
                         {
                             "type": "HasSubtype",
                             "subtype": "Wall"

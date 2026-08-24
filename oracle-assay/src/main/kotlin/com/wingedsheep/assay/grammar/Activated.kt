@@ -83,10 +83,16 @@ object Activated {
      * something an activated ability has nowhere to put.
      *
      * Shared by both directions so `match` can reconstruct and compare the whole value: an ability
-     * carrying a restriction, an activation zone, a `descriptionOverride`, convoke, exhaust or any
-     * of the two dozen other fields on `ActivatedAbility` fails the equality and refuses to print,
-     * rather than printing a sentence that quietly drops it. Only the id is exempt, because the id
-     * is not in the text.
+     * carrying a restriction, a `descriptionOverride`, convoke, exhaust or any of the two dozen other
+     * fields on `ActivatedAbility` fails the equality and refuses to print, rather than printing a
+     * sentence that quietly drops it. Only the id is exempt, because the id is not in the text.
+     *
+     * **The activation zone used to be on that list and is now derived.** Nothing in a printed line
+     * says "this ability works from the graveyard" in words of its own — the effect clause says
+     * "return this card **from your graveyard** to your hand" and CR 113.6m does the rest. So
+     * [Recursion.functionsIn] reads it off the cost and the effect for the same reason
+     * [producesMana] reads mana-ability-ness off them, and 74 cards stopped refusing to print over a
+     * field their own sentence already determined.
      */
     private fun abilityFor(
         cost: AbilityCost,
@@ -110,6 +116,7 @@ object Activated {
             },
             isManaAbility = manaAbility,
             restrictions = restrictions,
+            activateFromZone = Recursion.functionsIn(effect, cost) ?: Zone.BATTLEFIELD,
         )
     }
 
@@ -264,7 +271,10 @@ object Activated {
     private val choice: Phrase<List<ActivatedAbility>> =
         phrase("{cost}: {alternatives}", name = "an activated mana ability with a choice") {
             slot("cost", Costs.cost)
-            slot("alternatives", Mana.addedAlternatives)
+            slot(
+                "alternatives",
+                oneOf("several kinds of mana", Mana.addedAlternatives, Mana.addedAlternativesRestricted),
+            )
             build { bindings ->
                 val cost = bindings.value<AbilityCost>("cost")
                 val built = bindings.value<List<Effect>>("alternatives")

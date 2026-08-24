@@ -95,9 +95,12 @@ internal class PreventDamageFromAttackingCreaturesModifier : CombatDamageModifie
 /** Prevents damage blocked by protection from color/subtype (Rule 702.16). */
 internal class ProtectionModifier : CombatDamageModifier {
     override fun modify(state: GameState, projected: ProjectedState, assignments: List<CombatDamageAssignment>): List<CombatDamageAssignment> {
-        // If damage can't be prevented globally (Sunspine Lynx), skip protection checks
-        if (DamageUtils.isDamagePreventionDisabled(state)) return assignments
+        // Protection prevents damage (CR 702.16e), so it is skipped wherever prevention is off.
+        // Checked *per assignment* rather than as an early-out, because the shutoff can be
+        // per-recipient (Whippoorwill) as well as global (Sunspine Lynx): one marked creature must
+        // take its damage in full without blanking protection for everyone else in the combat.
         return assignments.filter { assignment ->
+            if (DamageUtils.isDamagePreventionDisabled(state, assignment.targetId)) return@filter true
             val sourceColors = projected.getColors(assignment.sourceId)
             val sourceSubtypes = projected.getSubtypes(assignment.sourceId)
             val sourceSupertypes = projected.getSupertypes(assignment.sourceId)
@@ -134,6 +137,8 @@ internal class ProtectionModifier : CombatDamageModifier {
  */
 internal class PlayerProtectionModifier : CombatDamageModifier {
     override fun modify(state: GameState, projected: ProjectedState, assignments: List<CombatDamageAssignment>): List<CombatDamageAssignment> {
+        // Left as a global early-out on purpose: every target here is a player, and the
+        // per-recipient shutoff (Whippoorwill) only ever marks a creature.
         if (DamageUtils.isDamagePreventionDisabled(state)) return assignments
         return assignments.filter { assignment ->
             !PlayerProtectionRules.isProtectedFromSource(

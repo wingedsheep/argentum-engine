@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityCost
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.costs.CostAtom
+import com.wingedsheep.sdk.scripting.values.DynamicAmount
 
 /**
  * Extracted cost-checking helpers from LegalActionsCalculator.
@@ -144,16 +145,37 @@ class CostEnumerationUtils(
 
     // --- Exile targets ---
 
+    /**
+     * The cards an exile cost may be paid with.
+     *
+     * [anyPlayersZone] widens the pool from the payer's copy of [zone] to every player's — Night
+     * Soil exiles "two creature cards from a single graveyard", and an opponent's graveyard is
+     * fair game. [singleZone] then adds that cost's other half: all [count] cards must come out of
+     * the *same* copy, so a graveyard holding fewer than [count] matches can never contribute to a
+     * legal payment and is dropped here. Dropping it is what keeps a naive "take the first
+     * [count]" consumer — the AI's strategist, the auto-payment path — from assembling a
+     * cross-graveyard selection the payment handler would reject.
+     */
     fun findExileTargets(
         state: GameState,
         playerId: EntityId,
         filter: GameObjectFilter,
-        zone: Zone
+        zone: Zone,
+        anyPlayersZone: Boolean = false,
+        singleZone: Boolean = false,
+        count: Int = 1,
     ): List<EntityId> {
-        val zoneKey = ZoneKey(playerId, zone)
         val predicateContext = PredicateContext(controllerId = playerId)
-        return state.getZone(zoneKey).filter { entityId ->
-            predicateEvaluator.matches(state, state.projectedState, entityId, filter, predicateContext)
+        val owners = if (anyPlayersZone) state.turnOrder else listOf(playerId)
+        val matchesByOwner = owners.map { owner ->
+            state.getZone(ZoneKey(owner, zone)).filter { entityId ->
+                predicateEvaluator.matches(state, state.projectedState, entityId, filter, predicateContext)
+            }
+        }
+        return if (singleZone) {
+            matchesByOwner.filter { it.size >= count }.flatten()
+        } else {
+            matchesByOwner.flatten()
         }
     }
 
@@ -586,6 +608,30 @@ class CostEnumerationUtils(
     /**
      * Calculate max affordable X for activated abilities, considering various X cost types.
      */
+    /**
+     * Does this cost make the player choose an X that is *not* paid in mana — "remove any number
+     * of counters from ~" ([CostAtom.RemoveCounters] with an [DynamicAmount.XValue] count) or
+     * "tap X permanents"?
+     *
+     * Shared by every enumerator that builds a `LegalAction`, because the answer decides whether
+     * the client opens its X picker at all. An enumerator that forgets to ask hands the player an
+     * activation with no choice, which then pays X = 0 — the storage lands (Bottomless Vault and
+     * its cycle) removing zero counters for zero mana was exactly that.
+     */
+    fun hasPlayerChosenNonManaX(abilityCost: AbilityCost): Boolean {
+        fun isXCounterRemoval(cost: AbilityCost): Boolean =
+            cost is AbilityCost.Atom &&
+                (cost.atom as? CostAtom.RemoveCounters)?.count is DynamicAmount.XValue
+        return when (abilityCost) {
+            is AbilityCost.TapXPermanents -> true
+            is AbilityCost.Atom -> isXCounterRemoval(abilityCost)
+            is AbilityCost.Composite -> abilityCost.costs.any {
+                it is AbilityCost.TapXPermanents || isXCounterRemoval(it)
+            }
+            else -> false
+        }
+    }
+
     fun calculateMaxAffordableX(
         state: GameState,
         playerId: EntityId,

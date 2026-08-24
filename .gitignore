@@ -186,6 +186,9 @@ gradle-app.setting
 # Claude Code per-agent git worktrees (transient — never commit)
 .claude/worktrees/
 
+# Codex per-agent git worktrees (transient — never commit)
+.codex/worktrees/
+
 # Agent-loop run state (per-run scratch — never commit)
 .claude/loop-runs/
 
@@ -196,6 +199,9 @@ review.md
 # Claude Code local-only files (auto-loaded, machine/contributor-specific — never commit)
 CLAUDE.local.md
 .claude/settings.local.json
+
+# Node/vitest caches (a stray root node_modules/ got committed once — never again)
+node_modules/
 
 # Bytecode from the shared modules the scripts/ tools import
 scripts/__pycache__/

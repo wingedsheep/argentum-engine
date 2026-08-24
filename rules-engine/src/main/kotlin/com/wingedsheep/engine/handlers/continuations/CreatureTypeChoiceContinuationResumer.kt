@@ -142,7 +142,13 @@ class CreatureTypeChoiceContinuationResumer(
         val stateWithComponent = if (state.getEntity(continuation.sourceId) != null) {
             state.updateEntity(continuation.sourceId) { container ->
                 val existing = container.get<NotedCreatureTypesComponent>() ?: NotedCreatureTypesComponent()
-                container.with(existing.withAdded(chosenValue))
+                // A secret note records *who* made it (CR 702.106b's "piece of paper kept with the
+                // object"): that player is the only one who may see it, and the only one who may
+                // reveal it later, even if someone else gains control of the permanent.
+                val noted = existing.withAdded(chosenValue)
+                container.with(
+                    if (continuation.secret) noted.copy(secretTo = continuation.controllerId) else noted
+                )
             }
         } else {
             state

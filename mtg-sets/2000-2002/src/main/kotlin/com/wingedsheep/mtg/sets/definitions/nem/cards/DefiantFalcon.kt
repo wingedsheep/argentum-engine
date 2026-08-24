@@ -32,8 +32,7 @@ val DefiantFalcon = card("Defiant Falcon") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{4}"), Costs.Tap)
         effect = Patterns.Library.searchLibrary(
-            filter = GameObjectFilter.Any.withSubtype("Rebel"),
-            count = 3,
+            filter = GameObjectFilter.Permanent.withSubtype("Rebel").manaValueAtMost(3),
             destination = SearchDestination.BATTLEFIELD
         )
     }

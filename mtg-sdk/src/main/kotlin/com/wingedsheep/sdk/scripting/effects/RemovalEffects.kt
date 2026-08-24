@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
+import com.wingedsheep.sdk.scripting.targets.selfNounToken
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import kotlinx.serialization.SerialName
@@ -175,8 +176,12 @@ data object SacrificeSelfEffect : Effect {
 data class SacrificeTargetEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
     val sacrificedByItsController: Boolean = false
-) : Effect {
-    override val description: String = "sacrifice ${target.description}"
+) : Effect, SelfReferentialDescription {
+    // `EffectTarget.Self.description` is the legacy "this creature", which is wrong the moment a
+    // land or artifact sacrifices itself (Safe Haven's upkeep trigger read "you may sacrifice this
+    // creature"). Route Self through the self-noun token so the render layer can say "this land".
+    override val descriptionTemplate: String = "sacrifice ${target.selfNounToken}"
+    override val description: String get() = defaultResolvedDescription
 }
 
 /**

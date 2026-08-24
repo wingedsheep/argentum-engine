@@ -74,7 +74,9 @@ sealed interface EntityReference {
 
     /**
      * A card **exiled with the ability's source** — the source's linked-exile pile (CR 607 linked
-     * abilities), which on Mirrodin's *Imprint* cards (CR 702.15) holds "the exiled card".
+     * abilities), which on Mirrodin's *Imprint* cards holds "the exiled card". (Imprint has no rule
+     * number of its own: it used to be a keyword ability and is now only an ability word, with the
+     * linkage carried by CR 607 and each card's own errata'd text.)
      *
      * This is the read-side companion to the `linkToSource = true` exile that puts a card there:
      * it turns the imprinted card into an ordinary entity reference, so every existing

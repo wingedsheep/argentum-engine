@@ -1,3 +1,58 @@
+// Aerie Mystics
+{
+    "name": "Aerie Mystics",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Bird Wizard",
+    "oracleText": "Flying\n{1}{G}{U}: Creatures you control gain shroud until end of turn. (They can't be the targets of spells or abilities.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "GrantKeyword",
+                        "keyword": "SHROUD",
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Zug",
+        "flavorText": "They are cautious with their body language and facial expressions. Any stray movement could betray the positions of the troops they protect and cost many lives.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58e86a42-cc53-4731-819a-e76f203a742a.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "GREEN"
+    ]
+}
+
 // Armillary Sphere
 {
     "name": "Armillary Sphere",
@@ -288,6 +343,50 @@
         "imageUri": "https://cards.scryfall.io/normal/front/5/6/568df642-3ad7-401c-a133-edb56970c3a1.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Scarland Thrinax
+{
+    "name": "Scarland Thrinax",
+    "manaCost": "{B}{R}{G}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "Sacrifice a creature: Put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "+1/+1",
+                    "count": 1,
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "rarity": "UNCOMMON",
+        "artist": "Daarken",
+        "flavorText": "\"There is only one way of life in Jund: feed on the weak until you are cut down by something stronger.\"\n—Jorshu of Clan Nel Toth",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2a179b9-e962-49a4-ad92-8cd0291296c1.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
 }
 
 // Sigil of the Empty Throne

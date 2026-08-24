@@ -637,3 +637,39 @@ private class TokenPhrase<T>(
         return if (runCatching { read(text) }.getOrNull() == value) text else null
     }
 }
+
+/**
+ * A rule that resolves [inner] on **first use** rather than at construction.
+ *
+ * Every grammar family here is an `object` whose rules are built during initialization, and that
+ * makes the reference graph between families an initialization *order*: a family that slots another
+ * one is constructed after it. Two families that each slot the other therefore cannot both be
+ * second, and the JVM does not refuse — it hands the one still initializing back a half-built
+ * object, so the slot reads `null` and the failure surfaces as a decline somewhere else entirely.
+ * That is the trap [com.wingedsheep.assay.grammar.Primitives]' own note describes, one file wider.
+ *
+ * The cycle is not an accident of layout: a noun phrase can be qualified by a count
+ * ("card with mana value less than or equal to **the number of lands you control**") and a count is
+ * taken over a noun phrase ("the number of **lands you control**"), so English genuinely nests each
+ * inside the other. Duplicating either vocabulary to break the cycle is the one thing this module
+ * exists to prevent, so the kernel carries the indirection instead — exactly the reason parser
+ * combinators over a recursive language usually have one.
+ *
+ * [inner] is called at most once and must not be called during the *caller's* own initialization,
+ * which is the whole point; a slot declared this way is otherwise an ordinary sub-phrase. It is not
+ * a way to write left recursion: re-entering a rule at the same offset is still
+ * [DeclineReason.LEFT_RECURSION], detected by [ParseContext] as before.
+ */
+fun <T> deferred(name: String, inner: () -> Phrase<T>): Phrase<T> = DeferredPhrase(name, inner)
+
+private class DeferredPhrase<T>(override val name: String, resolve: () -> Phrase<T>) : Phrase<T>() {
+    private val inner: Phrase<T> by lazy(resolve)
+    override val canonical: Boolean get() = inner.canonical
+
+    // A one-branch alternation, which is operationally what a deferred reference is: parse it, print
+    // it, nothing else. Reported as its own node rather than as the inner rule's so the grammar view
+    // shows where the indirection is, and so the walker's visited set still terminates the cycle.
+    override val shape: RuleShape get() = RuleShape.Choice(listOf(inner))
+    override fun parseHere(ctx: ParseContext, from: Int): List<Parse<T>> = inner.parseAt(ctx, from)
+    override fun unparse(value: T): String? = inner.unparse(value)
+}

@@ -280,6 +280,7 @@ class LegalActionEnricher(
         exileMinTotalWeight = exileMinTotalWeight,
         exileCardWeights = exileCardWeights,
         exileWeightUnit = exileWeightUnit,
+        exileWeightPerTarget = exileWeightPerTarget,
         validBeholdTargets = validBeholdTargets,
         beholdCount = beholdCount,
         counterRemovalCreatures = counterRemovalCreatures.map { it.toDto() },

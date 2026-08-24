@@ -33,6 +33,10 @@ internal fun effectTargetToChooser(target: EffectTarget): Chooser = when (target
         // the controller or an opponent. The discarding player chooses from their own hand, so
         // derive the chooser from the gathered cards rather than the spell's controller.
         is Player.OwnerOf -> Chooser.ControllerOfSelection
+        // "Defending player discards three cards" (Mindstab Thrull): the discard is the defending
+        // player's own choice from their own hand, so the chooser follows the acting player rather
+        // than defaulting to the ability's controller — who is, by definition, the attacker.
+        is Player.DefendingPlayer -> Chooser.DefendingPlayer
         else -> Chooser.Controller
     }
     else -> Chooser.Controller

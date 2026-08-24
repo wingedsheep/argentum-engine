@@ -159,6 +159,53 @@ data class GrantActivatedAbilityEffect(
 }
 
 /**
+ * The permanent [target] names **gains all activated abilities of the object [donor] names**, for
+ * [duration].
+ *
+ * The one-shot, resolution-time sibling of
+ * [com.wingedsheep.sdk.scripting.GainActivatedAbilitiesOfPermanents] (a static that re-reads its
+ * donor set every projection) and of [GrantActivatedAbilityEffect] (which grants one *authored*
+ * ability). Here the donor is picked at resolution — usually a target — so the abilities can't be
+ * written into the card:
+ *  - Quicksilver Elemental: `{U}: This creature gains all activated abilities of target creature
+ *    until end of turn.` → `GainAllActivatedAbilitiesOfEffect(donor = ContextTarget(0))`.
+ *  - Grell Philosopher / Havengul Lich are the same shape with a different donor and receiver.
+ *
+ * **The set of abilities is snapshotted when this resolves**, per the Havengul Lich ruling
+ * ("gains the activated abilities of the card *as it existed in the graveyard*"): the donor
+ * changing, leaving the battlefield, or gaining abilities afterwards does not change what the
+ * receiver has. That is the difference from the static sibling, and the reason this is an effect
+ * rather than a `GrantStaticAbility` carrying one.
+ *
+ * Each gained ability is granted with the **receiver** as its source (CR 113.7), so `{T}`,
+ * `SacrificeSelf` and "this creature" inside a copied ability bind to the permanent that gained it
+ * — the printed reminder "(If any of the abilities use that creature's name, use this creature's
+ * name instead.)".
+ *
+ * It grants only *activated* abilities — never triggered, static, or keyword abilities (unless the
+ * keyword is itself modelled as an activated ability), and only those activatable from the
+ * battlefield. Mana abilities **are** included: the printed wording is "all activated abilities",
+ * with no "except mana abilities" clause.
+ *
+ * @property donor The object whose activated abilities are copied.
+ * @property target The permanent that gains them (defaults to the source itself).
+ * @property duration How long the gain lasts.
+ */
+@SerialName("GainAllActivatedAbilitiesOf")
+@Serializable
+data class GainAllActivatedAbilitiesOfEffect(
+    val donor: EffectTarget,
+    val target: EffectTarget = EffectTarget.Self,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect, SelfReferentialDescription {
+    override val descriptionTemplate: String = buildString {
+        append("${target.selfNounToken} gains all activated abilities of ${donor.description}")
+        if (duration.description.isNotEmpty()) append(" ${duration.description}")
+    }
+    override val description: String get() = defaultResolvedDescription
+}
+
+/**
  * Grant Harmonize (CR 702.180) to a target instant or sorcery card in a graveyard.
  * "Target instant or sorcery card in your graveyard gains harmonize until end of turn. Its
  * harmonize cost is equal to its mana cost." — Songcrafter Mage.

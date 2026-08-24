@@ -1,0 +1,18 @@
+{
+  "Harvester of Misery": [
+    "removal",
+    "creature-removal"
+  ],
+  "Legion Extruder": [
+    "removal",
+    "creature-removal",
+    "planeswalker-removal"
+  ],
+  "Pest Control": [
+    "removal",
+    "creature-removal"
+  ],
+  "Territory Forge": [
+    "removal"
+  ]
+}

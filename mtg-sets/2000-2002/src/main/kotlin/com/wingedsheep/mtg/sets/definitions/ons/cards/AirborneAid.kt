@@ -19,7 +19,7 @@ val AirborneAid = card("Airborne Aid") {
     oracleText = "Draw a card for each Bird on the battlefield."
 
     spell {
-        effect = Effects.DrawCards(DynamicAmounts.creaturesWithSubtype(Subtype.BIRD))
+        effect = Effects.DrawCards(DynamicAmounts.permanentsWithSubtype(Subtype.BIRD))
     }
 
     metadata {

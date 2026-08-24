@@ -35,8 +35,22 @@ class FightEffectExecutor : EffectExecutor<FightEffect> {
         val power1 = projected.getPower(target1Id) ?: 0
         val power2 = projected.getPower(target2Id) ?: 0
 
+        // A fight is one instruction — each creature deals damage equal to its power to the other
+        // (CR 701.14a) — so an optional redirection shield is asked about both halves before either
+        // is dealt (Blood of the Martyr).
+        val (readyState, pause) = OptionalDamageRedirect.beforeDealing(
+            state,
+            listOf(
+                OptionalDamageRedirect.Instance(target1Id, target2Id, power1),
+                OptionalDamageRedirect.Instance(target2Id, target1Id, power2)
+            ),
+            effect,
+            context
+        )
+        if (pause != null) return pause
+
         // Creature 1 deals damage equal to its power to creature 2
-        var currentState = state
+        var currentState = readyState
         val allEvents = mutableListOf<GameEvent>()
 
         // Excess damage (CR 120.4a) that target1 deals to target2 — the "creature an opponent

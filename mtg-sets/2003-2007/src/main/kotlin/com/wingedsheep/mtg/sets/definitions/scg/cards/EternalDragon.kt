@@ -34,7 +34,7 @@ val EternalDragon = card("Eternal Dragon") {
 
     activatedAbility {
         cost = Costs.Mana("{3}{W}{W}")
-        effect = Effects.Move(EffectTarget.Self, Zone.HAND)
+        effect = Effects.ReturnToHandFromGraveyard(EffectTarget.Self)
         activateFromZone = Zone.GRAVEYARD
         restrictions = listOf(
             ActivationRestriction.All(

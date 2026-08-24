@@ -82,7 +82,11 @@ val FabricationFoundry = card("Fabrication Foundry") {
                 )
             )
         )
-        effect = Effects.PutOntoBattlefield(t)
+        // The graveyard guard is the facade's whole point (CR 608.2b): if the targeted card has left
+        // the graveyard by resolution the move is skipped, rather than dragging it back from wherever
+        // it ended up. Argentum Assay reads "from your graveyard" as `fromZone`, and its differential
+        // is what caught this card reaching for the unguarded sibling.
+        effect = Effects.PutOntoBattlefieldFromGraveyard(t)
         timing = TimingRule.SorcerySpeed
         description = "{2}{W}, {T}, Exile one or more other artifacts you control with total mana " +
             "value X: Return target artifact card with mana value X or less from your graveyard to " +

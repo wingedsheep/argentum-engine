@@ -51,8 +51,13 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
-            // Face-down creatures have no abilities (Rule 708.2)
-            if (container.has<FaceDownComponent>()) continue
+            // A face-down permanent has no characteristics beyond those the rules that made it face
+            // down list (CR 708.2), so none of its *card's* abilities are offered. Abilities another
+            // effect grants it still are — those apply in Layer 6 to the object on the battlefield,
+            // not to the hidden card (Etrata, Deadly Fugitive grants face-down creatures you control
+            // a turn-up ability). Handled below by folding face-down into the same own-vs-granted
+            // split the lost-all-abilities case uses, so this is not an early `continue`.
+            val isFaceDown = container.has<FaceDownComponent>()
 
             // Activated abilities of permanents matching a PreventActivatedAbilities filter
             // (Cursed Totem etc.) can't be activated — applies to both mana and non-mana
@@ -103,12 +108,12 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
             val classLevelComponent = container.get<ClassLevelComponent>()
             val classLevel = classLevelComponent?.currentLevel
 
-            // If entity lost all abilities, suppress its own non-mana abilities
-            val ownNonManaAbilities = if (cardDef == null || projected.hasLostAllAbilities(entityId)) emptyList()
+            // If entity lost all abilities — or is face down — suppress its own non-mana abilities
+            val ownNonManaAbilities = if (cardDef == null || isFaceDown || projected.hasLostAllAbilities(entityId)) emptyList()
             else cardDef.script.effectiveActivatedAbilities(classLevel).filter { !it.isManaAbility && it.activateFromZone == Zone.BATTLEFIELD }
 
             // Generate level-up abilities for Class enchantments
-            val levelUpAbilities = if (cardDef != null && classLevelComponent != null && !projected.hasLostAllAbilities(entityId)) {
+            val levelUpAbilities = if (cardDef != null && classLevelComponent != null && !isFaceDown && !projected.hasLostAllAbilities(entityId)) {
                 generateClassLevelUpAbilities(cardDef, classLevelComponent)
             } else emptyList()
 
@@ -153,22 +158,30 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 } else {
                     ability.cost
                 }
-                // Apply ability-specific generic cost reduction so payability is checked against
-                // the locked-in cost (e.g., The Dominion Bracelet — "{X} less, where X is this
-                // creature's power"). Then apply Forge Anew's free-first-equip discount, so the
-                // displayed cost and affordability reflect the {0} the player will actually pay.
-                val effectiveCost = context.castPermissionUtils.relaxAbilityCostColorsIfAny(
+                // Resolve a *defined* {X} (CR 107.3c — Soul Foundry's "X is the mana value of that
+                // card") first, so the ability is offered at the price the player will actually pay
+                // and never flagged as an X-picker cost. Then apply ability-specific generic cost
+                // reduction so payability is checked against the locked-in cost (e.g., The Dominion
+                // Bracelet — "{X} less, where X is this creature's power"). Then apply Forge Anew's
+                // free-first-equip discount, so the displayed cost and affordability reflect the {0}
+                // the player will actually pay.
+                val costWithDefinedX =
+                    context.castPermissionUtils.applyDefinedXValue(rawCost, ability, state, entityId, playerId)
+                val effectiveCost = context.castPermissionUtils.lowerAttachedManaCost(
+                    state, entityId,
+                    context.castPermissionUtils.relaxAbilityCostColorsIfAny(
                     state, entityId,
                     context.castPermissionUtils.applyFreeFirstEquipDiscount(
                         context.castPermissionUtils.applyEquipCostReduction(
                             context.castPermissionUtils.applyActivatedAbilityCostReduction(
-                                applyAbilityGenericCostReduction(rawCost, ability, state, entityId, playerId, context),
+                                applyAbilityGenericCostReduction(costWithDefinedX, ability, state, entityId, playerId, context),
                                 state, entityId, ability.isExhaust, ability.isPowerUp
                             ),
                             ability, state, playerId, abilitySourceId = entityId
                         ),
                         ability, state, playerId
                     )
+                )
                 )
 
                 // Description shown to the player. When the effective cost differs from the printed
@@ -190,6 +203,17 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 // only spendable on this kind of activation (e.g., Steelswarm Operator's mana
                 // restricted to abilities of artifact sources).
                 val abilityContext = com.wingedsheep.engine.mechanics.mana.buildAbilityPaymentContext(cardComponent, projected, entityId, ability)
+
+                // "Reveal the creature type you chose" is payable only by the player who made the
+                // secret note (A Killer Among Us's ruling: a player who gains control of it "will
+                // be unable to activate its last ability"). That is never a matter of affordability
+                // — no amount of mana or board state makes it payable for anyone else — so the
+                // ability is dropped outright rather than offered greyed out. Checked here, once,
+                // because the cost reaches the `when` below as either a bare atom or a composite.
+                if (costRevealsNotedCreatureType(effectiveCost) &&
+                    container.get<NotedCreatureTypesComponent>()
+                        ?.let { it.secretTo == playerId && it.types.isNotEmpty() } != true
+                ) continue
 
                 // Check cost requirements and gather sacrifice/tap/bounce targets if needed
                 var sacrificeTargets: List<EntityId>? = null
@@ -307,7 +331,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                         }
                         is CostAtom.ExileFrom -> {
                             val targets = context.costUtils.findExileTargets(
-                                state, playerId, atom.filter, atom.zone
+                                state, playerId, atom.filter, atom.zone,
+                                atom.anyPlayersZone, atom.singleZone, atom.count
                             )
                             if (targets.size < atom.count) continue
                             exileCost = atom
@@ -318,7 +343,11 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                         // entirely rather than surfacing an unpayable one.
                         is CostAtom.CollectEvidence -> {
                             prebuiltCostInfo = com.wingedsheep.engine.handlers.costs
-                                .CollectEvidenceResolver.costInfo(state, playerId, atom.amount)
+                                .CollectEvidenceResolver.costInfo(
+                                    state, playerId,
+                                    com.wingedsheep.engine.handlers.costs.CostAtomAmounts
+                                        .evaluate(state, atom.amount),
+                                )
                                 ?: continue
                         }
                         // Same fail-closed shape as collect evidence over a filtered pool: when the
@@ -333,7 +362,13 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                         // here (life payability is validated at payment time, matching the prior
                         // fall-through behavior for these costs). Putting counters on the source
                         // costs nothing the player must have, so it never gates enumeration either.
-                        is CostAtom.PayLife, is CostAtom.RevealFromHand, is CostAtom.PutCountersOnSelf -> {}
+                        is CostAtom.PayLife, is CostAtom.RevealFromHand, is CostAtom.PutCountersOnSelf,
+                        // PayCost-only (Tourach's Chant); no activated ability pays it, so there is
+                        // nothing to enumerate.
+                        is CostAtom.PutCountersOnPermanent -> {}
+                        // Gated above, before this `when` — only the chooser is offered the
+                        // ability at all — and it takes no enumeration-time selection.
+                        is CostAtom.RevealNotedCreatureType -> {}
                         // CR 701.17b — a mill cost is unpayable when the library holds fewer cards.
                         // No selection: the milled cards are the top of the library.
                         is CostAtom.Mill -> {
@@ -496,7 +531,11 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                     is CostAtom.CollectEvidence -> {
                                         prebuiltCostInfo = com.wingedsheep.engine.handlers.costs
                                             .CollectEvidenceResolver
-                                            .costInfo(state, playerId, atom.amount)
+                                            .costInfo(
+                                                state, playerId,
+                                                com.wingedsheep.engine.handlers.costs
+                                                    .CostAtomAmounts.evaluate(state, atom.amount),
+                                            )
                                         if (prebuiltCostInfo == null) {
                                             costCanBePaid = false
                                             break
@@ -519,8 +558,15 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                         // AdditionalCostData.validExileTargets (the picker prompt
                                         // for Rust Harvester's "Exile an artifact card from your
                                         // graveyard" cost).
+                                        // The atom's own pool flags have to ride along: Night Soil
+                                        // pays "{1}, Exile two creature cards from a single
+                                        // graveyard" as a *composite* cost, and dropping
+                                        // `anyPlayersZone` here narrowed the picker to the
+                                        // activating player's graveyard — an opponent's cards were
+                                        // legal payment the UI never offered.
                                         val targets = context.costUtils.findExileTargets(
-                                            state, playerId, atom.filter, atom.zone
+                                            state, playerId, atom.filter, atom.zone,
+                                            atom.anyPlayersZone, atom.singleZone, atom.count
                                         )
                                         if (targets.size < atom.count) {
                                             costCanBePaid = false
@@ -544,7 +590,10 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                                     // Pay-life / reveal / put-counters-on-self carry no enumeration-time
                                     // gate here (matching the prior else fall-through for these sub-costs).
                                     is CostAtom.PayLife, is CostAtom.RevealFromHand,
-                                    is CostAtom.PutCountersOnSelf -> {}
+                                    is CostAtom.PutCountersOnSelf,
+                                    is CostAtom.PutCountersOnPermanent -> {}
+                                    // See the top-level branch: gated before the `when`.
+                                    is CostAtom.RevealNotedCreatureType -> {}
                                     // CR 701.17b — a mill cost is unpayable when the library holds
                                     // fewer cards. No selection: the milled cards are the top.
                                     is CostAtom.Mill -> {
@@ -742,23 +791,11 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                     continue
                 }
 
-                // Check for X-variable costs early (needed for counter removal info and cost info)
-                val hasRemoveXCountersCostEarly = when (val cost = ability.cost) {
-                    is AbilityCost.Atom -> {
-                        val atom = cost.atom
-                        atom is CostAtom.RemoveCounters &&
-                            (atom.count is com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue)
-                    }
-                    is AbilityCost.Composite -> cost.costs.any {
-                        if (it !is AbilityCost.Atom) false
-                        else {
-                            val atom = it.atom
-                            atom is CostAtom.RemoveCounters &&
-                                atom.count is com.wingedsheep.sdk.scripting.values.DynamicAmount.XValue
-                        }
-                    }
-                    else -> false
-                }
+                // Check for X-variable costs early (needed for counter removal info and cost info).
+                // The predicate is shared with ManaAbilityEnumerator — a mana ability can carry the
+                // same "remove any number of counters" X (the storage lands), and the two answers
+                // must agree or the client's X picker appears for one and not the other.
+                val hasNonManaXCost = context.costUtils.hasPlayerChosenNonManaX(ability.cost)
 
                 val hasTapXPermanentsCost = when (ability.cost) {
                     is AbilityCost.TapXPermanents -> true
@@ -846,15 +883,15 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                 val abilityManaCostString = abilityManaCost?.toString()?.ifEmpty { "{0}" }
                 val abilityHasXInManaCost = abilityManaCost?.hasX == true
 
-                // Reuse the early checks for X-variable costs
-                val hasRemoveXCountersCost = hasRemoveXCountersCostEarly
+                // Reuse the early check for X-variable costs. It already covers TapXPermanents,
+                // so the OR below is belt-and-braces rather than two separate questions.
                 // Note: an `ExileXFromGraveyard` cost is deliberately NOT an X-picker cost. There X
                 // *is* the size of the graveyard selection, so the engine pauses for the cards and
                 // derives X from the count rather than asking for a number up front (see
                 // ActivateAbilityHandler's ExileXFromGraveyard pause). A `{X}` alongside it
                 // (Necropolis Fiend) still flags here through [abilityHasXInManaCost], because
                 // there X also has to be paid in mana.
-                val abilityHasXCost = abilityHasXInManaCost || hasRemoveXCountersCost || hasTapXPermanentsCost
+                val abilityHasXCost = abilityHasXInManaCost || hasNonManaXCost || hasTapXPermanentsCost
 
                 val abilityMaxAffordableX: Int? = if (abilityHasXCost) {
                     context.costUtils.calculateMaxAffordableX(state, playerId, ability.cost, abilityManaCost, precomputedSources = context.availableManaSources, sourceId = entityId)
@@ -1084,6 +1121,13 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
     /**
      * Check for "any player may activate" abilities on opponent's permanents (e.g., Lethal Vapors).
      */
+    /** See ActivateAbilityHandler.anyPlayerMayIn — the permission is often nested inside `All`. */
+    private fun anyPlayerMayIn(restriction: ActivationRestriction): Boolean = when (restriction) {
+        is ActivationRestriction.AnyPlayerMay -> true
+        is ActivationRestriction.All -> restriction.restrictions.any { anyPlayerMayIn(it) }
+        else -> false
+    }
+
     private fun enumerateAnyPlayerMayAbilities(context: EnumerationContext, result: MutableList<LegalAction>) {
         val state = context.state
         val playerId = context.playerId
@@ -1104,7 +1148,8 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
             // of a "any player may activate" permanent must still offer its ability.
             val cardDef = context.cardRegistry.getCard(cardComponent.cardDefinitionId) ?: continue
             val anyPlayerAbilities = cardDef.script.activatedAbilities.filter { ability ->
-                !ability.isManaAbility && ability.activateFromZone == Zone.BATTLEFIELD && ability.restrictions.any { it is ActivationRestriction.AnyPlayerMay }
+                !ability.isManaAbility && ability.activateFromZone == Zone.BATTLEFIELD &&
+                    ability.restrictions.any { anyPlayerMayIn(it) }
             }
             if (anyPlayerAbilities.isEmpty()) continue
 
@@ -1375,6 +1420,17 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
      * also excluded.
      */
     /** True when [cost] contains a [CostAtom.VariablePermanents] atom (top-level or in a Composite). */
+    /**
+     * Whether [cost] includes "Reveal the creature type you chose" — the cost only the player who
+     * made the source's secret note can pay. Mirrors `ActivateAbilityHandler`'s helper of the same
+     * name, which decides when to capture the note as last-known information.
+     */
+    private fun costRevealsNotedCreatureType(cost: AbilityCost): Boolean = when (cost) {
+        is AbilityCost.Atom -> cost.atom is CostAtom.RevealNotedCreatureType
+        is AbilityCost.Composite -> cost.costs.any { costRevealsNotedCreatureType(it) }
+        else -> false
+    }
+
     private fun costContainsVariablePermanents(cost: AbilityCost): Boolean = when (cost) {
         is AbilityCost.Atom -> cost.atom is CostAtom.VariablePermanents
         is AbilityCost.Composite -> cost.costs.any { costContainsVariablePermanents(it) }

@@ -7451,7 +7451,8 @@
                     "then": {
                         "type": "MoveToZone",
                         "target": "Self",
-                        "destination": "Hand"
+                        "destination": "Hand",
+                        "fromZone": "Graveyard"
                     }
                 },
                 "activeZones": [
@@ -11912,7 +11913,8 @@
                         "type": "BoundVariable",
                         "name": "target"
                     },
-                    "destination": "Battlefield"
+                    "destination": "Battlefield",
+                    "fromZone": "Graveyard"
                 },
                 "targetRequirement": {
                     "type": "TargetObject",

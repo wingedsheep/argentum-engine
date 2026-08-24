@@ -289,6 +289,14 @@ function getBadgeStyle(icon?: string): React.CSSProperties {
         backgroundColor: 'rgba(80, 110, 160, 0.9)',
         border: '1px solid rgba(160, 200, 255, 0.5)',
       }
+    // A creature type this permanent has noted (Long List of the Ents) or secretly chosen
+    // (A Killer Among Us). Muted parchment — it is a memo the permanent is carrying, not a
+    // change to the board, and the secret variant is only ever shown to the player who wrote it.
+    case 'creature-type':
+      return {
+        backgroundColor: 'rgba(90, 78, 55, 0.92)',
+        border: '1px dashed rgba(225, 205, 155, 0.6)',
+      }
     case 'color-change':
       // Dark badge with a five-color rainbow border — text stays legible while the
       // rainbow ring instantly tells the player "colors changed / all colors".
@@ -337,6 +345,8 @@ function getTooltipBorderColor(icon?: string): string {
       return 'rgba(255, 160, 100, 0.5)'
     case 'lost-abilities':
       return 'rgba(160, 160, 200, 0.5)'
+    case 'creature-type':
+      return 'rgba(225, 205, 155, 0.5)'
     case 'type-change':
       return 'rgba(160, 200, 255, 0.5)'
     case 'color-change':

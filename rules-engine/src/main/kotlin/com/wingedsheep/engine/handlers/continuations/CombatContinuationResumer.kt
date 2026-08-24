@@ -31,8 +31,52 @@ class CombatContinuationResumer(
         resumer(DamagePreventionContinuation::class, ::resumeDamagePrevention),
         resumer(DistributeDamageContinuation::class, ::resumeDistributeDamage),
         resumer(DeflectDamageSourceChoiceContinuation::class, ::resumeDeflectDamageSourceChoice),
-        resumer(PreventDamageFromChosenSourceContinuation::class, ::resumePreventDamageFromChosenSource)
+        resumer(PreventDamageFromChosenSourceContinuation::class, ::resumePreventDamageFromChosenSource),
+        resumer(CombatOptionalRedirectContinuation::class) { state, continuation, response, _ ->
+            resumeCombatOptionalRedirect(state, continuation, response)
+        },
+        resumer(OptionalRedirectEffectContinuation::class, ::resumeOptionalRedirectEffect)
     )
+
+    /**
+     * Record one "you may have that damage dealt to you instead" answer and re-run the combat damage
+     * step, which then asks about the next instance the shield covers (or deals the damage).
+     */
+    fun resumeCombatOptionalRedirect(
+        state: GameState,
+        continuation: CombatOptionalRedirectContinuation,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for optional damage redirection")
+        }
+        val recorded = com.wingedsheep.engine.handlers.effects.damage.OptionalDamageRedirect
+            .record(state, continuation.choiceKey, response.choice)
+        return services.combatManager.applyCombatDamage(recorded, firstStrike = continuation.firstStrike)
+    }
+
+    /** The non-combat counterpart: record the answer, then re-run the damage effect that asked. */
+    fun resumeOptionalRedirectEffect(
+        state: GameState,
+        continuation: OptionalRedirectEffectContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is YesNoResponse) {
+            return ExecutionResult.error(state, "Expected yes/no response for optional damage redirection")
+        }
+        val recorded = com.wingedsheep.engine.handlers.effects.damage.OptionalDamageRedirect
+            .record(state, continuation.choiceKey, response.choice)
+        val result = services.effectExecutorRegistry.execute(
+            recorded,
+            continuation.effect,
+            continuation.effectContext
+        )
+        if (result.isPaused) {
+            return ExecutionResult.paused(result.state, result.pendingDecision!!, result.events)
+        }
+        return checkForMore(result.state, result.events)
+    }
 
     fun resumeDamageAssignment(
         state: GameState,
@@ -316,7 +360,8 @@ class CombatContinuationResumer(
             // "The next time that source would deal damage to you this turn, prevent that damage"
             // (Circle of Protection family) — single instance, then consumed.
             SerializableModification.PreventNextDamageInstanceFromSource(
-                damageSourceId = chosenSourceId
+                damageSourceId = chosenSourceId,
+                halveRoundedDown = continuation.halvePreventedDamage
             )
         } else if (continuation.amount == null) {
             // Prevent all damage from the chosen source for the rest of the turn (Samite Ministration)

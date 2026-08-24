@@ -70,6 +70,17 @@ data class CompactReplay(
      * reconstruct unverified exactly as before.
      */
     val checkpoints: List<ReplayCheckpoint> = emptyList(),
+    /**
+     * True when recording was frozen before the game ended, so [actions] is an honest *prefix* of
+     * the game rather than all of it — the game went on past the last frame here.
+     *
+     * Set when a game passes [ReplayRecordingPolicy.MAX_RECORDED_ACTIONS] (a wedge that outlived
+     * the stall guard, a mill-loop stalemate, an AI grinding hundreds of turns). The prefix
+     * reconstructs exactly as any other record does; what it must not do is *look* complete, so the
+     * viewer is told to say the recording stops early. Defaults false, so every record written
+     * before this existed reads as the complete game it was.
+     */
+    val truncated: Boolean = false,
 ) {
     /** Number of reconstructable frames: the initial state plus one per applied action. */
     val frameCount: Int get() = 1 + actions.size
@@ -119,6 +130,8 @@ data class ReplayRecordingSnapshot(
     val startedAt: java.time.Instant?,
     /** Sampled with the rest, so a game that ended mid-sweep isn't flushed as in-progress. */
     val gameOver: Boolean,
+    /** Whether the recording has been frozen by the size cap — see [CompactReplay.truncated]. */
+    val truncated: Boolean,
 )
 
 /** Cadence knobs for the live recorder. */
@@ -128,6 +141,23 @@ object ReplayRecordingPolicy {
      * cadence, dense enough to pin a divergence to a handful of actions.
      */
     const val CHECKPOINT_EVERY_ACTIONS = 20
+
+    /**
+     * Actions after which a recording is frozen and marked [CompactReplay.truncated].
+     *
+     * Not a storage limit — the input log is ~7 stored bytes per action, so even this many is a
+     * couple of hundred KB, less than the archived frame stream of an ordinary game. It is a limit
+     * on the *cost of recording*: the live log is a copy-on-write list, so appending is O(n) and a
+     * game's recording is O(n²) in its own length, and the flusher re-encodes the whole log every
+     * few seconds until the game ends.
+     *
+     * A whole game of purely random play measures ~1,650 actions (`CompactReplaySizeBenchmark`) and
+     * a real one a few hundred, so this is an order of magnitude clear of any honest game and only
+     * a game that has already gone wrong can reach it. Deliberately below
+     * [com.wingedsheep.gameserver.session.GameStallGuard.MAX_ACTIONS], so the record gives up before
+     * the game does.
+     */
+    const val MAX_RECORDED_ACTIONS = 25_000
 }
 
 /** Which yield mutation a [ReplayYieldEntry] records. */

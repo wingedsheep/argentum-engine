@@ -42,7 +42,7 @@ val TeachersPest = card("Teacher's Pest") {
 
     activatedAbility {
         cost = Costs.Mana("{B}{G}")
-        effect = Effects.PutOntoBattlefield(EffectTarget.Self, tapped = true)
+        effect = Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.Self, tapped = true)
         activateFromZone = Zone.GRAVEYARD
         description = "Return this card from your graveyard to the battlefield tapped."
     }

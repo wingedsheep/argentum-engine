@@ -470,6 +470,49 @@
     ]
 }
 
+// Rally the Troops
+{
+    "name": "Rally the Troops",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nUntap all creatures you control.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "TapUntap",
+                "target": "Self",
+                "tap": false
+            }
+        },
+        "castRestrictions": [
+            {
+                "type": "OnlyDuringStep",
+                "step": "DECLARE_ATTACKERS"
+            },
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": "YouWereAttackedThisStep"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "19",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Poole",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61d92577-c3e2-4129-8974-89eb896cdc2d.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ravenous Rats
 {
     "name": "Ravenous Rats",
@@ -712,6 +755,56 @@
         "artist": "Keith Parkinson",
         "flavorText": "People fight hardest on their own soil.",
         "imageUri": "https://cards.scryfall.io/normal/front/d/e/de307b2e-9a1c-4f95-887f-14c9d99577aa.jpg?1783946489"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Warrior's Stand
+{
+    "name": "Warrior's Stand",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Cast this spell only during the declare attackers step and only if you've been attacked this step.\nCreatures you control get +2/+2 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            "body": {
+                "type": "ModifyStats",
+                "powerModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "toughnessModifier": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "target": "Self"
+            }
+        },
+        "castRestrictions": [
+            {
+                "type": "OnlyDuringStep",
+                "step": "DECLARE_ATTACKERS"
+            },
+            {
+                "type": "CastOnlyIfCondition",
+                "condition": "YouWereAttackedThisStep"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "UNCOMMON",
+        "artist": "Keith Parkinson",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a24f00c-7e2e-4609-b956-ca3d5fb365b2.jpg"
     },
     "colorIdentityOverride": [
         "WHITE"

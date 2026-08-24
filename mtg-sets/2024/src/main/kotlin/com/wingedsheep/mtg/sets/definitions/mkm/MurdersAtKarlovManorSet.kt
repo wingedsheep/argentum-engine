@@ -16,7 +16,7 @@ object MurdersAtKarlovManorSet : MtgSet {
     override val code = "MKM"
     override val displayName = "Murders at Karlov Manor"
     override val releaseDate = "2024-02-09"
-    override val incomplete = true
+    override val sealedSupported = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

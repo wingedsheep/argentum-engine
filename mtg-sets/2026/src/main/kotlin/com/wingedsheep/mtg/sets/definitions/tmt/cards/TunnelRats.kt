@@ -27,11 +27,7 @@ val TunnelRats = card("Tunnel Rats") {
 
     activatedAbility {
         cost = Costs.Mana("{4}{B}")
-        effect = Effects.Move(
-            target = EffectTarget.Self,
-            destination = Zone.BATTLEFIELD,
-            placement = ZonePlacement.Tapped
-        )
+        effect = Effects.PutOntoBattlefieldFromGraveyard(EffectTarget.Self, tapped = true)
         activateFromZone = Zone.GRAVEYARD
     }
 

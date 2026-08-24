@@ -302,6 +302,22 @@ enum class ContextPropertyKey(val description: String) {
     ADDITIONAL_COST_EXILED_COUNT("the number of cards exiled"),
     /** Number of (still-legal) targets in the current effect context. */
     TARGET_COUNT("the number of targets"),
+    /**
+     * Combined mana value of the objects the current spell or ability targets — Urgent Necropsy's
+     * "collect evidence X, where X is the total mana value of the permanents this spell targets".
+     *
+     * The summing sibling of [TARGET_COUNT], and read from the same target list. Player targets
+     * have no mana value and contribute nothing, so a mixed "target creature and target player"
+     * requirement measures only the objects.
+     *
+     * **Also readable while a spell is being cast**, which is the shape it exists for: an
+     * additional cost priced off the targets is determined at CR 601.2f, *after* the targets are
+     * announced at 601.2c and before the cost is paid at 601.2h, so a cost carrying this key reads
+     * the targets the caster just chose (`CastSpell.targets`) rather than a resolution context. In
+     * any context that has no targets at all it reads 0 — which for collect evidence is a real
+     * threshold, not a failure: collecting evidence 0 exiles nothing and is legal.
+     */
+    TARGETS_TOTAL_MANA_VALUE("the total mana value of the permanents this spell targets"),
     /** Number of +1/+1 counters on the source as it last existed on the battlefield (Hooded Hydra). */
     LAST_KNOWN_PLUS_ONE_COUNTER_COUNT("the number of +1/+1 counters on it"),
     /**
@@ -970,6 +986,27 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
             return if (newCondition !== condition || newIfTrue !== ifTrue || newIfFalse !== ifFalse)
                 copy(condition = newCondition, ifTrue = newIfTrue, ifFalse = newIfFalse) else this
         }
+    }
+
+    /**
+     * How many players are in [scope] — "for each opponent", "for each other player", "the number
+     * of players in the game". Counts only players still in the game (CR 800.4a: a player who
+     * leaves is no longer a player), so a pod that shrinks mid-game reports the live number.
+     *
+     * The unconditional sibling of [CountPlayersWith]; reach for that one when the count is
+     * qualified ("each opponent **who has one or fewer cards in hand**"). Its main use is as a
+     * [com.wingedsheep.sdk.scripting.targets.TargetObject.dynamicMaxCount]: paired with
+     * `optional = true` and `differentControllers = true` it spells "for each other player, ... up
+     * to one target creature that player controls" (Kaya, Spirits' Justice), where the scope names
+     * how many players may be hit and the other two flags cap it at one each.
+     *
+     * [Player.EachOpponent] (the default) is the "each other player" reading in every free-for-all
+     * game; [Player.Each] counts the whole table including you.
+     */
+    @SerialName("PlayerCount")
+    @Serializable
+    data class PlayerCount(val scope: Player = Player.EachOpponent) : DynamicAmount {
+        override val description: String = "the number of ${scope.description}"
     }
 
     /**

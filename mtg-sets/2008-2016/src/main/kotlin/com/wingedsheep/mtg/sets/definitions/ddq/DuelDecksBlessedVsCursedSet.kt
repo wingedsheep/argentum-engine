@@ -10,8 +10,13 @@ import com.wingedsheep.sdk.model.TokenPrinting
 /**
  * Duel Decks: Blessed vs. Cursed (2016)
  *
- * mtgish-tooling seed: only the cards relocated here as their canonical earliest printing.
- * Intentionally incomplete relative to the official set.
+ * Complete: all 67 cards, every one of them a reprint whose canonical definition lives in the set
+ * that first printed it (ISD, DKA, AVR, …) with a [Printing] row here.
+ *
+ * The official product also numbers its four tokens inside the main set (#77–80) rather than in a
+ * separate `tddq` set. Those are not cards and never enter the count — see [tokenArt] below.
+ *
+ * [sealedSupported] stays false: a duel deck is two fixed 60-card decks, not a draftable product.
  *
  * Set Code: DDQ
  * Release Date: 2016-02-26
@@ -22,7 +27,6 @@ object DuelDecksBlessedVsCursedSet : MtgSet {
     override val displayName = "Duel Decks: Blessed vs. Cursed"
     override val releaseDate = "2016-02-26"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

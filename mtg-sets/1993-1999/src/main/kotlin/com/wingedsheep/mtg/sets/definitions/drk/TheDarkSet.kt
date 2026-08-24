@@ -9,11 +9,16 @@ import com.wingedsheep.sdk.model.Printing
 /**
  * The Dark (1994)
  *
- * Scaffolded to hold the canonical [CardDefinition]s of cards whose earliest real-expansion
- * printing is The Dark (e.g. Bog Imp), with later sets contributing reprint [Printing] rows.
- *
  * Set Code: DRK
  * Release Date: August 1, 1994
+ *
+ * Scaffolded to hold the canonical [CardDefinition]s of cards whose earliest real-expansion
+ * printing is The Dark (e.g. Bog Imp), with later sets contributing reprint [Printing] rows.
+ * Every card in the set is one of those canonicals — The Dark introduced no reprints — so
+ * [printings] is empty, and the set has no basic lands of its own (hence [basicLandsFallback]).
+ *
+ * Since filled in: all 119 cards are implemented and field-verified against Scryfall, so the set
+ * is draftable (not `incomplete`).
  */
 object TheDarkSet : MtgSet {
 
@@ -21,7 +26,6 @@ object TheDarkSet : MtgSet {
     override val displayName = "The Dark"
     override val releaseDate = "1994-08-01"
     override val basicLandsFallback = PortalSet
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

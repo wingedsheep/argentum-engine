@@ -83,8 +83,12 @@ class ZoneActivatedAbilityEnumerator(private val zone: Zone) : ActionEnumerator 
                 }
                 if (!restrictionsMet) continue
 
-                // Check cost requirements and build cost info
-                val effectiveCost = ability.cost
+                // Check cost requirements and build cost info. A *defined* {X} (CR 107.3c) is
+                // resolved here for the same reason the battlefield enumerator resolves it: the
+                // affordability check below and the cost shown in the menu both have to be the
+                // number the handler will charge, not an unresolved `{X}`.
+                val effectiveCost = context.castPermissionUtils
+                    .applyDefinedXValue(ability.cost, ability, state, entityId, playerId)
                 var costCanBePaid = true
                 val handCards = state.getZone(playerId, Zone.HAND)
                 var hasDiscardCost = false

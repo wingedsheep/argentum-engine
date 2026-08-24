@@ -32,6 +32,19 @@ enum class AbilityFlag(val displayName: String) {
      */
     CANT_BECOME_UNTAPPED("Can't become untapped"),
 
+    /**
+     * "Can't be the target of spells" — spells only, so abilities may still target this permanent.
+     * That is what separates it from [com.wingedsheep.sdk.core.Keyword.SHROUD], which locks out
+     * both. Read by `TargetValidator`, which is told whether the targeting object is a spell or an
+     * ability via `TargetingSourceType`.
+     *
+     * For the conditional wording — Lurker's "can't be the target of spells **unless** it attacked
+     * or blocked this turn" — grant this through a `ConditionalStaticAbility`, exactly as Goblin
+     * Rock Sled gates `DOESNT_UNTAP`: the projector re-evaluates the gate continuously, so the
+     * creature becomes targetable the moment it attacks or blocks.
+     */
+    CANT_BE_TARGETED_BY_SPELLS("Can't be the target of spells"),
+
     MAY_NOT_UNTAP("You may choose not to untap"),
 
     /**
@@ -90,6 +103,20 @@ enum class AbilityFlag(val displayName: String) {
 
     // ── Combat damage assignment flags ──────────────────────────
     ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS("Assigns combat damage equal to its toughness rather than its power"),
+
+    /**
+     * "It assigns no combat damage this turn" — the Fallen Empires rider that trades a creature's
+     * combat damage away for something else (Farrel's Zealot, Farrel's Mantle, Delif's Cone,
+     * Delif's Cube).
+     *
+     * Distinct from preventing the damage: the creature assigns none at all, so nothing is dealt
+     * for a prevention effect to see, no damage triggers fire, and lifelink/deathtouch have nothing
+     * to attach to. Read at the single assignment chokepoint,
+     * `CombatDamageUtils.getAssignedCombatDamage`, so it covers first strike, trample and the
+     * ordered-blockers assignment alike. Grant it with a duration — the cards that print it all say
+     * "this turn".
+     */
+    ASSIGNS_NO_COMBAT_DAMAGE("Assigns no combat damage this turn"),
 
     // ── Summoning-sickness flags ────────────────────────────────
     /**

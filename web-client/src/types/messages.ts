@@ -1124,6 +1124,18 @@ export interface AdditionalCostInfo {
   readonly exileMinTotalWeight?: number
   readonly exileCardWeights?: Readonly<Record<EntityId, number>>
   readonly exileWeightUnit?: string
+  /**
+   * What each legal target would add to `exileMinTotalWeight` — present only for a cost whose
+   * threshold is priced off the spell's targets rather than printed (Urgent Necropsy's "collect
+   * evidence X, where X is the total mana value of the permanents this spell targets").
+   *
+   * Its presence says the threshold isn't final and the picker has to wait: `exileMinTotalWeight`
+   * carries only the part already known, and the real floor is that plus these weights summed over
+   * whatever the caster targets. So the cost-payment step runs *after* the targeting step for this
+   * cost — the same deferral `manaCostPerExtraTarget` already does for mana sources. Like every
+   * other weight here, the numbers are the server's, not the client's.
+   */
+  readonly exileWeightPerTarget?: Readonly<Record<EntityId, number>>
   readonly validBeholdTargets?: readonly EntityId[]
   readonly beholdCount?: number
   readonly counterRemovalCreatures?: readonly CounterRemovalCreatureInfo[]

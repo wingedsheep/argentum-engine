@@ -683,8 +683,24 @@ data class ChangeSpellTargetEffect(
  */
 @SerialName("ChangeTarget")
 @Serializable
-data object ChangeTargetEffect : Effect {
-    override val description: String = "Change the target of target spell or ability with a single target"
+data class ChangeTargetEffect(
+    /**
+     * Restrict the *new* target to a player — Reflecting Mirror's "the new target must be a
+     * player". Default false keeps Willbender's unrestricted redirect, which may point the spell
+     * at anything its own requirement allows.
+     */
+    val newTargetMustBePlayer: Boolean = false,
+    /**
+     * Only redirect when the spell's current single target is this effect's controller — Reflecting
+     * Mirror's "if that target is you". Default false: Willbender redirects whatever it targets.
+     */
+    val onlyIfCurrentTargetIsController: Boolean = false,
+) : Effect {
+    override val description: String = buildString {
+        append("Change the target of target spell or ability with a single target")
+        if (onlyIfCurrentTargetIsController) append(" if that target is you")
+        if (newTargetMustBePlayer) append(". The new target must be a player")
+    }
 }
 
 /**

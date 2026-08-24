@@ -4,11 +4,12 @@
 
 package com.wingedsheep.mtg.sets.definitions.dst.cards
 
-import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.CantBeBlocked
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 
 /**
@@ -23,7 +24,12 @@ val WhispersilkCloak = card("Whispersilk Cloak") {
     colorIdentity = ""
     typeLine = "Artifact — Equipment"
     oracleText = "Equipped creature can't be blocked and has shroud. (It can't be the target of spells or abilities.)\nEquip {2}"
-    flags(AbilityFlag.CANT_BE_BLOCKED)
+    staticAbility {
+        // A card-level `flags(AbilityFlag.CANT_BE_BLOCKED)` would land the evasion on this
+        // Equipment itself, which never blocks or is blocked — the printed line is about the
+        // equipped creature, so the evasion is a static scoped to what this is attached to.
+        ability = CantBeBlocked(GroupFilter.attachedCreature())
+    }
     staticAbility {
         ability = GrantKeyword(Keyword.SHROUD)
     }

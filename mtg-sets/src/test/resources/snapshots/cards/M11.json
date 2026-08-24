@@ -649,7 +649,8 @@
                             "ShuffleLibrary",
                             "EmitLibrarySearchedEvent"
                         ]
-                    }
+                    },
+                    "descriptionOverride": "When this creature enters, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle."
                 },
                 "descriptionOverride": "When this creature enters, you may search your library for a basic land card, reveal it, put it into your hand, then shuffle."
             }
@@ -663,6 +664,55 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Viscera Seer
+{
+    "name": "Viscera Seer",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Vampire Wizard",
+    "oracleText": "Sacrifice a creature: Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "Scry",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "120",
+        "artist": "John Stanko",
+        "flavorText": "In matters of life and death, he trusts his gut.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/6179f847-e334-4f7f-9a4e-0013942a394f.jpg",
+        "rulings": [
+            {
+                "date": "2010-08-15",
+                "text": "You can sacrifice Viscera Seer to activate its own ability."
+            },
+            {
+                "date": "2010-08-15",
+                "text": "If you sacrifice an attacking or blocking creature during the declare blockers step, it won't deal combat damage. If you wait until the combat damage step, but that creature is dealt lethal damage, it'll be destroyed before you get a chance to sacrifice it."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

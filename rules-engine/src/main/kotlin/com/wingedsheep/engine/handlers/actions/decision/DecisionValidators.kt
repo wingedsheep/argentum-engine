@@ -41,6 +41,7 @@ import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.core.YesNoResponse
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.model.EntityId
 
@@ -232,6 +233,18 @@ object DecisionValidators {
                     }
                     if (names.size != names.toSet().size) {
                         return "Targets for requirement $reqIndex must have different names"
+                    }
+                }
+                // "For each other player, ... up to one target creature that player controls" — no
+                // two chosen targets may share a controller (Kaya, Spirits' Justice). TargetValidator
+                // is authoritative; this rejects it interactively too.
+                if (req.differentControllers && selectedIds.size > 1 && state != null) {
+                    val controllers = selectedIds.map { id ->
+                        state.projectedState.getController(id)
+                            ?: state.getEntity(id)?.get<ControllerComponent>()?.playerId
+                    }
+                    if (controllers.size != controllers.toSet().size) {
+                        return "Targets for requirement $reqIndex must be controlled by different players"
                     }
                 }
             }

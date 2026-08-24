@@ -51,6 +51,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.*
 import com.wingedsheep.sdk.scripting.predicates.evaluateWith
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -882,6 +883,50 @@ class TriggerDetector(
                     continue
                 }
 
+                // "…whenever this creature blocks or becomes blocked by a creature this combat, that
+                // creature gains first strike" (Goblin Flotilla). Like the battlefield-resident
+                // form, this fans out one trigger per combat partner so `TriggeringEntity` names
+                // the *partner* — the creature the rider actually acts on — rather than the watched
+                // creature itself.
+                if (specEvent is com.wingedsheep.sdk.scripting.EventPattern.BlocksOrBecomesBlockedByEvent &&
+                    event is com.wingedsheep.engine.core.BlockersDeclaredEvent &&
+                    delayed.watchedEntityId != null
+                ) {
+                    val watched = delayed.watchedEntityId
+                    val partners = mutableListOf<EntityId>()
+                    event.blockers[watched]?.let { partners.addAll(it) }
+                    for ((blockerId, attackerIds) in event.blockers) {
+                        if (attackerIds.contains(watched)) partners.add(blockerId)
+                    }
+                    for (partnerId in partners.distinct()) {
+                        val partnerFilter = specEvent.partnerFilter
+                        if (partnerFilter != null && !predicateEvaluator.matches(
+                                state, state.projectedState, partnerId, partnerFilter,
+                                PredicateContext(controllerId = delayed.controllerId, sourceId = delayed.sourceId)
+                            )
+                        ) continue
+                        if (delayed.fireOnce && delayed.id in firedOnceIds) continue
+                        if (delayed.fireOnce) firedOnceIds.add(delayed.id)
+                        triggers.add(
+                            PendingTrigger(
+                                ability = TriggeredAbility.create(
+                                    trigger = spec.event,
+                                    binding = spec.binding,
+                                    effect = delayed.effect,
+                                    targetRequirement = delayed.targetRequirement,
+                                    additionalTargetRequirements = delayed.additionalTargetRequirements
+                                ),
+                                sourceId = delayed.sourceId,
+                                sourceName = delayed.sourceName,
+                                controllerId = delayed.controllerId,
+                                triggerContext = TriggerContext(triggeringEntityId = partnerId),
+                                consumesDelayedTriggerId = if (delayed.fireOnce) delayed.id else null
+                            )
+                        )
+                    }
+                    continue
+                }
+
                 if (delayed.fireOnce) firedOnceIds.add(delayed.id)
                 triggers.add(
                     PendingTrigger(
@@ -1004,6 +1049,24 @@ class TriggerDetector(
                     com.wingedsheep.sdk.scripting.ControlChangeDirection.GAINED ->
                         event.newControllerId == controllerId
                 }
+            }
+            // Goblin Flotilla's "this combat" rider. Entity-scoped: the watched creature must be
+            // in combat with somebody; which partners it fired for is decided by the fan-out above.
+            is com.wingedsheep.sdk.scripting.EventPattern.BlocksOrBecomesBlockedByEvent -> {
+                if (event !is com.wingedsheep.engine.core.BlockersDeclaredEvent) return false
+                val watched = watchedEntityId ?: return false
+                event.blockers.containsKey(watched) || event.blockers.values.any { it.contains(watched) }
+            }
+            // "This turn, when target creature you control attacks and isn't blocked, …" — the
+            // Fallen Empires Delif's artifacts. Entity-scoped: the watched creature is the one
+            // whose unblocked attack the delayed trigger is waiting for, so the CR 509.3g test
+            // runs against it rather than against the artifact that created the trigger.
+            is com.wingedsheep.sdk.scripting.EventPattern.BecomesUnblockedEvent -> {
+                if (event !is com.wingedsheep.engine.core.BlockersDeclaredEvent) return false
+                val watched = watchedEntityId ?: return false
+                val isAttacking = state.getEntity(watched)
+                    ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>() != null
+                isAttacking && event.blockers.values.none { it.contains(watched) }
             }
             else -> false
         }
@@ -1240,27 +1303,59 @@ class TriggerDetector(
                             }
                         }
 
-                        for (partnerId in partners.distinct()) {
+                        val matchingPartners = partners.distinct().filter { partnerId ->
                             val partnerFilter = trigger.partnerFilter
-                            val matchesFilter = if (partnerFilter != null) {
-                                predicateEvaluator.matches(
-                                    state, projected, partnerId, partnerFilter,
-                                    PredicateContext(controllerId = controllerId, sourceId = entityId)
+                            partnerFilter == null || predicateEvaluator.matches(
+                                state, projected, partnerId, partnerFilter,
+                                PredicateContext(controllerId = controllerId, sourceId = entityId)
+                            )
+                        }
+                        // "…blocks or becomes blocked *by* [filter]" is once per matching partner
+                        // (Corrosive Ooze). The partner-less wording "…blocks or becomes blocked"
+                        // is a single trigger however many creatures it is paired with (Spitting
+                        // Slug), so collapse to the first matching partner — it still binds an "it".
+                        val firingPartners =
+                            if (trigger.oncePerCombat) matchingPartners.take(1) else matchingPartners
+                        for (partnerId in firingPartners) {
+                            triggers.add(
+                                PendingTrigger(
+                                    ability = ability,
+                                    sourceId = entityId,
+                                    sourceName = cardComponent.name,
+                                    controllerId = controllerId,
+                                    triggerContext = TriggerContext(triggeringEntityId = partnerId)
                                 )
-                            } else {
-                                true
-                            }
-                            if (matchesFilter) {
-                                triggers.add(
-                                    PendingTrigger(
-                                        ability = ability,
-                                        sourceId = entityId,
-                                        sourceName = cardComponent.name,
-                                        controllerId = controllerId,
-                                        triggerContext = TriggerContext(triggeringEntityId = partnerId)
-                                    )
+                            )
+                        }
+                    }
+                    // "Whenever enchanted/equipped creature attacks and isn't blocked"
+                    // (Farrel's Mantle). BecomesUnblockedEvent piggybacks on BlockersDeclaredEvent
+                    // and its condition is a *negative* over the whole block map — "no blocker
+                    // lists this attacker" — which the per-entity AttachmentTriggerDetector path
+                    // cannot express, so ATTACHED is resolved here alongside the sibling
+                    // BlocksOrBecomesBlockedBy case. The combat relationships are read against the
+                    // enchanted creature; the trigger's source stays the Aura/Equipment, and the
+                    // triggering entity is the attacker so "it"/"its controller" bind to it.
+                    else if (ability.trigger is EventPattern.BecomesUnblockedEvent &&
+                        ability.binding == TriggerBinding.ATTACHED &&
+                        event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
+                        val attachedCreatureId = state.getEntity(entityId)
+                            ?.get<com.wingedsheep.engine.state.components.battlefield.AttachedToComponent>()
+                            ?.targetId
+                        val isAttacking = attachedCreatureId != null && state.getEntity(attachedCreatureId)
+                            ?.get<com.wingedsheep.engine.state.components.combat.AttackingComponent>() != null
+                        val isUnblocked = attachedCreatureId != null &&
+                            event.blockers.values.none { it.contains(attachedCreatureId) }
+                        if (isAttacking && isUnblocked) {
+                            triggers.add(
+                                PendingTrigger(
+                                    ability = ability,
+                                    sourceId = entityId,
+                                    sourceName = cardComponent.name,
+                                    controllerId = controllerId,
+                                    triggerContext = TriggerContext(triggeringEntityId = attachedCreatureId)
                                 )
-                            }
+                            )
                         }
                     }
                     // For "whenever [a player] draws a card" (DrawEvent), drawing N cards via a
@@ -2120,11 +2215,21 @@ class TriggerDetector(
                 val trigger = ability.trigger
                 if (trigger !is EventPattern.CardsPutIntoExileEvent) continue
 
-                val hasMatch = exiled.any { event ->
+                // The objects that caused this firing. They are handed to the payoff as the
+                // ability's captured collection so "choose a creature card from among them" has a
+                // referent (Kaya, Spirits' Justice); an unfiltered Ketramose-style trigger simply
+                // ignores it.
+                val matchingIds = exiled.filter { event ->
                     event.fromZone in trigger.fromZones &&
-                        cardMatchesGraveyardBatchFilter(state, event.entityId, trigger.filter)
-                }
-                if (!hasMatch) continue
+                        exileBatchOwnershipMatches(event, trigger.filter, entry.controllerId) &&
+                        cardMatchesGraveyardBatchFilter(
+                            state = state,
+                            entityId = event.entityId,
+                            filter = trigger.filter,
+                            includeTokens = trigger.includeTokens
+                        )
+                }.map { it.entityId }
+                if (matchingIds.isEmpty()) continue
 
                 triggers.add(
                     PendingTrigger(
@@ -2132,10 +2237,38 @@ class TriggerDetector(
                         sourceId = entry.entityId,
                         sourceName = entry.cardComponent.name,
                         controllerId = entry.controllerId,
-                        triggerContext = TriggerContext()
+                        triggerContext = TriggerContext(capturedEntityIds = matchingIds)
                     )
                 )
             }
+        }
+    }
+
+    /**
+     * Whether the object this [event] moved into exile satisfies [filter]'s controller predicate for
+     * a trigger controlled by [observerId].
+     *
+     * The object is already in exile when this runs, so control is read from last-known information
+     * (CR 603.10) for a battlefield exit and from ownership for every other zone — a card in a
+     * graveyard, hand or library has no controller, and "creature cards in **your** graveyard" is a
+     * statement about whose graveyard it is. Predicates the exile batch can't meaningfully answer
+     * (the target-relative ones, which have no target at detection time) fall through as matching,
+     * the same way [cardMatchesGraveyardBatchFilter] treats card predicates it doesn't model.
+     */
+    private fun exileBatchOwnershipMatches(
+        event: ZoneChangeEvent,
+        filter: GameObjectFilter,
+        observerId: EntityId
+    ): Boolean {
+        val holderId = if (event.fromZone == Zone.BATTLEFIELD) {
+            event.lastKnown?.controllerId ?: event.ownerId
+        } else {
+            event.ownerId
+        }
+        return when (filter.controllerPredicate) {
+            ControllerPredicate.ControlledByYou -> holderId == observerId
+            ControllerPredicate.ControlledByOpponent -> holderId != observerId
+            else -> true
         }
     }
 
@@ -2147,14 +2280,17 @@ class TriggerDetector(
     private fun cardMatchesGraveyardBatchFilter(
         state: GameState,
         entityId: EntityId,
-        filter: GameObjectFilter
+        filter: GameObjectFilter,
+        includeTokens: Boolean = false
     ): Boolean {
         // Tokens aren't cards (CR 111.6), so a token put into a graveyard never satisfies a
         // "one or more [permanent] cards are put into your graveyard" trigger — even though it
         // momentarily occupies the graveyard zone before CR 704.5s/111.7 sweeps it away (which
-        // is also why it can still be present here at trigger-detection time).
+        // is also why it can still be present here at trigger-detection time). [includeTokens]
+        // is the opposite reading, for a trigger whose printed noun is permanents rather than
+        // cards ("one or more creatures you control … are put into exile").
         val entity = state.getEntity(entityId) ?: return false
-        if (entity.has<TokenComponent>()) return false
+        if (!includeTokens && entity.has<TokenComponent>()) return false
         if (filter == GameObjectFilter.Any) return true
         val cardComponent = entity.get<CardComponent>() ?: return false
         return filter.cardPredicates.all { predicate ->

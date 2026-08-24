@@ -32,8 +32,7 @@ val RathiIntimidator = card("Rathi Intimidator") {
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{2}"), Costs.Tap)
         effect = Patterns.Library.searchLibrary(
-            filter = GameObjectFilter.Any.withSubtype("Mercenary"),
-            count = 2,
+            filter = GameObjectFilter.Permanent.withSubtype("Mercenary").manaValueAtMost(2),
             destination = SearchDestination.BATTLEFIELD
         )
     }

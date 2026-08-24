@@ -19,10 +19,13 @@ import io.kotest.matchers.shouldBe
  * each turn." + "{5}{U}{U}: Exile up to two other target nonland permanents you control. Return
  * those cards to the battlefield under their owner's control at the beginning of the next end step."
  *
- * The trigger is the new source-filtered form of the "you activate an ability" event
- * ([com.wingedsheep.sdk.dsl.Triggers.activatesAbilityOf]), so the interesting cases are the two
- * ways it must *not* fire: a creature's mana ability (excluded by the shared "isn't a mana ability"
- * gate) and a noncreature permanent's ability (excluded by the source filter).
+ * The trigger is the source-filtered form of the "you activate an ability" event
+ * ([com.wingedsheep.sdk.dsl.Triggers.activatesAbilityOf]) with `includeManaAbilities = true`. The
+ * Oracle text carries no "that isn't a mana ability" clause and a mana ability is still an
+ * activated ability (CR 605.3), so a creature's "{T}: Add {G}" fires it — the card's own ruling
+ * says so. That holds whether the player taps the mana creature by hand or the engine auto-taps it
+ * to pay for a spell; both are covered below. The one way it must *not* fire is a noncreature
+ * permanent's ability, excluded by the source filter.
  */
 class ElrondMoonReaderScenarioTest : ScenarioTestBase() {
 
@@ -70,7 +73,7 @@ class ElrondMoonReaderScenarioTest : ScenarioTestBase() {
                 }
             }
 
-            test("a creature's mana ability does not trigger it") {
+            test("tapping a creature for mana triggers it") {
                 val game = scenario()
                     .withPlayers("Player", "Opponent")
                     .withCardOnBattlefield(1, "Elrond, Moon-Reader", summoningSickness = false)
@@ -89,8 +92,73 @@ class ElrondMoonReaderScenarioTest : ScenarioTestBase() {
                 ).error shouldBe null
                 game.resolveStack()
 
-                withClue("mana abilities don't use the stack and never fire this trigger") {
+                withClue("a mana ability is still an activated ability (CR 605.3), so it triggers") {
+                    game.handSize(1) shouldBe handBefore + 1
+                }
+            }
+
+            test("auto-tapping a creature for mana while casting a spell triggers it") {
+                // The engine's auto-tap fast path is a UI shortcut for the player activating the
+                // source's mana ability, not a different game action — so it must fire the trigger
+                // exactly as the manual tap above does. The drawn card lands on top of the spell
+                // per CR 603.3: the trigger waits for priority, which comes after the cast.
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Elrond, Moon-Reader", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Llanowar Elves", summoningSickness = false)
+                    .withCardInHand(1, "Llanowar Elves")
+                    .withCardInLibrary(1, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val handBefore = game.handSize(1)
+
+                // The battlefield Elves is the only mana source, so paying {G} must tap it.
+                game.castSpell(1, "Llanowar Elves").error shouldBe null
+                if (game.hasPendingDecision()) game.submitManaSourcesAutoPay()
+                game.resolveStack()
+
+                withClue("the cast spent the card and the trigger drew one, netting zero") {
                     game.handSize(1) shouldBe handBefore
+                }
+                withClue("the drawn card is the one that was on top of the library") {
+                    game.isInHand(1, "Forest") shouldBe true
+                }
+            }
+
+            test("auto-tapping a creature to pay another permanent's ability cost triggers it") {
+                // The enchantment's own activation is out of scope (source filter is "a creature"),
+                // so the only thing that can draw here is the Elves being tapped for the generic
+                // {1} — which isolates the auto-tap path used to pay an *ability's* mana cost.
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardOnBattlefield(1, "Elrond, Moon-Reader", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Llanowar Elves", summoningSickness = false)
+                    .withCardOnBattlefield(1, "Along the Crooked Way")
+                    .withLandsOnBattlefield(1, "Swamp", 1)
+                    .withCardInLibrary(1, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val enchantment = game.findPermanent("Along the Crooked Way")!!
+                val grantMenace = AlongTheCrookedWay.activatedAbilities.single().id
+                val handBefore = game.handSize(1)
+
+                // {1}{B}: the lone Swamp covers {B}, so the {1} must come from the Elves.
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player1Id,
+                        sourceId = enchantment,
+                        abilityId = grantMenace
+                    )
+                ).error shouldBe null
+                if (game.hasPendingDecision()) game.submitManaSourcesAutoPay()
+                game.resolveStack()
+
+                withClue("tapping the Elves to help pay the cost activated its mana ability") {
+                    game.handSize(1) shouldBe handBefore + 1
                 }
             }
 

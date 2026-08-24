@@ -194,6 +194,20 @@ sealed interface Player {
         override val description: String = "its controller"
     }
 
+    /**
+     * Controller of the entity the enclosing `ForEachInGroup` is currently iterating over — "for
+     * each attacking red creature, … unless **its controller** pays {2}{R}" (Heroism, Tidal Flats).
+     *
+     * Distinct from [ControllerOfSource], which stays the enchantment's controller inside such a
+     * loop, and from [ControllerOf], which reads the effect's first *chosen target*. Null outside a
+     * ForEach-over-entities.
+     */
+    @SerialName("ControllerOfIterationEntity")
+    @Serializable
+    data object ControllerOfIterationEntity : Player {
+        override val description: String = "its controller"
+    }
+
     /** Owner of a permanent (used with EffectTarget) */
     @SerialName("OwnerOf")
     @Serializable
@@ -298,6 +312,7 @@ sealed interface Player {
             DefendingPlayer -> "defending player's"
             TargetOpponent -> "target opponent's"
             TargetPlayer -> "target player's"
+            ControllerOfIterationEntity -> "its controller's"
             EachTargetedPlayer -> "those players'"
             Each -> "each player's"
             ActivePlayerFirst -> "each player's"

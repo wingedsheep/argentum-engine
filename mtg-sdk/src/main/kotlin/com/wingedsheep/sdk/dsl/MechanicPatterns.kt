@@ -194,12 +194,28 @@ object MechanicPatterns {
     )
 
     /**
-     * Forage — exile three cards from your graveyard or sacrifice a Food.
+     * Forage — CR 701.59a, "Exile three cards from your graveyard or sacrifice a Food."
      *
      * Returns a [ChooseActionEffect] with feasibility checks so the choice is only
      * offered when the player can actually fulfill at least one option.
      *
-     * @param afterEffect optional effect appended to each mode (e.g., add counters)
+     * **Each mode ends by emitting the foraged event** ([Effects.Foraged]), which is what makes
+     * "Whenever you forage" (`Triggers.WheneverYouForage`) see a forage taken as an *effect*. The
+     * three *cost* contexts — an activated-ability cost, a cast-time additional cost, the
+     * graveyard-cast permission — emit it from their shared payment implementation instead, because
+     * they never come through here. That split is waterbend's: a keyword action that is sometimes a
+     * cost and sometimes an effect cannot be observed from one place.
+     *
+     * The marker sits **inside** each mode rather than after the choice, which is what gives the
+     * "only if it actually happened" property for free: forage has no "even if you can't" clause, so
+     * a declined forage — or one where neither mode is feasible — runs no mode and emits nothing.
+     * It also goes *before* [afterEffect], so the event is emitted the moment the forage completes
+     * and an "If you do, …" rider reads as the separate thing it is.
+     *
+     * @param afterEffect optional effect appended to each mode (e.g., add counters) — the "If you
+     *   do, …" half of "you may forage. If you do, …". Note that "**When** you do, …" is a
+     *   different card: that one is a reflexive trigger (CR 603.12) and belongs in
+     *   `ReflexiveTriggerEffect`, not here.
      */
     fun forage(afterEffect: Effect? = null): ChooseActionEffect {
         val exileFromGraveyard = CompositeEffect(
@@ -224,26 +240,25 @@ object MechanicPatterns {
                         destination = CardDestination.ToZone(Zone.EXILE)
                     )
                 )
+                add(Effects.Foraged())
                 if (afterEffect != null) add(afterEffect)
             }
         )
 
-        val sacrificeFood = if (afterEffect != null) {
-            CompositeEffect(
-                listOf(
+        // No empty-composite branch any more: every mode now carries the marker, so the sacrifice
+        // mode is a composite whether or not there is an `afterEffect`.
+        val sacrificeFood = CompositeEffect(
+            buildList {
+                add(
                     SacrificeEffect(
                         filter = GameObjectFilter.Any.withSubtype("Food"),
                         count = 1
-                    ),
-                    afterEffect
+                    )
                 )
-            )
-        } else {
-            SacrificeEffect(
-                filter = GameObjectFilter.Any.withSubtype("Food"),
-                count = 1
-            )
-        }
+                add(Effects.Foraged())
+                if (afterEffect != null) add(afterEffect)
+            }
+        )
 
         return ChooseActionEffect(
             choices = listOf(

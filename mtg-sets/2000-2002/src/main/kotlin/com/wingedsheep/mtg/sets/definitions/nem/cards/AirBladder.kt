@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.CanOnlyBlockCreaturesWith
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.GrantKeyword
+import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 
 
 /**
@@ -31,7 +32,14 @@ val AirBladder = card("Air Bladder") {
         ability = GrantKeyword(Keyword.FLYING)
     }
     staticAbility {
-        ability = CanOnlyBlockCreaturesWith(blockerFilter = GameObjectFilter.Creature.withKeyword(Keyword.FLYING))
+        // `CanOnlyBlockCreaturesWith` defaults its `filter` to `GroupFilter.source()`, where
+        // `GrantKeyword` above defaults to `attachedCreature()` — two neighbouring static families
+        // with opposite defaults for the same omitted field. The generated card took the default and
+        // restricted the *Aura*, which never blocks; the printed line is about the enchanted creature.
+        ability = CanOnlyBlockCreaturesWith(
+            blockerFilter = GameObjectFilter.Creature.withKeyword(Keyword.FLYING),
+            filter = GroupFilter.attachedCreature(),
+        )
     }
     metadata {
         rarity = Rarity.COMMON

@@ -101,7 +101,7 @@ player, so there's real demand behind it.
   `"313 matched of 360 (47 placeholder)"` plus a per-line "Not implemented yet" list. Cube import
   should reuse both wholesale.
 - **Example *decks* are a compiled-in Kotlin constant** (`DecksController.EXAMPLE_DECKS`, served at
-  `GET /api/decks/examples`). The root `example-decks.json` is not what the server reads.
+  `GET /api/decks/examples`).
 - **AI:** `SealedDeckGenerator` (`ai` module) builds decks from a pool but documents that eligible
   sets must be `SetConfig.fullyImplemented` and non-`extensionSet` — a synthetic cube config must set
   those flags coherently. Draft pick suggestion + deckbuild auto-build are gated per-lobby by

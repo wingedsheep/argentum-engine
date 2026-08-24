@@ -104,6 +104,29 @@ sealed interface ReplacementEffect : TextReplaceable<ReplacementEffect> {
     val priorityGroup: ReplacementPriorityGroup get() = ReplacementPriorityGroup.ANY
 
     /**
+     * The zones from which this replacement effect functions (CR 113.6).
+     *
+     * Default `{BATTLEFIELD}` — a permanent's abilities function only while it is on the
+     * battlefield, which is every replacement effect the corpus prints except the ones that say
+     * otherwise in so many words. A card whose printed line scopes itself to another zone declares
+     * that zone instead: Dearly Departed's "As long as this creature is in your graveyard, each
+     * Human creature you control enters with an additional +1/+1 counter on it" is
+     * `activeZones = setOf(Zone.GRAVEYARD)`.
+     *
+     * This is the replacement-effect twin of [TriggeredAbility.activeZones], and it is read the
+     * same way: the *scanner* filters by it. [com.wingedsheep.engine.handlers.effects.EntersWithReplacements]
+     * sweeps the battlefield for `BATTLEFIELD` sources and every graveyard for `GRAVEYARD` ones, so
+     * declaring `{GRAVEYARD}` both switches the effect **on** in the graveyard and switches it
+     * **off** on the battlefield — a Dearly Departed you cast does nothing until it dies, which is
+     * what the card says.
+     *
+     * Only the "as long as this card is in <zone>" *static* zone is expressed here. It is not a
+     * duration and not a condition: the effect is live for exactly as long as the card sits in one
+     * of these zones.
+     */
+    val activeZones: Set<Zone> get() = setOf(Zone.BATTLEFIELD)
+
+    /**
      * Additional [Condition]s gating when this replacement applies.
      *
      * Evaluated with the **player the event affects** as `EffectContext.controllerId`, not the
@@ -553,7 +576,8 @@ data class EntersWithDynamicCounters(
     override val appliesTo: EventPattern = EventPattern.ZoneChangeEvent(
         filter = GameObjectFilter.Creature.youControl(),
         to = Zone.BATTLEFIELD
-    )
+    ),
+    override val activeZones: Set<Zone> = setOf(Zone.BATTLEFIELD),
 ) : ReplacementEffect {
     override val description: String =
         "If ${appliesTo.description}, it enters with ${count.description} ${counterType.description} counters"
@@ -655,6 +679,47 @@ data class PreventDamage(
         val anyChanged = newAppliesTo !== appliesTo ||
             newRestrictions.zip(restrictions).any { (n, o) -> n !== o }
         return if (anyChanged) copy(appliesTo = newAppliesTo, restrictions = newRestrictions) else this
+    }
+}
+
+/**
+ * Prevent damage that would be dealt to this permanent and remove one counter of [counterType]
+ * from it — the printed twin of the shield counter's prevention half (CR 122.1c).
+ *
+ * Models Unbreathing Horde: "If this creature would be dealt damage, prevent that damage and
+ * remove a +1/+1 counter from it."
+ *
+ * Distinct from `PreventDamage` rather than a flag on it, because the counter removal is not a
+ * parameter of the prevention — it is what the ability *is*, and it makes the effect need a
+ * state-returning application path where plain prevention is a pure arithmetic reduction.
+ *
+ * Two rules the printed rulings pin down, both shared with shield counters:
+ *
+ * - **Exactly one counter per damage event**, however large the damage and however many counters
+ *   are on the permanent. A creature blocking two attackers is dealt combat damage once (CR 510.2),
+ *   so it spends one counter and prevents all of it; the first-strike and regular damage steps are
+ *   separate events and each cost a counter.
+ * - **The prevention does not depend on having a counter.** With no counters left the damage is
+ *   still prevented — there is simply nothing to remove. (Unbreathing Horde only survives that way
+ *   while something else is holding its toughness above 0.)
+ *
+ * [appliesTo] defaults to "any damage that would be dealt to this permanent"; narrow its
+ * `damageType`, `source` or `amount` for a card that only shields part of the picture.
+ */
+@SerialName("PreventDamageByRemovingCounter")
+@Serializable
+data class PreventDamageByRemovingCounter(
+    val counterType: CounterTypeFilter = CounterTypeFilter.PlusOnePlusOne,
+    override val appliesTo: EventPattern = EventPattern.DamageEvent(
+        recipient = RecipientFilter.Self
+    )
+) : ReplacementEffect {
+    override val description: String =
+        "If ${appliesTo.description}, prevent that damage and remove a ${counterType.description} counter from it"
+
+    override fun applyTextReplacement(replacer: TextReplacer): ReplacementEffect {
+        val newAppliesTo = appliesTo.applyTextReplacement(replacer)
+        return if (newAppliesTo !== appliesTo) copy(appliesTo = newAppliesTo) else this
     }
 }
 

@@ -874,6 +874,15 @@ class StaticAbilityHandler(
                     affectsFilter = convertGroupFilter(ability.filter)
                 )
             }
+            is com.wingedsheep.sdk.scripting.HasCreatureTypesOf -> {
+                // "has the creature types of [that object]" — Layer 4 (TYPE). The referenced object
+                // is resolved on every projection pass by the applicator, not here, so the gainer's
+                // types track it live (Duplicant).
+                ContinuousEffectData(
+                    modification = Modification.SetCreatureSubtypesFrom(ability.source, ability.retainedTypes),
+                    affectsFilter = convertGroupFilter(ability.filter)
+                )
+            }
             is SetBaseToughnessForCreatureGroup -> {
                 ContinuousEffectData(
                     modification = Modification.SetToughness(ability.toughness),
@@ -943,6 +952,7 @@ class StaticAbilityHandler(
             is CanAttackDespiteDefender,
             is CanBlockAnyNumber,
             is CantAttackUnless,
+            is com.wingedsheep.sdk.scripting.CantAttackUnlessSacrifice,
             is CantAttackUnlessCoAttacker,
             is CantBeAttackedBy,
             is CantBeAttackedWhileAttached,
@@ -959,6 +969,7 @@ class StaticAbilityHandler(
             is CrewSaddleContribution,
 
             // Combat: damage assignment (CombatDamageManager / CombatDamageUtils / DamageUtils):
+            is com.wingedsheep.sdk.scripting.CreaturesDamagedBySourceAreDoomed,
             is AssignCombatDamageAsUnblocked,
             is AssignDamageEqualToToughness,
             is DivideCombatDamageFreely,
@@ -996,6 +1007,8 @@ class StaticAbilityHandler(
             is PlayLandsAndCastFilteredFromTopOfLibrary,
             is PlotFromTopOfLibrary,
             is PlayersCantCastSpells,
+            is com.wingedsheep.sdk.scripting.PlayersCantPlayLands,
+            is com.wingedsheep.sdk.scripting.LandsCantEnterTheBattlefield,
             is RestrictSpellsCastPerTurn,
 
             // Spell costs (CostCalculator):
@@ -1050,9 +1063,11 @@ class StaticAbilityHandler(
             is RevealFirstDrawEachTurn,
             is RevealTopOfLibrary,
 
-            // Coin-flip result replacement (CR 705.3), queried by the coin-flip executors via
-            // CoinFlipModifiers — not a Rule 613 continuous effect:
+            // Coin-flip replacements, queried by CoinFlipService via CoinFlipModifiers — the
+            // result-dictating one (CR 705.3) and the flip-more-coins one (CR 614). Neither is a
+            // Rule 613 continuous effect:
             is WinCoinFlips,
+            is com.wingedsheep.sdk.scripting.FlipAdditionalCoins,
 
             // Stamped as marker components by addContinuousEffectComponent in this
             // handler and read from those components by their subsystems:
@@ -1134,6 +1149,7 @@ class StaticAbilityHandler(
         when (it) {
             // Damage replacement/modification:
             is PreventDamage,
+            is com.wingedsheep.sdk.scripting.PreventDamageByRemovingCounter,
             is DoubleDamage,
             is ModifyDamageAmount,
             is com.wingedsheep.sdk.scripting.CapDamage,

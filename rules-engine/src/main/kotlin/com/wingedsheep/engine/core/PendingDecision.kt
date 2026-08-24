@@ -151,7 +151,14 @@ data class TargetRequirementInfo(
      * cards with different names" (Behold the Sinister Six!). Enforced against each selected
      * target's name in [DecisionValidators.validateTargets].
      */
-    val differentNames: Boolean = false
+    val differentNames: Boolean = false,
+    /**
+     * When true, no two chosen targets for this requirement may share a controller — "for each
+     * other player, exile up to one target creature that player controls" (Kaya, Spirits'
+     * Justice). Enforced against each selected permanent's projected controller in
+     * [DecisionValidators.validateTargets].
+     */
+    val differentControllers: Boolean = false
 )
 
 /**

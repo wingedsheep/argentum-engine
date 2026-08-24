@@ -170,6 +170,17 @@ internal fun keywordLines(card: JsonObject, keywords: Set<String>, oracleText: S
         val rname = r.strField("_Rule") ?: continue
         // Landwalk is a top-level rule too; scan only this rule so a granted landwalk stays off the card.
         if (rname == "Landwalk") { findLandwalkKeywords(r, keywords, out); continue }
+        // Devoid (CR 702.114) is the one intrinsic card keyword the IR does NOT spell as a rule name:
+        // it rides as `CDA_Color[_SettableColor: Devoid]`, so neither the bridge lookup nor the
+        // PascalCase->enum auto-resolve below can reach it. The bare stamp is the whole mechanic —
+        // the SDK derives `CardDefinition.colors` as empty from the keyword — so read the nested tag
+        // here. Every other `_SettableColor` (SimpleColorList, AllColors, Colorless, TheChosenColor)
+        // is a different colour-setting shape with no card-keyword home; those add nothing and let
+        // the Emitter scaffold the card.
+        if (rname == "CDA_Color") {
+            if ("DEVOID" in keywords && r["args"].strField("_SettableColor") == "Devoid") out.add("DEVOID")
+            continue
+        }
         // Protection always carries a "from X" scope, so it renders as a scoped `keywordAbility(...)`
         // (see Emitter.protectionScopeDsl), never a bare `keywords(Keyword.PROTECTION)`.
         if (rname == "Protection") continue
