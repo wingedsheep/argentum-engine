@@ -137,6 +137,52 @@
     ]
 }
 
+// Fireblast
+{
+    "name": "Fireblast",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "You may sacrifice two Mountains rather than pay this spell's mana cost.\nFireblast deals 4 damage to any target.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": {
+                "type": "Fixed",
+                "amount": 4
+            },
+            "target": {
+                "type": "ContextTarget",
+                "index": 0
+            }
+        },
+        "targetRequirements": [
+            "AnyTarget"
+        ],
+        "selfAlternativeCost": {
+            "manaCost": "{0}",
+            "additionalCosts": [
+                {
+                    "type": "AdditionalAtom",
+                    "atom": {
+                        "type": "AtomSacrifice",
+                        "filter": "land Mountain",
+                        "count": 2
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "artist": "Michael Danza",
+        "flavorText": "\"Embermages aren't well known for their diplomatic skills.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/1/b1eb5b2c-1f02-48a6-a287-88eb189d6780.jpg?1783946989"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hulking Cyclops
 {
     "name": "Hulking Cyclops",
