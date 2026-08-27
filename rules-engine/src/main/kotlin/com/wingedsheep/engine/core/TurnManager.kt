@@ -748,6 +748,13 @@ class TurnManager(
                 for (member in newState.sharedTurnTeam(activePlayer)) {
                     val loseComponent = newState.getEntity(member)?.get<LoseAtEndStepComponent>() ?: continue
                     if (loseComponent.turnsUntilLoss <= 0) {
+                        // "You can't lose the game" (Platinum Angel — CR 104.3, and team-wide in
+                        // 2HG per CR 810.8a) stops this loss like every other: the delayed
+                        // trigger resolves and does nothing, so the marker is still consumed.
+                        if (com.wingedsheep.engine.mechanics.sba.player.playerCantLoseGame(newState, member)) {
+                            newState = newState.updateEntity(member) { it.without<LoseAtEndStepComponent>() }
+                            continue
+                        }
                         newState = newState.updateEntity(member) { container ->
                             container.without<LoseAtEndStepComponent>()
                                 .with(PlayerLostComponent(LossReason.CARD_EFFECT))

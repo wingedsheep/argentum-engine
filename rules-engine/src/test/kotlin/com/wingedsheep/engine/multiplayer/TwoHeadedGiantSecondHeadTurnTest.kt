@@ -132,6 +132,27 @@ class TwoHeadedGiantSecondHeadTurnTest : FunSpec({
         atEnd.gameOver.shouldBeTrue()
     }
 
+    test("'lose at the next end step' is stopped by a can't-lose grant, including a teammate's (CR 104.3 / 810.8a)") {
+        val (base, p, proc) = boot()
+        // Platinum Angel-style grant under p0; Final Fortune's marker on the teammate p1.
+        val (withAngel, _) = base.withPermanent(p[0], "Team Angel", "Artifact") {
+            with(com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameComponent())
+        }
+        val armed = withAngel.updateEntity(p[1]) { it.with(LoseAtEndStepComponent(turnsUntilLoss = 0)) }
+
+        val atEnd = drive(armed, proc) { it.gameOver || (it.step == Step.END && it.activePlayerId == p[0]) }
+
+        io.kotest.assertions.withClue(
+            "lost: " + p.map { it to atEnd.getEntity(it)?.get<PlayerLostComponent>()?.reason } +
+                " step=${atEnd.step} active=${atEnd.activePlayerId} turn=${atEnd.turnNumber}"
+        ) {
+            atEnd.gameOver.shouldBeFalse()
+        }
+        atEnd.getEntity(p[1])?.has<PlayerLostComponent>() shouldBe false
+        // The delayed loss resolved and did nothing — it doesn't lie in wait for the next end step.
+        atEnd.getEntity(p[1])?.has<LoseAtEndStepComponent>() shouldBe false
+    }
+
     test("a step-keyed delayed trigger owned by the second head fires at the team's end step") {
         val (base, p, proc) = boot()
         val delayed = DelayedTriggeredAbility(
