@@ -177,7 +177,8 @@ class ConnectionHandler(
             }
         }
 
-        // Cancel in-game disconnect timer and notify every opponent (2-player = the one opponent)
+        // Cancel in-game disconnect timer and notify every other seat — opponents and, in a team
+        // game, the returning player's partner (2-player = the one opponent)
         if (identity.gameDisconnectTimer != null) {
             identity.gameDisconnectTimer?.cancel(false)
             identity.gameDisconnectTimer = null
@@ -186,7 +187,7 @@ class ConnectionHandler(
             if (gameSessionId != null) {
                 val gameSession = gameRepository.findById(gameSessionId)
                 if (gameSession != null) {
-                    gameSession.getOpponentIds(identity.playerId).forEach { opponentId ->
+                    gameSession.getOtherPlayerIds(identity.playerId).forEach { opponentId ->
                         val opponentSession = gameSession.getPlayerSession(opponentId)
                         if (opponentSession?.isConnected == true) {
                             sender.send(opponentSession.webSocketSession, ServerMessage.OpponentReconnected)
@@ -388,8 +389,10 @@ class ConnectionHandler(
                 if (gameSessionId != null) {
                     val gameSession = gameRepository.findById(gameSessionId)
                     if (gameSession != null && !gameSession.isGameOver()) {
-                        // Notify every opponent that this seat dropped (2-player = the one opponent)
-                        gameSession.getOpponentIds(identity.playerId).forEach { opponentId ->
+                        // Notify every other seat that this one dropped — a Two-Headed Giant partner
+                        // needs to know at least as much as an opponent does, since their team
+                        // forfeits with them if the timer runs out (2-player = the one opponent)
+                        gameSession.getOtherPlayerIds(identity.playerId).forEach { opponentId ->
                             val opponentSession = gameSession.getPlayerSession(opponentId)
                             if (opponentSession?.isConnected == true) {
                                 sender.send(opponentSession.webSocketSession,

@@ -402,6 +402,14 @@ class GameSession(
     }
 
     /**
+     * Every *other* seat at the table — opponents and teammates alike. For table-wide notices
+     * (a seat dropped, a seat came back) that a partner needs at least as much as an opponent
+     * does; [getOpponentIds] is for anything that must stop at the team boundary.
+     */
+    fun getOtherPlayerIds(playerId: EntityId): List<EntityId> =
+        players.keys.filter { it != playerId }
+
+    /**
      * Get the player session for a player ID.
      */
     fun getPlayerSession(playerId: EntityId): PlayerSession? = players[playerId]
