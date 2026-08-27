@@ -106,6 +106,53 @@
     ]
 }
 
+// Bellows Lizard
+{
+    "name": "Bellows Lizard",
+    "manaCost": "{R}",
+    "typeLine": "Creature — Lizard",
+    "oracleText": "{1}{R}: This creature gets +1/+0 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "artist": "Jack Wang",
+        "flavorText": "As the price of wood and coal rose, smiths found creative ways to keep their forges burning.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/d/5da4a644-9809-4591-9007-6b70b5f9d923.jpg?1783940357"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Brushstrider
 {
     "name": "Brushstrider",

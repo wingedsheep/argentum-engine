@@ -111,6 +111,31 @@
     ]
 }
 
+// Eagle of the Watch
+{
+    "name": "Eagle of the Watch",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying, vigilance",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "metadata": {
+        "collectorNumber": "9",
+        "artist": "Scott Murphy",
+        "flavorText": "\"Even from miles away, I could see our eagles circling. That's when I gave the command to pick up the pace. I knew we were needed at home.\"\n—Kanlos, Akroan captain",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc4b6fb1-dc06-48f4-aae2-aa8bbb573548.jpg?1783939461"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Flurry of Horns
 {
     "name": "Flurry of Horns",
@@ -146,6 +171,29 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Gold-Forged Sentinel
+{
+    "name": "Gold-Forged Sentinel",
+    "manaCost": "{6}",
+    "typeLine": "Artifact Creature — Chimera",
+    "oracleText": "Flying",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "metadata": {
+        "collectorNumber": "161",
+        "rarity": "UNCOMMON",
+        "artist": "James Zapata",
+        "flavorText": "Blessed by the gods. Coveted by mortals. Beholden to neither.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/e/4e154012-5922-45d1-8e20-d2a2b1de0785.jpg?1783939399"
+    },
+    "colorIdentityOverride": []
 }
 
 // Heroes' Bane

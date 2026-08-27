@@ -811,3 +811,110 @@
         "GREEN"
     ]
 }
+
+// Watercourser
+{
+    "name": "Watercourser",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{U}: This creature gets +1/-1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{U}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"Beware an eddy where there should be none or a stretch that flows too fast or too slow.\"\n—Old Fishbones, Martyne river guide",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a27c441a-b31d-4214-8fc5-054003e257dc.jpg?1783940499"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Yeva's Forcemage
+{
+    "name": "Yeva's Forcemage",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Elf Shaman",
+    "oracleText": "When this creature enters, target creature gets +2/+2 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "target creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "artist": "Eric Deschamps",
+        "flavorText": "\"Nature can't be stopped. It rips and tears at Ravnica's tallest buildings to claim its place in the sun.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/f/3f9ebf02-56b3-492e-88fb-2e95f13f5764.jpg?1783940464",
+        "rulings": [
+            {
+                "date": "2012-07-01",
+                "text": "Yeva's Forcemage's ability is mandatory, although you can choose Yeva's Forcemage as the target."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}

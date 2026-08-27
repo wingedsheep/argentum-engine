@@ -5362,6 +5362,44 @@
     ]
 }
 
+// Skaab Goliath
+{
+    "name": "Skaab Goliath",
+    "manaCost": "{5}{U}",
+    "typeLine": "Creature — Zombie Giant",
+    "oracleText": "As an additional cost to cast this spell, exile two creature cards from your graveyard.\nTrample",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 9
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomExileFrom",
+                    "zone": "Graveyard",
+                    "filter": "creature",
+                    "count": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "rarity": "UNCOMMON",
+        "artist": "Volkan Baǵa",
+        "flavorText": "\"Three heads, six arms, and some armor grafts are better than . . . the normal numbers of those things.\"\n—Stitcher Geralf",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7c1134a5-5434-4733-812b-3587b1817813.jpg?1783940966"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Skirsdag Cultist
 {
     "name": "Skirsdag Cultist",

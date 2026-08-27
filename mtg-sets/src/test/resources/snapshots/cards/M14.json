@@ -81,6 +81,50 @@
     ]
 }
 
+// Charging Griffin
+{
+    "name": "Charging Griffin",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Griffin",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nWhenever this creature attacks, it gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": "AttackEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "13",
+        "artist": "Erica Yang",
+        "flavorText": "Four claws, two wings, one beak, no fear.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88637cc0-3b2a-402c-b491-26fcc2d21fb8.jpg?1783939945"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Elvish Mystic
 {
     "name": "Elvish Mystic",
