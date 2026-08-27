@@ -632,7 +632,7 @@ class ConnectionHandler(
                 if (opponentSession?.isConnected == true) {
                     sender.send(
                         opponentSession.webSocketSession,
-                        ServerMessage.GameOver(opponentId, GameOverReason.DISCONNECTION)
+                        ServerMessage.GameOver(opponentId, GameOverReason.DISCONNECTION, winnerIds = listOf(opponentId))
                     )
                 }
             }

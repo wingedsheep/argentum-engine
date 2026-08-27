@@ -660,13 +660,14 @@ class GamePlayHandler(
 
     fun handleGameOver(gameSession: GameSession, reason: GameOverReason? = null, events: List<GameEvent> = emptyList()) {
         val winnerId = gameSession.getWinnerId()
+        val winnerIds = gameSession.getWinnerIds()
         val gameOverReason = reason ?: gameSession.getGameOverReason() ?: GameOverReason.LIFE_ZERO
         // Extract custom message from PlayerLostEvent if present. A game the server abandoned for
         // lack of progress explains itself first — its stock reason is a bare "Draw", which reads
         // like a rules outcome the players brought about rather than a loop nobody could break.
         val customMessage = gameSession.stallMessage()
             ?: events.filterIsInstance<PlayerLostEvent>().firstOrNull()?.message
-        val message = ServerMessage.GameOver(winnerId, gameOverReason, customMessage, gameSession.sessionId)
+        val message = ServerMessage.GameOver(winnerId, gameOverReason, customMessage, gameSession.sessionId, winnerIds)
 
         gameSession.getPlayers().forEach { sender.send(it.webSocketSession, message) }
 
@@ -808,7 +809,7 @@ class GamePlayHandler(
                         com.wingedsheep.gameserver.stats.RecordedParticipant(
                             userId = identity?.userId,
                             playerName = player.playerName,
-                            won = winnerId != null && player.playerId == winnerId,
+                            won = player.playerId in winnerIds,
                             colors = profile?.colors,
                             setCodes = profile?.setCodes,
                             isAi = isAi,

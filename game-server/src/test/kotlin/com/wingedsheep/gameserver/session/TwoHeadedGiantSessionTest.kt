@@ -65,6 +65,15 @@ class TwoHeadedGiantSessionTest : ScenarioTestBase() {
             (teamOf[ids[0].value] == teamOf[ids[2].value]) shouldBe false
         }
 
+        test("both heads of the surviving team are winners, not just the representative (CR 810.8a)") {
+            val (session, ids) = started2hg()
+            // Team 1 (ids[2], ids[3]) concedes; one concession takes the whole team out (CR 810.8b).
+            session.playerConcedes(ids[2])
+            session.isGameOver() shouldBe true
+            session.getWinnerIds() shouldBe listOf(ids[0], ids[1])
+            session.getWinnerId() shouldBe ids[0]
+        }
+
         test("a teammate is not an opponent (CR 810): getOpponentIds returns only the other team") {
             val (session, ids) = started2hg()
 

@@ -198,7 +198,13 @@ sealed interface ServerMessage {
         val winnerId: EntityId?,
         val reason: GameOverReason,
         val message: String? = null,
-        val gameId: String? = null
+        val gameId: String? = null,
+        /**
+         * Every seat that won — the winning team in a team game (CR 810.8a), else just [winnerId].
+         * Clients decide "did I win?" from this; [winnerId] is one representative and stays for
+         * the spectator / replay readers that predate teams. Empty for a draw.
+         */
+        val winnerIds: List<EntityId> = emptyList()
     ) : ServerMessage
 
     /**

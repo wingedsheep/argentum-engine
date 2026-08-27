@@ -1312,9 +1312,25 @@ class GameSession(
     fun isGameOver(): Boolean = gameState?.gameOver == true
 
     /**
-     * Get the winner ID if the game is over.
+     * Get the winner ID if the game is over. In a team game this is a *representative* of the
+     * winning team (the engine records one seat); use [getWinnerIds] for everyone who won.
      */
     fun getWinnerId(): EntityId? = gameState?.winnerId
+
+    /**
+     * Every seat that won: the winner's whole still-in team (CR 810.8a — a team wins together), or
+     * just the winner outside a team game. Empty for a draw or an unfinished game. Anything that
+     * labels a seat as having won or lost — the GameOver message, match history, standings — has
+     * to read this rather than compare against the single [getWinnerId], or the winning team's
+     * other head is told they lost.
+     */
+    fun getWinnerIds(): List<EntityId> {
+        val state = gameState ?: return emptyList()
+        val winner = state.winnerId ?: return emptyList()
+        return state.teamOf(winner).filter {
+            state.getEntity(it)?.has<com.wingedsheep.engine.state.components.player.PlayerLostComponent>() != true
+        }
+    }
 
     /**
      * Determine the reason for game over.

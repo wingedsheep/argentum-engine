@@ -742,8 +742,14 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
       // Ignore a game-over for a game we already left — e.g. an eliminated FFA player who
       // returned to the lobby still holds a seat server-side and receives the final GameOver.
       if (msg.gameId && sessionId !== msg.gameId) return
-      const result: 'win' | 'lose' | 'draw' =
-        msg.winnerId === null ? 'draw' : msg.winnerId === playerId ? 'win' : 'lose'
+      // "Did I win?" is a team question in Two-Headed Giant (CR 810.8a): the server names every
+      // winning seat in winnerIds; winnerId is one representative and would tell the other head
+      // of the winning team they lost. Older servers send winnerId alone, so fall back to it.
+      const won =
+        msg.winnerIds && msg.winnerIds.length > 0
+          ? playerId !== null && msg.winnerIds.includes(playerId)
+          : msg.winnerId === playerId
+      const result: 'win' | 'lose' | 'draw' = msg.winnerId === null ? 'draw' : won ? 'win' : 'lose'
       trackEvent('game_over', { result, reason: msg.reason })
       setInGame(false)
       set({
