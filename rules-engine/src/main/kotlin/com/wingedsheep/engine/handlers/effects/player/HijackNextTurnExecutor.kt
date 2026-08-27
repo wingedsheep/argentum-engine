@@ -41,14 +41,21 @@ class HijackNextTurnExecutor : EffectExecutor<HijackNextTurnEffect> {
         val sourceId = context.sourceId ?: hijackedPlayerId
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "Hijack"
 
-        val newState = state.updateEntity(hijackedPlayerId) { container ->
-            container.with(
-                PlayerTurnHijackedComponent(
-                    controllerId = context.controllerId,
-                    state = PlayerTurnHijackedComponent.HijackState.SCHEDULED,
-                    scope = effect.scope
+        // CR 805.8 — "If an effect causes a player to control another player, the first player
+        // controls the affected player's team." In a shared team turn the hijacked turn is the
+        // whole team's, so every member is scheduled; outside shared team turns the team is the
+        // targeted player alone.
+        var newState = state
+        for (member in state.sharedTurnTeam(hijackedPlayerId)) {
+            newState = newState.updateEntity(member) { container ->
+                container.with(
+                    PlayerTurnHijackedComponent(
+                        controllerId = context.controllerId,
+                        state = PlayerTurnHijackedComponent.HijackState.SCHEDULED,
+                        scope = effect.scope
+                    )
                 )
-            )
+            }
         }
 
         return EffectResult.success(

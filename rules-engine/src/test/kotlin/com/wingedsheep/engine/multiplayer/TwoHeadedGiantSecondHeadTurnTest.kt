@@ -153,6 +153,39 @@ class TwoHeadedGiantSecondHeadTurnTest : FunSpec({
         atEnd.getEntity(p[1])?.has<LoseAtEndStepComponent>() shouldBe false
     }
 
+    test("hijacking one head controls the whole team on its next turn (CR 805.8)") {
+        val (base, p, proc) = boot()
+        // p2 resolves a Mindslaver aimed at p1 (the second head). The executor schedules the
+        // hijack on p1's whole shared-turn team.
+        val scheduled = com.wingedsheep.engine.handlers.effects.player.HijackNextTurnExecutor().execute(
+            base,
+            com.wingedsheep.sdk.scripting.effects.HijackNextTurnEffect(
+                target = com.wingedsheep.sdk.scripting.targets.EffectTarget.PlayerRef(com.wingedsheep.sdk.scripting.references.Player.You)
+            ),
+            com.wingedsheep.engine.handlers.EffectContext(sourceId = null, controllerId = p[1])
+        ).newState
+        // (Player.You resolves to p1 here; the controller field is what the hijack records.)
+        p.take(2).forEach { head ->
+            scheduled.getEntity(head)?.get<com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponent>()
+                ?.state shouldBe com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponent.HijackState.SCHEDULED
+        }
+        // Re-point the recorded controller at the opposing head so the engagement below is a real
+        // "opponent drives your team" case.
+        val armed = p.take(2).fold(scheduled) { s, head ->
+            s.updateEntity(head) { c ->
+                val h = c.get<com.wingedsheep.engine.state.components.player.PlayerTurnHijackedComponent>()!!
+                c.with(h.copy(controllerId = p[2]))
+            }
+        }
+
+        // Team 0's *next* turn: drive through team 1's turn and back.
+        val onTeam1 = drive(armed, proc) { it.activePlayerId == p[2] && it.step == Step.PRECOMBAT_MAIN }
+        onTeam1.actorFor(p[0]) shouldBe p[0]
+        val backOnTeam0 = drive(onTeam1, proc) { it.activePlayerId == p[0] && it.step == Step.UPKEEP }
+        backOnTeam0.actorFor(p[0]) shouldBe p[2]
+        backOnTeam0.actorFor(p[1]) shouldBe p[2]
+    }
+
     test("a step-keyed delayed trigger owned by the second head fires at the team's end step") {
         val (base, p, proc) = boot()
         val delayed = DelayedTriggeredAbility(

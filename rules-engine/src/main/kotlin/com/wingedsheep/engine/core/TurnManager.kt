@@ -205,22 +205,26 @@ class TurnManager(
         // ruling, a scheduled hijack waits through any skipped turns and engages on the next turn
         // the affected player actually takes. Combat-phase-scoped hijacks (Secret of Bloodbending)
         // are ignored here — they engage at beginning of combat (see advanceStep) instead.
-        val scheduledHijack = newState.getEntity(playerId)?.get<PlayerTurnHijackedComponent>()
-        if (scheduledHijack != null &&
-            scheduledHijack.state == PlayerTurnHijackedComponent.HijackState.SCHEDULED &&
-            scheduledHijack.scope == HijackScope.NextTurn
-        ) {
-            newState = newState.updateEntity(playerId) { container ->
-                container.with(
-                    scheduledHijack.copy(state = PlayerTurnHijackedComponent.HijackState.ACTIVE)
+        // The turn is the whole active team's in a shared team turn (CR 805.4), and a hijack
+        // controls the team (CR 805.8), so every member's scheduled hijack engages — the second
+        // head is never `playerId` here, and reading only that seat left them un-hijacked.
+        for (member in newState.sharedTurnTeam(playerId)) {
+            val scheduledHijack = newState.getEntity(member)?.get<PlayerTurnHijackedComponent>() ?: continue
+            if (scheduledHijack.state == PlayerTurnHijackedComponent.HijackState.SCHEDULED &&
+                scheduledHijack.scope == HijackScope.NextTurn
+            ) {
+                newState = newState.updateEntity(member) { container ->
+                    container.with(
+                        scheduledHijack.copy(state = PlayerTurnHijackedComponent.HijackState.ACTIVE)
+                    )
+                }
+                events += TurnHijackedEvent(
+                    controllerId = scheduledHijack.controllerId,
+                    hijackedPlayerId = member,
+                    sourceId = member,
+                    sourceName = "Hijack engaged"
                 )
             }
-            events += TurnHijackedEvent(
-                controllerId = scheduledHijack.controllerId,
-                hijackedPlayerId = playerId,
-                sourceId = playerId,
-                sourceName = "Hijack engaged"
-            )
         }
 
         return ExecutionResult.success(newState, events)
@@ -335,12 +339,15 @@ class TurnManager(
         // combat phase follows — "their next combat phase" is a single phase, never the extra ones.
         var state = incomingState
         if (currentStep == Step.END_COMBAT) {
-            val combatHijack = state.getEntity(activePlayer)?.get<PlayerTurnHijackedComponent>()
-            if (combatHijack != null &&
-                combatHijack.state == PlayerTurnHijackedComponent.HijackState.ACTIVE &&
-                combatHijack.scope == HijackScope.NextCombatPhase
-            ) {
-                state = state.updateEntity(activePlayer) { it.without<PlayerTurnHijackedComponent>() }
+            // Every member of the active team — a combat hijack controls the team (CR 805.8).
+            for (member in state.sharedTurnTeam(activePlayer)) {
+                val combatHijack = state.getEntity(member)?.get<PlayerTurnHijackedComponent>()
+                if (combatHijack != null &&
+                    combatHijack.state == PlayerTurnHijackedComponent.HijackState.ACTIVE &&
+                    combatHijack.scope == HijackScope.NextCombatPhase
+                ) {
+                    state = state.updateEntity(member) { it.without<PlayerTurnHijackedComponent>() }
+                }
             }
         }
 
@@ -630,24 +637,26 @@ class TurnManager(
                 // active player: their combat phase is now beginning, so input authority moves to
                 // the hijacker for the duration of this phase. A hijack scheduled while combat was
                 // skipped stays SCHEDULED and waits for a combat phase they actually reach here.
-                val combatHijack = newState.getEntity(activePlayer)?.get<PlayerTurnHijackedComponent>()
-                if (combatHijack != null &&
-                    combatHijack.state == PlayerTurnHijackedComponent.HijackState.SCHEDULED &&
-                    combatHijack.scope == HijackScope.NextCombatPhase
-                ) {
-                    newState = newState.updateEntity(activePlayer) { container ->
-                        container.with(
-                            combatHijack.copy(state = PlayerTurnHijackedComponent.HijackState.ACTIVE)
+                // Every member of the active team — a combat hijack controls the team (CR 805.8).
+                for (member in newState.sharedTurnTeam(activePlayer)) {
+                    val combatHijack = newState.getEntity(member)?.get<PlayerTurnHijackedComponent>() ?: continue
+                    if (combatHijack.state == PlayerTurnHijackedComponent.HijackState.SCHEDULED &&
+                        combatHijack.scope == HijackScope.NextCombatPhase
+                    ) {
+                        newState = newState.updateEntity(member) { container ->
+                            container.with(
+                                combatHijack.copy(state = PlayerTurnHijackedComponent.HijackState.ACTIVE)
+                            )
+                        }
+                        events.add(
+                            TurnHijackedEvent(
+                                controllerId = combatHijack.controllerId,
+                                hijackedPlayerId = member,
+                                sourceId = member,
+                                sourceName = "Combat hijack engaged"
+                            )
                         )
                     }
-                    events.add(
-                        TurnHijackedEvent(
-                            controllerId = combatHijack.controllerId,
-                            hijackedPlayerId = activePlayer,
-                            sourceId = activePlayer,
-                            sourceName = "Combat hijack engaged"
-                        )
-                    )
                 }
                 newState = newState.withPriority(activePlayer)
             }
