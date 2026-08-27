@@ -690,9 +690,10 @@ class GamePlayHandler(
             // TournamentManager, Free-for-All pods via FreeForAllHandler (which never creates
             // a TournamentManager). The callback routes by the lobby's game mode.
             // Capture winner's remaining life for tiebreaker calculations
+            // Through the resolver: a team's life is one shared total (CR 810.9a), and only the
+            // canonical member's raw component carries it.
             val winnerLifeRemaining = if (winnerId != null) {
-                gameSession.getStateForTesting()?.getEntity(winnerId)
-                    ?.get<LifeTotalComponent>()?.life ?: 0
+                gameSession.getStateForTesting()?.lifeTotal(winnerId) ?: 0
             } else {
                 0
             }
@@ -857,8 +858,7 @@ class GamePlayHandler(
         // Fired before cleanup so it can launch the next bracket game off its own coroutine.
         llmTournamentGameOverCallback?.let { callback ->
             val winnerLife = if (winnerId != null) {
-                gameSession.getStateForTesting()?.getEntity(winnerId)
-                    ?.get<LifeTotalComponent>()?.life ?: 0
+                gameSession.getStateForTesting()?.lifeTotal(winnerId) ?: 0
             } else 0
             callback(gameSessionId, winnerId, winnerLife)
         }

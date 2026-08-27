@@ -416,9 +416,8 @@ class ScenarioBuilderService(
 
         fun withLifeTotal(playerNumber: Int, life: Int): ScenarioBuilder {
             val playerId = playerFor(playerNumber)
-            state = state.updateEntity(playerId) { container ->
-                container.with(LifeTotalComponent(life))
-            }
+            // Through the resolver so a team's shared total (CR 810.9a) lands on its canonical owner.
+            state = state.withLifeTotal(playerId, life)
             return this
         }
 

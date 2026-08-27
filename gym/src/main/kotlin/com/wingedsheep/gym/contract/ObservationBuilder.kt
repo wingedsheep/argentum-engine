@@ -134,7 +134,8 @@ class ObservationBuilder(
     ): PlayerView {
         val container = state.getEntity(playerId)
         val playerComp = container?.get<PlayerComponent>()
-        val life = container?.get<LifeTotalComponent>()?.life ?: 0
+        // Through the resolver — a 2HG team's shared life lives on one member (CR 810.9a).
+        val life = if (container?.get<LifeTotalComponent>() != null) state.lifeTotal(playerId) else 0
         val manaPool = container?.get<ManaPoolComponent>()
         val hasLost = container?.get<PlayerLostComponent>() != null
 

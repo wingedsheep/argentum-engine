@@ -51,7 +51,8 @@ object ReplayFingerprint {
 
         // Life totals in turn order — the single most player-visible number a divergence moves.
         for (playerId in state.turnOrder) {
-            val life = state.getEntity(playerId)?.get<LifeTotalComponent>()?.life ?: 0
+            // The resolver, not the raw component: a 2HG team's life lives on one member (CR 810.9a).
+            val life = if (state.getEntity(playerId)?.get<LifeTotalComponent>() != null) state.lifeTotal(playerId) else 0
             sb.append(playerId.value).append('=').append(life).append(',')
         }
 

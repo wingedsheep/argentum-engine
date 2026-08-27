@@ -188,8 +188,11 @@ class SpectatorStateBuilder(
         val playerId = seat.playerId
         val playerEntity = state.getEntity(playerId)
 
-        val life = playerEntity?.get<LifeTotalComponent>()?.life ?: 20
-        val poisonCounters = playerEntity?.get<CountersComponent>()?.getCount(CounterType.POISON) ?: 0
+        // Through the resolvers: in Two-Headed Giant the life total (CR 810.9a) and the poison
+        // count (CR 810.10a) are the team's, carried on one member — a raw read shows the other
+        // head frozen at its starting life for the whole game.
+        val life = if (playerEntity?.get<LifeTotalComponent>() != null) state.lifeTotal(playerId) else 20
+        val poisonCounters = state.teamPoison(playerId)
         val hand = state.getZone(playerId, Zone.HAND)
         val library = state.getZone(playerId, Zone.LIBRARY)
         val battlefield = state.getZone(playerId, Zone.BATTLEFIELD)

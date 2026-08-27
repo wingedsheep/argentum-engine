@@ -24,7 +24,8 @@ class LifeTotalReadsThroughResolverTest : FunSpec({
         val valueRead = Regex("""LifeTotalComponent>\(\)[?!.]*\.life""")
         val construct = Regex("""\bLifeTotalComponent\s*\(""")
 
-        val offenders = sourceRoot().walkTopDown()
+        val offenders = sourceRoots().asSequence()
+            .flatMap { it.walkTopDown() }
             .filter { it.isFile && it.extension == "kt" }
             .flatMap { file ->
                 val relative = file.absolutePath.replace('\\', '/')
@@ -54,11 +55,25 @@ class LifeTotalReadsThroughResolverTest : FunSpec({
             "com/wingedsheep/engine/core/GameInitializer.kt",
             // The component's own declaration.
             "com/wingedsheep/engine/state/components/identity/PlayerIdentityComponents.kt",
+            // Scenario setup stamps the initial LifeTotalComponent on every player, like GameInitializer.
+            "com/wingedsheep/gameserver/scenario/ScenarioBuilderService.kt",
         )
 
-        private fun sourceRoot(): File =
-            listOf(File("src/main/kotlin"), File("rules-engine/src/main/kotlin"))
-                .firstOrNull { it.isDirectory }
-                ?: error("Could not locate rules-engine/src/main/kotlin from ${File(".").absolutePath}")
+        /**
+         * Every module that reads a [com.wingedsheep.engine.state.GameState] off the engine and
+         * renders a life total — not just the engine. The spectator view, the gym observation and
+         * the replay fingerprint each read the raw component once, and each showed the
+         * non-canonical head of a Two-Headed Giant team frozen at its starting life.
+         */
+        private val SCANNED_MODULES = listOf("rules-engine", "game-server", "gym", "ai")
+
+        private fun sourceRoots(): List<File> {
+            val repoRoot = listOf(File("."), File(".."))
+                .firstOrNull { File(it, "rules-engine/src/main/kotlin").isDirectory }
+                ?: error("Could not locate the repository root from ${File(".").absolutePath}")
+            return SCANNED_MODULES.map { File(repoRoot, "$it/src/main/kotlin") }
+                .filter { it.isDirectory }
+                .also { roots -> check(roots.isNotEmpty()) { "No source roots found under $repoRoot" } }
+        }
     }
 }
