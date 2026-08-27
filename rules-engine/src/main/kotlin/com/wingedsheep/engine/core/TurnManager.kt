@@ -1070,6 +1070,14 @@ class TurnManager(
         return combatManager.getMandatoryBlockerAssignments(state, playerId)
     }
 
+    /** The attackers [blockerId] may legally block for [playerId] — the per-pair half of block legality. */
+    fun getBlockableAttackers(state: GameState, blockerId: EntityId, playerId: EntityId): List<EntityId> =
+        combatManager.getBlockableAttackers(state, blockerId, playerId)
+
+    /** Blockers needed to block [attackerId] at all (menace, "except by N or more"). */
+    fun getMinimumBlockers(state: GameState, attackerId: EntityId): Int =
+        combatManager.getMinimumBlockers(state, attackerId)
+
     fun hasAttackingCreatures(state: GameState): Boolean {
         val battlefield = state.getBattlefield()
         return battlefield.any { entityId ->

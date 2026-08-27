@@ -224,6 +224,8 @@ export default function App() {
         attackingCreatures: [],
         mustBeBlockedAttackers: [],
         blockerMaxBlockCounts: {},
+        validBlockersByAttacker: {},
+        attackerMinBlockers: {},
         bands: [],
       })
       return
@@ -273,6 +275,13 @@ export default function App() {
       const blockerMaxBlockCounts: Record<EntityId, number> = blockersAction?.blockerMaxBlockCounts
         ? { ...blockersAction.blockerMaxBlockCounts }
         : {}
+      // Per-attacker legality and group minimums, from the same rule the engine enforces on Confirm.
+      const validBlockersByAttacker: Record<EntityId, readonly EntityId[]> = blockersAction?.validBlockersByAttacker
+        ? { ...blockersAction.validBlockersByAttacker }
+        : {}
+      const attackerMinBlockers: Record<EntityId, number> = blockersAction?.attackerMinBlockers
+        ? { ...blockersAction.attackerMinBlockers }
+        : {}
 
       // Enter combat mode
       startCombat({
@@ -288,6 +297,8 @@ export default function App() {
         attackingCreatures,
         mustBeBlockedAttackers,
         blockerMaxBlockCounts,
+        validBlockersByAttacker,
+        attackerMinBlockers,
         bands: [],
       })
     }

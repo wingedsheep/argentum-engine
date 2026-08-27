@@ -6,7 +6,7 @@
  * - enterPhase: calls the appropriate start* method for a phase
  */
 import type { ChosenTarget, EntityId, LegalActionInfo, GameAction, ClientGameState } from '@/types'
-import { TAP_FOR_GENERIC_LABEL_IMPROVISE, TAP_FOR_GENERIC_LABEL_WATERBEND } from '@/types'
+import { TAP_FOR_GENERIC_LABEL_WATERBEND } from '@/types'
 import type {
   PipelinePhase,
   PhaseResult,
@@ -679,22 +679,16 @@ export function enterPhase(
     }
 
     case 'delve': {
-      const manaCostStr = actionInfo.manaCostString ?? ''
-      const genericMatch = manaCostStr.match(/\{(\d+)\}/)
-      const printedGeneric = genericMatch ? parseInt(genericMatch[1]!, 10) : 0
-      // X mana resolves to xValue per {X} of generic, which delve can pay for like
-      // any other generic. xValue is set by the preceding xSelection phase.
-      const xCount = (manaCostStr.match(/\{X\}/g) ?? []).length
-      const xValue = action.type === 'CastSpell' ? action.xValue ?? 0 : 0
-      const genericAmount = printedGeneric + xCount * xValue
-      const maxDelve = Math.min(genericAmount, actionInfo.validDelveCards!.length)
+      // How many exiles can still buy anything is the server's call: the cost preview requested
+      // on entering this phase tightens `maxDelve` to its remaining generic when it lands
+      // (`receiveCostPreview`). Until then every valid card may be picked.
       store.startDelveSelection({
         actionInfo,
         cardName: actionInfo.description.replace('Cast ', ''),
-        manaCost: manaCostStr,
+        manaCost: actionInfo.manaCostString ?? '',
         selectedCards: [],
         validCards: actionInfo.validDelveCards!,
-        maxDelve,
+        maxDelve: actionInfo.validDelveCards!.length,
         minDelveNeeded: actionInfo.minDelveNeeded ?? 0,
       })
       break
@@ -712,36 +706,19 @@ export function enterPhase(
     }
 
     case 'tapForGeneric': {
-      // Fold {X} -> the chosen X so the HUD shows the real generic the taps reduce. xValue is
+      // Fold {X} -> the chosen X so the "before" pips show the cost the taps come off. xValue is
       // set by the preceding xSelection phase (0 if none). "waterbend {X}" spells carry an {X}.
       const xValue = action.type === 'CastSpell' ? action.xValue ?? 0 : 0
       const manaCost = (actionInfo.manaCostString ?? '').replace(/\{X\}/g, `{${xValue}}`)
-      const genericIn = (cost: string): number => {
-        let total = 0
-        const genericRe = /\{(\d+)\}/g
-        let gm: RegExpExecArray | null
-        while ((gm = genericRe.exec(cost)) !== null) total += parseInt(gm[1]!, 10)
-        return total
-      }
-      // Tap cap: an explicit spell-level waterbend {N}; else the chosen X for "waterbend {X}";
-      // else the generic mana in the cost.
-      //
-      // Improvise counts only the *printed* generic, which is a known gap rather than the rule:
-      // CR 702.126a bounds the taps at the generic in the spell's TOTAL cost, and X is locked in
-      // before that total is determined (CR 601.2b/601.2f), so improvise does pay X-derived
-      // generic — see the Whir of Invention ruling. Four printed cards have improvise with {X}
-      // (Whir of Invention, Universal Surveillance, Saheeli's Directive, Battle at the Bridge);
-      // none is implemented yet. The cap stays at the printed generic only because the *server*
-      // does not credit taps against the X mana yet (see the TODO in CastSpellEnumerator's
-      // maxAffordableX block) — offering more here would let the player tap artifacts the cast
-      // then refuses to credit. Lift this together with that TODO.
-      const isImprovise = actionInfo.tapForGenericLabel === TAP_FOR_GENERIC_LABEL_IMPROVISE
+      // Tap cap: an explicit spell-level waterbend {N}; the chosen X for "waterbend {X}"; otherwise
+      // it follows the generic the server's cost preview says a tap can still pay for
+      // (`receiveCostPreview` tightens it when the preview lands). That is the engine's own
+      // crediting rule — for improvise the printed generic today, see CastSpellEnumerator's
+      // improvise+{X} note — rather than a client reading of the cost string.
+      const isWaterbendX = actionInfo.tapForGenericLabel === TAP_FOR_GENERIC_LABEL_WATERBEND && actionInfo.hasXCost
+      const capFollowsGeneric = actionInfo.tapForGenericAmount == null && !isWaterbendX
       const maxTaps = actionInfo.tapForGenericAmount ??
-        (isImprovise
-          ? genericIn(actionInfo.manaCostString ?? '')
-          : actionInfo.hasXCost
-            ? xValue
-            : genericIn(manaCost))
+        (isWaterbendX ? xValue : actionInfo.validTapForGenericPermanents!.length)
       store.startTapForGenericSelection({
         actionInfo,
         // Strip the leading verb and the trailing " (waterbend {N})" disambiguator the enumerator
@@ -756,6 +733,7 @@ export function enterPhase(
         selectedPermanents: [],
         validPermanents: actionInfo.validTapForGenericPermanents!,
         maxTaps,
+        capFollowsGeneric,
         label: actionInfo.tapForGenericLabel ?? TAP_FOR_GENERIC_LABEL_WATERBEND,
       })
       break

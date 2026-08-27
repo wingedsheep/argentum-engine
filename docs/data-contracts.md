@@ -129,6 +129,61 @@ Sent when the user interacts with the UI.
 }
 ```
 
+### B1. Cost Preview (Client <-> Server)
+
+A read-only round trip that prices a *draft* action — the `CastSpell` / `ActivateAbility` the
+client is still assembling (X announced, cards delved, creatures convoked or tapped for
+improvise, targets picked, no sources chosen yet). The server runs the handler's own cost chain
+(`CastSpellHandler.previewCost` / `ActivateAbilityHandler.previewCost`, via
+`ActionProcessor.previewCost`) under the session lock and executes nothing. It is how every
+payment HUD and the manual mana picker show the *engine's* remaining cost instead of client
+arithmetic; the client sends one on entering each cost phase and on every selection change.
+
+```json
+{
+  "type": "previewCost",
+  "requestId": "cp-17",
+  "action": {
+    "type": "CastSpell",
+    "playerId": "p1",
+    "cardId": "ent-6",
+    "xValue": 2,
+    "alternativePayment": { "convokedCreatures": { "ent-9": { "color": "GREEN" } } },
+    "paymentStrategy": { "type": "AutoPay" }
+  }
+}
+```
+
+```json
+{
+  "type": "costPreview",
+  "requestId": "cp-17",
+  "manaCostString": "{2}{G}",
+  "genericRemaining": 2,
+  "xValue": 2,
+  "affordable": true,
+  "error": null,
+  "autoTapPreview": ["ent-3", "ent-4", "ent-5"]
+}
+```
+
+- `manaCostString` — the mana still owed once every payment in the draft is credited, `{X}`
+  folded into the generic. Empty when nothing is owed.
+- `genericRemaining` — the generic a further delve exile / improvise tap could still pay for
+  (read off the unfolded cost, because that is what the payment credits against). The client's
+  delve and tap caps are this number.
+- `xValue` — the X that will actually be paid as mana (a harmonize tap can lower it).
+- `affordable` / `error` — the handler's verdict on the draft, in its own words (`"Savannah Lions
+  can't pay blue mana for convoke: it isn't blue"`, `"Not enough mana to cast this spell"`).
+- `autoTapPreview` — the sources the engine would tap under auto-pay; null when unaffordable or
+  when the draft already names its sources.
+
+A draft that can't be priced at all (the card left the hand, the seat may not act, mulligans
+still open) is still answered — `affordable: false` with the reason — never with an `error`
+message: a preview is a readout the player didn't ask for, so it must not toast. `requestId` is
+echoed so the client can drop a reply to a draft it has since moved past; only the newest
+request's reply is honoured.
+
 ### B2. Persistent Yields (Client -> Server)
 
 MTGO-style per-ability yields (backlog §C). Keyed by the ability's **AbilityIdentity**

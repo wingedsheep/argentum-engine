@@ -18,6 +18,7 @@ import com.wingedsheep.gameserver.session.PlayerSession
 import com.wingedsheep.gameserver.session.SessionRegistry
 import com.wingedsheep.gameserver.config.GameProperties
 import com.wingedsheep.gameserver.deck.EasterEggDeckInjector
+import com.wingedsheep.engine.core.CostPreview
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PlayerLostEvent
 import com.wingedsheep.engine.registry.CardRegistry
@@ -102,6 +103,7 @@ class GamePlayHandler(
             is ClientMessage.CreateGame -> handleCreateGame(session, message)
             is ClientMessage.JoinGame -> handleJoinGame(session, message)
             is ClientMessage.SubmitAction -> handleSubmitAction(session, message)
+            is ClientMessage.PreviewCost -> handlePreviewCost(session, message)
             is ClientMessage.Concede -> handleConcede(session)
             is ClientMessage.CancelGame -> handleCancelGame(session)
             is ClientMessage.KeepHand -> handleKeepHand(session)
@@ -569,6 +571,32 @@ class GamePlayHandler(
                 sender.sendError(session, ErrorCode.INVALID_ACTION, result.reason)
             }
         }
+    }
+
+    /**
+     * Answer a read-only cost preview. Every outcome is a [ServerMessage.CostPreview] — a draft
+     * that can't be priced (no session, mulligans still open) comes back unaffordable with the
+     * reason, never as an error toast the player didn't ask for.
+     */
+    private fun handlePreviewCost(session: WebSocketSession, message: ClientMessage.PreviewCost) {
+        fun reply(preview: CostPreview) = sender.send(
+            session,
+            ServerMessage.CostPreview(
+                requestId = message.requestId,
+                manaCostString = preview.manaCostString,
+                genericRemaining = preview.genericRemaining,
+                xValue = preview.xValue,
+                affordable = preview.affordable,
+                error = preview.error,
+                autoTapPreview = preview.autoTapPreview,
+            )
+        )
+        val playerSession = sessionRegistry.getPlayerSession(session.id)
+            ?: return reply(CostPreview.unavailable("Not connected"))
+        val gameSession = playerSession.currentGameSessionId?.let { gameRepository.findById(it) }
+            ?: return reply(CostPreview.unavailable("Not in a game"))
+        if (gameSession.isMulliganPhase) return reply(CostPreview.unavailable("Mulligan phase not complete"))
+        reply(gameSession.previewCost(playerSession.playerId, message.action))
     }
 
     private fun handleConcede(session: WebSocketSession) {

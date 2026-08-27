@@ -64,6 +64,12 @@ class ActionHandlerRegistry {
     }
 
     /**
+     * The handler registered for [actionType], for callers that need more than the
+     * validate/execute contract — the read-only cost preview lives on the handler itself.
+     */
+    fun handlerFor(actionType: KClass<out GameAction>): ActionHandler<out GameAction>? = handlers[actionType]
+
+    /**
      * Check if a handler is registered for the given action type.
      */
     fun hasHandler(actionType: KClass<out GameAction>): Boolean {

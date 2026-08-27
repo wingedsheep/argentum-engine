@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
 import { getCardImageUrl } from '@/utils/cardImages.ts'
-import { parseManaCost, getRemainingCostSymbols } from '@/utils/manaCost.ts'
+import { parseManaCost } from '@/utils/manaCost.ts'
 import { ManaSymbol } from './ManaSymbols'
 import type { EntityId } from '@/types'
 
@@ -9,29 +9,34 @@ import type { EntityId } from '@/types'
  * Delve selector overlay.
  * Shows graveyard cards to exile for delve with a castability indicator
  * showing remaining mana cost and how many more cards to exile to cast.
- * The minimum delve needed is computed server-side by the mana solver.
+ * The remaining cost and whether the selection is payable are the server's cost preview for
+ * the draft as it stands; the minimum delve needed comes from the enumerator's mana solver.
+ * Neither gates Confirm — the server validates the submission and says why if it declines.
  */
 export function DelveSelector() {
   const delveSelectionState = useGameStore((state) => state.delveSelectionState)
+  const costPreview = useGameStore((state) => state.costPreview)
   const toggleDelveCard = useGameStore((state) => state.toggleDelveCard)
   const cancelDelveSelection = useGameStore((state) => state.cancelDelveSelection)
   const confirmDelveSelection = useGameStore((state) => state.confirmDelveSelection)
   const [viewingBattlefield, setViewingBattlefield] = useState(false)
 
-  const originalSymbols = useMemo(() => {
-    if (!delveSelectionState) return []
-    return parseManaCost(delveSelectionState.manaCost)
-  }, [delveSelectionState?.manaCost])
+  const preview = costPreview?.preview ?? null
+  const previewPending = costPreview?.pending ?? true
+  const remainingSymbols = useMemo(
+    () => (preview ? parseManaCost(preview.manaCostString) : null),
+    [preview?.manaCostString],
+  )
 
   const castInfo = useMemo(() => {
     if (!delveSelectionState) return null
     const { selectedCards: selected, minDelveNeeded } = delveSelectionState
     const delveCount = selected.length
-    const remainingSymbols = getRemainingCostSymbols(originalSymbols, delveCount)
-    const isCastable = delveCount >= minDelveNeeded
+    // The server's verdict when it has one; the enumerator's minimum until then.
+    const isCastable = preview ? preview.affordable : delveCount >= minDelveNeeded
     const moreNeeded = Math.max(0, minDelveNeeded - delveCount)
-    return { remainingSymbols, isCastable, moreNeeded, minDelveNeeded }
-  }, [originalSymbols, delveSelectionState?.selectedCards, delveSelectionState?.minDelveNeeded])
+    return { isCastable, moreNeeded, minDelveNeeded, reason: preview?.error ?? null }
+  }, [preview, delveSelectionState?.selectedCards, delveSelectionState?.minDelveNeeded])
 
   if (!delveSelectionState) return null
 
@@ -66,9 +71,11 @@ export function DelveSelector() {
           }}>
             <div style={styles.castStatusRow}>
               <span style={styles.castStatusLabel}>Remaining cost:</span>
-              <div style={styles.manaSymbols}>
-                {castInfo.remainingSymbols.length > 0 ? (
-                  castInfo.remainingSymbols.map((symbol, i) => (
+              <div style={{ ...styles.manaSymbols, opacity: previewPending ? 0.55 : 1 }}>
+                {remainingSymbols === null ? (
+                  <span style={{ color: '#888', fontSize: 14 }}>…</span>
+                ) : remainingSymbols.length > 0 ? (
+                  remainingSymbols.map((symbol, i) => (
                     <ManaSymbol key={i} symbol={symbol} size={20} />
                   ))
                 ) : (
@@ -82,10 +89,12 @@ export function DelveSelector() {
               fontWeight: 600,
               textAlign: 'center',
               marginTop: 6,
-            }}>
+            }} title={castInfo.reason ?? undefined}>
               {castInfo.isCastable
                 ? `Castable (minimum ${castInfo.minDelveNeeded} card${castInfo.minDelveNeeded !== 1 ? 's' : ''})`
-                : `Exile ${castInfo.moreNeeded} more card${castInfo.moreNeeded !== 1 ? 's' : ''} to cast (minimum ${castInfo.minDelveNeeded})`
+                : castInfo.moreNeeded > 0
+                  ? `Exile ${castInfo.moreNeeded} more card${castInfo.moreNeeded !== 1 ? 's' : ''} to cast (minimum ${castInfo.minDelveNeeded})`
+                  : castInfo.reason ?? "Can't pay this yet"
               }
             </div>
           </div>

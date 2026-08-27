@@ -1,7 +1,5 @@
-import { useMemo } from 'react'
 import { useGameStore } from '@/store/gameStore.ts'
-import { useViewingPlayer } from '@/store/selectors'
-import { estimatedShortfall, getRemainingCostSymbols, parseManaCost } from '@/utils/manaCost'
+import { CostPreviewReadout } from './CostPreviewReadout'
 import { ManaSymbol } from './ManaSymbols'
 
 /**
@@ -12,41 +10,18 @@ import { ManaSymbol } from './ManaSymbols'
  * shows progress and confirm/cancel. Confirming with nothing selected pays the cost entirely with
  * mana, which is legal for both — the taps are always optional ("you *may* tap").
  *
- * The cost readout is the shared `utils/manaCost` estimate and never disables Confirm: the server
- * validates every tapped permanent and the payment itself, and says why when it declines.
+ * The cost readout is the server's cost preview for the draft as it stands and never disables
+ * Confirm: the server validates every tapped permanent and the payment itself, and says why when
+ * it declines.
  */
 export function TapForGenericSelector() {
   const tapForGenericSelectionState = useGameStore((state) => state.tapForGenericSelectionState)
   const cancelTapForGenericSelection = useGameStore((state) => state.cancelTapForGenericSelection)
   const confirmTapForGenericSelection = useGameStore((state) => state.confirmTapForGenericSelection)
-  const viewingPlayer = useViewingPlayer()
-  const manaPool = viewingPlayer?.manaPool
-
-  const originalSymbols = useMemo(() => {
-    if (!tapForGenericSelectionState) return []
-    return parseManaCost(tapForGenericSelectionState.manaCost)
-  }, [tapForGenericSelectionState?.manaCost])
-
-  const remainingSymbols = useMemo(() => {
-    if (!tapForGenericSelectionState) return []
-    return getRemainingCostSymbols(originalSymbols, tapForGenericSelectionState.selectedPermanents.length)
-  }, [originalSymbols, tapForGenericSelectionState?.selectedPermanents])
-
-  // Conditional mana counts only where the server judged it eligible for this payment.
-  const eligibleRestricted = tapForGenericSelectionState?.actionInfo.eligibleRestrictedMana
-
-  const tappedIds = useMemo(
-    () => new Set(tapForGenericSelectionState?.selectedPermanents ?? []),
-    [tapForGenericSelectionState?.selectedPermanents],
-  )
 
   if (!tapForGenericSelectionState) return null
 
-  const { cardName, selectedPermanents, actionInfo, maxTaps, label } = tapForGenericSelectionState
-
-  const shortfall = estimatedShortfall(
-    remainingSymbols, manaPool, eligibleRestricted, actionInfo.availableManaSources, tappedIds,
-  )
+  const { cardName, selectedPermanents, maxTaps, label, manaCost } = tapForGenericSelectionState
 
   return (
     <div style={styles.bar}>
@@ -62,26 +37,8 @@ export function TapForGenericSelector() {
         </span>
       </span>
       <span style={styles.divider} />
-      <span style={styles.costLabel}>Cost:</span>
-      <div style={styles.manaSymbols}>
-        {originalSymbols.map((symbol, i) => (
-          <ManaSymbol key={i} symbol={symbol} size={18} />
-        ))}
-      </div>
-      <span style={styles.arrow}>→</span>
-      <div style={styles.manaSymbols}>
-        {remainingSymbols.length > 0 ? (
-          remainingSymbols.map((symbol, i) => <ManaSymbol key={i} symbol={symbol} size={18} />)
-        ) : (
-          <span style={styles.freeCast}>Free!</span>
-        )}
-      </div>
+      <CostPreviewReadout originalCost={manaCost} />
       <span style={styles.count}>({selectedPermanents.length} tapped)</span>
-      {shortfall > 0 && (
-        <span style={styles.shortfall} title="An estimate — the server has the final say">
-          may be {shortfall} short
-        </span>
-      )}
       <span style={styles.divider} />
       <button onClick={cancelTapForGenericSelection} style={styles.cancelButton}>
         Cancel
@@ -112,15 +69,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   label: { color: '#cce', fontSize: 14 },
   divider: { width: 1, height: 20, backgroundColor: '#3a6a8a' },
-  costLabel: { color: '#88a', fontSize: 13 },
-  manaSymbols: { display: 'flex', alignItems: 'center', gap: 3 },
-  arrow: { color: '#668', fontSize: 14 },
-  freeCast: { color: '#4caf50', fontWeight: 'bold', fontSize: 13 },
   count: { color: '#668', fontSize: 12 },
-  shortfall: {
-    color: '#e0a83a',
-    fontSize: 12,
-  },
   cancelButton: {
     padding: '6px 14px', fontSize: 13, backgroundColor: '#444', color: '#fff',
     border: 'none', borderRadius: 6, cursor: 'pointer',

@@ -3,6 +3,7 @@ import com.wingedsheep.engine.handlers.TargetingSourceType
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CostPreview
 import com.wingedsheep.engine.core.AbilityActivatedEvent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
@@ -185,14 +186,7 @@ class ActivateAbilityHandler(
         // Look up ability from card definition (including class-level abilities), granted abilities, or static grants
         val classLevel = container.get<ClassLevelComponent>()?.currentLevel
         val staticGrants = getStaticGrantedAbilitiesWithGranter(action.sourceId, state)
-        val ability = cardDef?.script?.effectiveActivatedAbilities(classLevel)?.find { it.id == action.abilityId }
-            ?: cardDef?.let { findClassLevelUpAbility(it, container, action.abilityId) }
-            ?: state.grantedActivatedAbilities
-                .filter { it.entityId == action.sourceId }
-                .map { it.ability }
-                .find { it.id == action.abilityId }
-            ?: staticGrants.firstOrNull { it.first.id == action.abilityId }?.first
-            ?: resolveIntrinsicManaAbility(state, action.sourceId, action.abilityId)
+        val ability = resolveAbility(state, action, container, cardDef, classLevel, staticGrants)
             ?: return "Ability not found on this card"
 
         // The mana-payment window (CR 605.3a) opens the door for mana abilities only — everything
@@ -287,42 +281,7 @@ class ActivateAbilityHandler(
 
         // Apply text-changing effects to cost and target filters
         val textReplacement = container.get<TextReplacementComponent>()
-        val rawCost = if (textReplacement != null) {
-            ability.cost.applyTextReplacement(textReplacement)
-        } else {
-            ability.cost
-        }
-        // Resolve a *defined* {X} (CR 107.3c) before anything else reads the cost, so validation
-        // sees the same fixed cost enumeration offered and payment will charge. Then apply
-        // ability-specific generic cost reduction (e.g., The Dominion Bracelet's
-        // "{X} less, where X is this creature's power"). Per Scryfall ruling, the reduced
-        // cost is locked in here, before costs are paid. Then apply generic equip-cost reduction
-        // (Éowyn) and finally Forge Anew's free-first-equip.
-        val equipTargetIdForCost = action.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()?.entityId
-        val costWithDefinedX =
-            castPermissionUtils.applyDefinedXValue(rawCost, ability, state, action.sourceId, action.playerId)
-        // Order matters: each step prices the cost the previous one produced. The last one lowers
-        // an attached-permanent mana cost (Merseine) to a plain mana atom, so nothing downstream
-        // has to know that shape existed.
-        val costAfterGenericReduction = applyGenericCostReduction(
-            costWithDefinedX, ability, state, action.sourceId, action.playerId, action.targets
-        )
-        val costAfterAbilityReduction = castPermissionUtils.applyActivatedAbilityCostReduction(
-            costAfterGenericReduction, state, action.sourceId, ability.isExhaust, ability.isPowerUp
-        )
-        val costAfterEquipReduction = castPermissionUtils.applyEquipCostReduction(
-            costAfterAbilityReduction, ability, state, action.playerId, equipTargetIdForCost,
-            abilitySourceId = action.sourceId
-        )
-        val costAfterEquipDiscount = castPermissionUtils.applyFreeFirstEquipDiscount(
-            costAfterEquipReduction, ability, state, action.playerId
-        )
-        val costAfterColorRelaxation = castPermissionUtils.relaxAbilityCostColorsIfAny(
-            state, action.sourceId, costAfterEquipDiscount
-        )
-        val effectiveCost = castPermissionUtils.lowerAttachedManaCost(
-            state, action.sourceId, costAfterColorRelaxation
-        )
+        val effectiveCost = effectiveCostOf(state, action, ability, container)
         val effectiveTargetReqs = if (textReplacement != null) {
             ability.targetRequirements.map { it.applyTextReplacement(textReplacement) }
         } else {
@@ -446,26 +405,7 @@ class ActivateAbilityHandler(
         // Check cost requirements (using ManaSolver for mana costs to consider untapped sources)
         // If the ability has convoke or waterbend and the player provided alternative payment,
         // account for the reduced cost.
-        val costAfterConvokeReduction = if ((ability.hasConvoke || ability.hasWaterbend) && action.alternativePayment != null && !action.alternativePayment.isEmpty) {
-            val mc = extractManaCost(effectiveCost) ?: effectiveCost
-            if (mc is ManaCost || effectiveCost.manaCostOrNull != null || effectiveCost is AbilityCost.Composite) {
-                val reducedManaCost = extractManaCost(effectiveCost)?.let {
-                    var reduced = it
-                    if (ability.hasConvoke) reduced = alternativePaymentHandler.calculateReducedCostForAbility(reduced, action.alternativePayment)
-                    if (ability.hasWaterbend) reduced = alternativePaymentHandler.calculateReducedCostForWaterbend(reduced, action.alternativePayment)
-                    reduced
-                }
-                if (reducedManaCost != null) {
-                    when (effectiveCost) {
-                        is AbilityCost.Atom -> AbilityCost.Atom(CostAtom.Mana(reducedManaCost))
-                        is AbilityCost.Composite -> AbilityCost.Composite(effectiveCost.costs.map { subCost ->
-                            if (subCost.manaCostOrNull != null) AbilityCost.Atom(CostAtom.Mana(reducedManaCost)) else subCost
-                        })
-                        else -> effectiveCost
-                    }
-                } else effectiveCost
-            } else effectiveCost
-        } else effectiveCost
+        val costAfterConvokeReduction = reduceByAlternativePayment(effectiveCost, ability, action)
 
         val abilityPaymentContext = buildAbilityPaymentContext(cardComponent, state.projectedState, action.sourceId, ability)
 
@@ -2227,6 +2167,150 @@ class ActivateAbilityHandler(
             prompt = prompt
         )
         return ExecutionResult.paused(pausedState, decision, listOf(event))
+    }
+
+    /**
+     * The ability [action] names on its source: the card's own (by class level), a class
+     * level-up, a runtime grant, a static grant, or an intrinsic basic-land mana ability.
+     * Shared by [validate] and [previewCost] so both price the same ability.
+     */
+    private fun resolveAbility(
+        state: GameState,
+        action: ActivateAbility,
+        container: com.wingedsheep.engine.state.ComponentContainer,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition?,
+        classLevel: Int?,
+        staticGrants: List<Pair<ActivatedAbility, com.wingedsheep.sdk.model.EntityId>>,
+    ): ActivatedAbility? =
+        cardDef?.script?.effectiveActivatedAbilities(classLevel)?.find { it.id == action.abilityId }
+            ?: cardDef?.let { findClassLevelUpAbility(it, container, action.abilityId) }
+            ?: state.grantedActivatedAbilities
+                .filter { it.entityId == action.sourceId }
+                .map { it.ability }
+                .find { it.id == action.abilityId }
+            ?: staticGrants.firstOrNull { it.first.id == action.abilityId }?.first
+            ?: resolveIntrinsicManaAbility(state, action.sourceId, action.abilityId)
+
+    /**
+     * The ability's cost as it will actually be charged, before any alternative payment: text
+     * replacement, then a *defined* {X} (CR 107.3c) before anything else reads the cost, so
+     * validation sees the same fixed cost enumeration offered and payment will charge; then
+     * ability-specific generic reduction (The Dominion Bracelet's "{X} less, where X is this
+     * creature's power" — per Scryfall ruling the reduced cost is locked in here, before costs are
+     * paid), the activated-ability reductions, equip-cost reduction (Éowyn), Forge Anew's
+     * free-first-equip, colour relaxation, and finally an attached-permanent mana cost (Merseine)
+     * lowered to a plain mana atom so nothing downstream has to know that shape existed.
+     * Order matters: each step prices the cost the previous one produced.
+     */
+    private fun effectiveCostOf(
+        state: GameState,
+        action: ActivateAbility,
+        ability: ActivatedAbility,
+        container: com.wingedsheep.engine.state.ComponentContainer,
+    ): AbilityCost {
+        val textReplacement = container.get<TextReplacementComponent>()
+        val rawCost = if (textReplacement != null) ability.cost.applyTextReplacement(textReplacement) else ability.cost
+        val equipTargetIdForCost = action.targets.filterIsInstance<ChosenTarget.Permanent>().firstOrNull()?.entityId
+        val costWithDefinedX =
+            castPermissionUtils.applyDefinedXValue(rawCost, ability, state, action.sourceId, action.playerId)
+        val costAfterGenericReduction = applyGenericCostReduction(
+            costWithDefinedX, ability, state, action.sourceId, action.playerId, action.targets
+        )
+        val costAfterAbilityReduction = castPermissionUtils.applyActivatedAbilityCostReduction(
+            costAfterGenericReduction, state, action.sourceId, ability.isExhaust, ability.isPowerUp
+        )
+        val costAfterEquipReduction = castPermissionUtils.applyEquipCostReduction(
+            costAfterAbilityReduction, ability, state, action.playerId, equipTargetIdForCost,
+            abilitySourceId = action.sourceId
+        )
+        val costAfterEquipDiscount = castPermissionUtils.applyFreeFirstEquipDiscount(
+            costAfterEquipReduction, ability, state, action.playerId
+        )
+        val costAfterColorRelaxation = castPermissionUtils.relaxAbilityCostColorsIfAny(
+            state, action.sourceId, costAfterEquipDiscount
+        )
+        return castPermissionUtils.lowerAttachedManaCost(state, action.sourceId, costAfterColorRelaxation)
+    }
+
+    /**
+     * [effectiveCost] with the ability's convoke / waterbend payment credited against its mana
+     * atom. Unchanged when the ability has neither keyword or the action carries no payment.
+     */
+    private fun reduceByAlternativePayment(
+        effectiveCost: AbilityCost,
+        ability: ActivatedAbility,
+        action: ActivateAbility,
+    ): AbilityCost {
+        val payment = action.alternativePayment
+        if (!(ability.hasConvoke || ability.hasWaterbend) || payment == null || payment.isEmpty) return effectiveCost
+        val reducedManaCost = extractManaCost(effectiveCost)?.let {
+            var reduced = it
+            if (ability.hasConvoke) reduced = alternativePaymentHandler.calculateReducedCostForAbility(reduced, payment)
+            if (ability.hasWaterbend) reduced = alternativePaymentHandler.calculateReducedCostForWaterbend(reduced, payment)
+            reduced
+        } ?: return effectiveCost
+        return when (effectiveCost) {
+            is AbilityCost.Atom -> AbilityCost.Atom(CostAtom.Mana(reducedManaCost))
+            is AbilityCost.Composite -> AbilityCost.Composite(effectiveCost.costs.map { subCost ->
+                if (subCost.manaCostOrNull != null) AbilityCost.Atom(CostAtom.Mana(reducedManaCost)) else subCost
+            })
+            else -> effectiveCost
+        }
+    }
+
+    /**
+     * Price a *draft* activation without executing it — the read-only twin of the cost half of
+     * [validate]: the same ability resolution, the same [effectiveCostOf] pipeline, the same
+     * alternative-payment check and credit, the same affordability read. Reported as a
+     * [CostPreview] rather than a first error so a client mid-way through the activation (an X
+     * chosen, two creatures tapped for convoke) shows the engine's remaining cost, not its own.
+     * Permission, timing and targets are the submission's business, not the draft's.
+     */
+    fun previewCost(state: GameState, action: ActivateAbility): CostPreview {
+        val container = state.getEntity(action.sourceId)
+            ?: return CostPreview.unavailable("Source not found")
+        val cardComponent = container.get<CardComponent>()
+            ?: return CostPreview.unavailable("Source is not a card")
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        val classLevel = container.get<ClassLevelComponent>()?.currentLevel
+        val staticGrants = getStaticGrantedAbilitiesWithGranter(action.sourceId, state)
+        val ability = resolveAbility(state, action, container, cardDef, classLevel, staticGrants)
+            ?: return CostPreview.unavailable("Ability not found on this card")
+
+        val effectiveCost = effectiveCostOf(state, action, ability, container)
+        val choiceError = action.alternativePayment?.takeUnless { it.isEmpty }?.let { payment ->
+            alternativePaymentHandler.validateForAbility(
+                state, payment, action.playerId, ability.hasConvoke, ability.hasWaterbend
+            )
+        }
+        val reducedCost = reduceByAlternativePayment(effectiveCost, ability, action)
+        val abilityPaymentContext = buildAbilityPaymentContext(cardComponent, state.projectedState, action.sourceId, ability)
+        val granterId = staticGrants.firstOrNull { it.first.id == action.abilityId }?.second
+        val xValue = action.xValue ?: 0
+        val remaining = (extractManaCost(reducedCost) ?: ManaCost(emptyList())).withXAs(xValue)
+
+        val error = choiceError ?: when {
+            action.paymentStrategy is PaymentStrategy.Explicit -> null
+            canPayAbilityCostWithSources(state, reducedCost, action.sourceId, action.playerId, abilityPaymentContext, granterId) -> null
+            extractManaCost(reducedCost) != null -> "Not enough mana to activate this ability"
+            else -> "Cannot pay ability cost"
+        }
+        val autoTap = if (error == null && action.paymentStrategy is PaymentStrategy.AutoPay && !remaining.isEmpty()) {
+            val excludeSources = if (hasTapCost(reducedCost)) setOf(action.sourceId) else emptySet()
+            manaSolver.solve(
+                state, action.playerId, remaining, excludeSources = excludeSources, spellContext = abilityPaymentContext
+            )?.sources?.map { it.entityId }
+        } else null
+        return CostPreview(
+            manaCostString = remaining.toString(),
+            // Same convention as the cast preview: the generic a further tap could still buy,
+            // which the payment twins read off the unfolded cost.
+            genericRemaining = (extractManaCost(reducedCost) ?: ManaCost(emptyList())).genericAmount,
+            xValue = xValue,
+            affordable = error == null,
+            error = error,
+            autoTapPreview = autoTap,
+        )
     }
 
     /**

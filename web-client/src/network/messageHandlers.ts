@@ -12,6 +12,7 @@ import type {
   MulliganCompleteMessage,
   GameOverMessage,
   ErrorMessage,
+  CostPreviewMessage,
   SealedGameCreatedMessage,
   SealedPoolGeneratedMessage,
   OpponentDeckSubmittedMessage,
@@ -130,6 +131,8 @@ export interface MessageHandlers {
   onFriendRequestReceived: (message: FriendRequestReceivedMessage) => void
   // Liveness handlers
   onPong: () => void
+  // Cost preview (reply to a previewCost request)
+  onCostPreview: (message: CostPreviewMessage) => void
   // Session takeover handlers
   onSessionReplaced: () => void
 }
@@ -315,6 +318,9 @@ export function handleServerMessage(message: ServerMessage, handlers: MessageHan
       break
     case 'pong':
       handlers.onPong()
+      break
+    case 'costPreview':
+      handlers.onCostPreview(message)
       break
     case 'sessionReplaced':
       handlers.onSessionReplaced()

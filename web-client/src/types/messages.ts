@@ -83,6 +83,8 @@ export type ServerMessage =
   | FriendRequestReceivedMessage
   // Liveness
   | PongMessage
+  // Cost preview (reply to previewCost)
+  | CostPreviewMessage
   // Session takeover
   | SessionReplacedMessage
 
@@ -972,6 +974,14 @@ export interface LegalActionInfo {
   readonly blockerMaxBlockCounts?: Readonly<Record<EntityId, number>>
   /** Pre-computed mandatory blocker→attacker assignments from Provoke / MustBeBlockedByAll */
   readonly mandatoryBlockerAssignments?: Readonly<Record<EntityId, readonly EntityId[]>>
+  /**
+   * Attacker → the subset of `validBlockers` that may block it (evasion, "can't block …", CR 509.1b
+   * defender scope), from the same rule the engine enforces on Confirm. An attacker with no legal
+   * blocker is absent.
+   */
+  readonly validBlockersByAttacker?: Readonly<Record<EntityId, readonly EntityId[]>>
+  /** Attacker → blockers it needs if blocked at all (menace = 2). Only attackers needing more than one appear. */
+  readonly attackerMinBlockers?: Readonly<Record<EntityId, number>>
   /** Maximum times this ability can be activated in a batch (for repeat-eligible self-targeting abilities) */
   readonly maxRepeatableActivations?: number
   /** Whether this action requires a "tap creatures with total power N" selection (Crew N / Saddle N) */
@@ -1981,6 +1991,7 @@ export type ClientMessage =
   | CreateGameMessage
   | JoinGameMessage
   | SubmitActionMessage
+  | PreviewCostMessage
   | KeepHandMessage
   | MulliganMessage
   | ClientChooseBottomCardsMessage
@@ -2108,6 +2119,18 @@ export interface JoinGameMessage {
 export interface SubmitActionMessage {
   readonly type: 'submitAction'
   readonly action: GameAction
+}
+
+/**
+ * Price a draft action without executing it. The client sends one for every step of a cast or
+ * activation it is building (X announced, cards delved, creatures convoked, targets picked) so
+ * the remaining-cost readout is the engine's, not local arithmetic. Read-only. `requestId` is
+ * echoed on the `costPreview` reply so a stale answer to an earlier draft can be dropped.
+ */
+export interface PreviewCostMessage {
+  readonly type: 'previewCost'
+  readonly action: GameAction
+  readonly requestId: string
 }
 
 /**
@@ -2313,6 +2336,10 @@ export function createJoinGameMessage(
 
 export function createSubmitActionMessage(action: GameAction): SubmitActionMessage {
   return { type: 'submitAction', action }
+}
+
+export function createPreviewCostMessage(action: GameAction, requestId: string): PreviewCostMessage {
+  return { type: 'previewCost', action, requestId }
 }
 
 export function createKeepHandMessage(): KeepHandMessage {
@@ -3028,6 +3055,26 @@ export interface FriendRequestReceivedMessage {
  */
 export interface PongMessage {
   readonly type: 'pong'
+}
+
+/**
+ * Reply to `previewCost`: the engine's price for the draft action as it stands (mirrors the
+ * backend `CostPreview`). A draft that can't be priced still gets a reply — `affordable: false`
+ * with the reason in `error` — never an error toast; a preview is a readout, not a request.
+ */
+export interface CostPreviewMessage {
+  readonly type: 'costPreview'
+  readonly requestId: string
+  /** Mana still owed after every payment in the draft, `{X}` folded in. Empty when nothing is owed. */
+  readonly manaCostString: string
+  /** Generic mana a further delve exile / improvise tap could still pay for. */
+  readonly genericRemaining: number
+  /** The X that will be paid as mana (a harmonize tap can lower it below the announced X). */
+  readonly xValue: number
+  readonly affordable: boolean
+  readonly error?: string | null
+  /** Sources the engine would tap under auto-pay; absent when unaffordable or the draft names its own sources. */
+  readonly autoTapPreview?: readonly EntityId[] | null
 }
 
 /**
