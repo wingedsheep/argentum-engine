@@ -5,6 +5,8 @@ import com.wingedsheep.engine.core.GameEndReason
 import com.wingedsheep.engine.core.PlayerLeftGameEvent
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.mechanics.combat.CombatRemovalHelper
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -85,6 +87,13 @@ object PlayerLeavesGameProcessor {
         //    vanish, the rest of combat proceeds).
         s = clearCombatReferences(s, toRemove)
 
+        // 3b. CR 800.4e — combat damage that would be assigned to a player who has left isn't.
+        //     Creatures attacking the leaver (or a planeswalker / battle of theirs, which has just
+        //     left too) are removed from combat: nothing is left for them to hit, and leaving
+        //     them "attacking" a seat that is gone would still fire lifelink and
+        //     "deals combat damage to a player" triggers off a dead life total in the damage step.
+        s = removeAttackersAimedAt(s, leaver, toRemove)
+
         // 4. Remove the objects from the game entirely.
         for (id in toRemove) {
             s = s.removeEntity(id)
@@ -135,6 +144,22 @@ object PlayerLeavesGameProcessor {
             .clearPendingDecision()
             .copy(continuationStack = emptyList())
             .withPriority(state.activePlayerId)
+    }
+
+    /**
+     * Remove from combat every remaining attacker whose declared defender is [leaver] or one of
+     * the [removed] objects (their planeswalkers and battles). Their own attackers are already
+     * gone, so this only ever touches other players' creatures.
+     */
+    private fun removeAttackersAimedAt(state: GameState, leaver: EntityId, removed: Set<EntityId>): GameState {
+        var s = state
+        for (id in s.getBattlefield()) {
+            val defender = s.getEntity(id)?.get<AttackingComponent>()?.defenderId ?: continue
+            if (defender == leaver || defender in removed) {
+                s = CombatRemovalHelper.removeFromCombat(s, id)
+            }
+        }
+        return s
     }
 
     /**

@@ -66,10 +66,13 @@ internal class AttackPhaseManager(
     ): ExecutionResult {
         // Validate each attacker
         val projected = state.projectedState
-        // CR 805.10a/b — a creature attacks the opposing team; never a teammate. Exclude the whole
-        // attacking team from legal player targets (in a non-team game this is just the attacker).
+        // CR 805.10a/b — a creature attacks the opposing team; never a teammate. [getOpponents]
+        // excludes the whole attacking team (in a non-team game just the attacker) and — unlike the
+        // raw turn order — every seat that has left the game (CR 800.4a): a departed player is no
+        // longer anyone's opponent, so they can't be attacked. The enumerator already reads the
+        // same set; the handler has to agree with it because actions are client-supplied.
         val attackingTeam = state.teamOf(attackingPlayer)
-        val opponents = state.turnOrder.filter { it !in attackingTeam }
+        val opponents = state.getOpponents(attackingPlayer)
 
         // Validate band declarations (CR 702.22c).
         val bandValidation = validateBands(state, attackers, bands, projected)

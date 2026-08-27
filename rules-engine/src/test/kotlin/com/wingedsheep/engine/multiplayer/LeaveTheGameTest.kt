@@ -84,6 +84,7 @@ class LeaveTheGameTest : FunSpec({
                 name = "Leave Test Bear",
                 manaCost = ManaCost.parse("{1}{G}"),
                 typeLine = TypeLine.parse("Creature — Bear"),
+                baseStats = bear.creatureStats,
                 ownerId = owner
             ),
             ControllerComponent(controller)
@@ -239,6 +240,42 @@ class LeaveTheGameTest : FunSpec({
         afterLeave.getEntity(attackerId).shouldBeNull()
         // The blocker no longer references the departed attacker (combat can proceed).
         afterLeave.getEntity(blockerId)?.has<BlockingComponent>() shouldBe false
+    }
+
+    test("attackers aimed at the leaver are removed from combat; the rest of the attack stands (CR 800.4e)") {
+        val (base, players) = initGame(4)
+        // players[0] attacks players[1] with one bear and players[2] with another.
+        val (s1, atB) = base.withCreature(owner = players[0])
+        val (s2, atC) = s1.withCreature(owner = players[0])
+        val state = s2
+            .updateEntity(atB) { it.with(AttackingComponent(defenderId = players[1])) }
+            .updateEntity(atC) { it.with(AttackingComponent(defenderId = players[2])) }
+
+        val afterLeave = PlayerLeavesGameProcessor.process(state, players[2], GameEndReason.CONCESSION).newState
+
+        // Nothing is left for the second bear to deal damage to — it is out of combat …
+        afterLeave.getEntity(atC)?.has<AttackingComponent>() shouldBe false
+        // … while the attack on players[1] is untouched.
+        afterLeave.getEntity(atB)?.get<AttackingComponent>()?.defenderId shouldBe players[1]
+    }
+
+    test("a player who has left the game is not a legal attack target (CR 800.4a)") {
+        val (base, players) = initGame(4)
+        val processor = ActionProcessor(registry())
+        val (withBear, bear) = base.withCreature(owner = players[0])
+        val gone = processor.process(withBear, Concede(players[2])).result.newState
+        val declaring = gone.copy(
+            step = com.wingedsheep.sdk.core.Step.DECLARE_ATTACKERS,
+            phase = com.wingedsheep.sdk.core.Phase.COMBAT
+        ).withPriority(players[0])
+
+        // The enumerator never offers the departed seat; the handler must refuse it too.
+        processor.process(
+            declaring, com.wingedsheep.engine.core.DeclareAttackers(players[0], mapOf(bear to players[2]))
+        ).result.isSuccess shouldBe false
+        processor.process(
+            declaring, com.wingedsheep.engine.core.DeclareAttackers(players[0], mapOf(bear to players[1]))
+        ).result.error.shouldBeNull()
     }
 
     test("priority held by the leaver passes to the next player still in the game (CR 800.4a)") {
