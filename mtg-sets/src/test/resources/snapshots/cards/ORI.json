@@ -1,3 +1,384 @@
+// Abbot of Keral Keep
+{
+    "name": "Abbot of Keral Keep",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhen this creature enters, exile the top card of your library. Until end of turn, you may play that card.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "impulseExiled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "impulseExiled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "impulseExiled"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "127",
+        "rarity": "RARE",
+        "artist": "Deruchenko Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cb7a2770-9a20-4f52-aac4-24502f50e374.jpg?1783938334",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "The card exiled by Abbot of Keral Keep's ability is exiled face up."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "You may play that card that turn even if Abbot of Keral Keep is no longer on the battlefield or under your control."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Playing the card exiled with Abbot of Keral Keep's ability follows the normal rules for playing that card. You must pay its costs, and you must follow all applicable timing rules. For example, if the card is a creature card, you can cast that card by paying its mana cost only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Unless an effect allows you to play additional lands that turn, you can play a land card exiled with Abbot of Keral Keep's ability only if you haven't played a land yet that turn."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If you don't play the card, it will remain exiled."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Any spell you cast that doesn't have the type creature will cause prowess to trigger. If a spell has multiple types, and one of those types is creature (such as an artifact creature), casting it won't cause prowess to trigger. Playing a land also won't cause prowess to trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Prowess goes on the stack on top of the spell that caused it to trigger. It will resolve before that spell."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Once it triggers, prowess isn't connected to the spell that caused it to trigger. If that spell is countered, prowess will still resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Aerial Volley
+{
+    "name": "Aerial Volley",
+    "manaCost": "{G}",
+    "typeLine": "Instant",
+    "oracleText": "Aerial Volley deals 3 damage divided as you choose among one, two, or three target creatures with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "DividedDamage",
+            "totalDamage": 3
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "count": 3,
+                "minCount": 1,
+                "filter": {
+                    "baseFilter": "creature kw:flying"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "168",
+        "artist": "Lake Hurwitz",
+        "flavorText": "Drakes can swerve to avoid a single arrow, but they can't dodge the whole sky.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5178301-f766-48d3-af07-6bd6f822c725.jpg?1783938325",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "You choose how many targets Aerial Volley has and how the damage is divided as you cast the spell. Each target must receive at least 1 damage."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If some (but not all) of the targets become illegal before Aerial Volley tries to resolve, the original division of damage still applies, but no damage is dealt to illegal targets. If all targets become illegal, Aerial Volley won't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Akroan Jailer
+{
+    "name": "Akroan Jailer",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "{2}{W}, {T}: Tap target creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target creature"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "He ensures escape attempts are just that—attempts.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d96bc2b-2e31-4654-b192-c3f023d9fde6.jpg?1783938366"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Akroan Sergeant
+{
+    "name": "Akroan Sergeant",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "First strike (This creature deals combat damage before creatures without first strike.)\nRenown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FIRST_STRIKE",
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "130",
+        "artist": "Zack Stella",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/31913547-460c-45b3-be23-89f0e3a43325.jpg?1783938333",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Alchemist's Vial
+{
+    "name": "Alchemist's Vial",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "When this artifact enters, draw a card.\n{1}, {T}, Sacrifice this artifact: Target creature can't attack or block this turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CantAttack",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target creature"
+                            }
+                        },
+                        {
+                            "type": "CantBlockTargetCreatures",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "target creature"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target creature"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "artist": "Lindsey Look",
+        "flavorText": "A weapon best suited for those with good aim and steady hands.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/5/251f89c5-d4da-4754-83fa-218c8864ef41.jpg?1783938312",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Activating the last ability of Alchemist's Vial targeting a creature that's already attacking or blocking won't cause that creature to stop attacking or blocking. It will prevent that creature from attacking or blocking in any additional combat phases the turn may have (although this is unusual)."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
+// Ampryn Tactician
+{
+    "name": "Ampryn Tactician",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, creatures you control get +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "\"It's all a game. You shouldn't get too attached to the pieces.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/2/82a2e1d9-6763-4024-a18b-982d96395553.jpg?1783938365"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Anchor to the Aether
 {
     "name": "Anchor to the Aether",
@@ -41,6 +422,60 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Anointer of Champions
+{
+    "name": "Anointer of Champions",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "{T}: Target attacking creature gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target attacking creature"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature attacking"
+                        },
+                        "id": "target attacking creature"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "rarity": "UNCOMMON",
+        "artist": "Anna Steinbauer",
+        "flavorText": "\"Arise. You have been anointed by the light. Go forth and fight without fear, for you shall be victorious.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/6/36d060c9-8385-40af-87eb-b4688ebb8e7c.jpg?1783938365"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -96,6 +531,115 @@
     ]
 }
 
+// Aven Battle Priest
+{
+    "name": "Aven Battle Priest",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Bird Cleric",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nWhen this creature enters, you gain 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "6",
+        "artist": "John Severin Brassell",
+        "flavorText": "When the shadow of the aven falls across the battlefield, hope rises in the hearts of the soldiers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0060e75-a5a4-4d9a-894c-45bb7e2feffc.jpg?1783938364"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Blazing Hellhound
+{
+    "name": "Blazing Hellhound",
+    "manaCost": "{2}{B}{R}",
+    "typeLine": "Creature — Elemental Dog",
+    "oracleText": "{1}, Sacrifice another creature: This creature deals 1 damage to any target.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "UNCOMMON",
+        "artist": "Eric Velhagen",
+        "flavorText": "It tears the flesh from your bones and then swallows the ash with its fiery maw.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/332769b1-1eb5-4c77-8317-27addc28650b.jpg?1783938315"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Blessed Spirits
 {
     "name": "Blessed Spirits",
@@ -145,6 +689,74 @@
         ]
     },
     "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Blood-Cursed Knight
+{
+    "name": "Blood-Cursed Knight",
+    "manaCost": "{1}{W}{B}",
+    "typeLine": "Creature — Vampire Knight",
+    "oracleText": "As long as you control an enchantment, this creature gets +1/+1 and has lifelink. (Damage dealt by this creature also causes you to gain that much life.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 1,
+                    "toughnessBonus": 1,
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "enchantment"
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "LIFELINK",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "enchantment"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "UNCOMMON",
+        "artist": "Winona Nelson",
+        "flavorText": "\"The bloodlust shall not control me, for my oath is my greatest compulsion.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/644bb558-113e-4e49-a395-7e0036c3419c.jpg?1783938315",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If you cast an Aura spell targeting a creature controlled by an opponent, you still control that Aura. It will count for Blood-Cursed Knight's ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
         "WHITE"
     ]
 }
@@ -262,6 +874,107 @@
         "flavorText": "The foundries of Kaladesh run like clockwork under the supervision of their formidable overseers.",
         "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2c65947-bc1d-4f47-b60b-2f76ab5ebde9.jpg?1783938311"
     }
+}
+
+// Citadel Castellan
+{
+    "name": "Citadel Castellan",
+    "manaCost": "{1}{G}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nRenown 2 (When this creature deals combat damage to a player, if it isn't renowned, put two +1/+1 counters on it and it becomes renowned.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "VIGILANCE",
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 2
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "UNCOMMON",
+        "artist": "Anastasia Ovchinnikova",
+        "flavorText": "\"I am the first line of defense. You will not encounter the second.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9aa11f30-f2b7-4279-9176-c336c74538bf.jpg?1783938314",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "WHITE"
+    ]
+}
+
+// Conclave Naturalists
+{
+    "name": "Conclave Naturalists",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Dryad",
+    "oracleText": "When this creature enters, you may destroy target artifact or enchantment.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target artifact or enchantment"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "artifact|enchantment"
+                    },
+                    "id": "target artifact or enchantment"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "171",
+        "rarity": "UNCOMMON",
+        "artist": "Howard Lyon",
+        "flavorText": "\"Your swords and wards have no power here.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/7/3759fc28-9adb-41ed-851c-566a3a424e09.jpg?1783938324"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Demonic Pact
@@ -523,6 +1236,102 @@
     ]
 }
 
+// Elemental Bond
+{
+    "name": "Elemental Bond",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a creature you control with power 3 or greater enters, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "creature pow>=3 ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "UNCOMMON",
+        "artist": "David Gaillet",
+        "flavorText": "\"I want to help Zendikar. Show me the way.\"\n—Nissa Revane",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/554a8769-c840-4c9d-9959-b075c174457b.jpg?1783938323",
+        "rulings": [
+            {
+                "date": "2025-10-02",
+                "text": "The creature must have power 3 or greater as it enters, or Elemental Bond's ability won't trigger. Static abilities that raise (or lower) a creature's power are taken into account. However, you can't have a creature with power 2 or less enter and try to raise its power with a spell, an activated ability, or a triggered ability."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Enlightened Ascetic
+{
+    "name": "Enlightened Ascetic",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Cat Monk",
+    "oracleText": "When this creature enters, you may destroy target enchantment.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target enchantment"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "enchantment"
+                    },
+                    "id": "target enchantment"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "artist": "James Zapata",
+        "flavorText": "\"I do not reject the gods. I reject their authority, their pettiness, and their arrogance.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/76549fc3-5798-4c70-bb70-802b6f597eb7.jpg?1783938363"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Eyeblight Assassin
 {
     "name": "Eyeblight Assassin",
@@ -668,6 +1477,107 @@
     ]
 }
 
+// Firefiend Elemental
+{
+    "name": "Firefiend Elemental",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Haste (This creature can attack and {T} as soon as it comes under your control.)\nRenown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE",
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "146",
+        "artist": "Torstein Nordstrand",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/5/55051412-8749-4b65-ac76-c20ef57fd2e3.jpg?1783938330",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Ghirapur Aether Grid
+{
+    "name": "Ghirapur Aether Grid",
+    "manaCost": "{2}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Tap two untapped artifacts you control: This enchantment deals 1 damage to any target.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "count": 2,
+                        "filter": "artifact"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "rarity": "UNCOMMON",
+        "artist": "Cynthia Sheppard",
+        "flavorText": "The city of Ghirapur is a living thing, and living things defend themselves.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2e4a0c29-a759-465f-9136-9d709b6f30fc.jpg?1783938330",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "You may tap any two untapped artifacts you control, including artifact creatures that haven't been under your control continuously since the beginning of your most recent turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Gilt-Leaf Winnower
 {
     "name": "Gilt-Leaf Winnower",
@@ -721,6 +1631,50 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Guardian Automaton
+{
+    "name": "Guardian Automaton",
+    "manaCost": "{4}",
+    "typeLine": "Artifact Creature — Construct",
+    "oracleText": "When this creature dies, you gain 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "artist": "Vincent Proce",
+        "flavorText": "The wealthy in the city of Ghirapur outfit their lives with grand machines, entrusting even their children to filigree and gears.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e8916b7-f5e4-4fae-8db8-9859d69212ec.jpg?1783938311",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "If Guardian Automaton dies at the same time as your life total is reduced to 0 or less, you'll lose the game before the triggered ability resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
 }
 
 // Harbinger of the Tides
@@ -782,6 +1736,124 @@
     ]
 }
 
+// Heavy Infantry
+{
+    "name": "Heavy Infantry",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When this creature enters, tap target creature an opponent controls.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature an opponent controls"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:opponent"
+                    },
+                    "id": "target creature an opponent controls"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "18",
+        "artist": "David Gaillet",
+        "flavorText": "Doors, walls, skulls . . . it matters not. All barriers will be broken.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/b/2b904b1c-bf35-4bc1-8022-7f632160733d.jpg?1783938361"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Herald of the Pantheon
+{
+    "name": "Herald of the Pantheon",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Centaur Shaman",
+    "oracleText": "Enchantment spells you cast cost {1} less to cast.\nWhenever you cast an enchantment spell, you gain 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsEnchantment"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "enchantment"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "RARE",
+        "artist": "Jason A. Engle",
+        "flavorText": "The distinction of bearing the gods' banner is nothing compared to the glory of being closer to Nyx.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffeca7a7-2a14-4166-9e89-0f4eb94b79f5.jpg?1783938322",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Herald of the Pantheon's first ability can't reduce the colored mana requirement of an enchantment spell."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If there are additional costs to cast an enchantment spell, apply those before applying cost reductions."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Herald of the Pantheon can reduce alternative costs such as bestow costs."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Hitchclaw Recluse
 {
     "name": "Hitchclaw Recluse",
@@ -803,6 +1875,90 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Iroas's Champion
+{
+    "name": "Iroas's Champion",
+    "manaCost": "{1}{R}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Double strike (This creature deals both first-strike and regular combat damage.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "DOUBLE_STRIKE"
+    ],
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "UNCOMMON",
+        "artist": "Marco Nelor",
+        "flavorText": "Accustomed to battling before an audience in the arena, Iroas's champions know how to put on a good show.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/0/c0441583-c9d5-47a1-8754-c9162cec64bc.jpg?1783938314"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
+// Jhessian Thief
+{
+    "name": "Jhessian Thief",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "Prowess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)\nWhenever this creature deals combat damage to a player, draw a card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "PROWESS"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": "AnyPlayer"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "UNCOMMON",
+        "artist": "Miles Johnston",
+        "flavorText": "\"Where's the fun in an escape if it's not at least a little daring?\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33b8553d-d326-4280-bc3a-2fffdd377cd2.jpg?1783938350",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Any spell you cast that doesn't have the type creature will cause prowess to trigger. If a spell has multiple types, and one of those types is creature (such as an artifact creature), casting it won't cause prowess to trigger. Playing a land also won't cause prowess to trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Prowess goes on the stack on top of the spell that caused it to trigger. It will resolve before that spell."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Once it triggers, prowess isn't connected to the spell that caused it to trigger. If that spell is countered, prowess will still resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -857,6 +2013,127 @@
     ]
 }
 
+// Knight of the Pilgrim's Road
+{
+    "name": "Knight of the Pilgrim's Road",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Human Knight",
+    "oracleText": "Renown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "20",
+        "artist": "David Gaillet",
+        "flavorText": "\"To be a knight, Gideon, is to be the shield for the meek against the cruel.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9de5f39-b07a-4272-8992-ed971132c9c4.jpg?1783938360",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Kytheon's Irregulars
+{
+    "name": "Kytheon's Irregulars",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Renown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)\n{W}{W}: Tap target creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{W}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "target creature"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "RARE",
+        "artist": "Mark Winters",
+        "flavorText": "Kytheon and his irregulars worked outside the law to bring justice to the streets of Akros.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/440f9dbb-6d31-4c03-9c6d-c4910adc5497.jpg?1783938360",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Languish
 {
     "name": "Languish",
@@ -898,6 +2175,93 @@
     ]
 }
 
+// Lightning Javelin
+{
+    "name": "Lightning Javelin",
+    "manaCost": "{3}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Lightning Javelin deals 3 damage to any target. Scry 1. (Look at the top card of your library. You may put that card on the bottom.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                {
+                    "type": "Scry",
+                    "count": 1
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "target"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "artist": "Seb McKinnon",
+        "flavorText": "The harpies descended without mercy upon Akros, only to find their attack put them within range of the javelineers.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/1/c1ccaeed-9670-4432-8a45-d5c06119fa9f.jpg?1783938329"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Magmatic Insight
+{
+    "name": "Magmatic Insight",
+    "manaCost": "{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "As an additional cost to cast this spell, discard a land card.\nDraw two cards.",
+    "script": {
+        "spellEffect": {
+            "type": "DrawCards",
+            "count": {
+                "type": "Fixed",
+                "amount": 2
+            }
+        },
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomDiscard",
+                    "filter": "land"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Barger",
+        "flavorText": "Chief among the tenets of Purphoros is that one must destroy in order to create.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f00192e0-439d-43b2-882c-90a2d52103f8.jpg?1783938328",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "You must discard exactly one land card to cast Magmatic Insight. You can't cast it without discarding a land card, and you can't discard additional cards."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Managorger Hydra
 {
     "name": "Managorger Hydra",
@@ -935,6 +2299,258 @@
         "rarity": "RARE",
         "artist": "Lucas Graciano",
         "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a08e5ab-1ff9-4470-ab28-fea19bb79845.jpg?1783938321"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Mantle of Webs
+{
+    "name": "Mantle of Webs",
+    "manaCost": "{1}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature gets +1/+3 and has reach. (It can block creatures with flying.)",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 3
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "REACH"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "artist": "Mathias Kollros",
+        "flavorText": "\"Why does everything the Golgari touch end up sticky?\"\n—Arrester Lavinia, Tenth Precinct",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/b/3b09e36a-ad53-44ae-8586-2b658e3c533c.jpg?1783938320"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Molten Vortex
+{
+    "name": "Molten Vortex",
+    "manaCost": "{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "{R}, Discard a land card: This enchantment deals 2 damage to any target.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{R}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomDiscard",
+                                "filter": "land"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "target"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "rarity": "RARE",
+        "artist": "Philip Straub",
+        "flavorText": "If you can't take the heat . . . well, that's going to be a problem.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d99fd073-c249-4cd2-9d71-be417c88c493.jpg?1783938327"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Nivix Barrier
+{
+    "name": "Nivix Barrier",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Illusion Wall",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nDefender (This creature can't attack.)\nWhen this creature enters, target attacking creature gets -4/-0 until end of turn.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLASH",
+        "DEFENDER"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -4
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target attacking creature"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking"
+                    },
+                    "id": "target attacking creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b9b968d-b0cc-411d-9366-8358be28aef2.jpg?1783938350"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Outland Colossus
+{
+    "name": "Outland Colossus",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "Renown 6 (When this creature deals combat damage to a player, if it isn't renowned, put six +1/+1 counters on it and it becomes renowned.)\nThis creature can't be blocked by more than one creature.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 6
+        }
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CantBeBlockedByMoreThan",
+                "maxBlockers": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "193",
+        "rarity": "RARE",
+        "artist": "Ryan Pancoast",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1caad298-52cb-46f1-8212-fe657ab80159.jpg?1783938318",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Pharika's Disciple
+{
+    "name": "Pharika's Disciple",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Centaur Warrior",
+    "oracleText": "Deathtouch (Any amount of damage this deals to a creature is enough to destroy it.)\nRenown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "DEATHTOUCH",
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "194",
+        "artist": "Karl Kopinski",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/0/f0b3d8f7-6a41-49ba-b111-d34a345394c0.jpg?1783938319",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -1138,6 +2754,147 @@
     ]
 }
 
+// Rhox Maulers
+{
+    "name": "Rhox Maulers",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Rhino Soldier",
+    "oracleText": "Trample (This creature can deal excess combat damage to the player or planeswalker it's attacking.)\nRenown 2 (When this creature deals combat damage to a player, if it isn't renowned, put two +1/+1 counters on it and it becomes renowned.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE",
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 2
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "196",
+        "artist": "Zoltan Boros",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64c3c972-82f6-46ea-8f9f-090c65c22e44.jpg?1783938318",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Ringwarden Owl
+{
+    "name": "Ringwarden Owl",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Bird",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nProwess (Whenever you cast a noncreature spell, this creature gets +1/+1 until end of turn.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "PROWESS"
+    ],
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Titus Lunter",
+        "flavorText": "The owls learn of mana from the mages who know it best.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1acf216d-ef8f-431b-9b65-1e2e91285517.jpg?1783938348",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Prowess goes on the stack on top of the spell that caused it to trigger. It will resolve before that spell."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Any spell you cast that doesn't have the type creature will cause prowess to trigger. If a spell has multiple types, and one of those types is creature (such as an artifact creature), casting it won't cause prowess to trigger. Playing a land also won't cause prowess to trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Once it triggers, prowess isn't connected to the spell that caused it to trigger. If that spell is countered, prowess will still resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Separatist Voidmage
+{
+    "name": "Separatist Voidmage",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature enters, you may return target creature to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "target creature"
+                        },
+                        "destination": "Hand"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "target creature"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "artist": "Jason Rainville",
+        "flavorText": "\"As long as each side thinks it can win, the balance holds, and the mage-rings stand.\"\n—Alhammarret",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/5/e5634d1a-ca4b-4528-9e0e-b88f1025d434.jpg?1783938348",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Separatist Voidmage's ability can target itself."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Shambling Ghoul
 {
     "name": "Shambling Ghoul",
@@ -1189,6 +2946,229 @@
     ]
 }
 
+// Skysnare Spider
+{
+    "name": "Skysnare Spider",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Creature — Spider",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nReach (This creature can block creatures with flying.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "VIGILANCE",
+        "REACH"
+    ],
+    "metadata": {
+        "collectorNumber": "197",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "flavorText": "The only thing more ill-tempered than a griffin in a web is the spider that must subdue it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/1/f1743227-94fd-44c0-884d-fa269bcfd67d.jpg?1783938318"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Somberwald Alpha
+{
+    "name": "Somberwald Alpha",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Wolf",
+    "oracleText": "Whenever a creature you control becomes blocked, it gets +1/+1 until end of turn.\n{1}{G}: Target creature you control gains trample until end of turn. (It can deal excess combat damage to the player or planeswalker it's attacking.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "BecomesBlockedEvent",
+                    "filter": "creature ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "TriggeringEntity"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "ability_2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "target creature you control"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "rarity": "UNCOMMON",
+        "artist": "Filip Burburan",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/492808ec-7e23-4266-adc5-519e74a06bbb.jpg?1783938317",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Somberwald Alpha's first ability will give each creature you control that becomes blocked +1/+1 until end of turn. It doesn't matter how many of your opponent's creatures are blocking each of your creatures."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Soulblade Djinn
+{
+    "name": "Soulblade Djinn",
+    "manaCost": "{3}{U}{U}",
+    "typeLine": "Creature — Djinn",
+    "oracleText": "Flying\nWhenever you cast a noncreature spell, creatures you control get +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "ability_1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsNoncreature"
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        }
+                    },
+                    "body": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Viktor Titov",
+        "flavorText": "He grants endless wishes, as long as you always wish for a blade.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2a48455-dde4-4263-9146-af547c0aad48.jpg?1783938347",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Any spell you cast that doesn't have the type creature will cause Soulblade Djinn's ability to trigger. If a spell has multiple types, and one of those types is creature (such as an artifact creature), casting it won't cause the ability to trigger. Playing a land also won't cause it to trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "Soulblade Djinn's ability goes on the stack on top of the spell that caused it to trigger. It will resolve before that spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Stalwart Aven
+{
+    "name": "Stalwart Aven",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Bird Soldier",
+    "oracleText": "Flying (This creature can't be blocked except by creatures with flying or reach.)\nRenown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "32",
+        "artist": "Scott Murphy",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc4dccbe-877a-4c1e-b46c-711d7c45a506.jpg?1783938357",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Subterranean Scout
 {
     "name": "Subterranean Scout",
@@ -1234,6 +3214,155 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Thunderclap Wyvern
+{
+    "name": "Thunderclap Wyvern",
+    "manaCost": "{2}{W}{U}",
+    "typeLine": "Creature — Drake",
+    "oracleText": "Flash (You may cast this spell any time you could cast an instant.)\nFlying\nOther creatures you control with flying get +1/+1.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLASH",
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature kw:flying ctrl:you",
+                    "excludeSelf": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "218",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "flavorText": "Thunder doesn't always mean rain. Sometimes it means ruin.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/d/dd20971a-11aa-452b-8507-0f48229062a0.jpg?1783938312"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "WHITE"
+    ]
+}
+
+// Topan Freeblade
+{
+    "name": "Topan Freeblade",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "Vigilance (Attacking doesn't cause this creature to tap.)\nRenown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "VIGILANCE",
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "36",
+        "artist": "Johannes Voss",
+        "flavorText": "\"My scars are my sigils. I will wear them with pride long after you're gone.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b9ef727b-3e67-46d2-80f9-b1d483977b05.jpg?1783938358",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Undercity Troll
+{
+    "name": "Undercity Troll",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Troll",
+    "oracleText": "Renown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)\n{2}{G}: Regenerate this creature. (The next time this creature would be destroyed this turn, instead tap it, remove it from combat, and heal all damage on it.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "UNCOMMON",
+        "artist": "Jason Felix",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/7/873d901f-1425-4a0e-a820-015dcf4803f6.jpg?1783938316",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -1293,6 +3422,310 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Veteran's Sidearm
+{
+    "name": "Veteran's Sidearm",
+    "manaCost": "{2}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "242",
+        "artist": "Aaron Miller",
+        "flavorText": "\"I've broken three swords, eighteen lances, and countless shields, but this little blade has survived every battle, just like I have.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c1b3e7d-0fd8-4324-be7b-382e75ae9c17.jpg?1783938307"
+    },
+    "colorIdentityOverride": []
+}
+
+// Vine Snare
+{
+    "name": "Vine Snare",
+    "manaCost": "{2}{G}",
+    "typeLine": "Instant",
+    "oracleText": "Prevent all combat damage that would be dealt this turn by creatures with power 4 or less.",
+    "script": {
+        "spellEffect": {
+            "type": "PreventDamageShield",
+            "scope": "CombatOnly",
+            "direction": "FromTarget",
+            "sourceFilter": {
+                "type": "FromGroup",
+                "filter": {
+                    "baseFilter": "creature pow<=4"
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "artist": "Igor Kieryluk",
+        "flavorText": "Nissa found that the vines of the marsh could ensnare just as well as forest vines could—maybe even better.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/2/d2241f71-4319-49bf-905a-b6b774ffcb27.jpg?1783938317",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Check the power of each creature as it would deal combat damage to determine if that damage is prevented. It doesn't matter what any creature's power is as Vine Snare resolves."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Volcanic Rambler
+{
+    "name": "Volcanic Rambler",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "{2}{R}: This creature deals 1 damage to target player or planeswalker.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "target player or planeswalker"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayerOrPlaneswalker",
+                        "id": "target player or planeswalker"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Vincent Proce",
+        "flavorText": "It moves through lava with the force of an erupting volcano.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/f/7fc075ee-16e9-4cf5-bbb0-7b3b4b9eb3f4.jpg?1783938326"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Vryn Wingmare
+{
+    "name": "Vryn Wingmare",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Pegasus",
+    "oracleText": "Flying\nNoncreature spells cost {1} more to cast.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "AnyCaster",
+                    "filter": "noncreature"
+                },
+                "modification": {
+                    "type": "IncreaseGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "RARE",
+        "artist": "Seb McKinnon",
+        "flavorText": "It's the favored mount of military commanders as well as anyone with a flair for the dramatic.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/3/a34291dc-103f-493d-b217-bd1b0e946d8d.jpg?1783938356",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "The ability affects each spell that's not a creature spell, including your own. Creature spells with another type, such as artifact creature spells, aren't affected."
+            },
+            {
+                "date": "2020-06-23",
+                "text": "To determine the total cost of a spell, start with the mana cost or alternative cost you're paying, add any cost increases (such as that of Vryn Wingmare), then apply any cost reductions. The mana value of the spell remains unchanged, no matter what the total cost to cast it was."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// War Horn
+{
+    "name": "War Horn",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Attacking creatures you control get +1/+0.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0,
+                "filter": {
+                    "baseFilter": "creature attacking ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "UNCOMMON",
+        "artist": "Lars Grant-West",
+        "flavorText": "The reverberations course through the warriors' veins, beat with their hearts, and pound with their footfalls as they charge into battle.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/5/45c17671-7c4a-4114-b2b7-d34af4e2f8c1.jpg?1783938307"
+    },
+    "colorIdentityOverride": []
+}
+
+// War Oracle
+{
+    "name": "War Oracle",
+    "manaCost": "{2}{W}{W}",
+    "typeLine": "Creature — Human Cleric",
+    "oracleText": "Lifelink (Damage dealt by this creature also causes you to gain that much life.)\nRenown 1 (When this creature deals combat damage to a player, if it isn't renowned, put a +1/+1 counter on it and it becomes renowned.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "LIFELINK",
+        "RENOWN"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "RENOWN",
+            "n": 1
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "UNCOMMON",
+        "artist": "Steve Prescott",
+        "flavorText": "\"When you are felled by my mace, you shall know it was divine fate.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d8827bf-11c3-4f78-b7aa-ae953442c709.jpg?1783938356",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "Renown won't trigger when a creature deals combat damage to a planeswalker or another creature. It also won't trigger when a creature deals noncombat damage to a player."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a creature with renown deals combat damage to its controller because that damage was redirected, renown will trigger."
+            },
+            {
+                "date": "2015-06-22",
+                "text": "If a renown ability triggers, but the creature leaves the battlefield before that ability resolves, the creature doesn't become renowned. Any ability that triggers \"whenever a creature becomes renowned\" won't trigger."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Zendikar Incarnate
+{
+    "name": "Zendikar Incarnate",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Creature — Elemental",
+    "oracleText": "Zendikar Incarnate's power is equal to the number of lands you control.",
+    "creatureStats": {
+        "power": {
+            "type": "Dynamic",
+            "source": {
+                "type": "AggregateBattlefield",
+                "player": "You",
+                "filter": "land"
+            }
+        },
+        "toughness": 4
+    },
+    "metadata": {
+        "collectorNumber": "219",
+        "rarity": "UNCOMMON",
+        "artist": "Lucas Graciano",
+        "flavorText": "\"Her people angered Zendikar, and they faced the land's wrath. That is why Nissa is the last of the animists.\"\n—Numa, Joraga chieftain",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/b/eb12b1d8-c53e-4d48-89e5-2168ff34a853.jpg?1783938312",
+        "rulings": [
+            {
+                "date": "2015-06-22",
+                "text": "The ability defining Zendikar Incarnate's power works in all zones, not just the battlefield. Zendikar Incarnate's power changes as the number of lands you control does."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "RED"
     ]
 }
 
