@@ -115,7 +115,7 @@ class AIPlayer(
             if (result.error != null) {
                 // Action was illegal — submit a safe fallback action
                 val fallback = when {
-                    current.step == Step.DECLARE_ATTACKERS && current.activePlayerId == playerId -> {
+                    current.step == Step.DECLARE_ATTACKERS && current.isActiveTurnFor(playerId) -> {
                         // Include mandatory attackers to avoid rejection
                         val legalActions = simulator.getLegalActions(current, playerId)
                         val attackAction = legalActions.find { it.actionType == "DeclareAttackers" }
@@ -130,7 +130,7 @@ class AIPlayer(
                         } else emptyMap()
                         DeclareAttackers(playerId, attackerMap)
                     }
-                    current.step == Step.DECLARE_BLOCKERS && current.activePlayerId != playerId -> {
+                    current.step == Step.DECLARE_BLOCKERS && !current.isActiveTurnFor(playerId) -> {
                         // Include mandatory blockers to avoid rejection
                         val legalActions = simulator.getLegalActions(current, playerId)
                         val blockerAction = legalActions.find { it.actionType == "DeclareBlockers" }

@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.actions.combat
 
 import com.wingedsheep.engine.core.AbilityTriggeredEvent
 import com.wingedsheep.engine.core.DeclareAttackers
+import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.event.TriggerDetector
@@ -34,6 +35,12 @@ class DeclareAttackersHandler(
         }
         if (state.step != Step.DECLARE_ATTACKERS) {
             return "You can only declare attackers during the declare attackers step"
+        }
+        // One declaration per combat (CR 508.1; in a shared team turn the team's one combined
+        // attack, CR 805.10b). The marker is stamped on every attacking player, so a teammate
+        // can't append a second wave after the first head has declared.
+        if (state.getEntity(action.playerId)?.has<AttackersDeclaredThisCombatComponent>() == true) {
+            return "Attackers have already been declared this combat"
         }
         // Additional validation is done by CombatManager
         return null

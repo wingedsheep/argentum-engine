@@ -1140,7 +1140,7 @@ class GameSession(
         }
 
         val effectiveOverrides = if (hasNonBattlefieldAbility) {
-            val isMyTurn = state.activePlayerId == priorityPlayer
+            val isMyTurn = state.isActiveTurnFor(priorityPlayer)
             if (isMyTurn) {
                 overrides.copy(myTurnStops = overrides.myTurnStops + state.step)
             } else {
@@ -1263,12 +1263,15 @@ class GameSession(
 
         // During combat declaration steps, submit an empty declaration instead of PassPriority.
         // The engine requires declarations before allowing priority to pass.
+        // Turn ownership is team-wide in a shared team turn (CR 805.10a) — the same gate the
+        // engine's PassPriorityHandler / DeclareBlockersHandler use — so the active player's
+        // teammate isn't handed a DeclareBlockers (or a bare pass) the engine will refuse.
         val action: GameAction = when {
-            state.step == Step.DECLARE_ATTACKERS && playerId == state.activePlayerId &&
+            state.step == Step.DECLARE_ATTACKERS && state.isActiveTurnFor(playerId) &&
                 state.getEntity(playerId)?.get<AttackersDeclaredThisCombatComponent>() == null ->
                 DeclareAttackers(playerId, emptyMap())
 
-            state.step == Step.DECLARE_BLOCKERS && playerId != state.activePlayerId &&
+            state.step == Step.DECLARE_BLOCKERS && !state.isActiveTurnFor(playerId) &&
                 state.getEntity(playerId)?.get<BlockersDeclaredThisCombatComponent>() == null ->
                 DeclareBlockers(playerId, emptyMap())
 

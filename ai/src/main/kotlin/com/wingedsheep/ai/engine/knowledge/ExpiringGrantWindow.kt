@@ -184,7 +184,7 @@ internal object ExpiringGrantWindow {
      * mistake, not the missed window.
      */
     private fun laterWindowIsStillAhead(state: GameState, playerId: EntityId): Boolean =
-        if (state.activePlayerId == playerId) state.step in BEFORE_OUR_ATTACK
+        if (state.isActiveTurnFor(playerId)) state.step in BEFORE_OUR_ATTACK
         else state.step in BEFORE_THEIR_ATTACK
 
     /**

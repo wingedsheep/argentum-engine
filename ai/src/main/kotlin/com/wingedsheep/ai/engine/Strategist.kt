@@ -281,7 +281,7 @@ class Strategist(
         // while a pump that is about to wear off in cleanup gets a penalty instead of an
         // encouragement. Keeping both would double-count the first and cancel the second.
         val adjustedPassScore =
-            if (!holdPolicy.isEnabled && state.activePlayerId != playerId && state.step == Step.END) {
+            if (!holdPolicy.isEnabled && !state.isActiveTurnFor(playerId) && state.step == Step.END) {
                 passScore - 1.5
             } else {
                 passScore
@@ -370,7 +370,7 @@ class Strategist(
                 turnNumber = state.turnNumber,
                 step = state.step.name,
                 activePlayerId = state.activePlayerId,
-                onOwnTurn = state.activePlayerId == playerId,
+                onOwnTurn = state.isActiveTurnFor(playerId),
                 baselineLabel = "Pass priority",
                 baselineScore = adjustedPassScore,
                 chosenLabel = options.firstOrNull { it.chosen }?.label ?: "Pass priority",
@@ -576,7 +576,7 @@ class Strategist(
                 turnNumber = state.turnNumber,
                 step = state.step.name,
                 activePlayerId = state.activePlayerId,
-                onOwnTurn = state.activePlayerId == playerId,
+                onOwnTurn = state.isActiveTurnFor(playerId),
                 baselineLabel = baselineLabel,
                 baselineScore = baselineScore,
                 chosenLabel = chosenLabel,

@@ -51,11 +51,11 @@ private fun isCombatStep(state: GameState): Boolean =
 
 /** True when it's the AI's own main phase. */
 private fun isOwnMainPhase(state: GameState, playerId: EntityId): Boolean =
-    state.activePlayerId == playerId && state.step.isMainPhase
+    state.isActiveTurnFor(playerId) && state.step.isMainPhase
 
 /** True when it's the opponent's turn. */
 private fun isOpponentsTurn(state: GameState, playerId: EntityId): Boolean =
-    state.activePlayerId != playerId
+    !state.isActiveTurnFor(playerId)
 
 /** Sum of creature board value for a player. */
 private fun creatureBoardValue(state: GameState, projected: ProjectedState, playerId: EntityId): Double {
@@ -309,7 +309,7 @@ object CounterspellAdvisor : CardAdvisor {
         if (isOpponentsTurn(state, playerId) && state.stack.isNotEmpty()) return null
 
         // Own turn: heavily penalize — hold it
-        if (state.activePlayerId == playerId) {
+        if (state.isActiveTurnFor(playerId)) {
             return context.passScore - 2.0
         }
 

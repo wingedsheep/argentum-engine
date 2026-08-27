@@ -118,6 +118,28 @@ class TwoHeadedGiantCombatTest : FunSpec({
         result.newState.getEntity(atk1)!!.get<AttackingComponent>()!!.defenderId shouldBe p[3]
     }
 
+    test("one declaration is the whole team's — the teammate may pass and can't add a second wave (CR 805.10b)") {
+        val (base, p) = init2hg()
+        val (s1, atk0) = base.withBear(p[0])
+        val (s2, atk1) = s1.withBear(p[1])
+        val state = s2.copy(step = Step.DECLARE_ATTACKERS, phase = Phase.COMBAT).withPriority(p[0])
+        val proc = ActionProcessor(registry())
+
+        // p0 attacks with their own bear only; p1's bear stays home.
+        val declared = proc.process(state, DeclareAttackers(p[0], mapOf(atk0 to p[2]))).result
+        declared.isSuccess.shouldBeTrue()
+        // The declaration is recorded on BOTH heads …
+        declared.newState.getEntity(p[1])?.has<AttackersDeclaredThisCombatComponent>() shouldBe true
+        // … so p1 is not made to declare before passing …
+        val afterP0Pass = proc.process(declared.newState, com.wingedsheep.engine.core.PassPriority(p[0])).result.newState
+        afterP0Pass.priorityPlayerId shouldBe p[1]
+        proc.process(afterP0Pass, com.wingedsheep.engine.core.PassPriority(p[1])).result.isSuccess.shouldBeTrue()
+        // … and can't send a second wave in after the fact.
+        val secondWave = proc.process(afterP0Pass, DeclareAttackers(p[1], mapOf(atk1 to p[3]))).result
+        secondWave.isSuccess.shouldBeFalse()
+        secondWave.newState.getEntity(atk1)?.has<AttackingComponent>() shouldBe false
+    }
+
     test("the whole nonactive team defends — even an un-attacked teammate is a defending player (CR 805.10a)") {
         val (base, p) = init2hg()
         val (state, _) = base.withBear(p[0], attacking = p[2]) // p0 attacks p2 only
