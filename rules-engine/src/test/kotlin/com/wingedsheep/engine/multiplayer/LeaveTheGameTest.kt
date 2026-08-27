@@ -278,6 +278,78 @@ class LeaveTheGameTest : FunSpec({
         ).result.error.shouldBeNull()
     }
 
+    /** A floating P/T effect on [target], controlled by [controller], sourced by [sourceId], with [duration]. */
+    fun GameState.pumpEffect(
+        target: EntityId,
+        controller: EntityId,
+        sourceId: EntityId?,
+        duration: Duration
+    ): Pair<GameState, EntityId> {
+        val fx = ActiveFloatingEffect(
+            id = EntityId.generate(),
+            effect = FloatingEffectData(
+                layer = Layer.POWER_TOUGHNESS,
+                modification = SerializableModification.ModifyPowerToughness(3, 3),
+                affectedEntities = setOf(target)
+            ),
+            duration = duration,
+            sourceId = sourceId,
+            controllerId = controller,
+            timestamp = timestamp
+        )
+        return copy(floatingEffects = floatingEffects + fx) to fx.id
+    }
+
+    test("a resolved spell's effect outlives its caster's departure (CR 611.2c) — only source-bound durations end (CR 800.4a)") {
+        val (base, players) = initGame(4)
+        val (s1, ownCreature) = base.withCreature(owner = players[0])
+        // players[1] cast a Giant Growth (the card is theirs and leaves with them) on players[0]'s creature.
+        val (s2, giantGrowthCard) = s1.withCreature(owner = players[1])
+        val (s3, pump) = s2.pumpEffect(ownCreature, controller = players[1], sourceId = giantGrowthCard, duration = Duration.EndOfTurn)
+        // players[1] also control a permanent whose static-style effect lasts while it is on the battlefield.
+        val (s4, anthemSource) = s3.withCreature(owner = players[1])
+        val (state, anthem) = s4.pumpEffect(ownCreature, controller = players[1], sourceId = anthemSource, duration = Duration.WhileSourceOnBattlefield())
+
+        val afterLeave = PlayerLeavesGameProcessor.process(state, players[1], GameEndReason.CONCESSION).newState
+
+        afterLeave.floatingEffects.any { it.id == pump } shouldBe true
+        afterLeave.floatingEffects.any { it.id == anthem } shouldBe false
+    }
+
+    test("a departed player's 'until your next turn' effect lasts until that turn would have begun (CR 800.4m)") {
+        val (base, players) = initGame(4)
+        val processor = ActionProcessor(registry())
+        val (s1, creature) = base.withCreature(owner = players[0])
+        val (armed, fx) = s1.pumpEffect(creature, controller = players[1], sourceId = null, duration = Duration.UntilYourNextTurn)
+
+        // players[1] concedes during players[0]'s turn. The effect neither ends now …
+        var state = processor.process(armed, Concede(players[1])).result.newState
+        state.floatingEffects.any { it.id == fx } shouldBe true
+
+        // … nor lasts forever: players[1]'s turn would have come right after players[0]'s, so it
+        // ends when players[2]'s turn begins instead.
+        var safety = 0
+        while (state.activePlayerId == players[0]) {
+            check(++safety < 500) { "stuck at ${state.step}" }
+            val prio = state.priorityPlayerId ?: break
+            val pending = state.pendingDecision
+            if (pending is com.wingedsheep.engine.core.SelectCardsDecision) {
+                val resp = com.wingedsheep.engine.core.CardsSelectedResponse(pending.id, pending.options.take(pending.minSelections))
+                state = processor.process(state, com.wingedsheep.engine.core.SubmitDecision(pending.playerId, resp)).result.newState
+                continue
+            }
+            if (state.step == com.wingedsheep.sdk.core.Step.DECLARE_ATTACKERS && state.isActiveTurnFor(prio) &&
+                state.getEntity(prio)?.has<com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent>() != true
+            ) {
+                state = processor.process(state, com.wingedsheep.engine.core.DeclareAttackers(prio, emptyMap())).result.newState
+                continue
+            }
+            state = processor.process(state, PassPriority(prio)).result.newState
+        }
+        state.activePlayerId shouldBe players[2]
+        state.floatingEffects.any { it.id == fx } shouldBe false
+    }
+
     test("priority held by the leaver passes to the next player still in the game (CR 800.4a)") {
         val (base, players) = initGame(4)
         // Give players[1] priority, then mark them lost (priority is still on them at this point).

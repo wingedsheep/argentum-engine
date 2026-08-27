@@ -15,6 +15,7 @@ import com.wingedsheep.engine.state.components.player.PlayerLostComponent
 import com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 
 /**
  * Applies the "leaving the game" processing for a player who has lost (CR 800.4a–c).
@@ -99,11 +100,27 @@ object PlayerLeavesGameProcessor {
             s = s.removeEntity(id)
         }
 
-        // 5. End floating effects the leaver controlled or that were sourced by an object
-        //    that just left (their continuous effects end with them — CR 800.4a).
+        // 5. End the continuous effects that depended on a departed object. Only those: the
+        //    effect of a spell or ability the leaver already *resolved* persists (CR 611.2c) — a
+        //    Giant Growth on someone else's creature outlives its caster's concession — so nothing
+        //    is dropped for having the leaver as its controller. What ends is an effect whose
+        //    duration is tied to its source staying on the battlefield (611.2b/611.3) when that
+        //    source just left, or one that lasts while the leaver controls the affected object,
+        //    which they no longer do. The leaver's "until your next turn" effects are neither —
+        //    CR 800.4m has them last until that turn would have begun (TurnManager.endTurn).
         s = s.copy(
             floatingEffects = s.floatingEffects.filterNot { fe ->
-                fe.controllerId == leaver || (fe.sourceId != null && fe.sourceId in toRemove)
+                val sourceLeft = fe.sourceId != null && fe.sourceId in toRemove
+                when (fe.duration) {
+                    is Duration.WhileSourceOnBattlefield,
+                    is Duration.WhileYouControlSource,
+                    is Duration.WhileSourceTapped,
+                    is Duration.WhileSourceTappedAndAffectedPowerAtMostSource,
+                    is Duration.WhileYouControlSourceAndSourceTapped,
+                    Duration.WhileSourceAttachedToAffected -> sourceLeft
+                    Duration.WhileControlledByController -> fe.controllerId == leaver
+                    else -> false
+                }
             }
         )
 
