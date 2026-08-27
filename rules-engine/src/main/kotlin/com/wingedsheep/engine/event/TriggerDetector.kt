@@ -2582,7 +2582,7 @@ class TriggerDetector(
                     if (reason != null && event.reason != reason) return@filter false
                     if (tapper == null) return@filter true
                     event.tappedById != null &&
-                        matcher.matchesPlayer(tapper, event.tappedById, entry.controllerId)
+                        matcher.matchesPlayer(state, tapper, event.tappedById, entry.controllerId)
                 }.map { it.entityId }
                 if (tappedIds.isEmpty()) continue
 

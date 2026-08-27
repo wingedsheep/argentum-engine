@@ -199,7 +199,7 @@ class AttachmentTriggerDetector(
                 // the aura/equipment's controller, as everywhere else here.
                 val tapper = trigger.tapper ?: return true
                 val tappedById = event.tappedById ?: return false
-                matcher.matchesPlayer(tapper, tappedById, auraControllerId)
+                matcher.matchesPlayer(state, tapper, tappedById, auraControllerId)
             }
             // "Whenever equipped creature becomes untapped" (Fishing Pole). UntapEvent carries no
             // filter, so identity with the attached permanent is the whole match.
@@ -209,7 +209,7 @@ class AttachmentTriggerDetector(
             is EventPattern.AbilityActivatedEvent -> {
                 if (event !is AbilityActivatedEvent) return false
                 if (event.sourceId != attachedEntityId) return false
-                if (!matcher.matchesPlayer(trigger.player, event.controllerId, auraControllerId)) return false
+                if (!matcher.matchesPlayer(state, trigger.player, event.controllerId, auraControllerId)) return false
                 // Mirror the main matcher's two wordings (see TriggerMatcher.AbilityActivatedEvent):
                 // "without {T} in its activation cost" vs. "isn't a mana ability".
                 when {

@@ -23,6 +23,8 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.ModifyDrawAmount
 import com.wingedsheep.sdk.scripting.PreventDraw
+import com.wingedsheep.sdk.scripting.PreventLifeGain
+import com.wingedsheep.sdk.scripting.ModifyLifeGain
 import com.wingedsheep.sdk.scripting.ReplacementEffect
 import com.wingedsheep.sdk.scripting.references.Player
 import io.kotest.assertions.withClue
@@ -142,6 +144,55 @@ class ReplacementTeamAwarenessTest : FunSpec({
         ) {
             processor.gatherReplacements(state, PendingGameEvent.DrawAmountPending(teammate, 1)).size shouldBe 0
         }
+    }
+
+    test("PreventLifeGain(EachOpponent) locks the opposing team, never the controller's teammate (CR 810.9g)") {
+        val booted = boot2hg()
+        val players = booted.playerIds
+        val (source, teammate) = players[0] to players[1]
+        val opponent = players[2]
+        val state = booted.state.withReplacementPermanent(
+            source, "Opposing Lifegain Lock",
+            PreventLifeGain(appliesTo = EventPattern.LifeGainEvent(player = Player.EachOpponent))
+        )
+        com.wingedsheep.engine.handlers.effects.DamageUtils.isLifeGainPrevented(state, opponent) shouldBe true
+        com.wingedsheep.engine.handlers.effects.DamageUtils.isLifeGainPrevented(state, source) shouldBe false
+        withClue("CR 102.3 — the teammate is not an opponent, so Gríma-style locks must not reach them") {
+            com.wingedsheep.engine.handlers.effects.DamageUtils.isLifeGainPrevented(state, teammate) shouldBe false
+        }
+    }
+
+    test("ModifyLifeGain(EachOpponent) scales the opposing team's gains, not the teammate's") {
+        val booted = boot2hg()
+        val players = booted.playerIds
+        val (source, teammate) = players[0] to players[1]
+        val opponent = players[2]
+        val state = booted.state.withReplacementPermanent(
+            source, "Opposing Lifegain Doubler",
+            ModifyLifeGain(multiplier = 2, appliesTo = EventPattern.LifeGainEvent(player = Player.EachOpponent))
+        )
+        com.wingedsheep.engine.handlers.effects.LifeGainModifiers.apply(state, opponent, 3) shouldBe 6
+        com.wingedsheep.engine.handlers.effects.LifeGainModifiers.apply(state, teammate, 3) shouldBe 3
+        com.wingedsheep.engine.handlers.effects.LifeGainModifiers.apply(state, source, 3) shouldBe 3
+    }
+
+    test("'whenever an opponent gains life' does not trigger off a teammate's gain") {
+        val booted = boot2hg()
+        val players = booted.playerIds
+        val (source, teammate) = players[0] to players[1]
+        val opponent = players[2]
+        val matcher = com.wingedsheep.engine.event.TriggerMatcher(
+            com.wingedsheep.engine.handlers.PredicateEvaluator(),
+            com.wingedsheep.engine.handlers.ConditionEvaluator()
+        )
+        fun gainBy(player: EntityId) = com.wingedsheep.engine.core.LifeChangedEvent(
+            player, 30, 32, com.wingedsheep.engine.core.LifeChangeReason.LIFE_GAIN
+        )
+        val pattern = EventPattern.LifeGainEvent(player = Player.EachOpponent)
+        val binding = com.wingedsheep.sdk.scripting.TriggerBinding.ANY
+        matcher.matchesTrigger(pattern, binding, gainBy(opponent), source, source, booted.state) shouldBe true
+        matcher.matchesTrigger(pattern, binding, gainBy(teammate), source, source, booted.state) shouldBe false
+        matcher.matchesTrigger(pattern, binding, gainBy(source), source, source, booted.state) shouldBe false
     }
 
     test("EachOpponent still matches every other seat in a non-team game") {

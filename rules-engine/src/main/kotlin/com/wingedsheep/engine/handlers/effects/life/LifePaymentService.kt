@@ -102,7 +102,8 @@ object LifePaymentService {
                 val applies = when (pattern.player) {
                     Player.Each, Player.Any -> true
                     Player.You -> payerId == sourceControllerId
-                    Player.EachOpponent -> payerId != sourceControllerId
+                    // Not `!= sourceControllerId`: a teammate is not an opponent (CR 102.3).
+                    Player.EachOpponent -> state.isOpponentOf(payerId, sourceControllerId)
                     else -> false
                 }
                 if (applies) return true

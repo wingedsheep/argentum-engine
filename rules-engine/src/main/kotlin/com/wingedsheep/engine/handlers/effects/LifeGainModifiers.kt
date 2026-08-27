@@ -58,7 +58,8 @@ object LifeGainModifiers {
                 val recipientMatches = when (lifeGainEvent.player) {
                     Player.Each -> true
                     Player.You -> recipientId == sourceControllerId
-                    Player.EachOpponent, Player.TargetOpponent -> recipientId != sourceControllerId
+                    // A real opponent test — the controller's teammate is not an opponent (CR 102.3).
+                    Player.EachOpponent, Player.TargetOpponent -> state.isOpponentOf(recipientId, sourceControllerId)
                     else -> recipientId == sourceControllerId
                 }
                 if (!recipientMatches) continue

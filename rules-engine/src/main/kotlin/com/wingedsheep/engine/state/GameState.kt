@@ -615,6 +615,16 @@ data class GameState(
         return activePlayers.filter { it !in ownTeam }
     }
 
+    /**
+     * Whether [playerId] is an opponent of [ofPlayerId] (CR 102.3) — the predicate form of
+     * [getOpponents], for the `Player.EachOpponent` branch of every "does this player match the
+     * pattern?" check. Never spell that branch as `playerId != controllerId`: in a team game the
+     * controller's teammate is not their opponent, and "your opponents can't gain life" must not
+     * lock your own partner. A player who has left the game is nobody's opponent any more.
+     */
+    fun isOpponentOf(playerId: EntityId, ofPlayerId: EntityId): Boolean =
+        playerId in getOpponents(ofPlayerId)
+
     // =========================================================================
     // Teams (Two-Headed Giant and other team variants — CR 810)
     //

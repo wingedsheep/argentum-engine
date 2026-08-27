@@ -1190,9 +1190,10 @@ object DamageUtils {
                 when (lifeGainEvent.player) {
                     Player.Each, Player.Any -> return true
                     Player.You -> if (playerId == sourceControllerId) return true
-                    // "Your opponents can't gain life." — Gríma Wormtongue (LTR).
+                    // "Your opponents can't gain life." — Gríma Wormtongue (LTR). A real opponent
+                    // test: the controller's teammate is not their opponent (CR 102.3 / 810.9g).
                     Player.EachOpponent ->
-                        if (playerId != sourceControllerId) return true
+                        if (sourceControllerId != null && state.isOpponentOf(playerId, sourceControllerId)) return true
                     // "Enchanted player can't gain life." — Grievous Wound. The host is an Aura
                     // attached to the locked player; compare against its attachment target.
                     Player.EnchantedPlayer -> {
@@ -2461,7 +2462,8 @@ object DamageUtils {
                 val playerMatches = when (pattern.player) {
                     Player.Each, Player.Any -> true
                     Player.You -> losingPlayerId == sourceControllerId
-                    Player.EachOpponent -> losingPlayerId != sourceControllerId
+                    // Not `!= sourceControllerId`: a teammate is not an opponent (CR 102.3).
+                    Player.EachOpponent -> state.isOpponentOf(losingPlayerId, sourceControllerId)
                     else -> false
                 }
                 if (!playerMatches) continue
