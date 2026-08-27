@@ -19,6 +19,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.ManaCost
+import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -125,6 +126,25 @@ class MultiDefenderCombatTest : FunSpec({
             state, DeclareBlockers(players[1], mapOf(ids["blkB"]!! to listOf(ids["atkB"]!!)))
         ).result
         legal.isSuccess.shouldBeTrue()
+    }
+
+    test("no seat gets a priority window between two defenders' block declarations (CR 802.4)") {
+        val (base, players) = initGame(4) // A active; B, C, D
+        val (s1, _) = base.withBear(players[0], attacking = players[1]) // A attacks B
+        val (s2, _) = s1.withBear(players[0], attacking = players[3])   // A attacks D — C is not attacked
+        val state = s2.copy(step = Step.DECLARE_BLOCKERS, phase = Phase.COMBAT).withPriority(players[1])
+        val processor = ActionProcessor(registry())
+
+        // B declares (nothing). The baton must go straight to D, the next undeclared defender …
+        val afterB = processor.process(state, DeclareBlockers(players[1], emptyMap())).result.newState
+        afterB.priorityPlayerId shouldBe players[3]
+        // … so C — who sits between them and isn't being attacked — has no window to act in.
+        processor.process(afterB, PassPriority(players[2])).result.isSuccess.shouldBeFalse()
+
+        // Once D has declared too, the round is a normal priority round again.
+        val afterD = processor.process(afterB, DeclareBlockers(players[3], emptyMap())).result.newState
+        afterD.priorityPlayerId shouldBe players[3]
+        processor.process(afterD, PassPriority(players[3])).result.isSuccess.shouldBeTrue()
     }
 
     test("both defenders declare blockers (APNAP) and damage lands on the right players") {

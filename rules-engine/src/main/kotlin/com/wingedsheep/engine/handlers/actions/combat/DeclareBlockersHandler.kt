@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.handlers.actions.combat
 
 import com.wingedsheep.engine.core.DeclareBlockers
+import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
+import com.wingedsheep.engine.mechanics.combat.CombatDefenders
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.PendingTriggersContinuation
 import com.wingedsheep.engine.event.TriggerDetector
@@ -83,12 +85,28 @@ class DeclareBlockersHandler(
             }
 
             return ExecutionResult.success(
-                triggerResult.newState,
+                handToNextUndeclaredDefender(triggerResult.newState),
                 result.events + triggerResult.events
             )
         }
 
-        return result
+        return ExecutionResult.success(handToNextUndeclaredDefender(result.newState), result.events)
+    }
+
+    /**
+     * CR 802.4 / 509.1: with more than one defending player, each declares blockers in APNAP order
+     * and nobody receives priority until every declaration is in. The declare-blockers round is
+     * driven by the priority baton, so after one defender declares, the baton goes straight to the
+     * next defender who still owes a declaration — not on a lap of the table, where a seat that is
+     * not being attacked would get a real priority window (and could Giant Growth the next
+     * defender's would-be blocker) before that defender has declared. Once every defender has
+     * declared the baton stays with the last declarer, exactly as before.
+     */
+    private fun handToNextUndeclaredDefender(state: GameState): GameState {
+        val next = CombatDefenders.defendingPlayersInApnapOrder(state).firstOrNull { defender ->
+            state.getEntity(defender)?.has<BlockersDeclaredThisCombatComponent>() != true
+        } ?: return state
+        return state.withPriority(next)
     }
 
     companion object {
