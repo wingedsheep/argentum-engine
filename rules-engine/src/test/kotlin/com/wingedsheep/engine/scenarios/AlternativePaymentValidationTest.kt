@@ -297,6 +297,54 @@ class AlternativePaymentValidationTest : FunSpec({
         }
     }
 
+    context("paying more than the cost has room for") {
+
+        test("convoke taps no creature once every pip it could pay is gone") {
+            // Merrow Skyswimmer is {3}{W/U}{W/U}: four creatures offered for generic can pay three.
+            // CR 702.51a — a creature taps *rather than pay that mana*; with no mana left to
+            // replace, the fourth stays untapped instead of tapping for nothing.
+            val board = convokeBoard()
+            val extra = listOf(
+                board.driver.putCreatureOnBattlefield(board.player, "Savannah Lions"),
+                board.driver.putCreatureOnBattlefield(board.player, "Savannah Lions"),
+            )
+            val all = listOf(board.whiteCreature, board.blueCreature) + extra
+            val result = board.cast(
+                AlternativePaymentChoice(convokedCreatures = all.associateWith { ConvokePayment(null) })
+            )
+            result.isSuccess shouldBe true
+            board.driver.stackSize shouldBe 1
+            all.count { board.driver.isTapped(it) } shouldBe 3
+        }
+
+        test("delve exiles no card beyond the generic in the cost") {
+            // Treasure Cruise is {7}{U}: eight cards offered, seven leave the graveyard (CR 702.66a).
+            val driver = createDriver()
+            driver.initMirrorMatch(
+                deck = Deck.of("Island" to 20, "Treasure Cruise" to 4, "Savannah Lions" to 4)
+            )
+            val player = driver.activePlayer!!
+            driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+            val cruise = driver.putCardInHand(player, "Treasure Cruise")
+            val graveyard = (1..8).map { driver.putCardInGraveyard(player, "Savannah Lions") }
+            driver.putLandOnBattlefield(player, "Island")
+
+            val result = driver.submit(
+                CastSpell(
+                    playerId = player,
+                    cardId = cruise,
+                    targets = emptyList(),
+                    paymentStrategy = PaymentStrategy.AutoPay,
+                    alternativePayment = AlternativePaymentChoice(delvedCards = graveyard),
+                )
+            )
+            result.isSuccess shouldBe true
+            driver.stackSize shouldBe 1
+            driver.getGraveyard(player).size shouldBe 1
+            driver.getGraveyard(player).single() shouldBe graveyard.last()
+        }
+    }
+
     context("delve") {
 
         test("a spell without delve rejects a delve payment instead of ignoring it") {
