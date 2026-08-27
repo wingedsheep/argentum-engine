@@ -153,6 +153,28 @@ class TwoHeadedGiantTeamLossTest : FunSpec({
         s.gameOver shouldBe false
     }
 
+    test("'you don't lose for having 0 or less life' on either head protects the whole team (CR 810.8a example)") {
+        val (state, p) = boot()
+        // Transcendence-style grant under p1's control (teammate of p0).
+        val (permId, withId) = state.newEntity()
+        val protectedState = withId
+            .withEntity(
+                permId,
+                ComponentContainer.of(
+                    ControllerComponent(p[1]),
+                    com.wingedsheep.engine.state.components.battlefield.GrantsCantLoseGameFromLifeComponent()
+                )
+            )
+            .addToZone(ZoneKey(p[1], Zone.BATTLEFIELD), permId)
+        val zeroed = DamageUtils.loseLife(protectedState, p[0], 30, LifeChangeReason.LIFE_LOSS).first
+
+        val s = checker().checkAndApply(zeroed).newState
+        // CR 810.8a: "If that player's team's life total is 0 or less, that team doesn't lose."
+        lost(s, p[0]) shouldBe false
+        lost(s, p[1]) shouldBe false
+        s.gameOver shouldBe false
+    }
+
     test("'you win the game' wins for your whole team and defeats only opposing teams (CR 810.8a)") {
         val (state, p) = boot()
         val result = WinGameExecutor().execute(

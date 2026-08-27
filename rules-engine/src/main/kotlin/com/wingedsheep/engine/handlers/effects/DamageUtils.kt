@@ -1170,9 +1170,14 @@ object DamageUtils {
      */
     fun isLifeGainPrevented(state: GameState, playerId: EntityId): Boolean {
         // Durable, source-independent lock conferred directly on the player
-        // (LockLifeGainEffect — Screaming Nemesis).
-        if (state.getEntity(playerId)
-                ?.has<com.wingedsheep.engine.state.components.player.CantGainLifeComponent>() == true
+        // (LockLifeGainEffect — Screaming Nemesis). CR 810.9g: where the life total is the team's,
+        // "that player can't gain life" means no player on their team can — a lock on either head
+        // closes the shared pool. Outside a shared-life format the team is the player alone.
+        val lockedSeats = if (state.format.sharesTeamLife) state.teamOf(playerId) else listOf(playerId)
+        if (lockedSeats.any { seat ->
+                state.getEntity(seat)
+                    ?.has<com.wingedsheep.engine.state.components.player.CantGainLifeComponent>() == true
+            }
         ) {
             return true
         }

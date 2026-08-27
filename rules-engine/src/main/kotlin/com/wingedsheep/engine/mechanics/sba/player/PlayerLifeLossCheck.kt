@@ -62,13 +62,21 @@ internal fun playerCantLoseGame(state: GameState, playerId: EntityId): Boolean {
 }
 
 /**
- * Narrow sibling of [playerCantLoseGame]: true when [playerId] controls a permanent granting
- * "you don't lose the game for having 0 or less life" (Marina Vendrell's Grimoire). Consulted only
- * by the 704.5a life-loss check, so poison / empty-library / effect losses are unaffected. Scoped
- * to the controller itself — it is not a team-wide "can't lose" grant.
+ * Narrow sibling of [playerCantLoseGame]: true when [playerId] — or, where players win and lose
+ * as a team, a teammate — controls a permanent granting "you don't lose the game for having 0 or
+ * less life" (Transcendence, Marina Vendrell's Grimoire). Consulted only by the 704.5a life-loss
+ * check, so poison / empty-library / effect losses are unaffected.
+ *
+ * The team reach is CR 810.8a's own example: a Two-Headed Giant team at 0 or less life with
+ * Transcendence on one head doesn't lose. The life total is the team's (810.4), so a grant that
+ * excuses one head from the 0-life loss has to excuse the other — otherwise the unprotected head
+ * is marked, TeamLossPropagationCheck drags the protected one down, and the grant did nothing.
  */
-internal fun playerCantLoseGameFromLife(state: GameState, playerId: EntityId): Boolean =
-    ControllerGrants.grantedTo<GrantsCantLoseGameFromLifeComponent>(state, playerId)
+internal fun playerCantLoseGameFromLife(state: GameState, playerId: EntityId): Boolean {
+    val team = (if (state.format.playersWinLoseAsTeam) state.teamOf(playerId) else listOf(playerId))
+        .toHashSet()
+    return ControllerGrants.anyGranting<GrantsCantLoseGameFromLifeComponent>(state) { it in team }
+}
 
 /**
  * True when [playerId] can't win the game because one of its opponents controls a permanent

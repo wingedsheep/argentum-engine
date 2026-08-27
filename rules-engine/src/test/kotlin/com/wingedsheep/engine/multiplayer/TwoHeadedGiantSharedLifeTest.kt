@@ -88,6 +88,18 @@ class TwoHeadedGiantSharedLifeTest : FunSpec({
         after.lifeTotal(p[1]) shouldBe 34
     }
 
+    test("a 'can't gain life' lock on one head closes the shared pool for the teammate too (CR 810.9g)") {
+        val (state, p) = boot()
+        val locked = state.updateEntity(p[0]) {
+            it.with(com.wingedsheep.engine.state.components.player.CantGainLifeComponent())
+        }
+        val (afterTeammateGain, event) = DamageUtils.gainLife(locked, p[1], 4)
+        event shouldBe null
+        afterTeammateGain.lifeTotal(p[1]) shouldBe 30
+        // The opposing team is untouched by team 0's lock.
+        DamageUtils.gainLife(locked, p[2], 4).first.lifeTotal(p[2]) shouldBe 34
+    }
+
     test("damage to a teammate reduces the shared team total") {
         val (state, p) = boot()
         val result = DamageUtils.dealDamageToTarget(state, p[0], 6, sourceId = null)
