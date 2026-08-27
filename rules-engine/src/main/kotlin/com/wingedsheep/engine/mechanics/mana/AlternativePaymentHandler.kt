@@ -276,6 +276,9 @@ class AlternativePaymentHandler(
         val exileZone = ZoneKey(playerId, Zone.EXILE)
 
         for (cardId in delvedCards) {
+            // CR 702.66a: one card per generic mana in the cost. A card past that would leave the
+            // graveyard for nothing, so it stays where it is.
+            if (genericReduction >= cost.genericAmount) break
             // Verify card is in player's graveyard
             if (cardId !in currentState.getZone(graveyardZone)) {
                 continue // Skip invalid cards
@@ -333,20 +336,20 @@ class AlternativePaymentHandler(
             if (container.has<TappedComponent>()) continue
             if (projected.getController(creatureId) != playerId) continue
 
-            // Tap the creature
+            // CR 702.51a: a creature taps "rather than pay that mana" — once no pip it could pay is
+            // left, it doesn't tap at all.
+            val paymentColor = payment.color
+            val afterPayment = if (paymentColor != null) {
+                reduceColoredCost(reducedCost, paymentColor)
+            } else {
+                reduceGenericCost(reducedCost, 1)
+            }
+            if (afterPayment == reducedCost) continue
+
             val (tappedState, tapEvent) = tap(currentState, creatureId)
             currentState = tappedState
             tapEvent?.let(events::add)
-
-            // Apply the payment
-            val paymentColor = payment.color
-            if (paymentColor != null) {
-                // Pay for colored mana
-                reducedCost = reduceColoredCost(reducedCost, paymentColor)
-            } else {
-                // Pay for generic mana
-                reducedCost = reduceGenericCost(reducedCost, 1)
-            }
+            reducedCost = afterPayment
         }
 
         return AlternativePaymentResult(reducedCost, currentState, events)
