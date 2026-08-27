@@ -1575,13 +1575,13 @@ class CostCalculator(
                     if (controllerId != casterId) continue
                 }
                 if (ability.firstSpellOfTurnOnly) {
-                    if (state.activePlayerId != casterId) continue
+                    if (!state.isActiveTurnFor(casterId)) continue
                     if ((state.playerSpellsCastThisTurn[casterId] ?: 0) > 0) continue
                 }
                 // `oncePerTurn` (Zaffai and the Tempests): only during the caster's own turn, and
                 // only while this specific source hasn't already been used this turn.
                 if (ability.oncePerTurn) {
-                    if (state.activePlayerId != casterId) continue
+                    if (!state.isActiveTurnFor(casterId)) continue
                     if (container.has<com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent>()) continue
                 }
                 // The permission may be scoped to a spell type (e.g. Dracogenesis — Dragons only).
@@ -1715,7 +1715,7 @@ class CostCalculator(
                     !matchesCardDefinition(spellCardDef, ability.spellFilter, entityId, state, state.projectedState)
                 ) continue
                 if (ability.oncePerTurn) {
-                    if (state.activePlayerId != casterId) continue
+                    if (!state.isActiveTurnFor(casterId)) continue
                     if (container.has<com.wingedsheep.engine.state.components.battlefield.MayCastWithoutPayingCostUsedThisTurnComponent>()) continue
                     if (oncePerTurnCandidate == null) oncePerTurnCandidate = entityId
                 } else {

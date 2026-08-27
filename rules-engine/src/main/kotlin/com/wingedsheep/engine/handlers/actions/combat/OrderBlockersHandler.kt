@@ -20,7 +20,7 @@ class OrderBlockersHandler : ActionHandler<OrderBlockers> {
     override val actionType: KClass<OrderBlockers> = OrderBlockers::class
 
     override fun validate(state: GameState, action: OrderBlockers): String? {
-        if (state.activePlayerId != action.playerId) {
+        if (!state.isActiveTurnFor(action.playerId)) {
             return "You can only order blockers on your turn"
         }
         if (state.step != Step.DECLARE_BLOCKERS) {

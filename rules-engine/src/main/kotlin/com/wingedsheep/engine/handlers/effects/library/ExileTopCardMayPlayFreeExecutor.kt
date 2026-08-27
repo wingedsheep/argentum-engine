@@ -305,7 +305,7 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
      * at cleanup — so we map any step in the turn to that turn's cleanup.
      *
      * This is a *floor*, not an exact turn: the expiry check in [CleanupPhaseManager] also requires
-     * `activePlayerId == controllerId`, so the permission dies at the cleanup of the first turn the
+     * `isActiveTurnFor(controllerId)`, so the permission dies at the cleanup of the first turn the
      * controller actually takes at or after this number. That pairing is what keeps the answer right
      * across skipped turns, extra turns and eliminated seats — none of which a turn count computed
      * from seat positions would survive.
@@ -320,7 +320,7 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
         controllerId: EntityId,
         expiry: MayPlayExpiry.UntilControllerStep
     ): Int {
-        val onControllerTurn = state.activePlayerId == controllerId
+        val onControllerTurn = state.isActiveTurnFor(controllerId)
         val targetReachedThisTurn = state.step.ordinal >= expiry.step.ordinal
         val thisTurnStillCounts = onControllerTurn && expiry.includeCurrentTurn && !targetReachedThisTurn
 

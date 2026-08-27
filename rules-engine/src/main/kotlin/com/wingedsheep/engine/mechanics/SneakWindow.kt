@@ -33,7 +33,7 @@ object SneakWindow {
      */
     fun isWindowOpen(state: GameState, playerId: EntityId): Boolean =
         state.step == Step.DECLARE_BLOCKERS &&
-            state.activePlayerId == playerId &&
+            state.isActiveTurnFor(playerId) &&
             blockersDeclared(state, playerId) &&
             unblockedAttackers(state, playerId).isNotEmpty()
 

@@ -93,8 +93,9 @@ class BeginningPhaseManager(
             events.addAll(dayNightEvents)
         }
 
-        // Check if the player has a SkipUntapComponent
-        val skipUntap = newState.getEntity(activePlayer)?.get<SkipUntapComponent>()
+        // Each active-team member's own "doesn't untap" marker applies to the permanents *they*
+        // control — in a shared team turn (CR 805.4) both heads untap, each under their own marker.
+        val skipUntapByPlayer = activeTeam.associateWith { newState.getEntity(it)?.get<SkipUntapComponent>() }
 
         // Use projected state for controller checks (control-changing effects like Annex).
         // Recomputed from newState so just-phased-in permanents are visible.
@@ -105,7 +106,8 @@ class BeginningPhaseManager(
             projected.getController(entityId) in activeTeam &&
                 container.has<TappedComponent>()
         }.keys.filter { entityId ->
-            // If there's a skip untap component, check if this permanent should be skipped
+            // If the controller has a skip untap component, check if this permanent should be skipped
+            val skipUntap = skipUntapByPlayer[projected.getController(entityId)]
             if (skipUntap != null) {
                 val cardComponent = newState.getEntity(entityId)?.get<CardComponent>()
                 val typeLine = cardComponent?.typeLine
@@ -121,9 +123,10 @@ class BeginningPhaseManager(
             }
         }
 
-        // Remove the SkipUntapComponent after processing (it's been consumed)
-        if (skipUntap != null) {
-            newState = newState.updateEntity(activePlayer) { container ->
+        // Remove the SkipUntapComponents after processing (they've been consumed)
+        for ((member, skipUntap) in skipUntapByPlayer) {
+            if (skipUntap == null) continue
+            newState = newState.updateEntity(member) { container ->
                 container.without<SkipUntapComponent>()
             }
         }
@@ -378,14 +381,18 @@ class BeginningPhaseManager(
 
     /**
      * Add a lore counter to each Saga the active player controls (Rule 714.3c).
-     * This is a turn-based action that happens at the beginning of precombat main phase.
+     * This is a turn-based action that happens at the beginning of precombat main phase. In a
+     * shared team turn (CR 805.4) the precombat main phase belongs to both heads, so each
+     * teammate's Sagas advance; outside shared team turns the team is the active player alone.
      */
     fun addLoreCountersToSagas(state: GameState, activePlayer: EntityId): ExecutionResult {
         var newState = state
         val events = mutableListOf<GameEvent>()
 
-        val battlefieldZone = ZoneKey(activePlayer, Zone.BATTLEFIELD)
-        for (entityId in newState.getZone(battlefieldZone)) {
+        val sagaIds = state.sharedTurnTeam(activePlayer).flatMap { member ->
+            newState.getZone(ZoneKey(member, Zone.BATTLEFIELD))
+        }
+        for (entityId in sagaIds) {
             val container = newState.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
             val sagaComponent = container.get<SagaComponent>() ?: continue

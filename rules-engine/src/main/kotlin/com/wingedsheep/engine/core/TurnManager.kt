@@ -313,10 +313,16 @@ class TurnManager(
      * `COMBAT_PHASE` skips all five combat steps one after another as this is consulted per step,
      * and `MAIN_PHASE` skips both main phases (CR 505.1).
      */
-    private fun skipsTurnPart(state: GameState, step: Step, playerId: EntityId): Boolean {
-        val parts = state.getEntity(playerId)?.get<SkippedTurnPartsComponent>()?.parts ?: return false
-        return parts.any { it.covers(step) }
-    }
+    /**
+     * Whether [playerId]'s turn skips [step]. CR 805.8 — in a shared team turn a step one teammate
+     * is made to skip is skipped by the team, so the marker is read off every member of the active
+     * team; outside shared team turns [GameState.sharedTurnTeam] is just the player.
+     */
+    private fun skipsTurnPart(state: GameState, step: Step, playerId: EntityId): Boolean =
+        state.sharedTurnTeam(playerId).any { member ->
+            state.getEntity(member)?.get<SkippedTurnPartsComponent>()?.parts
+                ?.any { it.covers(step) } == true
+        }
 
     private fun advanceStepFromEndedStep(incomingState: GameState): ExecutionResult {
         val currentStep = incomingState.step
@@ -715,11 +721,14 @@ class TurnManager(
                 // an attacking creature only during the end of combat step (e.g. Desert) still
                 // have legal targets.
 
-                // Remove MustAttackPlayerComponent after combat (Taunt effect is consumed)
-                val mustAttack = newState.getEntity(activePlayer)?.get<MustAttackPlayerComponent>()
-                if (mustAttack != null && mustAttack.activeThisTurn) {
-                    newState = newState.updateEntity(activePlayer) { container ->
-                        container.without<MustAttackPlayerComponent>()
+                // Remove MustAttackPlayerComponent after combat (Taunt effect is consumed). Read
+                // off every member of the active team: a shared team turn is either head's turn.
+                for (member in newState.sharedTurnTeam(activePlayer)) {
+                    val mustAttack = newState.getEntity(member)?.get<MustAttackPlayerComponent>()
+                    if (mustAttack != null && mustAttack.activeThisTurn) {
+                        newState = newState.updateEntity(member) { container ->
+                            container.without<MustAttackPlayerComponent>()
+                        }
                     }
                 }
 
@@ -731,14 +740,19 @@ class TurnManager(
                 // alongside the paired "return it at the beginning of the next end step" triggers.
                 newState = cleanupPhaseManager.performNextEndStepExpiry(newState)
 
-                val loseComponent = newState.getEntity(activePlayer)?.get<LoseAtEndStepComponent>()
-                if (loseComponent != null) {
+                // "At the beginning of the next end step, you lose the game" (Final Fortune) is
+                // keyed to whoever took the extra turn. In a shared team turn (CR 805.8) that is
+                // either head, so every member of the active team is checked — not just the seat
+                // that happens to be [activePlayer]; outside shared team turns the team is the
+                // active player alone.
+                for (member in newState.sharedTurnTeam(activePlayer)) {
+                    val loseComponent = newState.getEntity(member)?.get<LoseAtEndStepComponent>() ?: continue
                     if (loseComponent.turnsUntilLoss <= 0) {
-                        newState = newState.updateEntity(activePlayer) { container ->
+                        newState = newState.updateEntity(member) { container ->
                             container.without<LoseAtEndStepComponent>()
                                 .with(PlayerLostComponent(LossReason.CARD_EFFECT))
                         }
-                        events.add(PlayerLostEvent(activePlayer, GameEndReason.CARD_EFFECT, loseComponent.message))
+                        events.add(PlayerLostEvent(member, GameEndReason.CARD_EFFECT, loseComponent.message))
                         val sbaResult = sbaChecker.checkAndApply(newState)
                         if (sbaResult.isPaused) {
                             return ExecutionResult.paused(
@@ -754,7 +768,7 @@ class TurnManager(
                             return ExecutionResult.success(newState, events)
                         }
                     } else {
-                        newState = newState.updateEntity(activePlayer) { container ->
+                        newState = newState.updateEntity(member) { container ->
                             container.without<LoseAtEndStepComponent>()
                                 .with(LoseAtEndStepComponent(loseComponent.turnsUntilLoss - 1, loseComponent.message))
                         }

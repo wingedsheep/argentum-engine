@@ -124,7 +124,7 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
         val notBeforeTurn = when (effect.timing) {
             DelayedTriggerTiming.NEXT_TURN -> state.turnNumber + 1
             DelayedTriggerTiming.NEXT_END_STEP -> {
-                val onControllersTurn = context.controllerId == state.activePlayerId
+                val onControllersTurn = state.isActiveTurnFor(context.controllerId)
                 val endStepAlreadyStarted = state.step == Step.END || state.step == Step.CLEANUP
                 if (onControllersTurn && endStepAlreadyStarted) state.turnNumber + 1 else null
             }

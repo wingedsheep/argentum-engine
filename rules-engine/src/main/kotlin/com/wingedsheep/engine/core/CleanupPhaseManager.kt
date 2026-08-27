@@ -199,20 +199,24 @@ class CleanupPhaseManager(
      * controller rather than to a step of any player's turn.
      */
     fun expireUntilYourNextTurnEffects(state: GameState, activePlayer: EntityId): GameState {
+        // "Your next turn" is the next turn of the player's *team* in a shared team turn (CR
+        // 805.4): both heads' "until your next turn" effects wear off on the team's untap. Outside
+        // shared team turns this set is just [activePlayer].
+        val activeTeam = state.sharedTurnTeam(activePlayer).toHashSet()
         // Event-based delayed triggers scoped "until your next turn" (Tamiyo, Field Researcher's
         // +1). Keyed to the delayed trigger's own controller, so an opponent's rider is untouched
         // by this player's untap step.
         val remainingDelayed = state.delayedTriggers.filter { delayed ->
             !(delayed.expiry is DelayedTriggerExpiry.UntilControllersNextTurn &&
-                delayed.controllerId == activePlayer)
+                delayed.controllerId in activeTeam)
         }
         val remainingFloating = state.floatingEffects.filter { floatingEffect ->
             !(floatingEffect.duration is Duration.UntilYourNextTurn &&
-                floatingEffect.controllerId == activePlayer)
+                floatingEffect.controllerId in activeTeam)
         }
         val remainingGlobal = state.globalGrantedTriggeredAbilities.filter { grant ->
             !(grant.duration is Duration.UntilYourNextTurn &&
-                grant.controllerId == activePlayer)
+                grant.controllerId in activeTeam)
         }
         // Granted *activated* abilities with UntilYourNextTurn duration (Hydro-Man's temporary
         // "{T}: Add {U}"). The record carries no expiry-player, so key the expiry to the granted
@@ -222,7 +226,7 @@ class CleanupPhaseManager(
             !(grant.duration is Duration.UntilYourNextTurn &&
                 state.getEntity(grant.entityId)
                     ?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()
-                    ?.playerId == activePlayer)
+                    ?.playerId in activeTeam)
         }
         val floatingChanged = remainingFloating.size != state.floatingEffects.size
         val globalChanged = remainingGlobal.size != state.globalGrantedTriggeredAbilities.size
@@ -240,13 +244,15 @@ class CleanupPhaseManager(
         }
         // Player-component "until your next turn" effects (The One Ring's protection) expire on
         // the same post-untap hook as floating UntilYourNextTurn effects.
-        val protection = result.getEntity(activePlayer)?.get<PlayerProtectionComponent>()
-        if (protection?.removeOn == PlayerEffectRemoval.UntilYourNextTurn) {
-            result = result.updateEntity(activePlayer) { it.without<PlayerProtectionComponent>() }
-        }
-        val cantGainLife = result.getEntity(activePlayer)?.get<CantGainLifeComponent>()
-        if (cantGainLife?.removeOn == PlayerEffectRemoval.UntilYourNextTurn) {
-            result = result.updateEntity(activePlayer) { it.without<CantGainLifeComponent>() }
+        for (member in activeTeam) {
+            val protection = result.getEntity(member)?.get<PlayerProtectionComponent>()
+            if (protection?.removeOn == PlayerEffectRemoval.UntilYourNextTurn) {
+                result = result.updateEntity(member) { it.without<PlayerProtectionComponent>() }
+            }
+            val cantGainLife = result.getEntity(member)?.get<CantGainLifeComponent>()
+            if (cantGainLife?.removeOn == PlayerEffectRemoval.UntilYourNextTurn) {
+                result = result.updateEntity(member) { it.without<CantGainLifeComponent>() }
+            }
         }
         // Memory Vessel's "they can't play cards from their hand until your next turn" expires on
         // the same post-untap hook. The window keys off the *activating* player (every affected
@@ -257,7 +263,7 @@ class CleanupPhaseManager(
             val cantPlay = result.getEntity(playerId)?.get<PlayerCantPlayFromHandComponent>() ?: continue
             if (cantPlay.removeOn != PlayerEffectRemoval.UntilYourNextTurn) continue
             val expiryPlayer = cantPlay.expiresForPlayerId ?: playerId
-            if (expiryPlayer == activePlayer) {
+            if (expiryPlayer in activeTeam) {
                 result = result.updateEntity(playerId) { it.without<PlayerCantPlayFromHandComponent>() }
             }
         }
@@ -268,7 +274,7 @@ class CleanupPhaseManager(
             val restricted = result.getEntity(playerId)?.get<CantCastFromNonHandZonesComponent>() ?: continue
             if (restricted.removeOn != PlayerEffectRemoval.UntilYourNextTurn) continue
             val expiryPlayer = restricted.expiresForPlayerId ?: playerId
-            if (expiryPlayer == activePlayer) {
+            if (expiryPlayer in activeTeam) {
                 result = result.updateEntity(playerId) { it.without<CantCastFromNonHandZonesComponent>() }
             }
         }
@@ -280,7 +286,7 @@ class CleanupPhaseManager(
         // is back in time to trigger again.
         for ((entityId, container) in result.entities) {
             val marker = container.get<RevertCopyAtYourNextTurnComponent>() ?: continue
-            if (marker.playerId != activePlayer) continue
+            if (marker.playerId !in activeTeam) continue
             val originalCard = container.get<CopyOfComponent>()?.originalCardComponent
             result = result.updateEntity(entityId) { c ->
                 var reverted = c.without<RevertCopyAtYourNextTurnComponent>()
@@ -305,13 +311,15 @@ class CleanupPhaseManager(
      * carries the new turn's timestamp and survives this same-step expiry on the following turn.
      */
     fun expireUntilYourNextUpkeepEffects(state: GameState, activePlayer: EntityId): GameState {
+        // The team's upkeep is each head's upkeep in a shared team turn (CR 805.4).
+        val activeTeam = state.sharedTurnTeam(activePlayer).toHashSet()
         val remainingFloating = state.floatingEffects.filter { floatingEffect ->
             !(floatingEffect.duration is Duration.UntilYourNextUpkeep &&
-                floatingEffect.controllerId == activePlayer)
+                floatingEffect.controllerId in activeTeam)
         }
         val remainingGlobal = state.globalGrantedTriggeredAbilities.filter { grant ->
             !(grant.duration is Duration.UntilYourNextUpkeep &&
-                grant.controllerId == activePlayer)
+                grant.controllerId in activeTeam)
         }
         val floatingChanged = remainingFloating.size != state.floatingEffects.size
         val globalChanged = remainingGlobal.size != state.globalGrantedTriggeredAbilities.size
@@ -377,10 +385,13 @@ class CleanupPhaseManager(
     ): Pair<GameState, List<GameEvent>> {
         var newState = state
         val events = mutableListOf<GameEvent>()
+        // CR 701.15a "until the next turn of the controller" — in a shared team turn (CR 805.4)
+        // that turn belongs to both heads, so a goad by either one lapses here.
+        val activeTeam = newState.sharedTurnTeam(activePlayer).toHashSet()
         for (entityId in newState.getBattlefield()) {
             val goaded = newState.getEntity(entityId)?.get<GoadedComponent>() ?: continue
-            if (activePlayer !in goaded.goaderIds) continue
-            val remaining = goaded.goaderIds - activePlayer
+            if (goaded.goaderIds.none { it in activeTeam }) continue
+            val remaining = goaded.goaderIds - activeTeam
             newState = newState.updateEntity(entityId) { container ->
                 if (remaining.isEmpty()) container.without<GoadedComponent>()
                 else container.with(GoadedComponent(remaining))
@@ -403,11 +414,14 @@ class CleanupPhaseManager(
      */
     fun expireAffectedControllersNextUntapEffects(state: GameState, activePlayer: EntityId): GameState {
         val projected = state.projectedState
+        // Both heads untap on the team's turn (CR 805.4), so either head counts as "the
+        // affected creature's controller just had their untap step".
+        val activeTeam = state.sharedTurnTeam(activePlayer).toHashSet()
         val remaining = state.floatingEffects.filter { floatingEffect ->
             if (floatingEffect.duration !is Duration.UntilAfterAffectedControllersNextUntap) return@filter true
-            // Expire if any affected entity is controlled by the active player
+            // Expire if any affected entity is controlled by the active team
             val affectedByActivePlayer = floatingEffect.effect.affectedEntities.any { entityId ->
-                projected.getController(entityId) == activePlayer
+                projected.getController(entityId) in activeTeam
             }
             !affectedByActivePlayer
         }
@@ -534,7 +548,7 @@ class CleanupPhaseManager(
                         // turn" effect rather than stranding a control change permanently.
                         null -> false
                         else -> !(newState.turnNumber >= floor &&
-                            newState.activePlayerId == floatingEffect.controllerId)
+                            newState.isActiveTurnFor(floatingEffect.controllerId))
                     }
                 }
                 is Duration.UntilYourNextUpkeep -> true  // Keep until upkeep
@@ -1045,7 +1059,7 @@ class CleanupPhaseManager(
                     !permission.permanent && when {
                         permission.expiresAfterTurn != null ->
                             newState.turnNumber >= permission.expiresAfterTurn &&
-                                newState.activePlayerId == (permission.expiryControllerId ?: permission.controllerId)
+                                newState.isActiveTurnFor(permission.expiryControllerId ?: permission.controllerId)
                         else -> true
                     }
                 }

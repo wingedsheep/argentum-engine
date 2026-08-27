@@ -116,7 +116,8 @@ class TriggerMatcher(
             }
             is EventPattern.YouAttackEvent -> {
                 if (event !is AttackersDeclaredEvent) return false
-                if (state.activePlayerId != controllerId) return false
+                // "Whenever you attack" — the controller's team is attacking (CR 805.10a).
+                if (!state.isActiveTurnFor(controllerId)) return false
                 val filter = trigger.attackerFilter
                 if (filter != null) {
                     // Count attackers matching the filter
@@ -935,7 +936,7 @@ class TriggerMatcher(
 
         val drawer = event.playerId
         // Exemption only applies in the drawing player's own draw step.
-        val inOwnDrawStep = state.activePlayerId == drawer && state.step == Step.DRAW
+        val inOwnDrawStep = state.isActiveTurnFor(drawer) && state.step == Step.DRAW
         if (!inOwnDrawStep) return total
 
         val countAfter = (state.getEntity(drawer)?.get<CardsDrawnThisTurnComponent>()?.count ?: 0) -

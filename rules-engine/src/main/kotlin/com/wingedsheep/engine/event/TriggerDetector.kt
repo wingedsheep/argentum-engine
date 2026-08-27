@@ -483,11 +483,13 @@ class TriggerDetector(
      * Returns the pending triggers and the IDs of consumed delayed triggers.
      */
     fun detectDelayedTriggers(state: GameState, step: Step): Pair<List<PendingTrigger>, Set<String>> {
-        val activePlayer = state.activePlayerId
         val matching = state.delayedTriggers.filter { delayed ->
             delayed.trigger == null &&
                 delayed.fireAtStep == step &&
-                (delayed.fireOnPlayerId == null || delayed.fireOnPlayerId == activePlayer) &&
+                // "your next end step" is the team's in a shared team turn (CR 805.4) — the
+                // non-representative head is never `activePlayerId`, so equality would strand
+                // every one of their step-keyed delayed triggers.
+                (delayed.fireOnPlayerId == null || state.isActiveTurnFor(delayed.fireOnPlayerId)) &&
                 (delayed.notBeforeTurn == null || state.turnNumber >= delayed.notBeforeTurn)
         }
         if (matching.isEmpty()) return emptyList<PendingTrigger>() to emptySet()
@@ -2659,8 +2661,9 @@ class TriggerDetector(
         val activePlayer = state.activePlayerId ?: return
 
         for (entry in index.getEntitiesForCategory(TriggerCategory.UNTAPPED)) {
-            // "your untap step" — the observer must be the active player whose untap step just ran.
-            if (entry.controllerId != activePlayer) continue
+            // "your untap step" — the observer must be on the active team whose untap step just ran
+            // (both heads untap in a shared team turn, CR 805.4).
+            if (!state.isActiveTurnFor(entry.controllerId)) continue
             for (ability in entry.abilities) {
                 val trigger = ability.trigger
                 if (trigger !is EventPattern.UntapEvent || !trigger.batch) continue

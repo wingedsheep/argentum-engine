@@ -81,6 +81,9 @@ class TwoHeadedGiantTeamPriorityTest : FunSpec({
                 teams = teams,
                 startingPlayerIndex = 0,
                 skipMulligans = true,
+                // Pinned: the chain test needs two Sprouts in p0's opening hand and one in p1's;
+                // an unseeded shuffle misses that roughly one run in twenty.
+                seed = 2026_08_27L,
             )
         )
         return Triple(result.state, result.playerIds, ActionProcessor(registry()))
