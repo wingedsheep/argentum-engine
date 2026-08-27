@@ -259,6 +259,35 @@ class TwoHeadedGiantTeamPriorityTest : FunSpec({
         state.priorityPassedBy shouldBe setOf(p[0], p[1])
     }
 
+    test("a teammate who already passed this round can't pass again until someone acts") {
+        val (booted, p, proc) = boot2hg()
+        var state = toPrecombatMain(booted, proc)
+
+        // p1 passes out of baton order; p0 still holds the baton.
+        state = proc.process(state, PassPriority(p[1])).result.newState
+        state.priorityPlayerId shouldBe p[0]
+        state.priorityPassedBy shouldBe setOf(p[1])
+
+        // A second pass from p1 is refused — it would leave the state exactly as it is, which is
+        // the loop an AI partner polling its legal actions fell into.
+        val again = proc.process(state, PassPriority(p[1])).result
+        again.isSuccess shouldBe false
+        // And it is no longer offered: the enumerator mirrors the handler.
+        val services = com.wingedsheep.engine.core.EngineServices(registry())
+        val enumerator = com.wingedsheep.engine.legalactions.LegalActionEnumerator(
+            services.cardRegistry, services.manaSolver, services.costCalculator,
+            services.predicateEvaluator, services.conditionEvaluator, services.turnManager
+        )
+        enumerator.enumerate(state, p[1]).none { it.actionType == "PassPriority" } shouldBe true
+        // The baton holder's own pass is untouched.
+        enumerator.enumerate(state, p[0]).count { it.actionType == "PassPriority" } shouldBe 1
+
+        // Once p0 acts, the round is re-armed and p1 may pass again.
+        state = proc.process(state, CastSpell(p[0], state.handCard(p[0], hunch.name))).result.newState
+        state.priorityPassedBy.shouldBeEmpty()
+        proc.process(state, PassPriority(p[1])).result.isSuccess shouldBe true
+    }
+
     test("nextUnpassedPriorityAfter is plain getNextPlayer while nobody has passed") {
         val (booted, p, proc) = boot2hg()
         val state = toPrecombatMain(booted, proc)

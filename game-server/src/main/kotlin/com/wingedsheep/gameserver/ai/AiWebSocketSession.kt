@@ -279,6 +279,19 @@ class AiWebSocketSession(
             return
         }
 
+        // Team priority (CR 805.5) offers a bot its own actions while its human partner holds the
+        // baton. The bot takes its window in baton order instead — GameState.hasPriority's KDoc:
+        // widening permission never took a window away, and a bot racing its partner for every
+        // response would spend windows the human never got to see. So outside a decision addressed
+        // to us, act only when the seat these actions belong to is the baton holder (a hijacked
+        // seat we drive still qualifies: its actions carry that seat's id, which IS the baton).
+        // `priorityPlayerId` is kept current by applyDelta, so it is safe to read here.
+        val actingSeat = legalActions.firstOrNull()?.action?.playerId
+        if (!isOurDecision && actingSeat != null && actingSeat != state.priorityPlayerId) {
+            logger.info("AI skipping — team priority window belongs to the baton holder {}", state.priorityPlayerId)
+            return
+        }
+
         if (legalActions.isNotEmpty()) {
             logger.info("AI has {} legal actions: {}", legalActions.size,
                 legalActions.joinToString(", ") { "${it.actionType}${if (it.description.isNotBlank()) "(${it.description})" else ""}" })

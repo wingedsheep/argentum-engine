@@ -51,6 +51,15 @@ class PassPriorityHandler(
         if (!state.hasPriority(action.playerId)) {
             return "You don't have priority"
         }
+        // Under team priority (CR 805.5) a teammate may pass out of baton order, and their pass
+        // then stands until someone acts (which re-arms every seat). Passing *again* in the same
+        // round does nothing — the baton stays put and the round doesn't advance — so refuse it
+        // rather than let a client (an AI partner polling its legal actions) spin on it forever.
+        // The baton holder is never in [GameState.priorityPassedBy], so this only ever bites a
+        // seat that already declined; no non-team game can reach it.
+        if (action.playerId in state.priorityPassedBy && action.playerId != state.priorityPlayerId) {
+            return "You have already passed priority this round"
+        }
         // Cannot pass priority while there's a pending decision
         val pendingDecision = state.pendingDecision
         if (pendingDecision != null) {
