@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.giftKeyword
 
 import com.wingedsheep.engine.core.AlternativeCostType
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.CostPreview
 import com.wingedsheep.engine.core.CastWithCreatureTypeContinuation
 import com.wingedsheep.engine.core.ChooseOptionDecision
 import com.wingedsheep.engine.core.AdditionalCostSelectionKind
@@ -15,6 +16,7 @@ import com.wingedsheep.engine.core.DecisionRequestedEvent
 import com.wingedsheep.engine.core.EngineServices
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
+import com.wingedsheep.sdk.scripting.AlternativePaymentChoice
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.LifeChangedEvent
 import com.wingedsheep.engine.core.LifeChangeReason
@@ -680,19 +682,7 @@ class CastSpellHandler(
         // A free cast has no generic to pay, so `execute` ignores tap-for-generic permanents on
         // one (the `!playForFree` guards below); validation ignores them the same way rather than
         // rejecting a cast whose taps simply do nothing.
-        val alternativePayment = action.alternativePayment
-            ?.let { if (playForFree) it.copy(tapForGenericPermanents = emptySet()) else it }
-        if (alternativePayment != null && !alternativePayment.isEmpty && cardDef != null) {
-            val waterbendCap = spellWaterbendAmount(cardDef, action) + fixedAltWaterbendAmount(state, action, playForFree)
-            val tapForGeneric = when {
-                waterbendCap > 0 -> TapForGeneric.WATERBEND
-                grantedKeywordResolver.hasKeyword(state, action.playerId, cardDef, Keyword.IMPROVISE) -> TapForGeneric.IMPROVISE
-                else -> null
-            }
-            alternativePaymentHandler.validateForSpell(
-                state, alternativePayment, action.playerId, cardDef, action.cardId, tapForGeneric
-            )?.let { return it }
-        }
+        validateAlternativePaymentChoice(state, action, cardDef, playForFree)?.let { return it }
         val computedCost = computeTotalCastCost(state, action, cardDef, cardComponent, playForFree, hasCommanderCast)
             ?: return "No alternative casting cost available"
         val paymentError = validatePayment(state, action, computedCost.cost, computedCost.paymentXValue)
@@ -932,6 +922,97 @@ class CastSpellHandler(
         val leftover = (power - harmonizeCost.genericAmount).coerceAtLeast(0)
         val xCount = harmonizeCost.xCount.coerceAtLeast(1)
         return ((xValue * xCount - leftover).coerceAtLeast(0)) / xCount
+    }
+
+    /**
+     * The alternative payment [validate] and [previewCost] both price: a free cast has no generic
+     * to pay, so `execute` ignores tap-for-generic permanents on one and validation ignores them
+     * the same way rather than rejecting a cast whose taps simply do nothing.
+     */
+    private fun effectiveAlternativePayment(action: CastSpell, playForFree: Boolean): AlternativePaymentChoice? =
+        action.alternativePayment?.let { if (playForFree) it.copy(tapForGenericPermanents = emptySet()) else it }
+
+    /**
+     * Which tap-for-generic mechanic this cast may use: waterbend when the spell has a waterbend
+     * cost, else improvise when it effectively has the keyword, else none. Settled once here so
+     * validation, preview and payment agree.
+     */
+    private fun tapForGenericMechanic(
+        state: GameState,
+        action: CastSpell,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition,
+        playForFree: Boolean
+    ): TapForGeneric? {
+        val waterbendCap = spellWaterbendAmount(cardDef, action) + fixedAltWaterbendAmount(state, action, playForFree)
+        return when {
+            waterbendCap > 0 -> TapForGeneric.WATERBEND
+            grantedKeywordResolver.hasKeyword(state, action.playerId, cardDef, Keyword.IMPROVISE) -> TapForGeneric.IMPROVISE
+            else -> null
+        }
+    }
+
+    /**
+     * The engine, not the client, decides what a convoke/delve/improvise choice is worth: every
+     * chosen permanent or card must be one the payment could actually use, or the cost twins
+     * would price a payment `execute` then silently declines to apply.
+     */
+    private fun validateAlternativePaymentChoice(
+        state: GameState,
+        action: CastSpell,
+        cardDef: com.wingedsheep.sdk.model.CardDefinition?,
+        playForFree: Boolean
+    ): String? {
+        val alternativePayment = effectiveAlternativePayment(action, playForFree)
+        if (alternativePayment == null || alternativePayment.isEmpty || cardDef == null) return null
+        return alternativePaymentHandler.validateForSpell(
+            state, alternativePayment, action.playerId, cardDef, action.cardId,
+            tapForGenericMechanic(state, action, cardDef, playForFree)
+        )
+    }
+
+    /**
+     * Price a *draft* cast without executing it — the read-only twin of the cost half of
+     * [validate]. Runs the same chain (alternative-payment choice check → [computeTotalCastCost]
+     * → [validatePayment]) and reports the result as a [CostPreview] instead of a first error, so
+     * a client mid-way through building the action (X announced, two cards delved, no targets yet)
+     * can show the engine's own remaining cost and affordability rather than its own arithmetic.
+     *
+     * Deliberately skips everything in [validate] that isn't about the cost — zone permission,
+     * timing, targets — because a draft has none of that settled yet; the submission is validated
+     * in full when it arrives.
+     */
+    fun previewCost(state: GameState, action: CastSpell): CostPreview {
+        val cardComponent = state.getEntity(action.cardId)?.get<CardComponent>()
+            ?: return CostPreview.unavailable("Card not found")
+        val cardDef = cardRegistry.getCard(cardComponent.cardDefinitionId)
+        val playForFree = zoneResolver.hasPlayWithoutPayingCost(state, action.playerId, action.cardId) ||
+            action.useWithoutPayingManaCost
+        val choiceError = validateAlternativePaymentChoice(state, action, cardDef, playForFree)
+        val computed = computeTotalCastCost(
+            state, action, cardDef, cardComponent, playForFree,
+            castingFromCommandZone = zoneResolver.hasCommanderCastPermission(state, action.playerId, action.cardId)
+        ) ?: return CostPreview.unavailable("No alternative casting cost available")
+        val plan = paymentPlan(state, action, computed.cost)
+            ?: return CostPreview.unavailable("Invalid Phyrexian mana payment")
+        val error = choiceError ?: validatePayment(state, action, computed.cost, computed.paymentXValue)
+        val remaining = plan.validationCost.withXAs(computed.paymentXValue)
+        val autoTap = if (error == null && action.paymentStrategy is PaymentStrategy.AutoPay) {
+            manaSolver.solve(
+                state, action.playerId, plan.validationCost, computed.paymentXValue,
+                spellContext = plan.spellContext, xManaRestriction = plan.xManaRestriction
+            )?.sources?.map { it.entityId }
+        } else null
+        return CostPreview(
+            manaCostString = remaining.toString(),
+            // The generic a further delve exile / improvise tap can still buy. The payment twins
+            // credit those against the cost's printed generic only — an announced X is folded into
+            // the string above for display but is not (yet) theirs to pay — so report the same.
+            genericRemaining = plan.validationCost.genericAmount,
+            xValue = computed.paymentXValue,
+            affordable = error == null,
+            error = error,
+            autoTapPreview = autoTap,
+        )
     }
 
     /** The [cost] and adjusted X actually charged as mana at payment time for a cast. */
@@ -1260,9 +1341,19 @@ class CastSpellHandler(
         return ComputedCastCost(costAfterImprovise, paymentXValue)
     }
 
-    private fun validatePayment(state: GameState, action: CastSpell, cost: ManaCost, paymentXValue: Int = action.xValue ?: 0): String? {
-        val xValue = paymentXValue
+    /**
+     * What [validatePayment] and [previewCost] actually hand the solver: the cost with "any mana
+     * type" relaxation and Phyrexian life payments applied, the conditional-mana context, and the
+     * "spend only [colors] on X" restriction. Null when the declared Phyrexian life payments
+     * don't fit the cost.
+     */
+    private data class PaymentPlan(
+        val validationCost: ManaCost,
+        val spellContext: SpellPaymentContext?,
+        val xManaRestriction: Set<Color>,
+    )
 
+    private fun paymentPlan(state: GameState, action: CastSpell, cost: ManaCost): PaymentPlan? {
         // Build spell context for conditional mana validation
         val cardComponent = state.getEntity(action.cardId)?.get<CardComponent>()
         val spellCtx = if (action.castFaceDown) {
@@ -1295,9 +1386,16 @@ class CastSpellHandler(
 
         val validationCost = when (val strategy = action.paymentStrategy) {
             is PaymentStrategy.Explicit -> effectiveCost.withPhyrexianPaidByLife(strategy.phyrexianLifePayments)
-                ?: return "Invalid Phyrexian mana payment"
+                ?: return null
             else -> effectiveCost
         }
+        return PaymentPlan(validationCost, spellCtx, xManaRestriction)
+    }
+
+    private fun validatePayment(state: GameState, action: CastSpell, cost: ManaCost, paymentXValue: Int = action.xValue ?: 0): String? {
+        val xValue = paymentXValue
+        val (validationCost, spellCtx, xManaRestriction) = paymentPlan(state, action, cost)
+            ?: return "Invalid Phyrexian mana payment"
 
         return when (action.paymentStrategy) {
             is PaymentStrategy.AutoPay -> {

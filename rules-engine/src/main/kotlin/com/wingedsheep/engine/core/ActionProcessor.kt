@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.handlers.actions.ActionHandlerRegistry
+import com.wingedsheep.engine.handlers.actions.ability.ActivateAbilityHandler
+import com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler
 import com.wingedsheep.engine.handlers.actions.ability.AbilityModule
 import com.wingedsheep.engine.handlers.actions.combat.CombatModule
 import com.wingedsheep.engine.handlers.actions.decision.DecisionModule
@@ -62,6 +64,19 @@ class ActionProcessor(
         registerModule(RoomModule(services))
         registerModule(SpellModule(services))
         registerModule(DecisionModule(services))
+    }
+
+    /**
+     * Price a draft [CastSpell] / [ActivateAbility] without executing it — see [CostPreview].
+     * Null for any other action type: nothing else has a cost the client builds up in steps.
+     */
+    fun previewCost(state: GameState, action: GameAction): CostPreview? {
+        validateBasics(state, action)?.let { return CostPreview.unavailable(it) }
+        return when (action) {
+            is CastSpell -> (registry.handlerFor(CastSpell::class) as? CastSpellHandler)?.previewCost(state, action)
+            is ActivateAbility -> (registry.handlerFor(ActivateAbility::class) as? ActivateAbilityHandler)?.previewCost(state, action)
+            else -> null
+        }
     }
 
     /**

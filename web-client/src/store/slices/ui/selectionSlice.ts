@@ -18,16 +18,12 @@ import type {
   DecisionSelectionState,
   ManaSelectionState,
   ConvokeCreatureSelection,
+  PhaseResult,
 } from '../types'
 import type { LegalActionInfo } from '@/types'
 import { createSubmitActionMessage } from '@/types'
 import { getWebSocket } from '../shared'
-import {
-  parseManaCost as parseManaCostUtil,
-  getRemainingCostSymbols,
-  computeAutoTapPreview,
-  reduceCostByHarmonizeTap,
-} from '@/utils/manaCost'
+import { mergeResult } from './pipelinePhases'
 
 // Note: getWebSocket/createSubmitActionMessage are still used by confirmTapForPowerSelection
 // and confirmDecisionSelection (which are not part of the pipeline).
@@ -263,6 +259,10 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
         },
       }
     })
+    const selected = get().convokeSelectionState?.selectedCreatures ?? []
+    const convokedCreatures: Record<string, { color: string | null }> = {}
+    for (const c of selected) convokedCreatures[c.entityId] = { color: c.payingColor }
+    previewDraft(get, { type: 'convoke', convokedCreatures })
   },
 
   cancelConvokeSelection: () => {
@@ -308,6 +308,10 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
         },
       }
     })
+    previewDraft(get, {
+      type: 'tapForGeneric',
+      tapForGenericPermanents: [...(get().tapForGenericSelectionState?.selectedPermanents ?? [])],
+    })
   },
 
   cancelTapForGenericSelection: () => {
@@ -342,6 +346,8 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
         },
       }
     })
+    const selected = get().harmonizeSelectionState?.selectedCreature ?? null
+    previewDraft(get, { type: 'harmonize', harmonizeCreature: selected, reduction: 0 })
   },
 
   cancelHarmonizeSelection: () => {
@@ -446,6 +452,7 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
         },
       }
     })
+    previewDraft(get, { type: 'delve', delvedCards: [...(get().delveSelectionState?.selectedCards ?? [])] })
   },
 
   cancelDelveSelection: () => {
@@ -457,16 +464,10 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
   confirmDelveSelection: () => {
     const { delveSelectionState, pipelineState } = get()
     if (!delveSelectionState || !pipelineState) return
-
-    const originalSymbols = parseManaCostUtil(delveSelectionState.manaCost)
-    const remainingSymbols = getRemainingCostSymbols(originalSymbols, delveSelectionState.selectedCards.length)
-    const modifiedManaCost = remainingSymbols.map(s => `{${s}}`).join('')
-
     set({ delveSelectionState: null })
     get().advancePipeline({
       type: 'delve',
       delvedCards: [...delveSelectionState.selectedCards],
-      modifiedManaCost,
     })
   },
 
@@ -576,113 +577,34 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
       sourceColors[source.entityId] = colors
       sourceManaAmounts[source.entityId] = source.manaAmount ?? 1
     }
-    // The accumulated action carries xValue from the prior xSelection phase.
-    // The server's autoTapPreview only covers the fixed cost (X is unknown
-    // server-side), so we extend the pre-selection with enough additional
-    // sources to also cover xValue * (number of {X} symbols).
-    const action = actionInfo.action as {
-      xValue?: number
-      targets?: readonly unknown[]
-      alternativePayment?: { harmonizeCreature?: EntityId | null }
-      additionalCostPayment?: { sacrificedPermanents?: readonly EntityId[] }
-    }
-    const xValue = action.xValue ?? 0
-    // Emerge (CR 702.119): the creature chosen in the prior costPayment phase reduces the emerge
-    // cost by its mana value, so the printed `manaCostString` overstates what's owed. The server
-    // sent the resulting cost for every candidate, so price this step off the chosen entry rather
-    // than re-deriving the (generic-only) reduction here — that clamp is a rule, not client math.
-    const emergeSacrifice = action.additionalCostPayment?.sacrificedPermanents?.[0]
-    const emergeCost = emergeSacrifice
-      ? actionInfo.additionalCostInfo?.costAfterSacrifice?.[emergeSacrifice]
-      : undefined
-    // "This spell costs {W}{U} more to cast for each target beyond the first" (Officious
-    // Interrogation): the server advertises the one-target minimum, because it prices the cost
-    // before any target exists. `computePhases` puts targeting ahead of this step precisely so the
-    // tax is knowable here — append one copy of the increment per target beyond the first. Same
-    // shape as the emerge/harmonize adjustments around it: the server owns the rule, the client
-    // only applies the choice the player has since made.
-    const perExtraTarget = actionInfo.manaCostPerExtraTarget
-    const extraTargets = Math.max(0, (action.targets?.length ?? 0) - 1)
-    const targetTax =
-      perExtraTarget && extraTargets > 0 ? perExtraTarget.repeat(extraTargets) : ''
-    const manaCost = (emergeCost ?? actionInfo.manaCostString ?? '') + targetTax
-    const xSymbolCount = Math.max(1, (manaCost.match(/\{X\}/g)?.length ?? 0))
+    const validSources = sources.map((s) => s.entityId)
 
-    // Harmonize creature-tap (chosen in the prior `harmonize` phase) reduces the
-    // generic mana to pay by the tapped creature's power. The server can't know
-    // which creature the player picked, so neither autoTapPreview nor the X
-    // extension below account for it — apply it here.
-    const harmonizeCreatureId = action.alternativePayment?.harmonizeCreature
-    const harmonizeReduction = harmonizeCreatureId
-      ? actionInfo.validHarmonizeCreatures?.find((c) => c.entityId === harmonizeCreatureId)?.power ?? 0
-      : 0
+    // The cost this step charges is whatever the pipeline has built so far — X announced, cards
+    // delved, creatures convoked or tapped for improvise/harmonize, an emerge sacrifice, the
+    // per-target tax from the targets just picked. The server prices all of that in one place
+    // (the cost preview the pipeline requested on entering this phase); the client only decides
+    // which of the offered sources to tap. When the preview has already answered for this exact
+    // draft, price off it now; otherwise open with the printed cost ({X} folded in) marked
+    // provisional and let `receiveCostPreview` correct it — and pre-select the engine's own
+    // auto-tap — the moment it lands.
+    const preview = get().costPreview
+    const answered = preview && !preview.pending && preview.draft === actionInfo.action ? preview.preview : null
+    const xValue = (actionInfo.action as { xValue?: number }).xValue ?? 0
+    const provisionalCost = (actionInfo.manaCostString ?? '').replace(/\{X\}/g, `{${xValue}}`)
+    const selectedSources = answered
+      ? (answered.autoTapPreview ?? []).filter((id) => validSources.includes(id))
+      : []
 
-    // When a creature was tapped, recompute the whole pre-selection from the
-    // reduced cost (colored pips + generic remaining after the tap) so we don't
-    // over-tap lands for generic the tap already covered.
-    if (harmonizeReduction > 0) {
-      const reduced = reduceCostByHarmonizeTap(manaCost, xValue, harmonizeReduction)
-      set({
-        selectedCardId: null,
-        manaSelectionState: {
-          action: actionInfo.action,
-          actionInfo,
-          validSources: sources.map((s) => s.entityId),
-          selectedSources: computeAutoTapPreview(sources, reduced),
-          manaCost,
-          xValue,
-          harmonizeReduction,
-          sourceColors,
-          sourceManaAmounts,
-          phyrexianLifePipIndices: [],
-        },
-      })
-      return
-    }
-
-    const xManaNeeded = xValue * xSymbolCount
-
-    // The server only computes [autoTapPreview] when the spell is affordable
-    // from lands alone — for spells that require convoke/delve to be castable
-    // (e.g. Sun-Dappled Celebrant when lands provide too few colored pips),
-    // [autoTapPreview] is null. Once convoke/delve has trimmed the cost we can
-    // compute a fresh preview from [availableManaSources] so the player isn't
-    // left to hand-pick lands.
-    // An emerge cast's server preview was solved for the *first* candidate; the player may have
-    // picked a different creature, so recompute from the cost that choice actually left.
-    const reducedSymbols = parseManaCostUtil(manaCost)
-    const preSelectedIds: EntityId[] = (!emergeCost && actionInfo.autoTapPreview && actionInfo.autoTapPreview.length > 0)
-      ? [...actionInfo.autoTapPreview]
-      : (reducedSymbols.length > 0 ? computeAutoTapPreview(sources, reducedSymbols) : [])
-    if (xManaNeeded > 0) {
-      const alreadySelected = new Set(preSelectedIds)
-      const manaProvided = (id: string) => sourceManaAmounts[id] ?? 1
-      // Extend with sources not yet picked, preferring least-flexible
-      // (colorless / fewest colors) first since X is generic mana and we
-      // want to keep multi-color sources available for future plays. Server
-      // re-solves on submit (CastPaymentProcessor.explicitPay), so the exact
-      // ordering only affects the default — over-selection is safe.
-      const candidates = sources
-        .filter(s => !alreadySelected.has(s.entityId))
-        .map(s => ({ id: s.entityId, flexibility: (sourceColors[s.entityId]?.length ?? 0) }))
-        .sort((a, b) => a.flexibility - b.flexibility)
-      let remaining = xManaNeeded
-      for (const c of candidates) {
-        if (remaining <= 0) break
-        preSelectedIds.push(c.id)
-        remaining -= manaProvided(c.id)
-      }
-    }
     set({
       selectedCardId: null,
       manaSelectionState: {
         action: actionInfo.action,
         actionInfo,
-        validSources: sources.map(s => s.entityId),
-        selectedSources: preSelectedIds,
-        manaCost,
-        xValue,
-        harmonizeReduction: 0,
+        validSources,
+        selectedSources,
+        manaCost: answered ? answered.manaCostString : provisionalCost,
+        previewPending: !answered,
+        userEdited: false,
         sourceColors,
         sourceManaAmounts,
         phyrexianLifePipIndices: [],
@@ -698,6 +620,7 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
       return {
         manaSelectionState: {
           ...state.manaSelectionState,
+          userEdited: true,
           selectedSources: isSelected
             ? selectedSources.filter(id => id !== entityId)
             : [...selectedSources, entityId],
@@ -713,6 +636,7 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
       return {
         manaSelectionState: {
           ...state.manaSelectionState,
+          userEdited: true,
           phyrexianLifePipIndices: selected.includes(pipIndex)
             ? selected.filter((index) => index !== pipIndex)
             : [...selected, pipIndex],
@@ -733,3 +657,14 @@ export const createSelectionSlice: SliceCreator<SelectionSlice> = (set, get) => 
     set({ manaSelectionState: null })
   },
 })
+
+/**
+ * Price the pipeline's draft with an in-progress phase selection folded in — the same
+ * `mergeResult` the confirm handler will use, so the preview describes exactly what would be
+ * submitted. No-op outside a pipeline.
+ */
+function previewDraft(get: () => import('../types').GameStore, result: PhaseResult): void {
+  const { pipelineState, gameState, requestCostPreview } = get()
+  if (!pipelineState || !gameState) return
+  requestCostPreview(mergeResult(pipelineState.accumulatedAction, pipelineState.actionInfo, result, gameState))
+}

@@ -572,7 +572,7 @@ type GameplayHandlerKeys =
   | 'onGameCreated' | 'onGameStarted' | 'onGameCancelled'
   | 'onStateUpdate' | 'onStateDeltaUpdate'
   | 'onMulliganDecision' | 'onChooseBottomCards' | 'onMulliganComplete' | 'onWaitingForOpponentMulligan'
-  | 'onGameOver' | 'onPlayerEliminated' | 'onError'
+  | 'onGameOver' | 'onPlayerEliminated' | 'onError' | 'onCostPreview'
 
 export function createGameplayHandlers(set: SetState, get: GetState): Pick<MessageHandlers, GameplayHandlerKeys> {
   return {
@@ -773,6 +773,10 @@ export function createGameplayHandlers(set: SetState, get: GetState): Pick<Messa
           eliminated: true,
         },
       })
+    },
+
+    onCostPreview: (msg) => {
+      get().receiveCostPreview(msg)
     },
 
     onError: (msg) => {

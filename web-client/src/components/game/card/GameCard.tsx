@@ -55,6 +55,7 @@ import {
   PASSIVE_COUNTER_TYPES,
 } from '../board/shared'
 import { styles, bandColorFor, passiveCounterBadgeStyle, UNTAP_FROST_RIM, UNTAP_FROST_FILL } from '../board/styles'
+import { canBlockerBlock } from '@/store/slices/ui/combatSlice'
 import {
   TARGET_COLOR, TARGET_COLOR_BRIGHT, TARGET_GLOW, TARGET_GLOW_BRIGHT, TARGET_GLOW_OUTER, TARGET_SHADOW,
   SELECTED_COLOR, SELECTED_GLOW, SELECTED_SHADOW,
@@ -544,6 +545,25 @@ function GameCardImpl({
   const isSelectedAsBlocker = isInBlockerMode && !!(combatState?.blockerAssignments[card.id]?.length)
   const isAttackingInBlockerMode = isInBlockerMode && opponentForCombat && combatState.attackingCreatures.includes(card.id)
   const isMustBeBlocked = isInBlockerMode && opponentForCombat && combatState.mustBeBlockedAttackers.includes(card.id)
+  // While a blocker is being dragged, only the attackers the server says it may block are drop
+  // targets (`validBlockersByAttacker`: flying, shadow, "can't be blocked by …", CR 509.1b scope).
+  // The rest stay visibly attackers but lose the drop glow, and the drop is refused — the same
+  // verdict Confirm would give, shown where the drag happens.
+  const canDropDraggedBlockerHere =
+    isAttackingInBlockerMode && !!draggingBlockerId && !!combatState && canBlockerBlock(combatState, draggingBlockerId, card.id)
+  const isUnblockableByDraggedBlocker = isAttackingInBlockerMode && !!draggingBlockerId && !canDropDraggedBlockerHere
+  // Menace / "can't be blocked except by N or more": how many more blockers this attacker still
+  // needs before the declaration is legal, given what has been assigned to it so far.
+  const blockersStillNeeded = (() => {
+    if (!isAttackingInBlockerMode || !combatState) return 0
+    const minimum = combatState.attackerMinBlockers[card.id] ?? 1
+    if (minimum <= 1) return 0
+    let assigned = 0
+    for (const attackerIds of Object.values(combatState.blockerAssignments)) {
+      if (attackerIds.includes(card.id)) assigned++
+    }
+    return assigned > 0 ? Math.max(0, minimum - assigned) : 0
+  })()
   // Multiplayer: an attacker in this combat that is attacking a *different*
   // defender — you can't block it (CR 509.1b), so render it dimmed while you
   // declare blocks. `attackingCreatures` is already scoped to attacks on the
@@ -678,7 +698,8 @@ function GameCardImpl({
   // Handle mouse/touch up - drop blocker on attacker
   const handlePointerUp = useCallback(() => {
     if (isInBlockerMode && draggingBlockerId && isAttackingInBlockerMode) {
-      // Dropping on an attacker - assign the blocker
+      // Dropping on an attacker - assign the blocker. `assignBlocker` re-checks the server's
+      // per-pair list, so an illegal pairing is a no-op rather than a rejected Confirm.
       assignBlocker(draggingBlockerId, card.id)
       stopDraggingBlocker()
     }
@@ -1091,6 +1112,11 @@ function GameCardImpl({
     // Red highlight for planeswalkers currently targeted by an attacker
     borderStyle = '3px solid #ff4444'
     boxShadow = '0 0 16px rgba(255, 68, 68, 0.7), 0 0 32px rgba(255, 68, 68, 0.4)'
+  } else if (isUnblockableByDraggedBlocker) {
+    // The dragged blocker can't block this attacker (server's per-pair list): a flat grey ring,
+    // no glow, so the legal drop targets stand out by contrast.
+    borderStyle = '3px solid rgba(120, 120, 130, 0.7)'
+    boxShadow = 'none'
   } else if (isAttackingInBlockerMode) {
     // Orange glow for attackers that can be blocked
     borderStyle = '3px solid #ff8800'
@@ -3028,6 +3054,35 @@ function GameCardImpl({
     />
   ) : null
 
+  // "Needs N more" chip — a menace / "except by N or more" attacker that has been given some
+  // blockers but not yet enough. The server sends the minimum (`attackerMinBlockers`); the chip
+  // is a readout so the player sees why Confirm would fail before pressing it. Never a gate.
+  const blockerNeedChip = blockersStillNeeded > 0 ? (
+    <div
+      aria-label={`Needs ${blockersStillNeeded} more blocker${blockersStillNeeded === 1 ? '' : 's'}`}
+      title={`This attacker can only be blocked by ${combatState?.attackerMinBlockers[card.id] ?? 2} or more creatures — assign ${blockersStillNeeded} more or none.`}
+      style={{
+        position: 'absolute',
+        top: bandTop - 6,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        padding: '1px 6px',
+        borderRadius: 8,
+        background: 'linear-gradient(135deg, #7a3e00 0%, #e08a1e 50%, #7a3e00 100%)',
+        color: '#fff4e0',
+        fontSize: Math.max(8, Math.round(width * 0.075)),
+        fontWeight: 800,
+        letterSpacing: '0.06em',
+        whiteSpace: 'nowrap',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.6)',
+        pointerEvents: 'none',
+        zIndex: 6,
+      }}
+    >
+      +{blockersStillNeeded} blocker{blockersStillNeeded === 1 ? '' : 's'} needed
+    </div>
+  ) : null
+
   // Wrap in container for sideways battlefield cards (tapped permanents and Rooms) to
   // prevent overlap with neighbours.
   if (needsLandscapeContainer && battlefield) {
@@ -3046,6 +3101,7 @@ function GameCardImpl({
         {commanderCrown}
         {nonLegendaryChip}
         {grantedLegendaryChip}
+        {blockerNeedChip}
         {cardElement}
       </div>
       </RenderProfiler>
@@ -3066,6 +3122,7 @@ function GameCardImpl({
           {commanderCrown}
           {nonLegendaryChip}
           {grantedLegendaryChip}
+        {blockerNeedChip}
           {cardElement}
         </div>
       </RenderProfiler>

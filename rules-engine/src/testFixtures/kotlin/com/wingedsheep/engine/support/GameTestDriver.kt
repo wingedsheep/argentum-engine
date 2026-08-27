@@ -213,6 +213,13 @@ class GameTestDriver {
     }
 
     /**
+     * Price a draft cast/activation without executing it — the engine's read-only cost preview
+     * (`ActionProcessor.previewCost`). State is untouched.
+     */
+    fun previewCost(action: GameAction): com.wingedsheep.engine.core.CostPreview? =
+        processor.previewCost(_state, action)
+
+    /**
      * Submit an action and assert it succeeds.
      */
     fun submitSuccess(action: GameAction): ExecutionResult {

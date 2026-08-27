@@ -75,6 +75,14 @@ class CombatManager(
     fun getMandatoryBlockerAssignments(state: GameState, blockingPlayer: EntityId): Map<EntityId, List<EntityId>> =
         blockPhase.getMandatoryBlockerAssignments(state, blockingPlayer)
 
+    /** The attackers [blockerId] may block — see [BlockPhaseManager.blockableAttackers]. */
+    fun getBlockableAttackers(state: GameState, blockerId: EntityId, blockingPlayer: EntityId): List<EntityId> =
+        blockPhase.blockableAttackers(state, blockerId, blockingPlayer)
+
+    /** Blockers needed to block [attackerId] at all — see [BlockPhaseManager.minimumBlockersFor]. */
+    fun getMinimumBlockers(state: GameState, attackerId: EntityId): Int =
+        blockPhase.minimumBlockersFor(state, attackerId)
+
     fun getMandatoryAttackers(state: GameState, attackingPlayer: EntityId): List<EntityId> =
         attackPhase.getMandatoryAttackers(state, attackingPlayer)
 

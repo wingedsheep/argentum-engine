@@ -80,16 +80,10 @@ internal class BlockPhaseManager(
             }
         }
 
-        // Check menace requirements
-        val menaceValidation = validateMenaceRequirements(state, blockers)
-        if (menaceValidation != null) {
-            return ExecutionResult.error(state, menaceValidation)
-        }
-
-        // Check "can't be blocked except by N or more creatures" (Troll of Khazad-dûm)
-        val minBlockersValidation = validateMinBlockersRequirements(state, blockers)
-        if (minBlockersValidation != null) {
-            return ExecutionResult.error(state, minBlockersValidation)
+        // Menace / "can't be blocked except by N or more" — one rule, see minimumBlockersFor.
+        val minimumBlockerValidation = validateMinimumBlockerRequirements(state, blockers)
+        if (minimumBlockerValidation != null) {
+            return ExecutionResult.error(state, minimumBlockerValidation)
         }
 
         // Check max-blocker restrictions on attackers (CantBeBlockedByMoreThan)
@@ -263,8 +257,64 @@ internal class BlockPhaseManager(
         val attackers = state.entities.filter { (_, container) -> container.has<AttackingComponent>() }.keys
 
         return attackers.any { attackerId ->
-            canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)
+            canBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)
         }
+    }
+
+    /**
+     * Whether [blockerId] may be declared as a blocker of [attackerId] — the per-pair half of
+     * the legality [declareBlockers] enforces: the attacker must be attacking this defender's
+     * side (CR 509.1b / 805.10d) and no evasion or "can't block" rule may forbid the pair.
+     * Blocker-level facts (untapped, a creature you control, not already blocking) and group
+     * constraints (menace, "can't be blocked by more than one") are not this function's job —
+     * the enumerator lists blockers with the former and reports the latter per attacker via
+     * [minimumBlockersFor].
+     */
+    fun canBlockAttacker(
+        state: GameState,
+        blockerId: EntityId,
+        attackerId: EntityId,
+        blockingPlayer: EntityId,
+        projected: ProjectedState = state.projectedState,
+    ): Boolean {
+        val attacking = state.getEntity(attackerId)?.get<AttackingComponent>() ?: return false
+        val attackedDefender = CombatDefenders.defendingPlayerOf(state, attacking.defenderId)
+        if (attackedDefender !in state.sharedTurnTeam(blockingPlayer)) return false
+        return canCreatureBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected)
+    }
+
+    /**
+     * The attackers [blockerId] may block right now, in declaration order — the per-attacker
+     * view the client needs to say "this one can't block that one" before the drop.
+     */
+    fun blockableAttackers(state: GameState, blockerId: EntityId, blockingPlayer: EntityId): List<EntityId> {
+        val projected = state.projectedState
+        return state.entities
+            .filter { (_, container) -> container.has<AttackingComponent>() }
+            .keys
+            .filter { attackerId -> canBlockAttacker(state, blockerId, attackerId, blockingPlayer, projected) }
+    }
+
+    /**
+     * How many creatures must block [attackerId] if it is blocked at all: 2 for menace
+     * (CR 702.110b), the printed N for "can't be blocked except by N or more creatures"
+     * ([CantBeBlockedByFewerThan], which generalizes menace), the larger when both apply, else 1.
+     * A face-down attacker has neither (CR 708.2). Shared by [declareBlockers]'s check and the
+     * enumerator's per-attacker report so the client's hint and the engine's verdict agree.
+     */
+    fun minimumBlockersFor(state: GameState, attackerId: EntityId): Int {
+        val container = state.getEntity(attackerId) ?: return 1
+        val projected = state.projectedState
+        var minimum = if (projected.hasKeyword(attackerId, Keyword.MENACE)) 2 else 1
+        if (container.has<FaceDownComponent>()) return minimum
+        val card = container.get<CardComponent>() ?: return minimum
+        val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return minimum
+        cardDef.staticAbilities
+            .filterIsInstance<com.wingedsheep.sdk.scripting.CantBeBlockedByFewerThan>()
+            .filter { it.filter.scope is Scope.Self }
+            .maxOfOrNull { it.minBlockers }
+            ?.let { minimum = maxOf(minimum, it) }
+        return minimum
     }
 
     /**
@@ -391,6 +441,7 @@ internal class BlockPhaseManager(
             if (attackedDefender !in state.sharedTurnTeam(blockingPlayer)) {
                 return "${cardComponent.name} can't block a creature attacking another player"
             }
+            // Same pair rule the enumerator advertises through [canBlockAttacker].
 
             val evasionValidation = validateCanBlock(state, blockerId, attackerId, blockingPlayer)
             if (evasionValidation != null) {
@@ -500,7 +551,12 @@ internal class BlockPhaseManager(
     /**
      * Validate menace requirements (must be blocked by 2+ creatures).
      */
-    private fun validateMenaceRequirements(
+    /**
+     * Menace (CR 702.110b) and "can't be blocked except by N or more creatures"
+     * ([CantBeBlockedByFewerThan]): an attacker may be left unblocked, but if it is blocked it
+     * needs at least [minimumBlockersFor] blockers.
+     */
+    private fun validateMinimumBlockerRequirements(
         state: GameState,
         blockers: Map<EntityId, List<EntityId>>
     ): String? {
@@ -512,54 +568,17 @@ internal class BlockPhaseManager(
         }
 
         val projected = state.projectedState
-
-        for ((attackerId, blockerList) in attackerToBlockers) {
-            val attackerContainer = state.getEntity(attackerId) ?: continue
-            val attackerCard = attackerContainer.get<CardComponent>() ?: continue
-
-            if (projected.hasKeyword(attackerId, Keyword.MENACE)) {
-                if (blockerList.size < 2) {
-                    return "${attackerCard.name} has menace and must be blocked by 2 or more creatures"
-                }
-            }
-        }
-
-        return null
-    }
-
-    /**
-     * Validate "can't be blocked except by N or more creatures" ([CantBeBlockedByFewerThan]).
-     * Generalizes menace: an attacker carrying the static may be left unblocked, but if blocked it
-     * must have at least [CantBeBlockedByFewerThan.minBlockers] blockers.
-     */
-    private fun validateMinBlockersRequirements(
-        state: GameState,
-        blockers: Map<EntityId, List<EntityId>>
-    ): String? {
-        val attackerToBlockers = mutableMapOf<EntityId, MutableList<EntityId>>()
-        for ((blockerId, attackerIds) in blockers) {
-            for (attackerId in attackerIds) {
-                attackerToBlockers.getOrPut(attackerId) { mutableListOf() }.add(blockerId)
-            }
-        }
-
         for ((attackerId, blockerList) in attackerToBlockers) {
             if (blockerList.isEmpty()) continue
-            val attackerContainer = state.getEntity(attackerId) ?: continue
-            if (attackerContainer.has<FaceDownComponent>()) continue
-            val attackerCard = attackerContainer.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId) ?: continue
-
-            val minBlockers = cardDef.staticAbilities
-                .filterIsInstance<com.wingedsheep.sdk.scripting.CantBeBlockedByFewerThan>()
-                .filter { it.filter.scope is com.wingedsheep.sdk.scripting.filters.unified.Scope.Self }
-                .maxOfOrNull { it.minBlockers } ?: continue
-
-            if (blockerList.size < minBlockers) {
-                return "${attackerCard.name} can't be blocked except by $minBlockers or more creatures"
+            val minimum = minimumBlockersFor(state, attackerId)
+            if (blockerList.size >= minimum) continue
+            val attackerName = state.getEntity(attackerId)?.get<CardComponent>()?.name ?: "Attacker"
+            return if (projected.hasKeyword(attackerId, Keyword.MENACE) && minimum == 2) {
+                "$attackerName has menace and must be blocked by 2 or more creatures"
+            } else {
+                "$attackerName can't be blocked except by $minimum or more creatures"
             }
         }
-
         return null
     }
 

@@ -83,6 +83,20 @@ data class LegalAction(
     override val validBlockers: List<EntityId>? = null,
     val blockerMaxBlockCounts: Map<EntityId, Int>? = null,
     val mandatoryBlockerAssignments: Map<EntityId, List<EntityId>>? = null,
+    /**
+     * For each attacker this player may block, the subset of [validBlockers] that may block *it* —
+     * the per-pair half of block legality (flying, shadow, "can't be blocked by …", "can block
+     * only …", CR 509.1b defender scope), read from the same rule `declareBlockers` enforces. An
+     * attacker with no legal blocker is absent. Lets the client refuse an illegal drop with the
+     * engine's answer instead of discovering it on Confirm. Null outside declare-blockers.
+     */
+    val validBlockersByAttacker: Map<EntityId, List<EntityId>>? = null,
+    /**
+     * Attackers that need more than one blocker if blocked at all — menace (2), "can't be blocked
+     * except by N or more creatures" (N). Only attackers with a minimum above one appear. Null
+     * when none do.
+     */
+    val attackerMinBlockers: Map<EntityId, Int>? = null,
 
     // Costs
     val manaCostString: String? = null,

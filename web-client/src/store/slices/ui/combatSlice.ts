@@ -229,6 +229,11 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
       if (existing.length >= maxBlocks) {
         return state
       }
+      // The server's per-pair verdict (flying, shadow, "can't be blocked by …", CR 509.1b scope):
+      // refuse the pairing here, where the drag happens, instead of on Confirm.
+      if (!canBlockerBlock(state.combatState, blockerId, attackerId)) {
+        return state
+      }
       const newAssignments = {
         ...state.combatState.blockerAssignments,
         [blockerId]: [...existing, attackerId],
@@ -528,3 +533,18 @@ export const createCombatSlice: SliceCreator<CombatSlice> = (set, get) => ({
     })
   },
 })
+
+/**
+ * Whether the server listed [blockerId] among the creatures that may block [attackerId]. When the
+ * server sent no per-attacker map at all (older payload) every pairing is allowed and the server
+ * still rules on Confirm — never a client rule, only the server's list or nothing.
+ */
+export function canBlockerBlock(
+  combatState: Pick<CombatState, 'validBlockersByAttacker'>,
+  blockerId: EntityId,
+  attackerId: EntityId,
+): boolean {
+  const byAttacker = combatState.validBlockersByAttacker
+  if (Object.keys(byAttacker).length === 0) return true
+  return (byAttacker[attackerId] ?? []).includes(blockerId)
+}

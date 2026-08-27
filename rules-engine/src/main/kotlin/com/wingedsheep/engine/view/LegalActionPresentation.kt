@@ -172,6 +172,10 @@ data class LegalActionInfo(
     val sourceZone: String? = null,
     val blockerMaxBlockCounts: Map<EntityId, Int>? = null,
     val mandatoryBlockerAssignments: Map<EntityId, List<EntityId>>? = null,
+    /** Attacker → the blockers that may block it. See [com.wingedsheep.engine.legalactions.LegalAction.validBlockersByAttacker]. */
+    val validBlockersByAttacker: Map<EntityId, List<EntityId>>? = null,
+    /** Attacker → blockers it needs if blocked at all (menace = 2). See [com.wingedsheep.engine.legalactions.LegalAction.attackerMinBlockers]. */
+    val attackerMinBlockers: Map<EntityId, Int>? = null,
     val maxRepeatableActivations: Int? = null,
     val tapForPower: Boolean = false,
     val tapForPowerRequired: Int? = null,

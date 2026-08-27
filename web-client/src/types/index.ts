@@ -177,6 +177,7 @@ export type {
   DeckEntry,
   PrintingRef,
   SubmitActionMessage,
+  PreviewCostMessage,
   KeepHandMessage,
   MulliganMessage,
   ClientChooseBottomCardsMessage,
@@ -336,6 +337,7 @@ export type {
   FriendRequestReceivedMessage,
   PingMessage,
   PongMessage,
+  CostPreviewMessage,
   SessionReplacedMessage,
   DeckFormat,
 } from './messages'
@@ -355,6 +357,7 @@ export {
   createCreateGameMessage,
   createJoinGameMessage,
   createSubmitActionMessage,
+  createPreviewCostMessage,
   createKeepHandMessage,
   createMulliganMessage,
   createChooseBottomCardsMessage,

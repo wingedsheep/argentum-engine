@@ -201,6 +201,21 @@ export interface CombatState {
   /** Max block counts for blockers that can block more than one attacker (blocker ID -> max attackers) */
   blockerMaxBlockCounts: Readonly<Record<EntityId, number>>
   /**
+   * For blockers mode: attacker → the blockers the server says may block it (flying, shadow,
+   * "can't be blocked by …", "can block only …", CR 509.1b scope). The drop highlight and
+   * `assignBlocker` read this so an illegal pairing is refused where the drag happens, with the
+   * engine's answer, instead of on Confirm. An attacker missing from the map has no legal
+   * blocker. Empty when the server sent nothing (older payload) — then any pairing is allowed
+   * and the server still rules on Confirm.
+   */
+  validBlockersByAttacker: Readonly<Record<EntityId, readonly EntityId[]>>
+  /**
+   * For blockers mode: attacker → blockers it needs if blocked at all (menace = 2, "can't be
+   * blocked except by N or more"). Drives the "needs N blockers" badge on a partially blocked
+   * attacker. Only attackers needing more than one appear.
+   */
+  attackerMinBlockers: Readonly<Record<EntityId, number>>
+  /**
    * Banding bands declared during declare-attackers (CR 702.21): each entry is the set of
    * attacker IDs grouped into one band. Assembled client-side by dragging an attacker onto
    * another (see `linkBand`); legality is re-checked server-side on confirm. Empty otherwise.
@@ -268,16 +283,24 @@ export interface ManaSelectionState {
   validSources: readonly EntityId[]
   /** Currently selected source IDs */
   selectedSources: readonly EntityId[]
-  /** The mana cost string (e.g., "{2}{R}") */
-  manaCost: string
-  /** X value if spell has X cost */
-  xValue: number
   /**
-   * Generic mana the Harmonize creature-tap removes from the cost (the tapped
-   * creature's power), or 0 when none is tapped / not a Harmonize cast. Reduces
-   * both the pre-selected sources and the generic shown in the confirmation HUD.
+   * The mana still owed, as the server's cost preview priced it — every earlier payment in the
+   * pipeline (delve, convoke, improvise/waterbend taps, harmonize, an emerge sacrifice, the
+   * per-target tax) already credited and `{X}` folded into the generic. Until the preview has
+   * answered ([previewPending]) this is the legal action's printed cost with `{X}` folded, which
+   * may overstate what is owed.
    */
-  harmonizeReduction: number
+  manaCost: string
+  /**
+   * True until the server's cost preview for this step has arrived. The pre-selected sources
+   * and [manaCost] are provisional while it is set.
+   */
+  previewPending: boolean
+  /**
+   * Set once the player toggles a source or a Phyrexian pip by hand. A preview that lands after
+   * that must not overwrite their picks — only [manaCost] is refreshed.
+   */
+  userEdited: boolean
   /** Color production per source: entityId -> list of color symbols (W/U/B/R/G) */
   sourceColors: Readonly<Record<EntityId, readonly string[]>>
   /** Mana amount per source: entityId -> amount (e.g., 3 for Gilded Lotus) */
@@ -445,10 +468,14 @@ export interface TapForGenericSelectionState {
   validPermanents: readonly TapForGenericPermanentInfo[]
   /**
    * Maximum number of permanents that may be tapped — one per generic mana being paid this way.
-   * For a spell-level waterbend cost that is its amount N (the chosen X for "waterbend {X}");
-   * for improvise and an ability waterbend it is the generic in the cost.
+   * For a spell-level waterbend cost that is its amount N (the chosen X for "waterbend {X}").
+   * Otherwise it follows the generic the server's cost preview says is still payable this way
+   * ([capFollowsGeneric]): it starts at every eligible permanent and tightens when the preview
+   * lands, and again as each tap is credited.
    */
   maxTaps: number
+  /** Whether [maxTaps] is derived from the cost preview's remaining generic rather than a fixed N. */
+  capFollowsGeneric: boolean
   /** Player-facing verb — `"improvise"` / `"waterbend"`. Shown in the HUD. */
   label: string
 }
@@ -505,7 +532,11 @@ export interface DelveSelectionState {
   selectedCards: readonly EntityId[]
   /** All valid cards in graveyard that can be exiled for Delve */
   validCards: readonly DelveCardInfo[]
-  /** Maximum number of generic mana that can be paid via Delve */
+  /**
+   * Maximum number of cards worth exiling — the generic the server's cost preview says a delve
+   * exile can still pay for, capped by the cards available. Starts at every valid card and
+   * tightens when the preview lands.
+   */
   maxDelve: number
   /** Minimum number of cards to exile to afford the spell (from server) */
   minDelveNeeded: number
@@ -850,7 +881,7 @@ export type PhaseResult =
       distributedCounterRemovals: ReadonlyArray<{ entityId: EntityId; counterType: string; count: number }>
     }
   | { type: 'xSelection'; xValue: number; isRepeatCount?: boolean }
-  | { type: 'delve'; delvedCards: EntityId[]; modifiedManaCost: string }
+  | { type: 'delve'; delvedCards: EntityId[] }
   | { type: 'convoke'; convokedCreatures: Record<string, { color: string | null }> }
   | { type: 'tapForGeneric'; tapForGenericPermanents: EntityId[] }
   | { type: 'harmonize'; harmonizeCreature: EntityId | null; reduction: number }
@@ -869,6 +900,21 @@ export interface ActionPipelineState {
   actionInfo: import('../../types').LegalActionInfo
   accumulatedAction: import('../../types').GameAction
   remainingPhases: readonly PipelinePhase[]
+}
+
+/**
+ * The server's price for the draft action the pipeline is building — see `previewCost` /
+ * `costPreview` in the protocol. One request is in flight at a time; a reply whose `requestId`
+ * isn't the latest is dropped, so [preview] always describes [draft] or an earlier draft while
+ * [pending].
+ */
+export interface CostPreviewState {
+  requestId: string
+  /** The draft action the latest request priced. */
+  draft: import('../../types').GameAction
+  /** True until the reply to [requestId] arrives. [preview] is then the previous answer, if any. */
+  pending: boolean
+  preview: import('../../types').CostPreviewMessage | null
 }
 
 // ============================================================================
@@ -1061,12 +1107,15 @@ export type GameStore = {
 
   // Pipeline slice
   pipelineState: ActionPipelineState | null
+  costPreview: CostPreviewState | null
   startPipeline: (
     actionInfo: import('../../types').LegalActionInfo,
     options?: { forceManualTap?: boolean },
   ) => void
   advancePipeline: (result: PhaseResult) => void
   cancelPipeline: () => void
+  requestCostPreview: (draft: import('../../types').GameAction) => void
+  receiveCostPreview: (message: import('../../types').CostPreviewMessage) => void
 
   // Board view slice (multiplayer viewed-opponent board + follow-the-action camera)
   viewedOpponentId: EntityId | null

@@ -1,5 +1,6 @@
 package com.wingedsheep.gameserver.session
 
+import com.wingedsheep.engine.core.CostPreview
 import com.wingedsheep.engine.view.ClientEvent
 import com.wingedsheep.engine.view.ClientEventTransformer
 import com.wingedsheep.engine.view.ClientGameState
@@ -873,6 +874,22 @@ class GameSession(
     fun getClientState(playerId: EntityId): ClientGameState? {
         val state = gameState ?: return null
         return stateTransformer.transform(state, playerId)
+    }
+
+    /**
+     * Price a draft action for [playerId] without executing it — the engine's own cost chain
+     * ([ActionProcessor.previewCost]) read under the state lock, so the answer is never for a
+     * half-applied state. Seat authorization is the same as [executeAction]'s: a connection may
+     * preview for its own seat or for a seat it currently controls.
+     */
+    fun previewCost(playerId: EntityId, action: GameAction): CostPreview = synchronized(stateLock) {
+        val state = gameState ?: return CostPreview.unavailable("Game not started")
+        val actionPlayerId = action.playerId
+        if (playerId != actionPlayerId && state.actorFor(actionPlayerId) != playerId) {
+            return CostPreview.unavailable("Not authorized to act for player $actionPlayerId")
+        }
+        actionProcessor.previewCost(state, action)
+            ?: CostPreview.unavailable("This action has no cost to preview")
     }
 
     fun getLegalActions(playerId: EntityId): List<LegalActionInfo> {

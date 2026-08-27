@@ -6,19 +6,28 @@
  * (xSelectionState, targetingState, etc.) is preserved — components keep their
  * current subscriptions.
  */
-import type { SliceCreator, ActionPipelineState, PhaseResult } from '../types'
-import type { ActivateAbilityAction, CastSpellAction, EntityId, LegalActionInfo } from '@/types'
+import type { SliceCreator, ActionPipelineState, CostPreviewState, PhaseResult, PipelinePhase } from '../types'
+import type {
+  ActivateAbilityAction,
+  CastSpellAction,
+  CostPreviewMessage,
+  EntityId,
+  GameAction,
+  LegalActionInfo,
+} from '@/types'
+import { createPreviewCostMessage } from '@/types'
 import { computePhases, mergeResult, enterPhase } from './pipelinePhases'
 import type { PipelineStoreMethods } from './pipelinePhases'
-import {
-  parseManaCost as parseManaCostUtil,
-  getRemainingCostSymbols,
-  getRemainingCostAfterConvoke,
-  trimAutoTapPreview,
-} from '@/utils/manaCost'
+import { getWebSocket } from '../shared'
 
 export interface PipelineSliceState {
   pipelineState: ActionPipelineState | null
+  /**
+   * The server's price for the draft being built — the one source every payment HUD and the
+   * manual mana picker read their remaining cost, affordability and pre-selection from. Null
+   * outside a pipeline.
+   */
+  costPreview: CostPreviewState | null
 }
 
 export interface PipelineSliceActions {
@@ -28,12 +37,90 @@ export interface PipelineSliceActions {
   ) => void
   advancePipeline: (result: PhaseResult) => void
   cancelPipeline: () => void
+  /**
+   * Ask the server what [draft] costs as it stands. Fire-and-forget: the reply lands through
+   * [receiveCostPreview], and only the newest request's reply is honoured.
+   */
+  requestCostPreview: (draft: GameAction) => void
+  /** A `costPreview` reply arrived; adopt it if it answers the latest request. */
+  receiveCostPreview: (message: CostPreviewMessage) => void
 }
+
+/**
+ * Phases whose UI shows a running cost: the preview is requested on entering each of them, and
+ * again on every selection change inside them (see the toggle actions in `selectionSlice`).
+ */
+const COST_PHASES: ReadonlySet<PipelinePhase['type']> = new Set([
+  'delve',
+  'convoke',
+  'tapForGeneric',
+  'harmonize',
+  'manaSource',
+])
+
+let previewRequestCounter = 0
 
 export type PipelineSlice = PipelineSliceState & PipelineSliceActions
 
 export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
   pipelineState: null,
+  costPreview: null,
+
+  requestCostPreview: (draft) => {
+    const requestId = `cp-${++previewRequestCounter}`
+    set((state) => ({
+      costPreview: {
+        requestId,
+        draft,
+        pending: true,
+        preview: state.costPreview?.preview ?? null,
+      },
+    }))
+    getWebSocket()?.send(createPreviewCostMessage(draft, requestId))
+  },
+
+  receiveCostPreview: (message) => {
+    const current = get().costPreview
+    if (!current || current.requestId !== message.requestId) return
+    set((state) => {
+      const patch: Partial<import('../types').GameStore> = {
+        costPreview: { ...current, pending: false, preview: message },
+      }
+      // The caps the phase HUDs enforce are the server's remaining generic: one more delve exile
+      // or improvise tap can only buy what is still generic in the cost. Each card/permanent
+      // already selected has been credited, so the cap is what's left plus what's already spent.
+      const delve = state.delveSelectionState
+      if (delve) {
+        patch.delveSelectionState = {
+          ...delve,
+          maxDelve: Math.min(delve.validCards.length, message.genericRemaining + delve.selectedCards.length),
+        }
+      }
+      const taps = state.tapForGenericSelectionState
+      if (taps && taps.capFollowsGeneric) {
+        patch.tapForGenericSelectionState = {
+          ...taps,
+          maxTaps: Math.min(taps.validPermanents.length, message.genericRemaining + taps.selectedPermanents.length),
+        }
+      }
+      // The manual mana picker prices itself off the preview: the exact remaining cost and the
+      // engine's own auto-tap as the pre-selection — unless the player has already started
+      // picking, in which case only the cost readout is refreshed.
+      const mana = state.manaSelectionState
+      if (mana) {
+        const validSources = new Set(mana.validSources)
+        patch.manaSelectionState = {
+          ...mana,
+          manaCost: message.manaCostString,
+          previewPending: false,
+          ...(mana.userEdited
+            ? {}
+            : { selectedSources: (message.autoTapPreview ?? []).filter((id) => validSources.has(id)) }),
+        }
+      }
+      return patch
+    })
+  },
 
   startPipeline: (actionInfo, options) => {
     // Refuse to start a new cast/activation while one is already in progress — you must finish or
@@ -82,6 +169,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
 
     const firstPhase = phases[0]!
     const gameStateForPhase = get().gameState
+    if (COST_PHASES.has(firstPhase.type)) get().requestCostPreview(accumulatedAction)
     enterPhase(
       firstPhase,
       actionInfo,
@@ -102,105 +190,24 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
     // Merge result into accumulated action
     const mergedAction = mergeResult(accumulatedAction, actionInfo, result, gameState)
 
-    // If delve modified the mana cost, update actionInfo for subsequent phases.
-    // Also trim the server's full-cost autoTapPreview down to the subset needed for
-    // the reduced cost — the engine will re-solve on submit, but this keeps the UI
-    // pre-selection honest about what will actually tap.
-    if (result.type === 'delve') {
-      const originalSymbols = parseManaCostUtil(actionInfo.manaCostString ?? '')
-      // If X was resolved earlier, expand each {X} symbol to its numeric value so
-      // getRemainingCostSymbols can reduce that generic via delve.
-      const xValue =
-        mergedAction.type === 'CastSpell' ? mergedAction.xValue ?? 0 : 0
-      const resolvedSymbols =
-        xValue > 0
-          ? originalSymbols.map((s) => (s === 'X' ? String(xValue) : s))
-          : originalSymbols
-      const remainingSymbols = getRemainingCostSymbols(resolvedSymbols, result.delvedCards.length)
-      const modifiedManaCost = remainingSymbols.map((s) => `{${s}}`).join('')
-      const trimmedPreview: readonly EntityId[] | undefined =
-        actionInfo.autoTapPreview && actionInfo.availableManaSources
-          ? trimAutoTapPreview(actionInfo.autoTapPreview, actionInfo.availableManaSources, remainingSymbols)
-          : actionInfo.autoTapPreview
-      const {
-        hasDelve: _,
-        validDelveCards: _2,
-        minDelveNeeded: _3,
-        autoTapPreview: _4,
-        ...restActionInfo
-      } = actionInfo
+    // The cost after this step is the server's business — every later phase reads it from the
+    // cost preview requested below, never from a client-side rewrite of `manaCostString`. What
+    // does change here is the source list the manual mana picker offers: a permanent tapped for
+    // convoke / improvise / waterbend / harmonize is spent, so it can't also be tapped for mana
+    // (the Whir of Invention rulings say so explicitly, and the server rejects it). Drop those
+    // ids, or a mana rock the player just improvised with still shows up in the land picker and
+    // clicking it bounces.
+    const spent = new Set<EntityId>()
+    if (result.type === 'convoke') for (const id of Object.keys(result.convokedCreatures)) spent.add(id as EntityId)
+    if (result.type === 'tapForGeneric') for (const id of result.tapForGenericPermanents) spent.add(id)
+    if (result.type === 'harmonize' && result.harmonizeCreature) spent.add(result.harmonizeCreature)
+    if (spent.size > 0 && actionInfo.availableManaSources) {
       actionInfo = {
-        ...restActionInfo,
-        manaCostString: modifiedManaCost,
-        ...(trimmedPreview !== undefined ? { autoTapPreview: trimmedPreview } : {}),
+        ...actionInfo,
+        availableManaSources: actionInfo.availableManaSources.filter((source) => !spent.has(source.entityId)),
         action: mergedAction,
       }
     }
-
-    // If convoke modified the mana cost, update actionInfo for subsequent phases.
-    // Trim the preview similarly so the manaSource phase pre-selection reflects the
-    // reduced cost rather than over-selecting based on the original full cost.
-    if (result.type === 'convoke') {
-      const originalSymbols = parseManaCostUtil(actionInfo.manaCostString ?? '')
-      const remainingSymbols = getRemainingCostAfterConvoke(originalSymbols, result.convokedCreatures)
-      const modifiedManaCost = remainingSymbols.map((s) => `{${s}}`).join('')
-      const trimmedPreview: readonly EntityId[] | undefined =
-        actionInfo.autoTapPreview && actionInfo.availableManaSources
-          ? trimAutoTapPreview(actionInfo.autoTapPreview, actionInfo.availableManaSources, remainingSymbols)
-          : actionInfo.autoTapPreview
-      const {
-        hasConvoke: _,
-        validConvokeCreatures: _2,
-        autoTapPreview: _3,
-        ...restActionInfo
-      } = actionInfo
-      actionInfo = {
-        ...restActionInfo,
-        manaCostString: modifiedManaCost,
-        ...(trimmedPreview !== undefined ? { autoTapPreview: trimmedPreview } : {}),
-        action: mergedAction,
-      }
-    }
-
-    // If a tap-for-generic payment (improvise / waterbend) tapped permanents, reduce the generic
-    // cost shown to subsequent phases (each tapped permanent pays {1} generic). Mirrors convoke.
-    if (result.type === 'tapForGeneric') {
-      const originalSymbols = parseManaCostUtil(actionInfo.manaCostString ?? '')
-      const remainingSymbols = getRemainingCostSymbols(originalSymbols, result.tapForGenericPermanents.length)
-      const modifiedManaCost = remainingSymbols.map((s) => `{${s}}`).join('')
-      const trimmedPreview: readonly EntityId[] | undefined =
-        actionInfo.autoTapPreview && actionInfo.availableManaSources
-          ? trimAutoTapPreview(actionInfo.autoTapPreview, actionInfo.availableManaSources, remainingSymbols)
-          : actionInfo.autoTapPreview
-      // A permanent tapped for improvise/waterbend is spent — it can't also be tapped for mana
-      // (the Whir of Invention rulings say so explicitly, and the server rejects it). Drop the
-      // tapped ids from the source list the manaSource phase offers, or a mana rock the player
-      // just improvised with still shows up in the land picker and clicking it bounces.
-      const tappedIds = new Set<EntityId>(result.tapForGenericPermanents)
-      const remainingSources = actionInfo.availableManaSources?.filter(
-        (source) => !tappedIds.has(source.entityId),
-      )
-      const {
-        hasTapForGeneric: _,
-        validTapForGenericPermanents: _2,
-        autoTapPreview: _3,
-        ...restActionInfo
-      } = actionInfo
-      actionInfo = {
-        ...restActionInfo,
-        manaCostString: modifiedManaCost,
-        ...(trimmedPreview !== undefined ? { autoTapPreview: trimmedPreview } : {}),
-        ...(remainingSources !== undefined ? { availableManaSources: remainingSources } : {}),
-        action: mergedAction,
-      }
-    }
-
-    // Note: a harmonize creature-tap reduces the generic the player owes, but we don't
-    // rewrite manaCostString here. With auto-tap (default) the manaSource phase is skipped
-    // and the server auto-pays the reduced cost (CastSpellHandler applies the tap + the
-    // X-mana reduction). In manual-tap mode the manaSource pre-selection may over-pick by
-    // the tap's power, which is harmless — the server re-solves on submit and taps only
-    // what's needed. The HarmonizeSelector HUD shows the player the reduced cost.
 
     // Pop current phase
     let nextPhases = remainingPhases.slice(1)
@@ -263,7 +270,7 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
 
     if (nextPhases.length === 0) {
       // All phases complete — submit
-      set({ pipelineState: null })
+      set({ pipelineState: null, costPreview: null })
       submitAction(mergedAction)
       return
     }
@@ -278,12 +285,16 @@ export const createPipelineSlice: SliceCreator<PipelineSlice> = (set, get) => ({
     })
 
     const nextPhase = nextPhases[0]!
+    // Price the draft as it now stands before the next cost HUD opens, so it can show the
+    // engine's remaining cost (and, for the manual picker, the engine's own auto-tap).
+    if (COST_PHASES.has(nextPhase.type)) get().requestCostPreview(mergedAction)
     enterPhase(nextPhase, actionInfo, mergedAction, getStoreMethods(get), gameState)
   },
 
   cancelPipeline: () => {
     set({
       pipelineState: null,
+      costPreview: null,
       targetingState: null,
       xSelectionState: null,
       modalModeSelectionState: null,

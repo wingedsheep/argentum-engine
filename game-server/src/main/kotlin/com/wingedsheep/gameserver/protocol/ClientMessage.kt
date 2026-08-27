@@ -72,6 +72,17 @@ sealed interface ClientMessage {
     data class SubmitAction(val action: GameAction, val messageId: String? = null) : ClientMessage
 
     /**
+     * Price a draft [action] without executing it — see [ServerMessage.CostPreview]. The client
+     * sends one for every step of a cast/activation it is building (X announced, cards delved,
+     * creatures convoked, targets picked) so its remaining-cost readout is the engine's, not its
+     * own arithmetic. Read-only: nothing about the game changes. [requestId] is echoed on the
+     * reply so a stale answer to an earlier draft can be ignored.
+     */
+    @Serializable
+    @SerialName("previewCost")
+    data class PreviewCost(val action: GameAction, val requestId: String) : ClientMessage
+
+    /**
      * Concede the current game.
      */
     @Serializable

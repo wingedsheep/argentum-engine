@@ -116,13 +116,27 @@ class CombatEnumerator : ActionEnumerator {
                     }
                 }
                 val mandatoryAssignments = context.turnManager.getMandatoryBlockerAssignments(state, playerId)
+                // Per-attacker legality, from the same pair rule `declareBlockers` enforces: which of
+                // the valid blockers may block each attacker (evasion, "can't block", CR 509.1b
+                // scope) and how many blockers an attacker needs if blocked at all (menace).
+                val validBlockersByAttacker = linkedMapOf<com.wingedsheep.sdk.model.EntityId, MutableList<com.wingedsheep.sdk.model.EntityId>>()
+                for (blockerId in validBlockers) {
+                    for (attackerId in context.turnManager.getBlockableAttackers(state, blockerId, playerId)) {
+                        validBlockersByAttacker.getOrPut(attackerId) { mutableListOf() }.add(blockerId)
+                    }
+                }
+                val attackerMinBlockers = validBlockersByAttacker.keys
+                    .associateWith { context.turnManager.getMinimumBlockers(state, it) }
+                    .filterValues { it > 1 }
                 return listOf(LegalAction(
                     actionType = "DeclareBlockers",
                     description = "Declare blockers",
                     action = DeclareBlockers(playerId, emptyMap()),
                     validBlockers = validBlockers,
                     blockerMaxBlockCounts = blockerMaxBlockCounts.ifEmpty { null },
-                    mandatoryBlockerAssignments = mandatoryAssignments.ifEmpty { null }
+                    mandatoryBlockerAssignments = mandatoryAssignments.ifEmpty { null },
+                    validBlockersByAttacker = validBlockersByAttacker.ifEmpty { null },
+                    attackerMinBlockers = attackerMinBlockers.ifEmpty { null },
                 ))
             }
         }

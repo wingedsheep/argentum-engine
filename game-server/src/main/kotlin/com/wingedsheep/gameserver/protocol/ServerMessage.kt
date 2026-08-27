@@ -1237,6 +1237,29 @@ sealed interface ServerMessage {
     data object Pong : ServerMessage
 
     /**
+     * Reply to [ClientMessage.PreviewCost]: the engine's price for the draft action as it stands.
+     * Mirrors [com.wingedsheep.engine.core.CostPreview]. A draft that can't be priced at all (the
+     * card left the hand, the seat isn't allowed to act) still gets a reply — `affordable = false`
+     * with the reason in [error] — never an [Error] toast, because a preview is a readout the
+     * player didn't ask for.
+     */
+    @Serializable
+    @SerialName("costPreview")
+    data class CostPreview(
+        val requestId: String,
+        /** Mana still owed after every payment in the draft, `{X}` folded in; empty when free. */
+        val manaCostString: String,
+        /** Generic mana in [manaCostString] — how many more delve exiles / improvise taps could still pay for anything. */
+        val genericRemaining: Int,
+        /** The X that will be paid as mana (a harmonize tap can lower it below the announced X). */
+        val xValue: Int,
+        val affordable: Boolean,
+        val error: String? = null,
+        /** Sources the engine would tap under auto-pay; null when unaffordable or the draft names its own sources. */
+        val autoTapPreview: List<EntityId>? = null,
+    ) : ServerMessage
+
+    /**
      * Sent to a socket whose identity just authenticated from a *different* socket
      * (the same player opened the game in another tab or device). The receiving
      * client must stop auto-reconnecting — winning the session back is an explicit
