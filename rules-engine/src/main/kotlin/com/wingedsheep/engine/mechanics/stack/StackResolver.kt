@@ -3351,9 +3351,14 @@ class StackResolver(
         val container = state.getEntity(abilityId)
             ?: return ExecutionResult.error(state, "Ability not found: $abilityId")
 
-        val description = container.get<TriggeredAbilityOnStackComponent>()?.description
-            ?: container.get<ActivatedAbilityOnStackComponent>()?.let { "${it.sourceName}'s ability" }
+        val triggeredAbility = container.get<TriggeredAbilityOnStackComponent>()
+        val activatedAbility = container.get<ActivatedAbilityOnStackComponent>()
+        val description = triggeredAbility?.description
+            ?: activatedAbility?.let { "${it.sourceName}'s ability" }
             ?: "Unknown ability"
+        val sourceId = triggeredAbility?.sourceId ?: activatedAbility?.sourceId
+        val sourceName = triggeredAbility?.sourceName ?: activatedAbility?.sourceName
+        val controllerId = triggeredAbility?.controllerId ?: activatedAbility?.controllerId
 
         // "Abilities can't be countered" (Spider-Punk): a battlefield GrantCantBeCountered with
         // includesAbilities = true whose filter matches this ability makes the counter fizzle — the
@@ -3367,7 +3372,15 @@ class StackResolver(
 
         return ExecutionResult.success(
             newState,
-            listOf(AbilityCounteredEvent(abilityId, description))
+            listOf(
+                AbilityCounteredEvent(
+                    abilityEntityId = abilityId,
+                    description = description,
+                    sourceId = sourceId,
+                    sourceName = sourceName,
+                    controllerId = controllerId,
+                )
+            )
         )
     }
 

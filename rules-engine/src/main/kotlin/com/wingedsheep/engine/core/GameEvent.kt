@@ -783,7 +783,11 @@ data class SpellCounteredEvent(
 @SerialName("AbilityCounteredEvent")
 data class AbilityCounteredEvent(
     val abilityEntityId: EntityId,
-    val description: String
+    val description: String,
+    /** Last-known source metadata captured from the ability while it is still on the stack. */
+    val sourceId: EntityId? = null,
+    val sourceName: String? = null,
+    val controllerId: EntityId? = null,
 ) : GameEvent
 
 /**
