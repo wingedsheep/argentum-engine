@@ -10,6 +10,7 @@ import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownModeComponent
 import com.wingedsheep.sdk.scripting.effects.FaceDownMode
 import com.wingedsheep.engine.state.components.identity.MorphDataComponent
+import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
 import com.wingedsheep.sdk.core.Step
@@ -114,5 +115,14 @@ class CombatDamageMaskingEnricherTest : FunSpec({
         // The opponent-decision status shown to the defender also masks the attacker's real name.
         val status = enricher.createOpponentDecisionStatus(decision, driver.state, defender)
         (status.sourceName ?: "") shouldNotContain "Centaur Courser"
+
+        // The same presenter must stop masking when the engine's shared identity authority says
+        // this viewer has learned the face-down blocker. The decision DTO stays unchanged; only
+        // the semantic visibility fact in state changes.
+        driver.replaceState(driver.state.updateEntity(manifestBlocker) { container ->
+            container.with(RevealedToComponent.to(attacker))
+        })
+        val afterReveal = enricher.enrich(decision, driver.state, attacker) as CombatResolutionDecision
+        afterReveal.blockers.single { it.id == manifestBlocker }.name shouldBe "Savannah Lions"
     }
 })

@@ -72,8 +72,9 @@ data class TrainingObservation(
 
     /**
      * Per-zone entity views. A `(ownerId, zoneType)` pair appears at most once.
-     * Hidden zones (opponent hand, libraries) expose [ZoneView.hidden] = true
-     * and [ZoneView.cards] is empty (only [ZoneView.size] is populated).
+     * [ZoneView.hidden] means some identities remain hidden. [ZoneView.cards] contains only the
+     * identities this perspective may know, so an individually revealed card can appear while the
+     * zone remains hidden and [ZoneView.size] still reports its true size.
      */
     val zones: List<ZoneView>,
 
@@ -131,8 +132,9 @@ data class ManaPoolView(
 /**
  * A zone's contents from [TrainingObservation.perspectivePlayerId]'s point of view.
  *
- * When [hidden] is true (opponent's hand, any library), [cards] is empty and
- * only [size] is meaningful. This mirrors real-MTG information hiding.
+ * When [hidden] is true, at least one identity in the zone remains unknown. [cards] is the known
+ * subset (often empty), while [size] always reports the full zone size. Hidden-zone slot IDs and
+ * the positions of known cards among unknown cards are intentionally not part of this schema.
  */
 @Serializable
 data class ZoneView(

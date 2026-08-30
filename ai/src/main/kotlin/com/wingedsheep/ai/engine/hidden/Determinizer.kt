@@ -117,15 +117,10 @@ class Determinizer(
         viewerId: EntityId,
     ): List<EntityId> {
         val handKey = ZoneKey(opponentId, Zone.HAND)
-        val handHidden = !visibility.isZoneVisibleTo(state, handKey, viewerId)
-        val candidates = buildList {
-            addAll(state.getLibrary(opponentId))
-            if (handHidden) addAll(state.getHand(opponentId))
-        }
-        val visibleTop = state.getLibrary(opponentId).firstOrNull()?.takeIf {
-            visibility.revealsTopOfLibraryPublicly(state, opponentId) ||
-                (opponentId == viewerId && visibility.hasLookAtTopOfLibrary(state, viewerId))
-        }
+        val libraryKey = ZoneKey(opponentId, Zone.LIBRARY)
+        val library = state.getLibrary(opponentId)
+        val hand = state.getHand(opponentId)
+        val candidates = library + hand
         val referencedByStack = state.stack.flatMapTo(mutableSetOf()) { stackId ->
             state.getEntity(stackId)?.get<TargetsComponent>()?.targets.orEmpty().mapNotNull {
                 when (it) {
@@ -137,13 +132,13 @@ class Determinizer(
             }
         }
         return candidates.filter { id ->
-            id != visibleTop &&
+            val zoneKey = if (id in library) libraryKey else handKey
+            !visibility.isCardIdentityVisibleTo(state, zoneKey, id, viewerId) &&
                 id !in referencedByStack &&
                 // Continuation frames carry entity references in several different shapes.
                 // Quiet search roots normally have none; pinning while one exists is the safe
                 // fallback until those shapes share a common reference visitor.
                 state.continuationStack.isEmpty() &&
-                !visibility.isCardRevealedTo(state, id, viewerId) &&
                 isSafeToRewrite(state.getEntity(id))
         }
     }

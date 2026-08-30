@@ -25,7 +25,7 @@ class GameGymEnv(
     val environment: GameEnvironment,
     private val perspectivePlayerIndex: Int,
     private val defaultRevealAll: Boolean,
-    private val observationBuilder: ObservationBuilder = ObservationBuilder()
+    private val observationBuilder: ObservationBuilder = ObservationBuilder(environment.cardRegistry)
 ) : GymEnv {
 
     @Volatile

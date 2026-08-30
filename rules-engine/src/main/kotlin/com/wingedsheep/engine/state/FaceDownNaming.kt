@@ -43,8 +43,10 @@ fun nameVisibleToAll(state: GameState, entityId: EntityId, fallback: String): St
  *
  * Same masking as [nameVisibleToAll], except that a player may look at a face-down object they
  * control (CR 708.5) and so keeps [fallback] for their own. A spectator never may — matching the
- * gate [com.wingedsheep.engine.view.ClientStateTransformer] applies to card views, so a per-viewer
- * label and the card it labels always agree.
+ * baseline gate used by [com.wingedsheep.engine.view.Visibility]. This helper deliberately owns
+ * only the face-down name and controller/caster baseline; consumers that have a
+ * [com.wingedsheep.engine.registry.CardRegistry] must use [com.wingedsheep.engine.view.Visibility]
+ * for the aggregate answer, including explicit reveals and effect-granted access.
  */
 fun nameVisibleTo(
     state: GameState,
@@ -54,7 +56,7 @@ fun nameVisibleTo(
     isSpectator: Boolean = false,
 ): String {
     val masked = faceDownDisplayName(state, entityId) ?: return fallback
-    val mayLook = !isSpectator && viewingPlayerId == playerWhoMayLookAt(state, entityId)
+    val mayLook = !isSpectator && viewingPlayerId == playerWhoMayLookAtFaceDown(state, entityId)
     return if (mayLook) fallback else masked
 }
 
@@ -76,7 +78,7 @@ fun nameVisibleTo(
  * Anything else keeps its name, including a face-down object that has already left all three: its
  * owner reveals it to every player as it goes (CR 708.9).
  */
-private fun faceDownDisplayName(state: GameState, entityId: EntityId): String? {
+internal fun faceDownDisplayName(state: GameState, entityId: EntityId): String? {
     val container = state.getEntity(entityId) ?: return null
 
     if (entityId in state.stack) {
@@ -100,8 +102,14 @@ private fun faceDownDisplayName(state: GameState, entityId: EntityId): String? {
     return null
 }
 
-/** The one player entitled to read [entityId]'s real name off the table (CR 708.5). */
-private fun playerWhoMayLookAt(state: GameState, entityId: EntityId): EntityId? {
+/**
+ * The one player entitled to look at [entityId] merely because they control the face-down object.
+ *
+ * Other effects can grant additional players access; [com.wingedsheep.engine.view.Visibility]
+ * combines this baseline with those explicit reveal permissions. Keeping the baseline here makes
+ * the name-only and full-identity views agree about controller/caster access.
+ */
+internal fun playerWhoMayLookAtFaceDown(state: GameState, entityId: EntityId): EntityId? {
     val container = state.getEntity(entityId) ?: return null
     return state.projectedState.getController(entityId)
         ?: container.get<SpellOnStackComponent>()?.casterId

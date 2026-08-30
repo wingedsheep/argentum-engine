@@ -3,6 +3,7 @@ package com.wingedsheep.engine.view
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.support.GameTestDriver
@@ -233,6 +234,19 @@ class ModalSpellStackVisibilityTest : FunSpec({
         redactedName shouldNotContain "Savannah Lions"
         redactedName.lowercase() shouldContain "card in"
         redactedName.lowercase() shouldContain "hand"
+
+        // A per-card reveal changes the semantic identity answer without making the whole hand
+        // public. Stack target presentation must follow that answer rather than the old owner-only
+        // shortcut.
+        d.replaceState(d.state.updateEntity(secret) { container ->
+            container.with(RevealedToComponent.to(p2))
+        })
+        val revealedOpponentGroups = transformer(d)
+            .transform(d.state, viewingPlayerId = p2)
+            .cards[stackSpellId]
+            ?.perModeTargets
+        revealedOpponentGroups.shouldNotBeNull()
+        revealedOpponentGroups[1].targetNames shouldBe listOf("Savannah Lions")
 
         // Mode descriptions are still public to the opponent — only the card identity is hidden.
         opponentView.cards[stackSpellId]?.chosenModeDescriptions?.size shouldBe 2

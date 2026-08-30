@@ -2,29 +2,32 @@ package com.wingedsheep.gameserver.session
 
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.FACE_DOWN_DISPLAY_NAME
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.view.Visibility
 import com.wingedsheep.gameserver.protocol.ServerMessage
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 
 class DecisionEnricher(private val cardRegistry: CardRegistry) {
-
-    private companion object {
-        /** Generic label for a face-down (morph / manifest) creature; mirrors the client state transformer. */
-        const val FACE_DOWN_CREATURE_NAME = "Face-down creature"
-    }
+    private val visibility = Visibility(cardRegistry)
 
     /**
-     * Whether [entityId]'s real name must be hidden from [viewerId]. A face-down permanent's identity
-     * is known only to the player who controls it (they may look at their own face-down creatures);
-     * everyone else sees the generic label. Mirrors the battlefield masking in ClientStateTransformer
-     * (`isFaceDown && controllerId != viewingPlayerId`). It intentionally does not honour
-     * Lens-of-Clarity-style reveals — omitting them only ever over-masks, so it can't leak.
+     * Whether [entityId]'s real name must be hidden from [viewerId]. The engine visibility authority
+     * combines controller access with explicit reveals and effect-granted access; this presenter only
+     * chooses the generic label once that semantic answer is known.
      */
     private fun isHiddenFrom(state: GameState, entityId: EntityId, viewerId: EntityId): Boolean =
         state.getEntity(entityId)?.has<FaceDownComponent>() == true &&
-            state.projectedState.getController(entityId) != viewerId
+            !visibility.isCardIdentityVisibleTo(
+                state,
+                ZoneKey(state.projectedState.getController(entityId) ?: viewerId, Zone.BATTLEFIELD),
+                entityId,
+                viewerId,
+            )
 
     /**
      * The source name to display for [decision] to [viewerId]. The combat board copies the (single)
@@ -51,7 +54,7 @@ class DecisionEnricher(private val cardRegistry: CardRegistry) {
         val sourceName = decision.context.sourceName ?: return null
         if (decision is CombatResolutionDecision) {
             val single = decision.attackers.singleOrNull() ?: return sourceName
-            if (single.name == sourceName && isHiddenFrom(state, single.id, viewerId)) return FACE_DOWN_CREATURE_NAME
+            if (single.name == sourceName && isHiddenFrom(state, single.id, viewerId)) return FACE_DOWN_DISPLAY_NAME
         }
         return sourceName
     }
@@ -91,15 +94,15 @@ class DecisionEnricher(private val cardRegistry: CardRegistry) {
                 // leak to the opponent through a shared node. Mask per viewer: the controller keeps
                 // its own creature's name, everyone else sees the generic label.
                 val maskedAttackers = decision.attackers.map {
-                    if (isHiddenFrom(state, it.id, viewerId)) it.copy(name = FACE_DOWN_CREATURE_NAME) else it
+                    if (isHiddenFrom(state, it.id, viewerId)) it.copy(name = FACE_DOWN_DISPLAY_NAME) else it
                 }
                 val maskedBlockers = decision.blockers.map {
-                    if (isHiddenFrom(state, it.id, viewerId)) it.copy(name = FACE_DOWN_CREATURE_NAME) else it
+                    if (isHiddenFrom(state, it.id, viewerId)) it.copy(name = FACE_DOWN_DISPLAY_NAME) else it
                 }
                 // The single-attacker prompt embeds that attacker's name; mask it in lockstep.
                 val single = decision.attackers.singleOrNull()
                 val maskedPrompt = if (single != null && isHiddenFrom(state, single.id, viewerId)) {
-                    decision.prompt.replaceFirst(single.name, FACE_DOWN_CREATURE_NAME)
+                    decision.prompt.replaceFirst(single.name, FACE_DOWN_DISPLAY_NAME)
                 } else {
                     decision.prompt
                 }

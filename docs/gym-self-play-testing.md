@@ -64,8 +64,9 @@ Key config fields:
   `{"type":"RandomSealed","setCode":"BLB","boosterCount":8}` (needs the set's basic-land variants
   registered).
 - **`revealAll: true`** — set this for self-play. Normally observations hide the opponent's hand and
-  libraries; since one agent is playing *both* seats, you want to see everything. (Never use it for
-  real RL self-play — it leaks information.)
+  libraries except for identities the current perspective is entitled to know; since one agent is
+  playing *both* seats, you want to see everything. (Never use it for real RL self-play — it leaks
+  information.)
 - **`skipMulligans: true`** — skip the mulligan back-and-forth.
 - `startingPlayerIndex` — pin it for reproducibility (null = random).
 
@@ -150,7 +151,8 @@ The fields that matter most for spotting bugs:
   …), `description`, `affordable`, `manaCost`, target counts, and the combat candidates
   (`validAttackers`, `mandatoryAttackers`, `validAttackTargets`, `validBlockers`,
   `blockerMaxBlockCounts`, `mandatoryBlockerAssignments`).
-- `zones[]` → `cards[]` → `EntityFeatures` — the projected (post-layers) truth about each object:
+- `zones[]` → `cards[]` → `EntityFeatures` — the projected (post-layers) truth about each visible
+  object. A zone can remain `hidden: true` while `cards` contains its individually known subset:
   `oracleText`, `power`/`toughness`, `types`/`subtypes`/`keywords`/`colors`, `tapped`, `counters`,
   `attachedTo`. **`oracleText` is your oracle**: read what the card *says*, then watch whether the
   game state changes the way it says.

@@ -1193,20 +1193,24 @@ The server's responsibilities are strictly limited to:
 
 ### 3.2 State Masking (Fog of War)
 
-Hidden-zone visibility is centralized in `rules-engine/view/Visibility`. Both
-`ClientStateTransformer` and the engine AI's determinizer consume it, so a reveal effect cannot be
-visible to the client while remaining hidden from the AI (or vice versa). Consumers must not
-reimplement hand, library, teammate, turn-control, or individually-revealed-card rules.
+Card-identity visibility is centralized in `rules-engine/view/Visibility`.
+`ClientStateTransformer`, server decision presentation, the engine AI's determinizer, and Gym
+observations consume it, so a reveal effect cannot be visible to one perspective consumer while
+remaining hidden from another.
+Consumers must not reimplement hand, library, teammate, turn-control, individual-reveal,
+top-of-library, or face-down identity rules. They remain free to encode the shared answer
+differently: for example, the client retains opaque library slots while Gym reports a size plus the
+known subset.
 
 **Principle:** Each player sees a filtered view of the game state.
 
 In Magic, players cannot see each other's hands or libraries. The `ClientStateTransformer` produces a
 per-player view of the state that hides private information:
 
-- **Libraries:** Always hidden — only the count is visible
+- **Libraries:** The zone remains hidden, but an explicitly known top/individual card may have details
 - **Opponent's hand:** Only the count is visible, not the card identities
-- **Face-down cards:** Show as generic "Card back" to all players (even the controller cannot see
-  the identity in the masked view — only when they choose to interact)
+- **Face-down cards:** Show public face-down characteristics while the underlying identity is shown
+  only to a player entitled to look at it
 - **Revealed cards:** `RevealedToComponent` overrides hiding for cards that have been explicitly revealed
 - **Revealed / returned hand cards:** A card revealed *into* a hand, or returned to a hand from a public
   zone (battlefield, graveyard, the stack), stays visible to opponents until its owner *plays* a card with

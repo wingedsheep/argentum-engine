@@ -79,7 +79,7 @@ import com.wingedsheep.sdk.model.EntityId
  * ```
  */
 class GameEnvironment private constructor(
-    private val cardRegistry: CardRegistry,
+    internal val cardRegistry: CardRegistry,
     private val processor: ActionProcessor,
     private val enumerator: LegalActionEnumerator,
     private val evaluator: BoardEvaluator,

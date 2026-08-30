@@ -3,11 +3,14 @@ package com.wingedsheep.engine.view
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.faceDownDisplayName
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.playerWhoMayLookAtFaceDown
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
+import com.wingedsheep.engine.state.permissions.hasMayPlayFor
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -19,11 +22,14 @@ import com.wingedsheep.sdk.scripting.RevealTopOfLibrary
 import com.wingedsheep.sdk.scripting.StaticAbility
 
 /**
- * The engine's single source of truth for which hidden-zone identities a player may see.
+ * The engine's single source of truth for which card identities a player may see.
  *
- * Client masking and AI determinization deliberately share this service. Adding a reveal rule to
- * one without the other would either leak information to the AI or hide information it is legally
- * entitled to use.
+ * This covers both identities in hidden zones and face-down objects in otherwise public zones.
+ * Client state and decision masking, AI determinization, and Gym observations deliberately share
+ * this service. Adding a reveal rule to one without the others would either leak information or
+ * hide information a perspective is legally entitled to use. Consumers still own their
+ * representations: knowing an identity does not prescribe a client card DTO, a Gym feature vector,
+ * or opaque zone slots.
  */
 class Visibility(
     private val cardRegistry: CardRegistry,
@@ -38,18 +44,63 @@ class Visibility(
         isSpectator: Boolean = false,
     ): Boolean = when (zoneKey.zoneType) {
         Zone.LIBRARY -> false
-        Zone.HAND -> debugMode || zoneKey.ownerId == viewingPlayerId ||
-            (!isSpectator && state.actorFor(zoneKey.ownerId) == viewingPlayerId) ||
-            (!isSpectator && zoneKey.ownerId in state.teammatesOf(viewingPlayerId)) ||
-            (!isSpectator && zoneKey.ownerId != viewingPlayerId &&
-                revealsOpponentHandsTo(state, viewingPlayerId))
-        Zone.SIDEBOARD -> debugMode || zoneKey.ownerId == viewingPlayerId ||
-            (!isSpectator && state.actorFor(zoneKey.ownerId) == viewingPlayerId)
+        Zone.HAND -> debugMode || (!isSpectator && (
+            zoneKey.ownerId == viewingPlayerId ||
+                state.actorFor(zoneKey.ownerId) == viewingPlayerId ||
+                zoneKey.ownerId in state.teammatesOf(viewingPlayerId) ||
+                (zoneKey.ownerId != viewingPlayerId && revealsOpponentHandsTo(state, viewingPlayerId))
+            ))
+        Zone.SIDEBOARD -> debugMode || (!isSpectator && (
+            zoneKey.ownerId == viewingPlayerId ||
+                state.actorFor(zoneKey.ownerId) == viewingPlayerId
+            ))
         Zone.BATTLEFIELD,
         Zone.GRAVEYARD,
         Zone.STACK,
         Zone.EXILE,
         Zone.COMMAND -> true
+    }
+
+    /**
+     * Whether [viewingPlayerId] may know the identity of [entityId] in [zoneKey].
+     *
+     * A hidden zone is not all-or-nothing: [RevealedToComponent] and top-of-library effects can
+     * expose one card while the rest stays hidden. Conversely, a public zone does not make the
+     * identity under a face-down object public. This query combines those identity facts while
+     * leaving ordered hidden-zone structure and consumer-specific presentation to the caller.
+     */
+    fun isCardIdentityVisibleTo(
+        state: GameState,
+        zoneKey: ZoneKey,
+        entityId: EntityId,
+        viewingPlayerId: EntityId,
+        isSpectator: Boolean = false,
+    ): Boolean {
+        // Public-zone visibility does not reveal what is underneath a face-down object.
+        if (faceDownDisplayName(state, entityId) != null) {
+            if (isSpectator) return false
+            if (playerWhoMayLookAtFaceDown(state, entityId) == viewingPlayerId) return true
+            if (isCardRevealedTo(state, entityId, viewingPlayerId)) return true
+            if (zoneKey.zoneType == Zone.BATTLEFIELD &&
+                hasLookAtFaceDownCreatures(state, viewingPlayerId)
+            ) return true
+            if (zoneKey.zoneType == Zone.EXILE &&
+                state.hasMayPlayFor(entityId, viewingPlayerId, conditionEvaluator, cardRegistry)
+            ) return true
+            return false
+        }
+
+        if (isZoneVisibleTo(state, zoneKey, viewingPlayerId, isSpectator)) return true
+
+        // A spectator receives public reveals but never a player's private reveal memory.
+        val isTopCard = zoneKey.zoneType == Zone.LIBRARY &&
+            state.getLibrary(zoneKey.ownerId).firstOrNull() == entityId
+        if (isTopCard && revealsTopOfLibraryPublicly(state, zoneKey.ownerId)) return true
+        if (isSpectator) return false
+
+        if (isCardRevealedTo(state, entityId, viewingPlayerId)) return true
+        return isTopCard && zoneKey.ownerId == viewingPlayerId &&
+            hasLookAtTopOfLibrary(state, viewingPlayerId)
     }
 
     fun isCardRevealedTo(

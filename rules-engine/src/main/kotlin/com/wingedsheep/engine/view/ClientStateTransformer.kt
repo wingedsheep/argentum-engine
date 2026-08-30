@@ -23,7 +23,6 @@ import com.wingedsheep.sdk.scripting.ProtectionScope
 import com.wingedsheep.engine.state.FACE_DOWN_CARD_DISPLAY_NAME
 import com.wingedsheep.engine.state.FACE_DOWN_DISPLAY_NAME
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.nameVisibleTo
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.*
 import com.wingedsheep.engine.state.components.battlefield.*
@@ -128,7 +127,13 @@ class ClientStateTransformer(
                 entityIds
             } else {
                 entityIds.filter { entityId ->
-                    visibility.isCardRevealedTo(state, entityId, viewingPlayerId)
+                    visibility.isCardIdentityVisibleTo(
+                        state,
+                        zoneKey,
+                        entityId,
+                        viewingPlayerId,
+                        isSpectator,
+                    )
                 }
             }
             val zoneCardIds = if (isLibrary) entityIds else cardsWithDetails
@@ -201,73 +206,6 @@ class ClientStateTransformer(
             }
         }
         // --- FIX END ---
-
-        // Reveal top library card for players who "play with the top card revealed"
-        // (PlayFromTopOfLibrary, e.g. Future Sight; or RevealTopOfLibrary, e.g. Goblin Spy).
-        // The top card is revealed to ALL players per the card's oracle text. The two abilities
-        // differ only in play permission (handled elsewhere); the public reveal is identical.
-        for (ownerId in state.turnOrder) {
-            if (revealsTopOfLibraryPublicly(state, ownerId)) {
-                val library = state.getLibrary(ownerId)
-                if (library.isNotEmpty()) {
-                    val topCardId = library.first()
-                    if (topCardId !in cards) {
-                        val libraryZoneKey = ZoneKey(ownerId, Zone.LIBRARY)
-                        val clientCard = transformCard(state, topCardId, libraryZoneKey, projectedState, viewingPlayerId)
-                        if (clientCard != null) {
-                            cards[topCardId] = clientCard
-                            // Update the library zone entry to include this card as visible
-                            val zoneIndex = zones.indexOfFirst {
-                                it.zoneId.ownerId == ownerId && it.zoneId.zoneType == Zone.LIBRARY
-                            }
-                            if (zoneIndex >= 0) {
-                                val existingZone = zones[zoneIndex]
-                                val newCardIds = if (existingZone.cardIds.contains(topCardId)) {
-                                    existingZone.cardIds
-                                } else {
-                                    listOf(topCardId) + existingZone.cardIds
-                                }
-                                zones[zoneIndex] = existingZone.copy(
-                                    cardIds = newCardIds,
-                                    isVisible = true
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Reveal top library card privately for players with LookAtTopOfLibrary (e.g., Lens of Clarity)
-        // Unlike PlayFromTopOfLibrary, this only reveals to the controller, not all players.
-        if (!isSpectator && hasLookAtTopOfLibrary(state, viewingPlayerId)) {
-            val library = state.getLibrary(viewingPlayerId)
-            if (library.isNotEmpty()) {
-                val topCardId = library.first()
-                if (topCardId !in cards) {
-                    val libraryZoneKey = ZoneKey(viewingPlayerId, Zone.LIBRARY)
-                    val clientCard = transformCard(state, topCardId, libraryZoneKey, projectedState, viewingPlayerId)
-                    if (clientCard != null) {
-                        cards[topCardId] = clientCard
-                        val zoneIndex = zones.indexOfFirst {
-                            it.zoneId.ownerId == viewingPlayerId && it.zoneId.zoneType == Zone.LIBRARY
-                        }
-                        if (zoneIndex >= 0) {
-                            val existingZone = zones[zoneIndex]
-                            val newCardIds = if (existingZone.cardIds.contains(topCardId)) {
-                                existingZone.cardIds
-                            } else {
-                                listOf(topCardId) + existingZone.cardIds
-                            }
-                            zones[zoneIndex] = existingZone.copy(
-                                cardIds = newCardIds,
-                                isVisible = true
-                            )
-                        }
-                    }
-                }
-            }
-        }
 
         // Build player information
         val players = state.turnOrder.map { playerId ->
@@ -372,7 +310,15 @@ class ClientStateTransformer(
 
             val tally = tallies.getOrPut(definitionId) { Tally() }
             tally.copies++
-            if (!ownerKnowsIdentity(state, entityId, zoneType, viewingPlayerId)) tally.remaining++
+            if (!visibility.isCardIdentityVisibleTo(
+                    state,
+                    ZoneKey(ownerId, zoneType),
+                    entityId,
+                    viewingPlayerId,
+                )
+            ) {
+                tally.remaining++
+            }
             if (copyOf == null && tally.printingImageUri == null) {
                 tally.printingImageUri = cardComponent.imageUri
             }
@@ -396,31 +342,6 @@ class ClientStateTransformer(
                 imageUri = tally.printingImageUri ?: definition.metadata.imageUri
             )
         }.sortedWith(compareBy({ it.cmc }, { it.cardName }))
-    }
-
-    /**
-     * Whether the owner of [entityId] can currently tell *which* of their cards this one is.
-     *
-     * False for anything in their library (that's the whole point — you know what's in your deck,
-     * not where), and for a card of theirs that is face down somewhere they can't look: exiled face
-     * down, or a face-down permanent an opponent controls. Mirrors the face-down masking in
-     * [transformCard] so the tracker never claims knowledge the client wasn't sent.
-     */
-    private fun ownerKnowsIdentity(
-        state: GameState,
-        entityId: EntityId,
-        zoneType: Zone,
-        viewingPlayerId: EntityId
-    ): Boolean {
-        if (zoneType == Zone.LIBRARY) return false
-        val container = state.getEntity(entityId) ?: return false
-        val isInFaceDownZone =
-            zoneType == Zone.BATTLEFIELD || zoneType == Zone.STACK || zoneType == Zone.EXILE
-        if (!isInFaceDownZone || !container.has<FaceDownComponent>()) return true
-        val controllerId = container.get<ControllerComponent>()?.playerId
-        return controllerId == viewingPlayerId ||
-            visibility.isCardRevealedTo(state, entityId, viewingPlayerId) ||
-            (zoneType == Zone.BATTLEFIELD && visibility.hasLookAtFaceDownCreatures(state, viewingPlayerId))
     }
 
     /**
@@ -521,12 +442,6 @@ class ClientStateTransformer(
      * This is used for "look at hand" or "reveal hand" effects where the viewing player
      * can see specific cards in an otherwise hidden zone.
      */
-    private fun revealsTopOfLibraryPublicly(state: GameState, playerId: EntityId): Boolean =
-        visibility.revealsTopOfLibraryPublicly(state, playerId)
-
-    private fun hasLookAtTopOfLibrary(state: GameState, playerId: EntityId): Boolean =
-        visibility.hasLookAtTopOfLibrary(state, playerId)
-
     /**
      * Transform an activated or triggered ability on the stack into a ClientCard DTO.
      * These don't have CardComponent, so we create a synthetic card representation.
@@ -849,9 +764,12 @@ class ClientStateTransformer(
             // Check if the face-down card has been revealed to the viewing player (e.g., via Spy Network)
             // Also check LookAtFaceDownCreatures (e.g., Lens of Clarity) — only for battlefield creatures,
             // not face-down spells on the stack (per ruling).
-            val isRevealedToViewer = !isSpectator && (
-                visibility.isCardRevealedTo(state, entityId, viewingPlayerId) ||
-                (zoneKey.zoneType == Zone.BATTLEFIELD && visibility.hasLookAtFaceDownCreatures(state, viewingPlayerId))
+            val isRevealedToViewer = visibility.isCardIdentityVisibleTo(
+                state,
+                zoneKey,
+                entityId,
+                viewingPlayerId,
+                isSpectator,
             )
 
             // Face-down exiled cards show minimal info (not creatures, no P/T)
@@ -1751,8 +1669,8 @@ class ClientStateTransformer(
     /**
      * Build per-mode target groups for a modal spell on the stack, aligned with
      * [SpellOnStackComponent.modeTargetsOrdered]. Hidden-zone targets are redacted to a generic
-     * "a card in X's hand/library" string when the viewer does not own the zone, and a face-down
-     * object is redacted for every viewer but the one who may look at it (see
+     * "a card in X's hand/library" string, and a face-down object gets its generic public name,
+     * whenever the shared identity authority says this viewer may not know it (see
      * [resolveTargetDisplayName]).
      */
     private fun buildPerModeTargetGroups(
@@ -1787,8 +1705,8 @@ class ClientStateTransformer(
     }
 
     /**
-     * Resolve a [ChosenTarget] to a human-readable display name for the stack view. Cards in
-     * hidden zones are redacted unless the viewing player owns the zone.
+     * Resolve a [ChosenTarget] to a human-readable display name for the stack view. The engine's
+     * [Visibility] authority decides identity; this method owns only the client-facing placeholder.
      */
     private fun resolveTargetDisplayName(
         state: GameState,
@@ -1798,29 +1716,56 @@ class ClientStateTransformer(
     ): String = when (target) {
         is ChosenTarget.Player -> state.getEntity(target.playerId)
             ?.get<PlayerComponent>()?.name ?: "a player"
-        // A face-down object is nameless (CR 708.2a / 708.4), but this label has an audience, so
-        // it is masked per viewer rather than for everyone: a player may look at a face-down
-        // object they control (CR 708.5). That also keeps modal spells consistent with non-modal
-        // ones, whose targets ship as bare entity ids and are named client-side from the card
-        // view — which applies exactly this gate.
-        is ChosenTarget.Permanent -> state.getEntity(target.entityId)
-            ?.get<CardComponent>()?.name
-            ?.let { nameVisibleTo(state, target.entityId, it, viewingPlayerId, isSpectator) }
-            ?: "a permanent"
-        is ChosenTarget.Spell -> state.getEntity(target.spellEntityId)
-            ?.get<CardComponent>()?.name
-            ?.let { nameVisibleTo(state, target.spellEntityId, it, viewingPlayerId, isSpectator) }
-            ?: "a spell"
+        is ChosenTarget.Permanent -> {
+            val controllerId = state.projectedState.getController(target.entityId) ?: viewingPlayerId
+            if (visibility.isCardIdentityVisibleTo(
+                    state,
+                    ZoneKey(controllerId, Zone.BATTLEFIELD),
+                    target.entityId,
+                    viewingPlayerId,
+                    isSpectator,
+                )
+            ) {
+                state.getEntity(target.entityId)?.get<CardComponent>()?.name ?: "a permanent"
+            } else {
+                FACE_DOWN_DISPLAY_NAME
+            }
+        }
+        is ChosenTarget.Spell -> {
+            if (visibility.isCardIdentityVisibleTo(
+                    state,
+                    ZoneKey(viewingPlayerId, Zone.STACK),
+                    target.spellEntityId,
+                    viewingPlayerId,
+                    isSpectator,
+                )
+            ) {
+                state.getEntity(target.spellEntityId)?.get<CardComponent>()?.name ?: "a spell"
+            } else {
+                FACE_DOWN_DISPLAY_NAME
+            }
+        }
         is ChosenTarget.Card -> {
-            val hiddenZone = target.zone == Zone.HAND || target.zone == Zone.LIBRARY
-            if (hiddenZone && target.ownerId != viewingPlayerId) {
+            val identityVisible = visibility.isCardIdentityVisibleTo(
+                state,
+                ZoneKey(target.ownerId, target.zone),
+                target.cardId,
+                viewingPlayerId,
+                isSpectator,
+            )
+            if (identityVisible) {
+                state.getEntity(target.cardId)?.get<CardComponent>()?.name ?: "a card"
+            } else if (target.zone == Zone.HAND ||
+                target.zone == Zone.LIBRARY ||
+                target.zone == Zone.SIDEBOARD
+            ) {
                 val ownerName = state.getEntity(target.ownerId)
                     ?.get<PlayerComponent>()?.name ?: "opponent"
                 "a card in ${ownerName}'s ${target.zone.name.lowercase()}"
+            } else if (target.zone == Zone.EXILE) {
+                FACE_DOWN_CARD_DISPLAY_NAME
             } else {
-                state.getEntity(target.cardId)?.get<CardComponent>()?.name
-                    ?.let { nameVisibleTo(state, target.cardId, it, viewingPlayerId, isSpectator) }
-                    ?: "a card"
+                "a card"
             }
         }
     }
