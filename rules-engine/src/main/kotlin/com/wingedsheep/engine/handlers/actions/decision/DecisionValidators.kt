@@ -249,6 +249,15 @@ object DecisionValidators {
                 }
             }
         }
+
+        // Omitting a requirement is an empty selection for that group, not a way to bypass its
+        // minimum. Optional target groups may still be absent from the response.
+        val omittedRequired = decision.targetRequirements.firstOrNull { req ->
+            req.minTargets > 0 && req.index !in response.selectedTargets
+        }
+        if (omittedRequired != null) {
+            return "Not enough targets for requirement ${omittedRequired.index}: need at least ${omittedRequired.minTargets}"
+        }
         return null
     }
 
@@ -396,7 +405,9 @@ object DecisionValidators {
         if (response !is OrderedResponse) {
             return "Expected ordering response"
         }
-        if (response.orderedObjects.toSet() != decision.objects.toSet()) {
+        if (response.orderedObjects.size != decision.objects.size ||
+            response.orderedObjects.toSet() != decision.objects.toSet()
+        ) {
             return "Ordered objects must contain exactly the same objects as the decision"
         }
         return null
