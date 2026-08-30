@@ -176,6 +176,21 @@ Phase 8 starts with one shared determinization per search. More worlds compete d
 count, so raising K requires an arena result showing it buys more strength at the same wall-clock
 budget.
 
+For callers that already own an assignment, the generic engine boundary separate from Phase 8's
+sampling policy is `HiddenWorldMaterializer` in `rules-engine`. It accepts an explicit
+`EntityId → CardDefinition` assignment and a caller-selected RNG for future simulated game events.
+It preserves the opaque entity slots and ordered zones, rebuilds only definition-derived card
+components, and returns a typed unsupported result when an identity rewrite would cross in-flight
+references or runtime-bearing card state it cannot preserve safely. It has no viewer, deck model,
+or probability semantics: choosing candidate identities remains the caller's job. It also does
+not accept a `ClientGameState` or Gym observation; those are lossy views, while the materializer
+operates on a trusted complete engine-state substrate. The assignment map explicitly names the
+slots to rewrite; unmentioned slots remain unchanged because `GameState` itself cannot say which
+identities are epistemically unresolved. Callers that require hypothetical future randomness to be
+independent of an authoritative game must supply an independently derived `futureRng`; deliberately
+reusing the source state's RNG remains an explicit caller choice. Phase 8's existing
+`Determinizer` remains a separate AI policy path and is not migrated by this primitive.
+
 ---
 
 ## Scores are in raw evaluator units, everywhere above the leaf

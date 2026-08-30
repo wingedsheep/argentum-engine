@@ -469,6 +469,29 @@ combat state, attachments — leaving only the immutable identity (`CardComponen
   the immutable `GameState` — modifying a component means creating a new container, which means
   creating a new entity map, which means creating a new `GameState`.
 
+#### Hypothetical hidden worlds
+
+`GameState` is always a complete engine state; the masked client and Gym DTOs are not alternate
+`GameState` representations and cannot be expanded back into one. A simulation caller that has
+already chosen hypothetical identities for hidden hand or library slots can apply that explicit
+assignment through `HiddenWorldMaterializer` in `rules-engine/hidden`.
+
+The materializer preserves each slot's `EntityId`, owner, controller-component state, zone
+membership, zone ordering, and every unrelated part of the state. It rebuilds the slot's
+definition-derived components through `CardEntityFactory`, and requires the caller to provide the
+RNG for future events in the hypothetical world. It does not choose hidden slots, inspect
+visibility, infer a deck, or define a sampling distribution. Identity rewrites are refused with a
+typed unsupported result when stack objects, pending decisions, continuation frames, or runtime
+state on the assigned hidden object make substitution unsafe.
+
+References elsewhere in the state remain attached to the same opaque entity. Live relationships
+therefore observe the assigned identity, while frozen snapshots and turn-history records remain
+historical. This is a current-state coherence check, not replay/evidence validation. A caller that
+intends the result to represent a complete hidden-world hypothesis must name every semantically
+unresolved slot itself; `GameState` cannot detect an omission. When future-randomness separation
+matters, the caller must also derive an independent hypothetical future RNG. Unmentioned slots and
+an explicitly reused source RNG are preserved by request.
+
 ### 2.3 Rule 613: Base State vs. Projected State
 
 **Principle:** The engine explicitly separates stored state from derived state.
