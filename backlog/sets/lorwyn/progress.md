@@ -123,3 +123,32 @@ all existing entries are unchanged. Fresh Scryfall metadata, image HTTP 200, and
 LRW printing check passed. A manual setup is in
 `manual-scenarios/cards/t/turtleshell-changeling.json`; it has not been played through in the UI.
 No manual playthrough, UX session, or e2e test was performed. Full set verification remains owed.
+
+## Broken Ambitions and Oona’s Prowler
+
+Coverage is now 254 / 286, with 32 cards and final set verification outstanding. Broken Ambitions
+uses existing controller capture before countering, then clashes and mills the captured player
+on a win. The capture executor now recognizes a spell’s caster independently of its owner.
+Twelve card scenarios pass, including payment, uncounterable spells, fizzling, and a three-player
+case where the clash opponent differs from the targeted spell’s controller.
+
+Oona’s Prowler uses existing discard cost and temporary stat modification. Opponent activation
+enumeration now handles standalone discard costs with server-supplied hand candidates and counts.
+Three card scenarios and two shared scenarios cover activator payment, repeated activations,
+expiry, source blink, filtered costs, and random multi-card discard. The real browser test found
+and fixed the client’s blanket prohibition on interacting with opposing permanents: those with
+server-provided legal activations are now interactive. The passing two-seat browser scenario
+proves the menu, hand selection, activator-only payment, and 1/1 result on both boards.
+
+The full `just test` gate passed (5m 20s, 106 tasks). The multiplayer regression was added afterward
+and its focused class passed all twelve scenarios (34s, 43 tasks); no production code changed
+after the full backend gate. Client typechecking and the focused Playwright test passed.
+Independent backend/content and client reviews have no unresolved findings. The Turtleshell
+ordering review gap was corrected with asymmetric +2/+0 boosts; all seven scenarios pass.
+
+Fresh Scryfall fields, artwork HTTP 200, and both canonical-printing checks passed. The snapshot
+adds only these two cards, with all 246 prior Lorwyn objects unchanged. Assay compares 111 of
+248 canonical definitions: 108 agree, the same three equivalent folds remain, 135 decline, and
+two cannot fold. Neither new card is covered by the grammar. Manual scenario JSONs exist for
+both cards; only Prowler received a browser playthrough. The broader field, per-card script,
+token, and self-play audit remains owed. The set remains incomplete and PR #2252 remains draft.

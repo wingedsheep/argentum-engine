@@ -36,7 +36,7 @@ Cards: Aquitect's Will, Blades of Velis Vel, Boggart Birth Rite, Boggart Shenani
 
 Each participant reveals their top library card, chooses top or bottom, and wins only if their revealed mana value is greater than the other revealed cards. Clash observers trigger after the procedure finishes.
 
-**Engine support:** Supported core: `Patterns.Mechanic.clash`, `ClashEffect`, `Triggers.WheneverYouClash`, and `Triggers.WheneverYouClashAndWin`; see [Adder-Staff Boggart](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/AdderStaffBoggart.kt) and [Sylvan Echoes](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/SylvanEchoes.kt). Individual riders still need card tests, especially repeat-on-win, delayed mana and remembered target characteristics.
+**Engine support:** Supported core: `Patterns.Mechanic.clash`, `ClashEffect`, `Triggers.WheneverYouClash`, and `Triggers.WheneverYouClashAndWin`; see [Adder-Staff Boggart](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/AdderStaffBoggart.kt) and [Sylvan Echoes](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/lrw/cards/SylvanEchoes.kt). Broken Ambitions captures the target spell’s controller before countering and mills that player on a clash win; twelve scenarios cover payment, uncounterable spells, fizzles, and a distinct multiplayer clash opponent. Other individual riders still need card tests, especially delayed mana and remembered target characteristics.
 
 Cards: Adder-Staff Boggart, Bog Hoodlums, Broken Ambitions, Captivating Glance, Entangling Trap, Fistful of Force, Gilt-Leaf Ambush, Hoarder's Greed, Lash Out, Nath's Elite, Oaken Brawler, Paperfin Rascal, Pollen Lullaby, Rebellion of the Flamekin, Ringskipper, Scattering Stroke, Sentry Oak, Spring Cleaning, Springjack Knight, Sylvan Echoes, Weed Strangle, Whirlpool Whelm, Woodland Guidance
 
@@ -468,7 +468,7 @@ Cards: Twinning Glass
 
 The current priority holder may pay the activated ability's costs even if they do not control its source.
 
-**Engine support:** Supported: `ActivationRestriction.AnyPlayerMay`, used by [Lethal Vapors](../../../mtg-sets/2003-2007/src/main/kotlin/com/wingedsheep/mtg/sets/definitions/scg/cards/LethalVapors.kt); Oona's Prowler remains unauthored and needs its own discard-payer/source-controller test.
+**Engine support:** `ActivationRestriction.AnyPlayerMay` supports free, mana-only, and standalone discard costs for opponent activations. Oona’s Prowler has card scenarios for the activating player’s discard, source-controller independence, repeated activations, duration, and source blink; shared engine scenarios cover filtered and random multi-card discard costs. The client uses server-provided legal activations to make opposing permanents interactive; it does not infer activation permission from card text.
 
 Cards: Oona's Prowler
 

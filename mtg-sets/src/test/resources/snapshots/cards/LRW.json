@@ -1935,6 +1935,126 @@
     ]
 }
 
+// Broken Ambitions
+{
+    "name": "Broken Ambitions",
+    "manaCost": "{X}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {X}. Clash with an opponent. If you win, that spell's controller mills four cards. (Each clashing player reveals the top card of their library, then puts that card on their choice of the top or bottom. A player wins if their card had a greater mana value.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "ambitionsSpell"
+                },
+                {
+                    "type": "CaptureControllers",
+                    "from": "ambitionsSpell",
+                    "storeAs": "ambitionsControllers"
+                },
+                {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysDynamic",
+                        "amount": "XValue"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "ChooseOpponentForSource",
+                                    "prompt": "Choose an opponent to clash with"
+                                },
+                                "Clash"
+                            ]
+                        },
+                        "successCriterion": {
+                            "type": "SuccessCriterion.CollectionNonEmpty",
+                            "name": "clashWon"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForEachCapturedController",
+                                "collection": "ambitionsSpell",
+                                "originalCollection": "ambitionsSpell",
+                                "controllerSnapshot": "ambitionsControllers",
+                                "countVariable": "count0",
+                                "effects": [
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "TopOfLibrary",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 4
+                                                    },
+                                                    "isMill": true
+                                                },
+                                                "storeAs": "milled"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "milled",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Clash with an opponent. If you win, for each player who controlled at least one of those cards, look at the top 4 cards of your library. Put those cards into a graveyard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "target spell"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "artist": "Franz Vohwinkel",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8052d90b-bc49-4a9e-9211-159a54aa2bcd.jpg?1783942905",
+        "rulings": [
+            {
+                "date": "2007-10-01",
+                "text": "The opponent you clash with doesn't have to be the controller of the targeted spell."
+            },
+            {
+                "date": "2007-10-01",
+                "text": "The clash (and the result of the clash if you win) happens regardless of whether the targeted spell was countered or {X} was paid."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Burrenton Forge-Tender
 {
     "name": "Burrenton Forge-Tender",
@@ -11027,6 +11147,58 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Oona's Prowler
+{
+    "name": "Oona's Prowler",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flying\nDiscard a card: This creature gets -2/-0 until end of turn. Any player may activate this ability.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "restrictions": [
+                    "AnyPlayerMay"
+                ],
+                "descriptionOverride": "This creature gets -2/-0 until end of turn. Any player may activate this ability."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "flavorText": "Deep in Glen Elendra blossoms Oona, queen of the faeries, nourished by secrets and pollinated by stolen dreams.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/9675b8ea-47f9-440e-9535-de879da53f76.jpg?1783942886"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

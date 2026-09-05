@@ -2,17 +2,17 @@
 
 **Set Size:** 286 cards
 **Release Date:** October 12, 2007
-**Implemented:** 252 / 286
+**Implemented:** 254 / 286
 | Section    | Total | Done |
 |------------|-------|------|
 | White      | 49    | 43   |
-| Blue       | 49    | 39   |
-| Black      | 49    | 42   |
+| Blue       | 49    | 41   |
+| Black      | 49    | 44   |
 | Red        | 49    | 42   |
-| Green      | 49    | 41   |
+| Green      | 49    | 45   |
 | Multicolor | 8     | 7    |
 | Artifact   | 12    | 11   |
-| Land       | 21    | 16   |
+| Land       | 21    | 21   |
 
 > Verify status anytime with `scripts/card-status --set LRW` (and `--list`). That command's count is authoritative — keep this file's `Implemented:` line in sync (`just fix-backlog`) as boxes are checked. The set's mechanics are catalogued in [`mechanics.md`](mechanics.md).
 
@@ -74,7 +74,7 @@
 - [x] Amoeboid Changeling
 - [ ] Aquitect's Will
 - [x] Benthicore
-- [ ] Broken Ambitions
+- [x] Broken Ambitions
 - [ ] Captivating Glance
 - [x] Cryptic Command
 - [x] Deeptread Merrow
@@ -155,7 +155,7 @@
 - [x] Nectar Faerie
 - [x] Nettlevine Blight
 - [x] Nightshade Stinger
-- [ ] Oona's Prowler
+- [x] Oona's Prowler
 - [x] Peppersmoke
 - [x] Profane Command
 - [x] Prowess of the Fair
