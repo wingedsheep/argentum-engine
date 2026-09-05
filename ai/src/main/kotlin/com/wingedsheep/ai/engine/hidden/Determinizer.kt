@@ -103,7 +103,8 @@ class Determinizer internal constructor(
 
             val libraryKey = ZoneKey(opponentId, Zone.LIBRARY)
             val library = sampled.getZone(libraryKey)
-            val hiddenLibraryIds = hidden.filterTo(mutableSetOf()) { it in library }
+            val libraryIds = library.toHashSet()
+            val hiddenLibraryIds = hidden.filterTo(mutableSetOf()) { it in libraryIds }
             val (shuffledHidden, next) = currentRng.shuffle(library.filter { it in hiddenLibraryIds })
             currentRng = next
             val iterator = shuffledHidden.iterator()
@@ -133,8 +134,9 @@ class Determinizer internal constructor(
             // corresponding all-or-nothing request; sampling instead keeps every candidate slot.
             is HiddenSlotRewrite.IdentitySensitiveInFlightPins.Incomplete -> return emptyList()
         }
+        val libraryIds = library.toHashSet()
         return candidates.filter { id ->
-            val zoneKey = if (id in library) libraryKey else handKey
+            val zoneKey = if (id in libraryIds) libraryKey else handKey
             !visibility.isCardIdentityVisibleTo(state, zoneKey, id, viewerId) &&
                 id !in inFlightPins &&
                 isSafeToRewrite(state, id)

@@ -3,6 +3,8 @@ package com.wingedsheep.ai.engine.hidden
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.hidden.HiddenSlotRewrite
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.RevealedToComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -66,6 +68,28 @@ class DeterminizerInvariantsTest : ScenarioTestBase() {
             java.security.MessageDigest.getInstance("SHA-256").digest(signature.toByteArray())
                 .joinToString("") { "%02x".format(it) } shouldBe
                 "fe26af39d1fb97c30edbebf726115360a34a390af7d4c15e9c00a80b3ca8620b"
+        }
+
+        test("library membership lookup retains duplicate occurrences and repeated player traversal") {
+            val game = scenario().withPlayers()
+                .withCardInLibrary(2, "Forest")
+                .withCardInLibrary(2, "Mountain")
+                .withCardInLibrary(2, "Hill Giant")
+                .build()
+            val libraryKey = ZoneKey(game.player2Id, Zone.LIBRARY)
+            val library = game.state.getLibrary(game.player2Id)
+            val duplicated = library + library.first()
+            val source = game.state.copy(
+                zones = game.state.zones + (libraryKey to duplicated),
+                turnOrder = game.state.turnOrder + game.player2Id,
+            )
+            val sampler = Determinizer(cardRegistry)
+            for (seed in 1L..16L) {
+                val world = sampler.sample(source, game.player1Id, OpponentModel.IdentityPermutation, GameRng.seeded(seed))
+                world.getLibrary(game.player2Id).shouldContainExactlyInAnyOrder(duplicated)
+                world.entities.keys.toList() shouldBe source.entities.keys.toList()
+                source.getLibrary(game.player2Id) shouldBe duplicated
+            }
         }
 
         test("sampling preserves structure and everything visible to the viewer") {
