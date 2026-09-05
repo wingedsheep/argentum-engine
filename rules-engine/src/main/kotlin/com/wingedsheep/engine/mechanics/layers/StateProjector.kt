@@ -519,10 +519,10 @@ class StateProjector(
     }
 
     private fun extractTypes(card: CardComponent): MutableSet<String> {
-        val types = mutableSetOf<String>()
-        types.addAll(card.typeLine.supertypes.map { it.name })
-        types.addAll(card.typeLine.cardTypes.map { it.name })
-        types.addAll(card.typeLine.subtypes.map { it.value })
+        val types = linkedSetOf<String>()
+        card.typeLine.supertypes.forEach { types.add(it.name) }
+        card.typeLine.cardTypes.forEach { types.add(it.name) }
+        card.typeLine.subtypes.forEach { types.add(it.value) }
         return types
     }
 
