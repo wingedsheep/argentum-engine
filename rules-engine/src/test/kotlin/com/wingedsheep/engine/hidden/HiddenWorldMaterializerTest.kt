@@ -103,6 +103,13 @@ class HiddenWorldMaterializerTest : ScenarioTestBase() {
                     result.reason.kind shouldBe UnsupportedHiddenWorldKind.INVALID_ASSIGNMENT
                     result.reason.entityId shouldBe first
                     result.reason.details shouldBe listOf(expectedDetail)
+                    materializer.materialize(
+                        malformed,
+                        HiddenWorldMaterializationRequest(
+                            mapOf(first to cardRegistry.requireCard("Island")),
+                            GameRng.seeded(901L),
+                        ),
+                    ) shouldBe result
                     malformed.entities shouldBe source.entities
                     malformed.rng shouldBe source.rng
                 }

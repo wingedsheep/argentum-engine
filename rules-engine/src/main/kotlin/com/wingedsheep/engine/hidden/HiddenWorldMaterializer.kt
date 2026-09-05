@@ -119,12 +119,16 @@ class HiddenWorldMaterializer internal constructor(
         }
         // Preserve each occurrence, including duplicates within one zone. Validation below still
         // chooses the first obstruction in assignment order; unrelated malformed slots are ignored.
-        val memberships = mutableMapOf<EntityId, MutableList<ZoneKey>>()
-        for ((zoneKey, ids) in state.zones) {
-            for (id in ids) {
-                if (id in request.slotAssignments) memberships.getOrPut(id) { mutableListOf() }.add(zoneKey)
+        // A single assignment only needs one scan, so it does not pay for an index.
+        val memberships = if (request.slotAssignments.size > 1) {
+            mutableMapOf<EntityId, MutableList<ZoneKey>>().also { index ->
+                for ((zoneKey, ids) in state.zones) {
+                    for (id in ids) {
+                        if (id in request.slotAssignments) index.getOrPut(id) { mutableListOf() }.add(zoneKey)
+                    }
+                }
             }
-        }
+        } else null
         // Accumulate privately: validation still reads the source, and a refusal publishes nothing.
         val materializedEntities = state.entities.toMutableMap()
 
@@ -144,7 +148,11 @@ class HiddenWorldMaterializer internal constructor(
                     listOf("slot is conservatively pinned by in-flight execution"),
                 )
             }
-            val zones = memberships[entityId].orEmpty()
+            val zones = if (memberships == null) buildList {
+                for ((zoneKey, ids) in state.zones) {
+                    for (id in ids) if (id == entityId) add(zoneKey)
+                }
+            } else memberships[entityId].orEmpty()
             val occurrences = zones.size
             if (occurrences != 1 || zones.singleOrNull()?.zoneType !in SUPPORTED_ZONES) {
                 return unsupported(
