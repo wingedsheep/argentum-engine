@@ -125,9 +125,11 @@ object HiddenSlotRewrite {
         container: ComponentContainer,
         currentDefinition: CardDefinition,
         ownerId: EntityId,
-    ): List<String> {
-        val expectedByType = CardEntityFactory.create(currentDefinition, ownerId)
-            .all()
+    ): List<String> = runtimeBlockers(container, CardEntityFactory.create(currentDefinition, ownerId))
+
+    /** Reuse a factory-built expectation while still checking each source container separately. */
+    internal fun runtimeBlockers(container: ComponentContainer, expected: ComponentContainer): List<String> {
+        val expectedByType = expected.all()
             .associateBy { it::class.java }
         return container.all()
             .filterNot { it is CardComponent }

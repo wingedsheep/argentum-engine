@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.InFlightEntityReferences
 import com.wingedsheep.engine.core.InFlightReferenceProjector
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
@@ -131,6 +132,8 @@ class HiddenWorldMaterializer internal constructor(
         } else null
         // Accumulate privately: validation still reads the source, and a refusal publishes nothing.
         val materializedEntities = state.entities.toMutableMap()
+        // Deck copies share factory defaults, but ownership and per-slot runtime state still differ.
+        val expectedContainers = mutableMapOf<Pair<String, EntityId>, ComponentContainer>()
 
         // Slots are independent, so the order only decides *which* obstruction is reported when a
         // request has several. Sorting makes that report stable across equal requests.
@@ -203,7 +206,10 @@ class HiddenWorldMaterializer internal constructor(
                     entityId,
                     listOf("source definition is not registered: ${currentCard.cardDefinitionId}"),
                 )
-            val blockers = HiddenSlotRewrite.runtimeBlockers(container, currentDefinition, ownerId)
+            val expected = expectedContainers.getOrPut(currentCard.cardDefinitionId to ownerId) {
+                CardEntityFactory.create(currentDefinition, ownerId)
+            }
+            val blockers = HiddenSlotRewrite.runtimeBlockers(container, expected)
             if (blockers.isNotEmpty()) {
                 return unsupported(UnsupportedHiddenWorldKind.RUNTIME_STATE, entityId, blockers)
             }
