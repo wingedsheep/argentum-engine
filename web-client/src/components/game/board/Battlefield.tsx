@@ -153,6 +153,9 @@ function BattlefieldContent({
   const legalActions = useGameStore((state) => state.legalActions)
   const targetingState = useGameStore((state) => state.targetingState)
   const decisionSelectionState = useGameStore((state) => state.decisionSelectionState)
+  const hasServerActivation = (cardId: EntityId): boolean => legalActions.some(
+    ({ action }) => action.type === 'ActivateAbility' && action.sourceId === cardId,
+  )
 
   // How much of each attachment card peeks out from behind its parent
   const attachmentPeek = responsive.isMobile ? 12 : 16
@@ -189,6 +192,8 @@ function BattlefieldContent({
    * available to tap), and a tapped Equipment reads as tapped on an untapped host.
    */
   const renderWithAttachments = (group: GroupedCard, rowSizes: ResponsiveSizes = responsive) => {
+    // Activation permission comes from the server even when the source is on another seat's row.
+    const groupInteractive = interactive || (!spectatorMode && group.cardIds.some(hasServerActivation))
     const resolved = attachmentsByCardId.get(group.card.id)
     const attachmentCards = resolved?.attachments ?? EMPTY_ATTACHMENTS
     const linkedExileCards = resolved?.linkedExile ?? EMPTY_ATTACHMENTS
@@ -204,7 +209,7 @@ function BattlefieldContent({
         <CardStack
           key={group.cardIds[0]}
           group={group}
-          interactive={interactive}
+          interactive={groupInteractive}
           isOpponentCard={isOpponent}
         />
       )
@@ -253,7 +258,8 @@ function BattlefieldContent({
           const { card: attachment, kind } = tagged
           // Attachments controlled by the player are interactive even on the opponent's battlefield
           // (e.g., aura cast on opponent's creature — caster can still activate abilities)
-          const attachmentInteractive = !collapsed && !spectatorMode && attachment.controllerId === viewingPlayerId
+          const attachmentInteractive = !collapsed && !spectatorMode &&
+            (attachment.controllerId === viewingPlayerId || hasServerActivation(attachment.id))
           const box = layout.attachments[index]
           return (
             <div
@@ -311,7 +317,7 @@ function BattlefieldContent({
             // this too; omitting it here flips an enchanted/equipped morph face-up for its
             // controller, who receives the real card data + isFaceDown from the server.
             faceDown={group.card.isFaceDown}
-            interactive={interactive}
+            interactive={groupInteractive}
             battlefield
             isOpponentCard={isOpponent}
           />
