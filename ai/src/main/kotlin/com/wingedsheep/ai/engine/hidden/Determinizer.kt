@@ -103,13 +103,12 @@ class Determinizer internal constructor(
 
             val libraryKey = ZoneKey(opponentId, Zone.LIBRARY)
             val library = sampled.getZone(libraryKey)
-            val libraryIds = library.toHashSet()
-            val hiddenLibraryIds = hidden.filterTo(mutableSetOf()) { it in libraryIds }
-            val (shuffledHidden, next) = currentRng.shuffle(library.filter { it in hiddenLibraryIds })
+            val hiddenIds = hidden.toHashSet()
+            val (shuffledHidden, next) = currentRng.shuffle(library.filter { it in hiddenIds })
             currentRng = next
             val iterator = shuffledHidden.iterator()
             val shuffledLibrary = library.map { id ->
-                if (id in hiddenLibraryIds) iterator.next() else id
+                if (id in hiddenIds) iterator.next() else id
             }
             sampled = sampled.copy(
                 entities = sampledEntities,
