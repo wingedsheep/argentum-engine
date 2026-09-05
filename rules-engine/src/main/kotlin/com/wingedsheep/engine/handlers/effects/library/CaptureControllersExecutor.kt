@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.scripting.effects.CaptureControllersEffect
 import kotlin.reflect.KClass
 
@@ -15,9 +16,10 @@ import kotlin.reflect.KClass
  * parallel `List<EntityId>` of controllers to `storedCollections[storeAs]`.
  *
  * For each entity:
- *   1. `state.projectedState.getController(id)` if available (battlefield permanents).
- *   2. Else its raw `ControllerComponent.playerId`.
- *   3. Else `OwnerComponent.playerId` / `CardComponent.ownerId` as a last-resort fallback.
+ *   1. `SpellOnStackComponent.casterId` for a spell still on the stack.
+ *   2. `state.projectedState.getController(id)` if available (battlefield permanents).
+ *   3. Else its raw `ControllerComponent.playerId`.
+ *   4. Else `OwnerComponent.playerId` / `CardComponent.ownerId` as a last-resort fallback.
  *
  * Permanents on the battlefield always satisfy (1) or (2). Cards live somewhere with at
  * least an owner, so the captured list is the same length and order as [from].
@@ -35,9 +37,12 @@ class CaptureControllersExecutor : EffectExecutor<CaptureControllersEffect> {
             ?: return EffectResult.error(state, "No collection named '${effect.from}' in storedCollections")
 
         val controllers = cards.map { entityId ->
+            val entity = state.getEntity(entityId) ?: return@map context.controllerId
+            if (entityId in state.stack) {
+                entity.get<SpellOnStackComponent>()?.casterId?.let { return@map it }
+            }
             val projected = state.projectedState.getController(entityId)
             if (projected != null) return@map projected
-            val entity = state.getEntity(entityId) ?: return@map context.controllerId
             entity.get<ControllerComponent>()?.playerId
                 ?: entity.get<OwnerComponent>()?.playerId
                 ?: entity.get<CardComponent>()?.ownerId

@@ -8225,6 +8225,8 @@ ability — feed the matching count `DynamicAmount` to `genericCostReduction`.
 
 **`ActivationRestriction`**
 
+- `AnyPlayerMay` — permits opponents to activate the source. Free, mana-only, and standalone discard costs are offered through the ordinary legal-action flow; discard choices and affordability use the activating player's hand, including filtered, multiple-card, and random discard costs.
+
 - `MaxPerTurn(n)` — at most N activations per turn.
 - `OncePerTurn` — once each turn (resets at end of turn).
 - `Once` — *"Activate only once"* (CR): once per the **lifetime of this object**, tracked on the
@@ -12627,6 +12629,10 @@ Counter effects live in §4 (`AddCounters`, `RemoveCounters`, `Proliferate`, `Mo
 - `CaptureControllersEffect(from, storeAs)` — snapshot each entity's current controller into a parallel
   `List<EntityId>` under `storedCollections[storeAs]`. Required when a later step needs "who controlled
   this card before it left the battlefield" — `ControllerComponent` is stripped on move-out.
+  Also captures a spell's stack controller before countering it, even when its caster is not its owner
+  (Broken Ambitions). Battlefield permanents use projected control. Pair `captureControllers` with
+  `forEachCaptured` over the original collection when the rider applies regardless of whether a move
+  succeeded; retain the snapshot through intervening decisions such as counter payments and clashes.
 - `ForEachCapturedControllerEffect(collection, originalCollection, controllerSnapshot, countVariable?, effects)` —
   cross-references a post-move `collection` against an `originalCollection` + parallel `controllerSnapshot` to
   build per-controller tallies, then runs `effects` once per controller (turn order from the active player). Each
