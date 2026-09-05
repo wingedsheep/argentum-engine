@@ -7,14 +7,27 @@ import com.wingedsheep.mtg.sets.definitions.lrw.cards.TurtleshellChangeling
 import com.wingedsheep.mtg.sets.definitions.tsp.cards.MomentaryBlink
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.targets.TargetCreature
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
 class TurtleshellChangelingScenarioTest : FunSpec({
+    val asymmetricPump = card("Asymmetric Pump") {
+        manaCost = "{G}"
+        typeLine = "Instant"
+        oracleText = "Target creature gets +2/+0 until end of turn."
+        spell {
+            val creature = target("creature", TargetCreature())
+            effect = Effects.ModifyStats(2, 0, creature)
+        }
+    }
+
     fun driver() = GameTestDriver().apply {
-        registerCards(TestCards.all + listOf(TurtleshellChangeling, MomentaryBlink))
+        registerCards(TestCards.all + listOf(TurtleshellChangeling, MomentaryBlink, asymmetricPump))
         initMirrorMatch(Deck.of("Plains" to 40), startingPlayer = 0)
         passPriorityUntil(Step.PRECOMBAT_MAIN)
     }
@@ -60,12 +73,12 @@ class TurtleshellChangelingScenarioTest : FunSpec({
             val d = driver()
             val creature = d.castTurtleshell()
             if (!pumpFirst) d.switch(creature)
-            val growth = d.putCardInHand(d.player1, "Giant Growth")
+            val growth = d.putCardInHand(d.player1, "Asymmetric Pump")
             d.giveMana(d.player1, Color.GREEN, 1)
             d.castSpell(d.player1, growth, listOf(creature)).error shouldBe null
             d.bothPass().error shouldBe null
             if (pumpFirst) d.switch(creature)
-            d.stats(creature, 7, 4)
+            d.stats(creature, 4, 3)
         }
     }
 
