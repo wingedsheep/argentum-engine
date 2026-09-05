@@ -458,6 +458,7 @@ class HiddenWorldMaterializerTest : ScenarioTestBase() {
             ).shouldBeInstanceOf<HiddenWorldMaterializationResult.Materialized>().state
 
             world shouldBe source.copy(rng = futureRng)
+            (world.entities === source.entities) shouldBe true
         }
 
         test("a paused continuation consumes the caller RNG only when its later shuffle executes") {
@@ -565,6 +566,10 @@ class HiddenWorldMaterializerTest : ScenarioTestBase() {
 
             result.reason.kind shouldBe UnsupportedHiddenWorldKind.IN_FLIGHT_REFERENCES
             result.reason.entityId shouldBe null
+            rejectingMaterializer.materialize(
+                source,
+                HiddenWorldMaterializationRequest(emptyMap(), GameRng.seeded(619L)),
+            ) shouldBe result
             result.reason.details shouldContain "could not traverse pending decision test: forced"
             cardName(source, handId) shouldBe "Grizzly Bears"
             cardName(source, libraryId) shouldBe "Forest"

@@ -113,6 +113,9 @@ class HiddenWorldMaterializer internal constructor(
                 )
             }
         }
+        if (request.slotAssignments.isEmpty()) {
+            return HiddenWorldMaterializationResult.Materialized(state.copy(rng = request.futureRng))
+        }
         // Accumulate privately: validation still reads the source, and a refusal publishes nothing.
         val materializedEntities = state.entities.toMutableMap()
 
