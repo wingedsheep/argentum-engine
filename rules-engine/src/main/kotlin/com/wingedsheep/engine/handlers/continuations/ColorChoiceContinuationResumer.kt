@@ -97,7 +97,8 @@ class ColorChoiceContinuationResumer(
         }
         // Record the chosen number durably on the source permanent (replacing any prior value
         // for the slot), so the source's characteristic-defining ability reads the latest choice.
-        if (state.getEntity(continuation.sourceId) == null) {
+        if (state.getEntity(continuation.sourceId) == null ||
+            !continuation.objectReferences.isCurrent(continuation.objectReferences.source, state)) {
             return checkForMore(state, emptyList())
         }
         val newState = state.updateEntity(continuation.sourceId) { container ->
@@ -117,15 +118,16 @@ class ColorChoiceContinuationResumer(
         }
         val chosen = continuation.opponentIds.getOrNull(response.optionIndex)
             ?: return ExecutionResult.error(state, "Opponent choice index ${response.optionIndex} out of range")
-        // Record the chosen opponent durably on the source (spell or permanent) so
-        // Player.ChosenOpponent reads it for the rest of the resolution and beyond.
-        if (state.getEntity(continuation.sourceId) == null) {
-            return checkForMore(state, emptyList())
-        }
-        val newState = state.updateEntity(continuation.sourceId) { container ->
-            container.withCastChoice(ChoiceSlot.OPPONENT, ChoiceValue.EntityChoice(chosen))
-        }
-        return checkForMore(newState, emptyList())
+        val newState = if (state.getEntity(continuation.sourceId) != null &&
+            continuation.objectReferences.isCurrent(continuation.objectReferences.source, state)) {
+            state.updateEntity(continuation.sourceId) { container ->
+                container.withCastChoice(ChoiceSlot.OPPONENT, ChoiceValue.EntityChoice(chosen))
+            }
+        } else state
+        val withChoice = exposeCollectionsToNextFrame(newState, mapOf(
+            com.wingedsheep.engine.handlers.RESOLUTION_CHOSEN_OPPONENT to listOf(chosen),
+        ))
+        return checkForMore(withChoice, emptyList())
     }
 
     fun resumeChooseCardTypeForSource(
@@ -141,7 +143,8 @@ class ColorChoiceContinuationResumer(
             ?: return ExecutionResult.error(state, "Card type choice index ${response.optionIndex} out of range")
         // Record the chosen card type durably on the source permanent so
         // CardPredicate.CardTypeEqualsChosenComponent reads it at cost-calculation / projection time.
-        if (state.getEntity(continuation.sourceId) == null) {
+        if (state.getEntity(continuation.sourceId) == null ||
+            !continuation.objectReferences.isCurrent(continuation.objectReferences.source, state)) {
             return checkForMore(state, emptyList())
         }
         val newState = state.updateEntity(continuation.sourceId) { container ->

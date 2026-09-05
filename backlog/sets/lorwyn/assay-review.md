@@ -52,3 +52,21 @@ After Hunt Down: 245 canonical cards, 111 compared, 108 agreed, the same three e
 132 declined, and two failed to fold. Hunt Down is declined. Expanding composite static abilities
 and distributing their conditions again matches all three divergent scripts; Epic Proportions
 also differs only in the unused Aura target label. No existing golden entry changed.
+
+## Turtleshell Changeling
+
+The fresh differential covers 246 canonical definitions: 111 compared, 108 agree, the same
+three existing equivalent folds (Boggart Sprite-Chaser, Epic Proportions, Kithkin Greatheart),
+133 grammar declines, and two nonfolding cards. No Oracle mismatches or decode errors.
+Turtleshell's new switch primitive is outside the current grammar; its behavior is covered
+by the card and shared engine scenarios, not by an Assay agreement.
+
+## Broken Ambitions and Oona’s Prowler
+
+The fresh differential covers 248 canonical definitions: 111 compared, 108 agree, the same
+three equivalent folds (Boggart Sprite-Chaser, Epic Proportions, Kithkin Greatheart), 135 grammar
+declines, and two nonfolding cards. Both new cards decline; this is not behavioral verification.
+All 246 previous Lorwyn snapshot objects are unchanged, and the only additions are these two cards.
+Broken Ambitions has twelve passing scenarios, including a three-player clash that mills the
+targeted spell’s controller rather than the chosen clash opponent. Prowler has three passing
+card scenarios, with two shared tests for opponent-paid filtered and random discard costs.

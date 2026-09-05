@@ -74,6 +74,7 @@ class BecomeCreatureTypeExecutor : EffectExecutor<BecomeCreatureTypeEffect> {
             decisionId = decisionId,
             controllerId = context.controllerId,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = sourceName,
             targetId = targetId,
             creatureTypes = allCreatureTypes,

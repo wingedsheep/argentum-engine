@@ -188,7 +188,9 @@ class CreateTokenCopyOfChosenPermanentExecutor(
                 entityName = tokenCard.name,
                 fromZone = null,
                 toZone = Zone.BATTLEFIELD,
-                ownerId = controllerId
+                ownerId = controllerId,
+                oldObject = null,
+                newObject = newState.objectRef(tokenId)
             )
 
             // CR 714.2b/714.3a: a token copy of a Saga enters as a Saga with its on-enter lore

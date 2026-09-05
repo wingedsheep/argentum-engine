@@ -109,6 +109,7 @@ class SelectTargetPipelineExecutor(
             decisionId = decisionId,
             playerId = controllerId,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = sourceName,
             storeAs = effect.storeAs,
             storedCollections = context.pipeline.storedCollections

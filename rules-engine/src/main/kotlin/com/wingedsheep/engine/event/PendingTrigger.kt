@@ -13,6 +13,8 @@ data class PendingTrigger(
     val sourceName: String,
     /** Source battlefield visit captured at detection, before target or ordering decisions. */
     val sourceBattlefieldTimestamp: Long? = null,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment =
+        com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val controllerId: EntityId,
     /**
      * The permanent whose `GrantTriggeredAbility` static granted this triggered ability, when it is

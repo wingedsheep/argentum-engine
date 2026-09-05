@@ -88,6 +88,7 @@ class AddDynamicManaExecutor(
             decisionId = decisionResult.pendingDecision!!.id,
             playerId = context.controllerId,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = sourceName,
             totalAmount = amount,
             firstColor = firstColor,

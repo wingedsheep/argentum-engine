@@ -363,7 +363,9 @@ class CreateTokenCopyOfTargetExecutor(
                     entityName = tokenCard.name,
                     fromZone = null,
                     toZone = Zone.BATTLEFIELD,
-                    ownerId = controllerId
+                    ownerId = controllerId,
+                    oldObject = null,
+                    newObject = newState.objectRef(tokenId)
                 )
             )
 
@@ -402,6 +404,7 @@ class CreateTokenCopyOfTargetExecutor(
                     effect = SacrificeTargetEffect(EffectTarget.SpecificEntity(tokenId)),
                     fireAtStep = sacrificeStep,
                     sourceId = sourceId,
+                    objectReferences = context.objectReferences,
                     sourceName = sourceName,
                     controllerId = controllerId,
                     // "sacrifice at the beginning of your next end step" → gate the firing step
@@ -439,6 +442,7 @@ class CreateTokenCopyOfTargetExecutor(
                     effect = delayedEffect,
                     fireAtStep = exileStep,
                     sourceId = sourceId,
+                    objectReferences = context.objectReferences,
                     sourceName = sourceName,
                     controllerId = controllerId
                 )

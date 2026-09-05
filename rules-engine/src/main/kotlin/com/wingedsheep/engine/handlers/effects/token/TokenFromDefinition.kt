@@ -242,7 +242,9 @@ object TokenFromDefinition {
             entityName = cardDef.name,
             fromZone = null,
             toZone = Zone.BATTLEFIELD,
-            ownerId = controllerId
+            ownerId = controllerId,
+            oldObject = null,
+            newObject = newState.objectRef(tokenId)
         )
 
         return EffectResult.success(

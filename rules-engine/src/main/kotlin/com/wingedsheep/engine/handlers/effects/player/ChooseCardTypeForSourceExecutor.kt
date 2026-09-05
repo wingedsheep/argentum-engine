@@ -44,7 +44,7 @@ class ChooseCardTypeForSourceExecutor : EffectExecutor<ChooseCardTypeForSourceEf
         context: EffectContext
     ): EffectResult {
         val sourceId = context.sourceId ?: return EffectResult.success(state)
-        val source = state.getEntity(sourceId) ?: return EffectResult.success(state)
+        val source = state.getEntity(sourceId)
 
         val options = effect.allowedCardTypes ?: allCardTypes
         if (options.isEmpty()) return EffectResult.success(state)
@@ -56,9 +56,9 @@ class ChooseCardTypeForSourceExecutor : EffectExecutor<ChooseCardTypeForSourceEf
 
         // Sole allowed type → forced choice, no prompt.
         if (options.size == 1) {
-            val newState = baseState.updateEntity(sourceId) { container ->
+            val newState = if (source != null && context.objectReferences.isCurrent(context.objectReferences.source, baseState)) baseState.updateEntity(sourceId) { container ->
                 container.withCastChoice(effect.slot, ChoiceValue.TextChoice(options.single()))
-            }
+            } else baseState
             return EffectResult.success(newState, lookEvents)
         }
 
@@ -69,7 +69,7 @@ class ChooseCardTypeForSourceExecutor : EffectExecutor<ChooseCardTypeForSourceEf
             prompt = effect.prompt,
             context = DecisionContext(
                 sourceId = sourceId,
-                sourceName = source.get<CardComponent>()?.name ?: "Unknown",
+                sourceName = source?.get<CardComponent>()?.name ?: "Unknown",
                 phase = DecisionPhase.RESOLUTION
             ),
             options = options
@@ -77,6 +77,7 @@ class ChooseCardTypeForSourceExecutor : EffectExecutor<ChooseCardTypeForSourceEf
         val continuation = ChooseCardTypeForSourceContinuation(
             decisionId = decisionId,
             sourceId = sourceId,
+            objectReferences = context.objectReferences,
             controllerId = context.controllerId,
             slot = effect.slot,
             cardTypes = options

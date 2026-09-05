@@ -60,6 +60,7 @@ class DrawReplacementContinuationResumer(
             val effectContext = EffectContext(
                 controllerId = playerId,
                 sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
                 targets = emptyList()
             )
             val effectResult = services.effectExecutorRegistry.execute(

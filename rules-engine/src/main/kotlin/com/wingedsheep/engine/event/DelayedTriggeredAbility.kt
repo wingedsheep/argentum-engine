@@ -89,5 +89,6 @@ data class DelayedTriggeredAbility(
      * [com.wingedsheep.engine.handlers.effects.composite.CreateDelayedTriggerExecutor] from
      * [com.wingedsheep.sdk.scripting.effects.CreateDelayedTriggerEffect.fireOnPlayer].
      */
-    val fireOnPlayerId: EntityId? = null
+    val fireOnPlayerId: EntityId? = null,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment()
 )

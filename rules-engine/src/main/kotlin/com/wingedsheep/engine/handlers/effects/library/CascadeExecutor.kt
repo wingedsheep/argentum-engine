@@ -133,6 +133,7 @@ class CascadeExecutor(
             decisionId = pendingDecision.id,
             playerId = controllerId,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             exiledCards = exiledCards.toList(),
             cascadeCardId = cascadeCard
         )

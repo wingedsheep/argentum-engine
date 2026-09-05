@@ -508,7 +508,8 @@ object Emitter {
 
     private fun incomplete(ctx: EmitCtx, pre: List<String>, header: String, body: List<Stmt>, scryfall: JsonObject?, pkg: String): RenderResult {
         val b = body.toMutableList()
-        b.add(RawLine("    // STRUCTURE needs human wiring: ${ctx.reasons.sorted().joinToString(", ")}"))
+        val reasonText = ctx.reasons.sorted().joinToString(", ").ifEmpty { "unsupported card structure" }
+        b.add(RawLine("    // STRUCTURE needs human wiring: $reasonText"))
         b.addAll(metadataLines(scryfall).map { RawLine(it) })
         return RenderResult(assemble(pre + renderBlock(Block(header, b)), pkg, complete = false), false, ctx.reasons)
     }

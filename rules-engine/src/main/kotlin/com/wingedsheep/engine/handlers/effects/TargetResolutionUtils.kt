@@ -33,14 +33,14 @@ object TargetResolutionUtils {
      */
     fun resolveTarget(effectTarget: EffectTarget, context: EffectContext): EntityId? {
         return when (effectTarget) {
-            is EffectTarget.Self -> context.pipeline.iterationTarget
-                ?: context.sourceId?.takeUnless { context.sourceReferenceLost }
+            is EffectTarget.Self -> (context.pipeline.iterationTarget ?: context.objectReferences.selfBinding?.entityId ?: context.sourceId)
+                ?.takeUnless { context.sourceReferenceLost }
             is EffectTarget.GrantingSource -> context.granterId
             is EffectTarget.Controller -> context.controllerId
             is EffectTarget.ContextTarget -> context.positionalTarget(effectTarget.index)?.toEntityId()
             is EffectTarget.BoundVariable -> context.pipeline.namedTargets[effectTarget.name]?.toEntityId()
             is EffectTarget.SpecificEntity -> effectTarget.entityId
-            is EffectTarget.TriggeringEntity -> context.triggeringEntityId
+            is EffectTarget.TriggeringEntity -> context.triggeringEntityId?.takeUnless { context.triggeringReferenceLost }
             is EffectTarget.DiscardedAsCost ->
                 context.discardedAsCostCards.getOrNull(effectTarget.index)
             is EffectTarget.TappedAsCost ->
@@ -56,6 +56,10 @@ object TargetResolutionUtils {
      * that need to look up attachment relationships).
      */
     fun resolveTarget(effectTarget: EffectTarget, context: EffectContext, state: GameState): EntityId? {
+        if (effectTarget == EffectTarget.Self && !context.objectReferences.isSelfCurrent(state)) return null
+        if (effectTarget == EffectTarget.TriggeringEntity && context.triggeringEntityId !in state.turnOrder &&
+            !context.objectReferences.isCurrent(context.objectReferences.triggering, state)) return null
+
         if (effectTarget is EffectTarget.EnchantedCreature ||
             effectTarget is EffectTarget.EquippedCreature ||
             effectTarget is EffectTarget.EnchantedPermanent
@@ -79,6 +83,9 @@ object TargetResolutionUtils {
             return controllerOf(state, targetEntity)
         }
         if (effectTarget is EffectTarget.ControllerOfTriggeringEntity) {
+            if (!context.objectReferences.isCurrent(context.objectReferences.triggering, state)) {
+                return context.triggeringPlayerId
+            }
             val triggerId = context.triggeringEntityId ?: return null
             val entity = state.getEntity(triggerId) ?: return null
             state.projectedState.getController(triggerId)?.let { return it }
@@ -186,7 +193,7 @@ object TargetResolutionUtils {
             Player.Candidate -> context.candidatePlayerId
             Player.AnOpponent -> state.getOpponents(context.controllerId).firstOrNull()
             Player.DefendingPlayer -> resolveDefendingPlayer(context, state)
-            Player.ChosenOpponent -> context.sourceId?.let { state.getEntity(it)?.chosenOpponent() }
+            Player.ChosenOpponent -> context.chosenOpponent(state)
             Player.EnchantedPlayer -> enchantedPlayer(context, state)
             is Player.OwnerOf -> context.targets.firstOrNull()?.toEntityId()
                 ?.let { state.getEntity(it)?.get<CardComponent>()?.ownerId }

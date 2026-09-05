@@ -792,3 +792,9 @@ npm run preview
 - Spectator mode
 - Sound effects
 - Mobile touch support
+
+
+Battlefield activation menus follow the server's legal actions even on an opponent's row. An
+`ActivateAbility` naming a displayed source makes that permanent (or visible attachment) clickable;
+spectator mode remains read-only. Ownership does not override a server-granted activation, and the
+existing targeting and combat interactions still take precedence over opening the menu.

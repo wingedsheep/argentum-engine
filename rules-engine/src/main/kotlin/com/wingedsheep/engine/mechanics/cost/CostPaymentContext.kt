@@ -24,6 +24,7 @@ import com.wingedsheep.sdk.scripting.effects.Effect
  *   cards gathered earlier in the same resolution.
  */
 data class CostPaymentContext(
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val onPaid: Effect? = null,
     val onDeclined: Effect? = null,
     val targets: List<ChosenTarget> = emptyList(),

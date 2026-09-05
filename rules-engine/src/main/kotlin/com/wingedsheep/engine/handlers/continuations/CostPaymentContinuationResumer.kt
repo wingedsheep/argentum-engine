@@ -285,7 +285,7 @@ class CostPaymentContinuationResumer(
     ): ExecutionResult {
         if (followup == null) return checkForMore(state, priorEvents)
         val result = services.effectExecutorRegistry
-            .execute(state, followup, effectContext(state, continuation))
+            .execute(state, followup, effectContext(state, continuation).authorizeObjectMoves(priorEvents))
             .toExecutionResult()
         val allEvents = priorEvents + result.events
         return if (result.isPaused) {
@@ -298,6 +298,7 @@ class CostPaymentContinuationResumer(
     private fun effectContext(state: GameState, continuation: CostPaymentContinuation): EffectContext =
         EffectContext(
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
             controllerId = continuation.payerId,
             targets = continuation.targets,
             pipeline = PipelineState(
@@ -308,6 +309,7 @@ class CostPaymentContinuationResumer(
 
     private fun contextOf(continuation: CostPaymentContinuation): CostPaymentContext =
         CostPaymentContext(
+            objectReferences = continuation.objectReferences,
             onPaid = continuation.onPaid,
             onDeclined = continuation.onDeclined,
             targets = continuation.targets,

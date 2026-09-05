@@ -165,7 +165,9 @@ class CreatePredefinedTokenExecutor(
                 entityName = effect.tokenType,
                 fromZone = null,
                 toZone = Zone.BATTLEFIELD,
-                ownerId = tokenControllerId
+                ownerId = tokenControllerId,
+                oldObject = null,
+                newObject = newState.objectRef(tokenId)
             )
         }.toMutableList<com.wingedsheep.engine.core.GameEvent>()
 

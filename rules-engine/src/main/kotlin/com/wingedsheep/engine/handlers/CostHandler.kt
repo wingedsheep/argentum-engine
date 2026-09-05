@@ -1523,6 +1523,7 @@ class CostHandler {
             val owner = ownerOf.getValue(cardId)
             val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Card"
             newState = newState.removeFromZone(ZoneKey(owner, fromZone), cardId)
+            val oldObjectRef = newState.objectRef(cardId)
             newState = newState.addToZone(ZoneKey(owner, Zone.EXILE), cardId)
             events.add(
                 ZoneChangeEvent(
@@ -1530,7 +1531,9 @@ class CostHandler {
                     entityName = cardName,
                     fromZone = fromZone,
                     toZone = Zone.EXILE,
-                    ownerId = owner
+                    ownerId = owner,
+                    oldObject = oldObjectRef,
+                    newObject = newState.objectRef(cardId)
                 )
             )
         }

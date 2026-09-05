@@ -161,7 +161,9 @@ class ReturnOneFromLinkedExileExecutor : EffectExecutor<ReturnOneFromLinkedExile
                     entityName = cardComponent.name,
                     fromZone = Zone.EXILE,
                     toZone = Zone.BATTLEFIELD,
-                    ownerId = ownerId
+                    ownerId = ownerId,
+                    oldObject = state.objectRef(cardId),
+                    newObject = newState.objectRef(cardId)
                 )
             )
 

@@ -201,7 +201,9 @@ class CreateTokenCopyOfSourceExecutor(
                     entityName = tokenCard.name,
                     fromZone = null,
                     toZone = Zone.BATTLEFIELD,
-                    ownerId = controllerId
+                    ownerId = controllerId,
+                    oldObject = null,
+                    newObject = newState.objectRef(tokenId)
                 )
             )
             createdTokens.add(tokenId)
@@ -216,6 +218,7 @@ class CreateTokenCopyOfSourceExecutor(
                         effect = MoveToZoneEffect(EffectTarget.SpecificEntity(tokenId), Zone.EXILE),
                         fireAtStep = exileStep,
                         sourceId = sourceId,
+                        objectReferences = context.objectReferences,
                         sourceName = sourceCard.name,
                         controllerId = controllerId
                     )

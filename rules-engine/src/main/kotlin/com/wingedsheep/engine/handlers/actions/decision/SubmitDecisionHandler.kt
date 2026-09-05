@@ -119,7 +119,7 @@ class SubmitDecisionHandler(
                 }
 
                 val preSbaStackSize = result.state.continuationStack.size
-                val sbaResult = sbaChecker.checkAndApply(result.state)
+                val sbaResult = sbaChecker.checkAndApply(result.state, preSbaTriggers.mapNotNull { it.objectReferences.origin }.toSet())
 
                 // If SBA needs player input (e.g., legend rule), return paused — but first queue
                 // preSbaTriggers beneath the SBA's continuation frames so they fire after the SBA

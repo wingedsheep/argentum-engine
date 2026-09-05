@@ -188,6 +188,7 @@ class CrewVehicleHandler(
         // Put the crew ability on the stack
         val abilityOnStack = ActivatedAbilityOnStackComponent(
             sourceId = action.vehicleId,
+            objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true, origin = state.objectRef(action.vehicleId), source = state.objectRef(action.vehicleId)),
             sourceName = vehicleCard.name,
             controllerId = action.playerId,
             effect = crewEffect

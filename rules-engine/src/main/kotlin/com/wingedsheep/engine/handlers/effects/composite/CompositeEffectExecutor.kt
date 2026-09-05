@@ -102,6 +102,7 @@ class CompositeEffectExecutor(
                 result.state
             }
             allEvents.addAll(result.events)
+            currentContext = currentContext.authorizeObjectMoves(result.events)
 
             // Merge any updated collections / subtype groups / stored numbers / chosen values from the sub-effect into the context
             if (result.updatedCollections.isNotEmpty() ||

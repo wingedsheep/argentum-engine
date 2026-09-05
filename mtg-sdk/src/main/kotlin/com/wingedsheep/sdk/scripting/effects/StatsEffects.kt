@@ -197,3 +197,14 @@ data class SetBaseStatsEffect(
             copy(power = newPower, toughness = newToughness) else this
     }
 }
+
+/** Switch power and toughness after all other stat changes, for the chosen duration. */
+@SerialName("SwitchPowerToughness")
+@Serializable
+data class SwitchPowerToughnessEffect(
+    val target: EffectTarget,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = "Switch ${target.description}'s power and toughness" +
+        if (duration.description.isNotEmpty()) " ${duration.description}" else ""
+}

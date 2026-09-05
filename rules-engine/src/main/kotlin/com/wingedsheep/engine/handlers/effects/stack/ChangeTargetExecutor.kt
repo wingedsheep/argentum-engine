@@ -102,7 +102,8 @@ class ChangeTargetExecutor : EffectExecutor<ChangeTargetEffect> {
         val continuation = ChangeSpellTargetContinuation(
             decisionId = decisionResult.pendingDecision!!.id,
             spellEntityId = targetSpell.spellEntityId,
-            sourceId = context.sourceId
+            sourceId = context.sourceId,
+            objectReferences = context.objectReferences
         )
 
         val stateWithContinuation = decisionResult.state.pushContinuation(continuation)

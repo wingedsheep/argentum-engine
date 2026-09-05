@@ -787,7 +787,7 @@ val BedlamReveler = card("Bedlam Reveler") {
     power = 3
     toughness = 4
     prowess()
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "142"
@@ -1820,7 +1820,7 @@ val CobbledLancer = card("Cobbled Lancer") {
     oracleText = "As an additional cost to cast this spell, exile a creature card from your graveyard.\n{3}{U}, Exile this card from your graveyard: Draw a card."
     power = 3
     toughness = 3
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "56"
@@ -2564,7 +2564,7 @@ val DemonmailHauberk = card("Demonmail Hauberk") {
     staticAbility {
         ability = ModifyStats(4, 2)
     }
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "261"
@@ -2916,7 +2916,7 @@ val EatenAlive = card("Eaten Alive") {
     colorIdentity = "B"
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, sacrifice a creature or pay {3}{B}.\nExile target creature or planeswalker."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "106"
@@ -3150,7 +3150,7 @@ val EmrakulThePromisedEnd = card("Emrakul, the Promised End") {
     power = 13
     toughness = 13
     keywords(Keyword.FLYING, Keyword.TRAMPLE)
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "5"
@@ -4036,7 +4036,7 @@ val Ghoultree = card("Ghoultree") {
     oracleText = "This spell costs {1} less to cast for each creature card in your graveyard."
     power = 10
     toughness = 10
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "198"
@@ -5724,7 +5724,7 @@ val LightningAxe = card("Lightning Axe") {
     colorIdentity = "R"
     typeLine = "Instant"
     oracleText = "As an additional cost to cast this spell, discard a card or pay {5}.\nLightning Axe deals 5 damage to target creature."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "162"
@@ -6022,7 +6022,7 @@ val MakeshiftMauler = card("Makeshift Mauler") {
     oracleText = "As an additional cost to cast this spell, exile a creature card from your graveyard."
     power = 4
     toughness = 5
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "73"
@@ -10030,7 +10030,7 @@ val VanquishTheHorde = card("Vanquish the Horde") {
     colorIdentity = "W"
     typeLine = "Sorcery"
     oracleText = "This spell costs {1} less to cast for each creature on the battlefield.\nDestroy all creatures."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "49"

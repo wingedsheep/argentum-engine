@@ -407,9 +407,11 @@ class StackResolver(
             }
         }
 
+        val objectBeforeCast = state.objectRef(cardId)
         // Push to stack and reset priority passes (new stack item requires fresh round of passes)
         newState = newState.pushToStack(cardId)
             .copy(priorityPassedBy = emptySet())
+        val objectOnStack = newState.objectRef(cardId)
 
         // Consume one-shot free-cast permissions used to play this spell. If the
         // spell is later countered or fizzles and AfterResolveDestinationComponent sends
@@ -515,6 +517,8 @@ class StackResolver(
         val reportedChosenModesCount = if (countsAsModalForTriggers) chosenModes.size else 0
 
         val events = mutableListOf<GameEvent>(
+            ZoneChangeEvent(cardId, eventName, castFromZone, Zone.STACK, cardComponent.ownerId ?: casterId,
+                oldObject = objectBeforeCast, newObject = objectOnStack),
             SpellCastEvent(
                 spellEntityId = cardId,
                 cardName = eventName,
@@ -1026,18 +1030,7 @@ class StackResolver(
             // that lands a permanent face down is covered, not only a face-down cast.
             val permanentName = nameVisibleToAll(newState, spellId, cardComponent?.name ?: "Unknown")
             events.add(ResolvedEvent(spellId, permanentName))
-            events.add(
-                ZoneChangeEvent(
-                    spellId,
-                    permanentName,
-                    null, // Was on stack
-                    Zone.BATTLEFIELD,
-                    cardComponent?.ownerId ?: spellComponent.casterId,
-                    xValue = spellComponent.xValue,
-                    enteredBattlefieldTimestamp = newState.getEntity(spellId)
-                        ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp
-                )
-            )
+
         } else {
             // Execute effects and put in graveyard
             val effectResult = resolveNonPermanentSpell(
@@ -1046,10 +1039,8 @@ class StackResolver(
                 alignedResolvedTargets
             )
             if (effectResult.isPaused) {
-                // Effect paused for a decision (e.g., draw replacement prompt).
-                // resolveNonPermanentSpell already moved spell to graveyard.
-                val allEvents = events + effectResult.events +
-                    ResolvedEvent(spellId, cardComponent?.name ?: "Unknown")
+                // The spell remains on the stack until its final continuation completes.
+                val allEvents = events + effectResult.events
                 return ExecutionResult.paused(
                     effectResult.state,
                     effectResult.pendingDecision!!,
@@ -1711,6 +1702,8 @@ class StackResolver(
                         ),
                         fireAtStep = sacrificeStep,
                         sourceId = spellId,
+                        objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true,
+                            origin = newState.objectRef(spellId), source = newState.objectRef(spellId)),
                         sourceName = sourceName,
                         controllerId = controllerId,
                         fireOnPlayerId = if (copyRiders.sacrificeOnlyOnControllersTurn) controllerId else null
@@ -1949,6 +1942,8 @@ class StackResolver(
                 ),
                 fireAtStep = Step.END,
                 sourceId = spellId,
+                        objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true,
+                            origin = newState.objectRef(spellId), source = newState.objectRef(spellId)),
                 sourceName = cardComponent?.name ?: "Unknown",
                 controllerId = controllerId
             )
@@ -1970,6 +1965,8 @@ class StackResolver(
                 ),
                 fireAtStep = Step.END,
                 sourceId = spellId,
+                        objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true,
+                            origin = newState.objectRef(spellId), source = newState.objectRef(spellId)),
                 sourceName = cardComponent?.name ?: "Unknown",
                 controllerId = controllerId
             )
@@ -1989,6 +1986,15 @@ class StackResolver(
             newState = PreparationLogic.makePrepared(newState, spellId, cardDef, controllerId)
         }
 
+        // Entry precedes the counters placed on that battlefield object.
+        counterEvents.add(0, ZoneChangeEvent(
+            spellId, nameVisibleToAll(newState, spellId, cardComponent?.name ?: "Unknown"),
+            Zone.STACK, Zone.BATTLEFIELD, cardComponent?.ownerId ?: controllerId,
+            xValue = spellComponent.xValue,
+            enteredBattlefieldTimestamp = newState.getEntity(spellId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp,
+            oldObject = state.objectRef(spellId), newObject = newState.objectRef(spellId),
+        ))
         return newState to counterEvents
     }
 
@@ -2043,6 +2049,8 @@ class StackResolver(
             fireOnPlayerId = casterId,
             notBeforeTurn = state.turnNumber + 1,
             sourceId = exiledCardId,
+            objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true,
+                origin = state.objectRef(exiledCardId), source = state.objectRef(exiledCardId)),
             sourceName = sourceName,
             controllerId = casterId,
         )
@@ -2063,7 +2071,9 @@ class StackResolver(
         // rather than shifting onto a later still-valid target.
         alignedTargets: List<ChosenTarget?> = targets,
     ): ExecutionResult {
-        var newState = state
+        // resolveTop removed the item from the priority stack; a resolving spell itself
+        // remains a stack object until its effects finish, below any spell those effects cast.
+        var newState = if (spellId !in state.stack) state.copy(stack = state.stack + spellId) else state
         val events = mutableListOf<GameEvent>()
 
         // Execute the spell effect if present, applying text replacement if the spell
@@ -2123,6 +2133,10 @@ class StackResolver(
                 if (splicedSlotCount == 0) targets else mainAlignedTargets.filterNotNull()
             val context = EffectContext(
                 sourceId = spellId,
+                objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(
+                    captured = true, origin = state.objectRef(spellId), source = state.objectRef(spellId),
+                    resolutionKey = "$spellId:${state.objectRef(spellId)?.generation}",
+                ),
                 controllerId = spellComponent.casterId,
                 targets = mainTargets,
                 // Position-preserving view (null in slots dropped by 608.2b) so positional
@@ -2166,6 +2180,14 @@ class StackResolver(
                 )
             )
 
+            val finishing = FinishResolvingSpellContinuation(
+                decisionId = "finish-spell-${java.util.UUID.randomUUID()}",
+                spellObject = state.objectRef(spellId)!!,
+                spellComponent = spellComponent,
+                cardComponent = cardComponent,
+            )
+            newState = newState.pushContinuation(finishing)
+
             // Pre-push the splice tail so it runs whether the main spell's effect finishes here or
             // pauses for a decision of its own — the frame sits beneath the inner decision's frames
             // and auto-resumes once they finish (CR 702.47b: main spell first, then the spliced text).
@@ -2176,7 +2198,8 @@ class StackResolver(
                         controllerId = spellComponent.casterId,
                         sourceId = spellId,
                         sourceName = cardComponent?.name,
-                        remainingEntries = spliceEntries
+                        remainingEntries = spliceEntries,
+                        objectReferences = context.objectReferences
                     )
                 )
             } else newState
@@ -2195,7 +2218,8 @@ class StackResolver(
                         sourceId = spellId,
                         sourceName = cardComponent?.name,
                         xValue = null,
-                        triggeringEntityId = null
+                        triggeringEntityId = null,
+                        objectReferences = context.objectReferences.authorize(effectResult.events)
                     ),
                     effectExecutor = { s, e, c -> effectHandler.execute(s, e, c) },
                     targetValidator = spliceTargetValidator,
@@ -2204,184 +2228,47 @@ class StackResolver(
                 effectResult = tail
             }
 
-            // If effect is paused awaiting a decision, we still need to move the spell
-            // to graveyard/exile (it has already resolved from the stack). The decision only
-            // determines how the effect completes.
             if (effectResult.isPaused) {
-                val pausedIsCopy = effectResult.state.getEntity(spellId)?.has<CopyOfComponent>() == true
-                if (pausedIsCopy) {
-                    // Rule 112.3b — copies cease to exist when they leave the stack.
-                    val pausedState = effectResult.state.removeEntity(spellId)
-                    return ExecutionResult.paused(
-                        pausedState,
-                        effectResult.pendingDecision!!,
-                        events + effectResult.events
-                    )
-                }
-
-                val ownerId = cardComponent?.ownerId ?: spellComponent.casterId
-                val pausedCardDef = cardComponent?.let { cardRegistry.getCard(it.name) }
-                // For a cast face (Adventure / modal DFC), "Exile <name>." lives on the face's script.
-                val pausedResolvedScript = spellComponent.faceIndex?.let { pausedCardDef?.cardFaces?.getOrNull(it)?.script }
-                    ?: pausedCardDef?.script
-
-                // Esper Origins: a graveyard-cast that returns itself to the battlefield transformed
-                // does so even when its resolution paused mid-way (e.g. the Surveil earlier in the
-                // same resolution). The card leaves the stack and enters transformed now; the paused
-                // continuation still resolves the remaining effects. Precedence over flashback exile.
-                val pausedReturnTransformed = pausedResolvedScript?.returnTransformedFromGraveyardOnResolve
-                if (pausedReturnTransformed != null && spellComponent.castFromZone == Zone.GRAVEYARD) {
-                    val transformEvents = mutableListOf<GameEvent>()
-                    val transformed = resolveSelfToBattlefieldTransformed(
-                        effectResult.state, spellId, pausedReturnTransformed.counters, transformEvents
-                    )
-                    if (transformed != null) {
-                        return ExecutionResult.paused(
-                            transformed,
-                            effectResult.pendingDecision!!,
-                            events + effectResult.events + transformEvents
-                        )
-                    }
-                }
-
-                val pausedSelfExile = pausedResolvedScript?.selfExileOnResolve == true
-                // Flashback (printed or granted — Archmage's Newt) or Harmonize (printed or granted
-                // — Songcrafter Mage): a graveyard cast exiles on resolution instead of returning
-                // to the graveyard.
-                val pausedFlashbackExile = spellComponent.castFromZone == Zone.GRAVEYARD &&
-                    (FlashbackGrants.effectiveFlashback(
-                        state, spellId, pausedCardDef, spellComponent.casterId, cardRegistry, predicateEvaluator
-                    ) != null ||
-                        HarmonizeGrants.effectiveHarmonize(state, spellId, pausedCardDef) != null)
-                val pausedExileAfterResolveComp = effectResult.state.getEntity(spellId)?.get<AfterResolveDestinationComponent>()
-                val pausedAdventureFaceExile = pausedCardDef?.layout == com.wingedsheep.sdk.model.CardLayout.ADVENTURE &&
-                    spellComponent.faceIndex != null
-                val pausedOmenFaceShuffle = pausedCardDef?.layout == com.wingedsheep.sdk.model.CardLayout.OMEN &&
-                    spellComponent.faceIndex != null
-                // "Shuffle <name> into its owner's library." printed on the card itself (the
-                // Mirrodin Besieged Zenith cycle). Same seam as pausedSelfExile — it replaces the
-                // CR 608.2n destination — but lands in the library shuffled rather than in exile.
-                val pausedSelfShuffleIntoLibrary = pausedResolvedScript?.selfShuffleIntoLibraryOnResolve == true
-                val pausedReboundExile = spellComponent.castFromZone == Zone.HAND &&
-                    spellHasRebound(effectResult.state, spellId, pausedCardDef)
-                // See the resolved twin below for why this isn't a plain priority order.
-                val pausedIntended = when {
-                    // The cast-this-way rider is the most specific instruction on this one spell,
-                    // so it outranks the card-intrinsic exile reasons below rather than being
-                    // OR'd into them — it is the only one that can name a zone other than exile.
-                    // It replaces "would be put into a graveyard", though (Kylox's Voltstrider),
-                    // and a spell that shuffles itself into its owner's library never would be —
-                    // hence the guard, which hands that case to the printed clause below.
-                    pausedExileAfterResolveComp != null && !pausedSelfShuffleIntoLibrary ->
-                        pausedExileAfterResolveComp.zone
-                    // Flashback (CR 702.34a) and harmonize (CR 702.180a) are the two replacements
-                    // here worded "instead of putting it anywhere else any time it would leave the
-                    // stack" rather than naming the graveyard, so they outrank even the printed
-                    // clause: a flashbacked spell that shuffles itself in is exiled instead.
-                    pausedFlashbackExile -> Zone.EXILE
-                    pausedSelfShuffleIntoLibrary -> Zone.LIBRARY
-                    pausedSelfExile || pausedAdventureFaceExile || pausedReboundExile -> Zone.EXILE
-                    pausedOmenFaceShuffle -> Zone.LIBRARY
-                    else -> Zone.GRAVEYARD
-                }
-
-                // Apply RedirectZoneChange replacement effects (e.g., Festival of Embers).
-                val pausedRedirect = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.checkZoneChangeRedirect(
-                    effectResult.state, spellId, Zone.STACK, pausedIntended
-                )
-                val pausedDestZone = pausedRedirect.destinationZone
-                val pausedDestZoneKey = ZoneKey(ownerId, pausedDestZone)
-
-                // Move spell to graveyard/exile even though effect is paused
-                var pausedState = effectResult.state.updateEntity(spellId) { c ->
-                    c.without<SpellOnStackComponent>().without<TargetsComponent>()
-                }
-                pausedState = pausedState.addToZone(pausedDestZoneKey, spellId)
-
-                // Paradigm: tag the just-exiled spell even when its effect paused mid-resolution.
-                if (pausedDestZone == Zone.EXILE && pausedResolvedScript?.paradigm == true) {
-                    pausedState = pausedState.updateEntity(spellId) { c ->
-                        c.with(com.wingedsheep.engine.state.components.battlefield.ParadigmComponent)
-                    }
-                }
-
-                // Rebound: arm the next-upkeep free recast even when the effect paused mid-resolution.
-                if (pausedReboundExile && pausedDestZone == Zone.EXILE) {
-                    pausedState = scheduleReboundRecast(
-                        pausedState, spellId, spellComponent.casterId, cardComponent?.name ?: "Unknown"
-                    )
-                }
-
-                // Link an opponent's resolving spell exiled by a RedirectZoneChange(linkToSource)
-                // replacement (Valgavoth) even when the effect paused mid-resolution.
-                if (pausedDestZone == Zone.EXILE && pausedRedirect.linkSourceId != null) {
-                    pausedState = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
-                        .linkExiledToSource(pausedState, spellId, pausedRedirect.linkSourceId)
-                }
-
-                // CR 715.3d — Adventure exiled by its own resolution: re-grant cast-from-exile.
-                if (pausedAdventureFaceExile && pausedDestZone == Zone.EXILE) {
-                    val (permId, stateWithPerm) = pausedState.newEntity()
-                    pausedState = stateWithPerm.addMayPlayPermission(
-                        com.wingedsheep.engine.state.permissions.MayPlayPermission(
-                            id = permId,
-                            cardIds = setOf(spellId),
-                            controllerId = spellComponent.casterId,
-                            permanent = true,
-                            timestamp = state.timestamp,
-                        )
-                    )
-                }
-
-                val pausedCounterEvents = mutableListOf<GameEvent>()
-                if (pausedDestZone == Zone.EXILE && pausedExileAfterResolveComp != null && pausedExileAfterResolveComp.withCounters.isNotEmpty()) {
-                    pausedState = applyExileCounters(pausedState, spellId, pausedExileAfterResolveComp.withCounters, pausedCounterEvents)
-                }
-
-                // Omen (Tarkir: Dragonstorm), and the Zenith cycle's printed "Shuffle <name> into
-                // its owner's library.": shuffle the just-added card into its owner's library.
-                // Gated on the *final* destination for the same two reasons as the resolved twin —
-                // a RedirectZoneChange may have sent the card elsewhere, and
-                // AfterResolveDestination.BOTTOM_OF_LIBRARY also lands in Zone.LIBRARY but must
-                // not shuffle.
-                if ((pausedOmenFaceShuffle || pausedSelfShuffleIntoLibrary) && pausedDestZone == Zone.LIBRARY) {
-                    pausedState = shuffleOwnerLibrary(pausedState, ownerId)
-                    pausedCounterEvents.add(LibraryShuffledEvent(ownerId))
-                }
-
-                pausedRedirect.additionalEffect?.let { extra ->
-                    val (updatedState, extraEvents) = com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.applyReplacementAdditionalEffect(
-                        pausedState, extra, pausedRedirect.effectControllerId, spellId,
-                        sourceId = pausedRedirect.effectSourceId
-                    )
-                    pausedState = updatedState
-                    pausedCounterEvents.addAll(extraEvents)
-                }
-
-                // Include the zone change event along with effect events
-                val allEvents = events + effectResult.events + ZoneChangeEvent(
-                    spellId,
-                    cardComponent?.name ?: "Unknown",
-                    null,
-                    pausedDestZone,
-                    ownerId
-                ) + pausedCounterEvents
-
-                return ExecutionResult.paused(
-                    pausedState,
-                    effectResult.pendingDecision!!,
-                    allEvents
-                )
+                // The finalizer is below all effect and splice frames; no zone change yet.
+                return ExecutionResult.paused(effectResult.state, effectResult.pendingDecision!!,
+                    events + effectResult.events)
             }
 
             // Always apply state changes from effect execution, even on partial
             // failure. Per MTG rules, when a spell resolves, you do as much as
             // possible. Partial state changes (e.g., first target destroyed but
             // second target missing) should be preserved.
-            newState = effectResult.newState
+            newState = effectResult.newState.copy(continuationStack = effectResult.newState.continuationStack
+                .filterNot { it.decisionId == finishing.decisionId })
             events.addAll(effectResult.events)
         }
 
+        val completed = if (state.objectRef(spellId)?.let(newState::isCurrentObject) == true)
+            finishNonPermanentSpell(newState, spellId, spellComponent, cardComponent)
+        else ExecutionResult.success(newState)
+        return completed.copy(events = events + completed.events)
+    }
+
+    /** Finish only the captured resolving spell, never a later visit of the same card. */
+    fun finishResolvingSpell(state: GameState, continuation: FinishResolvingSpellContinuation): ExecutionResult {
+        val result = if (state.isCurrentObject(continuation.spellObject) &&
+            state.logicalZone(continuation.spellObject.entityId)?.zoneType == Zone.STACK
+        ) finishNonPermanentSpell(state, continuation.spellObject.entityId,
+            continuation.spellComponent, continuation.cardComponent)
+        else ExecutionResult.success(state)
+        return result.copy(events = result.events + ResolvedEvent(continuation.spellObject.entityId,
+            continuation.cardComponent?.name ?: "Unknown"))
+    }
+
+    private fun finishNonPermanentSpell(
+        state: GameState,
+        spellId: EntityId,
+        spellComponent: SpellOnStackComponent,
+        cardComponent: CardComponent?,
+    ): ExecutionResult {
+        if (state.logicalZone(spellId)?.zoneType != Zone.STACK) return ExecutionResult.success(state)
+        var newState = if (spellId in state.stack) state.copy(stack = state.stack.filterNot { it == spellId }) else state
+        val events = mutableListOf<GameEvent>()
         // Rule 112.3b: a copy of a spell ceases to exist when it leaves the stack —
         // it does not go to a graveyard or exile.
         val isCopy = newState.getEntity(spellId)?.has<CopyOfComponent>() == true
@@ -2485,6 +2372,7 @@ class StackResolver(
         }
         newState = newState.removeMayPlayPermissionsForCard(spellId)
         newState = newState.addToZone(destZoneKey, spellId)
+        val destinationObject = newState.objectRef(spellId)
 
         // Paradigm (Secrets of Strixhaven): tag the just-exiled spell so the engine synthesizes its
         // recurring precombat-main free-recast ability (Paradigm.recastAbility). The marker is the
@@ -2575,9 +2463,9 @@ class StackResolver(
             ZoneChangeEvent(
                 spellId,
                 cardComponent?.name ?: "Unknown",
-                null,
+                Zone.STACK,
                 destinationZone,
-                ownerId
+                ownerId, oldObject = state.objectRef(spellId), newObject = destinationObject
             )
         )
 
@@ -2745,6 +2633,7 @@ class StackResolver(
             c.without<SpellOnStackComponent>().without<TargetsComponent>()
         }
         newState = newState.addToZone(destZoneKey, spellId)
+        val destinationObject = newState.objectRef(spellId)
         // A card-intrinsic redirect into the library shuffles the card in (Progenitus).
         if (destZone == Zone.LIBRARY && fizzleRedirect.shuffleIntoLibrary) {
             newState = shuffleOwnerLibrary(newState, ownerId)
@@ -2761,9 +2650,9 @@ class StackResolver(
                 ZoneChangeEvent(
                     spellId,
                     cardComponent?.name ?: "Unknown",
-                    null,
+                    Zone.STACK,
                     destZone,
-                    ownerId
+                    ownerId, oldObject = state.objectRef(spellId), newObject = destinationObject
                 )
             )
         )
@@ -2790,7 +2679,7 @@ class StackResolver(
             abilityComponent,
             targets = resolvedTargets2,
             targetRequirements = targetReqs
-        ).forAbilityResolution(state)
+        ).forAbilityResolution(state, abilityId)
 
         // CR 608.2a, then CR 608.2b — in that lettered order. 608.2a: "If a triggered ability has
         // an intervening 'if' clause, it checks whether the clause's condition is true. If it
@@ -2958,6 +2847,7 @@ class StackResolver(
             activatedAbility = abilityComponent.activatedAbility,
             sourceFaceChanges = abilityComponent.sourceFaceChanges,
             sourceBattlefieldTimestamp = abilityComponent.sourceBattlefieldTimestamp,
+            objectReferences = abilityComponent.objectReferences,
             targets = activatedTargets,
             alignedTargets = alignedActivatedTargets,
             sacrificedPermanents = abilityComponent.sacrificedPermanents,
@@ -2978,7 +2868,7 @@ class StackResolver(
                     ?.let { mapOf(ChooseCreatureTypePipelineExecutor.CHOSEN_CREATURE_TYPE_KEY to it) }
                     ?: emptyMap()
             )
-        ).forAbilityResolution(state)
+        ).forAbilityResolution(state, abilityId)
 
         val effectResult = effectHandler.execute(state, abilityComponent.effect, context)
 
@@ -3111,6 +3001,7 @@ class StackResolver(
         val destZone = counterRedirect.destinationZone
         val destZoneKey = ZoneKey(ownerId, destZone)
         newState = newState.addToZone(destZoneKey, spellId)
+        val destinationObject = newState.objectRef(spellId)
         // A card-intrinsic redirect into the library shuffles the card in (Progenitus).
         if (destZone == Zone.LIBRARY && counterRedirect.shuffleIntoLibrary) {
             newState = shuffleOwnerLibrary(newState, ownerId)
@@ -3132,9 +3023,9 @@ class StackResolver(
                 ZoneChangeEvent(
                     spellId,
                     cardComponent?.name ?: "Unknown",
-                    null,
+                    Zone.STACK,
                     destZone,
-                    ownerId
+                    ownerId, oldObject = state.objectRef(spellId), newObject = destinationObject
                 )
             )
         )
@@ -3182,6 +3073,7 @@ class StackResolver(
             ?.takeIf { !it.onlyIfResolved }
         val destZone = riderOnCounter?.zone ?: Zone.HAND
         newState = newState.addToZone(ZoneKey(ownerId, destZone), spellId)
+        val destinationObject = newState.objectRef(spellId)
 
         newState = newState.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>().without<TargetsComponent>()
@@ -3194,9 +3086,9 @@ class StackResolver(
                 ZoneChangeEvent(
                     spellId,
                     cardComponent?.name ?: "Unknown",
-                    null,
+                    Zone.STACK,
                     destZone,
-                    ownerId
+                    ownerId, oldObject = state.objectRef(spellId), newObject = destinationObject
                 )
             )
         )
@@ -3273,9 +3165,9 @@ class StackResolver(
                 ZoneChangeEvent(
                     spellId,
                     cardComponent?.name ?: "Unknown",
-                    null,
+                    Zone.STACK,
                     Zone.EXILE,
-                    ownerId
+                    ownerId, oldObject = state.objectRef(spellId), newObject = newState.objectRef(spellId)
                 )
             )
         )
@@ -3329,7 +3221,8 @@ class StackResolver(
         }
 
         val events = mutableListOf<GameEvent>(
-            ZoneChangeEvent(spellId, cardComponent?.name ?: "Unknown", Zone.STACK, Zone.EXILE, ownerId)
+            ZoneChangeEvent(spellId, cardComponent?.name ?: "Unknown", Zone.STACK, Zone.EXILE, ownerId,
+                oldObject = state.objectRef(spellId), newObject = newState.objectRef(spellId))
         )
 
         if (makePlotted) {

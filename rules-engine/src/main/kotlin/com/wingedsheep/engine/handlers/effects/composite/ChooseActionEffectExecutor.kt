@@ -82,6 +82,7 @@ class ChooseActionEffectExecutor(
             choosingPlayerId = choosingPlayerId,
             controllerId = context.controllerId,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = sourceName,
             choices = feasibleChoices,
             targets = context.targets,

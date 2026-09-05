@@ -231,6 +231,8 @@ class ForEachExecutor(
         )
 
         is ForEachItem.OfEntity -> outerContext.copy(
+            objectReferences = outerContext.objectReferences.copy(selfBinding =
+                com.wingedsheep.engine.handlers.CapturedObjectBinding(item.entityId, state.objectRef(item.entityId))),
             pipeline = outerContext.pipeline.copy(iterationTarget = item.entityId)
         )
 

@@ -20,6 +20,10 @@ class CoreAutoResumerModule(
 ) : AutoResumerModule {
 
     override fun autoResumers(): List<AutoResumer<*>> = listOf(
+        autoResumer(FinishResolvingSpellContinuation::class) { state, continuation, events, checkForMore ->
+            val result = services.stackResolver.finishResolvingSpell(state, continuation)
+            mergeAndContinue(result, events, checkForMore)
+        },
         autoResumer(PendingTriggersContinuation::class) { state, continuation, events, _ ->
             val result = services.triggerProcessor.processTriggers(state, continuation.remainingTriggers)
             mergeAndContinue(result, events)
@@ -171,7 +175,8 @@ class CoreAutoResumerModule(
                 sourceName = continuation.sourceName,
                 xValue = continuation.xValue,
                 triggeringEntityId = continuation.triggeringEntityId,
-                pipeline = continuation.pipeline
+                pipeline = continuation.pipeline,
+                objectReferences = continuation.objectReferences
             )
             val result = com.wingedsheep.engine.handlers.effects.composite.processPreTargetedEffectQueue(
                 state = state,
@@ -193,7 +198,8 @@ class CoreAutoResumerModule(
                 sourceId = continuation.sourceId,
                 sourceName = continuation.sourceName,
                 xValue = null,
-                triggeringEntityId = null
+                triggeringEntityId = null,
+                objectReferences = continuation.objectReferences
             )
             val result = com.wingedsheep.engine.handlers.effects.composite.processPreTargetedEffectQueue(
                 state = state,
@@ -222,6 +228,8 @@ class CoreAutoResumerModule(
                 allowCancelBackToModesList = null,
                 outerTargets = continuation.outerTargets,
                 outerNamedTargets = continuation.outerNamedTargets,
+                pipeline = continuation.pipeline,
+                objectReferences = continuation.objectReferences,
                 accumulatedEvents = events,
                 checkForMore = checkForMore
             )

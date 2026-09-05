@@ -110,7 +110,9 @@ class CreateRoleTokenExecutor(
                 entityName = effect.roleName,
                 fromZone = null,
                 toZone = Zone.BATTLEFIELD,
-                ownerId = tokenControllerId
+                ownerId = tokenControllerId,
+                oldObject = null,
+                newObject = newState.objectRef(tokenId)
             )
         )
 

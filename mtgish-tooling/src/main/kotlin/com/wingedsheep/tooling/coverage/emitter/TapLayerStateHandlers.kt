@@ -593,6 +593,10 @@ internal fun EmitCtx.renderLayerEffect(node: JsonObject, action: String, tvar: S
                     else call("ModifyStatsEffect", arg("${pt[0].asInt()}"), arg("${pt[1].asInt()}"), arg(Lit(target)), arg(Lit(duration))),
                 )
             }
+            "SwitchPT" -> {
+                val dur = if (duration.isEmpty()) "Duration.EndOfTurn" else duration
+                inner.add(call("Effects.SwitchPowerToughness", arg(Lit(target)), arg(Lit(dur))))
+            }
             "SetPT" -> {
                 // "becomes a P/T" — set base power and toughness (CR 613.4b, layer 7b). The IR nests the
                 // values one level deeper than AdjustPT: args is `{_PT: PT, args: [p, t]}`. The

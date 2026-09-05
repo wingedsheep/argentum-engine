@@ -131,6 +131,7 @@ class EachPlayerDiscardsOrLoseLifeExecutor(
         val continuation = EachPlayerDiscardsOrLoseLifeContinuation(
             decisionId = decisionResult.pendingDecision!!.id,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = sourceName,
             controllerId = context.controllerId,
             currentPlayerId = playerId,

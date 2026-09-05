@@ -230,7 +230,7 @@ class PassPriorityHandler(
 
         // Check state-based actions after resolution
         val preSbaStackSize = trackedState.continuationStack.size
-        val sbaResult = sbaChecker.checkAndApply(trackedState)
+        val sbaResult = sbaChecker.checkAndApply(trackedState, preSbaTriggers.mapNotNull { it.objectReferences.origin }.toSet())
 
         // If SBA needs player input (e.g., legend rule for two copies of a legendary
         // creature entering at once), return paused. Queue preSbaTriggers beneath the

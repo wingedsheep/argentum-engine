@@ -48,7 +48,8 @@ class ChainCopyExecutor(
             decisionId = "chain-after-action-${UUID.randomUUID()}",
             effect = effect,
             recipientPlayerId = recipientPlayerId,
-            sourceId = context.sourceId
+            sourceId = context.sourceId,
+            objectReferences = context.objectReferences
         )
         val stateWithContinuation = state.pushContinuation(afterActionContinuation)
 
@@ -170,7 +171,8 @@ class ChainCopyExecutor(
             decisionId = decisionId,
             effect = effect,
             copyControllerId = recipientPlayerId,
-            sourceId = context.sourceId
+            sourceId = context.sourceId,
+            objectReferences = context.objectReferences
         )
 
         val newState = state.withPendingDecision(decision).pushContinuation(continuation)

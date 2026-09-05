@@ -192,6 +192,7 @@ class CounterEffectExecutor(
             spellEntityId = spellEntityId,
             manaCost = manaCost,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = "Counter unless pays",
             counterDestination = effect.counterDestination,
             controllerId = context.controllerId,

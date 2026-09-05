@@ -67,6 +67,7 @@ data class ModalContinuation(
     val allowRepeat: Boolean = false,
     val outerTargets: List<ChosenTarget> = emptyList(),
     val outerNamedTargets: Map<String, ChosenTarget> = emptyMap(),
+    val pipeline: com.wingedsheep.engine.handlers.PipelineState = com.wingedsheep.engine.handlers.PipelineState.EMPTY,
     /**
      * "Choose one that hasn't been chosen" (Gandalf the Grey): when true, each chosen
      * mode index is recorded in the source's
@@ -81,7 +82,8 @@ data class ModalContinuation(
      * triggers *this turn* exclude it. Cleared at end of turn. Turn-scoped sibling of
      * [recordChosenModesOnSource].
      */
-    val recordChosenModesThisTurn: Boolean = false
+    val recordChosenModesThisTurn: Boolean = false,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -135,7 +137,8 @@ data class ModalPreChosenContinuation(
      */
     val pipeline: com.wingedsheep.engine.handlers.PipelineState =
         com.wingedsheep.engine.handlers.PipelineState.EMPTY,
-    val remainingEntries: List<PreTargetedEffectEntry>
+    val remainingEntries: List<PreTargetedEffectEntry>,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -159,7 +162,8 @@ data class SpliceTailContinuation(
     val controllerId: EntityId,
     val sourceId: EntityId?,
     val sourceName: String?,
-    val remainingEntries: List<PreTargetedEffectEntry>
+    val remainingEntries: List<PreTargetedEffectEntry>,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -192,7 +196,9 @@ data class ModalChosenModeTailContinuation(
     /** Outer-scope targets propagated to any remaining no-target modes. See
      *  [ModalContinuation.outerTargets]. */
     val outerTargets: List<ChosenTarget> = emptyList(),
-    val outerNamedTargets: Map<String, ChosenTarget> = emptyMap()
+    val outerNamedTargets: Map<String, ChosenTarget> = emptyMap(),
+    val pipeline: com.wingedsheep.engine.handlers.PipelineState = com.wingedsheep.engine.handlers.PipelineState.EMPTY,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -224,7 +230,9 @@ data class ModalTargetContinuation(
     /** Outer-scope targets from the enclosing spell/ability, propagated to any
      *  remaining no-target modes. See [ModalContinuation.outerTargets]. */
     val outerTargets: List<ChosenTarget> = emptyList(),
-    val outerNamedTargets: Map<String, ChosenTarget> = emptyMap()
+    val outerNamedTargets: Map<String, ChosenTarget> = emptyMap(),
+    val pipeline: com.wingedsheep.engine.handlers.PipelineState = com.wingedsheep.engine.handlers.PipelineState.EMPTY,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -301,7 +309,10 @@ data class CloneEntersOnBattlefieldContinuation(
     val toughnessOverride: Int? = null,
     val exileCopiedCard: Boolean = false,
     val tappedIfCopied: Boolean = false,
-    val additionalCounters: DynamicAmount? = null
+    val additionalCounters: DynamicAmount? = null,
+    /** Actual entry refs, retained across every as-enters decision. */
+    val entryOldObject: com.wingedsheep.engine.state.ObjectRef? = null,
+    val entryNewObject: com.wingedsheep.engine.state.ObjectRef? = null
 ) : ContinuationFrame
 
 /**
@@ -409,7 +420,10 @@ data class EntersWithChoiceOnBattlefieldContinuation(
     /** See [EntersWithChoiceSpellContinuation.syntheticRiot]. */
     val syntheticRiot: Boolean = false,
     /** See [EntersWithChoiceSpellContinuation.syntheticRiotRemaining]. */
-    val syntheticRiotRemaining: Int = 0
+    val syntheticRiotRemaining: Int = 0,
+    /** Actual entry refs, retained across every as-enters decision. */
+    val entryOldObject: com.wingedsheep.engine.state.ObjectRef? = null,
+    val entryNewObject: com.wingedsheep.engine.state.ObjectRef? = null
 ) : ContinuationFrame
 
 /**
@@ -429,7 +443,10 @@ data class PayLifeOrEnterTappedLandContinuation(
     val landId: EntityId,
     val controllerId: EntityId,
     val lifeCost: Int,
-    val fromZone: Zone
+    val fromZone: Zone,
+    /** Actual entry refs, retained across every as-enters decision. */
+    val entryOldObject: com.wingedsheep.engine.state.ObjectRef? = null,
+    val entryNewObject: com.wingedsheep.engine.state.ObjectRef? = null
 ) : ContinuationFrame
 
 /**
@@ -562,6 +579,7 @@ data class BudgetModalContinuation(
     val modes: List<@Serializable BudgetMode>,
     val remainingBudget: Int,
     val selectedModeIndices: List<Int> = emptyList(),
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -579,7 +597,8 @@ data class CreateTokenCopyOfChosenContinuation(
     override val decisionId: String,
     val controllerId: EntityId,
     val sourceId: EntityId?,
-    val sourceName: String?
+    val sourceName: String?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -667,5 +686,6 @@ data class ChooseActionContinuation(
     val choices: List<@Serializable EffectChoice>,
     val targets: List<ChosenTarget> = emptyList(),
     val namedTargets: Map<String, ChosenTarget> = emptyMap(),
-    val triggeringEntityId: EntityId? = null
+    val triggeringEntityId: EntityId? = null,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame

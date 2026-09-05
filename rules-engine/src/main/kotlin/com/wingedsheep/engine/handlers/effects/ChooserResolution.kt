@@ -89,9 +89,7 @@ object ChooserResolution {
         // The durable pick a preceding ChooseOpponentForSourceEffect wrote onto the source, so the
         // opponent who revealed a card is the same one who decides where it goes (CR 701.30b/c).
         Chooser.ChosenOpponent -> {
-            val chosen = context.sourceId?.let {
-                state.getEntity(it)?.chosenOpponent()
-            }
+            val chosen = context.chosenOpponent(state)
             chosen?.let { Outcome.Resolved(it) }
                 ?: Outcome.Unresolvable("No opponent has been chosen for this source")
         }

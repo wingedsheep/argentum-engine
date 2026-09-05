@@ -140,6 +140,7 @@ class CopyTargetSpellExecutor(
                 }
                 val copyAbility = TriggeredAbilityOnStackComponent(
                     sourceId = sourceId,
+            objectReferences = context.objectReferences,
                     sourceName = spellName,
                     controllerId = context.controllerId,
                     effect = spellEffect,

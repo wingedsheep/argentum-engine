@@ -80,6 +80,7 @@ class ChoosePileExecutor : EffectExecutor<ChoosePileEffect> {
             decisionId = decisionId,
             playerId = deciderId,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = sourceName,
             pileAIds = pileA,
             pileBIds = pileB,

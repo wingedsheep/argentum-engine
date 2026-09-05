@@ -137,6 +137,7 @@ object SbaZoneMovementHelper {
                 val cardOwnerId = cardComp?.ownerId ?: controllerId
                 val ownerExileZone = ZoneKey(cardOwnerId, Zone.EXILE)
                 newState = newState.removeFromZone(graveyardZone, cardId)
+                val oldObjectRef = newState.objectRef(cardId)
                 newState = newState.addToZone(ownerExileZone, cardId)
                 // Same stamp ZoneTransitionService writes on an effect-driven exile — these cards
                 // came from a graveyard, so a later CR 610.3 "return it to its previous zone"
@@ -153,7 +154,9 @@ object SbaZoneMovementHelper {
                         cardComp?.name ?: "Unknown",
                         Zone.GRAVEYARD,
                         Zone.EXILE,
-                        cardOwnerId
+                        cardOwnerId,
+                        oldObject = oldObjectRef,
+                        newObject = newState.objectRef(cardId)
                     )
                 )
             }

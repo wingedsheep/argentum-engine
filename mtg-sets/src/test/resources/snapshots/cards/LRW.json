@@ -1935,6 +1935,126 @@
     ]
 }
 
+// Broken Ambitions
+{
+    "name": "Broken Ambitions",
+    "manaCost": "{X}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell unless its controller pays {X}. Clash with an opponent. If you win, that spell's controller mills four cards. (Each clashing player reveals the top card of their library, then puts that card on their choice of the top or bottom. A player wins if their card had a greater mana value.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": "ChosenTargets",
+                    "storeAs": "ambitionsSpell"
+                },
+                {
+                    "type": "CaptureControllers",
+                    "from": "ambitionsSpell",
+                    "storeAs": "ambitionsControllers"
+                },
+                {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysDynamic",
+                        "amount": "XValue"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.DoAction",
+                        "action": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "ChooseOpponentForSource",
+                                    "prompt": "Choose an opponent to clash with"
+                                },
+                                "Clash"
+                            ]
+                        },
+                        "successCriterion": {
+                            "type": "SuccessCriterion.CollectionNonEmpty",
+                            "name": "clashWon"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ForEachCapturedController",
+                                "collection": "ambitionsSpell",
+                                "originalCollection": "ambitionsSpell",
+                                "controllerSnapshot": "ambitionsControllers",
+                                "countVariable": "count0",
+                                "effects": [
+                                    {
+                                        "type": "Composite",
+                                        "effects": [
+                                            {
+                                                "type": "GatherCards",
+                                                "source": {
+                                                    "type": "TopOfLibrary",
+                                                    "count": {
+                                                        "type": "Fixed",
+                                                        "amount": 4
+                                                    },
+                                                    "isMill": true
+                                                },
+                                                "storeAs": "milled"
+                                            },
+                                            {
+                                                "type": "MoveCollection",
+                                                "from": "milled",
+                                                "destination": {
+                                                    "type": "ToZone",
+                                                    "zone": "Graveyard"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Clash with an opponent. If you win, for each player who controlled at least one of those cards, look at the top 4 cards of your library. Put those cards into a graveyard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "target spell"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "54",
+        "artist": "Franz Vohwinkel",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/0/8052d90b-bc49-4a9e-9211-159a54aa2bcd.jpg?1783942905",
+        "rulings": [
+            {
+                "date": "2007-10-01",
+                "text": "The opponent you clash with doesn't have to be the controller of the targeted spell."
+            },
+            {
+                "date": "2007-10-01",
+                "text": "The clash (and the result of the clash if you win) happens regardless of whether the targeted spell was countered or {X} was paid."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Burrenton Forge-Tender
 {
     "name": "Burrenton Forge-Tender",
@@ -11030,6 +11150,58 @@
     ]
 }
 
+// Oona's Prowler
+{
+    "name": "Oona's Prowler",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Faerie Rogue",
+    "oracleText": "Flying\nDiscard a card: This creature gets -2/-0 until end of turn. Any player may activate this ability.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": "AtomDiscard"
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                },
+                "restrictions": [
+                    "AnyPlayerMay"
+                ],
+                "descriptionOverride": "This creature gets -2/-0 until end of turn. Any player may activate this ability."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "133",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "flavorText": "Deep in Glen Elendra blossoms Oona, queen of the faeries, nourished by secrets and pollinated by stolen dreams.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/9675b8ea-47f9-440e-9535-de879da53f76.jpg?1783942886"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Paperfin Rascal
 {
     "name": "Paperfin Rascal",
@@ -14941,6 +15113,64 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Turtleshell Changeling
+{
+    "name": "Turtleshell Changeling",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Shapeshifter",
+    "oracleText": "Changeling (This card is every creature type.)\n{1}{U}: Switch this creature's power and toughness until end of turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "keywords": [
+        "CHANGELING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{U}"
+                    }
+                },
+                "effect": {
+                    "type": "SwitchPowerToughness",
+                    "target": "Self"
+                },
+                "descriptionOverride": "Switch this creature's power and toughness until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "UNCOMMON",
+        "artist": "Ron Spencer",
+        "flavorText": "A changeling involuntarily mimics the nearest being at hand, sometimes trading a borrowed shell for borrowed claws.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a72b078e-e324-4775-9d38-08943017a48e.jpg?1783942895",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "Effects that switch a creature's power and toughness apply after all other effects, regardless of when those effects began to apply. For instance, if you target a 1/2 creature then give it +2/+0 later in the turn, it's a 2/3 creature, not a 4/1 creature."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to a creature may become lethal if you switch its power and toughness during that turn."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Switching a creature's power and toughness twice (or any even number of times) effectively returns the creature to the power and toughness it had before any switches."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

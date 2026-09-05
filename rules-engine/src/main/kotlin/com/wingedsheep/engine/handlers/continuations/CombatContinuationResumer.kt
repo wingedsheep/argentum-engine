@@ -317,7 +317,8 @@ class CombatContinuationResumer(
             effectSourceId = continuation.sourceId,
             effectSourceName = continuation.sourceName,
             onPrevented = continuation.onPrevented,
-            preventDamage = continuation.preventDamage
+            preventDamage = continuation.preventDamage,
+            objectReferences = continuation.objectReferences
         )
 
         return checkForMore(newState, emptyList())
@@ -338,6 +339,7 @@ class CombatContinuationResumer(
 
         val context = EffectContext(
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
             controllerId = continuation.controllerId,
         )
         // "Prevent all damage that would be dealt this turn by a source of your choice", with no

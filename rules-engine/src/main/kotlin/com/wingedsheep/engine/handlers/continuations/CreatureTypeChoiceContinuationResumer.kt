@@ -52,6 +52,7 @@ class CreatureTypeChoiceContinuationResumer(
 
         val context = EffectContext(
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
             controllerId = continuation.controllerId
         )
         val newState = state.addFloatingEffect(
@@ -196,6 +197,7 @@ class CreatureTypeChoiceContinuationResumer(
         // Create a floating effect that sets creature subtypes
         val context = EffectContext(
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
             controllerId = continuation.controllerId,
         )
         val newState = state.addFloatingEffect(

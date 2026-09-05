@@ -20,7 +20,8 @@ data class PutFromHandContinuation(
     val playerId: EntityId,
     val entersTapped: Boolean,
     val sourceId: EntityId?,
-    val sourceName: String?
+    val sourceName: String?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -50,7 +51,8 @@ data class SecretBidContinuation(
     val chosenNumbers: Map<EntityId, Int>,
     val highestBidderEffect: Effect?,
     val lowestBidderEffect: Effect?,
-    val tiedBidderEffect: Effect?
+    val tiedBidderEffect: Effect?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -94,7 +96,9 @@ data class OpenLifeBidContinuation(
     val onWin: Effect,
     val targets: List<ChosenTarget>,
     val sourceId: EntityId?,
-    val sourceName: String?
+    val sourceName: String?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
+    val effectContext: com.wingedsheep.engine.handlers.EffectContext? = null
 ) : ContinuationFrame
 
 /**
@@ -122,7 +126,8 @@ data class ContestedRetargetContinuation(
     val originalTargets: List<ChosenTarget>,
     val newTargets: List<ChosenTarget>,
     val currentSlot: Int,
-    val sourceId: EntityId?
+    val sourceId: EntityId?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -147,7 +152,8 @@ data class DistributeCountersContinuation(
      * created on the chosen recipients with nothing removed from the source — the "distribute N
      * counters among …" shape (e.g. Crashing Wave's three stun counters).
      */
-    val removeFromSource: Boolean = true
+    val removeFromSource: Boolean = true,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -187,7 +193,8 @@ data class RemoveAnyNumberOfCountersContinuation(
     val sourceName: String?,
     val remainingBudget: Int? = null,
     val currentMinAmount: Int = 0,
-    val remainingFloor: Int = 0
+    val remainingFloor: Int = 0,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -223,7 +230,8 @@ data class AddCountersUpToContinuation(
     val targetId: EntityId,
     val controllerId: EntityId,
     val counterType: String,
-    val sourceId: EntityId?
+    val sourceId: EntityId?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -245,7 +253,8 @@ data class PayCountersContinuation(
     val playerId: EntityId,
     val counterType: String,
     val storeAmountAs: String,
-    val sourceId: EntityId?
+    val sourceId: EntityId?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -279,7 +288,8 @@ data class MoveChosenCountersToTargetContinuation(
     val sourceName: String,
     val destinationName: String,
     val drawCardOnMove: Boolean,
-    val anyMovedSoFar: Boolean = false
+    val anyMovedSoFar: Boolean = false,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -337,7 +347,8 @@ data class AmassContinuation(
     val subtype: String,
     val amount: Int,
     val sourceId: EntityId?,
-    val candidates: List<EntityId>
+    val candidates: List<EntityId>,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -434,7 +445,8 @@ data class StormCopyTargetContinuation(
     val totalCopies: Int = remainingCopies,  // Original total copies (defaults to remainingCopies for backward compat)
     /** Keyword enum names (e.g., "WITHER") to grant to each copy while it's on the stack. */
     val keywordsForCopy: Set<String> = emptySet(),
-    val removeLegendary: Boolean = false
+    val removeLegendary: Boolean = false,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -496,7 +508,8 @@ data class StormCopyModalTargetContinuation(
     /** Keyword enum names (e.g., "WITHER") to grant to each copy while it's on the stack. */
     val keywordsForCopy: Set<String> = emptySet(),
     /** If true, strip the Legendary supertype from each resulting copy. */
-    val removeLegendary: Boolean = false
+    val removeLegendary: Boolean = false,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -509,7 +522,8 @@ data class StormCopyModalTargetContinuation(
 data class ChangeSpellTargetContinuation(
     override val decisionId: String,
     val spellEntityId: EntityId,
-    val sourceId: EntityId?
+    val sourceId: EntityId?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**

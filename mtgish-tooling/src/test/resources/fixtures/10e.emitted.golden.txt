@@ -868,7 +868,7 @@ val AvatarOfMight = card("Avatar of Might") {
     power = 8
     toughness = 8
     keywords(Keyword.TRAMPLE)
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "251"
@@ -2437,7 +2437,7 @@ val ConsumeSpirit = card("Consume Spirit") {
     colorIdentity = "B"
     typeLine = "Sorcery"
     oracleText = "Spend only black mana on X.\nConsume Spirit deals X damage to any target and you gain X life."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "131"
@@ -11430,7 +11430,7 @@ val Soulblast = card("Soulblast") {
     colorIdentity = "R"
     typeLine = "Instant"
     oracleText = "As an additional cost to cast this spell, sacrifice all creatures you control.\nSoulblast deals damage to any target equal to the total power of the sacrificed creatures."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "236"

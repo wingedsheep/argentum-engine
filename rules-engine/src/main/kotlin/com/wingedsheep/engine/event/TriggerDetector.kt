@@ -256,7 +256,34 @@ class TriggerDetector(
                     .filter { it.playerId == event.playerId }
                     .sumOf { it.count }
             } else 0
-            triggers.addAll(detectTriggersForEvent(state, event, index, samePlayerDrawsLaterInBatch))
+            val detected = detectTriggersForEvent(state, event, index, samePlayerDrawsLaterInBatch)
+            triggers.addAll(detected.map { pending ->
+                val selfZoneEvent = event is ZoneChangeEvent && event.entityId == pending.sourceId
+                val attachedDeparture = selfZoneEvent && pending.ability.binding == TriggerBinding.ATTACHED &&
+                    pending.triggerContext.triggeringEntityId != pending.sourceId
+                val triggeringZoneEvent = if (event is ZoneChangeEvent && pending.triggerContext.triggeringEntityId == event.entityId) event
+                    else if (attachedDeparture) events.take(eventIndex).filterIsInstance<ZoneChangeEvent>().lastOrNull {
+                        it.entityId == pending.triggerContext.triggeringEntityId && it.fromZone == Zone.BATTLEFIELD
+                    } else null
+                val eventContext = triggeringZoneEvent?.let(TriggerContext::fromEvent) ?: pending.triggerContext
+                val sourceEventContext = (event as? ZoneChangeEvent)?.takeIf { selfZoneEvent }?.let(TriggerContext::fromEvent)
+                val sourceAtEvent = events.subList(eventIndex + 1, events.size)
+                    .filterIsInstance<ZoneChangeEvent>().firstOrNull { it.entityId == pending.sourceId }?.oldObject
+                    ?: state.objectRef(pending.sourceId)
+                pending.copy(triggerContext = eventContext, objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(
+                    captured = true,
+                    origin = if (selfZoneEvent) sourceEventContext?.triggeringOrigin else sourceAtEvent,
+                    // CR 400.7f allows the Aura's immediate graveyard object, including the unattached SBA.
+                    source = if (attachedDeparture && (event as ZoneChangeEvent).toZone != Zone.GRAVEYARD)
+                        sourceEventContext?.triggeringOrigin
+                    else if (selfZoneEvent) sourceEventContext?.triggeringObject else sourceAtEvent,
+                    triggering = if (triggeringZoneEvent != null) eventContext.triggeringObject
+                    else eventContext.triggeringObject ?: pending.triggerContext.triggeringEntityId?.let { id ->
+                        events.subList(eventIndex + 1, events.size).filterIsInstance<ZoneChangeEvent>()
+                            .firstOrNull { it.entityId == id }?.oldObject ?: state.objectRef(id)
+                    },
+                ))
+            })
         }
 
         // Rule 603.10: "Look back in time" for simultaneous deaths.
@@ -399,7 +426,7 @@ class TriggerDetector(
         // Rule 603.4: Filter out triggers with unmet intervening-if conditions
         return matcher.sortByApnapOrder(
             state,
-            matcher.filterByTriggerCondition(state, assignGranterIds(state, filteredTriggers))
+            matcher.filterByTriggerCondition(state, assignGranterIds(state, filteredTriggers, events))
         )
     }
 
@@ -422,15 +449,35 @@ class TriggerDetector(
      */
     private fun assignGranterIds(
         state: GameState,
-        triggers: List<PendingTrigger>
+        triggers: List<PendingTrigger>,
+        events: List<EngineGameEvent> = emptyList(),
     ): List<PendingTrigger> {
         val cursor = HashMap<Pair<EntityId, com.wingedsheep.sdk.scripting.AbilityId>, Int>()
         return triggers.map { unstamped ->
-            val trigger = unstamped.copy(sourceBattlefieldTimestamp = unstamped.sourceBattlefieldTimestamp
+            var trigger = unstamped.copy(sourceBattlefieldTimestamp = unstamped.sourceBattlefieldTimestamp
                 ?: unstamped.triggerContext.triggeringBattlefieldTimestamp
                     ?.takeIf { unstamped.triggerContext.triggeringEntityId == unstamped.sourceId }
                 ?: state.getEntity(unstamped.sourceId)
                     ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp)
+            if (!trigger.objectReferences.captured) {
+                val triggerContext = trigger.triggerContext
+                val selfEvent = triggerContext.triggeringEntityId == trigger.sourceId
+                val departure = events.filterIsInstance<ZoneChangeEvent>().firstOrNull {
+                    it.entityId == trigger.sourceId && it.fromZone == Zone.BATTLEFIELD &&
+                        (trigger.sourceBattlefieldTimestamp == null ||
+                            it.lastKnown?.battlefieldEntryTimestamp == trigger.sourceBattlefieldTimestamp)
+                }
+                val origin = if (selfEvent && triggerContext.triggeringOrigin != null) triggerContext.triggeringOrigin
+                    else departure?.oldObject ?: state.objectRef(trigger.sourceId)
+                val actionable = if (selfEvent && triggerContext.triggeringObject != null) triggerContext.triggeringObject else origin
+                trigger = trigger.copy(objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(
+                    captured = true, origin = origin, source = actionable,
+                    triggering = triggerContext.triggeringObject ?: triggerContext.triggeringEntityId?.let { id ->
+                        events.filterIsInstance<ZoneChangeEvent>().lastOrNull { it.entityId == id }?.newObject
+                            ?: state.objectRef(id)
+                    },
+                ))
+            }
             val granters = abilityResolver.resolveGranterIds(state, trigger.sourceId, trigger.ability.id)
             if (granters.isEmpty()) return@map trigger
             val key = trigger.sourceId to trigger.ability.id
@@ -509,6 +556,7 @@ class TriggerDetector(
                     additionalTargetRequirements = delayed.additionalTargetRequirements
                 ),
                 sourceId = delayed.sourceId,
+                objectReferences = delayed.objectReferences.copy(captured = true),
                 sourceName = delayed.sourceName,
                 controllerId = delayed.controllerId,
                 triggerContext = TriggerContext(
@@ -852,8 +900,15 @@ class TriggerDetector(
         // once even if several events in this batch match it — track which ids have already
         // produced a pending trigger this pass.
         val firedOnceIds = mutableSetOf<String>()
-        for (event in events) {
+        for ((eventIndex, event) in events.withIndex()) {
             for (delayed in eventBased) {
+                fun referencesFor(id: EntityId?): com.wingedsheep.engine.handlers.ObjectReferenceEnvironment {
+                    val triggering = if (event is ZoneChangeEvent && event.entityId == id)
+                        TriggerContext.fromEvent(event).triggeringObject
+                    else id?.let { entity -> events.drop(eventIndex + 1).filterIsInstance<ZoneChangeEvent>()
+                        .firstOrNull { it.entityId == entity }?.oldObject ?: state.objectRef(entity) }
+                    return delayed.objectReferences.copy(captured = true, triggering = triggering)
+                }
                 if (delayed.fireOnce && delayed.id in firedOnceIds) continue
                 val spec = delayed.trigger ?: continue
                 if (!matchesEventForWatchedEntity(spec, event, delayed.watchedEntityId, delayed.watchedRecipientId, delayed.id, delayed.sourceId, delayed.controllerId, state)) continue
@@ -886,6 +941,7 @@ class TriggerDetector(
                                     additionalTargetRequirements = delayed.additionalTargetRequirements
                                 ),
                                 sourceId = delayed.sourceId,
+                objectReferences = referencesFor(attackerId),
                                 sourceName = delayed.sourceName,
                                 controllerId = delayed.controllerId,
                                 triggerContext = TriggerContext.fromEvent(event).copy(triggeringEntityId = attackerId),
@@ -930,6 +986,7 @@ class TriggerDetector(
                                     additionalTargetRequirements = delayed.additionalTargetRequirements
                                 ),
                                 sourceId = delayed.sourceId,
+                objectReferences = referencesFor(partnerId),
                                 sourceName = delayed.sourceName,
                                 controllerId = delayed.controllerId,
                                 triggerContext = TriggerContext(triggeringEntityId = partnerId),
@@ -951,6 +1008,7 @@ class TriggerDetector(
                             additionalTargetRequirements = delayed.additionalTargetRequirements
                         ),
                         sourceId = delayed.sourceId,
+                objectReferences = referencesFor(delayed.watchedEntityId ?: TriggerContext.fromEvent(event).triggeringEntityId),
                         sourceName = delayed.sourceName,
                         controllerId = delayed.controllerId,
                         triggerContext = TriggerContext.fromEvent(event).copy(
@@ -2411,7 +2469,8 @@ class TriggerDetector(
                     controllerId = event.controllerId,
                     granterId = event.granterId,
                     triggerContext = event.carriedTriggerContext,
-                    carriedPipeline = event.carriedPipeline
+                    carriedPipeline = event.carriedPipeline,
+                    objectReferences = event.carriedObjectReferences.copy(captured = true)
                 )
             )
         }

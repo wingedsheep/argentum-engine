@@ -1154,17 +1154,35 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
 
                 // Check cost payability (Free cost always passes)
                 val anyPlayerAbilityContext = com.wingedsheep.engine.mechanics.mana.buildAbilityPaymentContext(cardComponent, projected, entityId, ability)
+                var discardCost: CostAtom.Discard? = null
+                var discardTargets: List<EntityId>? = null
                 val anyPlayerManaCostString = when (effectiveCost) {
                     is AbilityCost.Free -> null
                     is AbilityCost.Atom -> {
-                        // Only mana costs on opponents' permanents are supported ("any player may
-                        // activate"); other atoms (sacrifice/discard/…) fall through to continue.
-                        val mana = effectiveCost.manaCostOrNull ?: continue
-                        if (!context.manaSolver.canPay(state, playerId, mana, precomputedSources = context.availableManaSources, spellContext = anyPlayerAbilityContext)) continue
-                        mana.toString()
+                        when (val atom = effectiveCost.atom) {
+                            is CostAtom.Discard -> {
+                                val targets = context.costUtils.findDiscardTargets(state, playerId, atom.filter)
+                                if (targets.size < atom.count) continue
+                                if (!atom.random) {
+                                    discardCost = atom
+                                    discardTargets = targets
+                                }
+                                null
+                            }
+                            else -> {
+                                val mana = effectiveCost.manaCostOrNull ?: continue
+                                if (!context.manaSolver.canPay(state, playerId, mana, precomputedSources = context.availableManaSources, spellContext = anyPlayerAbilityContext)) continue
+                                mana.toString()
+                            }
+                        }
                     }
                     else -> continue // Other costs on opponent's permanents not yet supported
                 }
+
+                val costInfo = buildAdditionalCostInfo(
+                    ability, null, null, false, null, null, null, null, emptyList(),
+                    discardCost = discardCost, discardTargets = discardTargets
+                )
 
                 // Check activation restrictions
                 var restrictionsMet = true
@@ -1199,14 +1217,16 @@ class ActivatedAbilityEnumerator : ActionEnumerator {
                         minTargets = firstReq.effectiveMinCount,
                         targetDescription = firstReq.description,
                         targetRequirements = if (targetReqInfos.size > 1) targetReqInfos else null,
-                        manaCostString = anyPlayerManaCostString
+                        manaCostString = anyPlayerManaCostString,
+                        additionalCostInfo = costInfo
                     ))
                 } else {
                     result.add(LegalAction(
                         actionType = "ActivateAbility",
                         description = ability.description,
                         action = ActivateAbility(playerId, entityId, ability.id),
-                        manaCostString = anyPlayerManaCostString
+                        manaCostString = anyPlayerManaCostString,
+                        additionalCostInfo = costInfo
                     ))
                 }
             }

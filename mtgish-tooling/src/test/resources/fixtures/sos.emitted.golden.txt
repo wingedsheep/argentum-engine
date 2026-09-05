@@ -3719,7 +3719,7 @@ val FixWhatsBroken = card("Fix What's Broken") {
     colorIdentity = "WB"
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, pay X life.\nReturn each artifact and creature card with mana value X from your graveyard to the battlefield."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "188"
@@ -4649,7 +4649,7 @@ val GroupProject = card("Group Project") {
             creatureTypes = setOf("Spirit")
         )
     }
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "17"
@@ -7278,7 +7278,7 @@ val OrysaTideChoreographer = card("Orysa, Tide Choreographer") {
     oracleText = "This spell costs {3} less to cast if creatures you control have total toughness 10 or greater.\nWhen Orysa enters, draw two cards."
     power = 2
     toughness = 2
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "62"
@@ -9612,7 +9612,7 @@ val SeizeTheSpoils = card("Seize the Spoils") {
     colorIdentity = "R"
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, discard a card.\nDraw two cards and create a Treasure token. (It's an artifact with \"{T}, Sacrifice this token: Add one mana of any color.\")"
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "129"
@@ -10252,7 +10252,7 @@ val SoaringStoneglider = card("Soaring Stoneglider") {
     power = 4
     toughness = 3
     keywords(Keyword.FLYING, Keyword.VIGILANCE)
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "32"
@@ -11785,7 +11785,7 @@ val TheDawningArchaic = card("The Dawning Archaic") {
     power = 7
     toughness = 7
     keywords(Keyword.REACH)
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.MYTHIC
         collectorNumber = "1"
@@ -12401,7 +12401,7 @@ val ViciousRivalry = card("Vicious Rivalry") {
     colorIdentity = "BG"
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, pay X life.\nDestroy all artifacts and creatures with mana value X or less."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "241"
@@ -12623,7 +12623,7 @@ val WiltInTheHeat = card("Wilt in the Heat") {
     colorIdentity = "WR"
     typeLine = "Instant"
     oracleText = "This spell costs {2} less to cast if one or more cards left your graveyard this turn.\nWilt in the Heat deals 5 damage to target creature. If that creature would die this turn, exile it instead."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "243"

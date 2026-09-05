@@ -6,6 +6,7 @@ import com.wingedsheep.engine.core.GameConfig
 import com.wingedsheep.engine.core.GameInitializer
 import com.wingedsheep.engine.core.PlayerConfig
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
 import com.wingedsheep.engine.handlers.effects.EffectExecutorRegistry
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
@@ -111,7 +112,10 @@ class GiftChosenOpponentTest : FunSpec({
 
         // Executing the choose-opponent effect pauses with one option per opponent.
         val registry2 = EffectExecutorRegistry(cardRegistry = registry)
-        val context = EffectContext(sourceId = sourceId, controllerId = players[0])
+        val sourceRef = withSource.objectRef(sourceId)!!
+        val context = EffectContext(sourceId = sourceId, controllerId = players[0],
+            objectReferences = ObjectReferenceEnvironment(captured = true,
+                origin = sourceRef, source = sourceRef, resolutionKey = "gift-recipient-fixture"))
         val execResult = registry2.execute(withSource, ChooseOpponentForSourceEffect(), context)
 
         execResult.isPaused shouldBe true

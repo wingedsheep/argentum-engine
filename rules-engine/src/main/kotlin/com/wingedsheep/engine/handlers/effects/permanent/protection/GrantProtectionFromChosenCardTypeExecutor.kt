@@ -62,6 +62,7 @@ class GrantProtectionFromChosenCardTypeExecutor :
             decisionId = decisionId,
             controllerId = context.controllerId,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = sourceName,
             targetId = targetId,
             cardTypes = cardTypes,

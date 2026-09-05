@@ -247,6 +247,7 @@ class SuspendCardFromHandHandler(
         val fromZoneKey = ZoneKey(action.playerId, Zone.HAND)
         val exileZone = ZoneKey(ownerId, Zone.EXILE)
         currentState = currentState.removeFromZone(fromZoneKey, action.cardId)
+        val oldObjectRef = currentState.objectRef(action.cardId)
         currentState = currentState.addToZone(exileZone, action.cardId)
         events.add(
             ZoneChangeEvent(
@@ -254,7 +255,9 @@ class SuspendCardFromHandHandler(
                 entityName = cardComponent.name,
                 fromZone = Zone.HAND,
                 toZone = Zone.EXILE,
-                ownerId = ownerId
+                ownerId = ownerId,
+                oldObject = oldObjectRef,
+                newObject = currentState.objectRef(action.cardId)
             )
         )
 

@@ -262,16 +262,15 @@ class GatherCardsExecutor : EffectExecutor<GatherCardsEffect> {
             }
 
             is CardSource.Self -> {
-                val sourceId = context.sourceId
-                    ?: return EffectResult.error(state, "No source entity for CardSource.Self")
-                if (state.getEntity(sourceId) != null) listOf(sourceId) else emptyList()
+                val sourceId = context.resolveTarget(com.wingedsheep.sdk.scripting.targets.EffectTarget.Self, state)
+                if (sourceId != null && state.getEntity(sourceId) != null) listOf(sourceId) else emptyList()
             }
 
             is CardSource.TriggeringEntity -> {
                 // The entity that fired the trigger ("it"); single-element when still in play.
                 // Mirrors EffectTarget.TriggeringEntity for non-targeted gather → move pipelines
                 // (Norin, Swift Survivalist: exile the just-blocked creature you control).
-                val triggeringId = context.triggeringEntityId
+                val triggeringId = context.resolveTarget(com.wingedsheep.sdk.scripting.targets.EffectTarget.TriggeringEntity, state)
                 if (triggeringId != null && state.getEntity(triggeringId) != null) {
                     listOf(triggeringId)
                 } else {

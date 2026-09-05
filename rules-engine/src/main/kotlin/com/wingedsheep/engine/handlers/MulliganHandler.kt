@@ -106,15 +106,24 @@ class MulliganHandler(
         for (cardId in hand) {
             newState = newState.removeFromZone(handKey, cardId)
             // Add to bottom of library (end of list, since first() = top)
-            val library = newState.getZone(libraryKey)
-            newState = newState.copy(zones = newState.zones + (libraryKey to library + listOf(cardId)))
+            val oldObjectRef = newState.objectRef(cardId)
+            newState = newState.addToZone(libraryKey, cardId)
+            events.add(ZoneChangeEvent(
+                entityId = cardId,
+                entityName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown",
+                fromZone = Zone.HAND,
+                toZone = Zone.LIBRARY,
+                ownerId = playerId,
+                oldObject = oldObjectRef,
+                newObject = newState.objectRef(cardId)
+            ))
         }
 
         // 2. Shuffle library (clearing any per-card reveals first)
         newState = com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
             .clearLibraryReveals(newState, playerId)
         val (shuffledLibrary, shuffledState) = newState.nextRandom { shuffle(newState.getZone(libraryKey)) }
-        newState = shuffledState.copy(zones = shuffledState.zones + (libraryKey to shuffledLibrary))
+        newState = shuffledState.reorderZone(libraryKey, shuffledLibrary)
         events.add(LibraryShuffledEvent(playerId, ShuffleCause.MULLIGAN))
 
         // 3. Update mulligan count
@@ -133,6 +142,7 @@ class MulliganHandler(
                 val cardId = library.first()
                 drawnCardIds.add(cardId)
                 newState = newState.removeFromZone(libraryKey, cardId)
+                val oldObjectRef = newState.objectRef(cardId)
                 newState = newState.addToZone(handKey, cardId)
 
                 events.add(ZoneChangeEvent(
@@ -141,7 +151,9 @@ class MulliganHandler(
                         ?.get<CardComponent>()?.name ?: "Unknown",
                     fromZone = Zone.LIBRARY,
                     toZone = Zone.HAND,
-                    ownerId = playerId
+                    ownerId = playerId,
+                    oldObject = oldObjectRef,
+                    newObject = newState.objectRef(cardId)
                 ))
             }
         }
@@ -217,8 +229,8 @@ class MulliganHandler(
         for (cardId in action.cardIds) {
             newState = newState.removeFromZone(handKey, cardId)
             // Add to bottom of library (end of list, since first() = top)
-            val library = newState.getZone(libraryKey)
-            newState = newState.copy(zones = newState.zones + (libraryKey to library + listOf(cardId)))
+            val oldObjectRef = newState.objectRef(cardId)
+            newState = newState.addToZone(libraryKey, cardId)
 
             events.add(ZoneChangeEvent(
                 entityId = cardId,
@@ -226,7 +238,9 @@ class MulliganHandler(
                     ?.get<CardComponent>()?.name ?: "Unknown",
                 fromZone = Zone.HAND,
                 toZone = Zone.LIBRARY,
-                ownerId = playerId
+                ownerId = playerId,
+                oldObject = oldObjectRef,
+                newObject = newState.objectRef(cardId)
             ))
         }
 

@@ -47,6 +47,8 @@ data class TriggeredAbilityContinuation(
     val sourceId: EntityId,
     val sourceName: String,
     val sourceBattlefieldTimestamp: Long? = null,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment =
+        com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val controllerId: EntityId,
     val effect: Effect,
     val description: String,
@@ -145,6 +147,8 @@ data class TriggerDamageDistributionContinuation(
     val sourceId: EntityId,
     val sourceName: String,
     val sourceBattlefieldTimestamp: Long? = null,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment =
+        com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     val controllerId: EntityId,
     val effect: Effect,
     val description: String,
@@ -481,7 +485,8 @@ data class FlipCoinsUntilLossContinuation(
     val flipperId: EntityId,
     val storeWinsAs: String,
     val winsSoFar: Int,
-    val sourceId: EntityId?
+    val sourceId: EntityId?,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**

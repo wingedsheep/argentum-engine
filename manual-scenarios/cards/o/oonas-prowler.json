@@ -1,0 +1,69 @@
+{
+  "player1Name": "Prowler controller",
+  "player2Name": "Opponent activating Prowler",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [
+      "Oona's Prowler",
+      "Momentary Blink",
+      "Swamp"
+    ],
+    "battlefield": [
+      {
+        "name": "Oona's Prowler"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Plains"
+      },
+      {
+        "name": "Plains"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Swamp"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Forest",
+      "Forest"
+    ],
+    "battlefield": [
+      {
+        "name": "Grizzly Bears"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest",
+      "Forest"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "step": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 2,
+  "player1StopAtSteps": [
+    "UPKEEP"
+  ],
+  "player2StopAtSteps": [
+    "UPKEEP"
+  ],
+  "player1OpponentStopAtSteps": [],
+  "player2OpponentStopAtSteps": []
+}

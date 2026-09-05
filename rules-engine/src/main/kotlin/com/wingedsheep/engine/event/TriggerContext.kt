@@ -18,6 +18,7 @@ import com.wingedsheep.engine.core.TurnFaceUpEvent
 import com.wingedsheep.engine.core.UntappedEvent
 import com.wingedsheep.engine.core.PhasedInEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.model.EntityId
 
@@ -27,6 +28,8 @@ import com.wingedsheep.sdk.model.EntityId
 @kotlinx.serialization.Serializable
 data class TriggerContext(
     val triggeringEntityId: EntityId? = null,
+    val triggeringOrigin: com.wingedsheep.engine.state.ObjectRef? = null,
+    val triggeringObject: com.wingedsheep.engine.state.ObjectRef? = null,
     /** Battlefield visit of the entity whose entry or departure caused this trigger. */
     val triggeringBattlefieldTimestamp: Long? = null,
     val triggeringPlayerId: EntityId? = null,
@@ -205,6 +208,8 @@ data class TriggerContext(
             return when (event) {
                 is ZoneChangeEvent -> TriggerContext(
                     triggeringEntityId = event.entityId,
+                    triggeringOrigin = if (event.toZone == Zone.BATTLEFIELD) event.newObject else event.oldObject,
+                    triggeringObject = if (event.toZone in setOf(Zone.BATTLEFIELD, Zone.GRAVEYARD, Zone.EXILE, Zone.STACK, Zone.COMMAND)) event.newObject else event.oldObject,
                     triggeringBattlefieldTimestamp = event.lastKnown?.battlefieldEntryTimestamp
                         ?: event.enteredBattlefieldTimestamp,
                     // The player associated with a zone change is the object's controller as it
@@ -232,6 +237,7 @@ data class TriggerContext(
                 )
                 is DamageDealtEvent -> TriggerContext(
                     triggeringEntityId = event.targetId,
+                    triggeringPlayerId = event.targetControllerId,
                     damageAmount = event.amount,
                     excessDamageAmount = event.excessAmount.takeIf { it > 0 },
                     recipientToughnessAtDamage = event.targetToughnessAtDamage
@@ -240,6 +246,7 @@ data class TriggerContext(
                     // The prevented source — so "deal that much to that source's controller" resolves
                     // via EffectTarget.ControllerOfTriggeringEntity, and damageAmount feeds PREVENTED_DAMAGE_AMOUNT.
                     triggeringEntityId = event.sourceId,
+                    triggeringPlayerId = event.sourceControllerId,
                     damageAmount = event.amount
                 )
                 // A land play (CR 305.1): the land played this way is "it" and the player who

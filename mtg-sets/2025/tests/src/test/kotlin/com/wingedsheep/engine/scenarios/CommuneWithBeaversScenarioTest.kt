@@ -1,6 +1,9 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ReorderLibraryDecision
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -60,8 +63,16 @@ class CommuneWithBeaversScenarioTest : ScenarioTestBase() {
                 select.options shouldContainExactlyInAnyOrder listOf(bear, forest)
                 select.nonSelectableOptions shouldContainExactlyInAnyOrder listOf(bolt)
 
-                game.selectCards(listOf(bear))
-                game.resolveStack()
+                game.selectCards(listOf(bear)).error shouldBe null
+                val bottomOrder = game.state.pendingDecision as ReorderLibraryDecision
+                bottomOrder.cards shouldContainExactlyInAnyOrder listOf(forest, bolt)
+                // The spell is still resolving until the controller orders the remaining cards.
+                game.findCardsInGraveyard(1, "Commune with Beavers").size shouldBe 0
+                game.state.stack.size shouldBe 1
+                game.keepLibraryOrder().error shouldBe null
+                game.state.pendingDecision shouldBe null
+                game.state.stack.size shouldBe 0
+                game.state.getZone(ZoneKey(game.player1Id, Zone.LIBRARY)).takeLast(2) shouldBe bottomOrder.cards
 
                 withClue("The revealed creature ends up in hand") {
                     game.findCardsInHand(1, "Grizzly Bears").size shouldBe 1
@@ -96,8 +107,16 @@ class CommuneWithBeaversScenarioTest : ScenarioTestBase() {
                 select.minSelections shouldBe 0
 
                 // Decline the optional reveal.
-                game.selectCards(emptyList())
-                game.resolveStack()
+                game.selectCards(emptyList()).error shouldBe null
+                val bottomOrder = game.state.pendingDecision as ReorderLibraryDecision
+                bottomOrder.cards.size shouldBe 3
+                game.findCardsInGraveyard(1, "Commune with Beavers").size shouldBe 0
+                game.state.stack.size shouldBe 1
+                game.keepLibraryOrder().error shouldBe null
+                game.state.pendingDecision shouldBe null
+                game.state.stack.size shouldBe 0
+                game.state.getZone(ZoneKey(game.player1Id, Zone.LIBRARY)).takeLast(3) shouldBe bottomOrder.cards
+                game.findCardsInGraveyard(1, "Commune with Beavers").size shouldBe 1
 
                 withClue("Nothing went to hand from the look") {
                     game.findCardsInHand(1, "Grizzly Bears").size shouldBe 0

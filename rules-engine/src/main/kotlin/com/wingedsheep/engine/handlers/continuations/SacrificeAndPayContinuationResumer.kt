@@ -206,6 +206,7 @@ class SacrificeAndPayContinuationResumer(
             // executePayOrSufferConsequence), not the player who declined the costs.
             val context = EffectContext(
                 sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
                 controllerId = continuation.abilityControllerId ?: continuation.playerId,
                 targets = continuation.targets,
                 pipeline = PipelineState(
@@ -232,6 +233,7 @@ class SacrificeAndPayContinuationResumer(
         )
         val context = EffectContext(
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
             controllerId = continuation.playerId,
             targets = continuation.targets,
             pipeline = PipelineState(
@@ -570,6 +572,7 @@ class SacrificeAndPayContinuationResumer(
 
         for (cardId in selectedCards) {
             val cardName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            val oldObject = newState.objectRef(cardId)
             newState = newState.removeFromZone(fromZone, cardId)
             newState = newState.addToZone(exileZone, cardId)
             events.add(
@@ -578,7 +581,7 @@ class SacrificeAndPayContinuationResumer(
                     entityName = cardName,
                     fromZone = sourceZone,
                     toZone = Zone.EXILE,
-                    ownerId = playerId
+                    ownerId = playerId, oldObject = oldObject, newObject = newState.objectRef(cardId)
                 )
             )
         }
@@ -762,6 +765,7 @@ class SacrificeAndPayContinuationResumer(
         // for the common case where the payer is the controller.
         val context = EffectContext(
             sourceId = sourceId,
+            objectReferences = continuation.objectReferences,
             controllerId = continuation.abilityControllerId ?: continuation.playerId,
             targets = continuation.targets,
             pipeline = PipelineState(
@@ -865,6 +869,7 @@ class SacrificeAndPayContinuationResumer(
         if (consequence == null) return checkForMore(state, priorEvents)
         val context = EffectContext(
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences.authorize(priorEvents),
             controllerId = continuation.controllerId,
             pipeline = PipelineState(
                 storedCollections = continuation.storedCollections,
@@ -878,7 +883,7 @@ class SacrificeAndPayContinuationResumer(
         )
         val result = services.effectExecutorRegistry.execute(state, consequence, context).toExecutionResult()
         val allEvents = priorEvents + result.events
-        return if (result.isPaused) result else checkForMore(result.state, allEvents)
+        return if (result.isPaused) result.copy(events = allEvents) else checkForMore(result.state, allEvents)
     }
 
     /**

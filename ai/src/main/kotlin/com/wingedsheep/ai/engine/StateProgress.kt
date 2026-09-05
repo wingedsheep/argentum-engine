@@ -77,7 +77,7 @@ object StateProgress {
 
         var objects = 0L
         for ((key, contents) in state.zones) {
-            // A library is hashed by its order alone — carried by `zones` in [normalized]. Its 60
+            // A library's order and object generations are carried by [normalized]. Its 60
             // cards have no components a game action touches without also moving them somewhere
             // this digest reads in full.
             if (key.zoneType == Zone.LIBRARY) continue
@@ -103,7 +103,9 @@ object StateProgress {
      *
      * What is stripped, and why none of it is a game fact:
      * - `entities` — read separately by [objectHash], which drops [IGNORED_COMPONENTS].
-     * - `rng`, `nextEntityId`, `timestamp` — advanced by resolving anything at all.
+     * - `rng`, `nextEntityId`, `nextObjectGeneration`, `timestamp` — allocation/resolution bookkeeping.
+     * - Orphan object identities — a completed stack object is not a live game object. Exact
+     *   generations of physically present objects remain: a real zone round trip is progress.
      * - `priorityPlayerId`, `priorityPassedBy` — whose turn it is to speak, not what is true. This
      *   is what makes an action's own resolution comparable with the position it started from.
      * - `continuationStack` — counted instead; see [digest].
@@ -112,16 +114,24 @@ object StateProgress {
      * `projectedState` is a body property rather than a constructor parameter, so it is already out
      * of `hashCode` — and would be redundant anyway, being a pure function of what is left.
      */
-    private fun normalized(state: GameState): GameState = state.copy(
-        entities = emptyMap(),
-        rng = GameRng(0L),
-        nextEntityId = 0L,
-        timestamp = 0L,
-        priorityPlayerId = null,
-        priorityPassedBy = emptySet(),
-        continuationStack = emptyList(),
-        pendingDecision = null,
-    )
+    private fun normalized(state: GameState): GameState {
+        val liveObjects = buildSet {
+            state.zones.values.forEach { addAll(it) }
+            addAll(state.stack)
+        }
+        return state.copy(
+            entities = emptyMap(),
+            objectIdentities = state.objectIdentities.filterKeys { it in liveObjects },
+            nextObjectGeneration = 0L,
+            rng = GameRng(0L),
+            nextEntityId = 0L,
+            timestamp = 0L,
+            priorityPlayerId = null,
+            priorityPassedBy = emptySet(),
+            continuationStack = emptyList(),
+            pendingDecision = null,
+        )
+    }
 
     /**
      * Everything the ECS records about one object, minus the ignored bookkeeping.

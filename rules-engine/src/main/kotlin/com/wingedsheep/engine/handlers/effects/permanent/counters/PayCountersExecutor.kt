@@ -67,7 +67,8 @@ class PayCountersExecutor : EffectExecutor<PayCountersEffect> {
             playerId = playerId,
             counterType = effect.counterType,
             storeAmountAs = effect.storeAmountAs,
-            sourceId = context.sourceId
+            sourceId = context.sourceId,
+            objectReferences = context.objectReferences
         )
 
         val newState = state

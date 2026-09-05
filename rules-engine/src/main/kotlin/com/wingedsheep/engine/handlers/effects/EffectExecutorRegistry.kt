@@ -165,7 +165,10 @@ class EffectExecutorRegistry(
                     "Register one in the matching *Executors module " +
                     "(EffectExecutorCoverageTest guards this at build time)."
             )
-        return executor.execute(state, effect, context)
+        val instructionContext = context.withCurrentObjectReferences(state)
+        val result = executor.execute(state, effect, instructionContext)
+        val references = instructionContext.objectReferences.authorize(result.events)
+        return result.copy(state = com.wingedsheep.engine.handlers.continuations.propagateObjectReferences(result.state, references))
     }
 
     /**

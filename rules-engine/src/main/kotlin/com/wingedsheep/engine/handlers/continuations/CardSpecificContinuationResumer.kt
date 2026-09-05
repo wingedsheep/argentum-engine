@@ -74,6 +74,10 @@ class CardSpecificContinuationResumer(
             services.effectExecutorRegistry.execute(s, e, c)
         }
 
+        val context = (continuation.effectContext ?: EffectContext(
+            sourceId = continuation.sourceId, controllerId = continuation.casterId, targets = continuation.targets
+        )).copy(objectReferences = continuation.objectReferences)
+
         return when (continuation.stage) {
             OpenLifeBidStage.AWAITING_TOP_DECISION -> {
                 if (response !is YesNoResponse) {
@@ -83,7 +87,7 @@ class CardSpecificContinuationResumer(
                     // Pass — the high bid stands; resolve in favor of the current high bidder.
                     val result = OpenLifeBidLogic.resolve(
                         state, continuation.casterId, continuation.highBidder, continuation.highBid,
-                        continuation.onWin, continuation.targets, continuation.sourceId, executeEffect
+                        continuation.onWin, continuation.targets, continuation.sourceId, executeEffect, context
                     )
                     if (result.pendingDecision != null) result else checkForMore(result.state, result.events)
                 } else {
@@ -102,7 +106,7 @@ class CardSpecificContinuationResumer(
                     highBidder = continuation.bidderToAsk, highBid = newBid,
                     bidderToAsk = continuation.highBidder, onWin = continuation.onWin,
                     targets = continuation.targets, sourceId = continuation.sourceId,
-                    sourceName = continuation.sourceName, executeEffect = executeEffect
+                    sourceName = continuation.sourceName, executeEffect = executeEffect, context = context
                 )
                 if (result.pendingDecision != null) result else checkForMore(result.state, result.events)
             }
@@ -228,6 +232,7 @@ class CardSpecificContinuationResumer(
     ): ExecutionResult {
         val context = com.wingedsheep.engine.handlers.EffectContext(
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
             controllerId = playerId,
             xValue = bidAmount
         )

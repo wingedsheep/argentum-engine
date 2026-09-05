@@ -32,9 +32,8 @@ class ShuffleLibraryExecutor : EffectExecutor<ShuffleLibraryEffect> {
         val cleared = LibraryRevealUtils.clearLibraryReveals(state, targetId)
         val (library, advanced) = cleared.nextRandom { shuffle(cleared.getZone(libraryZone)) }
 
-        val newZones = advanced.zones + (libraryZone to library)
         return EffectResult.success(
-            advanced.copy(zones = newZones),
+            advanced.reorderZone(libraryZone, library),
             listOf(LibraryShuffledEvent(targetId))
         )
     }

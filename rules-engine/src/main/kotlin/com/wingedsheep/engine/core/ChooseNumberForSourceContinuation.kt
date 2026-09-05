@@ -21,7 +21,8 @@ data class ChooseNumberForSourceContinuation(
     override val decisionId: String,
     val sourceId: EntityId,
     val controllerId: EntityId,
-    val slot: ChoiceSlot
+    val slot: ChoiceSlot,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -43,7 +44,8 @@ data class ChooseOpponentForSourceContinuation(
     override val decisionId: String,
     val sourceId: EntityId,
     val controllerId: EntityId,
-    val opponentIds: List<EntityId>
+    val opponentIds: List<EntityId>,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -67,7 +69,8 @@ data class ChooseCardTypeForSourceContinuation(
     val sourceId: EntityId,
     val controllerId: EntityId,
     val slot: ChoiceSlot,
-    val cardTypes: List<String>
+    val cardTypes: List<String>,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
