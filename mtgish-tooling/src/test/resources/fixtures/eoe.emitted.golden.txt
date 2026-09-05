@@ -3207,7 +3207,7 @@ val FungalColossus = card("Fungal Colossus") {
     oracleText = "This spell costs {X} less to cast, where X is the number of differently named lands you control."
     power = 5
     toughness = 5
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "184"
@@ -3463,7 +3463,7 @@ val GigastormTitan = card("Gigastorm Titan") {
     oracleText = "This spell costs {3} less to cast if you've cast another spell this turn."
     power = 4
     toughness = 4
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "57"
@@ -4931,7 +4931,7 @@ val LashwhipPredator = card("Lashwhip Predator") {
     power = 5
     toughness = 7
     keywords(Keyword.REACH)
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "195"
@@ -5667,7 +5667,7 @@ val MentalModulation = card("Mental Modulation") {
     colorIdentity = "U"
     typeLine = "Instant"
     oracleText = "This spell costs {1} less to cast during your turn.\nTap target artifact or creature.\nDraw a card."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "67"
@@ -9296,7 +9296,7 @@ val TemporalIntervention = card("Temporal Intervention") {
     colorIdentity = "B"
     typeLine = "Sorcery"
     oracleText = "Void — This spell costs {2} less to cast if a nonland permanent left the battlefield this turn or a spell was warped this turn.\nTarget opponent reveals their hand. You choose a nonland card from it. That player discards that card."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "120"
@@ -10293,7 +10293,7 @@ val VoteOut = card("Vote Out") {
     colorIdentity = "B"
     typeLine = "Sorcery"
     oracleText = "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nDestroy target creature."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "126"

@@ -1385,6 +1385,8 @@ Atomic effect factories. For library/zone manipulation, prefer the pipelines in 
 
 ### Stats & keywords
 
+- `SwitchPowerToughness(target?, duration?)` — switch power and toughness after all other stat changes. Defaults to target 0 and end of turn. Each switch applies; two cancel.
+
 - `ModifyStats(power, toughness, target?, duration?)` — `±P/±T` for `duration` (default: until end of
   turn). Pass `Duration.WhileSourceTapped("…")` for the Antiquities "tap-locked" buffs (Ashnod's Battle
   Gear `+2/-2`, Tawnos's Weaponry `+1/+1`): the bonus persists for as long as the source artifact remains

@@ -22,7 +22,7 @@ val AbandonHope = card("Abandon Hope") {
     colorIdentity = "B"
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, discard X cards.\nLook at target opponent's hand and choose X cards from it. That player discards those cards."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "107"
@@ -760,7 +760,7 @@ val BloodFrenzy = card("Blood Frenzy") {
     colorIdentity = "R"
     typeLine = "Instant"
     oracleText = "Cast this spell only before the combat damage step.\nTarget attacking or blocking creature gets +4/+0 until end of turn. Destroy that creature at the beginning of the next end step."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "164"
@@ -3532,7 +3532,7 @@ val ErtaisMeddling = card("Ertai's Meddling") {
     colorIdentity = "U"
     typeLine = "Instant"
     oracleText = "X can't be 0.\nTarget spell's controller exiles it with X delay counters on it.\nAt the beginning of each of that player's upkeeps, if that card is exiled, remove a delay counter from it. If the card has no delay counters on it, the player puts it onto the stack as a copy of the original spell."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "61"
@@ -9576,7 +9576,7 @@ val ScorchedEarth = card("Scorched Earth") {
     colorIdentity = "R"
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, discard X land cards.\nDestroy X target lands."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "200"
@@ -10220,7 +10220,7 @@ val SkyshroudCondor = card("Skyshroud Condor") {
     power = 2
     toughness = 2
     keywords(Keyword.FLYING)
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "88"

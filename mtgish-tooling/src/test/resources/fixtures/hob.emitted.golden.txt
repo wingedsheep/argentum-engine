@@ -259,7 +259,7 @@ val BardsCompany = card("Bard's Company") {
     oracleText = "You may cast this spell as though it had flash if you control a Human.\nOther creatures you control get +1/+1.\nWhenever this creature enters or attacks, recruit. (Draw a card, then discard a card. If you discarded a nonland card, create a 1/1 white Human Soldier creature token.)"
     power = 2
     toughness = 3
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "146"
@@ -1515,7 +1515,7 @@ val DreadedBatCloud = card("Dreaded Bat-Cloud") {
     power = 4
     toughness = 2
     keywords(Keyword.FLYING, Keyword.DEATHTOUCH)
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "66"
@@ -5823,7 +5823,7 @@ val StirUpTrouble = card("Stir Up Trouble") {
     colorIdentity = "B"
     typeLine = "Sorcery"
     oracleText = "As an additional cost to cast this spell, sacrifice an artifact or creature or pay {4}.\nDestroy target creature."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "84"
@@ -6260,7 +6260,7 @@ val TheLordOfTheEagles = card("The Lord of the Eagles") {
     power = 8
     toughness = 8
     keywords(Keyword.FLASH, Keyword.FLYING)
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "46"

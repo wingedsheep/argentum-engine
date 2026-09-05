@@ -2146,7 +2146,7 @@ val DevouringLight = card("Devouring Light") {
     colorIdentity = "W"
     typeLine = "Instant"
     oracleText = "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nExile target attacking or blocking creature."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "13"
@@ -2798,7 +2798,7 @@ val DreamLeash = card("Dream Leash") {
     colorIdentity = "U"
     typeLine = "Enchantment — Aura"
     oracleText = "Enchant permanent\nYou can't choose an untapped permanent as this spell's target as you cast it.\nYou control enchanted permanent."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "45"
@@ -3883,7 +3883,7 @@ val GatherCourage = card("Gather Courage") {
     colorIdentity = "G"
     typeLine = "Instant"
     oracleText = "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nTarget creature gets +2/+2 until end of turn."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "165"
@@ -5003,7 +5003,7 @@ val HourOfReckoning = card("Hour of Reckoning") {
     colorIdentity = "W"
     typeLine = "Sorcery"
     oracleText = "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nDestroy all nontoken creatures."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "21"
@@ -6003,7 +6003,7 @@ val MasterWarcraft = card("Master Warcraft") {
     colorIdentity = "WR"
     typeLine = "Instant"
     oracleText = "Cast this spell only before attackers are declared.\nYou choose which creatures attack this turn.\nYou choose which creatures block this turn and how those creatures block."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "250"
@@ -6819,7 +6819,7 @@ val Overwhelm = card("Overwhelm") {
     colorIdentity = "G"
     typeLine = "Sorcery"
     oracleText = "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nCreatures you control get +3/+3 until end of turn."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "175"
@@ -7958,7 +7958,7 @@ val ScatterTheSeeds = card("Scatter the Seeds") {
     colorIdentity = "G"
     typeLine = "Instant"
     oracleText = "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nCreate three 1/1 green Saproling creature tokens."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "181"
@@ -9175,7 +9175,7 @@ val SunderingVitae = card("Sundering Vitae") {
     colorIdentity = "G"
     typeLine = "Instant"
     oracleText = "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nDestroy target artifact or enchantment."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "185"

@@ -40,6 +40,7 @@ internal fun BridgeBuilder.manaCountersAndState() {
     // trample" cycle — but every corpus card with this tag also carries SetPT / activated-ability /
     // until-EOT riders the shape doesn't cover, so there is no calibrated card to render and the
     // emitter keeps declining.)
+    effect("SwitchPT", "SwitchPowerToughness", UNIVERSAL)
     effect("SetPT", "SetBaseStats", "set base power/toughness via an enters-with layer effect (Ghost Vacuum)")
     effect("AddCreatureType", "AddCreatureType", "add a creature subtype in addition to other types (Ghost Vacuum)")
     // The mtgish IR routes every put-counter action through a `PutCounters` envelope whose nested

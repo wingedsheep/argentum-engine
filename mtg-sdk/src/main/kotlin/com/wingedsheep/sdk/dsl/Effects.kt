@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.core.Speed
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.*
+import com.wingedsheep.sdk.scripting.effects.SwitchPowerToughnessEffect
 import com.wingedsheep.sdk.scripting.effects.AddAnyColorManaSpendOnChosenTypeEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
@@ -1635,6 +1636,12 @@ object Effects {
     // =========================================================================
     // Stat Modification Effects
     // =========================================================================
+
+    /** Switch power and toughness after other stat changes for the given duration. */
+    fun SwitchPowerToughness(
+        target: EffectTarget = EffectTarget.ContextTarget(0),
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = SwitchPowerToughnessEffect(target, duration)
 
     /**
      * Modify power and toughness for the given [duration] (default: until end of turn).

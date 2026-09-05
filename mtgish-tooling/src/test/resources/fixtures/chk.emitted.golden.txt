@@ -1061,7 +1061,7 @@ val ConsumingVortex = card("Consuming Vortex") {
     colorIdentity = "U"
     typeLine = "Instant — Arcane"
     oracleText = "Return target creature to its owner's hand.\nSplice onto Arcane {3}{U} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "54"
@@ -1305,7 +1305,7 @@ val DampenThought = card("Dampen Thought") {
     colorIdentity = "U"
     typeLine = "Instant — Arcane"
     oracleText = "Target player mills four cards.\nSplice onto Arcane {1}{U} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "57"
@@ -1425,7 +1425,7 @@ val DesperateRitual = card("Desperate Ritual") {
     colorIdentity = "R"
     typeLine = "Instant — Arcane"
     oracleText = "Add {R}{R}{R}.\nSplice onto Arcane {1}{R} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "163"
@@ -1494,7 +1494,7 @@ val DevouringGreed = card("Devouring Greed") {
     colorIdentity = "B"
     typeLine = "Sorcery — Arcane"
     oracleText = "As an additional cost to cast this spell, you may sacrifice any number of Spirits.\nTarget player loses 2 life plus 2 life for each Spirit sacrificed this way. You gain that much life."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "110"
@@ -1527,7 +1527,7 @@ val DevouringRage = card("Devouring Rage") {
     colorIdentity = "R"
     typeLine = "Instant — Arcane"
     oracleText = "As an additional cost to cast this spell, you may sacrifice any number of Spirits.\nTarget creature gets +3/+0 until end of turn. For each Spirit sacrificed this way, that creature gets an additional +3/+0 until end of turn."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "164"
@@ -2357,7 +2357,7 @@ val GlacialRay = card("Glacial Ray") {
     colorIdentity = "R"
     typeLine = "Instant — Arcane"
     oracleText = "Glacial Ray deals 2 damage to any target.\nSplice onto Arcane {1}{R} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "168"
@@ -2902,7 +2902,7 @@ val HideousLaughter = card("Hideous Laughter") {
     colorIdentity = "B"
     typeLine = "Instant — Arcane"
     oracleText = "All creatures get -2/-2 until end of turn.\nSplice onto Arcane {3}{B}{B} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "115"
@@ -4702,7 +4702,7 @@ val KitsuneRiftwalker = card("Kitsune Riftwalker") {
     power = 2
     toughness = 1
     keywordAbility(KeywordAbility.Protection(ProtectionScope.Subtype("Spirit")))
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "29"
@@ -4809,7 +4809,7 @@ val KodamasMight = card("Kodama's Might") {
     colorIdentity = "G"
     typeLine = "Instant — Arcane"
     oracleText = "Target creature gets +2/+2 until end of turn.\nSplice onto Arcane {G} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "224"
@@ -5296,7 +5296,7 @@ val LiftedByClouds = card("Lifted by Clouds") {
     colorIdentity = "U"
     typeLine = "Instant — Arcane"
     oracleText = "Target creature gains flying until end of turn.\nSplice onto Arcane {1}{U} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "73"
@@ -7202,7 +7202,7 @@ val PsychicPuppetry = card("Psychic Puppetry") {
     colorIdentity = "U"
     typeLine = "Instant — Arcane"
     oracleText = "You may tap or untap target permanent.\nSplice onto Arcane {U} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "80"
@@ -9012,7 +9012,7 @@ val Soulblast = card("Soulblast") {
     colorIdentity = "R"
     typeLine = "Instant"
     oracleText = "As an additional cost to cast this spell, sacrifice all creatures you control.\nSoulblast deals damage to any target equal to the total power of the sacrificed creatures."
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.RARE
         collectorNumber = "190"
@@ -9045,7 +9045,7 @@ val SoullessRevival = card("Soulless Revival") {
     colorIdentity = "B"
     typeLine = "Instant — Arcane"
     oracleText = "Return target creature card from your graveyard to your hand.\nSplice onto Arcane {1}{B} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "144"
@@ -9151,7 +9151,7 @@ val StrangeInversion = card("Strange Inversion") {
     colorIdentity = "R"
     typeLine = "Instant — Arcane"
     oracleText = "Switch target creature's power and toughness until end of turn.\nSplice onto Arcane {1}{R} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: CreatePermanentLayerEffectUntil
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.UNCOMMON
         collectorNumber = "192"
@@ -10415,7 +10415,7 @@ val WearAway = card("Wear Away") {
     colorIdentity = "G"
     typeLine = "Instant — Arcane"
     oracleText = "Destroy target artifact or enchantment.\nSplice onto Arcane {3}{G} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)"
-    // STRUCTURE needs human wiring: 
+    // STRUCTURE needs human wiring: unsupported card structure
     metadata {
         rarity = Rarity.COMMON
         collectorNumber = "250"
