@@ -119,8 +119,8 @@ class HiddenWorldMaterializer internal constructor(
         }
         // Preserve each occurrence, including duplicates within one zone. Validation below still
         // chooses the first obstruction in assignment order; unrelated malformed slots are ignored.
-        // A single assignment only needs one scan, so it does not pay for an index.
-        val memberships = if (request.slotAssignments.size > 1) {
+        // For one or two assignments the original scan costs less than building an index.
+        val memberships = if (request.slotAssignments.size > 2) {
             mutableMapOf<EntityId, MutableList<ZoneKey>>().also { index ->
                 for ((zoneKey, ids) in state.zones) {
                     for (id in ids) {
@@ -148,24 +148,28 @@ class HiddenWorldMaterializer internal constructor(
                     listOf("slot is conservatively pinned by in-flight execution"),
                 )
             }
-            val zones = if (memberships == null) buildList {
-                for ((zoneKey, ids) in state.zones) {
-                    for (id in ids) if (id == entityId) add(zoneKey)
-                }
-            } else memberships[entityId].orEmpty()
-            val occurrences = zones.size
-            if (occurrences != 1 || zones.singleOrNull()?.zoneType !in SUPPORTED_ZONES) {
+            val zones = if (memberships == null) state.zones.filterValues { entityId in it } else null
+            val indexedZones = memberships?.get(entityId).orEmpty()
+            val occurrences = if (zones != null) zones.values.sumOf { zone -> zone.count { it == entityId } }
+                else indexedZones.size
+            if (occurrences != 1) {
                 return unsupported(
                     UnsupportedHiddenWorldKind.INVALID_ASSIGNMENT,
                     entityId,
                     listOf(
                         if (occurrences == 0) "entity is not in a zone"
-                        else if (occurrences > 1) "entity occurs in zones $occurrences times"
-                        else "supported slots are HAND/LIBRARY; found ${zones.single().zoneType.name}"
+                        else "entity occurs in zones $occurrences times"
                     ),
                 )
             }
-            val zoneKey = zones.single()
+            val zoneKey = zones?.keys?.single() ?: indexedZones.single()
+            if (zoneKey.zoneType !in SUPPORTED_ZONES) {
+                return unsupported(
+                    UnsupportedHiddenWorldKind.INVALID_ASSIGNMENT,
+                    entityId,
+                    listOf("supported slots are HAND/LIBRARY; found ${zoneKey.zoneType.name}"),
+                )
+            }
 
             val ownerId = container.get<OwnerComponent>()?.playerId
                 ?: return unsupported(

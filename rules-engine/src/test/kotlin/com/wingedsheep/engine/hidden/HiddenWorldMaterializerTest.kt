@@ -69,6 +69,7 @@ class HiddenWorldMaterializerTest : ScenarioTestBase() {
         test("zone membership retains multiplicity and sorted refusal order") {
             val game = scenario().withPlayers()
                 .withCardInLibrary(2, "Forest").withCardInLibrary(2, "Mountain")
+                .withCardInLibrary(2, "Swamp")
                 .build()
             val ids = game.state.getLibrary(game.player2Id).sortedBy { it.value }
             val first = ids.first()
@@ -95,7 +96,7 @@ class HiddenWorldMaterializerTest : ScenarioTestBase() {
                     HiddenWorldMaterializationRequest(
                         // Insertion order opposes the required sorted failure order. The later
                         // slot also fails, but its runtime-state refusal must not take precedence.
-                        linkedMapOf(later to cardRegistry.requireCard("Island"), first to cardRegistry.requireCard("Island")),
+                        ids.reversed().associateWith { cardRegistry.requireCard("Island") },
                         GameRng.seeded(901L),
                     ),
                 ).shouldBeInstanceOf<HiddenWorldMaterializationResult.Unsupported>()
@@ -107,6 +108,13 @@ class HiddenWorldMaterializerTest : ScenarioTestBase() {
                         malformed,
                         HiddenWorldMaterializationRequest(
                             mapOf(first to cardRegistry.requireCard("Island")),
+                            GameRng.seeded(901L),
+                        ),
+                    ) shouldBe result
+                    materializer.materialize(
+                        malformed,
+                        HiddenWorldMaterializationRequest(
+                            linkedMapOf(later to cardRegistry.requireCard("Island"), first to cardRegistry.requireCard("Island")),
                             GameRng.seeded(901L),
                         ),
                     ) shouldBe result
