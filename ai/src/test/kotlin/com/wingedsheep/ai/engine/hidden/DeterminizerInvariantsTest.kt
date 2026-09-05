@@ -302,7 +302,9 @@ class DeterminizerInvariantsTest : ScenarioTestBase() {
             val candidateIdentities = candidateIds.associateWith {
                 source.getEntity(it)!!.require<CardComponent>()
             }
+            var analyses = 0
             val determinizer = Determinizer(cardRegistry, Visibility(cardRegistry)) {
+                analyses++
                 HiddenSlotRewrite.IdentitySensitiveInFlightPins.Incomplete("forced for test")
             }
 
@@ -317,6 +319,38 @@ class DeterminizerInvariantsTest : ScenarioTestBase() {
                 sampled.getEntity(entityId)!!.require<CardComponent>() shouldBe identity
             }
             sampled shouldBe source
+            analyses shouldBe 1
+        }
+
+        test("in-flight references are analyzed once for all players in a sample") {
+            val game = scenario()
+                .withPlayers()
+                .withCardInLibrary(1, "Forest")
+                .withCardInLibrary(1, "Mountain")
+                .withCardInHand(2, "Grizzly Bears")
+                .withCardInLibrary(2, "Hill Giant")
+                .build()
+            var analyses = 0
+            val determinizer = Determinizer(cardRegistry, Visibility(cardRegistry)) { state ->
+                analyses++
+                HiddenSlotRewrite.identitySensitiveInFlightPins(state)
+            }
+            val rng = GameRng.seeded(914L)
+
+            determinizer.sample(game.state, game.player1Id, OpponentModel.IdentityPermutation, rng) shouldBe
+                Determinizer(cardRegistry).sample(game.state, game.player1Id, OpponentModel.IdentityPermutation, rng)
+            analyses shouldBe 1
+        }
+
+        test("a position without players does not analyze in-flight references") {
+            val game = scenario().withPlayers().build()
+            val source = game.state.copy(turnOrder = emptyList())
+            val determinizer = Determinizer(cardRegistry, Visibility(cardRegistry)) {
+                error("There are no players to sample")
+            }
+
+            (determinizer.sample(source, game.player1Id, OpponentModel.IdentityPermutation, GameRng.seeded(915L)) ===
+                source) shouldBe true
         }
 
         test("the viewer does not retain knowledge of their own library order") {

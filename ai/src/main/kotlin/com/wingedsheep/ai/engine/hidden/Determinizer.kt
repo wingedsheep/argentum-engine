@@ -70,13 +70,20 @@ class Determinizer internal constructor(
         rng: GameRng,
         fallback: OpponentModel = OpponentModel.IdentityPermutation,
     ): GameState {
+        if (state.turnOrder.isEmpty()) return state
+        // Every player is sampled from this same source position, so analyze its references once.
+        val inFlightPins = when (val pins = inFlightPinAnalysis(state)) {
+            is HiddenSlotRewrite.IdentitySensitiveInFlightPins.Complete -> pins.entityIds
+            // An incomplete traversal cannot justify sampling any hidden identity.
+            is HiddenSlotRewrite.IdentitySensitiveInFlightPins.Incomplete -> return state
+        }
         var sampled = state
         var currentRng = rng
 
         // Even the viewer's own library order is hidden. Teammate hands are visible, but teammate
         // libraries are not. Walk every player and let Visibility decide which cards are hidden.
         for (opponentId in state.turnOrder) {
-            val hidden = hiddenCards(state, opponentId, viewerId)
+            val hidden = hiddenCards(state, opponentId, viewerId, inFlightPins)
             if (hidden.isEmpty()) continue
 
             val definitions = when (val model = models[opponentId] ?: fallback) {
@@ -122,17 +129,12 @@ class Determinizer internal constructor(
         state: GameState,
         opponentId: EntityId,
         viewerId: EntityId,
+        inFlightPins: Set<EntityId>,
     ): List<EntityId> {
         val handKey = ZoneKey(opponentId, Zone.HAND)
         val libraryKey = ZoneKey(opponentId, Zone.LIBRARY)
         val library = state.getLibrary(opponentId)
         val candidates = library + state.getHand(opponentId)
-        val inFlightPins = when (val pins = inFlightPinAnalysis(state)) {
-            is HiddenSlotRewrite.IdentitySensitiveInFlightPins.Complete -> pins.entityIds
-            // An incomplete traversal cannot justify sampling any hidden identity. HWM rejects the
-            // corresponding all-or-nothing request; sampling instead keeps every candidate slot.
-            is HiddenSlotRewrite.IdentitySensitiveInFlightPins.Incomplete -> return emptyList()
-        }
         return candidates.filter { id ->
             val zoneKey = if (id in library) libraryKey else handKey
             !visibility.isCardIdentityVisibleTo(state, zoneKey, id, viewerId) &&
