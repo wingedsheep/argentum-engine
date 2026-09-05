@@ -34,7 +34,13 @@ class BattleDefenseCheck : StateBasedActionCheck {
     override val name = "704.5v/w Battle Defense"
     override val order = SbaOrder.BATTLE_DEFENSE
 
-    override fun check(state: GameState): ExecutionResult {
+    override fun check(state: GameState): ExecutionResult = check(state, state, emptySet())
+
+    override fun check(
+        state: GameState,
+        passStartState: GameState,
+        pendingTriggerSources: Set<com.wingedsheep.engine.state.ObjectRef>
+    ): ExecutionResult {
         var newState = state
         val events = mutableListOf<GameEvent>()
 
@@ -47,7 +53,7 @@ class BattleDefenseCheck : StateBasedActionCheck {
             // Both reprieves below are CR 704.5v's, and 704.5v is Siege-only. A non-Siege battle
             // falls through to 704.5w and is binned on the spot.
             if (Battles.isSiege(newState, entityId)) {
-                if (isSourceOfPendingTriggeredAbility(newState, entityId)) continue
+                if (isSourceOfPendingTriggeredAbility(newState, entityId, pendingTriggerSources)) continue
 
                 // A Siege whose last defense counter was just removed by damage has *triggered* but
                 // has not reached the stack yet — combat damage runs this check before the turn's
@@ -68,19 +74,33 @@ class BattleDefenseCheck : StateBasedActionCheck {
         return ExecutionResult.success(newState, events)
     }
 
-    /**
-     * True while [entityId] is the source of an ability that has triggered but not yet left the
-     * stack (CR 704.5v — Sieges only). Triggers are detected and pushed onto the stack by the
-     * trigger processor as part of the action that emitted their event, so by the time state-based
-     * actions run the Siege's defeat trigger is already a stack object — checking the stack is
-     * enough.
-     */
+    /** Pending, decision-paused, and stacked triggers protect only their exact source object. */
     private fun isSourceOfPendingTriggeredAbility(
         state: GameState,
-        entityId: com.wingedsheep.sdk.model.EntityId
-    ): Boolean = state.stack.any { stackId ->
-        state.getEntity(stackId)
-            ?.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>()
-            ?.sourceId == entityId
+        entityId: com.wingedsheep.sdk.model.EntityId,
+        pendingTriggerSources: Set<com.wingedsheep.engine.state.ObjectRef>
+    ): Boolean {
+        val current = state.objectRef(entityId) ?: return false
+        if (current in pendingTriggerSources) return true
+        if (state.stack.any { stackId ->
+            state.getEntity(stackId)
+                ?.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>()
+                ?.objectReferences?.origin == current
+        }) return true
+        return state.continuationStack.any { frame ->
+            when (frame) {
+                is com.wingedsheep.engine.core.PendingTriggersContinuation ->
+                    frame.remainingTriggers.any { it.objectReferences.origin == current }
+                is com.wingedsheep.engine.core.TriggeredAbilityContinuation -> frame.objectReferences.origin == current
+                is com.wingedsheep.engine.core.MayTriggerContinuation -> frame.trigger.objectReferences.origin == current
+                is com.wingedsheep.engine.core.BatchMayTriggerContinuation ->
+                    frame.triggers.any { it.objectReferences.origin == current }
+                is com.wingedsheep.engine.core.MayPayManaTriggerContinuation -> frame.trigger.objectReferences.origin == current
+                is com.wingedsheep.engine.core.ManaSourceSelectionContinuation -> frame.trigger.objectReferences.origin == current
+                is com.wingedsheep.engine.core.TriggerModalModeSelectionContinuation -> frame.ability.objectReferences.origin == current
+                is com.wingedsheep.engine.core.TriggerModalTargetSelectionContinuation -> frame.ability.objectReferences.origin == current
+                else -> false
+            }
+        }
     }
 }

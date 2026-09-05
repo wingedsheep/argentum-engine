@@ -75,6 +75,15 @@ data class GameState(
     /** The stack (spells and abilities waiting to resolve) */
     val stack: List<EntityId> = emptyList(),
 
+    /**
+     * Current visits, independent of components. Defaults initialize fresh raw fixtures/imports
+     * exactly once; copy() and serialized stamped states preserve their recorded identities.
+     */
+    val objectIdentities: Map<EntityId, ObjectIdentity> = initialObjectIdentities(entities, zones, stack),
+
+    /** Monotonic allocator, independent of continuous-effect timestamps. */
+    val nextObjectGeneration: Long = (objectIdentities.values.maxOfOrNull { it.generation } ?: 0) + 1,
+
     /** Players who have passed priority in sequence */
     val priorityPassedBy: Set<EntityId> = emptySet(),
 
@@ -433,7 +442,7 @@ data class GameState(
      * Remove an entity (returns new state).
      */
     fun withoutEntity(id: EntityId): GameState =
-        copy(entities = entities - id)
+        copy(entities = entities - id, objectIdentities = objectIdentities - id)
 
     /**
      * Update an entity's components (returns new state).
@@ -524,7 +533,9 @@ data class GameState(
      */
     fun addToZone(key: ZoneKey, entityId: EntityId): GameState {
         val current = zones[key] ?: emptyList()
-        var newState = copy(zones = zones + (key to current + entityId))
+        if (entityId in current) return this
+        requireDetachedForInsertion(entityId)
+        var newState = enterObjectZone(key, entityId).copy(zones = zones + (key to current + entityId))
         if (key.zoneType != Zone.BATTLEFIELD && key.zoneType != Zone.STACK) {
             val container = newState.getEntity(entityId)
             if (container != null && container.get<TappedComponent>() != null) {
@@ -542,6 +553,75 @@ data class GameState(
             }
         }
         return newState
+    }
+
+    /** Positional real entry, also usable for a same-library reorder after removal. */
+    fun insertIntoZone(key: ZoneKey, entityId: EntityId, index: Int): GameState {
+        if (entityId in getZone(key)) return this
+        val inserted = addToZone(key, entityId)
+        val contents = inserted.getZone(key).toMutableList()
+        contents.remove(entityId)
+        contents.add(index.coerceIn(0, contents.size), entityId)
+        return inserted.copy(zones = inserted.zones + (key to contents))
+    }
+
+    fun objectRef(entityId: EntityId): ObjectRef? =
+        if (entityId in entities) objectIdentities[entityId]?.let { ObjectRef(entityId, it.generation) }
+        else null
+
+    fun isCurrentObject(ref: ObjectRef): Boolean = objectRef(ref.entityId) == ref
+
+    /** Retains STACK while a popped spell resolves, and the origin during source-list removal. */
+    fun logicalZone(entityId: EntityId): ZoneKey? = objectIdentities[entityId]?.logicalZone
+
+    /** Reject duplicate membership without scanning every card in every unrelated zone. */
+    private fun requireDetachedForInsertion(entityId: EntityId) {
+        val origin = logicalZone(entityId)
+        require(entityId !in stack && (origin == null || entityId !in getZone(origin))) {
+            "Remove $entityId from its current zone before inserting it into another zone"
+        }
+    }
+
+    private fun enterObjectZone(key: ZoneKey, entityId: EntityId): GameState {
+        val old = objectIdentities[entityId]
+        val sameZone = old != null && old.logicalZone.zoneType == key.zoneType &&
+            (key.zoneType in SHARED_OBJECT_ZONES || old.logicalZone.ownerId == key.ownerId)
+        if (sameZone && key.zoneType != Zone.EXILE) {
+            return if (old!!.logicalZone == key) this else copy(
+                objectIdentities = objectIdentities + (entityId to old.copy(logicalZone = key))
+            )
+        }
+        return copy(
+            objectIdentities = objectIdentities + (entityId to ObjectIdentity(nextObjectGeneration, key)),
+            nextObjectGeneration = nextObjectGeneration + 1
+        )
+    }
+
+    /**
+     * Explicit import/fixture migration. Existing recorded visits and allocator survive unchanged;
+     * unstamped members get their first identity without pretending they moved between zones.
+     * Normal execution must use destination insertion, never this reconstruction boundary.
+     */
+    fun initializeObjectIdentities(): GameState {
+        var initialized = this
+        for ((key, ids) in zones) for (id in ids) {
+            if (id !in initialized.objectIdentities && id in entities) {
+                initialized = initialized.enterObjectZone(key, id)
+            }
+        }
+        for (id in stack) {
+            if (id !in initialized.objectIdentities && id in entities) {
+                initialized = initialized.enterObjectZone(ZoneKey(id, Zone.STACK), id)
+            }
+        }
+        return initialized
+    }
+
+    /** Replace storage order only; reconstruction must preserve membership and every visit. */
+    fun reorderZone(key: ZoneKey, orderedIds: List<EntityId>): GameState {
+        require(orderedIds.size == orderedIds.toSet().size &&
+            orderedIds.size == getZone(key).size && orderedIds.toSet() == getZone(key).toSet())
+        return copy(zones = zones + (key to orderedIds))
     }
 
     /**
@@ -948,8 +1028,11 @@ data class GameState(
     /**
      * Push an entity onto the stack (returns new state).
      */
-    fun pushToStack(entityId: EntityId): GameState =
-        copy(stack = stack + entityId)
+    fun pushToStack(entityId: EntityId): GameState {
+        if (entityId in stack) return this
+        requireDetachedForInsertion(entityId)
+        return enterObjectZone(ZoneKey(entityId, Zone.STACK), entityId).copy(stack = stack + entityId)
+    }
 
     /**
      * Pop the top entity from the stack (returns entity ID and new state).
@@ -1436,3 +1519,21 @@ data class ActiveCounterPlacementModifier(
     val recipient: com.wingedsheep.sdk.scripting.events.RecipientFilter,
     val duration: com.wingedsheep.sdk.scripting.Duration,
 )
+
+private val SHARED_OBJECT_ZONES = setOf(Zone.BATTLEFIELD, Zone.STACK, Zone.EXILE, Zone.COMMAND)
+
+private fun initialObjectIdentities(
+    entities: Map<EntityId, ComponentContainer>,
+    zones: Map<ZoneKey, List<EntityId>>,
+    stack: List<EntityId>
+): Map<EntityId, ObjectIdentity> {
+    val identities = linkedMapOf<EntityId, ObjectIdentity>()
+    var generation = 1L
+    for ((zone, ids) in zones) for (id in ids) {
+        if (id in entities && id !in identities) identities[id] = ObjectIdentity(generation++, zone)
+    }
+    for (id in stack) {
+        if (id in entities && id !in identities) identities[id] = ObjectIdentity(generation++, ZoneKey(id, Zone.STACK))
+    }
+    return identities
+}

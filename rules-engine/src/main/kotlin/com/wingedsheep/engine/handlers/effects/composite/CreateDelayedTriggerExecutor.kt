@@ -147,6 +147,8 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
             effect = resolvedEffect,
             fireAtStep = effect.step,
             sourceId = sourceId,
+            objectReferences = context.objectReferences.copy(selfBinding = context.objectReferences.selfBinding
+                ?: context.pipeline.iterationTarget?.let { com.wingedsheep.engine.handlers.CapturedObjectBinding(it, state.objectRef(it)) }),
             sourceName = sourceName,
             controllerId = context.controllerId,
             trigger = resolvedTrigger,
@@ -295,7 +297,7 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
     private fun resolveContextTargets(effect: Effect, context: EffectContext, state: GameState): Effect {
         return when (effect) {
             is MoveToZoneEffect -> {
-                val resolvedId = context.resolveTarget(effect.target)
+                val resolvedId = if (effect.target == EffectTarget.Self) null else context.resolveTarget(effect.target)
                 val resolvedController = effect.controllerOverride?.let { co ->
                     context.resolveTarget(co)?.let { EffectTarget.SpecificEntity(it) }
                 }
@@ -305,15 +307,15 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
                 )
             }
             is SacrificeTargetEffect -> {
-                val resolvedId = context.resolveTarget(effect.target)
+                val resolvedId = if (effect.target == EffectTarget.Self) null else context.resolveTarget(effect.target)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             is DestroyAllEquipmentOnTargetEffect -> {
-                val resolvedId = context.resolveTarget(effect.target)
+                val resolvedId = if (effect.target == EffectTarget.Self) null else context.resolveTarget(effect.target)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             is WarpExileEffect -> {
-                val resolvedId = context.resolveTarget(effect.target)
+                val resolvedId = if (effect.target == EffectTarget.Self) null else context.resolveTarget(effect.target)
                 if (resolvedId != null) {
                     // Snapshot the tracked object's entry stamp NOW (CR 603.7c), mirroring the
                     // StackResolver warp path — a permanent that leaves and re-enters before
@@ -327,7 +329,7 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
                 } else effect
             }
             is MoveTrackedBattlefieldObjectEffect -> {
-                val resolvedId = context.resolveTarget(effect.target)
+                val resolvedId = if (effect.target == EffectTarget.Self) null else context.resolveTarget(effect.target)
                 if (resolvedId != null) {
                     val entryTimestamp = state.getEntity(resolvedId)
                         ?.get<BattlefieldEntryTimestampComponent>()?.timestamp
@@ -338,7 +340,7 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
                 } else effect
             }
             is AddCountersEffect -> {
-                val resolvedId = context.resolveTarget(effect.target)
+                val resolvedId = if (effect.target == EffectTarget.Self) null else context.resolveTarget(effect.target)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             // Same as AddCountersEffect, plus: the count is context-derived, and the context that
@@ -346,7 +348,7 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
             // "return it with one fewer revival counter" from its *dies* trigger — the last-known
             // counter snapshot lives on that trigger's context only — so snapshot the amount NOW.
             is AddDynamicCountersEffect -> {
-                val resolvedId = context.resolveTarget(effect.target)
+                val resolvedId = if (effect.target == EffectTarget.Self) null else context.resolveTarget(effect.target)
                 effect.copy(
                     target = if (resolvedId != null) EffectTarget.SpecificEntity(resolvedId) else effect.target,
                     amount = snapshotAmount(effect.amount, context, state)
@@ -359,7 +361,7 @@ class CreateDelayedTriggerExecutor : EffectExecutor<CreateDelayedTriggerEffect> 
             // from the captured entity's CardComponent (last-known information), matching the rule
             // that the token copies what was printed on the original (Esoteric Duplicator).
             is CreateTokenCopyOfTargetEffect -> {
-                val resolvedId = context.resolveTarget(effect.target)
+                val resolvedId = if (effect.target == EffectTarget.Self) null else context.resolveTarget(effect.target)
                 if (resolvedId != null) effect.copy(target = EffectTarget.SpecificEntity(resolvedId)) else effect
             }
             // A delayed trigger that adds mana "equal to" a value read from a context entity

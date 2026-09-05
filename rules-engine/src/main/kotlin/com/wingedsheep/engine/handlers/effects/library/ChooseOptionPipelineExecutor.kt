@@ -73,6 +73,7 @@ class ChooseOptionPipelineExecutor(
             decisionId = decisionId,
             controllerId = controllerId,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = sourceName,
             storeAs = effect.storeAs,
             options = options

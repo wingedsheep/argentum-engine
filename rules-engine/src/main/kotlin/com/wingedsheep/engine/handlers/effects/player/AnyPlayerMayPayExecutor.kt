@@ -97,16 +97,7 @@ class AnyPlayerMayPayExecutor(
 
         // No more players can pay - run the "none paid" branch (e.g., reanimate the card).
         if (index >= playerOrder.size) {
-            return runConsequence(
-                state,
-                effect.consequenceIfNonePaid,
-                context.controllerId,
-                sourceId,
-                context.pipeline.storedCollections,
-                context.triggeringEntityId,
-                context.triggeringPlayerId,
-                context.pipeline.iterationTarget
-            )
+            return runConsequence(state, effect.consequenceIfNonePaid, context)
         }
 
         val playerId = playerOrder[index]
@@ -272,35 +263,17 @@ class AnyPlayerMayPayExecutor(
         storedCollections = context.pipeline.storedCollections,
         triggeringEntityId = context.triggeringEntityId,
         triggeringPlayerId = context.triggeringPlayerId,
-        iterationTarget = context.pipeline.iterationTarget
+        iterationTarget = context.pipeline.iterationTarget,
+        objectReferences = context.objectReferences
     )
 
     /**
      * Run one of the two consequence branches (may be null = nothing). Carries the pipeline's
      * stored collections so the effect can reference cards gathered earlier this resolution.
      */
-    private fun runConsequence(
-        state: GameState,
-        consequence: Effect?,
-        controllerId: EntityId,
-        sourceId: EntityId,
-        storedCollections: Map<String, List<EntityId>>,
-        triggeringEntityId: EntityId? = null,
-        triggeringPlayerId: EntityId? = null,
-        iterationTarget: EntityId? = null
-    ): EffectResult {
+    private fun runConsequence(state: GameState, consequence: Effect?, context: EffectContext): EffectResult {
         if (consequence == null) return EffectResult.success(state)
         val executor = executeEffect ?: return EffectResult.success(state)
-        val context = EffectContext(
-            sourceId = sourceId,
-            controllerId = controllerId,
-            pipeline = PipelineState(
-                storedCollections = storedCollections,
-                iterationTarget = iterationTarget
-            ),
-            triggeringEntityId = triggeringEntityId,
-            triggeringPlayerId = triggeringPlayerId
-        )
         return executor(state, consequence, context)
     }
 

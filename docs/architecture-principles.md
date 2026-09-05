@@ -484,6 +484,57 @@ entry pointing at a different card. Closing that means extending the analysis, n
 already covers them. `HiddenWorldMaterializer` is the all-or-nothing caller (`docs/ai/architecture.md`
 covers the sampling one).
 
+#### Rules object identity across zones
+
+`EntityId` is the stable card/entity slot. `ObjectRef(entityId, generation)` identifies one rules
+object occupying that slot. `GameState.objectIdentities` stores its generation and logical zone
+outside the ECS component container; battlefield/stack component cleanup cannot strip it. The
+allocator is independent of timestamps used to order continuous effects. `objectRef` and
+`isCurrentObject` are constant-time queries and never infer history from current characteristics.
+
+Every real destination insertion goes through `addToZone`, positional `insertIntoZone`, or
+`pushToStack`. They allocate the first visit, then a new generation on a zone change, including
+exile-to-exile. Removing from a zone list or popping the stack preserves the logical origin until
+the actual destination is committed: a popped spell is still its original stack object while it
+resolves. Shared battlefield/controller buckets denote one zone; private owner-specific zones do
+not. Library ordering, control changes, phasing, transformation, component replacement and hidden
+world reconstruction preserve the object. Deletion removes its identity without resetting the
+allocator, so recreating an entity ID cannot revive an old reference.
+
+A resolving nonpermanent spell stays physically on the stack while its effects execute, including
+nested serialized decisions. `FinishResolvingSpellContinuation` captures the original stack object
+and performs the shared cleanup exactly once after those effects finish. It removes that specific
+spell, preserving any other spells cast during resolution above it, and then applies the ordinary
+resolution destination rules. The finalizer checks the original reference directly: if an effect
+already moved the spell, it cannot move a later visit of that card. This finalization identity is
+separate from the effect context's permission to follow its own moves.
+
+Insertion is a movement/creation operation, not a reconstruction API. An already-present destination
+member is idempotent; insertion while still present in its origin is rejected. Pure permutations
+use `reorderZone`. Fresh constructor fixtures and legacy JSON without identity fields initialize
+current zone members once through constructor defaults. Copies preserve recorded identity data;
+copy-based imports call `initializeObjectIdentities` explicitly, as do session persistence and dev
+injection boundaries. This migration establishes current visits only: it cannot recover the origin
+of an ability or continuation saved before references were recorded. Consumers must not pretend
+such history was recovered by resolving the entity's latest visit.
+
+`ZoneChangeEvent.oldObject` and `.newObject` are captured at the actual movement before later effects
+can move the entity again. `ZoneTransitionService` returns individual `ZoneTransitionOutcome` values
+with requested/actual destination and `PRIMARY` versus `REPLACEMENT_ADDITIONAL` attribution. A
+replacement's extra token entry or move cannot stand in for the requested move. Prevented moves and
+same-zone reordering produce no transition outcome. Last-known characteristics remain separate from
+actionable references: invalidating a live object does not erase the event's last-known information.
+These fields are internal engine data; client event mapping continues to expose the existing game
+log shape.
+
+Triggered abilities detected before state-based actions carry their origin references into
+`StateBasedActionChecker` as a transient `pendingTriggerSources` set. This lets a zero-defense Siege
+remain while an ability from that exact object awaits the stack. If an SBA pauses for a decision,
+the existing deferred-trigger continuation preserves those references; the battle check also reads
+pending target/mode/consent frames and stacked triggered abilities. A later visit of the same card
+receives no reprieve from an old origin, and removing or declining the last pending ability leaves
+no persistent protection. Other state-based checks ignore this context.
+
 ### 2.3 Rule 613: Base State vs. Projected State
 
 **Principle:** The engine explicitly separates stored state from derived state.

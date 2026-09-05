@@ -75,8 +75,17 @@ data class ZoneChangeEvent(
      * from any other way a permanent is exiled. Always `false` for non-exile exits and for exiles
      * that are not craft materials (removal, the crafted card's own self-exile, etc.).
      */
-    val craftMaterial: Boolean = false
+    val craftMaterial: Boolean = false,
+    /** Captured at the actual move, never reconstructed from the final event-batch state. */
+    val oldObject: com.wingedsheep.engine.state.ObjectRef? = null,
+    val newObject: com.wingedsheep.engine.state.ObjectRef? = null,
+    val transitionCause: ZoneTransitionCause = ZoneTransitionCause.PRIMARY,
+    /** The move's requested destination, before any redirect chose [toZone]. */
+    val requestedDestination: Zone = toZone
 ) : GameEvent
+
+@Serializable
+enum class ZoneTransitionCause { PRIMARY, REPLACEMENT_ADDITIONAL }
 
 // =============================================================================
 // Life Events
@@ -186,7 +195,9 @@ data class DamagePreventedEvent(
     val recipientId: EntityId,
     val amount: Int,
     val linkId: String,
-    val sourceName: String? = null
+    val sourceName: String? = null,
+    /** Controller when damage met the shield, retained after the source leaves its zone. */
+    val sourceControllerId: EntityId? = null
 ) : GameEvent
 
 /**
@@ -919,6 +930,8 @@ data class ReflexiveAbilityTriggeredEvent(
     val reflexiveTargetRequirements: List<com.wingedsheep.sdk.scripting.targets.TargetRequirement> = emptyList(),
     val descriptionOverride: String? = null,
     val carriedPipeline: com.wingedsheep.engine.handlers.PipelineState = com.wingedsheep.engine.handlers.PipelineState.EMPTY,
+    val carriedObjectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment =
+        com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     /**
      * The ORIGINAL ability's own trigger context (X value, triggering entity/player, damage/counter
      * amounts, etc.) — a reflexive effect (or its target filter) may reference any of these (e.g.

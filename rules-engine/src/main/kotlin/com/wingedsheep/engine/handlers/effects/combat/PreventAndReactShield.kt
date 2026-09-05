@@ -23,7 +23,8 @@ internal fun GameState.installPreventAndReactShield(
     effectSourceId: EntityId?,
     effectSourceName: String?,
     onPrevented: Effect?,
-    preventDamage: Boolean
+    preventDamage: Boolean,
+    objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment
 ): GameState {
     val (stateWithSource, reactionSourceId) = if (effectSourceId != null) {
         this to effectSourceId
@@ -42,6 +43,7 @@ internal fun GameState.installPreventAndReactShield(
             DelayedTriggeredAbility(
                 id = delayedTriggerId,
                 effect = reaction,
+                objectReferences = objectReferences,
                 sourceId = reactionSourceId,
                 sourceName = sourceName,
                 controllerId = controllerId,

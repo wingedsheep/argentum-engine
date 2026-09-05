@@ -130,6 +130,7 @@ class PreventDamageExecutor(
                 decisionId = decisionId,
                 controllerId = controllerId,
                 sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
                 sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
                 onPrevented = effect.onPrevented,
                 preventDamage = effect.preventDamage
@@ -163,6 +164,7 @@ class PreventDamageExecutor(
                 amount = amount,
                 gainLifeFromColors = effect.gainLifeFromColors.map { it.name }.toSet(),
                 sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
                 sourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
                 nextInstanceOnly = effect.nextInstanceOnly,
                 halvePreventedDamage = effect.halvePreventedDamage
@@ -213,7 +215,8 @@ class PreventDamageExecutor(
                 effectSourceId = context.sourceId,
                 effectSourceName = context.sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
                 onPrevented = effect.onPrevented,
-                preventDamage = effect.preventDamage
+                preventDamage = effect.preventDamage,
+                objectReferences = context.objectReferences
             )
             return EffectResult.success(newState)
         }

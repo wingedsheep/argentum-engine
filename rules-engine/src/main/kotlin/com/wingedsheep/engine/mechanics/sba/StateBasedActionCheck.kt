@@ -29,6 +29,13 @@ interface StateBasedActionCheck {
      * reads [passStartState]. Everything else keeps the single-argument form.
      */
     fun check(state: GameState, passStartState: GameState): ExecutionResult = check(state)
+
+    /** Sources of abilities already triggered but awaiting placement on the stack. */
+    fun check(
+        state: GameState,
+        passStartState: GameState,
+        pendingTriggerSources: Set<com.wingedsheep.engine.state.ObjectRef>
+    ): ExecutionResult = check(state, passStartState)
 }
 
 /**

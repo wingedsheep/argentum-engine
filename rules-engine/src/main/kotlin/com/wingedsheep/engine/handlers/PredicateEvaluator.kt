@@ -1268,6 +1268,7 @@ class PredicateEvaluator {
         val controllerId = context?.controllerId ?: return null
         val effectContext = EffectContext(
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceBattlefieldTimestamp = context.sourceBattlefieldTimestamp,
             controllerId = controllerId,
             xValue = context.xValue,
@@ -1831,6 +1832,7 @@ class PredicateEvaluator {
                     controllerId = ownerId,
                     sourceId = context?.sourceId,
                     sourceBattlefieldTimestamp = context?.sourceBattlefieldTimestamp,
+                    objectReferences = context?.objectReferences ?: ObjectReferenceEnvironment(),
                 )
                 state.getBattlefield().any { candidate ->
                     matches(state, projected, candidate, predicate.filter, ctx)
@@ -1842,7 +1844,8 @@ class PredicateEvaluator {
             // PreventActivatedAbilities form (Braided Net), where the activation-legality
             // check supplies the grant's holder as the source. False with no source context.
             StatePredicate.IsSource -> context != null && context.sourceId == entityId &&
-                (context.sourceBattlefieldTimestamp == null || state.getEntity(entityId)
+                context.objectReferences.isCurrent(context.objectReferences.source, state) &&
+                (context.objectReferences.captured || context.sourceBattlefieldTimestamp == null || state.getEntity(entityId)
                     ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()
                     ?.timestamp == context.sourceBattlefieldTimestamp)
             StatePredicate.IsGrantingPermanent -> context?.granterId != null && context.granterId == entityId
@@ -2195,6 +2198,7 @@ data class PredicateContext(
     val sourceId: EntityId? = null,
     /** Original source visit for resolution-time source/exclusion predicates. */
     val sourceBattlefieldTimestamp: Long? = null,
+    val objectReferences: ObjectReferenceEnvironment = ObjectReferenceEnvironment(),
     /** Owner of the entity being evaluated (for graveyard targeting) */
     val ownerId: EntityId? = null,
     /**
@@ -2319,6 +2323,7 @@ data class PredicateContext(
                 targetPlayerId = chosenPlayerTarget,
                 sourceId = context.sourceId,
                 sourceBattlefieldTimestamp = context.sourceBattlefieldTimestamp,
+            objectReferences = context.objectReferences,
                 granterId = context.granterId,
                 triggeringEntityId = context.triggeringEntityId,
                 triggeringPlayerId = context.triggeringPlayerId,

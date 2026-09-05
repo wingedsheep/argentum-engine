@@ -1,0 +1,50 @@
+{
+  "player1Name": "Skeleton controller",
+  "player2Name": "Graveyard response",
+  "player1": {
+    "lifeTotal": 20,
+    "hand": [],
+    "battlefield": [
+      {
+        "name": "Swamp"
+      },
+      {
+        "name": "Swamp"
+      }
+    ],
+    "graveyard": [
+      "Reassembling Skeleton"
+    ],
+    "library": [
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Swamp"
+    ]
+  },
+  "player2": {
+    "lifeTotal": 20,
+    "hand": [
+      "Cremate"
+    ],
+    "battlefield": [
+      {
+        "name": "Swamp"
+      }
+    ],
+    "graveyard": [],
+    "library": [
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Swamp",
+      "Swamp"
+    ]
+  },
+  "phase": "PRECOMBAT_MAIN",
+  "activePlayer": 1,
+  "priorityPlayer": 1
+}

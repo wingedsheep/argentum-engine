@@ -20,8 +20,8 @@ import com.wingedsheep.sdk.scripting.RevealFirstDrawEachTurn
  * Primitive single-card draw.
  *
  * Takes a [GameState] + player, moves the top card of that player's library to
- * their hand, increments [CardsDrawnThisTurnComponent], and emits
- * [CardRevealedFromDrawEvent] if this is the first draw of the turn and the
+ * their hand, increments [CardsDrawnThisTurnComponent], emits the exact object transition,
+ * and emits [CardRevealedFromDrawEvent] if this is the first draw of the turn and the
  * player controls a permanent with [RevealFirstDrawEachTurn].
  *
  * Handles empty-library loss (Rule 704.5b) respecting [playerCantLoseGame] (Platinum Angel).
@@ -43,8 +43,8 @@ class DrawCardPrimitive(
      * Result of a single [drawOne] call.
      *
      * @property state updated game state
-     * @property events per-card side events (currently only [CardRevealedFromDrawEvent]
-     *     or [DrawFailedEvent]); does **not** include [com.wingedsheep.engine.core.CardsDrawnEvent]
+     * @property events the zone transition and per-card reveal/failure events;
+     *     does **not** include [com.wingedsheep.engine.core.CardsDrawnEvent]
      * @property drawnCardId the id of the drawn card, or `null` if the draw failed
      * @property failed true if the library was empty and the draw failed
      */
@@ -105,7 +105,17 @@ class DrawCardPrimitive(
             container.with(CardsDrawnThisTurnComponent(count = drawCountBefore + 1))
         }
 
-        val events = mutableListOf<GameEvent>()
+        val events = mutableListOf<GameEvent>(
+            com.wingedsheep.engine.core.ZoneChangeEvent(
+                entityId = cardId,
+                entityName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown",
+                fromZone = Zone.LIBRARY,
+                toZone = Zone.HAND,
+                ownerId = playerId,
+                oldObject = state.objectRef(cardId),
+                newObject = newState.objectRef(cardId)
+            )
+        )
         if (drawCountBefore == 0) {
             val revealEvent = checkRevealFirstDraw(newState, playerId, cardId)
             if (revealEvent != null) events.add(revealEvent)

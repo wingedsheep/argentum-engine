@@ -46,7 +46,8 @@ data class EachPlayerDiscardsOrLoseLifeContinuation(
     val currentPlayerId: EntityId,
     val remainingPlayers: List<EntityId>,
     val discardedCreature: Map<EntityId, Boolean>,
-    val lifeLoss: Int
+    val lifeLoss: Int,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -65,7 +66,8 @@ data class DrawUpToContinuation(
     val sourceName: String?,
     val maxCards: Int,
     val originalMaxCards: Int = 0,
-    val storeNotDrawnAs: String? = null
+    val storeNotDrawnAs: String? = null,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**
@@ -125,7 +127,8 @@ data class StaticDrawReplacementContinuation(
     val drawnCardsSoFar: List<EntityId> = emptyList(),
     val declinedIdentity: ReplacementEffectIdentity? = null,
     /** Prior applications and declines for this individual draw, retained across pauses. */
-    val alreadyApplied: Set<ReplacementEffectIdentity> = emptySet()
+    val alreadyApplied: Set<ReplacementEffectIdentity> = emptySet(),
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
 ) : ContinuationFrame
 
 /**

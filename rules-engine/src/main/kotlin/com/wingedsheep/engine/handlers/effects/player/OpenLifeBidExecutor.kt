@@ -58,14 +58,14 @@ class OpenLifeBidExecutor(
                 OpenLifeBidLogic.resolve(
                     state, casterId, highBidder = casterId, highBid = 1,
                     onWin = effect.onWin, targets = context.targets,
-                    sourceId = context.sourceId, executeEffect = executeEffect
+                    sourceId = context.sourceId, context = context, executeEffect = executeEffect
                 )
             } else {
                 OpenLifeBidLogic.advance(
                     state, casterId, highBidder = casterId, highBid = 1,
                     bidderToAsk = otherBidder, onWin = effect.onWin,
                     targets = context.targets, sourceId = context.sourceId, sourceName = sourceName,
-                    executeEffect = executeEffect
+                    context = context, executeEffect = executeEffect
                 )
             }
         )
@@ -101,11 +101,12 @@ object OpenLifeBidLogic {
         targets: List<ChosenTarget>,
         sourceId: EntityId?,
         sourceName: String?,
-        executeEffect: (GameState, Effect, EffectContext) -> EffectResult
+        executeEffect: (GameState, Effect, EffectContext) -> EffectResult,
+        context: EffectContext
     ): ExecutionResult {
         // A player can only top if they can bid strictly more than the high bid.
         if (lifeOf(state, bidderToAsk) <= highBid) {
-            return resolve(state, casterId, highBidder, highBid, onWin, targets, sourceId, executeEffect)
+            return resolve(state, casterId, highBidder, highBid, onWin, targets, sourceId, executeEffect, context)
         }
 
         val decisionResult = decisionHandler.createYesNoDecision(
@@ -128,7 +129,9 @@ object OpenLifeBidLogic {
             onWin = onWin,
             targets = targets,
             sourceId = sourceId,
-            sourceName = sourceName
+            sourceName = sourceName,
+            effectContext = context,
+            objectReferences = context.objectReferences
         )
 
         return ExecutionResult.paused(
@@ -177,13 +180,14 @@ object OpenLifeBidLogic {
         onWin: Effect,
         targets: List<ChosenTarget>,
         sourceId: EntityId?,
-        executeEffect: (GameState, Effect, EffectContext) -> EffectResult
+        executeEffect: (GameState, Effect, EffectContext) -> EffectResult,
+        context: EffectContext
     ): ExecutionResult {
         val events = mutableListOf<GameEvent>()
 
         // The high bidder loses life equal to the high bid (routed through the life-loss
         // executor so prevention/replacement effects apply uniformly).
-        val loseLifeContext = EffectContext(sourceId = sourceId, controllerId = highBidder)
+        val loseLifeContext = context.copy(controllerId = highBidder)
         val lifeResult = executeEffect(
             state,
             LoseLifeEffect(DynamicAmount.Fixed(highBid), EffectTarget.PlayerRef(Player.You)),
@@ -195,11 +199,8 @@ object OpenLifeBidLogic {
 
         // If you win the bidding, apply the payoff (counter the spell) against the targets.
         if (highBidder == casterId) {
-            val winContext = EffectContext(
-                sourceId = sourceId,
-                controllerId = casterId,
-                targets = targets
-            )
+            val winContext = context.copy(controllerId = casterId, targets = targets)
+
             val winResult = executeEffect(currentState, onWin, winContext)
             currentState = winResult.state
             events.addAll(winResult.events)

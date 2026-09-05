@@ -153,6 +153,7 @@ class ModalEffectExecutor(
             decisionId = decisionId,
             controllerId = context.controllerId,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = sourceName,
             modes = effect.modes,
             xValue = context.xValue,
@@ -163,6 +164,7 @@ class ModalEffectExecutor(
             availableIndices = availableIndices,
             allowRepeat = effect.allowRepeat,
             outerTargets = context.targets,
+            pipeline = context.pipeline,
             outerNamedTargets = context.pipeline.namedTargets,
             recordChosenModesOnSource = effect.excludePreviouslyChosenModes,
             recordChosenModesThisTurn = effect.excludeModesChosenThisTurn
@@ -212,7 +214,8 @@ class ModalEffectExecutor(
             // earlier step of the same resolution stored — Cemetery Desecrator's two modes both
             // spell X as `StoredCardManaValue("exiledCard")`, the collection its reflexive
             // trigger's action half filled. Dropping it made every such amount read 0.
-            pipeline = context.pipeline
+            pipeline = context.pipeline,
+            objectReferences = context.objectReferences
         )
         return processPreTargetedEffectQueue(state, entries, baseCtx, effectExecutor, targetValidator, emptyList())
     }
@@ -271,7 +274,8 @@ internal data class PreTargetedEffectContext(
      * Defaults to empty for the callers that genuinely have no enclosing pipeline (splice, CR
      * 702.47b: each spliced card's text is its own resolution).
      */
-    val pipeline: PipelineState = PipelineState.EMPTY
+    val pipeline: PipelineState = PipelineState.EMPTY,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment()
 )
 
 /**
@@ -336,6 +340,7 @@ internal fun processPreTargetedEffectQueue(
 
     val effectContext = EffectContext(
         sourceId = ctx.sourceId,
+        objectReferences = ctx.objectReferences,
         controllerId = ctx.controllerId,
         xValue = ctx.xValue,
         targets = head.targets,
@@ -357,6 +362,7 @@ internal fun processPreTargetedEffectQueue(
                 decisionId = "modal-pre-chosen-${UUID.randomUUID()}",
                 controllerId = ctx.controllerId,
                 sourceId = ctx.sourceId,
+            objectReferences = ctx.objectReferences,
                 sourceName = ctx.sourceName,
                 xValue = ctx.xValue,
                 triggeringEntityId = ctx.triggeringEntityId,
@@ -382,5 +388,5 @@ internal fun processPreTargetedEffectQueue(
         afterPop
     } else result.state
 
-    return processPreTargetedEffectQueue(nextState, tail, ctx, effectExecutor, targetValidator, nextEvents)
+    return processPreTargetedEffectQueue(nextState, tail, ctx.copy(objectReferences = ctx.objectReferences.authorize(result.events)), effectExecutor, targetValidator, nextEvents)
 }

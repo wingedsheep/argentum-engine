@@ -213,7 +213,7 @@ internal object ClashScoring {
      * Null when no choice was made or the source is gone, which makes the clash a silent no-op.
      */
     fun chosenOpponentOf(state: GameState, context: EffectContext): EntityId? =
-        context.sourceId?.let { state.getEntity(it)?.chosenOpponent() }
+        context.chosenOpponent(state)
 
     /**
      * Mana value of a revealed card, or null when no card was revealed. Read off the printed

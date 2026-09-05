@@ -59,9 +59,11 @@ class ReturnSpellToOwnersHandExecutor : EffectExecutor<ReturnSpellToOwnersHandEf
                 ZoneChangeEvent(
                     spellId,
                     cardComponent?.name ?: "Unknown",
-                    null,
+                    Zone.STACK,
                     Zone.HAND,
-                    ownerId
+                    ownerId,
+                    oldObject = state.objectRef(spellId),
+                    newObject = newState.objectRef(spellId)
                 )
             )
         )

@@ -321,6 +321,7 @@ class CostPaymentService(private val services: EngineServices) {
         sourceName = sourceName,
         cost = cost,
         onPaid = ctx.onPaid,
+        objectReferences = ctx.objectReferences,
         onDeclined = ctx.onDeclined,
         targets = ctx.targets,
         namedTargets = ctx.namedTargets,
@@ -612,12 +613,13 @@ class CostPaymentService(private val services: EngineServices) {
         val events = mutableListOf<GameEvent>()
         for (cardId in selected) {
             val name = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown"
+            val oldObjectRef = newState.objectRef(cardId)
             newState = newState.removeFromZone(fromZone, cardId).addToZone(exileZone, cardId)
             // Record the origin zone the way ZoneTransitionService does, so a later CR 610.3
             // "return it to its previous zone" (CardDestination.ToZoneExiledFrom) can put a card
             // exiled as a *cost* back where it came from instead of taking the fallback.
             newState = newState.updateEntity(cardId) { c -> c.with(ExiledFromZoneComponent(zone)) }
-            events.add(ZoneChangeEvent(cardId, name, zone, Zone.EXILE, payerId))
+            events.add(ZoneChangeEvent(cardId, name, zone, Zone.EXILE, payerId, oldObject = oldObjectRef, newObject = newState.objectRef(cardId)))
         }
         return CostPaymentExecution(newState, events, success = true)
     }

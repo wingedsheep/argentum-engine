@@ -101,9 +101,15 @@ class ZodiarkUmbralGodScenarioTest : ScenarioTestBase() {
                     .build()
 
                 val zodiark = game.findPermanent("Zodiark, Umbral God")!!
+                val bears = game.findPermanent("Grizzly Bears")!!
                 game.castSpell(1, "Ritual Sacrifice")
+                game.resolveStack()
+                (game.getPendingDecision() is SelectCardsDecision) shouldBe true
+                game.selectCards(listOf(bears))
                 game.resolveAll()
 
+                game.findPermanent("Zodiark, Umbral God") shouldBe zodiark
+                game.findCardsInGraveyard(1, "Grizzly Bears") shouldBe listOf(bears)
                 game.plusOneCounters(zodiark) shouldBe 1
             }
         }

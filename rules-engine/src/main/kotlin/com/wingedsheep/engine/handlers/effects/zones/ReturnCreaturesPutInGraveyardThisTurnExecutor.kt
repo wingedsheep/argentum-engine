@@ -56,6 +56,7 @@ class ReturnCreaturesPutInGraveyardThisTurnExecutor : EffectExecutor<ReturnCreat
             val handKey = ZoneKey(ownerId, Zone.HAND)
 
             newState = newState.removeFromZone(graveyardKey, entityId)
+            val oldObjectRef = newState.objectRef(entityId)
             newState = newState.addToZone(handKey, entityId)
 
             events.add(
@@ -64,7 +65,9 @@ class ReturnCreaturesPutInGraveyardThisTurnExecutor : EffectExecutor<ReturnCreat
                     entityName = cardComponent.name,
                     fromZone = Zone.GRAVEYARD,
                     toZone = Zone.HAND,
-                    ownerId = ownerId
+                    ownerId = ownerId,
+                    oldObject = oldObjectRef,
+                    newObject = newState.objectRef(entityId)
                 )
             )
         }

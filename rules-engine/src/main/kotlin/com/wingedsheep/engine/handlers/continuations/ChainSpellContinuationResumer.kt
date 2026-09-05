@@ -204,6 +204,7 @@ class ChainSpellContinuationResumer(
         }
         val ability = TriggeredAbilityOnStackComponent(
             sourceId = sourceId,
+            objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true, origin = state.objectRef(sourceId), source = state.objectRef(sourceId)),
             sourceName = effect.spellName,
             controllerId = continuation.copyControllerId,
             effect = copyEffect,
@@ -434,6 +435,7 @@ class ChainSpellContinuationResumer(
 
                     newState = com.wingedsheep.engine.handlers.effects.ZoneTransitionService
                         .trackPermanentSacrifice(newState, listOf(cardId), controllerId)
+                    val oldObject = newState.objectRef(cardId)
                     newState = newState.removeFromZone(currentZone, cardId)
                     newState = newState.addToZone(graveyardZone, cardId)
 
@@ -443,7 +445,7 @@ class ChainSpellContinuationResumer(
                         entityName = cardComponent.name,
                         fromZone = Zone.BATTLEFIELD,
                         toZone = Zone.GRAVEYARD,
-                        ownerId = ownerId
+                        ownerId = ownerId, oldObject = oldObject, newObject = newState.objectRef(cardId)
                     ))
                 }
             }

@@ -40,6 +40,7 @@ class ChooseColorForTargetExecutor(
             decisionId = decision.id,
             controllerId = context.controllerId,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = sourceName,
             targetEntityId = targetId
         )

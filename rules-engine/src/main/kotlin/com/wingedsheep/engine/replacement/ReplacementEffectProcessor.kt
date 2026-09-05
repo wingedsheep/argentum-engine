@@ -235,7 +235,11 @@ class ReplacementEffectProcessor {
             }
             else -> EffectContext(
                 controllerId = event.affectedPlayerId,
-                sourceId = gathered.sourceEntityId(state)
+                sourceId = gathered.sourceEntityId(state),
+                objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true,
+                    origin = gathered.sourceEntityId(state)?.let(state::objectRef),
+                    source = gathered.sourceEntityId(state)?.let(state::objectRef),
+                    resolutionKey = "replacement:${java.util.UUID.randomUUID()}")
             )
         }
 

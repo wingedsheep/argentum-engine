@@ -44,6 +44,7 @@ class ExileOpponentsGraveyardsExecutor : EffectExecutor<ExileOpponentsGraveyards
                 val ownerExileZone = ZoneKey(ownerId, Zone.EXILE)
 
                 newState = newState.removeFromZone(graveyardZone, cardId)
+                val oldObjectRef = newState.objectRef(cardId)
                 newState = newState.addToZone(ownerExileZone, cardId)
                 // Same stamp ZoneTransitionService writes on an effect-driven exile, so a later
                 // CR 610.3 "return it to its previous zone" sends these back to the graveyard
@@ -57,7 +58,9 @@ class ExileOpponentsGraveyardsExecutor : EffectExecutor<ExileOpponentsGraveyards
                         cardComp?.name ?: "Unknown",
                         Zone.GRAVEYARD,
                         Zone.EXILE,
-                        ownerId
+                        ownerId,
+                        oldObject = oldObjectRef,
+                        newObject = newState.objectRef(cardId)
                     )
                 )
             }

@@ -1,5 +1,7 @@
 package com.wingedsheep.engine.handlers
 
+import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
+
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -82,6 +84,8 @@ data class EffectContext(
      * Frozen at resolution start so instructions can still track a source they themselves return.
      */
     val sourceReferenceLost: Boolean = false,
+    val triggeringReferenceLost: Boolean = false,
+    val objectReferences: ObjectReferenceEnvironment = ObjectReferenceEnvironment(),
     val targets: List<ChosenTarget> = emptyList(),
     /**
      * Positionally-aligned view of [targets]: the same length as the originally-chosen target
@@ -450,19 +454,45 @@ data class EffectContext(
             targets.getOrNull(index)
         }
 
-    /** Capture source-reference validity once, before executing an ability's effect. */
-    fun forAbilityResolution(state: GameState): EffectContext {
+    /** Capture legacy battlefield validity and bind this resolution's independent identity scope. */
+    fun forAbilityResolution(state: GameState, resolutionId: EntityId? = null): EffectContext {
         val currentVisit = sourceId?.let { state.getEntity(it) }
             ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp
-        return copy(sourceReferenceLost = sourceBattlefieldTimestamp != null && currentVisit != null &&
-            currentVisit != sourceBattlefieldTimestamp)
+        // Older serialized abilities have no provable historical identity. Keep their LKI and
+        // remaining instructions, but fail closed for actionable source/trigger references.
+        val captured = objectReferences.copy(captured = true)
+        return copy(
+            objectReferences = captured.copy(resolutionKey = resolutionId?.let { id ->
+                "$id:${state.objectRef(id)?.generation}"
+            } ?: captured.resolutionKey),
+            sourceReferenceLost = sourceBattlefieldTimestamp != null && currentVisit != null &&
+                currentVisit != sourceBattlefieldTimestamp,
+        ).withCurrentObjectReferences(state)
     }
+
+    /** Recheck on every instruction/resume; an unrelated move while paused cannot be followed. */
+    fun withCurrentObjectReferences(state: GameState): EffectContext = copy(
+        sourceReferenceLost = if (objectReferences.captured || objectReferences.selfBinding != null) {
+            !objectReferences.isSelfCurrent(state)
+        } else sourceReferenceLost,
+        triggeringReferenceLost = triggeringEntityId !in state.turnOrder &&
+            !objectReferences.isCurrent(objectReferences.triggering, state),
+    )
+
+    fun authorizeObjectMoves(events: List<com.wingedsheep.engine.core.GameEvent>): EffectContext =
+        copy(objectReferences = objectReferences.authorize(events))
+
+    fun chosenOpponent(state: GameState): EntityId? =
+        pipeline.storedCollections[RESOLUTION_CHOSEN_OPPONENT]?.firstOrNull()
+            ?: sourceId?.takeIf { objectReferences.isCurrent(objectReferences.source, state) }
+                ?.let { state.getEntity(it)?.chosenOpponent() }
+
 
     /** Battlefield-only instructions cannot affect a source that has left or already returned. */
     fun isUnavailableBattlefieldSource(target: EffectTarget, state: GameState): Boolean =
-        target == EffectTarget.Self && pipeline.iterationTarget == null &&
-            (sourceReferenceLost || (sourceBattlefieldTimestamp != null && sourceId != null &&
-                sourceId !in state.getBattlefield()))
+        target == EffectTarget.Self &&
+            (sourceReferenceLost || ((objectReferences.selfBinding != null || sourceBattlefieldTimestamp != null) &&
+                (pipeline.iterationTarget ?: objectReferences.selfBinding?.entityId ?: sourceId) !in state.getBattlefield()))
 
     fun resolveTarget(target: EffectTarget): EntityId? =
         TargetResolutionUtils.resolveTarget(target, this)
@@ -573,6 +603,7 @@ data class EffectContext(
             abilityIdentity = ability.abilityIdentity,
             sourceFaceChanges = ability.sourceFaceChanges,
             sourceBattlefieldTimestamp = ability.sourceBattlefieldTimestamp,
+            objectReferences = ability.objectReferences,
             targets = targets,
             triggerDamageAmount = ability.triggerDamageAmount,
             triggerCounterCount = ability.triggerCounterCount,
@@ -626,3 +657,5 @@ data class EffectContext(
         )
     }
 }
+
+internal const val RESOLUTION_CHOSEN_OPPONENT = "resolution.chosenOpponent"

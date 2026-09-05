@@ -286,6 +286,7 @@ class AlternativePaymentHandler(
 
             // Move card from graveyard to exile
             currentState = currentState.removeFromZone(graveyardZone, cardId)
+            val oldObjectRef = currentState.objectRef(cardId)
             currentState = currentState.addToZone(exileZone, cardId)
 
             events.add(
@@ -294,7 +295,9 @@ class AlternativePaymentHandler(
                     entityName = cardComponent.name,
                     fromZone = Zone.GRAVEYARD,
                     toZone = Zone.EXILE,
-                    ownerId = playerId
+                    ownerId = playerId,
+                    oldObject = oldObjectRef,
+                    newObject = currentState.objectRef(cardId)
                 )
             )
 

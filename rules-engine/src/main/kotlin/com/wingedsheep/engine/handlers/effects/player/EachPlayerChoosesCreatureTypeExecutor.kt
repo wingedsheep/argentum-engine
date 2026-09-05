@@ -53,6 +53,7 @@ class EachPlayerChoosesCreatureTypeExecutor : EffectExecutor<EachPlayerChoosesCr
         val continuation = EachPlayerChoosesCreatureTypeContinuation(
             decisionId = decisionId,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             sourceName = sourceName,
             controllerId = context.controllerId,
             currentPlayerId = firstPlayer,

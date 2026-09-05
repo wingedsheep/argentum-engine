@@ -231,6 +231,7 @@ class PlotCardHandler(
         val fromZoneKey = ZoneKey(action.playerId, source.zone)
         val exileZone = ZoneKey(ownerId, Zone.EXILE)
         currentState = currentState.removeFromZone(fromZoneKey, action.cardId)
+        val oldObjectRef = currentState.objectRef(action.cardId)
         currentState = currentState.addToZone(exileZone, action.cardId)
         events.add(
             ZoneChangeEvent(
@@ -238,7 +239,9 @@ class PlotCardHandler(
                 entityName = cardComponent.name,
                 fromZone = source.zone,
                 toZone = Zone.EXILE,
-                ownerId = ownerId
+                ownerId = ownerId,
+                oldObject = oldObjectRef,
+                newObject = currentState.objectRef(action.cardId)
             )
         )
 

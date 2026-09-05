@@ -3555,6 +3555,13 @@ can't statically prevent (cross-trigger flows, `Self`-vs-`ContextTarget` inside 
 
 ### Resolution-time (`EffectTarget`)
 
+`Self` and `TriggeringEntity` refer to a captured zone instance, not merely a card's stable entity ID. A zone change creates a new instance. A departure trigger can act on its immediate public-zone destination; the same resolving effect (including its costs) can follow its own public-zone transitions. Unrelated movement, including leaving and returning to the same zone during a decision, invalidates that actionable reference. Replacement additional movements do not grant this permission. The enchanted-permanent departure exception also permits finding each attached Aura in its immediate owner’s graveyard, whether it moved simultaneously or through the unattached-Aura state-based action; it does not follow a later graveyard roundtrip or an exile destination. Delayed abilities preserve source identity from creation, rather than capturing whichever same-ID object exists when they fire. Reflexive triggers carry the creating action’s source references and authorized public transitions across their separate stack entry. These permissions survive serialized continuations. An invalid `Self` move does nothing; subsequent instructions still resolve, and last-known source/trigger characteristics remain available. Player-valued `TriggeringEntity` references remain stable because players have no zone instance.
+
+A resolving nonpermanent spell retains its stack instance through serialized effect and splice choices. Its normal destination cleanup runs once, after the final choice and instruction; an explicit self-move skips that cleanup without making a later visit actionable. Older snapshots which already completed the zone move while paused cannot reconstruct the lost stack history.
+
+`ForEach` collection/group iteration deliberately binds `Self` to its iteration target, independently of the originating source. The bound object is captured with its own generation, survives a delayed ability and serialized decisions, and cannot be replaced by a later visit of the same card. A present binding whose object vanished fails closed. The original source object remains separately captured for source provenance. Older serialized pending abilities without historical references fail closed for actionable source/trigger card references; importing current zone membership cannot reconstruct that history.
+
+
 - `EffectTarget.ContextTarget(i)` — i-th cast-time target.
 - `EffectTarget.Controller` — controller of the source ability.
 - `EffectTarget.Self` — the source permanent. In a *granted* ability (Equipment/Aura "equipped

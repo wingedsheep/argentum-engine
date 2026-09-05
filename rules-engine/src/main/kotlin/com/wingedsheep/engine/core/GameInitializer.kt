@@ -428,7 +428,7 @@ class GameInitializer(
     private fun shuffleLibrary(state: GameState, playerId: EntityId): GameState {
         val libraryKey = ZoneKey(playerId, Zone.LIBRARY)
         val (library, newState) = state.nextRandom { shuffle(state.getZone(libraryKey)) }
-        return newState.copy(zones = newState.zones + (libraryKey to library))
+        return newState.reorderZone(libraryKey, library)
     }
 
     /**
@@ -459,6 +459,7 @@ class GameInitializer(
 
             // Move card from library to hand
             currentState = currentState.removeFromZone(libraryKey, cardId)
+            val oldObjectRef = currentState.objectRef(cardId)
             currentState = currentState.addToZone(handKey, cardId)
 
             events.add(ZoneChangeEvent(
@@ -467,7 +468,9 @@ class GameInitializer(
                     ?.get<CardComponent>()?.name ?: "Unknown",
                 fromZone = Zone.LIBRARY,
                 toZone = Zone.HAND,
-                ownerId = playerId
+                ownerId = playerId,
+                oldObject = oldObjectRef,
+                newObject = currentState.objectRef(cardId)
             ))
         }
 
@@ -567,6 +570,7 @@ class GameInitializer(
         // Add cards to hand
         for (cardId in bestCandidate) {
             drawnCardIds.add(cardId)
+            val oldObjectRef = currentState.objectRef(cardId)
             currentState = currentState.addToZone(handKey, cardId)
 
             events.add(ZoneChangeEvent(
@@ -575,7 +579,9 @@ class GameInitializer(
                     ?.get<CardComponent>()?.name ?: "Unknown",
                 fromZone = Zone.LIBRARY,
                 toZone = Zone.HAND,
-                ownerId = playerId
+                ownerId = playerId,
+                oldObject = oldObjectRef,
+                newObject = currentState.objectRef(cardId)
             ))
         }
 

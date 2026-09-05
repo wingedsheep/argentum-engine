@@ -797,8 +797,7 @@ class GameTestDriver {
 
         // Prepend to library (top = index 0)
         val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
-        val currentLibrary = _state.getZone(libraryZone)
-        _state = _state.copy(zones = _state.zones + (libraryZone to listOf(cardId) + currentLibrary))
+        _state = _state.insertIntoZone(libraryZone, cardId, 0)
 
         return cardId
     }

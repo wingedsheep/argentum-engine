@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.CardExiledWithMadnessEvent
 import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.ZoneChangeEvent
+import com.wingedsheep.engine.core.ZoneTransitionCause
 import com.wingedsheep.engine.core.GameEvent as EngineGameEvent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.EffectContext
@@ -119,8 +120,20 @@ data class ZoneTransitionResult(
     val state: GameState,
     val events: List<EngineGameEvent>,
     val redirectResult: ZoneChangeRedirectResult? = null,
-    val actualDestination: Zone? = null
+    val actualDestination: Zone? = null,
+    val transitions: List<ZoneTransitionOutcome> = emptyList()
 )
+
+/** Actual moves from one invocation; replacement riders cannot impersonate its primary move. */
+data class ZoneTransitionOutcome(
+    val oldObject: com.wingedsheep.engine.state.ObjectRef?,
+    val newObject: com.wingedsheep.engine.state.ObjectRef?,
+    val fromZone: Zone?,
+    val toZone: Zone,
+    val requestedDestination: Zone,
+    val cause: ZoneTransitionCause = ZoneTransitionCause.PRIMARY
+)
+
 
 /**
  * Single canonical zone transition pipeline.
@@ -191,6 +204,7 @@ object ZoneTransitionService {
         val currentZoneKey = fromZoneKey ?: findEntityZone(state, entityId)
             ?: return ZoneTransitionResult(state, emptyList())
 
+        val oldObject = state.objectRef(entityId)
         val fromZone = currentZoneKey.zoneType
         val leavingBattlefield = fromZone == Zone.BATTLEFIELD
 
@@ -318,6 +332,55 @@ object ZoneTransitionService {
             ZoneKey(destControllerId, actualDestZone)
         } else {
             ZoneKey(ownerId, actualDestZone)
+        }
+
+        // Same-zone instructions do not leave and re-enter, except a fresh exile instruction.
+        // In particular they must not run battlefield exit cleanup or emit a fictional move.
+        if (fromZone == actualDestZone && actualDestZone != Zone.EXILE &&
+            (currentZoneKey == destZoneKey || actualDestZone in setOf(Zone.BATTLEFIELD, Zone.STACK, Zone.COMMAND))) {
+            var retained = state
+            val retainedEvents = mutableListOf<EngineGameEvent>()
+            if (actualDestZone == Zone.LIBRARY) {
+                retained = retained.removeFromZone(currentZoneKey, entityId)
+                retained = placeInLibrary(retained, entityId, destZoneKey, effectiveLibraryPlacement)
+                if (effectiveLibraryPlacement is LibraryPlacement.Shuffled) {
+                    retained = com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
+                        .clearLibraryReveals(retained, ownerId)
+                    retainedEvents.add(com.wingedsheep.engine.core.LibraryShuffledEvent(ownerId))
+                } else {
+                    retainedEvents.add(com.wingedsheep.engine.core.LibraryReorderedEvent(ownerId, 1))
+                }
+                retained = com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
+                    .setPlacementKnowledge(
+                        retained, listOf(entityId),
+                        com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils.placementAudience(
+                            fromZone = fromZone,
+                            publiclyRevealed = options.libraryMovePublic,
+                            moverId = options.libraryMoverId,
+                            allPlayers = retained.turnOrder,
+                            knownPosition = effectiveLibraryPlacement !is LibraryPlacement.Shuffled
+                        )
+                    )
+            }
+            val extra = redirectResult.additionalEffect
+            if (extra != null) {
+                val (afterExtra, extraEvents) = ZoneMovementUtils.applyReplacementAdditionalEffect(
+                    retained, extra, redirectResult.effectControllerId, entityId,
+                    sourceId = redirectResult.effectSourceId
+                )
+                retained = afterExtra
+                retainedEvents.addAll(extraEvents.map { event ->
+                    if (event is ZoneChangeEvent) event.copy(transitionCause = ZoneTransitionCause.REPLACEMENT_ADDITIONAL)
+                    else event
+                })
+            }
+            return ZoneTransitionResult(
+                retained, retainedEvents, redirectResult, actualDestZone,
+                retainedEvents.filterIsInstance<ZoneChangeEvent>().map { event ->
+                    ZoneTransitionOutcome(event.oldObject, event.newObject, event.fromZone, event.toZone,
+                        event.requestedDestination, ZoneTransitionCause.REPLACEMENT_ADDITIONAL)
+                }
+            )
         }
 
         // One frozen snapshot of the permanent as it last existed on the battlefield
@@ -488,6 +551,7 @@ object ZoneTransitionService {
         // player's battlefield zone (e.g., control-changed permanents in some zone layouts).
         val removeZoneKey = currentZoneKey
         newState = newState.removeFromZone(removeZoneKey, entityId)
+        if (fromZone == Zone.STACK) newState = newState.removeFromStack(entityId)
 
         // Drop any remaining linked-exile reference held by a granter still on the
         // battlefield (e.g. Maralen, Fae Ascendant). The card has just left exile by
@@ -681,11 +745,20 @@ object ZoneTransitionService {
                     newState = ZoneMovementUtils.linkExiledToSource(newState, entityId, sourceId)
                 }
             }
+            Zone.STACK -> {
+                newState = newState.pushToStack(entityId)
+            }
             else -> {
-                // HAND, GRAVEYARD, STACK — simple addToZone
+                // HAND, GRAVEYARD, COMMAND, SIDEBOARD — simple addToZone
                 newState = newState.addToZone(destZoneKey, entityId)
             }
         }
+
+        // Capture the committed destination before any replacement rider can move it again.
+        val newObject = newState.objectRef(entityId)
+        val transitions = mutableListOf(
+            ZoneTransitionOutcome(oldObject, newObject, fromZone, actualDestZone, destinationZone)
+        )
 
         // 7b. Rule 712.8a: while a DFC is in a zone other than the battlefield or stack, it has
         // only the characteristics of its front face. Restore the saved front-face CardComponent.
@@ -752,7 +825,10 @@ object ZoneTransitionService {
                 wasSacrificed = wasSacrificed,
                 // Only a battlefield exit can be a craft-material exile; the flag is carried on the
                 // ZoneEntryOptions by the Craft cost payment for each chosen material.
-                craftMaterial = leavingBattlefield && options.craftMaterial
+                craftMaterial = leavingBattlefield && options.craftMaterial,
+                oldObject = oldObject,
+                newObject = newObject,
+                requestedDestination = destinationZone
             )
         )
 
@@ -951,14 +1027,24 @@ object ZoneTransitionService {
                 sourceId = redirectResult.effectSourceId
             )
             newState = updatedState
-            events.addAll(extraEvents)
+            events.addAll(extraEvents.map { event ->
+                if (event is ZoneChangeEvent) event.copy(transitionCause = ZoneTransitionCause.REPLACEMENT_ADDITIONAL)
+                else event
+            })
+            transitions.addAll(extraEvents.filterIsInstance<ZoneChangeEvent>().map { event ->
+                ZoneTransitionOutcome(
+                    event.oldObject, event.newObject, event.fromZone, event.toZone,
+                    event.requestedDestination, ZoneTransitionCause.REPLACEMENT_ADDITIONAL
+                )
+            })
         }
 
         return ZoneTransitionResult(
             state = newState,
             events = events,
             redirectResult = redirectResult,
-            actualDestination = actualDestZone
+            actualDestination = actualDestZone,
+            transitions = transitions
         )
     }
 
@@ -974,6 +1060,7 @@ object ZoneTransitionService {
     ): ZoneTransitionResult {
         var currentState = state
         val allEvents = mutableListOf<EngineGameEvent>()
+        val transitions = mutableListOf<ZoneTransitionOutcome>()
 
         for (entityId in entityIds) {
             // For batch library moves with Shuffled placement, don't shuffle per-card
@@ -989,6 +1076,7 @@ object ZoneTransitionService {
             val result = moveToZone(currentState, entityId, destinationZone, perCardOptions)
             currentState = result.state
             allEvents.addAll(result.events)
+            transitions.addAll(result.transitions)
         }
 
         // Final shuffle if needed
@@ -1002,12 +1090,12 @@ object ZoneTransitionService {
                     .clearLibraryReveals(currentState, ownerId)
                 val libraryZone = ZoneKey(ownerId, Zone.LIBRARY)
                 val (library, shuffledState) = currentState.nextRandom { shuffle(currentState.getZone(libraryZone)) }
-                currentState = shuffledState.copy(zones = shuffledState.zones + (libraryZone to library))
+                currentState = shuffledState.reorderZone(libraryZone, library)
                 allEvents.add(com.wingedsheep.engine.core.LibraryShuffledEvent(ownerId))
             }
         }
 
-        return ZoneTransitionResult(state = currentState, events = allEvents)
+        return ZoneTransitionResult(state = currentState, events = allEvents, transitions = transitions)
     }
 
     /**
@@ -1077,6 +1165,7 @@ object ZoneTransitionService {
         val cardNames = cardIds.map { state.getEntity(it)?.get<CardComponent>()?.name ?: "Card" }
         var newState = markDiscardCause(state, cardIds, causedByControllerId)
         val moveEvents = mutableListOf<EngineGameEvent>()
+        val transitions = mutableListOf<ZoneTransitionOutcome>()
         for (cardId in cardIds) {
             val result = moveToZone(
                 state = newState,
@@ -1086,10 +1175,11 @@ object ZoneTransitionService {
             )
             newState = result.state
             moveEvents.addAll(result.events)
+            transitions.addAll(result.transitions)
         }
         newState = trackDiscard(newState, playerId, cardIds)
         val discardEvent = CardsDiscardedEvent(playerId, cardIds, cardNames, asCyclingCost = asCyclingCost)
-        return ZoneTransitionResult(newState, listOf(discardEvent) + moveEvents)
+        return ZoneTransitionResult(newState, listOf(discardEvent) + moveEvents, transitions = transitions)
     }
 
     /**
@@ -1391,21 +1481,15 @@ object ZoneTransitionService {
     ): GameState {
         val currentLibrary = state.getZone(libraryZoneKey)
         return when (placement) {
-            LibraryPlacement.Top -> {
-                state.copy(zones = state.zones + (libraryZoneKey to listOf(entityId) + currentLibrary))
-            }
-            LibraryPlacement.Bottom -> {
-                state.copy(zones = state.zones + (libraryZoneKey to currentLibrary + entityId))
-            }
+            LibraryPlacement.Top -> state.insertIntoZone(libraryZoneKey, entityId, 0)
+            LibraryPlacement.Bottom -> state.addToZone(libraryZoneKey, entityId)
             LibraryPlacement.Shuffled -> {
-                val (newLibrary, shuffledState) = state.nextRandom { shuffle(currentLibrary + entityId) }
-                shuffledState.copy(zones = shuffledState.zones + (libraryZoneKey to newLibrary))
+                val inserted = state.addToZone(libraryZoneKey, entityId)
+                val (newLibrary, shuffledState) = inserted.nextRandom { shuffle(inserted.getZone(libraryZoneKey)) }
+                shuffledState.reorderZone(libraryZoneKey, newLibrary)
             }
-            is LibraryPlacement.NthFromTop -> {
-                val insertIndex = placement.position.coerceAtMost(currentLibrary.size)
-                val newLibrary = currentLibrary.toMutableList().apply { add(insertIndex, entityId) }
-                state.copy(zones = state.zones + (libraryZoneKey to newLibrary))
-            }
+            is LibraryPlacement.NthFromTop ->
+                state.insertIntoZone(libraryZoneKey, entityId, placement.position.coerceAtMost(currentLibrary.size))
         }
     }
 
@@ -1492,6 +1576,6 @@ object ZoneTransitionService {
                 return zoneKey
             }
         }
-        return null
+        return state.logicalZone(entityId)?.takeIf { it.zoneType == Zone.STACK }
     }
 }

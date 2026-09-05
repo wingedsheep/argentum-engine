@@ -156,6 +156,7 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
                     DelayedTriggeredAbility(
                         id = linkId,
                         effect = rider,
+                        objectReferences = context.objectReferences,
                         sourceId = sourceId,
                         sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: "",
                         controllerId = controllerId,

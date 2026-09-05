@@ -1226,7 +1226,7 @@ class DynamicAmountEvaluator(
             }
             is Player.Candidate -> listOfNotNull(context.candidatePlayerId)
             is Player.ChosenOpponent -> listOfNotNull(
-                context.sourceId?.let { state.getEntity(it)?.chosenOpponent() }
+                context.chosenOpponent(state)
             )
             is Player.AnOpponent, is Player.DefendingPlayer, is Player.EnchantedPlayer -> listOfNotNull(
                 TargetResolutionUtils.resolvePlayerRef(player, context, state)
@@ -1441,6 +1441,14 @@ class DynamicAmountEvaluator(
         useProjected: Boolean,
         explicitProjected: ProjectedState? = null
     ): Int {
+        val staleTrigger = entityId == context.triggeringEntityId && context.objectReferences.captured &&
+            !context.objectReferences.isCurrent(context.objectReferences.triggering, state)
+        val staleSource = entityId == context.sourceId && context.objectReferences.captured &&
+            !context.objectReferences.isCurrent(context.objectReferences.source, state)
+        if (staleTrigger || staleSource) {
+            val lastKnown = if (isPower) context.triggerLastKnownPower else context.triggerLastKnownToughness
+            if (lastKnown != null) return lastKnown
+        }
         if (useProjected) {
             val projection = resolveProjection(state, explicitProjected)
             val projectedValue = if (isPower) projection.getPower(entityId) else projection.getToughness(entityId)

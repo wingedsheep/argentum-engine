@@ -1714,12 +1714,22 @@ object DamageUtils {
         val newState = state.copy(floatingEffects = updatedEffects)
         val sourceName = state.getEntity(sourceId)?.get<CardComponent>()?.name
             ?.let { nameVisibleToAll(state, sourceId, it) }
+        // A resolving stack object's controller is carried by its stack component; a card's
+        // base controller can still describe its previous zone (for example, another player's hand).
+        val sourceControllerId = sourceEntity?.get<SpellOnStackComponent>()?.casterId
+            ?: sourceEntity?.get<com.wingedsheep.engine.state.components.stack.ActivatedAbilityOnStackComponent>()?.controllerId
+            ?: sourceEntity?.get<com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent>()?.controllerId
+            ?: sourceEntity?.get<com.wingedsheep.engine.state.components.stack.AbilityOnStackComponent>()?.controllerId
+            ?: state.projectedState.getController(sourceId)
+            ?: sourceEntity?.get<ControllerComponent>()?.playerId
+            ?: sourceEntity?.get<LastKnownPermanentComponent>()?.snapshot?.controllerId
         val event = DamagePreventedEvent(
             sourceId = sourceId,
             recipientId = targetId,
             amount = damageAmount,
             linkId = mod.linkId,
-            sourceName = sourceName
+            sourceName = sourceName,
+            sourceControllerId = sourceControllerId
         )
         // preventDamage = true (Deflecting Palm): damage is prevented — short-circuit. preventDamage
         // = false (Eye for an Eye): the reaction fires but the damage still proceeds.

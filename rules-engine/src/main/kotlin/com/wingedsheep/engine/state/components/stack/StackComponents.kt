@@ -304,6 +304,8 @@ data class TriggeredAbilityOnStackComponent(
     val sourceFaceChanges: Int? = null,
     /** Battlefield visit that created this trigger, retained across source zone changes. */
     val sourceBattlefieldTimestamp: Long? = null,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment =
+        com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     /**
      * The ability's intervening-"if" clause (CR 603.4), carried onto the stack object because the
      * ability itself is no longer reachable by the time this resolves — the trigger has been
@@ -411,6 +413,8 @@ data class ActivatedAbilityOnStackComponent(
      */
     val sourceFaceChanges: Int? = null,
     val sourceBattlefieldTimestamp: Long? = null,
+    val objectReferences: com.wingedsheep.engine.handlers.ObjectReferenceEnvironment =
+        com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(),
     /**
      * Division chosen at activation for a `DividedDamageEffect` ability (target -> damage), locked
      * onto the stack object so responding removal can't make the controller re-divide (CR 601.2d).

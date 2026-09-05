@@ -681,6 +681,12 @@ class ActivateAbilityHandler(
     }
 
     private fun executeActivation(state: GameState, action: ActivateAbility): ExecutionResult {
+        val abilityEntityId = EntityId.generate()
+        val sourceObject = state.objectRef(action.sourceId)
+        val activationReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(
+            captured = true, origin = sourceObject, source = sourceObject, resolutionKey = abilityEntityId.value,
+        )
+
         val container = state.getEntity(action.sourceId)
             ?: return ExecutionResult.error(state, "Source not found")
 
@@ -1736,6 +1742,7 @@ class ActivateAbilityHandler(
             }
             val context = EffectContext(
                 sourceId = action.sourceId,
+                objectReferences = activationReferences.authorize(events),
                 controllerId = action.playerId,
                 granterId = staticGranterId,
                 targets = action.targets,
@@ -1978,6 +1985,7 @@ class ActivateAbilityHandler(
             abilityIdentity = abilityIdentity,
             activatedAbility = ability,
             granterId = staticGranterId,
+            objectReferences = activationReferences.authorize(activationCostEvents),
             sourceBattlefieldTimestamp = state.getEntity(action.sourceId)
                 ?.get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()?.timestamp,
             // CR 701.28f — freeze the source's face-change clock as the ability goes on the stack;
@@ -2077,6 +2085,7 @@ class ActivateAbilityHandler(
                 // Put another ability on the stack
                 val repeatAbilityOnStack = ActivatedAbilityOnStackComponent(
                     sourceId = action.sourceId,
+            objectReferences = activationReferences.authorize(activationCostEvents),
                     sourceName = sourceName,
                     controllerId = action.playerId,
                     effect = finalEffect,

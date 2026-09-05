@@ -143,6 +143,8 @@ class LeylineContinuationResumer(
             cardComponent = cardComponent,
             choice = firstChoice,
             fromZone = Zone.HAND,
+            entryOldObject = transitionEvents.filterIsInstance<ZoneChangeEvent>().firstOrNull { it.entityId == leylineCardId }?.oldObject,
+            entryNewObject = transitionEvents.filterIsInstance<ZoneChangeEvent>().firstOrNull { it.entityId == leylineCardId }?.newObject,
             carryEvents = transitionEvents.filterNot {
                 it is ZoneChangeEvent && it.entityId == leylineCardId
             },

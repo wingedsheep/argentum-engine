@@ -114,6 +114,7 @@ class AmassExecutor(
             subtype = subtype,
             amount = amount,
             sourceId = context.sourceId,
+            objectReferences = context.objectReferences,
             candidates = armies
         )
         val newState = state.withPendingDecision(decision).pushContinuation(continuation)

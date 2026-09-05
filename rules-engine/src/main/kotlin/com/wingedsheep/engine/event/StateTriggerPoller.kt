@@ -92,7 +92,9 @@ class StateTriggerPoller(
                             sourceId = permanentId,
                             sourceName = card.name,
                             controllerId = controllerId,
-                            triggerContext = TriggerContext()
+                            triggerContext = TriggerContext(),
+                            objectReferences = com.wingedsheep.engine.handlers.ObjectReferenceEnvironment(captured = true,
+                                origin = workingState.objectRef(permanentId), source = workingState.objectRef(permanentId))
                         )
                     }
                     !conditionMet && wasLatched -> {

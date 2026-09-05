@@ -451,7 +451,7 @@ class ReflexiveTriggerEffectExecutor(
 
         val event = buildReflexiveTriggeredEvent(
             stateWithoutCont, effect.reflexiveEffect, effect.reflexiveTargetRequirements,
-            effect.descriptionOverride, mergedContext
+            effect.descriptionOverride, mergedContext.authorizeObjectMoves(result.events)
         )
         return EffectResult.success(stateWithoutCont, result.events.toList() + event)
     }
@@ -485,6 +485,7 @@ class ReflexiveTriggerEffectExecutor(
                 reflexiveTargetRequirements = reflexiveTargetRequirements,
                 descriptionOverride = descriptionOverride,
                 carriedPipeline = effectContext.pipeline,
+                carriedObjectReferences = effectContext.objectReferences,
                 carriedTriggerContext = com.wingedsheep.engine.event.TriggerContext(
                     triggeringEntityId = effectContext.triggeringEntityId,
                     triggeringPlayerId = effectContext.triggeringPlayerId,

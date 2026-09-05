@@ -419,6 +419,7 @@ class TriggerProcessor(
         val chooser = trigger.ability.effect.asMayDecide()?.decisionMaker ?: return trigger.controllerId
         val context = EffectContext(
             sourceId = trigger.sourceId,
+            objectReferences = trigger.objectReferences,
             controllerId = trigger.controllerId,
             triggeringEntityId = trigger.triggerContext.triggeringEntityId,
             triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
@@ -772,6 +773,7 @@ class TriggerProcessor(
             val evaluator = DynamicAmountEvaluator()
             val context = EffectContext(
                 sourceId = trigger.sourceId,
+            objectReferences = trigger.objectReferences,
                 controllerId = trigger.controllerId,
                 triggeringEntityId = trigger.triggerContext.triggeringEntityId,
                 triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
@@ -825,6 +827,7 @@ class TriggerProcessor(
             sourceId = trigger.sourceId,
             sourceName = trigger.sourceName,
             sourceBattlefieldTimestamp = trigger.sourceBattlefieldTimestamp,
+            objectReferences = trigger.objectReferences,
             controllerId = trigger.controllerId,
             effect = ability.effect,
             description = ability.description,
@@ -891,6 +894,7 @@ class TriggerProcessor(
         val abilityComponent = TriggeredAbilityOnStackComponent(
             sourceId = trigger.sourceId,
             sourceBattlefieldTimestamp = trigger.sourceBattlefieldTimestamp,
+            objectReferences = trigger.objectReferences,
             sourceName = trigger.sourceName,
             controllerId = trigger.controllerId,
             effect = effectOverride ?: ability.effect,
@@ -1415,6 +1419,7 @@ class TriggerProcessor(
         } else rawAmount
         val context = EffectContext(
             sourceId = trigger.sourceId,
+            objectReferences = trigger.objectReferences,
             controllerId = trigger.controllerId,
         )
         return DynamicAmountEvaluator().evaluate(state, resolvedAmount, context)
@@ -1507,6 +1512,7 @@ class TriggerProcessor(
                 val resolved = try {
                     val context = EffectContext(
                         sourceId = trigger.sourceId,
+            objectReferences = trigger.objectReferences,
                         controllerId = trigger.controllerId,
                         triggeringEntityId = trigger.triggerContext.triggeringEntityId,
                         triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,
@@ -1573,6 +1579,7 @@ class TriggerProcessor(
         return try {
             val context = EffectContext(
                 sourceId = trigger.sourceId,
+            objectReferences = trigger.objectReferences,
                 controllerId = trigger.controllerId,
                 triggeringEntityId = trigger.triggerContext.triggeringEntityId,
                 triggeringPlayerId = trigger.triggerContext.triggeringPlayerId,

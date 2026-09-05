@@ -320,7 +320,7 @@ class DeathAndLeaveTriggerDetector(
                         sourceId = entry.entityId,
                         sourceName = entry.cardComponent.name,
                         controllerId = entry.controllerId,
-                        triggerContext = TriggerContext(triggeringEntityId = dyingEntityId)
+                        triggerContext = TriggerContext.fromEvent(event)
                     )
                 )
             }

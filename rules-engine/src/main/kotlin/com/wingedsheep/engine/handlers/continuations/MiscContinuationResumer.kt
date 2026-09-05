@@ -201,6 +201,7 @@ class MiscContinuationResumer(
         )
         val addContext = EffectContext(
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
             controllerId = continuation.controllerId,
         )
         val result = services.effectExecutorRegistry.execute(state, addEffect, addContext).toExecutionResult()
@@ -314,6 +315,7 @@ class MiscContinuationResumer(
         val drawEffect = com.wingedsheep.sdk.scripting.effects.DrawCardsEffect(chosenCount, com.wingedsheep.sdk.scripting.targets.EffectTarget.Controller)
         val drawContext = EffectContext(
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
             controllerId = continuation.playerId,
         )
         val result = services.effectExecutorRegistry.execute(currentState, drawEffect, drawContext).toExecutionResult()
@@ -680,6 +682,7 @@ class MiscContinuationResumer(
             spellName = continuation.spellName,
             controllerId = continuation.controllerId,
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
             totalCopies = continuation.totalCopies,
             keywordsForCopy = continuation.keywordsForCopy,
             removeLegendary = continuation.removeLegendary
@@ -881,6 +884,7 @@ class MiscContinuationResumer(
         )
         val tokenContext = EffectContext(
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
             controllerId = continuation.controllerId
         )
         val tokenResult = effectRunner.executeRemainingEffects(newState, listOf(tokenEffect), tokenContext)
@@ -1050,6 +1054,7 @@ class MiscContinuationResumer(
             val nextContinuation = MoveChosenCountersToTargetContinuation(
                 decisionId = decisionId,
                 sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
                 destinationId = continuation.destinationId,
                 controllerId = continuation.controllerId,
                 currentCounterType = nextType,

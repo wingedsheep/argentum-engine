@@ -78,9 +78,11 @@ class ReturnSpellOrPermanentToOwnersHandExecutor(
                     ZoneChangeEvent(
                         targetId,
                         cardComponent?.name ?: "Unknown",
-                        null,
+                        Zone.STACK,
                         Zone.HAND,
-                        ownerId
+                        ownerId,
+                        oldObject = state.objectRef(targetId),
+                        newObject = newState.objectRef(targetId)
                     )
                 )
             )

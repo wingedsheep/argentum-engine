@@ -140,7 +140,9 @@ class ReturnSelfToBattlefieldAttachedExecutor(
                 entityName = enteringCard.name,
                 fromZone = currentZone.zoneType,
                 toZone = Zone.BATTLEFIELD,
-                ownerId = ownerId
+                ownerId = ownerId,
+                oldObject = state.objectRef(sourceId),
+                newObject = newState.objectRef(sourceId)
             )
         )
 

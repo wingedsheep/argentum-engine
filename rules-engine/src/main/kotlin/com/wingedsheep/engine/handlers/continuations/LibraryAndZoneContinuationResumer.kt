@@ -117,30 +117,32 @@ class LibraryAndZoneContinuationResumer(
         var newState = state
         val events = mutableListOf<GameEvent>()
 
-        // Remove all cards from their current zones
+        // Source storage can be any owner's zone or the stack. A stolen permanent's
+        // battlefield bucket is not necessarily its owner's bucket.
         for (cardId in orderedCards) {
-            val ownerId = newState.getEntity(cardId)?.get<OwnerComponent>()?.playerId ?: destPlayerId
-            for (zone in Zone.entries) {
-                val zoneKey = ZoneKey(ownerId, zone)
-                if (cardId in newState.getZone(zoneKey)) {
-                    newState = newState.removeFromZone(zoneKey, cardId)
-                    break
-                }
-            }
+            val currentZone = newState.zones.entries.firstOrNull { cardId in it.value }?.key
+            if (currentZone != null) newState = newState.removeFromZone(currentZone, cardId)
+            if (cardId in newState.stack) newState = newState.removeFromStack(cardId)
         }
 
-        // Place cards in library in the chosen order
-        val currentLibrary = newState.getZone(libraryZone)
-        newState = if (continuation.placement == ZonePlacement.Bottom) {
-            // Bottom: append ordered cards at the end
-            newState.copy(
-                zones = newState.zones + (libraryZone to currentLibrary + orderedCards)
-            )
-        } else {
-            // Top (default): prepend ordered cards at the beginning
-            newState.copy(
-                zones = newState.zones + (libraryZone to orderedCards + currentLibrary)
-            )
+        // Positional entry distinguishes real arrivals from same-library ordering.
+        val insertionIndex = if (continuation.placement == ZonePlacement.Bottom)
+            newState.getZone(libraryZone).size else 0
+        for ((offset, cardId) in orderedCards.withIndex()) {
+            val oldObject = newState.objectRef(cardId)
+            val origin = newState.logicalZone(cardId)
+            newState = newState.insertIntoZone(libraryZone, cardId, insertionIndex + offset)
+            if (origin != null && origin != libraryZone) {
+                events.add(ZoneChangeEvent(
+                    entityId = cardId,
+                    entityName = newState.getEntity(cardId)?.get<CardComponent>()?.name ?: "Unknown",
+                    fromZone = origin.zoneType,
+                    toZone = Zone.LIBRARY,
+                    ownerId = newState.getEntity(cardId)?.get<CardComponent>()?.ownerId ?: destPlayerId,
+                    oldObject = oldObject,
+                    newObject = newState.objectRef(cardId)
+                ))
+            }
         }
 
         events.add(
@@ -174,21 +176,11 @@ class LibraryAndZoneContinuationResumer(
         val orderedCards = response.orderedObjects
         val libraryZone = ZoneKey(playerId, Zone.LIBRARY)
 
-        // Get current library
-        val currentLibrary = state.getZone(libraryZone).toMutableList()
-
-        // Remove the reordered cards from the library (they should already be removed by the executor,
-        // but filter just in case)
-        val cardsSet = orderedCards.toSet()
-        val remainingLibrary = currentLibrary.filter { it !in cardsSet }
-
-        // Place the cards on the BOTTOM in the player's chosen order
-        val newLibrary = remainingLibrary + orderedCards
-
-        // Update the library zone
-        val newState = state.copy(
-            zones = state.zones + (libraryZone to newLibrary)
-        )
+        // These are the same library objects, possibly detached by an older saved continuation.
+        // Reinsert through the shared entry helper so the retained logical visit is preserved.
+        var newState = state
+        for (cardId in orderedCards) newState = newState.removeFromZone(libraryZone, cardId)
+        for (cardId in orderedCards) newState = newState.addToZone(libraryZone, cardId)
 
         val events = listOf(
             LibraryReorderedEvent(
@@ -358,6 +350,7 @@ class LibraryAndZoneContinuationResumer(
                 destPlayerId = nextControllerId,
                 remainingAuras = nextRemaining,
                 sourceId = continuation.sourceId,
+                objectReferences = continuation.objectReferences,
                 sourceName = continuation.sourceName,
                 underOwnersControl = continuation.underOwnersControl
             )
@@ -592,7 +585,8 @@ class LibraryAndZoneContinuationResumer(
             pendingPlayers = continuation.pendingPlayers,
             startCategory = continuation.categoryIndex + 1,
             picks = continuation.picks + response.selectedCards,
-            sourceId = continuation.sourceId
+            sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences
         )
 
         if (result.isPaused) {
@@ -763,18 +757,12 @@ class LibraryAndZoneContinuationResumer(
 
         val libZoneKey = ZoneKey(ownerId, Zone.LIBRARY)
         val currentLibrary = newState.getZone(libZoneKey)
-        val newLibrary = when (placement) {
-            com.wingedsheep.engine.handlers.effects.LibraryPlacement.Top ->
-                listOf(spellId) + currentLibrary
-            com.wingedsheep.engine.handlers.effects.LibraryPlacement.Bottom ->
-                currentLibrary + spellId
-            is com.wingedsheep.engine.handlers.effects.LibraryPlacement.NthFromTop -> {
-                val insertIndex = placement.position.coerceAtMost(currentLibrary.size)
-                currentLibrary.toMutableList().apply { add(insertIndex, spellId) }
-            }
-            else -> currentLibrary + spellId
+        val insertIndex = when (placement) {
+            com.wingedsheep.engine.handlers.effects.LibraryPlacement.Top -> 0
+            is com.wingedsheep.engine.handlers.effects.LibraryPlacement.NthFromTop -> placement.position
+            else -> currentLibrary.size
         }
-        newState = newState.copy(zones = newState.zones + (libZoneKey to newLibrary))
+        newState = newState.insertIntoZone(libZoneKey, spellId, insertIndex)
 
         // Both players watched the spell get placed at this position — mark it revealed to all
         // so each side's library viewer shows it face-up at the new slot.
@@ -788,6 +776,8 @@ class LibraryAndZoneContinuationResumer(
                 entityName = spellName,
                 fromZone = Zone.STACK,
                 toZone = Zone.LIBRARY,
+                oldObject = state.objectRef(spellId),
+                newObject = newState.objectRef(spellId),
                 ownerId = ownerId
             )
         )
@@ -1019,6 +1009,7 @@ class LibraryAndZoneContinuationResumer(
         if (continuation.thenEffect != null) {
             val thenCtx = EffectContext(
                 sourceId = continuation.sourceId,
+                objectReferences = continuation.objectReferences,
                 controllerId = continuation.playerId,
                 pipeline = PipelineState.EMPTY.copy(storedCollections = discoveredCollections)
             )
@@ -1123,6 +1114,7 @@ class LibraryAndZoneContinuationResumer(
             ?: return checkForMore(state, leadingEvents)
         val ctx = EffectContext(
             sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
             controllerId = continuation.playerId,
             pipeline = PipelineState.EMPTY.copy(storedCollections = discoveredCollections)
         )

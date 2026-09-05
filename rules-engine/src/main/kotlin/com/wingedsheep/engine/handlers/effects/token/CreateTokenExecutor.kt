@@ -304,6 +304,7 @@ class CreateTokenExecutor(
                     effect = MoveToZoneEffect(EffectTarget.SpecificEntity(tokenId), Zone.EXILE),
                     fireAtStep = exileStep,
                     sourceId = sourceId,
+                    objectReferences = context.objectReferences,
                     sourceName = sourceName,
                     controllerId = tokenControllerId
                 )
@@ -326,6 +327,7 @@ class CreateTokenExecutor(
                     effect = SacrificeTargetEffect(EffectTarget.SpecificEntity(tokenId)),
                     fireAtStep = sacrificeStep,
                     sourceId = sourceId,
+                    objectReferences = context.objectReferences,
                     sourceName = sourceName,
                     controllerId = tokenControllerId
                 )
@@ -423,7 +425,9 @@ class CreateTokenExecutor(
                 entityName = card.name,
                 fromZone = null,
                 toZone = Zone.BATTLEFIELD,
-                ownerId = tokenControllerId
+                ownerId = tokenControllerId,
+                oldObject = null,
+                newObject = newState.objectRef(tokenId)
             )
         }
 
