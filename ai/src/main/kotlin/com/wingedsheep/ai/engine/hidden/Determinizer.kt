@@ -92,10 +92,13 @@ class Determinizer internal constructor(
             }
 
             if (definitions.size != hidden.size) continue
+            // No caller observes intermediate identities. Copy once for this player and publish
+            // only after all replacements, without mutating an input or previously sampled world.
+            val sampledEntities = sampled.entities.toMutableMap()
             for ((entityId, cardDef) in hidden.zip(definitions)) {
-                val old = sampled.getEntity(entityId) ?: continue
+                val old = sampledEntities[entityId] ?: continue
                 val ownerId = old.get<OwnerComponent>()?.playerId ?: opponentId
-                sampled = HiddenSlotRewrite.rewrite(sampled, entityId, cardDef, ownerId)
+                sampledEntities[entityId] = HiddenSlotRewrite.rewrite(old, cardDef, ownerId)
             }
 
             val libraryKey = ZoneKey(opponentId, Zone.LIBRARY)
@@ -107,7 +110,10 @@ class Determinizer internal constructor(
             val shuffledLibrary = library.map { id ->
                 if (id in hiddenLibraryIds) iterator.next() else id
             }
-            sampled = sampled.copy(zones = sampled.zones + (libraryKey to shuffledLibrary))
+            sampled = sampled.copy(
+                entities = sampledEntities,
+                zones = sampled.zones + (libraryKey to shuffledLibrary),
+            )
         }
         return sampled
     }

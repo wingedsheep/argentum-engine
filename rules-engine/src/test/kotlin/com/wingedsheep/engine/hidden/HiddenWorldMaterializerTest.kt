@@ -123,6 +123,7 @@ class HiddenWorldMaterializerTest : ScenarioTestBase() {
             val assignedIds = listOf(hiddenHandId) + hiddenLibraryIds
             val source = game.state
                 .copy(lastCardDrawnThisTurnByPlayer = mapOf(game.player2Id to hiddenHandId))
+            val sourceEntities = source.entities.toMap()
             val futureRng = GameRng.seeded(202L)
 
             val result = materializer.materialize(
@@ -159,7 +160,42 @@ class HiddenWorldMaterializerTest : ScenarioTestBase() {
             }
             withClue("materialization is purely functional") {
                 game.state.getEntity(hiddenHandId)?.get<CardComponent>()?.name shouldBe "Grizzly Bears"
+                source.entities shouldBe sourceEntities
+                world.entities.keys.toList() shouldBe source.entities.keys.toList()
+                val retainedEntities = world.entities.toMap()
+                materializer.materialize(
+                    world,
+                    HiddenWorldMaterializationRequest(
+                        assignedIds.associateWith { cardRegistry.requireCard("Swamp") },
+                        GameRng.seeded(203L),
+                    ),
+                ).shouldBeInstanceOf<HiddenWorldMaterializationResult.Materialized>()
+                world.entities shouldBe retainedEntities
             }
+        }
+
+        test("a refusal after a valid slot leaves the entire input world unchanged") {
+            val game = scenario().withPlayers()
+                .withCardInLibrary(2, "Forest").withCardInLibrary(2, "Mountain")
+                .build()
+            val ids = game.state.getLibrary(game.player2Id).sortedBy { it.value }
+            val source = game.state.updateEntity(ids.last()) {
+                it.with(RevealedToComponent.to(game.player1Id))
+            }
+            val originalEntities = source.entities.toMap()
+            val originalRng = source.rng
+            val result = materializer.materialize(
+                source,
+                HiddenWorldMaterializationRequest(
+                    ids.associateWith { cardRegistry.requireCard("Island") },
+                    GameRng.seeded(204L),
+                ),
+            ).shouldBeInstanceOf<HiddenWorldMaterializationResult.Unsupported>()
+
+            result.reason.kind shouldBe UnsupportedHiddenWorldKind.RUNTIME_STATE
+            result.reason.entityId shouldBe ids.last()
+            source.entities shouldBe originalEntities
+            source.rng shouldBe originalRng
         }
 
         test("caller-generated assignments are reproducible and do not consume source randomness") {

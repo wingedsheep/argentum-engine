@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.engine.view.ClientStateTransformer
 import com.wingedsheep.engine.view.Visibility
 import com.wingedsheep.sdk.model.GameRng
+import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AdditionalCostPayment
 import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
@@ -21,6 +22,52 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 class DeterminizerInvariantsTest : ScenarioTestBase() {
 
     init {
+        test("sampling retains the pre-batching assignment and library sequence") {
+            val game = scenario().withPlayers().withRngSeed(883L)
+                .withCardInHand(1, "Forest")
+                .withCardInLibrary(1, "Mountain").withCardInLibrary(1, "Hill Giant")
+                .withCardInHand(2, "Mountain").withCardInHand(2, "Hill Giant")
+                .withCardInLibrary(2, "Grizzly Bears").withCardInLibrary(2, "Craw Wurm")
+                .build()
+            val revealed = game.state.getHand(game.player2Id).first()
+            val before = game.state.updateEntity(revealed) { it.with(RevealedToComponent.to(game.player1Id)) }
+            val originalEntities = before.entities.toMap()
+            val originalZones = before.zones.mapValues { it.value.toList() }
+            val models = listOf(
+                emptyMap<EntityId, OpponentModel>(),
+                mapOf(
+                    game.player1Id to OpponentModel.KnownDecklist(
+                        mapOf("Forest" to 1, "Mountain" to 1, "Hill Giant" to 1),
+                    ),
+                    game.player2Id to OpponentModel.KnownDecklist(
+                        mapOf("Mountain" to 1, "Hill Giant" to 1, "Grizzly Bears" to 1, "Craw Wurm" to 1),
+                    ),
+                ),
+            )
+            val sampler = Determinizer(cardRegistry)
+            val signature = buildString {
+                for (model in models) for (viewer in before.turnOrder) for (seed in 1L..16L) {
+                    val world = sampler.sample(before, viewer, model, GameRng.seeded(seed))
+                    world.copy(entities = before.entities, zones = before.zones) shouldBe before
+                    before.entities shouldBe originalEntities
+                    before.zones shouldBe originalZones
+                    world.getEntity(revealed) shouldBe before.getEntity(revealed)
+                    append(viewer.value).append('/').append(seed).append(':')
+                    world.entities.forEach { (id, components) ->
+                        append(id.value).append('=').append(components.get<CardComponent>()?.name).append(';')
+                    }
+                    append(world.zones).append('\n')
+                    val retainedEntities = world.entities.toMap()
+                    sampler.sample(world, viewer, model, GameRng.seeded(seed + 100))
+                    world.entities shouldBe retainedEntities
+                }
+            }
+            // Captured from the per-card-copy implementation at upstream 12589ae4a2.
+            java.security.MessageDigest.getInstance("SHA-256").digest(signature.toByteArray())
+                .joinToString("") { "%02x".format(it) } shouldBe
+                "fe26af39d1fb97c30edbebf726115360a34a390af7d4c15e9c00a80b3ca8620b"
+        }
+
         test("sampling preserves structure and everything visible to the viewer") {
             val game = scenario()
                 .withPlayers()

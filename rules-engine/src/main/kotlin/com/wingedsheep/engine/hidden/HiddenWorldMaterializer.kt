@@ -113,7 +113,8 @@ class HiddenWorldMaterializer internal constructor(
                 )
             }
         }
-        var materialized = state
+        // Accumulate privately: validation still reads the source, and a refusal publishes nothing.
+        val materializedEntities = state.entities.toMutableMap()
 
         // Slots are independent, so the order only decides *which* obstruction is reported when a
         // request has several. Sorting makes that report stable across equal requests.
@@ -199,11 +200,11 @@ class HiddenWorldMaterializer internal constructor(
                     listOf("replacement definition is not registered: $replacementDefinitionId"),
                 )
             }
-            materialized = HiddenSlotRewrite.rewrite(materialized, entityId, replacementDefinition, ownerId)
+            materializedEntities[entityId] = HiddenSlotRewrite.rewrite(container, replacementDefinition, ownerId)
         }
 
         return HiddenWorldMaterializationResult.Materialized(
-            materialized.copy(rng = request.futureRng)
+            state.copy(entities = materializedEntities, rng = request.futureRng)
         )
     }
 

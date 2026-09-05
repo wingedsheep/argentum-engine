@@ -154,10 +154,21 @@ object HiddenSlotRewrite {
         ownerId: EntityId,
     ): GameState {
         val source = state.getEntity(entityId) ?: return state
+        return state.withEntity(entityId, rewrite(source, definition, ownerId))
+    }
+
+    /**
+     * The container-only form lets callers batch several rewrites into one entity-map copy.
+     * As with the state form, callers must first clear [runtimeBlockers] for the source slot.
+     */
+    fun rewrite(
+        source: ComponentContainer,
+        definition: CardDefinition,
+        ownerId: EntityId,
+    ): ComponentContainer {
         val rebuilt = CardEntityFactory.create(definition, ownerId)
-        val withController = source.get<ControllerComponent>()
+        return source.get<ControllerComponent>()
             ?.let { rebuilt.with(it) }
             ?: rebuilt.without<ControllerComponent>()
-        return state.withEntity(entityId, withController)
     }
 }
