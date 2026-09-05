@@ -1,6 +1,11 @@
 package com.wingedsheep.engine.hidden
 
 import com.wingedsheep.engine.core.ContinuationFrame
+import com.wingedsheep.engine.core.CardEntityFactory
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.MadnessComponent
+import com.wingedsheep.engine.state.components.identity.RevealedToComponent
+import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.engine.core.DecisionContext
 import com.wingedsheep.engine.core.TypedEntityReferences
 import com.wingedsheep.engine.core.InFlightReferenceProjector
@@ -18,6 +23,21 @@ import io.kotest.matchers.types.shouldBeInstanceOf
 class HiddenSlotRewriteTest : ScenarioTestBase() {
 
     init {
+        test("runtime blockers retain identity exclusions, decoration values, and sorted names") {
+            val owner = EntityId.of("owner")
+            val definition = cardRegistry.requireCard("Fiery Temper")
+            val expected = CardEntityFactory.create(definition, owner)
+            val renamed = expected.with(expected.require<CardComponent>().copy(name = "Printed alias"))
+            HiddenSlotRewrite.runtimeBlockers(renamed, definition, owner) shouldBe emptyList()
+
+            val changed = renamed
+                .with(RevealedToComponent.to(EntityId.of("viewer")))
+                .with(MadnessComponent(ManaCost.parse("{7}")))
+            HiddenSlotRewrite.runtimeBlockers(changed, definition, owner) shouldBe
+                listOf("MadnessComponent", "RevealedToComponent")
+            expected.require<MadnessComponent>().cost shouldNotBe ManaCost.parse("{7}")
+        }
+
         test("a Mind Rot paused graph pins its discard options but not an unrelated library slot") {
             val game = scenario()
                 .withPlayers()

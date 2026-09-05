@@ -129,12 +129,11 @@ object HiddenSlotRewrite {
 
     /** Reuse a factory-built expectation while still checking each source container separately. */
     internal fun runtimeBlockers(container: ComponentContainer, expected: ComponentContainer): List<String> {
-        val expectedByType = expected.all()
-            .associateBy { it::class.java }
         return container.all()
-            .filterNot { it is CardComponent }
-            .filter { component -> expectedByType[component::class.java] != component }
-            .map { component -> component::class.simpleName ?: component::class.java.name }
+            .mapNotNull { component ->
+                if (component is CardComponent || expected.components[component::class.java] == component) null
+                else component::class.simpleName ?: component::class.java.name
+            }
             .sorted()
     }
 
