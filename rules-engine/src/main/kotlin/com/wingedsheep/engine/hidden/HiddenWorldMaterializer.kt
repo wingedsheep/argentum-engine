@@ -190,7 +190,8 @@ class HiddenWorldMaterializer internal constructor(
                     listOf("replacement HAND/LIBRARY identity is a DFC back face: ${replacementDefinition.name}"),
                 )
             }
-            val replacementDefinitionId = CardEntityFactory.create(replacementDefinition, ownerId)
+            val replacementContainer = CardEntityFactory.create(replacementDefinition, ownerId)
+            val replacementDefinitionId = replacementContainer
                 .require<CardComponent>()
                 .cardDefinitionId
             if (cardRegistry.getCard(replacementDefinitionId) != replacementDefinition) {
@@ -200,7 +201,7 @@ class HiddenWorldMaterializer internal constructor(
                     listOf("replacement definition is not registered: $replacementDefinitionId"),
                 )
             }
-            materializedEntities[entityId] = HiddenSlotRewrite.rewrite(container, replacementDefinition, ownerId)
+            materializedEntities[entityId] = HiddenSlotRewrite.rewrite(container, replacementContainer)
         }
 
         return HiddenWorldMaterializationResult.Materialized(

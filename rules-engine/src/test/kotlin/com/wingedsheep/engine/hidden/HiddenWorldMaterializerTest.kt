@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.hidden
 
+import com.wingedsheep.engine.core.CardEntityFactory
 import com.wingedsheep.engine.core.CardsSelectedResponse
 import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.ChooseOptionDecision
@@ -145,6 +146,10 @@ class HiddenWorldMaterializerTest : ScenarioTestBase() {
             world.zones shouldBe source.zones
             world.lastCardDrawnThisTurnByPlayer shouldBe mapOf(game.player2Id to hiddenHandId)
             cardName(world, hiddenHandId) shouldBe "Fiery Temper"
+            world.getEntity(hiddenHandId)?.get<CardComponent>()?.cardDefinitionId shouldBe
+                CardEntityFactory.create(cardRegistry.requireCard("Fiery Temper"), game.player2Id)
+                    .require<CardComponent>().cardDefinitionId
+            world.getEntity(hiddenHandId)?.get<ControllerComponent>() shouldBe ControllerComponent(game.player2Id)
             cardName(world, hiddenLibraryIds[0]) shouldBe "Mountain"
             cardName(world, hiddenLibraryIds[1]) shouldBe "Island"
             withClue("definition-derived components are rebuilt for the assigned identity") {

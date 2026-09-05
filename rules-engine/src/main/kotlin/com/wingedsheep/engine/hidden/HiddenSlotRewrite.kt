@@ -165,10 +165,11 @@ object HiddenSlotRewrite {
         source: ComponentContainer,
         definition: CardDefinition,
         ownerId: EntityId,
-    ): ComponentContainer {
-        val rebuilt = CardEntityFactory.create(definition, ownerId)
-        return source.get<ControllerComponent>()
+    ): ComponentContainer = rewrite(source, CardEntityFactory.create(definition, ownerId))
+
+    /** Reuse a factory container already built and validated by the materializer. */
+    internal fun rewrite(source: ComponentContainer, rebuilt: ComponentContainer): ComponentContainer =
+        source.get<ControllerComponent>()
             ?.let { rebuilt.with(it) }
             ?: rebuilt.without<ControllerComponent>()
-    }
 }
