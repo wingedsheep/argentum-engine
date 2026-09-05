@@ -5,6 +5,7 @@ import com.wingedsheep.engine.core.InFlightEntityReferences
 import com.wingedsheep.engine.core.InFlightReferenceProjector
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.sdk.core.Zone
@@ -116,6 +117,14 @@ class HiddenWorldMaterializer internal constructor(
         if (request.slotAssignments.isEmpty()) {
             return HiddenWorldMaterializationResult.Materialized(state.copy(rng = request.futureRng))
         }
+        // Preserve each occurrence, including duplicates within one zone. Validation below still
+        // chooses the first obstruction in assignment order; unrelated malformed slots are ignored.
+        val memberships = mutableMapOf<EntityId, MutableList<ZoneKey>>()
+        for ((zoneKey, ids) in state.zones) {
+            for (id in ids) {
+                if (id in request.slotAssignments) memberships.getOrPut(id) { mutableListOf() }.add(zoneKey)
+            }
+        }
         // Accumulate privately: validation still reads the source, and a refusal publishes nothing.
         val materializedEntities = state.entities.toMutableMap()
 
@@ -135,20 +144,20 @@ class HiddenWorldMaterializer internal constructor(
                     listOf("slot is conservatively pinned by in-flight execution"),
                 )
             }
-            val zones = state.zones.filterValues { entityId in it }
-            val occurrences = zones.values.sumOf { zone -> zone.count { it == entityId } }
-            if (occurrences != 1 || zones.keys.singleOrNull()?.zoneType !in SUPPORTED_ZONES) {
+            val zones = memberships[entityId].orEmpty()
+            val occurrences = zones.size
+            if (occurrences != 1 || zones.singleOrNull()?.zoneType !in SUPPORTED_ZONES) {
                 return unsupported(
                     UnsupportedHiddenWorldKind.INVALID_ASSIGNMENT,
                     entityId,
                     listOf(
                         if (occurrences == 0) "entity is not in a zone"
                         else if (occurrences > 1) "entity occurs in zones $occurrences times"
-                        else "supported slots are HAND/LIBRARY; found ${zones.keys.single().zoneType.name}"
+                        else "supported slots are HAND/LIBRARY; found ${zones.single().zoneType.name}"
                     ),
                 )
             }
-            val zoneKey = zones.keys.single()
+            val zoneKey = zones.single()
 
             val ownerId = container.get<OwnerComponent>()?.playerId
                 ?: return unsupported(
