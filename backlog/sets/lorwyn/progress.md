@@ -1,6 +1,6 @@
 # Lorwyn completion work
 
-This branch tracks completion of Lorwyn and the engine capabilities its cards require. The draft PR stays open for review while work proceeds; it is not ready to merge.
+This work tracks completion of Lorwyn and the engine capabilities its cards require. The initial completion PR #2235 was merged at 251/286 cards. Further work continues in draft PRs; the set is not yet complete.
 
 ## Starting point
 
@@ -102,3 +102,24 @@ and the existing server effect indicator names the creature to be blocked. Comba
 turn cleanup reuse the current engine paths; no SDK type or client interaction was added. No
 manual playthrough or end-to-end UI run was performed. Champion and the other completion work
 remain outstanding; the set stays incomplete and the PR stays draft.
+
+## Turtleshell Changeling and reusable switching
+
+Turtleshell Changeling adds the missing `Effects.SwitchPowerToughness(target, duration)` atom.
+It uses the existing floating-effect switch layer, source-instance guard, duration cleanup,
+projected stats, and `StatsModifiedEvent` client mapping. The existing ability menu displays the
+server's description; no new decision or client rule is introduced.
+
+Seven card scenarios pass: expiry, double switching, boosts before/after switching, lethal
+marked damage, and blinking before/after resolution. The blink tests cast the creature through
+the real entry path so its battlefield identity is present. Three shared engine scenarios cover
+other targets, permanent duration, noncreature animation, event emission, and immutable input.
+The SDK round-trip and two mtgish emitter scenarios pass. The generator now maps `SwitchPT`;
+67 fixture comment changes give previously empty scaffold diagnostics a readable fallback.
+They change no generated code.
+
+The full `just test` gate passed (3m 22s, 106 tasks). The card snapshot adds only Turtleshell;
+all existing entries are unchanged. Fresh Scryfall metadata, image HTTP 200, and the canonical
+LRW printing check passed. A manual setup is in
+`manual-scenarios/cards/t/turtleshell-changeling.json`; it has not been played through in the UI.
+No manual playthrough, UX session, or e2e test was performed. Full set verification remains owed.

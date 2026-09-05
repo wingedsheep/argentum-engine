@@ -2,7 +2,7 @@
 
 **Set Size:** 286 cards
 **Release Date:** October 12, 2007
-**Implemented:** 251 / 286
+**Implemented:** 252 / 286
 | Section    | Total | Done |
 |------------|-------|------|
 | White      | 49    | 43   |
@@ -114,7 +114,7 @@
 - [x] Streambed Aquitects
 - [x] Surgespanner
 - [x] Tideshaper Mystic
-- [ ] Turtleshell Changeling
+- [x] Turtleshell Changeling
 - [ ] Wanderwine Prophets
 - [x] Whirlpool Whelm
 - [x] Wings of Velis Vel
