@@ -125,10 +125,21 @@ class TriggerAbilityResolver(
         // gates it, the printed KeywordAbility.Numeric supplies N.
         val renownAbilities = getRenownTriggeredAbilities(entityId, cardDefinitionId, state)
 
-        val allGranted = grantedAbilities + staticGrantedAbilities + attachedGrantedAbilities +
-            selfGrantedAbilities + wardAbilities + flankingAbilities + ringBearerAbilities +
-            suspendAbilities + paradigmAbilities + siegeAbilities + vanishingAbilities +
-            fabricateAbilities + renownAbilities
+        val allGranted = buildList {
+            addAll(grantedAbilities)
+            addAll(staticGrantedAbilities)
+            addAll(attachedGrantedAbilities)
+            addAll(selfGrantedAbilities)
+            addAll(wardAbilities)
+            addAll(flankingAbilities)
+            addAll(ringBearerAbilities)
+            addAll(suspendAbilities)
+            addAll(paradigmAbilities)
+            addAll(siegeAbilities)
+            addAll(vanishingAbilities)
+            addAll(fabricateAbilities)
+            addAll(renownAbilities)
+        }
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
         // Apply text replacement if the entity has one
@@ -329,10 +340,21 @@ class TriggerAbilityResolver(
         // gates it, the printed KeywordAbility.Numeric supplies N.
         val renownAbilities = getRenownTriggeredAbilities(entityId, cardDefinitionId, state)
 
-        val allGranted = grantedAbilities + staticGrantedAbilities + attachedGrantedAbilities +
-            selfGrantedAbilities + wardAbilities + flankingAbilities + ringBearerAbilities +
-            suspendAbilities + paradigmAbilities + siegeAbilities + vanishingAbilities +
-            fabricateAbilities + renownAbilities
+        val allGranted = buildList {
+            addAll(grantedAbilities)
+            addAll(staticGrantedAbilities)
+            addAll(attachedGrantedAbilities)
+            addAll(selfGrantedAbilities)
+            addAll(wardAbilities)
+            addAll(flankingAbilities)
+            addAll(ringBearerAbilities)
+            addAll(suspendAbilities)
+            addAll(paradigmAbilities)
+            addAll(siegeAbilities)
+            addAll(vanishingAbilities)
+            addAll(fabricateAbilities)
+            addAll(renownAbilities)
+        }
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
         val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
