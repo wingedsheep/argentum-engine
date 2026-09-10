@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.combat.AttackedThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisTurnComponent
+import com.wingedsheep.engine.mechanics.combat.CombatStatusQueries
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockedThisTurnComponent
@@ -476,16 +477,9 @@ internal class AffectsFilterResolver {
             enchanted != null && defenderId == enchanted
         }
         StatePredicate.IsBlocking -> container.has<BlockingComponent>()
-        StatePredicate.IsBlocked -> {
-            container.has<AttackingComponent>() && state.getBattlefield().any { blockerId ->
-                state.getEntity(blockerId)?.get<BlockingComponent>()?.blockedAttackerIds?.contains(entityId) == true
-            }
-        }
-        StatePredicate.IsUnblocked -> {
-            container.has<AttackingComponent>() && state.getBattlefield().none { blockerId ->
-                state.getEntity(blockerId)?.get<BlockingComponent>()?.blockedAttackerIds?.contains(entityId) == true
-            }
-        }
+        StatePredicate.IsBlocked -> CombatStatusQueries.isBlockedAttacker(state, entityId, container)
+        StatePredicate.IsUnblocked -> container.has<AttackingComponent>() &&
+            !CombatStatusQueries.isBlockedAttacker(state, entityId, container)
         // Source-relative band membership has no meaning when projecting a group static ability
         // (there's no per-recipient "source" here); it's only evaluated in damage-prevention
         // recipient filters via PredicateEvaluator. Never match in this context.

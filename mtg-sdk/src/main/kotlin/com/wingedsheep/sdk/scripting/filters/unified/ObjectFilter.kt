@@ -1020,6 +1020,21 @@ data class GameObjectFilter(
     )
 
     /**
+     * Must be a blocked creature — an attacker that had at least one blocker declared against it
+     * (Smite). Per CR 509.1h it stays blocked for the rest of combat even once every creature
+     * blocking it has left combat, so this is not the live "something is blocking it right now"
+     * question. See [StatePredicate.IsBlocked].
+     */
+    fun blocked() = copy(
+        statePredicates = statePredicates + StatePredicate.IsBlocked
+    )
+
+    /** Must be an attacking creature that was never blocked this combat. See [StatePredicate.IsUnblocked]. */
+    fun unblocked() = copy(
+        statePredicates = statePredicates + StatePredicate.IsUnblocked
+    )
+
+    /**
      * Must be blocking the effect's source (CR 509). Source-relative; only matches the source's
      * own blockers. "Whenever this becomes blocked, it deals N damage to each creature blocking it."
      */

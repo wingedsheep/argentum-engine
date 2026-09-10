@@ -25,6 +25,7 @@ import com.wingedsheep.engine.state.components.battlefield.SolvedComponent
 import com.wingedsheep.engine.state.components.battlefield.RenownedComponent
 import com.wingedsheep.engine.state.components.combat.AttackedThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisTurnComponent
+import com.wingedsheep.engine.mechanics.combat.CombatStatusQueries
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedThisCombatComponent
 import com.wingedsheep.engine.state.components.combat.BlockedThisTurnComponent
@@ -1435,19 +1436,10 @@ class PredicateEvaluator {
                 enchanted != null && defenderId == enchanted
             }
             StatePredicate.IsBlocking -> container.has<BlockingComponent>()
-            StatePredicate.IsBlocked -> {
-                // Check if this attacking creature has any blockers assigned
-                val attackingComp = container.get<AttackingComponent>()
-                attackingComp != null && state.getBattlefield().any { blockerId ->
-                    state.getEntity(blockerId)?.get<BlockingComponent>()?.blockedAttackerIds?.contains(entityId) == true
-                }
-            }
-            StatePredicate.IsUnblocked -> {
-                val attackingComp = container.get<AttackingComponent>()
-                attackingComp != null && state.getBattlefield().none { blockerId ->
-                    state.getEntity(blockerId)?.get<BlockingComponent>()?.blockedAttackerIds?.contains(entityId) == true
-                }
-            }
+            StatePredicate.IsBlocked -> CombatStatusQueries.isBlockedAttacker(state, entityId, container)
+            StatePredicate.IsUnblocked ->
+                container.has<AttackingComponent>() &&
+                    !CombatStatusQueries.isBlockedAttacker(state, entityId, container)
 
             // Same combat band as the effect's source (CR 702.22). Resolves against
             // context.sourceId: matches the source creature itself, or a creature sharing the
