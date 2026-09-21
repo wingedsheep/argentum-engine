@@ -400,6 +400,47 @@
     ]
 }
 
+// Geist of Saint Thalia
+{
+    "name": "Geist of Saint Thalia",
+    "manaCost": "{1}{U}",
+    "typeLine": "Legendary Creature — Spirit Cleric",
+    "oracleText": "Flying\nNoncreature spells you cast cost {1} less to cast.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "noncreature"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "rarity": "UNCOMMON",
+        "artist": "Ryan Pancoast",
+        "flavorText": "\"Be at peace, child. The horrors will not claim you this night.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/c/9c334530-0880-46b5-a358-9603eee3cecf.jpg?1789128026",
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Innovative Commons
 {
     "name": "Innovative Commons",
