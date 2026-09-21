@@ -44,6 +44,53 @@
     ]
 }
 
+// Blessed Ghoul
+{
+    "name": "Blessed Ghoul",
+    "manaCost": "{W/B}",
+    "typeLine": "Creature — Zombie Cleric",
+    "oracleText": "Lifelink\n{2}{W/B}: Return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "LIFELINK"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "ability_1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{W/B}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activateFromZone": "Graveyard"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "123",
+        "artist": "Igor Grechanyi",
+        "flavorText": "He had failed his final exam, but his professor had kindly offered a way to make up the work.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb975803-9bf2-401e-9414-d272df314398.jpg?1789556847",
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "WHITE"
+    ]
+}
+
 // Cast Away Doubt
 {
     "name": "Cast Away Doubt",
