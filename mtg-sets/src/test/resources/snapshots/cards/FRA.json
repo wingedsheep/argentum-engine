@@ -549,6 +549,65 @@
     ]
 }
 
+// Loyal Tutor
+{
+    "name": "Loyal Tutor",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Search your library for a planeswalker card, reveal it, then shuffle and put that card on top.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library",
+                        "filter": "planeswalker"
+                    },
+                    "storeAs": "searchable"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "searchable",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "found"
+                },
+                "ShuffleLibrary",
+                {
+                    "type": "MoveCollection",
+                    "from": "found",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Top"
+                    },
+                    "revealed": true
+                },
+                "EmitLibrarySearchedEvent"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "RARE",
+        "artist": "Darren Tan",
+        "flavorText": "\"We swore to keep watch,\" Ajani growled through gritted teeth, \"and that includes against our own.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/490dae91-94ce-42a9-a11f-6c5e77c4e486.jpg?1788878096",
+        "inBooster": false
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Meticulous Commons
 {
     "name": "Meticulous Commons",

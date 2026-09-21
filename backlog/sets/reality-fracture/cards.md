@@ -2,11 +2,11 @@
 
 **Set Size:** 285 cards
 **Release Date:** October 2, 2026
-**Implemented:** 33 / 285
+**Implemented:** 34 / 285
 
 | Section    | Total | Done |
 |------------|-------|------|
-| Extras     | 285   | 33   |
+| Extras     | 285   | 34   |
 
 > Verify status anytime with `scripts/card-status --set FRA` (and `--list`). That command's count is authoritative — keep this file's `Implemented:` line in sync (`just fix-backlog`) as boxes are checked. The set's mechanics are catalogued in [`mechanics.md`](mechanics.md).
 
@@ -149,7 +149,7 @@
 - [ ] Living Library
 - [ ] Loot, the Anomaly
 - [ ] Loot, the Nexus
-- [ ] Loyal Tutor
+- [x] Loyal Tutor
 - [ ] Lyra, Archangel of Dawn
 - [ ] Lyra, Tolarian Archangel
 - [ ] Mabel, Bitter Recluse
