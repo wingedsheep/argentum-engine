@@ -3073,6 +3073,136 @@
     ]
 }
 
+// Keiga, the Tide Star
+{
+    "name": "Keiga, the Tide Star",
+    "manaCost": "{5}{U}",
+    "typeLine": "Legendary Creature — Dragon Spirit",
+    "oracleText": "Flying\nWhen Keiga dies, gain control of target creature.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Keiga, the Tide Star:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "GainControl",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When Keiga dies, gain control of target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "72",
+        "rarity": "RARE",
+        "artist": "Ittoku",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ea83eaeb-cf82-406b-977f-2bac41925739.jpg?1783944325",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Keiga's effect lasts indefinitely. It doesn't wear off during the cleanup step."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Kiki-Jiki, Mirror Breaker
+{
+    "name": "Kiki-Jiki, Mirror Breaker",
+    "manaCost": "{2}{R}{R}{R}",
+    "typeLine": "Legendary Creature — Goblin Shaman",
+    "oracleText": "Haste\n{T}: Create a token that's a copy of target nonlegendary creature you control, except it has haste. Sacrifice it at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kiki-Jiki, Mirror Breaker:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "CreateTokenCopyOfTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "addedKeywords": [
+                        "HASTE"
+                    ],
+                    "sacrificeAtStep": "END"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsNonlegendary"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Create a token that's a copy of target nonlegendary creature you control, except it has haste. Sacrifice it at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "175",
+        "rarity": "RARE",
+        "artist": "Pete Venters",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/6/162018eb-5483-4fa2-9c5a-abb639eecf91.jpg?1783944301",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "The token copies exactly what was printed on the original creature (except that the copy also has haste) and nothing else. It doesn't copy whether the creature is tapped or untapped, whether it has any counters on it or Auras and/or Equipment attached to it, or any non-copy effects that changed its power, toughness, types, color, and so on."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If another creature becomes a copy of, or enters the battlefield as a copy of, the token, that creature will copy the creature card the token is copying, except it will also have haste. However, you won't sacrifice the new copy at the beginning of the next end step."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "If Kiki-Jiki's ability creates multiple tokens due to a replacement effect (such as the one Doubling Season creates), you'll sacrifice each of them."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Kitsune Blademaster
 {
     "name": "Kitsune Blademaster",
@@ -3319,6 +3449,50 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Kokusho, the Evening Star
+{
+    "name": "Kokusho, the Evening Star",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Creature — Dragon Spirit",
+    "oracleText": "Flying\nWhen Kokusho dies, each opponent loses 5 life. You gain life equal to the life lost this way.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kokusho, the Evening Star:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                },
+                "descriptionOverride": "When Kokusho dies, each opponent loses 5 life. You gain life equal to the life lost this way."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "122",
+        "rarity": "RARE",
+        "artist": "Tsutomu Kawade",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63dc0698-e92f-4134-80e4-5cc37b80e37c.jpg?1783944312"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -5097,6 +5271,81 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Peer Through Depths
+{
+    "name": "Peer Through Depths",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant — Arcane",
+    "oracleText": "Look at the top five cards of your library. You may reveal an instant or sorcery card from among them and put it into your hand. Put the rest on the bottom of your library in any order.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 5
+                        }
+                    },
+                    "storeAs": "looked"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "looked",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "instant|sorcery",
+                    "storeSelected": "kept",
+                    "storeRemainder": "rest",
+                    "prompt": "You may reveal an instant or sorcery card from among them and put it into your hand",
+                    "showAllCards": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "kept",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    },
+                    "revealed": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "rest",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "placement": "Bottom"
+                    },
+                    "order": "ControllerChooses"
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "78",
+        "artist": "Anthony S. Waters",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9be02570-b840-46cc-af54-5279463fdcab.jpg?1783944323",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "If you don't reveal an instant or sorcery card, put all the revealed cards on the bottom of your library in any order."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
