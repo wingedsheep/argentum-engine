@@ -1788,6 +1788,36 @@
     ]
 }
 
+// Hisoka's Defiance
+{
+    "name": "Hisoka's Defiance",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target Spirit or Arcane spell.",
+    "script": {
+        "spellEffect": "Counter",
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "Spirit|Arcane",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "67",
+        "artist": "Greg Hildebrandt",
+        "flavorText": "\"With every passing day, the kami shape our world to suit their will. I, for one, would not see them succeed.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09fd4d01-1204-46a3-b237-45c37985acac.jpg?1783944326"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hold the Line
 {
     "name": "Hold the Line",
@@ -2860,6 +2890,124 @@
     ]
 }
 
+// Kashi-Tribe Reaver
+{
+    "name": "Kashi-Tribe Reaver",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Snake Warrior",
+    "oracleText": "Whenever this creature deals combat damage to a creature, tap that creature and it doesn't untap during its controller's next untap step.\n{1}{G}: Regenerate this creature.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kashi-Tribe Reaver:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "TriggeringEntity",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Kashi-Tribe Reaver:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "220",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony S. Waters",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/d/3d417f90-10e9-4c41-ac3b-1a861147d69e.jpg?1783944287"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Kashi-Tribe Warriors
+{
+    "name": "Kashi-Tribe Warriors",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Creature — Snake Warrior",
+    "oracleText": "Whenever this creature deals combat damage to a creature, tap that creature and it doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kashi-Tribe Warriors:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "TriggeringEntity",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "221",
+        "artist": "Stephen Tappin",
+        "flavorText": "The orochi and the monks had always had an unspoken agreement: live and let live. But when the kami began raging, some warrior youths began questioning that agreement.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cd4df4a-fbab-4598-ad8e-b24ed0bb4497.jpg?1783944287"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Kitsune Blademaster
 {
     "name": "Kitsune Blademaster",
@@ -3505,6 +3653,84 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Matsu-Tribe Decoy
+{
+    "name": "Matsu-Tribe Decoy",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Snake Warrior",
+    "oracleText": "{2}{G}: Target creature blocks this creature this turn if able.\nWhenever this creature deals combat damage to a creature, tap that creature and it doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Matsu-Tribe Decoy:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "TriggeringEntity",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Matsu-Tribe Decoy:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{G}"
+                    }
+                },
+                "effect": {
+                    "type": "ForceBlock",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "227",
+        "artist": "Alan Pollack",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/4/14bf9bec-9a5d-48a6-941b-95e1633b9484.jpg?1783944286"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -4657,6 +4883,57 @@
         "artist": "Joel Thomas",
         "flavorText": "\"Only orochi hatched from eggs 'touched by the kami' may become shamans. These days, there are fewer and fewer new shamans being born.\"",
         "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6c39031-1c49-4c1e-83df-66c3795ddc72.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Orochi Ranger
+{
+    "name": "Orochi Ranger",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Snake Warrior Ranger",
+    "oracleText": "Whenever this creature deals combat damage to a creature, tap that creature and it doesn't untap during its controller's next untap step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Orochi Ranger:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": "creature"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "TriggeringEntity"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "TriggeringEntity",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "artist": "Greg Hildebrandt",
+        "flavorText": "\"The young come to me, confused. They have been taught to respect the kami, and now they must fight them? I do not know what to say.\"\n—Sachi, to her father",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e8dc216f-4447-4370-b31a-18304507669b.jpg?1783944283"
     },
     "colorIdentityOverride": [
         "GREEN"
