@@ -6868,6 +6868,50 @@
     ]
 }
 
+// Reciprocate
+{
+    "name": "Reciprocate",
+    "manaCost": "{W}",
+    "typeLine": "Instant",
+    "oracleText": "Exile target creature that dealt damage to you this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Exile"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "DealtDamageToSourceControllerThisTurn"
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "40",
+        "rarity": "UNCOMMON",
+        "artist": "Pat Lee",
+        "flavorText": "\"Just as the noble soul calls virtue to itself, the evil soul summons harm.\"\n—Teachings of Eight-and-a-Half-Tails",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/6/f6c835f8-9269-4950-95c9-125d58b7b19e.jpg?1783944333"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Reito Lantern
 {
     "name": "Reito Lantern",
@@ -9719,6 +9763,64 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Wicked Akuba
+{
+    "name": "Wicked Akuba",
+    "manaCost": "{B}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "{B}: Target player dealt damage by this creature this turn loses 1 life.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Wicked Akuba:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{B}"
+                    }
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPlayer",
+                        "id": "t0",
+                        "restriction": {
+                            "type": "SourceDealtDamageToPlayerThisTurn",
+                            "player": "Candidate"
+                        },
+                        "descriptionOverride": "target player dealt damage by this creature this turn"
+                    }
+                ],
+                "descriptionOverride": "{B}: Target player dealt damage by this creature this turn loses 1 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "150",
+        "artist": "Ittoku",
+        "flavorText": "The sound of children weeping is a song that fills its heart with joy.",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/3/c3172965-6057-472f-9712-1dd23d25d1a7.jpg?1783944306"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

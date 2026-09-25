@@ -1316,23 +1316,38 @@ data class DamageDealtThisTurnComponent(
 ) : Component
 
 /**
- * The players and planeswalkers this permanent has dealt damage to **this game** — the memory
- * behind The Fallen ("this creature deals 1 damage to each opponent and planeswalker it has dealt
- * damage to this game").
+ * The players and planeswalkers this permanent has dealt damage to **this game**, each stamped with
+ * the turn of the most recent damage — the memory behind The Fallen ("this creature deals 1 damage
+ * to each opponent and planeswalker it has dealt damage to this game") and, through the stamp, behind
+ * the per-turn readings "a creature that dealt damage to you this turn" (Reciprocate) and "target
+ * player dealt damage by this creature this turn" (Wicked Akuba).
+ *
+ * One fact, two windows, the [HasDealtDamageComponent] shape: key presence answers "this game",
+ * a stamp equal to the current turn answers "this turn", and nothing is cleared at end of turn —
+ * a stale stamp simply stops matching once the turn number moves on.
  *
  * Unlike [DealtCombatDamageToPlayersThisTurnComponent] this is not a per-turn marker: it is never
- * cleared by `CleanupPhaseManager`, so it accumulates across every turn the permanent spends on the
- * battlefield. It *is* stripped on a zone change like the rest of the damage memory, because a
- * permanent that leaves and returns is a new object with no history (CR 400.7) — which is the
- * printed behaviour: a Fallen that dies and is reanimated has dealt damage to nobody.
+ * cleared by `CleanupPhaseManager`. It has the [LastKnownPermanentComponent] lifetime instead: it
+ * survives the permanent's move off the battlefield, so an ability that outlives its source still
+ * knows whom the source damaged (CR 113.7a, CR 608.2h), and is dropped on the entity's next zone
+ * change — a permanent that leaves and returns is a new object with no history (CR 400.7), which is
+ * the printed behaviour: a Fallen that dies and is reanimated has dealt damage to nobody.
  *
  * Both combat and noncombat damage count, and it records planeswalkers alongside players; the
  * consumer filters to what the card asks for.
  */
 @Serializable
 data class DealtDamageToThisGameComponent(
-    val recipientIds: Set<EntityId> = emptySet()
-) : Component
+    val lastDamageTurnByRecipient: Map<EntityId, Int> = emptyMap()
+) : Component {
+    val recipientIds: Set<EntityId> get() = lastDamageTurnByRecipient.keys
+
+    fun dealtDamageToOnTurn(recipientId: EntityId, turnNumber: Int): Boolean =
+        lastDamageTurnByRecipient[recipientId] == turnNumber
+
+    fun withDamageTo(recipientId: EntityId, turnNumber: Int): DealtDamageToThisGameComponent =
+        copy(lastDamageTurnByRecipient = lastDamageTurnByRecipient + (recipientId to turnNumber))
+}
 
 /**
  * A number the controller chose as this permanent entered the battlefield, kept for as long as the

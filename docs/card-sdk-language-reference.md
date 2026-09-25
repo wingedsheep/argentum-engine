@@ -4599,6 +4599,12 @@ Author the restriction through the `Conditions.candidate*` facade (never hand-wr
 
 - `Conditions.candidateLostLifeThisTurn()` — the targeted player lost life this turn (Rix Maadi Guildmage).
 - `Conditions.candidateLifeAtMost(n)` — the targeted player has `n` or less life.
+- `Conditions.candidateWasDealtDamageBySourceThisTurn()` — this ability's **source** dealt damage (combat
+  or noncombat) to the targeted player this turn; backed by `SourceDealtDamageToPlayerThisTurn(player)`,
+  which reads the source's per-recipient damage memory. "Target player dealt damage by this creature this
+  turn" (Wicked Akuba). The memory survives the source leaving the battlefield (last-known information,
+  CR 113.7a), so the ability still resolves if its source dies in response; it is dropped on the card's
+  next zone change, so a returned permanent has dealt damage to nobody (CR 400.7).
 
 Because `Condition` descriptions don't read as English relative clauses, pass `descriptionOverride`
 whenever `restriction` is set:
@@ -5130,6 +5136,15 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   controller, so as an edict filter it means "...a creature that dealt combat damage to *you* this
   turn" (Witch-king of Angmar). Per-turn marker, cleared at end-of-turn cleanup; inert with no source
   context (group-static projection returns false).
+- `.dealtDamageToSourceControllerThisTurn()` — the any-damage sibling of the above: dealt damage —
+  combat **or noncombat** — *this turn* to the player who controls the effect's source (a spell on the
+  stack resolves to its caster); backed by `StatePredicate.DealtDamageToSourceControllerThisTurn`. "Exile
+  target creature that dealt damage to you this turn" is
+  `target(TargetFilter.Creature.dealtDamageToSourceControllerThisTurn())` (Reciprocate). Reads the
+  candidate's own per-recipient damage memory (the turn it last dealt damage to each player), so it
+  doesn't matter who controlled the creature when it dealt the damage, but one that left the battlefield
+  and returned is a new object with no history (CR 400.7). Nothing to clean up — a stale turn stamp stops
+  matching. Inert with no source context.
 - `.controllerDealtCombatDamageBySourceThisTurn()` — the **mirror** of the above: the permanent is
   controlled *right now* by a player the effect's **source** dealt combat damage to this turn; backed by
   `StatePredicate.ControllerDealtCombatDamageBySourceThisTurn`. Reads the source's per-turn recipient

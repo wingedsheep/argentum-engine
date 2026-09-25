@@ -1057,21 +1057,23 @@ object DamageUtils {
      * stack — carries no timestamp and is identified by its entity alone.
      */
     /**
-     * Record on [sourceId] that it has dealt damage to [recipientId] at some point this game — the
-     * accumulating memory behind The Fallen. [recipientId] is a player or a planeswalker; the
-     * consumer decides which of them the printed line cares about.
+     * Record on [sourceId] that it has dealt damage to [recipientId] this turn — the accumulating
+     * memory behind The Fallen ("this game") and the per-turn "dealt damage to you / by this creature
+     * this turn" readings, which compare the recorded turn stamp. [recipientId] is a player or a
+     * planeswalker; the consumer decides which of them the printed line cares about.
      *
-     * A no-op when the source entity is gone (a spell that has already left the stack). The set is
-     * never cleared per turn and is stripped on a zone change with the rest of the damage memory,
-     * so a permanent that leaves and returns starts over (CR 400.7).
+     * A no-op when the source entity is gone. Never cleared per turn; it outlives the source's move
+     * off the battlefield as last-known information and is dropped on the card's next zone change
+     * (see `DealtDamageToThisGameComponent`), so a permanent that leaves and returns starts over
+     * (CR 400.7).
      */
     fun markDealtDamageToThisGame(state: GameState, sourceId: EntityId, recipientId: EntityId): GameState {
         val container = state.getEntity(sourceId) ?: return state
         val existing = container.get<DealtDamageToThisGameComponent>()
-        if (existing != null && recipientId in existing.recipientIds) return state
+        if (existing?.dealtDamageToOnTurn(recipientId, state.turnNumber) == true) return state
         return state.updateEntity(sourceId) { c ->
             val current = c.get<DealtDamageToThisGameComponent>() ?: DealtDamageToThisGameComponent()
-            c.with(DealtDamageToThisGameComponent(current.recipientIds + recipientId))
+            c.with(current.withDamageTo(recipientId, state.turnNumber))
         }
     }
 

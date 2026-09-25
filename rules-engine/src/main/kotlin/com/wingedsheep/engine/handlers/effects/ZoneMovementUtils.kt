@@ -484,6 +484,7 @@ object ZoneMovementUtils {
             .without<com.wingedsheep.engine.state.components.battlefield.EnteredWithValueComponent>()
             // Likewise the accumulating "dealt damage to these players/planeswalkers this
             // game" memory (The Fallen): what comes back is a new object (CR 400.7).
+            // ZoneTransitionService re-attaches it off the battlefield as last-known info.
             .without<com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent>()
             // A permanent that leaves and returns is a new object (CR 400.7) that has never become
             // tapped, so its "first time tapped this turn" window starts over.

@@ -347,6 +347,7 @@ class ConditionEvaluator(
             is SourceInZone,
             is SourceIsBlockingOrBlockedBySubtype,
             SourceIsModified,
+            is com.wingedsheep.sdk.scripting.conditions.SourceDealtDamageToPlayerThisTurn,
             SourceIsRingBearer,
             SourcePlottedOnPriorTurn,
             SourceReturnedAsEnchantment,
@@ -557,6 +558,17 @@ class ConditionEvaluator(
             // Aura-controller-aware modified check (CR 700.4) — distinct enough from the
             // generic StatePredicate.IsModified to warrant its own branch.
             is SourceIsModified -> evaluateSourceIsModifiedCtx(state, ctx)
+
+            // The source's per-recipient damage memory, stamped with the turn of its latest damage
+            // to each player; stripped on a zone change, so a returned permanent has no history.
+            is com.wingedsheep.sdk.scripting.conditions.SourceDealtDamageToPlayerThisTurn -> {
+                val playerId = resolvePlayer(state, condition.player, ctx)
+                val sourceId = ctx.sourceId
+                playerId != null && sourceId != null &&
+                    state.getEntity(sourceId)
+                        ?.get<com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent>()
+                        ?.dealtDamageToOnTurn(playerId, state.turnNumber) == true
+            }
 
             is SourceIsBlockingOrBlockedBySubtype -> evaluateSourceIsBlockingOrBlockedBySubtypeCtx(state, condition, ctx)
 

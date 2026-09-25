@@ -1790,6 +1790,22 @@ class PredicateEvaluator(
                 candidateController != null && candidateController in damagedPlayers
             }
 
+            // Any-damage sibling of DealtCombatDamageToSourceControllerThisTurn ("exile target
+            // creature that dealt damage to you this turn" — Reciprocate). Reads the candidate's
+            // per-recipient damage memory, stamped with the turn of its latest damage to each
+            // player and stripped on a zone change (CR 400.7). The source may be a spell on the
+            // stack, so fall back to its caster.
+            StatePredicate.DealtDamageToSourceControllerThisTurn -> {
+                val sourceController = context?.sourceId?.let { sourceId ->
+                    val source = state.getEntity(sourceId)
+                    source?.get<ControllerComponent>()?.playerId
+                        ?: source?.get<com.wingedsheep.engine.state.components.stack.SpellOnStackComponent>()?.casterId
+                }
+                sourceController != null &&
+                    container.get<com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent>()
+                        ?.dealtDamageToOnTurn(sourceController, state.turnNumber) == true
+            }
+
             // Dealt damage this turn by the effect's source: the source's per-turn record of the
             // creatures it damaged. Dropped when the source changes zones (CR 400.7). Inert with no
             // source context.

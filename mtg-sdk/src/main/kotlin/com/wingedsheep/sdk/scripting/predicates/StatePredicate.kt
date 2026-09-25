@@ -476,6 +476,22 @@ sealed interface StatePredicate {
     }
 
     /**
+     * Dealt damage — combat or noncombat — *this turn* to the player who controls the effect's
+     * source: the any-damage sibling of [DealtCombatDamageToSourceControllerThisTurn]. "Exile target
+     * creature that dealt damage to you this turn" (Reciprocate).
+     *
+     * Reads the candidate's own per-recipient damage memory (the turn it last dealt damage to each
+     * player), so the creature must be the same object that dealt the damage — one that left the
+     * battlefield and returned is a new object with no history (CR 400.7). Who controlled it when
+     * it dealt the damage doesn't matter. Inert with no source context.
+     */
+    @SerialName("DealtDamageToSourceControllerThisTurn")
+    @Serializable
+    data object DealtDamageToSourceControllerThisTurn : History {
+        override val description: String = "dealt damage to you this turn"
+    }
+
+    /**
      * Controlled by a player the effect's *source* dealt combat damage to this turn — the mirror of
      * [DealtCombatDamageToSourceControllerThisTurn]. Source-relative: reads the per-turn recipient
      * marker off `context.sourceId` and asks whether this permanent's controller is among the

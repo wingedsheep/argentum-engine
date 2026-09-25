@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.conditions
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -25,6 +26,23 @@ import kotlinx.serialization.Serializable
 @Serializable
 data object YouControlSource : Condition {
     override val description: String = "if you control this permanent"
+}
+
+/**
+ * Condition: the effect's source dealt damage — combat or noncombat — to [player] this turn.
+ * Reads the source's per-recipient damage memory, so it answers for the source *as the current
+ * object*: a permanent that left the battlefield and returned has dealt damage to nobody (CR 400.7).
+ *
+ * As a player-target restriction ([player] = `Player.Candidate`, via
+ * `Conditions.candidateWasDealtDamageBySourceThisTurn()`) it backs "target player dealt damage by
+ * this creature this turn" (Wicked Akuba).
+ */
+@SerialName("SourceDealtDamageToPlayerThisTurn")
+@Serializable
+data class SourceDealtDamageToPlayerThisTurn(
+    val player: Player
+) : Condition {
+    override val description: String = "if this dealt damage to ${player.description} this turn"
 }
 
 /**

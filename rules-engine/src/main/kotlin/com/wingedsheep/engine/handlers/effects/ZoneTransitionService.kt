@@ -610,6 +610,11 @@ class ZoneTransitionService(
             // source has left.
             val preStripNotedExile = newState.getEntity(entityId)
                 ?.get<com.wingedsheep.engine.state.components.battlefield.NotedExileComponent>()
+            // And for the per-recipient damage memory: an ability that outlives its source still
+            // knows whom the source dealt damage to (CR 113.7a, CR 608.2h) — Wicked Akuba's
+            // "target player dealt damage by this creature this turn", The Fallen's upkeep trigger.
+            val preStripDamageMemory = newState.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent>()
 
             // Revert permanent-level copy effects (Clone / Mockingbird / "becomes a copy of").
             // Per CR 400.7, a card that changes zones becomes a new object — its copy effect
@@ -660,11 +665,16 @@ class ZoneTransitionService(
                     c.with(LastKnownPermanentComponent(lastKnownSnapshot))
                 }
             }
+            if (preStripDamageMemory != null && actualDestZone != Zone.BATTLEFIELD) {
+                newState = newState.updateEntity(entityId) { c -> c.with(preStripDamageMemory) }
+            }
         } else {
             // Any further zone change makes a new object (CR 400.7): information about the old
             // battlefield incarnation must not survive it. No-op when the component is absent.
+            // The damage memory goes too — also the memory a spell recorded while on the stack.
             newState = newState.updateEntity(entityId) { c ->
                 c.without<LastKnownPermanentComponent>()
+                    .without<com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent>()
             }
         }
 

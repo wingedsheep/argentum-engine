@@ -627,6 +627,14 @@ interface ObjectFilterBuilder<out Self> {
         withStatePredicate(StatePredicate.DealtCombatDamageToSourceControllerThisTurn)
 
     /**
+     * Must have dealt damage — combat or noncombat — *this turn* to the player who controls the
+     * effect's source. Source-relative. Used by "exile target creature that dealt damage to you this
+     * turn" (Reciprocate).
+     */
+    fun dealtDamageToSourceControllerThisTurn() =
+        withStatePredicate(StatePredicate.DealtDamageToSourceControllerThisTurn)
+
+    /**
      * Must be controlled — right now — by a player the effect's *source* dealt combat damage to
      * this turn. Mirror of [dealtCombatDamageToSourceControllerThisTurn]; source-relative and
      * cleared at end-of-turn cleanup. Used by "destroy each nonland permanent … whose controller

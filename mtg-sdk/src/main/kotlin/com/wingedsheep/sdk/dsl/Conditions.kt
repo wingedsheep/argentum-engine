@@ -1856,6 +1856,14 @@ object Conditions {
         trackerAtLeast(com.wingedsheep.sdk.scripting.values.TurnTracker.LIFE_LOST, player = Player.Candidate)
 
     /**
+     * Candidate-target restriction: this ability's source dealt damage to the player being targeted
+     * this turn. Backs "target player dealt damage by this creature this turn" (Wicked Akuba). Pair
+     * with a `descriptionOverride` on the `TargetPlayer`.
+     */
+    fun candidateWasDealtDamageBySourceThisTurn(): ConditionInterface =
+        com.wingedsheep.sdk.scripting.conditions.SourceDealtDamageToPlayerThisTurn(Player.Candidate)
+
+    /**
      * Candidate-target restriction: the player being targeted has [n] or less life.
      * Backs "target player with N or less life". The restriction is re-checked at resolution
      * (CR 608.2b), so a player who gains above the threshold after being targeted is removed.
