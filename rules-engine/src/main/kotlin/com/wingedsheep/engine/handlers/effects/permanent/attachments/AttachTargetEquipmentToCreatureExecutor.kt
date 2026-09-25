@@ -2,10 +2,10 @@ package com.wingedsheep.engine.handlers.effects.permanent.attachments
 
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
-import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.sdk.scripting.effects.AttachTargetEquipmentToCreatureEffect
 import kotlin.reflect.KClass
 
@@ -19,8 +19,14 @@ import kotlin.reflect.KClass
  * (CR 608.2c) — there is nothing to attach, so the effect is a graceful no-op (Raubahn, Bull of
  * Ala Mhigo attaches "up to one target Equipment"; Blacksmith's Talent attaches to "up to one
  * target creature").
+ *
+ * An attachment that can't legally be attached to the creature doesn't move, and re-attaching it to
+ * the creature it is already on does nothing (both CR 701.3b) — see [AttachmentMover].
  */
-class AttachTargetEquipmentToCreatureExecutor : EffectExecutor<AttachTargetEquipmentToCreatureEffect> {
+class AttachTargetEquipmentToCreatureExecutor(
+    private val predicateEvaluator: PredicateEvaluator,
+    private val cardRegistry: CardRegistry
+) : EffectExecutor<AttachTargetEquipmentToCreatureEffect> {
 
     override val effectType: KClass<AttachTargetEquipmentToCreatureEffect> =
         AttachTargetEquipmentToCreatureEffect::class
@@ -37,38 +43,10 @@ class AttachTargetEquipmentToCreatureExecutor : EffectExecutor<AttachTargetEquip
         val creatureId = context.resolveTarget(effect.creatureTarget, state)
             ?: return EffectResult.success(state)
 
-        var newState = state
-
-        // Detach from current creature if already attached
-        val currentAttachment = newState.getEntity(equipmentId)?.get<AttachedToComponent>()
-        if (currentAttachment != null) {
-            val oldTargetId = currentAttachment.targetId
-            newState = newState.updateEntity(oldTargetId) { container ->
-                val attachments = container.get<AttachmentsComponent>()
-                if (attachments != null) {
-                    val updatedIds = attachments.attachedIds.filter { it != equipmentId }
-                    if (updatedIds.isEmpty()) {
-                        container.without<AttachmentsComponent>()
-                    } else {
-                        container.with(AttachmentsComponent(updatedIds))
-                    }
-                } else {
-                    container
-                }
-            }
+        if (!AttachmentMover.canAttach(state, predicateEvaluator, cardRegistry, equipmentId, creatureId)) {
+            return EffectResult.success(state)
         }
-
-        // Attach to new creature
-        newState = newState.updateEntity(equipmentId) { container ->
-            container.with(AttachedToComponent(creatureId))
-        }
-
-        newState = newState.updateEntity(creatureId) { container ->
-            val existing = container.get<AttachmentsComponent>()
-            val updatedIds = (existing?.attachedIds ?: emptyList()) + equipmentId
-            container.with(AttachmentsComponent(updatedIds))
-        }
-
-        return EffectResult.success(newState)
+        val (newState, events) = AttachmentMover.attach(state, equipmentId, creatureId, context.controllerId)
+        return EffectResult.success(newState, events)
     }
 }

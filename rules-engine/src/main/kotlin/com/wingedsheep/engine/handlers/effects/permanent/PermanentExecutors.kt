@@ -24,6 +24,7 @@ import com.wingedsheep.engine.handlers.effects.permanent.abilities.RemoveAllAbil
 import com.wingedsheep.engine.handlers.effects.permanent.abilities.RemoveKeywordExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachEquipmentExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachTargetEquipmentToCreatureExecutor
+import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachToChosenHostExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.UnattachEquipmentExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.attachments.GrantExileOnLeaveExecutor
 import com.wingedsheep.engine.handlers.effects.permanent.control.ExchangeControlExecutor
@@ -201,7 +202,8 @@ class PermanentExecutors(
         RevealFaceDownPermanentExecutor(),
         // attachments
         AttachEquipmentExecutor(),
-        AttachTargetEquipmentToCreatureExecutor(),
+        AttachTargetEquipmentToCreatureExecutor(zones.predicateEvaluator, cardRegistry),
+        AttachToChosenHostExecutor(zones.predicateEvaluator, cardRegistry),
         UnattachEquipmentExecutor(),
         GrantExileOnLeaveExecutor(),
         // stats

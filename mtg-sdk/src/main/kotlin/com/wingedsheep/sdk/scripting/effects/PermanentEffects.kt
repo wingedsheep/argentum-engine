@@ -441,6 +441,30 @@ data class AttachTargetEquipmentToCreatureEffect(
 }
 
 /**
+ * Attach an Aura or Equipment that is already on the battlefield to **another** permanent that the
+ * effect's controller chooses at resolution — the new host is not a target. Models "Attach target
+ * Aura attached to a creature to another creature" (Autumn-Tail, Kitsune Sage; Crown of the Ages)
+ * and "Attach it to another permanent it can enchant" (Aura Graft).
+ *
+ * Only hosts the attachment could legally be attached to are offered (CR 701.3a — an Aura's enchant
+ * restriction and protection, an Equipment's "creature" requirement), and the permanent it is
+ * currently attached to is excluded ("another"). With no such host the effect does nothing and the
+ * attachment stays where it is (CR 701.3b). Hexproof and shroud don't matter: the host isn't targeted.
+ *
+ * @property attachment The Aura or Equipment to move (e.g. the ability's target).
+ * @property hostFilter Which permanents are eligible new hosts, before the legality check.
+ */
+@SerialName("AttachToChosenHost")
+@Serializable
+data class AttachToChosenHostEffect(
+    val attachment: EffectTarget = EffectTarget.ContextTarget(0),
+    val hostFilter: GameObjectFilter = GameObjectFilter.Creature
+) : Effect {
+    override val description: String =
+        "Attach ${attachment.description} to another ${hostFilter.description}"
+}
+
+/**
  * Unattach an Aura/Equipment from its host without moving it to another zone (CR 701.3d). Removes
  * the [target] attachment's `AttachedToComponent` and drops it from the host's attachment list; a
  * no-op if [target] isn't currently attached to anything. The inverse of [AttachEquipmentEffect] /

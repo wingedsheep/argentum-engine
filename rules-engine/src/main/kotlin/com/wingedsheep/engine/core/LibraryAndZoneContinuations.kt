@@ -224,6 +224,20 @@ data class PutOntoBattlefieldAttachedToChosenContinuation(
 ) : AnswerContinuation
 
 /**
+ * Resume after the controller chooses the new host for an Aura/Equipment already on the battlefield
+ * (AttachToChosenHostEffect — Autumn-Tail, Kitsune Sage). The move is re-checked for legality at
+ * resume and does nothing if the attachment or host can no longer be attached (CR 701.3b).
+ *
+ * @property attachmentId The Aura or Equipment being moved
+ * @property controllerId The player who chose the host
+ */
+@Serializable
+data class AttachToChosenHostContinuation(
+    val attachmentId: EntityId,
+    val controllerId: EntityId
+) : AnswerContinuation
+
+/**
  * Resume after player reorders revealed cards to put on the bottom of their library.
  *
  * Used for effects like Erratic Explosion that reveal cards and then put them

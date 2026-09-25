@@ -989,6 +989,13 @@ object DynamicAmounts {
             EntityNumericProperty.AttachmentCount(kind)
         )
 
+    /** Number of Auras attached to the source — "enchanted by two or more Auras" (Kitsune Mystic). */
+    fun aurasAttachedToSelf(): DynamicAmount =
+        DynamicAmount.EntityProperty(
+            EffectTarget.Self,
+            EntityNumericProperty.AttachmentCount(AttachmentKind.AURA)
+        )
+
     /** Number of Equipment attached to the source (Shagrat, Loot Bearer's amass amount). */
     fun equipmentAttachedToSelf(): DynamicAmount =
         DynamicAmount.EntityProperty(

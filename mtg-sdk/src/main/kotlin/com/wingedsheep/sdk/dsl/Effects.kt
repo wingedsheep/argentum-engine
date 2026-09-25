@@ -5784,6 +5784,18 @@ object Effects {
     )
 
     /**
+     * Attach an Aura/Equipment already on the battlefield to **another** permanent matching
+     * [hostFilter] that the controller chooses at resolution (not targeted), restricted to hosts it
+     * can legally be attached to — "Attach target Aura attached to a creature to another creature"
+     * (Autumn-Tail, Kitsune Sage; Crown of the Ages). No legal host: nothing happens (CR 701.3b).
+     */
+    fun AttachToChosenHost(
+        attachment: EffectTarget,
+        hostFilter: com.wingedsheep.sdk.scripting.GameObjectFilter =
+            com.wingedsheep.sdk.scripting.GameObjectFilter.Creature
+    ): Effect = com.wingedsheep.sdk.scripting.effects.AttachToChosenHostEffect(attachment, hostFilter)
+
+    /**
      * Unattach an Aura/Equipment from its host without moving zones (CR 701.3d). No-op if [target]
      * isn't currently attached. Inverse of [AttachEquipment] — e.g. Stolen Uniform's "unattach it".
      */

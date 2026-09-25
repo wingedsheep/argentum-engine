@@ -317,6 +317,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChoosePileContinuation::class)
         subclass(MoveCollectionAuraTargetContinuation::class)
         subclass(PutOntoBattlefieldAttachedToChosenContinuation::class)
+        subclass(AttachToChosenHostContinuation::class)
         subclass(PutOnBottomOfLibraryContinuation::class)
         subclass(PutOnTopOrBottomContinuation::class)
         subclass(ReturnFromLinkedExileContinuation::class)

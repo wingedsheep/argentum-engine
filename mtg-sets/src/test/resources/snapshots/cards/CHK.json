@@ -4086,6 +4086,122 @@
     ]
 }
 
+// Kitsune Mystic
+{
+    "name": "Kitsune Mystic",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Fox Wizard",
+    "oracleText": "At the beginning of the end step, if this creature is enchanted by two or more Auras, flip it.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kitsune Mystic:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": "Flip",
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "AttachmentCount",
+                            "kind": "AURA"
+                        }
+                    },
+                    "operator": "GTE",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                }
+            }
+        ]
+    },
+    "flipSide": {
+        "name": "Autumn-Tail, Kitsune Sage",
+        "manaCost": "{3}{W}",
+        "typeLine": "Legendary Creature — Fox Wizard",
+        "oracleText": "{1}: Attach target Aura attached to a creature to another creature.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 5
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Autumn-Tail, Kitsune Sage:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{1}"
+                        }
+                    },
+                    "effect": {
+                        "type": "AttachToChosenHost",
+                        "attachment": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsEnchantment",
+                                        {
+                                            "type": "HasSubtype",
+                                            "subtype": "Aura"
+                                        }
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "IsAttachedTo",
+                                            "filter": "creature"
+                                        }
+                                    ]
+                                }
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{1}: Attach target Aura attached to a creature to another creature."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "28",
+            "rarity": "RARE",
+            "artist": "Jim Murray",
+            "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2ddf1a3-e6fa-4dd0-b80d-1a585b51b934.jpg?1783944336"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "28",
+        "rarity": "RARE",
+        "artist": "Jim Murray",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f2ddf1a3-e6fa-4dd0-b80d-1a585b51b934.jpg?1783944336"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "FLIP"
+}
+
 // Kodama of the North Tree
 {
     "name": "Kodama of the North Tree",
