@@ -26,6 +26,24 @@ data class TransformEffect(
 }
 
 /**
+ * Flip a flip-card permanent (CR 710) — "flip this creature".
+ *
+ * Gives the permanent the flipped status (CR 110.5): from then on it has its flip half's name,
+ * type line, rules text and P/T, but keeps its mana cost and colour (CR 710.1c). One-way — an
+ * already-flipped permanent stays flipped (CR 710.4) — and a no-op on anything that isn't a flip
+ * card. Distinct from [TransformEffect]: flipping is not transforming, so "whenever this
+ * transforms" never fires, and a flip card can't be transformed (CR 701.27c).
+ */
+@SerialName("Flip")
+@Serializable
+data class FlipEffect(
+    val target: EffectTarget = EffectTarget.Self
+) : Effect, SelfReferentialDescription {
+    override val descriptionTemplate: String = "Flip ${target.selfNounToken}"
+    override val description: String get() = defaultResolvedDescription
+}
+
+/**
  * Which face a permanent re-enters on after an [ExileAndReturnTransformedEffect].
  *
  * - [TRANSFORMED] — the opposite of the face it had on the battlefield (oracle: "return it to

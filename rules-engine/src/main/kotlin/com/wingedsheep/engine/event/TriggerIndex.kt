@@ -480,6 +480,8 @@ class TriggerIndex(
             is com.wingedsheep.engine.core.TurnChangedEvent,
             is com.wingedsheep.engine.core.TurnHijackedEvent,
             is com.wingedsheep.engine.core.TurnedFaceDownEvent -> emptyList()
+            // No card triggers on a permanent flipping (CR 710); the flip is its own action.
+            is com.wingedsheep.engine.core.FlippedEvent -> emptyList()
 
             // Unwired on purpose — see SdkGameEvent.LandTappedForMana in triggerToCategories.
             is com.wingedsheep.engine.core.LandTappedForManaEvent -> emptyList()

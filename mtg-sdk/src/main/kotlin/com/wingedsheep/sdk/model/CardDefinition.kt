@@ -142,6 +142,16 @@ enum class CardLayout {
      * leaves the battlefield or otherwise stops being prepared, the exiled copy ceases to exist.
      */
     PREPARE,
+
+    /**
+     * Flip card (CR 710, Kamigawa block). The primary characteristics describe the upright half;
+     * [CardDefinition.flipSide] holds the upside-down half as a full definition (its own name,
+     * type line, oracle text, P/T and abilities). The flip half is used only while the permanent
+     * is on the battlefield **and** flipped (CR 710.1b, 710.2); flipping never changes the card's
+     * mana cost or colour (CR 710.1c). Flipped is a permanent *status* (CR 110.5), one-way while
+     * the permanent stays on the battlefield (CR 710.4) — see `Effects.Flip`.
+     */
+    FLIP,
 }
 
 /**
@@ -207,6 +217,7 @@ data class CardDefinition(
     val oracleId: String? = null,
     val setCode: String? = null,
     val backFace: CardDefinition? = null,  // For double-faced cards
+    val flipSide: CardDefinition? = null,  // For flip cards (CR 710): the upside-down half
     val metadata: ScryfallMetadata = ScryfallMetadata(),  // Scryfall metadata for web client
     val startingLoyalty: Int? = null,  // For planeswalkers
     /**
@@ -387,6 +398,7 @@ data class CardDefinition(
     val isEquipment: Boolean get() = typeLine.isEquipment
     val isPermanent: Boolean get() = typeLine.isPermanent
     val isDoubleFaced: Boolean get() = backFace != null
+    val isFlip: Boolean get() = flipSide != null
     val isSplit: Boolean get() = layout == CardLayout.SPLIT
     val isAdventure: Boolean get() = layout == CardLayout.ADVENTURE
     val isOmen: Boolean get() = layout == CardLayout.OMEN
@@ -742,6 +754,25 @@ data class CardDefinition(
             require(frontFace.isCreature) { "Front face must be a creature" }
             require(backFace.isCreature) { "Back face must be a creature" }
             return frontFace.copy(backFace = backFace)
+        }
+
+        /**
+         * Creates a flip card (CR 710): [unflipped] is the upright half the card has everywhere,
+         * [flipped] the upside-down half it has only on the battlefield once flipped. The flipped
+         * half keeps the card's mana cost and colour (CR 710.1c), so it carries no cost of its own.
+         * It is not a double-faced card — transform effects do nothing to it (CR 701.27c).
+         */
+        fun flipCard(
+            unflipped: CardDefinition,
+            flipped: CardDefinition
+        ): CardDefinition {
+            require(unflipped.isPermanent) { "Flip card must be a permanent: ${unflipped.name}" }
+            require(flipped.isPermanent) { "Flipped half must be a permanent: ${flipped.name}" }
+            require(unflipped.backFace == null) { "A flip card is not double-faced: ${unflipped.name}" }
+            return unflipped.copy(
+                flipSide = flipped.copy(manaCost = unflipped.manaCost),
+                layout = CardLayout.FLIP,
+            )
         }
 
         /**

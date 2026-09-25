@@ -26,6 +26,7 @@ import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.handlers.effects.permanent.types.stampDoubleFacedFrontFace
 import com.wingedsheep.engine.handlers.effects.permanent.types.withDfcFaceSelfRedirects
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
+import com.wingedsheep.engine.state.components.identity.FlippedComponent
 import com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.MadnessExiledComponent
@@ -792,6 +793,19 @@ class ZoneTransitionService(
                             .with(dfc.copy(currentFace = DoubleFacedComponent.Face.FRONT, frontFaceCard = null))
                         if (frontDef != null) withDfcFaceSelfRedirects(reverted, frontDef) else reverted
                     }
+                }
+            }
+        }
+
+        // 7b'. CR 710.4: a flipped permanent that leaves the battlefield retains no memory of its
+        // status — it is its upright half again everywhere else.
+        if (actualDestZone != Zone.BATTLEFIELD) {
+            val flipped = newState.getEntity(entityId)?.get<FlippedComponent>()
+            if (flipped != null) {
+                val uprightDef = cardRegistry.getCard(flipped.unflippedCard.cardDefinitionId)
+                newState = newState.updateEntity(entityId) { c ->
+                    val reverted = c.with(flipped.unflippedCard).without<FlippedComponent>()
+                    if (uprightDef != null) withDfcFaceSelfRedirects(reverted, uprightDef) else reverted
                 }
             }
         }

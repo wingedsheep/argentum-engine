@@ -5810,6 +5810,9 @@ object Effects {
     /** Transform a double-faced permanent (CR 701.28) — "transform this creature". */
     fun Transform(target: EffectTarget = EffectTarget.Self): Effect = com.wingedsheep.sdk.scripting.effects.TransformEffect(target)
 
+    /** Flip a flip-card permanent (CR 710) — "flip this creature". One-way; keeps mana cost and colour. */
+    fun Flip(target: EffectTarget = EffectTarget.Self): Effect = com.wingedsheep.sdk.scripting.effects.FlipEffect(target)
+
     /** Turn a face-down permanent face up (Break Open). */
     fun TurnFaceUp(target: EffectTarget): Effect = com.wingedsheep.sdk.scripting.effects.TurnFaceUpEffect(target)
 

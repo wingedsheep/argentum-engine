@@ -1457,6 +1457,9 @@ is PermanentsSacrificedEvent -> {
             is ManifestedDreadEvent,
             is LibrarySearchedEvent,
             is TurnedFaceDownEvent,
+            // The flip shows in state — the permanent's new name and `isFlipped` — so no
+            // separate client event.
+            is FlippedEvent,
             is CreatureTypeChangedEvent,
             is BecomesTargetEvent,
             is SpellCopiedEvent,

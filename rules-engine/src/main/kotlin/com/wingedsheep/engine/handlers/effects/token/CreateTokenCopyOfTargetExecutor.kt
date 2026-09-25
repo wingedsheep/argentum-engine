@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.token
 
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
@@ -79,7 +80,7 @@ class CreateTokenCopyOfTargetExecutor(
         val targetContainer = state.getEntity(targetId)
             ?: return EffectResult.success(state)
 
-        val targetCard = targetContainer.get<CardComponent>()
+        val targetCard = targetContainer.copiableCardComponent()
             ?: return EffectResult.success(state)
 
         val count = amountEvaluator.evaluate(state, effect.count, context)
@@ -153,7 +154,7 @@ class CreateTokenCopyOfTargetExecutor(
             ?: return EffectResult.success(state)
         val targetContainer = state.getEntity(targetId)
             ?: return EffectResult.success(state)
-        val targetCard = targetContainer.get<CardComponent>()
+        val targetCard = targetContainer.copiableCardComponent()
             ?: return EffectResult.success(state)
 
         var newState = state

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.token
 
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
@@ -74,7 +75,7 @@ class CreateTokenCopyOfSourceExecutor(
         val sourceContainer = state.getEntity(sourceId)
             ?: return EffectResult.success(state)
 
-        val sourceCard = sourceContainer.get<CardComponent>()
+        val sourceCard = sourceContainer.copiableCardComponent()
             ?: return EffectResult.success(state)
 
         var newState = state

@@ -412,7 +412,8 @@ data class ClientCard(
     /**
      * Clockwise rotation in degrees to apply to the card art when rendering (default 0). Non-zero
      * only for flip-layout tokens whose single Scryfall image shows the other face upright — e.g.
-     * the Wilds of Eldraine "Cursed" / "Sorcerer" Roles need 180. Purely cosmetic.
+     * the Wilds of Eldraine "Cursed" / "Sorcerer" Roles need 180 — and for a flipped flip card
+     * (CR 710), whose flip half is printed upside down. Purely cosmetic.
      */
     val imageRotation: Int = 0,
 

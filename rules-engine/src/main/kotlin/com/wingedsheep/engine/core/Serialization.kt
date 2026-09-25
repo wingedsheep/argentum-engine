@@ -163,6 +163,7 @@ val engineSerializersModule = SerializersModule {
         subclass(TurnFaceUpEvent::class)
         subclass(TurnedFaceDownEvent::class)
         subclass(TransformedEvent::class)
+        subclass(FlippedEvent::class)
         subclass(CreatureGoadedEvent::class)
         subclass(CreatureNoLongerGoadedEvent::class)
     }
@@ -448,6 +449,7 @@ val engineSerializersModule = SerializersModule {
         subclass(RevertCopyAtYourNextTurnComponent::class)
         subclass(CopyWhileAttachedComponent::class)
         subclass(DoubleFacedComponent::class)
+        subclass(FlippedComponent::class)
         subclass(RoomComponent::class)
         subclass(CantBeCounteredComponent::class)
         subclass(CantBeCopiedComponent::class)

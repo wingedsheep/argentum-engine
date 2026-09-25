@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.continuations
 
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PipelineState
@@ -337,7 +338,7 @@ class ModalAndCloneContinuationResumer(
 
         if (selectedCreatureId != null) {
             val targetContainer = newState.getEntity(selectedCreatureId)
-            val targetCardComponent = targetContainer?.get<CardComponent>()
+            val targetCardComponent = targetContainer?.copiableCardComponent()
 
             if (targetCardComponent != null) {
                 copyApplied = true
@@ -442,7 +443,7 @@ class ModalAndCloneContinuationResumer(
         val selectedId = response.selectedCards.firstOrNull()
 
         if (selectedId != null) {
-            val targetCardComponent = newState.getEntity(selectedId)?.get<CardComponent>()
+            val targetCardComponent = newState.getEntity(selectedId)?.copiableCardComponent()
             if (targetCardComponent != null) {
                 copyApplied = true
                 // Copy the chosen object's copiable characteristics (CR 707.2) onto this permanent,

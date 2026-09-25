@@ -543,7 +543,10 @@ internal class CardProjector(
                     ?.value
                 ?: cardComponent.imageUri
                 ?: cardDef?.metadata?.imageUri,
-            imageRotation = cardDef?.metadata?.imageRotation ?: 0,
+            // A flipped flip card (CR 710) is the same physical card turned upside down, so its
+            // single image is rotated 180° to read the flip half.
+            imageRotation = ((cardDef?.metadata?.imageRotation ?: 0) +
+                (if (container.has<FlippedComponent>()) 180 else 0)) % 360,
             activeEffects = cardEffects,
             rulings = cardDef?.metadata?.rulings?.map {
                 ClientRuling(date = it.date, text = it.text)

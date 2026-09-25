@@ -2873,6 +2873,139 @@
     ]
 }
 
+// Jushi Apprentice
+{
+    "name": "Jushi Apprentice",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{2}{U}, {T}: Draw a card. If you have nine or more cards in hand, flip this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Jushi Apprentice:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": "You",
+                                        "zone": "Hand"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 9
+                                    }
+                                }
+                            },
+                            "then": "Flip"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}{U}, {T}: Draw a card. If you have nine or more cards in hand, flip this creature."
+            }
+        ]
+    },
+    "flipSide": {
+        "name": "Tomoya the Revealer",
+        "manaCost": "{1}{U}",
+        "typeLine": "Legendary Creature — Human Wizard",
+        "oracleText": "{3}{U}{U}, {T}: Target player draws X cards, where X is the number of cards in your hand.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 3
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Tomoya the Revealer:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{3}{U}{U}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Count",
+                            "player": "You",
+                            "zone": "Hand"
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetPlayer",
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{3}{U}{U}, {T}: Target player draws X cards, where X is the number of cards in your hand."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "70",
+            "rarity": "RARE",
+            "artist": "Glen Angus",
+            "imageUri": "https://cards.scryfall.io/normal/front/3/3/33a8e5b9-6bfb-4ff2-a16d-3168a5412807.jpg?1783944325"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "70",
+        "rarity": "RARE",
+        "artist": "Glen Angus",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33a8e5b9-6bfb-4ff2-a16d-3168a5412807.jpg?1783944325"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "FLIP"
+}
+
 // Kabuto Moth
 {
     "name": "Kabuto Moth",
@@ -5567,6 +5700,155 @@
     "colorIdentityOverride": [
         "RED"
     ]
+}
+
+// Orochi Eggwatcher
+{
+    "name": "Orochi Eggwatcher",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Snake Shaman",
+    "oracleText": "{2}{G}, {T}: Create a 1/1 green Snake creature token. If you control ten or more creatures, flip this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Orochi Eggwatcher:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{G}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 1,
+                            "toughness": 1,
+                            "colors": [
+                                "GREEN"
+                            ],
+                            "creatureTypes": [
+                                "Snake"
+                            ]
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "creature"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    }
+                                }
+                            },
+                            "then": "Flip"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{2}{G}, {T}: Create a 1/1 green Snake creature token. If you control ten or more creatures, flip this creature."
+            }
+        ]
+    },
+    "flipSide": {
+        "name": "Shidako, Broodmistress",
+        "manaCost": "{2}{G}",
+        "typeLine": "Legendary Creature — Snake Shaman",
+        "oracleText": "{G}, Sacrifice a creature: Target creature gets +3/+3 until end of turn.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Shidako, Broodmistress:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{G}"
+                                }
+                            },
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomSacrifice",
+                                    "filter": "creature"
+                                }
+                            }
+                        ]
+                    },
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 3
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{G}, Sacrifice a creature: Target creature gets +3/+3 until end of turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "233",
+            "rarity": "UNCOMMON",
+            "artist": "Dan Murayama Scott",
+            "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4f4aa3b-c64a-4430-b1a2-a7fca87d0a22.jpg?1783944284"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "233",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/4/a4f4aa3b-c64a-4430-b1a2-a7fca87d0a22.jpg?1783944284"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "FLIP"
 }
 
 // Orochi Leafcaller

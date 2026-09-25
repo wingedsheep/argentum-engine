@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.token
 
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
@@ -107,7 +108,7 @@ class CreateTokenCopyOfChosenPermanentExecutor(
             val chosenContainer = state.getEntity(chosenId)
                 ?: return EffectResult.success(state)
 
-            val chosenCard = chosenContainer.get<CardComponent>()
+            val chosenCard = chosenContainer.copiableCardComponent()
                 ?: return EffectResult.success(state)
 
             val (tokenId, stateWithId) = state.newEntity()

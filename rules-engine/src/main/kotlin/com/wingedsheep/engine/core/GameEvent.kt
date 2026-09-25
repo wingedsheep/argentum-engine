@@ -1976,6 +1976,19 @@ data class TransformedEvent(
     val controllerId: EntityId
 ) : GameEvent
 
+/**
+ * A flip-card permanent flipped (CR 710) — it now has its flip half's characteristics, [newName].
+ * Not a [TransformedEvent]: flipping is a different action, so "whenever this transforms" never
+ * sees it.
+ */
+@Serializable
+@SerialName("FlippedEvent")
+data class FlippedEvent(
+    val entityId: EntityId,
+    val newName: String,
+    val controllerId: EntityId
+) : GameEvent
+
 // =============================================================================
 // Control Events
 // =============================================================================

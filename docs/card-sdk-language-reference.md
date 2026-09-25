@@ -279,6 +279,13 @@ carries the other side for the hover preview's flip toggle.
   Casts exactly like an Adventure (creature face, or Omen via `CastSpell.faceIndex = 0`), but resolving the Omen
   **shuffles the card into its owner's library** instead of exiling it — no cast-from-exile linkage. DSL:
   `card { omen("Name") { spell { … } } }`.
+- `FLIP` — a Kamigawa flip card (CR 710). Primary characteristics are the upright half; the upside-down half is a
+  full `CardDefinition` in `flipSide` (not `backFace` — a flip card is **not** double-faced, so `Transform`,
+  "return it transformed", daybound and `Filters.DoubleFaced` all ignore it, CR 701.27c). Built with
+  `CardDefinition.flipCard(unflipped, flipped)`, which copies the upright mana cost onto the flip half (flipping
+  never changes mana cost or colour, CR 710.1c); give the flip half the same `imageUri` — it's one physical card,
+  and the client rotates the art 180° while flipped. The half turns over with `Effects.Flip()` (§ effects).
+  Jushi Apprentice // Tomoya the Revealer, Orochi Eggwatcher // Shidako, Broodmistress.
 - `MODAL_DFC` — primary characteristics are the front face; the caster picks one face before the card goes on the
   stack and only that face is evaluated (CR 712.11b/712.11c). Two shapes, by what the back face *is*:
   - **Spell back** — `cardFaces[0]`, cast via `CastSpell.faceIndex = 0`. No exile-then-recast linkage: it resolves
@@ -1130,6 +1137,7 @@ serialized shape; the facade for each is:
 | `TapUntapEffect` | `Effects.Tap(target)` / `Effects.Untap(target)` |
 | `TauntEffect` | `Effects.Taunt` |
 | `TransformEffect` | `Effects.Transform` |
+| `FlipEffect` | `Effects.Flip` |
 | `TurnFaceDownEffect` | `Effects.TurnFaceDown` |
 | `TurnFaceUpEffect` | `Effects.TurnFaceUp` |
 
@@ -1482,6 +1490,15 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   that way today, but a `Transform` on one that did would be a silent no-op. To gate the flip on the card
   actually having two faces — "If it's a double-faced card, you may transform it" — wrap it in a
   `Effects.If` over `Filters.DoubleFaced` (§ filters).
+- `Flip(target = Self)` — "flip this creature" for a `FLIP`-layout card (CR 710). Gives the permanent the
+  flipped *status* (CR 110.5, `FlippedComponent`): its `CardComponent` becomes the `flipSide` half's name, type
+  line, rules text, P/T and abilities, keeping mana cost and colour (CR 710.1c); the entity id, counters, damage,
+  attachments and timestamp survive, and the flip half's static/replacement abilities are re-registered. One-way —
+  an already-flipped permanent stays as it is (CR 710.4); a target that isn't a flip card on the battlefield is a
+  silent no-op. Emits `FlippedEvent`, **not** `TransformedEvent`. Leaving the battlefield forgets the status
+  (CR 710.4, restored in `ZoneTransitionService`), and copy effects copy the upright half, because status isn't
+  copied (CR 707.2, `copiableCardComponent()`). The usual shape is an ability's rider gated on a state check —
+  `Effects.Composite(Effects.DrawCards(1), Effects.If(Conditions.CardsInHandAtLeast(9), Effects.Flip()))`.
 - `ExileAndReturnTransformed(target = Self, returnAs = ReturnFace.TRANSFORMED)` — "Exile [this], then return it
   to the battlefield transformed under its owner's control" (FIN Dominant / eikon transform). Exiles a
   double-faced permanent and re-enters it as a **new object** on the chosen face — unlike `Transform`, which

@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.permanent.types
 
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.event.GrantedActivatedAbility
@@ -59,7 +60,7 @@ class EachPermanentBecomesCopyOfTargetExecutor(
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.success(state)
 
-        val targetCard = state.getEntity(targetId)?.get<CardComponent>()
+        val targetCard = state.getEntity(targetId)?.copiableCardComponent()
             ?: return EffectResult.success(state)
 
         // Target must still be on the battlefield to serve as a copy source — unless the effect

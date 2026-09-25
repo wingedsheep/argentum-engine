@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects.token
 
+import com.wingedsheep.engine.state.components.identity.copiableCardComponent
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.ZoneChangeEvent
@@ -59,7 +60,7 @@ class CreateTokenCopyOfEquippedCreatureExecutor(
         val equippedContainer = state.getEntity(equippedId)
             ?: return EffectResult.success(state)
 
-        val equippedCard = equippedContainer.get<CardComponent>()
+        val equippedCard = equippedContainer.copiableCardComponent()
             ?: return EffectResult.success(state)
 
         val controllerId = context.controllerId
