@@ -143,6 +143,52 @@
     ]
 }
 
+// Akki Underminer
+{
+    "name": "Akki Underminer",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Goblin Rogue Shaman",
+    "oracleText": "Whenever this creature deals combat damage to a player, that player sacrifices a permanent of their choice.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Akki Underminer:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "permanent",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever this creature deals combat damage to a player, that player sacrifices a permanent of their choice."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "155",
+        "rarity": "UNCOMMON",
+        "artist": "Thomas M. Baxa",
+        "flavorText": "\"Deep inside the Sokenzan Mountains, a band of akki discovered a cache of ancient items of power. Their ensuing spree of destruction became known as 'The Three Days of Fun.'\"\n—*Observations of the Kami War*",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/efdd1e22-d68d-4858-b253-80071d26d50e.jpg?1783944304"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Azami, Lady of Scrolls
 {
     "name": "Azami, Lady of Scrolls",
@@ -183,6 +229,78 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Battle-Mad Ronin
+{
+    "name": "Battle-Mad Ronin",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Human Samurai",
+    "oracleText": "Bushido 2 (Whenever this creature blocks or becomes blocked, it gets +2/+2 until end of turn.)\nThis creature attacks each combat if able.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "BUSHIDO"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "BUSHIDO",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Battle-Mad Ronin:1",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Bushido 2"
+            },
+            {
+                "id": "Battle-Mad Ronin:2",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Bushido 2"
+            }
+        ],
+        "staticAbilities": [
+            "MustAttack"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "156",
+        "artist": "Wayne England",
+        "flavorText": "\"I fought fiercely, bravely, and without mercy. Had I not struck down my captain in the heat of battle, I might have become a hero instead of an outcast.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/6/a6e4394a-fa91-4cf9-99c1-dc0bc1011c5b.jpg?1783944304"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -1003,6 +1121,51 @@
     ]
 }
 
+// Deathcurse Ogre
+{
+    "name": "Deathcurse Ogre",
+    "manaCost": "{5}{B}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "When this creature dies, each player loses 3 life.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Deathcurse Ogre:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "Each"
+                    }
+                },
+                "descriptionOverride": "When this creature dies, each player loses 3 life."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "109",
+        "artist": "Mark Tedin",
+        "flavorText": "After their worship of oni began, only a few of Kamigawa's ogres remained in the bitter cold of the Tendo Peaks. Most were drawn to the darkness of Takenuma.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/62bd3c73-fff4-40e8-b9db-80a010a4dd37.jpg?1783944315"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Desperate Ritual
 {
     "name": "Desperate Ritual",
@@ -1104,6 +1267,90 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Distress
+{
+    "name": "Distress",
+    "manaCost": "{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target player reveals their hand. You choose a nonland card from it. That player discards that card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "filter": "nonland",
+                    "storeSelected": "selected2",
+                    "prompt": "Choose a nonland card to discard",
+                    "showAllCards": true,
+                    "alwaysPrompt": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected2",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "moveType": "Discard"
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "111",
+        "artist": "Michael Sutfin",
+        "flavorText": "\"Today I asked Master Dosan what the ogre mages did with the humans they sacrificed. He gave me a hard look and said to think no more on the matter.\"\n—Meditation journal of young budoka",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/1/8130a902-3a03-4473-a64f-84cf3590f4c6.jpg?1783944315",
+        "rulings": [
+            {
+                "date": "2014-02-01",
+                "text": "If you target yourself with this spell, you must reveal your entire hand to the other players just as any other player would."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -4371,6 +4618,53 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Mystic Restraints
+{
+    "name": "Mystic Restraints",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nWhen this Aura enters, tap enchanted creature.\nEnchanted creature doesn't untap during its controller's untap step.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Mystic Restraints:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature"
+                },
+                "descriptionOverride": "When this Aura enters, tap enchanted creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "DOESNT_UNTAP"
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "76",
+        "artist": "Christopher Rush",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/96cc4428-3f86-4359-927d-4009ada52c5d.jpg?1783944325"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
