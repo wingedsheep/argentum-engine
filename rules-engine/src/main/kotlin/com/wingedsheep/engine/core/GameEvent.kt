@@ -1295,7 +1295,7 @@ data class BecameRenownedEvent(
 ) : GameEvent
 
 /**
- * An Aura, Equipment, or Fortification became attached to a permanent (CR 603.2e). Emitted only
+ * An Aura, Equipment, or Fortification became attached to a permanent (CR 603.2f). Emitted only
  * at the moment of attaching — when the attachment moves onto a new host — not when an
  * already-attached state persists, and not on phasing in/out (CR 702.26j). Emitted from every
  * attach site: aura ETB onto its enchant target (StackResolver), equip resolution

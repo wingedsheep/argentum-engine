@@ -1544,7 +1544,7 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
 
     /**
      * When an Aura, Equipment, or Fortification becomes attached to a permanent or player
-     * (CR 603.2e — "becomes" triggers fire only at the moment of attaching, not on a state that
+     * (CR 603.2f — "becomes" triggers fire only at the moment of attaching, not on a state that
      * already exists, and not on phasing in/out per CR 702.26j).
      *
      * The triggering entity is the *attachment* (the aura/equipment that became attached); the

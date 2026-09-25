@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.actions.spell.CastSpellHandler
 import com.wingedsheep.engine.handlers.TargetFinder
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachmentMover
 import com.wingedsheep.engine.handlers.effects.library.CascadeExecutor
 import com.wingedsheep.engine.handlers.effects.library.ChooseOnePerCategoryExecutor
 import com.wingedsheep.engine.handlers.effects.library.CastAnyNumberFromCollectionWithoutPayingCostExecutor
@@ -420,14 +421,13 @@ class LibraryAndZoneContinuationResumer(
         }
         val hostId = response.selectedTargets[0]?.firstOrNull()
             ?: return checkForMore(state, emptyList())
-        val attachments = com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachmentMover
-        if (!attachments.canAttach(
+        if (!AttachmentMover.canAttach(
                 state, services.predicateEvaluator, services.cardRegistry, continuation.attachmentId, hostId
             )
         ) {
             return checkForMore(state, emptyList())
         }
-        val (newState, events) = attachments.attach(state, continuation.attachmentId, hostId, continuation.controllerId)
+        val (newState, events) = AttachmentMover.attach(state, continuation.attachmentId, hostId, continuation.controllerId)
         return checkForMore(newState, events)
     }
 

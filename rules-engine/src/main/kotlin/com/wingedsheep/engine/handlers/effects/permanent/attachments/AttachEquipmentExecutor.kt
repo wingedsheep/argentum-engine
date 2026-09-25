@@ -14,7 +14,7 @@ import kotlin.reflect.KClass
  * Moving an Equipment onto a *new* host makes it become unattached from the old one first
  * (CR 701.3d), so this reports a PermanentUnattachedEvent — that is how Stitcher's Graft's
  * "sacrifice that permanent" fires when you equip it away — followed by a PermanentAttachedEvent
- * (CR 603.2e). Re-affirming the same host emits nothing. See [AttachmentMover.attach].
+ * (CR 603.2f). Re-affirming the same host emits nothing. See [AttachmentMover.attach].
  */
 class AttachEquipmentExecutor : EffectExecutor<AttachEquipmentEffect> {
 

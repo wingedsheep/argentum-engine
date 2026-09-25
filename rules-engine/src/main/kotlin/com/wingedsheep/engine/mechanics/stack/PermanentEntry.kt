@@ -105,7 +105,7 @@ internal class PermanentEntry(
         // Handle "enters with counters" replacement effects (before adding to battlefield)
         val counterEvents = mutableListOf<GameEvent>()
 
-        // CR 603.2e — an Aura entering attached to its enchant target "becomes attached"; emit the
+        // CR 603.2f — an Aura entering attached to its enchant target "becomes attached"; emit the
         // event so attachment triggers (Eriette, the Beguiler) fire.
         if (auraTargetId != null) {
             counterEvents.add(

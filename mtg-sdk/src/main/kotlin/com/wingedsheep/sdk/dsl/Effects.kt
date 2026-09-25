@@ -5791,8 +5791,7 @@ object Effects {
      */
     fun AttachToChosenHost(
         attachment: EffectTarget,
-        hostFilter: com.wingedsheep.sdk.scripting.GameObjectFilter =
-            com.wingedsheep.sdk.scripting.GameObjectFilter.Creature
+        hostFilter: GameObjectFilter = GameObjectFilter.Creature
     ): Effect = com.wingedsheep.sdk.scripting.effects.AttachToChosenHostEffect(attachment, hostFilter)
 
     /**

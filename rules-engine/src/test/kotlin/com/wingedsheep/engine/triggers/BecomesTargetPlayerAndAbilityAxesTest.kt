@@ -289,7 +289,7 @@ class BecomesTargetPlayerAndAbilityAxesTest : FunSpec({
          * That is **wrong** under the rules, not an open question: CR 115.9c counts the objects and
          * players chosen as targets when the spell or ability was put on the stack "(as modified by
          * effects that changed those targets)", so a redirected object *is* one of its targets, and
-         * by CR 603.2e a "becomes" trigger fires at the moment the named event happens — which for a
+         * by CR 603.2f a "becomes" trigger fires at the moment the named event happens — which for a
          * redirect is the moment the new object becomes a target. So ward (CR 702.21a) and every
          * other becomes-target trigger *should* fire on a Spellskite/Misdirection redirect and do
          * not.

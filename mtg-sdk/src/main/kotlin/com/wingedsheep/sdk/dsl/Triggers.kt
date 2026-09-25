@@ -454,7 +454,7 @@ class ObjectTriggerSubject internal constructor(
     fun connives(): TriggerSpec = spec(ConnivedEvent(filter = filter))
 
     /**
-     * The subject (an Aura or Equipment) "becomes attached to" a permanent matching [to] (CR 603.2e).
+     * The subject (an Aura or Equipment) "becomes attached to" a permanent matching [to] (CR 603.2f).
      * [controller] is who must control the attachment ("an Aura you control"). The host is
      * `EffectTarget.AttachedToTriggeringPermanent`.
      */

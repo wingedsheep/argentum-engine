@@ -6658,7 +6658,7 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   becomes-target trigger sees a redirect. **Known bug (ward and every other becomes-target trigger
   miss redirects), not intended behaviour:** CR 115.9c counts the targets chosen when the spell or
   ability was put on the stack "(as modified by effects that changed those targets)", so a redirected
-  object *is* a target of it, and by CR 603.2e the "becomes a target" event happens at the moment the
+  object *is* a target of it, and by CR 603.2f the "becomes a target" event happens at the moment the
   redirect makes it one. Pre-existing and orthogonal to the player axis, so it is pinned rather than
   fixed by `BecomesTargetPlayerAndAbilityAxesTest`, which characterizes current-and-wrong behaviour —
   when a later unit fixes it, invert that test rather than deleting it.
@@ -6762,7 +6762,7 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   uses `Triggers.or(Triggers.self.saddles(), Triggers.self.crews())` plus
   `triggerRestriction = Conditions.IsYourMainPhase`.
 - `Triggers.<subject>.becomesAttached(to, controller)`
-  — "whenever an Aura/Equipment becomes attached to a permanent" (CR 603.2e). Fires from
+  — "whenever an Aura/Equipment becomes attached to a permanent" (CR 603.2f). Fires from
   `PermanentAttachedEvent`, emitted at every attach site (aura ETB onto its enchant target, equip
   resolution, an aura moved onto the battlefield attached by an effect) only when newly attached —
   not on a persisting attachment, and not on phasing in/out (CR 702.26j). The triggering entity is

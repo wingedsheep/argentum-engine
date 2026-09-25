@@ -266,7 +266,7 @@ class CreateTokenCopyOfTargetExecutor(
                 )
             // Wire the host side of the attachment and announce it, so "becomes attached"
             // triggers (Eriette, the Beguiler) fire for an Aura token the same way they do when
-            // an Aura card is put onto the battlefield attached (CR 603.2e).
+            // an Aura card is put onto the battlefield attached (CR 603.2f).
             if (auraHostId != null) {
                 newState = newState.updateEntity(auraHostId) { hostContainer ->
                     val existing = hostContainer.get<AttachmentsComponent>()
