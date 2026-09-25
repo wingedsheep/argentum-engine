@@ -1457,7 +1457,7 @@ is PermanentsSacrificedEvent -> {
             is ManifestedDreadEvent,
             is LibrarySearchedEvent,
             is TurnedFaceDownEvent,
-            // The flip shows in state — the permanent's new name and `isFlipped` — so no
+            // The flip shows in state — the new name and a 180° `imageRotation` — so no
             // separate client event.
             is FlippedEvent,
             is CreatureTypeChangedEvent,
