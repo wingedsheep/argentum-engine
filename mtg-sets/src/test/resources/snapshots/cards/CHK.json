@@ -462,6 +462,83 @@
     ]
 }
 
+// Cloudcrest Lake
+{
+    "name": "Cloudcrest Lake",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}: Add {W} or {U}. This land doesn't untap during your next untap step.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cloudcrest Lake:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Cloudcrest Lake:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "WHITE"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "Self",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Cloudcrest Lake:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "Self",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "274",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/b/9bcbd030-762e-4754-ae95-685d59ccdfb9.jpg?1783944274"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE"
+    ]
+}
+
 // Commune with Nature
 {
     "name": "Commune with Nature",
@@ -3207,6 +3284,83 @@
     ]
 }
 
+// Lantern-Lit Graveyard
+{
+    "name": "Lantern-Lit Graveyard",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}: Add {B} or {R}. This land doesn't untap during your next untap step.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Lantern-Lit Graveyard:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Lantern-Lit Graveyard:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "BLACK"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "Self",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Lantern-Lit Graveyard:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "Self",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "278",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/8/484a7675-787f-49be-9b44-edd0a7d73812.jpg?1783944273"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Lava Spike
 {
     "name": "Lava Spike",
@@ -4601,6 +4755,83 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Pinecrest Ridge
+{
+    "name": "Pinecrest Ridge",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}: Add {R} or {G}. This land doesn't untap during your next untap step.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pinecrest Ridge:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Pinecrest Ridge:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "RED"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "Self",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Pinecrest Ridge:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "Self",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "281",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/9/7900552f-6147-49ec-8c02-f253e4896c4d.jpg?1783944272"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
     ]
 }
 
@@ -6565,6 +6796,83 @@
     ]
 }
 
+// Tranquil Garden
+{
+    "name": "Tranquil Garden",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}: Add {G} or {W}. This land doesn't untap during your next untap step.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tranquil Garden:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Tranquil Garden:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "GREEN"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "Self",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Tranquil Garden:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "WHITE"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "Self",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "284",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/112b6577-fbd6-46dd-b77d-37df0abe9845.jpg?1783944271"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "GREEN"
+    ]
+}
+
 // Uncontrollable Anger
 {
     "name": "Uncontrollable Anger",
@@ -6900,6 +7208,83 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Waterveil Cavern
+{
+    "name": "Waterveil Cavern",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add {C}.\n{T}: Add {U} or {B}. This land doesn't untap during your next untap step.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Waterveil Cavern:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Waterveil Cavern:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "BLUE"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "Self",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Waterveil Cavern:3",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddMana",
+                            "color": "BLACK"
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "DOESNT_UNTAP",
+                            "target": "Self",
+                            "duration": "UntilAfterAffectedControllersNextUntap"
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "286",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/405805e0-07f6-420f-86f9-5bde822caa5c.jpg?1783944271"
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
     ]
 }
 
