@@ -1793,6 +1793,39 @@
     ]
 }
 
+// Graceful Adept
+{
+    "name": "Graceful Adept",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "You have no maximum hand size.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            "NoMaximumHandSize"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "63",
+        "rarity": "UNCOMMON",
+        "artist": "Scott M. Fischer",
+        "flavorText": "\"When you have mastered my lessons, it will seem as though the whole of the world has opened up to your mind and nothing is beyond your grasp.\"\n—Lady Azami",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/648430cc-80d1-479f-ae31-76687d2eb57c.jpg?1783944327",
+        "rulings": [
+            {
+                "date": "2009-10-01",
+                "text": "If multiple effects modify your hand size, apply them in timestamp order. For example, if you put Null Profusion (an enchantment that says your maximum hand size is two) onto the battlefield and then put Graceful Adept onto the battlefield, you'll have no maximum hand size. However, if those permanents entered in the opposite order, your maximum hand size would be two."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Guardian of Solitude
 {
     "name": "Guardian of Solitude",
@@ -3565,6 +3598,76 @@
     ]
 }
 
+// Kitsune Healer
+{
+    "name": "Kitsune Healer",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Fox Cleric",
+    "oracleText": "{T}: Prevent the next 1 damage that would be dealt to any target this turn.\n{T}: Prevent all damage that would be dealt to target legendary creature this turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kitsune Healer:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Kitsune Healer:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "PreventDamageShield",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsLegendary"
+                                ]
+                            }
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "27",
+        "artist": "Michael Sutfin",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/1/11bb6894-b56a-4a63-859a-65a0c2d160fc.jpg?1783944336"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Kodama of the North Tree
 {
     "name": "Kodama of the North Tree",
@@ -3585,6 +3688,88 @@
         "artist": "Shishizaru",
         "flavorText": "\"The monks of the North Tree rarely saw their kodama until the Kami War, when it woke like a slumbering, angry bear.\"\n—\"Poem of the Five Trees\"",
         "imageUri": "https://cards.scryfall.io/normal/front/2/d/2d9b5c33-63c4-4ddd-9f04-37bb36970b43.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Kodama of the South Tree
+{
+    "name": "Kodama of the South Tree",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "Whenever you cast a Spirit or Arcane spell, each other creature you control gets +1/+1 and gains trample until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kodama of the South Tree:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Spirit"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Arcane"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        }
+                    },
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                },
+                                "target": "IterationEntity"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "TRAMPLE",
+                                "target": "IterationEntity"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "223",
+        "rarity": "RARE",
+        "artist": "Ron Spears",
+        "flavorText": "\"The monks of the South Tree had always reveled beneath their kodama's friendly gaze. During the Kami War, this gaze became fierce and full of hate.\"\n—\"Poem of the Five Trees\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/2/120c05f1-5ec3-4a0f-8628-6919e393104a.jpg?1783944287"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -5508,6 +5693,75 @@
     ]
 }
 
+// Otherworldly Journey
+{
+    "name": "Otherworldly Journey",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant — Arcane",
+    "oracleText": "Exile target creature. At the beginning of the next end step, return that card to the battlefield under its owner's control with a +1/+1 counter on it.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                {
+                    "type": "CreateDelayedTrigger",
+                    "step": "END",
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "addCounterType": "PLUS_ONE_PLUS_ONE"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "37",
+        "rarity": "UNCOMMON",
+        "artist": "Vance Kovacs",
+        "flavorText": "\"The landscape shimmered and I felt a chill breeze. When my vision cleared, I found myself alone among the corpses of my fallen friends.\"\n—Journal found in Numai",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a293db52-49f2-4a9c-8ee0-054d994b7299.jpg?1783944334",
+        "rulings": [
+            {
+                "date": "2005-08-01",
+                "text": "Any Aura attached to the creature is put into its owner's graveyard as a state-based action. Equipment attached to the creature become unattached but remain on the battlefield."
+            },
+            {
+                "date": "2005-08-01",
+                "text": "If Otherworldly Journey is cast during an end step, the creature won't return until the beginning of the next end step."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "The creature comes back onto the battlefield as a new creature, with one +1/+1 counter on it (plus any other counters that it would normally enter with)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pain Kami
 {
     "name": "Pain Kami",
@@ -5565,6 +5819,47 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Part the Veil
+{
+    "name": "Part the Veil",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant — Arcane",
+    "oracleText": "Return all creatures you control to their owner's hand.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "creature ctrl:you"
+                    },
+                    "storeAs": "returnAllToHand_gathered"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "returnAllToHand_gathered",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "77",
+        "rarity": "RARE",
+        "artist": "Arnie Swekel",
+        "flavorText": "At the waterfall, the border between the humanoid and the spirit worlds was weakest. The kami moved across it with ease and at will.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d870e607-1607-46f3-bc9f-925d0164bcf9.jpg?1783944324"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
