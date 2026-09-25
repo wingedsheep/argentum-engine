@@ -1752,6 +1752,256 @@
     ]
 }
 
+// Honden of Cleansing Fire
+{
+    "name": "Honden of Cleansing Fire",
+    "manaCost": "{3}{W}",
+    "typeLine": "Legendary Enchantment — Shrine",
+    "oracleText": "At the beginning of your upkeep, you gain 2 life for each Shrine you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Honden of Cleansing Fire:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "Shrine"
+                        },
+                        "multiplier": 2
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "14",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Staples",
+        "flavorText": "To the sorrow of all, its fire was turned toward those who worshipped it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/463f598a-7de0-4691-a61a-fe24c29f9e1b.jpg?1783944339"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Honden of Infinite Rage
+{
+    "name": "Honden of Infinite Rage",
+    "manaCost": "{2}{R}",
+    "typeLine": "Legendary Enchantment — Shrine",
+    "oracleText": "At the beginning of your upkeep, Honden of Infinite Rage deals damage to any target equal to the number of Shrines you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Honden of Infinite Rage:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "Shrine"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "rarity": "UNCOMMON",
+        "artist": "John Avon",
+        "flavorText": "To the sorrow of all, its rage became focused on those who once stoked it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/2/b254f341-aac1-433b-a739-fee8bd7fdf69.jpg?1783944300"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Honden of Life's Web
+{
+    "name": "Honden of Life's Web",
+    "manaCost": "{4}{G}",
+    "typeLine": "Legendary Enchantment — Shrine",
+    "oracleText": "At the beginning of your upkeep, create a 1/1 colorless Spirit creature token for each Shrine you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Honden of Life's Web:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "Shrine"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/8/082c3bad-3fea-4c3f-8263-4b16139bb32a.jpg?1783937532"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "213",
+        "rarity": "UNCOMMON",
+        "artist": "Rob Alexander",
+        "flavorText": "To the sorrow of all, its web became a net that strangled those who helped weave it.",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c618af6-b02e-448f-9131-3c50ef0d433b.jpg?1783944289"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Honden of Night's Reach
+{
+    "name": "Honden of Night's Reach",
+    "manaCost": "{3}{B}",
+    "typeLine": "Legendary Enchantment — Shrine",
+    "oracleText": "At the beginning of your upkeep, target opponent discards a card for each Shrine you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Honden of Night's Reach:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "Shrine"
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose cards to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "116",
+        "rarity": "UNCOMMON",
+        "artist": "Jim Nelson",
+        "flavorText": "To the sorrow of all, its dark reach grasped and crushed those who guarded its silent vigil.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/2/526419ae-5a49-40e8-ac45-f213a76c7326.jpg?1783944314"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Honden of Seeing Winds
+{
+    "name": "Honden of Seeing Winds",
+    "manaCost": "{4}{U}",
+    "typeLine": "Legendary Enchantment — Shrine",
+    "oracleText": "At the beginning of your upkeep, draw a card for each Shrine you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Honden of Seeing Winds:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "Shrine"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "rarity": "UNCOMMON",
+        "artist": "Martina Pilcerova",
+        "flavorText": "To the sorrow of all, its winds found sin in the hearts of those who once learned from its wisdom.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/d/ad732186-eeb9-4edb-a17a-51f8bac71802.jpg?1783944325"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Horizon Seed
 {
     "name": "Horizon Seed",
