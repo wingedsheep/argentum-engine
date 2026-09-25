@@ -361,6 +361,71 @@
     ]
 }
 
+// Cage of Hands
+{
+    "name": "Cage of Hands",
+    "manaCost": "{2}{W}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nEnchanted creature can't attack or block.\n{1}{W}: Return this Aura to its owner's hand.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cage of Hands:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand"
+                },
+                "descriptionOverride": "{1}{W}: Return this Aura to its owner's hand."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CantAttack",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            },
+            {
+                "type": "CantBlock",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "3",
+        "artist": "Mark Tedin",
+        "flavorText": "\"Our own actions built the prisons that now hold us. Our hands reached too far and tried to hold too much.\"\n—Dosan the Falling Leaf",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98a80b6a-90ed-482f-9714-eb856269e9d3.jpg?1783944342",
+        "rulings": [
+            {
+                "date": "2020-11-10",
+                "text": "The ability to return Cage of Hands to its owner's hand can only be activated if Cage of Hands is on the battlefield. If Cage of Hands is no longer on the battlefield when the ability resolves, Cage of Hands remains in its new zone and isn't returned to its owner's hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Call to Glory
 {
     "name": "Call to Glory",
@@ -6156,6 +6221,85 @@
     ]
 }
 
+// Soilshaper
+{
+    "name": "Soilshaper",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Whenever you cast a Spirit or Arcane spell, target land becomes a 3/3 creature until end of turn. It's still a land.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Soilshaper:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Spirit"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Arcane"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "BecomeCreature",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "power": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "toughness": {
+                        "type": "Fixed",
+                        "amount": 3
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "land"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast a Spirit or Arcane spell, target land becomes a 3/3 creature until end of turn. It's still a land."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "243",
+        "rarity": "UNCOMMON",
+        "artist": "Thomas M. Baxa",
+        "flavorText": "It spoke with the voice of nature, but its words were curses spat upon humankind.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae4066c3-bcb0-41c4-a4d3-a22bd186fd13.jpg?1783944282",
+        "rulings": [
+            {
+                "date": "2008-08-01",
+                "text": "A noncreature permanent that turns into a creature can attack, and its {T} abilities can be activated, only if its controller has continuously controlled that permanent since the beginning of their most recent turn. It doesn't matter how long the permanent has been a creature."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Sokenzan Bruiser
 {
     "name": "Sokenzan Bruiser",
@@ -6343,6 +6487,76 @@
     ]
 }
 
+// Soratami Mirror-Mage
+{
+    "name": "Soratami Mirror-Mage",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Moonfolk Wizard",
+    "oracleText": "Flying\n{3}, Return three lands you control to their owner's hand: Return target creature to its owner's hand.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soratami Mirror-Mage:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": "land",
+                                "count": 3
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Hand"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}, Return three lands you control to their owner's hand: Return target creature to its owner's hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "UNCOMMON",
+        "artist": "Ron Spears",
+        "flavorText": "\"The clouds obey my whims, and you'll obey theirs.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/1/215209b1-1a5d-48f4-9eca-19a9848b2fed.jpg?1783944321"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Soratami Rainshaper
 {
     "name": "Soratami Rainshaper",
@@ -6403,6 +6617,157 @@
         "collectorNumber": "89",
         "artist": "Ittoku",
         "imageUri": "https://cards.scryfall.io/normal/front/b/9/b942ee46-c78b-414a-9de7-4376370532fa.jpg?1783944320"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Soratami Savant
+{
+    "name": "Soratami Savant",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Moonfolk Wizard",
+    "oracleText": "Flying\n{3}, Return a land you control to its owner's hand: Counter target spell unless its controller pays {3}.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soratami Savant:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": "land"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Counter",
+                    "condition": {
+                        "type": "CounterCondition.UnlessPaysMana",
+                        "cost": "{3}"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}, Return a land you control to its owner's hand: Counter target spell unless its controller pays {3}."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "UNCOMMON",
+        "artist": "Jim Nelson",
+        "flavorText": "\"To prevent, one must first predict.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43ea2db8-67c6-4bcd-8ba1-f620b8e8a8c4.jpg?1783944321"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Soratami Seer
+{
+    "name": "Soratami Seer",
+    "manaCost": "{4}{U}",
+    "typeLine": "Creature — Moonfolk Wizard",
+    "oracleText": "Flying\n{4}, Return two lands you control to their owner's hand: Discard all the cards in your hand, then draw that many cards.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Soratami Seer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{4}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": "land",
+                                "count": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "discardedHand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discardedHand",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "VariableReference",
+                                "variableName": "discardedHand_count"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "{4}, Return two lands you control to their owner's hand: Discard all the cards in your hand, then draw that many cards."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "UNCOMMON",
+        "artist": "Glen Angus",
+        "flavorText": "Their mirrors show two worlds: that which is and that which should be.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/6/462a861d-e5c5-48b1-95c0-3ef04b690eac.jpg?1783944320"
     },
     "colorIdentityOverride": [
         "BLUE"
