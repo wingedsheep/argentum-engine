@@ -18,6 +18,7 @@ import com.wingedsheep.engine.state.components.battlefield.EnteredThisTurnCompon
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
 import com.wingedsheep.engine.state.components.battlefield.DealtCombatDamageToPlayersThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
+import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.WasDealtDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.PreparedComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
@@ -1787,6 +1788,16 @@ class PredicateEvaluator(
                 val candidateController = state.projectedState.getController(entityId)
                     ?: container.get<ControllerComponent>()?.playerId
                 candidateController != null && candidateController in damagedPlayers
+            }
+
+            // Dealt damage this turn by the effect's source: the source's per-turn record of the
+            // creatures it damaged. Dropped when the source changes zones (CR 400.7). Inert with no
+            // source context.
+            StatePredicate.WasDealtDamageBySourceThisTurn -> {
+                val sourceId = context?.sourceId
+                sourceId != null && state.getEntity(sourceId)
+                    ?.get<DamageDealtToCreaturesThisTurnComponent>()
+                    ?.creatureIds?.contains(entityId) == true
             }
 
             // Whether this creature has been declared as an attacker this turn — derived

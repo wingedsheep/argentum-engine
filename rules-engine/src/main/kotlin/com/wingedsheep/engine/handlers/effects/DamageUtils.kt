@@ -1139,9 +1139,11 @@ object DamageUtils {
      * `CantBeRegeneratedExecutor` place.
      *
      * Reads **granted** statics only ([GameState.grantedStaticAbilities]), the point-of-use shape
-     * `CombatDamageUtils` documents. No card prints this ability — Runesword grants it for a turn —
-     * and reading printed ones here would need a `CardRegistry` this helper doesn't have. Give this
-     * reader a registry when a card prints it.
+     * `CombatDamageUtils` documents. No card prints this ability — Runesword grants it for a turn.
+     * The printed "if a creature dealt damage by this creature this turn would die, exile it
+     * instead" (Frostwielder, Kumano) is deliberately *not* this: its rulings need the source on the
+     * battlefield at death time, so it is a printed `RedirectZoneChange` over
+     * `StatePredicate.WasDealtDamageBySourceThisTurn`, answered by the zone-change redirect path.
      */
     fun applyDoomedRidersToDamagedCreature(
         state: GameState,

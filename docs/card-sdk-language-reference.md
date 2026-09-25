@@ -5138,6 +5138,18 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   .controllerDealtCombatDamageBySourceThisTurn()`). Controller is evaluated at resolution (CR 608.2), so it
   doesn't matter who controlled the permanent when the damage landed, or whether it was on the battlefield
   then. Same lifetime and source-relative caveats as its mirror.
+- `.wasDealtDamageBySourceThisTurn()` — the creature was dealt damage this turn by the effect's
+  **source**; backed by `StatePredicate.WasDealtDamageBySourceThisTurn`, which reads the source's per-turn
+  damaged-creature record (the one the "a creature dealt damage by this creature this turn dies" trigger
+  reads). The record is dropped when the source leaves the battlefield (CR 400.7), so the filter stops
+  matching then. Also honoured by the zone-change redirect path, which answers it off the replacement's
+  host as it stood when an SBA batch began — so the printed replacement "if a creature dealt damage by
+  this creature this turn would die, exile it instead" is
+  `replacementEffect(RedirectZoneChange(newDestination = Zone.EXILE, appliesTo = EventPattern.ZoneChangeEvent(
+  filter = GameObjectFilter.Creature.wasDealtDamageBySourceThisTurn(), from = Zone.BATTLEFIELD,
+  to = Zone.GRAVEYARD)))` (Frostwielder, Kumano's Pupils, Kumano, Master Yamabushi) and still applies when
+  the host dies simultaneously. Inert with no source context (group-static projection, granted
+  sourceless replacements).
 - `.saddled()` — permanent is saddled (CR 702.171b); backed by `StatePredicate.IsSaddled`.
 - `.renowned()` — creature has the **renowned** designation (CR 702.112b); backed by
   `StatePredicate.IsRenowned` and the engine's `RenownedComponent`. Component-backed and sticky
@@ -8513,7 +8525,10 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   can compose the same two marks (`Effects.CantBeRegenerated`, `Effects.MarkExileOnDeath`) after its
   own damage because that is one resolution; combat damage gives no such window. Applied inside
   damage application by `DamageUtils.applyDoomedRidersToDamagedCreature`, which reads *granted*
-  statics only — no card prints this one.
+  statics only. The **printed** "if a creature dealt damage by this creature this turn would die, exile
+  it instead" (Frostwielder, Kumano) is *not* this static — its rulings require the source to still be
+  on the battlefield when the creature would die, which a damage-time mark can't honour. It is a printed
+  `RedirectZoneChange` over `.wasDealtDamageBySourceThisTurn()` instead (see that filter).
 - `ReplaceLandManaColor(filter, color = null)` — global: lands matching `filter` produce one mana of a color of their
   controller's choice instead of their normal mana. Implemented by swapping the land's base mana effect
   for "add one mana of any color", so the choice flows through the normal any-color machinery (manual tap

@@ -493,6 +493,22 @@ sealed interface StatePredicate {
     }
 
     /**
+     * Was dealt damage this turn by the effect's *source* — the recipient-side view of the source's
+     * per-turn damaged-creature record (the same record `Triggers` "a creature dealt damage by this
+     * creature this turn dies" reads). Source-relative and inert with no source context.
+     *
+     * The record lives on the source and is dropped when the source leaves the battlefield
+     * (CR 400.7), so the predicate stops matching once the source is gone — which is what Kumano's
+     * "if a creature dealt damage by Kumano this turn would die, exile it instead" asks for: Kumano
+     * must still be on the battlefield (or leaving simultaneously) for the replacement to apply.
+     */
+    @SerialName("WasDealtDamageBySourceThisTurn")
+    @Serializable
+    data object WasDealtDamageBySourceThisTurn : History {
+        override val description: String = "dealt damage by this creature this turn"
+    }
+
+    /**
      * Was declared as an attacker at least once during the current turn (set during the
      * declare-attackers step, CR 508.1). Backed by the controller's
      * [com.wingedsheep.engine.state.components.combat.PlayerAttackersThisTurnComponent] (which

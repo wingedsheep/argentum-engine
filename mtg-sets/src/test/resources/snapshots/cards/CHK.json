@@ -1903,6 +1903,71 @@
     ]
 }
 
+// Frostwielder
+{
+    "name": "Frostwielder",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "{T}: This creature deals 1 damage to any target.\nIf a creature dealt damage by this creature this turn would die, exile it instead.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Frostwielder:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: This creature deals 1 damage to any target."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "WasDealtDamageBySourceThisTurn"
+                        ]
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Christopher Moeller",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/5/a54df527-6949-4b74-821b-b051f493f3c5.jpg?1783944300"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Gale Force
 {
     "name": "Gale Force",
@@ -4349,6 +4414,121 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Kumano's Pupils
+{
+    "name": "Kumano's Pupils",
+    "manaCost": "{4}{R}",
+    "typeLine": "Creature — Human Shaman",
+    "oracleText": "If a creature dealt damage by this creature this turn would die, exile it instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "WasDealtDamageBySourceThisTurn"
+                        ]
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "177",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Hildebrandt",
+        "flavorText": "\"Long before he reluctantly joined the war, stories spread of Kumano's followers winning victories against the kami.\"\n—*Observations of the Kami War*",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/6/c62b233e-95fe-4cfd-ad89-86e07656bf8b.jpg?1783944298"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Kumano, Master Yamabushi
+{
+    "name": "Kumano, Master Yamabushi",
+    "manaCost": "{3}{R}{R}",
+    "typeLine": "Legendary Creature — Human Shaman",
+    "oracleText": "{1}{R}: Kumano deals 1 damage to any target.\nIf a creature dealt damage by Kumano this turn would die, exile it instead.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kumano, Master Yamabushi:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "AnyTarget",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{R}: Kumano deals 1 damage to any target."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ],
+                        "statePredicates": [
+                            "WasDealtDamageBySourceThisTurn"
+                        ]
+                    },
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "rarity": "RARE",
+        "artist": "Adam Rex",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/9/f93870f9-343f-43e7-8ae8-e7aaa56aacca.jpg?1783944299"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 

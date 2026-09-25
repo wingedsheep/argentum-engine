@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtToCreaturesThisTurnComponent
+import com.wingedsheep.sdk.scripting.predicates.StatePredicate
 import com.wingedsheep.engine.state.components.battlefield.HasDealtCombatDamageToPlayerComponent
 import com.wingedsheep.engine.state.components.battlefield.HasBecomeTappedComponent
 import com.wingedsheep.engine.state.components.battlefield.HasDealtDamageComponent
@@ -800,7 +801,7 @@ object ZoneMovementUtils {
                         if (event.from != null && event.from != fromZone) continue
 
                         // Check filter against the entity being moved
-                        if (!matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId)) continue
+                        if (!matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId, battlefieldSourceState, permanentId)) continue
 
                         // Honour any cause qualifier (e.g. "only when discarded by an opponent's
                         // spell or ability") the same way the self-replacement path above does.
@@ -821,7 +822,7 @@ object ZoneMovementUtils {
 
                         if (event.to != null && event.to != toZone) continue
                         if (event.from != null && event.from != fromZone) continue
-                        if (!effect.selfOnly && !matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId)) continue
+                        if (!effect.selfOnly && !matchesZoneChangeFilter(state, entityId, container, event.filter, sourceControllerId, battlefieldSourceState, permanentId)) continue
 
                         // Match found — redirect AND return additional effect. When the replacement
                         // links its exiled cards to the source (The Darkness Crystal), carry the
@@ -866,16 +867,35 @@ object ZoneMovementUtils {
      * Check if an entity matches a GameObjectFilter for zone change replacement effects.
      * Uses base state (not projected) since the entity may be leaving the battlefield.
      */
+    /**
+     * @param sourceState The state the replacement's source permanent is read from — the
+     *   [checkZoneChangeRedirect] `battlefieldSourceState`, so a source leaving in the same SBA
+     *   batch still answers source-relative predicates as it stood when the batch began.
+     * @param sourceId The permanent hosting the replacement; null for granted (sourceless)
+     *   replacements, where source-relative predicates never match.
+     */
     private fun matchesZoneChangeFilter(
         state: GameState,
         entityId: EntityId,
         container: ComponentContainer,
         filter: GameObjectFilter,
-        sourceControllerId: EntityId
+        sourceControllerId: EntityId,
+        sourceState: GameState = state,
+        sourceId: EntityId? = null
     ): Boolean {
         if (filter == GameObjectFilter.Any) return true
 
         val cardComponent = container.get<CardComponent>() ?: return false
+
+        // "A creature dealt damage by this creature this turn" (Frostwielder, Kumano) — read off the
+        // source's per-turn damaged-creature record. The record is dropped when the source leaves
+        // the battlefield, which is the rulings' "must be on the battlefield" requirement.
+        if (StatePredicate.WasDealtDamageBySourceThisTurn in filter.statePredicates) {
+            val damaged = sourceId?.let {
+                sourceState.getEntity(it)?.get<DamageDealtToCreaturesThisTurnComponent>()?.creatureIds
+            }
+            if (damaged == null || entityId !in damaged) return false
+        }
 
         // Check card predicates
         for (predicate in filter.cardPredicates) {

@@ -513,6 +513,9 @@ internal class AffectsFilterResolver(
         // by the source this turn" needs the ability's source permanent, absent in group-static
         // projection. Only meaningful in gather-filter contexts via PredicateEvaluator.
         StatePredicate.ControllerDealtCombatDamageBySourceThisTurn -> false
+        // Source-relative too: "dealt damage by the source this turn" reads the source's per-turn
+        // damaged-creature record. Only meaningful via PredicateEvaluator / the zone-change gate.
+        StatePredicate.WasDealtDamageBySourceThisTurn -> false
         // Likewise source-relative: "crewed/saddled the source this turn" needs the ability's
         // source permanent, absent in group-static projection. Only meaningful in target/count
         // contexts via PredicateEvaluator / DynamicAmountEvaluator. Never match here.
