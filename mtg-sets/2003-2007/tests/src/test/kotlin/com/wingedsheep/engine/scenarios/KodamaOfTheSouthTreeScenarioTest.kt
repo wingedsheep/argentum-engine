@@ -55,6 +55,28 @@ class KodamaOfTheSouthTreeScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("a Spirit creature spell triggers it too") {
+                val game = scenario()
+                    .withPlayers("Alice", "Bob")
+                    .withCardOnBattlefield(1, "Kodama of the South Tree")
+                    .withCardOnBattlefield(1, "Grizzly Bears")
+                    .withCardInHand(1, "Soilshaper")
+                    .withLandsOnBattlefield(1, "Forest", 2)
+                    .withCardInLibrary(1, "Island")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val bears = game.findPermanent("Grizzly Bears")!!
+                game.castSpell(1, "Soilshaper").error shouldBe null
+                game.resolveStack()
+
+                val projected = game.state.projectedState
+                projected.getPower(bears) shouldBe 3
+                projected.hasKeyword(bears, Keyword.TRAMPLE) shouldBe true
+            }
+
             test("a non-Spirit, non-Arcane spell doesn't trigger it") {
                 val game = scenario()
                     .withPlayers("Alice", "Bob")
