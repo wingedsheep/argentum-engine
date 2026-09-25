@@ -683,6 +683,12 @@ enum class Keyword(val displayName: String) {
     VANISHING("Vanishing"),
 
     /**
+     * Soulshift N (CR 702.46). Display-only; the `soulshift(n)` DSL helper composes the optional
+     * dies trigger that returns a Spirit card with mana value N or less to hand.
+     */
+    SOULSHIFT("Soulshift"),
+
+    /**
      * Suspend (CR 702.62). A card with suspend can be exiled with a number of time
      * counters on it. At the beginning of its owner's upkeep a time counter is removed,
      * and when the last is removed its owner plays it without paying its mana cost (with

@@ -8072,6 +8072,123 @@
     ]
 }
 
+// Thief of Hope
+{
+    "name": "Thief of Hope",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Whenever you cast a Spirit or Arcane spell, target opponent loses 1 life and you gain 1 life.\nSoulshift 2 (When this creature dies, you may return target Spirit card with mana value 2 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thief of Hope:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Spirit"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Arcane"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you cast a Spirit or Arcane spell, target opponent loses 1 life and you gain 1 life."
+            },
+            {
+                "id": "Thief of Hope:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 2 (When this creature dies, you may return target Spirit card with mana value 2 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=2 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "Soulshift 2 (When this creature dies, you may return target Spirit card with mana value 2 or less from your graveyard to your hand.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "147",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Hildebrandt",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a3029b8-01e2-4419-817e-318f23d6ce04.jpg?1783944306"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Thoughtbind
 {
     "name": "Thoughtbind",
@@ -8512,6 +8629,71 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c571f66-7a00-4cb0-9da9-8271083f49d3.jpg?1783944272"
     },
     "colorIdentityOverride": []
+}
+
+// Venerable Kumo
+{
+    "name": "Venerable Kumo",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Reach (This creature can block creatures with flying.)\nSoulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH",
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 4
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Venerable Kumo:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=4 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Soulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "artist": "Carl Critchlow",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/0/308566ed-18cc-4e3b-b5ab-d5b17795f2f1.jpg?1783944280"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Vigilance

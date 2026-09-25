@@ -10115,6 +10115,13 @@ composite abilities).
   `EntersWithDynamicCounters(DynamicAmounts.castX())` replacement plus a `Triggers.self.enters()` draw gated by the
   intervening-if `castX() >= 5`. Both read the cast-time X (CR 107.3m), so a ravenous creature put onto the battlefield
   without being cast enters with no counters and draws nothing.
+- `Soulshift` — "Soulshift N (When this creature dies, you may return target Spirit card with mana value N or less
+  from your graveyard to your hand.)" (CR 702.46, Champions of Kamigawa; Thief of Hope). Display-only
+  `Keyword.SOULSHIFT` numeric keyword; wire it with `card { soulshift(n) }`, which adds
+  `KeywordAbility.Numeric(SOULSHIFT, n)` plus an optional `Triggers.self.dies()` trigger targeting
+  `Any.withSubtype("Spirit").manaValueAtMost(n).ownedByYou()` in the graveyard → `Effects.ReturnToHand`. The dying
+  permanent is already in the graveyard when the target is chosen, so a Spirit whose own mana value is N or less can
+  return itself. Each call is a separate trigger, so multiple instances trigger separately (CR 702.46b).
 - `Job select` — "Job select (When this Equipment enters, create a 1/1 colorless Hero creature token, then attach
   this to it.)" (Final Fantasy). Equipment keyword; display-only. Wire it with the `card { jobSelect() }` builder
   helper, which adds the keyword plus an `EntersBattlefield` triggered ability composing two existing primitives
