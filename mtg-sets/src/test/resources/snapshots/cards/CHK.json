@@ -4544,6 +4544,66 @@
     ]
 }
 
+// Pain Kami
+{
+    "name": "Pain Kami",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "{X}{R}, Sacrifice this creature: It deals X damage to target creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Pain Kami:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{X}{R}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": "XValue",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{X}{R}, Sacrifice this creature: It deals X damage to target creature."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "183",
+        "rarity": "UNCOMMON",
+        "artist": "Tomas Giorello",
+        "flavorText": "\"All kami are our enemies now, A very tough lesson to learn. But it's one that's taken quickly, When you feel what it's like to burn!\"\n—Ku-Ku, akki poet",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/693317ea-0237-4b65-812f-b31a6427b2a3.jpg?1783944296"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Psychic Puppetry
 {
     "name": "Psychic Puppetry",
@@ -4713,6 +4773,56 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Reito Lantern
+{
+    "name": "Reito Lantern",
+    "manaCost": "{2}",
+    "typeLine": "Artifact",
+    "oracleText": "{3}: Put target card from a graveyard on the bottom of its owner's library.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Reito Lantern:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Bottom"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{3}: Put target card from a graveyard on the bottom of its owner's library."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "267",
+        "rarity": "UNCOMMON",
+        "artist": "Greg Hildebrandt",
+        "flavorText": "Lanterns carved from the mystic stones of the Reito Mines were said to light the way of lost souls.",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/0/90eba910-852b-47e0-b4cd-07f30d80f921.jpg?1783944276"
+    },
+    "colorIdentityOverride": []
 }
 
 // Rend Flesh
@@ -5216,6 +5326,57 @@
         "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a08ca06-58db-4ce6-b490-be4bea8956a1.jpg"
     },
     "colorIdentityOverride": []
+}
+
+// Serpent Skin
+{
+    "name": "Serpent Skin",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nEnchanted creature gets +1/+1.\n{G}: Regenerate enchanted creature.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Serpent Skin:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{G}"
+                    }
+                },
+                "effect": {
+                    "type": "Regenerate",
+                    "target": "EnchantedPermanent"
+                },
+                "descriptionOverride": "{G}: Regenerate enchanted creature."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "artist": "Rob Alexander",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/c/8c5722d9-d1a4-4ad2-bf85-db666d4a30d9.jpg?1783944283"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Seshiro the Anointed
@@ -6596,6 +6757,63 @@
     ]
 }
 
+// Villainous Ogre
+{
+    "name": "Villainous Ogre",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Ogre Warrior",
+    "oracleText": "This creature can't block.\nAs long as you control a Demon, this creature has \"{B}: Regenerate this creature.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            "CantBlock",
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantActivatedAbility",
+                    "ability": {
+                        "id": "Villainous Ogre:1",
+                        "cost": {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{B}"
+                            }
+                        },
+                        "effect": {
+                            "type": "Regenerate",
+                            "target": "Self"
+                        },
+                        "descriptionOverride": "{B}: Regenerate this creature."
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent Demon"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "148",
+        "artist": "Tony Szczudlo",
+        "flavorText": "\"The war saw the ogres emerge from their caves, reeking of blood, with the power of oni in their veins.\"\n—*Observations of the Kami War*",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/2/0277c1ba-eae4-442b-8b80-20869ba20568.jpg?1783944307"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Waking Nightmare
 {
     "name": "Waking Nightmare",
@@ -6727,5 +6945,52 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Yamabushi's Flame
+{
+    "name": "Yamabushi's Flame",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Yamabushi's Flame deals 3 damage to any target. If a creature dealt damage this way would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "MarkExileOnDeath",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 3
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "198",
+        "artist": "Christopher Moeller",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a9bacba-55c4-4b92-bdd9-01b6035ed1b2.jpg?1783944293"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
