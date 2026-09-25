@@ -191,6 +191,7 @@ class DynamicAmountEvaluator(
         DynamicAmount.StationCharge,
         is DynamicAmount.StoredCardManaValue,
         is DynamicAmount.SubtypeEnteredUnderControlThisTurn,
+        is DynamicAmount.CreaturesWithSubtypeDiedThisTurn,
         DynamicAmount.TotalManaSpent,
         DynamicAmount.TotalPowerSacrificedThisWay,
         is DynamicAmount.TurnTracking,
@@ -854,6 +855,19 @@ class DynamicAmountEvaluator(
                         rec.entityId != excludeId &&
                             rec.subtypes.any { have -> wanted.any { have.equals(it, ignoreCase = true) } }
                     }
+                }
+            }
+
+            // One record per death, holding that creature's last-known (projected) subtypes — so a
+            // creature that was a Zubera only through a continuous effect still counts.
+            is DynamicAmount.CreaturesWithSubtypeDiedThisTurn -> {
+                val wanted = amount.subtype.value
+                resolveUnifiedPlayerIds(state, amount.player, context).sumOf { playerId ->
+                    state.getEntity(playerId)
+                        ?.get<com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent>()
+                        ?.diedSubtypeSets
+                        ?.count { died -> died.any { it.equals(wanted, ignoreCase = true) } }
+                        ?: 0
                 }
             }
 

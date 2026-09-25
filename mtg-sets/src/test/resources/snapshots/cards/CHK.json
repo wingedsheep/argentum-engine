@@ -189,6 +189,88 @@
     ]
 }
 
+// Ashen-Skin Zubera
+{
+    "name": "Ashen-Skin Zubera",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Zubera Spirit",
+    "oracleText": "When this creature dies, target opponent discards a card for each Zubera that died this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ashen-Skin Zubera:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "CreaturesWithSubtypeDiedThisTurn",
+                                    "subtype": "Zubera"
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose cards to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, target opponent discards a card for each Zubera that died this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "101",
+        "artist": "Wayne Reynolds",
+        "flavorText": "When the Honden of Night's Reach began to crumble, its attendants swarmed Kamigawa to haunt mortal dreams.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/0/40cee88d-849d-4715-ad88-7cdb855a3088.jpg?1783944317"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Azami, Lady of Scrolls
 {
     "name": "Azami, Lady of Scrolls",
@@ -1354,6 +1436,54 @@
     ]
 }
 
+// Dripping-Tongue Zubera
+{
+    "name": "Dripping-Tongue Zubera",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Zubera Spirit",
+    "oracleText": "When this creature dies, create a 1/1 colorless Spirit creature token for each Zubera that died this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Dripping-Tongue Zubera:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "CreaturesWithSubtypeDiedThisTurn",
+                        "subtype": "Zubera"
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "imageUri": "https://cards.scryfall.io/normal/front/0/8/082c3bad-3fea-4c3f-8263-4b16139bb32a.jpg?1783937532"
+                },
+                "descriptionOverride": "When this creature dies, create a 1/1 colorless Spirit creature token for each Zubera that died this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "206",
+        "artist": "Tsutomu Kawade",
+        "flavorText": "When the Honden of Life's Web was destroyed, its attendants swarmed Kamigawa to ensure mortal defeat.",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/7/e752b762-38b7-463c-aa09-37fecfe71a53.jpg?1783944291"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Earthshaker
 {
     "name": "Earthshaker",
@@ -1560,6 +1690,55 @@
     ]
 }
 
+// Ember-Fist Zubera
+{
+    "name": "Ember-Fist Zubera",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Zubera Spirit",
+    "oracleText": "When this creature dies, it deals damage to any target equal to the number of Zubera that died this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ember-Fist Zubera:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "CreaturesWithSubtypeDiedThisTurn",
+                        "subtype": "Zubera"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "AnyTarget",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this creature dies, it deals damage to any target equal to the number of Zubera that died this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "166",
+        "artist": "Ron Spencer",
+        "flavorText": "When the Honden of Infinite Rage shattered, its attendants swarmed Kamigawa to sow mortal destruction.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/0150e3f0-237e-4669-9401-d2cd08e86387.jpg?1783944300"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Ethereal Haze
 {
     "name": "Ethereal Haze",
@@ -1677,6 +1856,47 @@
         "artist": "Christopher Rush",
         "flavorText": "\"The scholars of the Minamo School understood the veil between their world and that of the kami. Moreover, they knew how to exploit it.\"\n—*Observations of the Kami War*",
         "imageUri": "https://cards.scryfall.io/normal/front/2/f/2ff7c6fc-324b-4cff-9109-6d817767865f.jpg?1783944328"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Floating-Dream Zubera
+{
+    "name": "Floating-Dream Zubera",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Zubera Spirit",
+    "oracleText": "When this creature dies, draw a card for each Zubera that died this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Floating-Dream Zubera:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "CreaturesWithSubtypeDiedThisTurn",
+                        "subtype": "Zubera"
+                    }
+                },
+                "descriptionOverride": "When this creature dies, draw a card for each Zubera that died this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "61",
+        "artist": "Shishizaru",
+        "flavorText": "When the Honden of Seeing Winds was forgotten, its attendants swarmed Kamigawa to uncover mortal secrets.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/3/63ea55a8-6c21-4cc1-a2c4-86cd60cddced.jpg?1783944328"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -7272,6 +7492,51 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Silent-Chant Zubera
+{
+    "name": "Silent-Chant Zubera",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Zubera Spirit",
+    "oracleText": "When this creature dies, you gain 2 life for each Zubera that died this turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Silent-Chant Zubera:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "CreaturesWithSubtypeDiedThisTurn",
+                            "subtype": "Zubera"
+                        },
+                        "multiplier": 2
+                    }
+                },
+                "descriptionOverride": "When this creature dies, you gain 2 life for each Zubera that died this turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "45",
+        "artist": "Ben Thompson",
+        "flavorText": "When the Honden of Cleansing Fire was abandoned, its attendants swarmed Kamigawa to erode mortal will.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/7/272dfee6-9c90-4409-9289-f451261909e7.jpg?1783944332"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

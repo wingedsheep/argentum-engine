@@ -1754,6 +1754,35 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The number of creatures with [subtype] that died (were put into a graveyard from the
+     * battlefield) this turn while under [player]'s control. Defaults to [Player.Each] — the
+     * game-wide count every printed card so far wants ("for each Zubera that died this turn",
+     * the Champions of Kamigawa Zubera cycle).
+     *
+     * A turn-history count over the same per-death record as the
+     * [com.wingedsheep.sdk.scripting.conditions.CreatureWithSubtypeDiedThisTurn] condition
+     * (`CreatureSubtypesDiedThisTurnComponent`, one entry per death holding the creature's
+     * last-known subtypes). A dies trigger's own source is already recorded when the trigger
+     * resolves, so "for each Zubera that died this turn" counts the Zubera itself, and a creature
+     * that was a Zubera only through a continuous effect counts too.
+     */
+    @SerialName("CreaturesWithSubtypeDiedThisTurn")
+    @Serializable
+    data class CreaturesWithSubtypeDiedThisTurn(
+        val subtype: com.wingedsheep.sdk.core.Subtype,
+        val player: Player = Player.Each
+    ) : DynamicAmount {
+        override fun applyTextReplacement(replacer: TextReplacer): DynamicAmount {
+            val new = replacer.replaceSubtype(subtype)
+            return if (new == subtype) this else copy(subtype = new)
+        }
+        override val description: String = buildString {
+            append("the number of ${subtype.value}s that died this turn")
+            if (player != Player.Each) append(" under ${player.possessive} control")
+        }
+    }
+
+    /**
      * Number of permanents sacrificed by the current resolving effect ("this way"). Reads the
      * effect context's `sacrificedPermanents` snapshot list, populated when an edict (e.g. "each
      * opponent sacrifices a creature") resolves earlier in the same composite. Used by "Create a

@@ -744,6 +744,16 @@ object DynamicAmounts {
         DynamicAmount.TurnTracking(player, TurnTracker.NONLAND_PERMANENTS_ENTERED)
 
     /**
+     * "The number of [subtype]s that died this turn" — game-wide by default ([Player.Each]).
+     * See [DynamicAmount.CreaturesWithSubtypeDiedThisTurn]. Used by the Zubera cycle
+     * ("for each Zubera that died this turn").
+     */
+    fun creaturesWithSubtypeDiedThisTurn(
+        subtype: com.wingedsheep.sdk.core.Subtype,
+        player: Player = Player.Each
+    ): DynamicAmount = DynamicAmount.CreaturesWithSubtypeDiedThisTurn(subtype, player)
+
+    /**
      * "The number of [other] [subtype]s that entered the battlefield under [player]'s control
      * this turn" (Geralf, the Fleshwright — "each other Zombie that entered the battlefield under
      * your control this turn"). Counts entries even after the permanent has left or changed type.

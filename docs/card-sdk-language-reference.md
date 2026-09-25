@@ -12561,6 +12561,14 @@ entrant is recorded before the triggers resolve, each one sees the others (2024-
 two single-subtype amounts would double-count a permanent carrying both. The singular facade is the
 ordinary one-tribe case.
 
+`CreaturesWithSubtypeDiedThisTurn(subtype, player = Player.Each)` /
+`DynamicAmounts.creaturesWithSubtypeDiedThisTurn(subtype, player?)` — "the number of [subtype]s that
+died this turn" (the CHK Zubera cycle: "for each Zubera that died this turn"). Game-wide by default;
+pass a player to count only deaths under that player's control. Reads the same per-death record as the
+`CreatureWithSubtypeDiedThisTurn` condition (`CreatureSubtypesDiedThisTurnComponent`, each entry the
+dying creature's last-known projected subtypes), so a dies trigger's own source is already counted when
+it resolves, and a creature that had the type only through a continuous effect counts.
+
 ---
 
 ## 14. Modal & choice
