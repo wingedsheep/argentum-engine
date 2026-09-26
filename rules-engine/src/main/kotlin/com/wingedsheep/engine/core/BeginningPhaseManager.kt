@@ -58,7 +58,8 @@ class BeginningPhaseManager(
         // CR 500.11 / 614.10a — a member with a pending "skip your next untap step" has no untap
         // step this turn: nothing of theirs phases or untaps, and their own next-untap-step markers
         // (SkipUntapComponent, exert) wait for the next step that isn't skipped. The skip itself is
-        // consumed by TurnManager.finishUntapStep. When the whole active team skips, the step never
+        // consumed by TurnManager once the step is over (finishUntapStep, or the
+        // Step.UNTAP branch of advanceStep). When the whole active team skips, the step never
         // happens at all, so its game-wide actions (day/night, Seedborn untaps) don't either.
         val untappingTeam = activeTeam.filterTo(HashSet()) {
             state.getEntity(it)?.has<SkipNextUntapStepComponent>() != true

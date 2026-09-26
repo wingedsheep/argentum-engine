@@ -522,7 +522,7 @@ data class SkipUntapComponent(
  *
  * Read by `BeginningPhaseManager.performUntapStep`, which leaves the marked player out of every
  * untap-step action (phasing, untapping, their own [SkipUntapComponent]), and decremented by
- * `TurnManager.finishUntapStep` once the step is over. Because the skipped step never happened,
+ * `TurnManager` once the step is over (`finishUntapStep`, or `advanceStep`'s untap branch). Because the skipped step never happened,
  * a [SkipUntapComponent] and any "until your next untap step" effect wait for the next real one.
  */
 @Serializable
