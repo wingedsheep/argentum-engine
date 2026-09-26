@@ -12,6 +12,7 @@ import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.Deck
+import com.wingedsheep.sdk.model.EntityId
 import io.kotest.assertions.withClue
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
@@ -33,7 +34,7 @@ class CranialExtractionScenarioTest : FunSpec({
         return d
     }
 
-    fun GameTestDriver.castAt(target: com.wingedsheep.sdk.model.EntityId): ChooseOptionDecision {
+    fun GameTestDriver.castAt(target: EntityId): ChooseOptionDecision {
         giveMana(player1, Color.BLACK, 4)
         val spell = putCardInHand(player1, "Cranial Extraction")
         val cast = castSpellWithTargets(player1, spell, listOf(ChosenTarget.Player(target)))
