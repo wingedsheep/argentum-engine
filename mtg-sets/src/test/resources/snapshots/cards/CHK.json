@@ -9189,6 +9189,155 @@
     ]
 }
 
+// Struggle for Sanity
+{
+    "name": "Struggle for Sanity",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent reveals their hand. That player exiles a card from it, then you exile a card from it. Repeat this process until all cards in that hand have been exiled. That player returns the cards they exiled this way to their hand and puts the rest into their graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "RevealHand",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "RepeatWhile",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                },
+                                "storeAs": "gathered2"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered2",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "chooser": "TargetPlayer",
+                                "storeSelected": "selected3",
+                                "storeRemainder": "remainder3",
+                                "prompt": "Choose a card from your hand to exile (you'll get it back)"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected3",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "remainder3",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "selected5",
+                                "prompt": "Choose a card from their hand to exile (it goes to their graveyard)",
+                                "showAllCards": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected5",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile",
+                                    "player": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "repeatCondition": {
+                        "type": "WhileCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "zone": "Hand"
+                        }
+                    },
+                    "collectCollections": {
+                        "selected3": "collected7",
+                        "selected5": "collected8"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "collected7",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "collected8",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "145",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/ba827c43-5dd5-471f-83b2-cb5428fcd063.jpg?1783944307"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Swallowing Plague
 {
     "name": "Swallowing Plague",

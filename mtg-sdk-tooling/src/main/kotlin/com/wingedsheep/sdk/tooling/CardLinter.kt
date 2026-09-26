@@ -793,7 +793,9 @@ object CardLinter {
                     Kind.WRITE to (Space.COLLECTION to "toGraveyard"),
                     Kind.WRITE to (Space.COLLECTION to "toTop"),
                 )
-            type == "ForEach" -> {
+            // ForEach and RepeatWhile both fold a body-local collection into an aggregate the
+            // effects after the loop read.
+            type == "ForEach" || type == "RepeatWhile" -> {
                 val reducers = obj["collectCollections"] as? JsonObject
                 if (reducers == null) emptyList() else reducers.flatMap { (localName, aggregateValue) ->
                     val aggregateName = (aggregateValue as? JsonPrimitive)?.contentOrNull
