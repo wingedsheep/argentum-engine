@@ -627,6 +627,14 @@ object Costs {
             AdditionalCost.Atom(CostAtom.Sacrifice(filter, count))
 
         /**
+         * Sacrifice **every** permanent you control matching [filter] (Soulblast). Nothing is
+         * chosen and controlling none pays it for free; the sacrificed permanents' last-known
+         * snapshots feed `DynamicAmounts.totalPowerSacrificedThisWay()`.
+         */
+        fun SacrificeAll(filter: GameObjectFilter = GameObjectFilter.Creature): AdditionalCost =
+            AdditionalCost.Atom(CostAtom.SacrificeAll(filter))
+
+        /**
          * Tap any number of permanents matching [filter] you control whose **total projected
          * power** is [totalPower] or more — the "tap creatures for total power N" selection crew
          * and saddle already use, re-exposed as a spell's additional cost (Teamwork N,

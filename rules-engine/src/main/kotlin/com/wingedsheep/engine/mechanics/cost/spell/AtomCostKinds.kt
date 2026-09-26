@@ -146,6 +146,23 @@ internal object SacrificeCostKind : SpellCostKind<CostAtom.Sacrifice> {
     }
 }
 
+/** "Sacrifice all creatures you control" (Soulblast) — every matching permanent, nothing chosen. */
+internal object SacrificeAllCostKind : SpellCostKind<CostAtom.SacrificeAll> {
+    // Controlling none of them sacrifices nothing, so this is always payable (CR 118.3).
+    override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.SacrificeAll, costHandler: CostHandler) = true
+
+    // The caster picks nothing, so the client submits no payment for it.
+    override fun paysUnprompted(cost: CostAtom.SacrificeAll) = true
+
+    override fun pay(ledger: SpellCostLedger, cost: CostAtom.SacrificeAll): String? {
+        val all = ledger.costHandler.sacrificeAllCandidates(ledger.state, cost, ledger.playerId)
+        // Snapshot before any of them leaves (CR 608.2h) — "the sacrificed creatures' total power".
+        ledger.sacrificedSnapshots.addAll(captureEntitySnapshots(all, ledger.state.projectedState))
+        for (permId in all) ledger.sacrifice(permId)
+        return null
+    }
+}
+
 /** "Discard a card" (Force of Will). */
 internal object DiscardCostKind : SpellCostKind<CostAtom.Discard> {
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.Discard, costHandler: CostHandler) =
@@ -215,6 +232,9 @@ internal object DiscardCostKind : SpellCostKind<CostAtom.Discard> {
 internal object DiscardHandCostKind : SpellCostKind<CostAtom.DiscardHand> {
     // An empty hand discards nothing, so this is always payable (CR 118.3).
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.DiscardHand, costHandler: CostHandler) = true
+
+    // Every card goes, so the caster picks nothing and the client submits no payment for it.
+    override fun paysUnprompted(cost: CostAtom.DiscardHand) = true
 
     override fun pay(ledger: SpellCostLedger, cost: CostAtom.DiscardHand): String? {
         // Every card at once, through the same shared discard path as the counted variant, so

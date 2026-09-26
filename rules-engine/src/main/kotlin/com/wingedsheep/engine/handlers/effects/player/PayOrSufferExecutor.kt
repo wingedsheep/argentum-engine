@@ -123,6 +123,9 @@ class PayOrSufferExecutor(
                     handlePutCountersCost(state, effect, context, atom, sourceId, sourceCard.name, payingPlayerId)
                 is CostAtom.RevealNotedCreatureType ->
                     EffectResult.error(state, "RevealNotedCreatureType is an activated-ability cost, not a PayOrSuffer cost")
+                // No printed "unless you sacrifice all …" exists; fails closed (canPay reports it unpayable).
+                is CostAtom.SacrificeAll ->
+                    EffectResult.error(state, "SacrificeAll payment for PayOrSuffer not yet implemented")
                 is CostAtom.Unattach ->
                     EffectResult.error(state, "Unattach is an activated-ability cost, not a PayOrSuffer cost")
                 // Deep Spawn — "sacrifice this creature unless you mill two cards".
@@ -1011,6 +1014,7 @@ class PayOrSufferExecutor(
                     findValidPermanentsOnBattlefield(state, playerId, atom.filter, null, sourceId).isNotEmpty()
                 is CostAtom.RevealNotedCreatureType -> false
                 is CostAtom.Unattach -> false
+                is CostAtom.SacrificeAll -> false
                 is CostAtom.VariablePermanents -> false
                 // CR 701.17b — a player can't pay a cost that includes milling more cards than
                 // their library holds, so a library shallower than the cost makes this unpayable

@@ -145,6 +145,32 @@ sealed interface CostAtom : TextReplaceable<CostAtom> {
     }
 
     /**
+     * Sacrifice **every** permanent you control matching [filter] — "as an additional cost to cast
+     * this spell, sacrifice all creatures you control" (Soulblast).
+     *
+     * Distinct from [Sacrifice] rather than a count on it, for the same reason [DiscardHand] is
+     * distinct from [Discard]: the number is whatever the payer controls when the cost is paid, and
+     * there is nothing to *select*. Controlling none pays it for free (CR 118.3), so affordability
+     * is unconditionally true. The sacrificed permanents are snapshotted as they last existed on the
+     * battlefield, so the spell's "the sacrificed creatures' total power" reads
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.TotalPowerSacrificedThisWay].
+     */
+    @SerialName("AtomSacrificeAll")
+    @Serializable
+    data class SacrificeAll(
+        val filter: GameObjectFilter = GameObjectFilter.Creature
+    ) : CostAtom {
+        // Every matching permanent goes, so the payer picks nothing.
+        override val selectionCount: Int get() = 0
+        override val description: String get() = "sacrifice all ${filter.description}s you control"
+
+        override fun applyTextReplacement(replacer: TextReplacer): CostAtom {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
+    }
+
+    /**
      * Put one or more permanents matching [filter] you control into another zone — a
      * *variable-count* cost: the payer chooses how many (at least [minCount]). Unlike the
      * fixed-count [Sacrifice] / [ExileFrom] atoms, the number is a player choice made as the ability

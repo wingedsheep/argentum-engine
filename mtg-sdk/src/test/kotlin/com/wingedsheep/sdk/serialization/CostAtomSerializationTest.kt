@@ -52,6 +52,7 @@ class CostAtomSerializationTest : FunSpec({
         CostAtom.CollectEvidence(CostAtom.CollectEvidence.TARGET_SUM),
         CostAtom.RevealNotedCreatureType,
         CostAtom.DiscardHand,
+        CostAtom.SacrificeAll(GameObjectFilter.Creature),
         CostAtom.Unattach,
         CostAtom.ExileFromGraveyardForTotal(
             filter = GameObjectFilter.Any.withColor(Color.BLACK),

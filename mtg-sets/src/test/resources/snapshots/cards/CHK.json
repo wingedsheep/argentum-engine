@@ -8979,6 +8979,45 @@
     ]
 }
 
+// Soulblast
+{
+    "name": "Soulblast",
+    "manaCost": "{3}{R}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "As an additional cost to cast this spell, sacrifice all creatures you control.\nSoulblast deals damage to any target equal to the total power of the sacrificed creatures.",
+    "script": {
+        "spellEffect": {
+            "type": "DealDamage",
+            "amount": "TotalPowerSacrificedThisWay",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": "AtomSacrificeAll"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "190",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/2/92fe38cc-2b12-4491-8deb-fbcb306febf2.jpg?1783944294"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Soulless Revival
 {
     "name": "Soulless Revival",

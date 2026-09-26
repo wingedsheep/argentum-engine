@@ -25,6 +25,7 @@ object SpellCosts {
         put(CostAtom.Sacrifice::class, SacrificeCostKind)
         put(CostAtom.Discard::class, DiscardCostKind)
         put(CostAtom.DiscardHand::class, DiscardHandCostKind)
+        put(CostAtom.SacrificeAll::class, SacrificeAllCostKind)
         put(CostAtom.ExileFrom::class, ExileFromCostKind)
         put(CostAtom.CollectEvidence::class, CollectEvidenceCostKind)
         put(CostAtom.ExileFromGraveyardForTotal::class, ExileFromGraveyardForTotalCostKind)
@@ -121,6 +122,9 @@ object SpellCosts {
 
     fun pay(ledger: SpellCostLedger, cost: AdditionalCost): String? =
         dispatch(cost) { kind, leaf -> kind.pay(ledger, leaf) }
+
+    fun paysUnprompted(cost: AdditionalCost): Boolean =
+        dispatch(cost) { kind, leaf -> kind.paysUnprompted(leaf) }
 
     // ---------------------------------------------------------------------------------------------
     // The cost tree: composites and the costs that offer the caster a choice of legs

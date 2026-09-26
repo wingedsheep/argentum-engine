@@ -364,6 +364,9 @@ class ActivatedAbilityEnumerator(
                         // Always payable and takes no selection: every card goes, and an empty hand
                         // discards nothing (CR 118.3). Never gates enumeration.
                         is CostAtom.DiscardHand -> {}
+                        // Same for sacrificing every matching permanent: controlling none of them
+                        // sacrifices nothing.
+                        is CostAtom.SacrificeAll -> {}
                         // Gated above, before this `when` — only the chooser is offered the
                         // ability at all — and it takes no enumeration-time selection.
                         is CostAtom.RevealNotedCreatureType -> {}
@@ -610,6 +613,7 @@ class ActivatedAbilityEnumerator(
                                     is CostAtom.PutCountersOnPermanent,
                                     // See the top-level branch: always payable, nothing to select.
                                     is CostAtom.DiscardHand -> {}
+                                    is CostAtom.SacrificeAll -> {}
                                     // See the top-level branch: gated before the `when`.
                                     is CostAtom.RevealNotedCreatureType -> {}
                                     // See the top-level branch: unpayable while unattached.

@@ -95,8 +95,16 @@ interface SpellCostKind<in C : Any> {
     fun lifeToPay(check: SpellCostCheck, cost: C): Int = 0
 
     /**
+     * True for a cost that selects nothing — every object it names goes ("discard your hand",
+     * "sacrifice all creatures you control") — so [pay] runs whether or not the caster submitted a
+     * payment object. A cast with no other selection cost arrives with none at all.
+     */
+    fun paysUnprompted(cost: C): Boolean = false
+
+    /**
      * Pays [cost] from the caster's submitted selection. Only called when a payment was submitted
-     * ([CastSpell.additionalCostPayment] is non-null). Returns an error to abort the cast.
+     * ([CastSpell.additionalCostPayment] is non-null), or always when [paysUnprompted]. Returns an
+     * error to abort the cast.
      */
     fun pay(ledger: SpellCostLedger, cost: C): String? = null
 }
@@ -175,6 +183,8 @@ class SpellCostLedger(
     val cardRegistry: CardRegistry,
     /** Moves the cards the costs discard, sacrifice, exile or bounce. */
     val zones: ZoneTransitionService,
+    /** Finds the permanents a cost names without a selection (sacrifice all …). */
+    val costHandler: CostHandler,
     /**
      * The costs the caster's declared optional ability (kicker, teamwork, …) contributed, reduced
      * the same way as the full list — what names a tap's cause for "tapped to pay a teamwork cost".

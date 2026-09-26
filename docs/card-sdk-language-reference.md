@@ -771,6 +771,15 @@ definitions construct these through the facade, e.g. `Costs.additional.Sacrifice
   surfaces the returnable permanents (a `costType = "ReturnToHand"` cost) and the client picks them
   on the battlefield. The bounce goes through `ZoneTransitionService.moveToZone(…, Zone.HAND)`, so
   attached Auras fall off and tokens cease to exist. Mirrors the sacrifice/tap additional-cost path.
+- `Costs.additional.SacrificeAll(filter = GameObjectFilter.Creature)` — "as an additional cost to
+  cast this spell, sacrifice all creatures you control" (Soulblast). A `CostAtom.SacrificeAll`: nothing
+  is selected (every matching permanent you control goes), so the enumerator offers no picker, the
+  client submits no payment for it, and the cost is paid unprompted (`SpellCostKind.paysUnprompted`,
+  shared with `CostAtom.DiscardHand`). Controlling none pays it for free (CR 118.3). Each sacrificed
+  permanent is snapshotted as it last existed on the battlefield, so
+  `DynamicAmounts.totalPowerSacrificedThisWay()` / `permanentsSacrificedThisWay()` read them at
+  resolution. Casting-context only for now: as a `PayCost` it is reported unpayable (no printed
+  "unless you sacrifice all …" exists), and there is no activated-ability facade.
 - `Costs.additional.TapForTotalPower(totalPower, filter = GameObjectFilter.Creature)` — "tap any number of
   creatures you control with total power N or more" (Teamwork N, CR 702.194a). A
   `CostAtom.VariablePermanents` with `action = TAP`, `xMeasure = TOTAL_POWER`, `minMeasure = N` and

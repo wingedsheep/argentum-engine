@@ -102,6 +102,10 @@ class CostPaymentContinuationResumer(
             // selection — never reaches a PayCost prompt.
             is CostAtom.Unattach ->
                 resumeYesNo(state, continuation, cost, response, checkForMore)
+            // PayOrSuffer reports it unpayable, so it never reaches a PayCost prompt — but it takes
+            // no selection, so the yes/no path is the right one if it ever does.
+            is CostAtom.SacrificeAll ->
+                resumeYesNo(state, continuation, cost, response, checkForMore)
             // VariablePermanents is an activated-ability-only cost, never a PayCost — unreachable here.
             is CostAtom.VariablePermanents ->
                 ExecutionResult.error(state, "VariablePermanents is not a payable cost in this context")

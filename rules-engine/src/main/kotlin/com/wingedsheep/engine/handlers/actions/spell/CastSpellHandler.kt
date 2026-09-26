@@ -287,6 +287,7 @@ class CastSpellHandler(
             cardDefinitionName = cardDef?.name,
             cardRegistry = cardRegistry,
             zones = zones,
+            costHandler = costHandler,
             declaredSlotCosts = declaredSlotCosts,
         )
         val paid = when (val outcome = castCostPayer.pay(ledger, cardComponent, cardDef, totalCost, owedCosts, playForFree)) {

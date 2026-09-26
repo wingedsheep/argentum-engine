@@ -593,6 +593,8 @@ class CostHandler(private val zones: ZoneTransitionService) {
         // Always payable — an empty hand discards nothing, and a cost of nothing is a cost you can
         // pay (CR 118.3). Same answer the AbilityCost.DiscardHand branch gives above.
         is CostAtom.DiscardHand -> true
+        // Always payable for the same reason — controlling none of them sacrifices nothing.
+        is CostAtom.SacrificeAll -> true
         is CostAtom.PayLife -> {
             // CR 810.9a — affordability uses the team's shared total in Two-Headed Giant.
             val life = state.lifeTotal(controllerId)
@@ -742,6 +744,15 @@ class CostHandler(private val zones: ZoneTransitionService) {
             val (newState, events) = LifePaymentService.pay(zones, state, controllerId, atom.amount)
                 ?: return CostPaymentResult.failure("Player has no life total")
             CostPaymentResult.success(newState, manaPool, events = events)
+        }
+        // Every matching permanent, so there is nothing to choose and nothing to auto-pick around.
+        is CostAtom.SacrificeAll -> {
+            val all = sacrificeAllCandidates(state, atom, controllerId, sourceId)
+            if (all.isEmpty()) CostPaymentResult.success(state, manaPool)
+            else paySacrificeList(
+                state, all, atom.filter,
+                requiredCount = all.size, excludeSelf = false, sourceId, controllerId, manaPool
+            )
         }
         is CostAtom.Sacrifice -> paySacrificeList(
             state, choices.sacrificeChoices, atom.filter,
@@ -1598,6 +1609,15 @@ class CostHandler(private val zones: ZoneTransitionService) {
             predicateEvaluator.matches(state, projected, entityId, atom.filter, context)
         }
     }
+
+    /** Every permanent [controllerId] controls that a [CostAtom.SacrificeAll] would sacrifice. */
+    internal fun sacrificeAllCandidates(
+        state: GameState,
+        atom: CostAtom.SacrificeAll,
+        controllerId: EntityId,
+        sourceId: EntityId? = null
+    ): List<EntityId> =
+        findMatchingCardsUnified(state, state.controlledBattlefield(controllerId), atom.filter, controllerId, sourceId)
 
     internal fun findMatchingPermanentsUnified(
         state: GameState,

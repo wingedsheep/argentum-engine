@@ -260,8 +260,9 @@ internal class CastCostPayer(
 
     /**
      * Pays [costs] into [ledger]: first the life every life cost takes — fixed by the cast, so it is
-     * paid whether or not the client sent a payment object — then, when a selection was submitted,
-     * each cost from it in order. Returns an error to abort the cast.
+     * paid whether or not the client sent a payment object — then each cost in order: from the
+     * submitted selection, or — for a cost that selects nothing — unprompted. Returns an error to
+     * abort the cast.
      */
     private fun payAdditionalCosts(ledger: SpellCostLedger, costs: List<AdditionalCost>): String? {
         for (cost in costs) {
@@ -272,8 +273,9 @@ internal class CastCostPayer(
             ledger.state = afterPayment
             ledger.events.addAll(paymentEvents)
         }
-        if (ledger.action.additionalCostPayment == null) return null
+        val submitted = ledger.action.additionalCostPayment != null
         for (cost in costs) {
+            if (!submitted && !SpellCosts.paysUnprompted(cost)) continue
             SpellCosts.pay(ledger, cost)?.let { return it }
         }
         return null
