@@ -22,7 +22,8 @@ import com.wingedsheep.sdk.scripting.filters.unified.Scope
  *  - battlefield scope on any permanent whose group filter matches the creature (Masako the
  *    Humorless: "Tapped creatures you control can block as though they were untapped"), matched
  *    with that permanent as predicate source and its controller as "you" against the current
- *    projection. A face-down permanent has no abilities (CR 708.2) and contributes nothing.
+ *    projection. A face-down permanent (CR 708.2) or one that has lost all abilities contributes
+ *    nothing.
  *
  * Every other blocking restriction still applies — callers keep running their remaining checks.
  * Consulted by every blocker-eligibility path (`TurnManager.getValidBlockers`, `BlockPhaseManager`'s
@@ -52,6 +53,7 @@ object TappedBlockBypass {
         for (permanentId in state.getBattlefield()) {
             val permanent = state.getEntity(permanentId) ?: continue
             if (permanent.has<FaceDownComponent>()) continue
+            if (projected.hasLostAllAbilities(permanentId)) continue
             val permCard = permanent.get<CardComponent>() ?: continue
             val abilities = cardRegistry.getCard(permCard.cardDefinitionId)?.staticAbilities ?: continue
             val grants = abilities.filterIsInstance<CanBlockAsThoughUntapped>()

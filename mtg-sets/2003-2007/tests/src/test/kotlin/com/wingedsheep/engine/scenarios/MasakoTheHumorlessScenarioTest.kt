@@ -128,6 +128,35 @@ class MasakoTheHumorlessScenarioTest : ScenarioTestBase() {
                 game.declareBlockers(mapOf("Jungle Lion" to listOf("Raging Goblin"))).error shouldNotBe null
             }
 
+            test("a Masako that lost all abilities grants nothing — not even to herself") {
+                val game = scenario()
+                    .withPlayers("Alice", "Bob")
+                    .withCardOnBattlefield(1, "Raging Goblin")
+                    .withCardInHand(1, "Merfolk Trickster")
+                    .withLandsOnBattlefield(1, "Island", 2)
+                    .withCardOnBattlefield(2, "Masako the Humorless")
+                    .withCardOnBattlefield(2, "Grizzly Bears", tapped = true)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                val masako = game.findPermanent("Masako the Humorless")!!
+                val bears = game.findPermanent("Grizzly Bears")!!
+
+                // Trickster's ETB taps Masako and strips her abilities until end of turn.
+                game.castSpell(1, "Merfolk Trickster").error shouldBe null
+                game.resolveStack()
+                game.selectTargets(listOf(masako)).error shouldBe null
+                game.resolveStack()
+                game.state.getEntity(masako)!!.has<TappedComponent>() shouldBe true
+
+                game.toDeclareBlockers("Raging Goblin")
+                withClue("neither the tapped Bears nor the tapped Masako is offered") {
+                    game.validBlockers() shouldNotContain bears
+                    game.validBlockers() shouldNotContain masako
+                }
+                game.declareBlockers(mapOf("Grizzly Bears" to listOf("Raging Goblin"))).error shouldNotBe null
+            }
+
             test("ruling: a tapped creature without flying or reach still can't block a flyer") {
                 val game = scenario()
                     .withPlayers("Alice", "Bob")
