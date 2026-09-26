@@ -6,6 +6,8 @@ import com.wingedsheep.engine.core.Outcome
 import com.wingedsheep.engine.core.SpellCounteredEvent
 import com.wingedsheep.engine.core.YesNoDecision
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.sdk.scripting.effects.AfterResolveDestination
+import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.support.GameTestDriver
@@ -194,6 +196,20 @@ class CounterToLibraryTest : FunSpec({
         val counterer = d.player2
         d.putCreatureOnBattlefield(counterer, "Test Counter Exiler")
         val courser = d.castCourser(victim)
+
+        d.counterWith(counterer, "Test Hinder", courser)
+
+        d.pendingDecision.shouldBeNull()
+        (courser in d.state.getZone(ZoneKey(victim, Zone.EXILE))) shouldBe true
+        (courser in d.library(victim)) shouldBe false
+    }
+
+    test("a spell's own on-counter exile rider (flashback) wins over the library, without a prompt") {
+        val d = driver()
+        val victim = d.player1
+        val counterer = d.player2
+        val courser = d.castCourser(victim)
+        d.addComponent(courser, AfterResolveDestinationComponent(AfterResolveDestination.EXILE))
 
         d.counterWith(counterer, "Test Hinder", courser)
 

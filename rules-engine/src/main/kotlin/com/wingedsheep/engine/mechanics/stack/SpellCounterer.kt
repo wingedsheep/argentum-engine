@@ -176,14 +176,16 @@ class SpellCounterer(
 
     /**
      * Whether countering [spellId] now would actually send it to the countering effect's printed
-     * destination — it can be countered, and no counter replacement ([ExileCounteredSpellInstead])
-     * would exile it instead. A destination that needs a choice (Hinder's top or bottom) asks only
+     * destination — it can be countered, and neither a counter replacement
+     * ([ExileCounteredSpellInstead]) nor the spell's own on-counter rider (flashback's exile)
+     * would send it elsewhere. A destination that needs a choice (Hinder's top or bottom) asks only
      * when this holds, so an uncounterable spell never prompts for a pointless choice.
      */
     fun wouldReachCounterDestination(state: GameState, spellId: EntityId, countererId: EntityId?): Boolean {
         val container = state.getEntity(spellId) ?: return false
         if (spellId !in state.stack) return false
         if (container.has<CantBeCounteredComponent>() || isGrantedCantBeCountered(state, spellId)) return false
+        if (container.get<AfterResolveDestinationComponent>()?.takeIf { !it.onlyIfResolved } != null) return false
         return findExileInsteadReplacement(state, countererId) == null
     }
 
@@ -231,7 +233,7 @@ class SpellCounterer(
             ?.takeIf { !it.onlyIfResolved }
         val destZone = riderOnCounter?.zone ?: printedZone
         val destZoneKey = ZoneKey(ownerId, destZone)
-        newState = if (destZone == Zone.LIBRARY && position != null) {
+        newState = if (riderOnCounter == null && destZone == Zone.LIBRARY && position != null) {
             val librarySize = newState.getZone(destZoneKey).size
             val index = when (position) {
                 LibraryChoicePosition.Top -> 0
