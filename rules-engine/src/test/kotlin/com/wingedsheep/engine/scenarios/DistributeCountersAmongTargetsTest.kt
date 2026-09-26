@@ -18,6 +18,7 @@ import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 
 /**
@@ -99,6 +100,18 @@ class DistributeCountersAmongTargetsTest : FunSpec({
         d.bothPass().error shouldBe null
         d.plusOnes(courser) shouldBe 1
         d.plusOnes(lions) shouldBe 2
+    }
+
+    test("every target must receive at least one — leaving one out of the division is rejected") {
+        val d = newGame()
+        val courser = d.putCreatureOnBattlefield(d.player1, "Centaur Courser")
+        val lions = d.putCreatureOnBattlefield(d.player1, "Savannah Lions")
+
+        d.castAndTarget("Counter Seeder Probe", listOf(courser, lions))
+        val decision = d.pendingDecision.shouldBeInstanceOf<DistributeDecision>()
+
+        d.submitDecision(d.player1, DistributionResponse(decision.id, mapOf(courser to 3))).error shouldNotBe null
+        d.stackSize shouldBe 0
     }
 
     test("a target removed in response loses its share; the survivor keeps exactly what it was assigned") {

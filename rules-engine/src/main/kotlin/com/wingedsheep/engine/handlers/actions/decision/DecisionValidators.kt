@@ -437,6 +437,10 @@ object DecisionValidators {
                 return "Target $targetId cannot receive more than $maxForTarget"
             }
         }
+        // A target left out of the map would receive nothing, so a minimum covers every target.
+        if (decision.minPerTarget > 0 && decision.targets.any { it !in response.distribution }) {
+            return "Each target must receive at least ${decision.minPerTarget}"
+        }
         return null
     }
 
