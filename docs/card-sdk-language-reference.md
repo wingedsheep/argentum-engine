@@ -7325,6 +7325,15 @@ Dominant back faces that "stay" instead self-exile on their final chapter, dodgi
     control on your next attack). With `fireOnce = false` (default) it fires on every matching event
     until expiry (double-strike combat damage). One-shot consumption happens when the trigger goes
     on the stack (`TriggerProcessor`), so a second matching event the same turn won't re-fire it.
+  - **Return a source exiled as its own cost when a made object dies** — no new vocabulary: an
+    activated ability with `Costs.ExileSelf` makes the object, then arms
+    `CreateDelayedTrigger(trigger = Triggers.self.dies(), watchedTarget = PipelineTarget(CREATED_TOKENS, 0),
+    fireOnce = true, expiry = DelayedTriggerExpiry.Never, effect = Effects.Move(Self, BATTLEFIELD, fromZone = EXILE))`.
+    `Self` follows the cost's own exile (the resolution's permitted moves) and the delayed trigger
+    inherits that identity (CR 603.7c), so the card returns only if it is still the same exiled
+    object — one that left exile and came back is a new object (CR 400.7) and stays put. A token
+    that leaves any other way (exiled, bounced) never fires the `dies()` watch. **Tatsumasa, the
+    Dragon's Fang**.
   - `expiry` — when the resident delayed trigger is removed. `DelayedTriggerExpiry.EndOfTurn`
     (default) drops it in the end-of-turn cleanup ("this turn" riders).
     `DelayedTriggerExpiry.EndOfCombat` scopes it to the **current combat phase**, which `EndOfTurn` is

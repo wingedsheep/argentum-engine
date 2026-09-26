@@ -10074,6 +10074,119 @@
     ]
 }
 
+// Tatsumasa, the Dragon's Fang
+{
+    "name": "Tatsumasa, the Dragon's Fang",
+    "manaCost": "{6}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +5/+5.\n{6}, Exile Tatsumasa: Create a 5/5 blue Dragon Spirit creature token with flying. Return Tatsumasa to the battlefield under its owner's control when that token dies.\nEquip {3}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tatsumasa, the Dragon's Fang:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{6}"
+                            }
+                        },
+                        "CostExileSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreateToken",
+                            "power": 5,
+                            "toughness": 5,
+                            "colors": [
+                                "BLUE"
+                            ],
+                            "creatureTypes": [
+                                "Dragon",
+                                "Spirit"
+                            ],
+                            "keywords": [
+                                "FLYING"
+                            ]
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "effect": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Battlefield",
+                                "fromZone": "Exile"
+                            },
+                            "trigger": {
+                                "event": {
+                                    "type": "ZoneChangeEvent",
+                                    "from": "Battlefield",
+                                    "to": "Graveyard"
+                                }
+                            },
+                            "watchedTarget": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            },
+                            "expiry": "DelayedTriggerExpiry.Never",
+                            "fireOnce": true
+                        }
+                    ]
+                },
+                "descriptionOverride": "{6}, Exile Tatsumasa: Create a 5/5 blue Dragon Spirit creature token with flying. Return Tatsumasa to the battlefield under its owner's control when that token dies."
+            },
+            {
+                "id": "Tatsumasa, the Dragon's Fang:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 5,
+                "toughnessBonus": 5
+            }
+        ]
+    },
+    "equipCost": "{3}",
+    "metadata": {
+        "collectorNumber": "270",
+        "rarity": "RARE",
+        "artist": "Martina Pilcerova",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/98d3bc63-8814-46e7-a6ee-dd5b94a8257e.jpg?1783944276"
+    }
+}
+
 // Teller of Tales
 {
     "name": "Teller of Tales",
