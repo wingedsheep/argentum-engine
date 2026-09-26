@@ -1909,6 +1909,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   Artificial-Evolution-style indefinite change. The player picks the FROM and TO words on **one
   screen** (a `ChooseReplacementDecision`), with words **present on the target** surfaced first
   (labeled "On <card>") so a no-op pick is discouraged, and a live `from → to` preview. (Crystal Spray)
+  The global, static counterpart is `ChangeAllColorWordsToChosenColor` (Swirl the Mists).
 
 ### Mana
 
@@ -7437,6 +7438,16 @@ staticAbility {
   type from the source's `ChosenLandTypeComponent` (paired with
   `EntersWithChoice(ChoiceType.BASIC_LAND_TYPE)`). Chosen-value counterpart to
   `SetEnchantedLandType`, mirroring `GrantChosenColor`/`GrantColor`. (Phantasmal Terrain)
+- `ChangeAllColorWordsToChosenColor` — "All instances of color words in the text of spells and
+  permanents are changed to the chosen color word." A global Layer 3 text change (CR 613.1c) reading
+  the source's chosen color; pair with `EntersWithChoice(ChoiceType.COLOR)`. While the source is on
+  the battlefield every spell and permanent reads its color words as the chosen one: protection
+  colors, `HasColor`/`NotColor` filters on statics, triggers and activated abilities, and a spell's
+  targets as it is cast (`TargetEnumerationUtils.buildSpellTargetInfos`) and re-checked on resolution.
+  Mana symbols, names and objects' own colors are untouched (CR 612.2). Cards in other zones keep
+  their text. Stacks with a targeted `ChangeWordInText`, which applies on top of it. The engine reads
+  every text change through `TextChanges.of(state, id)` — never `TextReplacementComponent` directly.
+  (Swirl the Mists)
 - `GrantLandwalkOfChosenType(filter = attachedCreature())` — "Enchanted creature has landwalk of
   the chosen type" — grants the landwalk keyword matching the source's `ChosenLandTypeComponent`
   (Plains→Plainswalk, Island→Islandwalk, …) at projection time. Chosen-value counterpart to

@@ -75,6 +75,7 @@ import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.sdk.core.BendType
 import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.permissions.activeMayPlayFor
 import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
@@ -1077,7 +1078,10 @@ class CastSpellHandler(
         while (ordinal < chosenModeIndices.size) {
             val modeIndex = chosenModeIndices[ordinal]
             val mode = modes[modeIndex]
-            if (mode.targetRequirements.isEmpty()) {
+            // Read through text-changing effects in force (CR 613.1c) — the spell exists (601.2a).
+            val modeText = TextChanges.forSpellBeingCast(state, cardId)
+            val modeTargetReqs = mode.targetRequirements.map { req -> modeText?.let { req.applyTextReplacement(it) } ?: req }
+            if (modeTargetReqs.isEmpty()) {
                 targetsAccum = targetsAccum + listOf(emptyList())
                 ordinal++
                 continue
@@ -1097,18 +1101,18 @@ class CastSpellHandler(
                 xValue = baseCastAction.xValue
             )
             val legalTargetsMap = mutableMapOf<Int, List<EntityId>>()
-            mode.targetRequirements.forEachIndexed { index, req ->
+            modeTargetReqs.forEachIndexed { index, req ->
                 legalTargetsMap[index] = targetFinder.findLegalTargets(
                     state, req, casterId, cardId, pipelineContext = xContext
                 )
             }
-            val allSatisfied = mode.targetRequirements.withIndex().all { (index, req) ->
+            val allSatisfied = modeTargetReqs.withIndex().all { (index, req) ->
                 legalTargetsMap[index]?.isNotEmpty() == true || req.effectiveMinCount == 0
             }
             if (!allSatisfied) {
                 return ExecutionResult.error(state, "No legal targets for mode: ${mode.description}")
             }
-            val requirementInfos = mode.targetRequirements.mapIndexed { index, req ->
+            val requirementInfos = modeTargetReqs.mapIndexed { index, req ->
                 // Targets are distinct objects, so no requirement can take more than there are
                 // legal ones — which also keeps an unbounded "any number of target …" mode from
                 // handing the client Int.MAX_VALUE as its cap. The floor stays the requirement's

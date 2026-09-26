@@ -71,6 +71,12 @@ class EnumerationContext(
     // Projected state
     val projected: ProjectedState by lazy { state.projectedState }
 
+    // Global Layer 3 color-word changes (Swirl the Mists), computed once per pass; merge with a
+    // permanent's own rules via TextChanges.merge.
+    val globalTextChanges: List<com.wingedsheep.engine.state.components.identity.TextReplacement> by lazy {
+        com.wingedsheep.engine.state.components.identity.TextChanges.global(state)
+    }
+
     // Battlefield permanents controlled by player (via projected state)
     val battlefieldPermanents: List<EntityId> by lazy {
         projected.getBattlefieldControlledBy(playerId)

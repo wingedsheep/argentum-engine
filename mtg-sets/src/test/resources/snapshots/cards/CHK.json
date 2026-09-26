@@ -8942,6 +8942,44 @@
     ]
 }
 
+// Swirl the Mists
+{
+    "name": "Swirl the Mists",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "As this enchantment enters, choose a color word.\nAll instances of color words in the text of spells and permanents are changed to the chosen color word.",
+    "script": {
+        "staticAbilities": [
+            "ChangeAllColorWordsToChosenColor"
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithChoice",
+                "choiceType": "COLOR"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "94",
+        "rarity": "RARE",
+        "artist": "Arnie Swekel",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/e/2ea50e09-4ab3-439e-83d7-d584f8af8f16.jpg?1783944319",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "This effect lasts as long as Swirl the Mists is on the battlefield. It ends as soon as Swirl the Mists leaves the battlefield."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "Swirl the Mists' ability also affects spells that are cast and permanents that enter after Swirl the Mists enters."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Teller of Tales
 {
     "name": "Teller of Tales",

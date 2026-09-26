@@ -78,6 +78,7 @@ import com.wingedsheep.engine.state.components.battlefield.PreparedSpellCopyComp
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithAdditionalCostComponent
@@ -723,6 +724,9 @@ internal class CastValidator(
         } else {
             effectiveScript.targetRequirements
         }
+        // Read through text-changing effects in force (CR 613.1c): the spell exists from 601.2a,
+        // before its targets are chosen, so the enumerator offered targets against the changed text.
+        val castText = TextChanges.forSpellBeingCast(state, action.cardId)
         val targetRequirements = buildList {
             addAll(baseTargetReqs)
             // The cast-time choice: Dream Leash narrows it to a tapped permanent. The stack captures
@@ -732,7 +736,7 @@ internal class CastValidator(
             // this spell. They sit after the main spell's own requirements, so the flat target list
             // splits into the main slice followed by one slice per spliced card.
             addAll(SpliceCasts.targetRequirementsFor(state, action.splicedCardIds, cardRegistry))
-        }
+        }.map { req -> castText?.let { req.applyTextReplacement(it) } ?: req }
         if (targetRequirements.isEmpty()) return null
         // Reject casting if spell requires targets but none were provided
         if (action.targets.isEmpty() && targetRequirements.sumOf { it.effectiveMinCount } > 0) {

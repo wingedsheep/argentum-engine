@@ -11,6 +11,7 @@ import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.identity.AfterResolveDestinationComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.engine.state.nameVisibleToAll
@@ -57,9 +58,14 @@ internal class SpellResolver(
         val resolvedTargets: List<ChosenTarget>
         val alignedResolvedTargets: List<ChosenTarget?>
         if (targetsComponent != null && targetsComponent.targets.isNotEmpty()) {
+            // 608.2b re-checks targets against the spell's text as it is now (CR 613.1c) — the
+            // stack keeps the printed requirements, so a text change that began or ended while
+            // the spell waited is honoured.
+            val spellText = TextChanges.of(state, spellId)
             val validTargets = targetValidator.validateTargets(
                 state, targetsComponent.targets, sourceColors, sourceSubtypes,
-                spellComponent.casterId, targetsComponent.targetRequirements,
+                spellComponent.casterId,
+                targetsComponent.targetRequirements.map { req -> spellText?.let { req.applyTextReplacement(it) } ?: req },
                 sourceId = spellId,
                 targetingSourceType = TargetingSourceType.SPELL,
                 xValue = spellComponent.xValue,

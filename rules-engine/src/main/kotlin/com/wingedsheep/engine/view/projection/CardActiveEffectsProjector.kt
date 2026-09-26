@@ -105,7 +105,7 @@ internal class CardActiveEffectsProjector(
 
     /** Check for text replacements. */
     private fun textReplacementBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> =
-        state.getEntity(entityId)?.get<TextReplacementComponent>()?.replacements?.map { r ->
+        TextChanges.of(state, entityId)?.replacements?.map { r ->
             ClientCardEffect(
                 effectId = "text_modified_${r.fromWord}_${r.toWord}",
                 name = "Text Modified",

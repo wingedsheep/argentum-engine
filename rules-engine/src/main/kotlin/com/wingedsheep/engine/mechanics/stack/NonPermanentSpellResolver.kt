@@ -21,7 +21,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CopyOfComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.PlayWithoutPayingCostComponent
-import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
+import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.stack.*
 import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.engine.state.permissions.removeMayPlayPermissionsForCard
@@ -190,7 +190,7 @@ internal class NonPermanentSpellResolver(
             else -> cardComponent?.spellEffect
         }
         val rawSpellEffect = baseSpellEffect
-        val textReplacement = state.getEntity(spellId)?.get<TextReplacementComponent>()
+        val textReplacement = TextChanges.of(state, spellId)
         return if (rawSpellEffect != null && textReplacement != null) {
             rawSpellEffect.applyTextReplacement(textReplacement)
         } else {

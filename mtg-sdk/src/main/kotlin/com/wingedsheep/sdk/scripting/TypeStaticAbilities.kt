@@ -249,6 +249,26 @@ data class GrantChosenColor(
 }
 
 /**
+ * "All instances of color words in the text of spells and permanents are changed to the chosen
+ * color word." (Swirl the Mists)
+ *
+ * A global Layer 3 text-changing effect (CR 613.1c, CR 612). The chosen color is read from the
+ * source's `CastChoicesComponent`, so pair it with `EntersWithChoice(ChoiceType.COLOR)`. While the
+ * source is on the battlefield, every color word in the rules text of every spell and permanent —
+ * protection colors, color-word filters ("nonblack", "target red creature"), color-keyed amounts —
+ * reads as the chosen color. It changes *words*, not objects: mana symbols, card names and an
+ * object's actual colors are untouched (CR 612.2). It covers spells as they're cast (targets are
+ * chosen against the changed text) and permanents that enter later. Until a color is chosen it
+ * changes nothing.
+ */
+@SerialName("ChangeAllColorWordsToChosenColor")
+@Serializable
+data object ChangeAllColorWordsToChosenColor : StaticAbility {
+    override val description: String =
+        "All instances of color words in the text of spells and permanents are changed to the chosen color word"
+}
+
+/**
  * Adds a creature type to all creatures that have a specific counter type.
  * Used for Aurification: "Each creature with a gold counter on it is a Wall."
  *

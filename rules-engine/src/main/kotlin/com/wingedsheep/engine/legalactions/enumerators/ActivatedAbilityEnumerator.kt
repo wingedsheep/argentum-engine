@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.ZoneKey
 import com.wingedsheep.engine.state.components.battlefield.*
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
+import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.CounterType
@@ -112,7 +113,7 @@ class ActivatedAbilityEnumerator(
             val nonManaAbilities = ownNonManaAbilities + levelUpAbilities + allAbilities.filter { !it.isManaAbility }
 
             // Apply text-changing effects to ability costs and targets
-            val textReplacement = container.get<TextReplacementComponent>()
+            val textReplacement = TextChanges.merge(context.globalTextChanges, container.get<TextReplacementComponent>())
 
             for (ability in nonManaAbilities) {
                 // Sorcery-speed abilities: skip during non-main phases / opponent's turn.
@@ -1162,7 +1163,7 @@ class ActivatedAbilityEnumerator(
             }
             if (anyPlayerAbilities.isEmpty()) continue
 
-            val textReplacement = container.get<TextReplacementComponent>()
+            val textReplacement = TextChanges.merge(context.globalTextChanges, container.get<TextReplacementComponent>())
 
             for (ability in anyPlayerAbilities) {
                 // Kang the Conqueror's turn-scoped power-up lockout applies to every player, so it

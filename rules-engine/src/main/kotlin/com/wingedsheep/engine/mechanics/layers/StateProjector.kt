@@ -17,6 +17,7 @@ import com.wingedsheep.engine.state.components.identity.HexproofFromComponent
 import com.wingedsheep.engine.state.components.identity.ProtectionComponent
 import com.wingedsheep.engine.state.components.identity.RingBearerComponent
 import com.wingedsheep.engine.state.components.identity.ToxicComponent
+import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
 import com.wingedsheep.sdk.core.AbilityFlag
 import com.wingedsheep.sdk.core.CounterType
@@ -505,9 +506,10 @@ class StateProjector {
         state: GameState,
         projectedValues: MutableMap<EntityId, MutableProjectedValues>
     ) {
+        val globalText = TextChanges.global(state)
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
-            val textReplacement = container.get<TextReplacementComponent>() ?: continue
+            val textReplacement = TextChanges.merge(globalText, container.get<TextReplacementComponent>()) ?: continue
             val values = projectedValues[entityId] ?: continue
 
             val transformedSubtypes = values.subtypes.map { textReplacement.applyToCreatureType(it) }.toMutableSet()
@@ -599,13 +601,14 @@ class StateProjector {
         projectedValues: Map<EntityId, MutableProjectedValues>
     ): List<ContinuousEffect> {
         val effects = mutableListOf<ContinuousEffect>()
+        val globalText = TextChanges.global(state)
 
         // 1. Collect effects from static abilities on permanents
         for (entityId in state.getBattlefield()) {
             val container = state.getEntity(entityId) ?: continue
             val continuousEffectComponent = container.get<ContinuousEffectSourceComponent>()
             if (continuousEffectComponent != null) {
-                val textReplacement = container.get<TextReplacementComponent>()
+                val textReplacement = TextChanges.merge(globalText, container.get<TextReplacementComponent>())
                 effects.addAll(continuousEffectComponent.effects.map { effect ->
                     val effectiveFilter = if (textReplacement != null && effect.affectsFilter != null) {
                         effect.affectsFilter.applyTextReplacement(textReplacement)
@@ -869,6 +872,7 @@ class StateProjector {
         if (dynamicStatEntities.isEmpty()) return
 
         val intermediateProjected = buildIntermediateProjectedState(state, projectedValues)
+        val globalText = TextChanges.global(state)
         for ((entityId, cardComponent) in dynamicStatEntities) {
             val values = projectedValues[entityId] ?: continue
             val controllerId = values.controllerId ?: continue
@@ -877,7 +881,7 @@ class StateProjector {
                 controllerId = controllerId,
             )
             val baseStats = cardComponent.baseStats ?: continue
-            val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
+            val textReplacement = TextChanges.merge(globalText, state.getEntity(entityId)?.get<TextReplacementComponent>())
 
             fun resolveDynamicAmount(source: DynamicAmount): Int {
                 val effective = if (textReplacement != null) {

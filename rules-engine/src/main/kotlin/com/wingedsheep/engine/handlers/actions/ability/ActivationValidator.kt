@@ -100,7 +100,7 @@ internal class ActivationValidator(
         checkSourceZoneAndController(state, action, container, cardComponent, ability)?.let { return it }
 
         // Apply text-changing effects to cost and target filters
-        val textReplacement = container.get<com.wingedsheep.engine.state.components.identity.TextReplacementComponent>()
+        val textReplacement = com.wingedsheep.engine.state.components.identity.TextChanges.of(state, action.sourceId)
         val effectiveCost = costTotaller.totalForValidation(state, action, ability, textReplacement)
         val effectiveTargetReqs = if (textReplacement != null) {
             ability.targetRequirements.map { it.applyTextReplacement(textReplacement) }

@@ -436,6 +436,7 @@ val engineSerializersModule = SerializersModule {
         subclass(MorphDataComponent::class)
         subclass(FaceDownModeComponent::class)
         subclass(TextReplacementComponent::class)
+        subclass(ChangesAllColorWordsComponent::class)
         subclass(ProtectionComponent::class)
         subclass(HexproofFromComponent::class)
         subclass(SelfZoneRedirectComponent::class)

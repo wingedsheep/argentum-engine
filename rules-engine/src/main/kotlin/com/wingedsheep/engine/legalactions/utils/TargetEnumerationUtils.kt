@@ -285,6 +285,23 @@ class TargetEnumerationUtils(
         }
     }
 
+    /**
+     * [buildTargetInfos] for a spell being cast: its target requirements are read through the
+     * text-changing effects in force (CR 613.1c) — a spell exists from CR 601.2a, before its targets
+     * are chosen in 601.2c, so "target nonblack creature" under Swirl the Mists naming blue offers
+     * nonblue creatures.
+     */
+    fun buildSpellTargetInfos(
+        state: GameState,
+        playerId: EntityId,
+        targetReqs: List<TargetRequirement>,
+        cardId: EntityId
+    ): List<TargetInfo> {
+        val text = com.wingedsheep.engine.state.components.identity.TextChanges.forSpellBeingCast(state, cardId)
+        val effective = if (text == null) targetReqs else targetReqs.map { it.applyTextReplacement(text) }
+        return buildTargetInfos(state, playerId, effective, cardId)
+    }
+
     fun buildTargetInfos(
         state: GameState,
         playerId: EntityId,

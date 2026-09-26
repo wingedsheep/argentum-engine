@@ -33,7 +33,7 @@ import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimes
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
-import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
+import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.engine.state.components.player.EquipActivationsThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ExhaustAbilitiesActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.LoyaltyAbilitiesActivatedThisTurnComponent
@@ -240,7 +240,7 @@ class ActivateAbilityHandler(
 
         // Resolve a *defined* {X} (CR 107.3c) before the reductions, matching validate() and the
         // enumerator so all three paths charge the same number.
-        val textReplacement = container.get<TextReplacementComponent>()
+        val textReplacement = TextChanges.of(state, action.sourceId)
         val definedXValue = castPermissionUtils.definedXValue(state, ability, action.sourceId, action.playerId)
         val effectiveCost = costTotaller.total(state, action, ability, textReplacement)
 

@@ -19,7 +19,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.engine.state.components.identity.RoomComponent
 import com.wingedsheep.engine.state.components.player.TheRingComponent
-import com.wingedsheep.engine.state.components.identity.TextReplacementComponent
+import com.wingedsheep.engine.state.components.identity.TextChanges
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AbilityId
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -151,7 +151,7 @@ class TriggerAbilityResolver(
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
         // Apply text replacement if the entity has one
-        val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
+        val textReplacement = TextChanges.of(state, entityId)
         return if (textReplacement != null) {
             combined.map { it.applyTextReplacement(textReplacement) }
         } else {
@@ -372,7 +372,7 @@ class TriggerAbilityResolver(
         }
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
-        val textReplacement = state.getEntity(entityId)?.get<TextReplacementComponent>()
+        val textReplacement = TextChanges.of(state, entityId)
         return if (textReplacement != null) {
             combined.map { it.applyTextReplacement(textReplacement) }
         } else {

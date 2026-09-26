@@ -279,6 +279,12 @@ class StaticAbilityHandler(
             result = result.with(CantBeTargetedByOpponentAbilitiesComponent(it.condition))
         }
 
+        // Global Layer 3 color-word change (Swirl the Mists): read by TextChanges, which scans the
+        // battlefield for this marker and reads the source's chosen color live.
+        if (allStaticAbilities.any { it is com.wingedsheep.sdk.scripting.ChangeAllColorWordsToChosenColor }) {
+            result = result.with(com.wingedsheep.engine.state.components.identity.ChangesAllColorWordsComponent)
+        }
+
         // Player-level protection is the one grant gated *per scope* rather than per permanent: a
         // card may carry several GrantProtectionToController abilities and gate them
         // independently, so each keeps its own condition rather than collapsing to one marker.
@@ -1088,6 +1094,7 @@ class StaticAbilityHandler(
             // handler and read from those components by their subsystems:
             is CantBeTargetedByOpponentAbilities,
             is CantBeBlockedWhilePropertyAtMost,
+            is com.wingedsheep.sdk.scripting.ChangeAllColorWordsToChosenColor,
             is GrantCantLoseGame,
             is com.wingedsheep.sdk.scripting.GrantOpponentsCantWinGame,
             is com.wingedsheep.sdk.scripting.GrantCantLoseGameFromLife,
