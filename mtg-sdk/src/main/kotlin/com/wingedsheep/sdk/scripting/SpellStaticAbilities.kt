@@ -843,9 +843,18 @@ data class MayCastWithoutPayingManaCost(
  *  - Void Winnower: `PlayersCantCastSpells(Player.EachOpponent, spellFilter =
  *    GameObjectFilter(cardPredicates = listOf(CardPredicate.ManaValueIsEven)))`.
  *
+ * [conditionFromCaster] moves the **when** axis to the *caster's* point of view, for restrictions
+ * whose timing is relative to each restricted player rather than to this permanent's controller:
+ *
+ *  - Dosan the Falling Leaf: `PlayersCantCastSpells(Player.Each, condition = IsNotYourTurn,
+ *    conditionFromCaster = true)` ("Players can cast spells only during their own turns.") — a
+ *    controller-relative pair of statics can say this only with exactly two players.
+ *
  * @property affected Who is forbidden, relative to the source's controller.
  * @property spellFilter Which spells are forbidden (matched against the card being cast).
  * @property condition Optional timing/state gate, evaluated in the controller's context; null = always.
+ * @property conditionFromCaster When true, [condition] is evaluated in the *casting player's*
+ *   context instead, so `IsYourTurn` reads "during their own turn".
  */
 /**
  * Players matching [affected] can't play lands (CR 305.1) — Worms of the Earth's "players can't
@@ -920,17 +929,24 @@ data class PlayersCantPlayLands(
 data class PlayersCantCastSpells(
     val affected: Player = Player.EachOpponent,
     val spellFilter: GameObjectFilter = GameObjectFilter.Any,
-    val condition: Condition? = null
+    val condition: Condition? = null,
+    val conditionFromCaster: Boolean = false
 ) : StaticAbility {
     override val description: String = buildString {
-        when (affected) {
-            is Player.You -> append("You can't cast ")
-            is Player.EachOpponent -> append("Your opponents can't cast ")
-            else -> append("${affected.description.replaceFirstChar { it.uppercase() }} can't cast ")
+        val who = when (affected) {
+            is Player.You -> "You"
+            is Player.EachOpponent -> "Your opponents"
+            is Player.Each -> "Players"
+            else -> affected.description.replaceFirstChar { it.uppercase() }
         }
-        append(if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells")
+        val spells = if (spellFilter == GameObjectFilter.Any) "spells" else "${spellFilter.description} spells"
+        if (conditionFromCaster && condition is IsNotYourTurn) {
+            append("$who can cast $spells only during their own turns")
+            return@buildString
+        }
+        append("$who can't cast $spells")
         when (condition) {
-            is IsYourTurn -> append(" during your turn")
+            is IsYourTurn -> append(if (conditionFromCaster) " during their own turns" else " during your turn")
             is IsNotYourTurn -> append(" during your opponents' turns")
             null -> {}
             else -> append(" ${condition.description}")

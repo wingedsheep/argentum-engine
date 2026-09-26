@@ -8545,7 +8545,7 @@ staticAbility {
   colors of the last spell cast, cleared each turn). Never blocks the first spell of the turn; a
   colorless spell shares no color, so it is always castable and casting one lifts the restriction
   until the next colored spell. (Mana Maze)
-- `PlayersCantCastSpells(affected = Player.EachOpponent, spellFilter = GameObjectFilter.Any, condition = null)`
+- `PlayersCantCastSpells(affected = Player.EachOpponent, spellFilter = GameObjectFilter.Any, condition = null, conditionFromCaster = false)`
   — continuous cast *prohibition* parameterized along three independent axes, each a reused
   primitive: **who** (`affected`, a `Player` reference *relative to the source's controller* —
   `EachOpponent`/`Opponent`, `You`, `Each`), **which** (`spellFilter`, matched against the card being
@@ -8556,7 +8556,11 @@ staticAbility {
   projected state. Examples: Voice of Victory = `PlayersCantCastSpells(Player.EachOpponent, condition
   = IsYourTurn)`; Grand Abolisher's cast clause = `PlayersCantCastSpells(Player.EachOpponent, condition
   = IsYourTurn)`; Void Winnower = `PlayersCantCastSpells(Player.EachOpponent, spellFilter =
-  GameObjectFilter(cardPredicates = listOf(CardPredicate.ManaValueIsEven)))`.
+  GameObjectFilter(cardPredicates = listOf(CardPredicate.ManaValueIsEven)))`. `conditionFromCaster =
+  true` evaluates `condition` from the *casting player's* seat instead, for timing relative to each
+  restricted player: Dosan the Falling Leaf = `PlayersCantCastSpells(Player.Each, condition =
+  IsNotYourTurn, conditionFromCaster = true)` ("Players can cast spells only during their own turns"
+  — correct in multiplayer, where a controller-relative pair of statics is not).
 - `PlayersCantActivateAbilities(affected = Player.EachOpponent, permanentFilter = GameObjectFilter.Any, condition = null)`
   — continuous *activation* prohibition, the activated-ability twin of `PlayersCantCastSpells`,
   parameterized along the same three axes: **who** (`affected`, relative to the source's controller),

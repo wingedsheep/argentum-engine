@@ -214,7 +214,8 @@ class CastPermissionUtils(
      * True when a [PlayersCantCastSpells] static forbids [castingPlayerId] from casting the card
      * [spellCardId] — i.e. some battlefield permanent's ability whose [affected][PlayersCantCastSpells.affected]
      * group (relative to the granter's controller) includes the caster, whose
-     * [condition][PlayersCantCastSpells.condition] holds in the controller's context, and whose
+     * [condition][PlayersCantCastSpells.condition] holds in the controller's context (the caster's,
+     * with [conditionFromCaster][PlayersCantCastSpells.conditionFromCaster]), and whose
      * [spellFilter][PlayersCantCastSpells.spellFilter] matches the card. Control is read from
      * projected state; face-down permanents (no abilities) are skipped.
      */
@@ -237,9 +238,11 @@ class CastPermissionUtils(
                 if (!affectedPlayerMatches(sa.affected, controller, castingPlayerId)) continue
                 val condition = sa.condition
                 if (condition != null) {
+                    // A caster-relative gate (Dosan's "during their own turns") reads the
+                    // condition from the restricted player's seat, not the granter's.
                     val ctx = EffectContext(
                         sourceId = permanentId,
-                        controllerId = controller,
+                        controllerId = if (sa.conditionFromCaster) castingPlayerId else controller,
                     )
                     if (!conditionEvaluator.evaluate(state, condition, ctx)) continue
                 }

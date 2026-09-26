@@ -1697,6 +1697,44 @@
     ]
 }
 
+// Dosan the Falling Leaf
+{
+    "name": "Dosan the Falling Leaf",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Legendary Creature — Human Monk",
+    "oracleText": "Players can cast spells only during their own turns.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "PlayersCantCastSpells",
+                "affected": "Each",
+                "condition": "IsNotYourTurn",
+                "conditionFromCaster": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "205",
+        "rarity": "RARE",
+        "artist": "Mark Zug",
+        "flavorText": "\"Each night as Master Dosan prays to the kami, the hate he receives in return withers his body a little more. Though the kami are slowly killing him, still he continues his prayers.\"\n—Meditation journal of a young budoka",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/f/ffb190db-48fc-4c39-ae9f-5e304eabb4f4.jpg?1783944291",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "Dosan's ability only stops players from casting spells. It doesn't stop activated or triggered abilities."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Dripping-Tongue Zubera
 {
     "name": "Dripping-Tongue Zubera",
