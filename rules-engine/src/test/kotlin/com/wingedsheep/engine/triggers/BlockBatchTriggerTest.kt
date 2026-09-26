@@ -1,8 +1,25 @@
 package com.wingedsheep.engine.triggers
 
+import com.wingedsheep.engine.core.ActionProcessor
+import com.wingedsheep.engine.core.DeclareBlockers
+import com.wingedsheep.engine.core.GameConfig
+import com.wingedsheep.engine.core.GameInitializer
+import com.wingedsheep.engine.core.PlayerConfig
+import com.wingedsheep.engine.registry.CardRegistry
+import com.wingedsheep.engine.state.ComponentContainer
+import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.combat.AttackersDeclaredThisCombatComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.identity.CardComponent
+import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.OwnerComponent
 import com.wingedsheep.engine.support.GameTestDriver
 import com.wingedsheep.engine.support.TestCards
+import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
+import com.wingedsheep.sdk.core.Zone
+import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
@@ -152,5 +169,49 @@ class BlockBatchTriggerTest : FunSpec({
         shouldThrow<IllegalArgumentException> {
             Triggers.oneOrMoreOther(GameObjectFilter.Creature).block()
         }
+    }
+
+    test("two defending players each blocking still fire the batch form once (CR 802.4)") {
+        val registry = CardRegistry().also { r -> TestCards.all.forEach(r::register); r.register(anyBlockBatch) }
+        val init = GameInitializer(registry).initializeGame(
+            GameConfig(
+                players = (1..3).map { PlayerConfig("Player $it", Deck.of("Mountain" to 40), 20) },
+                skipMulligans = true,
+                startingPlayerIndex = 0
+            )
+        )
+        val (a, b, c) = init.playerIds
+        var state = init.state
+
+        fun put(def: CardDefinition, owner: EntityId, attacking: EntityId? = null): EntityId {
+            val id = EntityId.generate()
+            var container = ComponentContainer.of(
+                CardComponent(
+                    cardDefinitionId = def.name, name = def.name, manaCost = def.manaCost,
+                    typeLine = def.typeLine, baseStats = def.creatureStats, ownerId = owner
+                ),
+                OwnerComponent(owner),
+                ControllerComponent(owner)
+            )
+            if (attacking != null) container = container.with(AttackingComponent(defenderId = attacking))
+            state = state.withEntity(id, container).addToZone(ZoneKey(owner, Zone.BATTLEFIELD), id)
+            return id
+        }
+
+        val bears = registry.requireCard("Grizzly Bears")
+        put(anyBlockBatch, a)
+        val atkB = put(bears, a, attacking = b)
+        val atkC = put(bears, a, attacking = c)
+        val blkB = put(bears, b)
+        val blkC = put(bears, c)
+        state = state.updateEntity(a) { it.with(AttackersDeclaredThisCombatComponent) }
+            .copy(step = Step.DECLARE_BLOCKERS, phase = Phase.COMBAT)
+            .withPriority(b)
+
+        val processor = ActionProcessor(registry)
+        state = processor.process(state, DeclareBlockers(b, mapOf(blkB to listOf(atkB)))).result.newState
+        state = processor.process(state, DeclareBlockers(c, mapOf(blkC to listOf(atkC)))).result.newState
+
+        (state.stack.size + state.pendingTriggers.size) shouldBe 1
     }
 })

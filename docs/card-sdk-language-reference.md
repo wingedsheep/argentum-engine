@@ -6107,7 +6107,7 @@ The shapes in this family, with their engine notes.
   at construction). Read off `BlockersDeclaredEvent`, so a block count raised mid-combat by a later
   effect does not re-check it.
 - `Triggers.oneOrMore(filter).block()` — the **batch** wording "whenever one or more [filter] block"
-  (`BlockEvent(filter, batch = true)`, CR 603.2c): fires **once** per block declaration however many
+  (`BlockEvent(filter, batch = true)`, CR 603.2c): fires **once** per declare-blockers step (even when several defending players each declare, CR 802.4) however many
   matching creatures block, and not at all when no matching creature blocks. The filter reads the
   blockers with no implicit controller (`GameObjectFilter.Creature` = anyone's creatures;
   `.youControl()` narrows it to yours). There is no triggering entity — read the blockers at
