@@ -73,6 +73,7 @@ internal class StackTextRenderer(
                 declaredCostSlot = spellOnStack.declaredCostSlot,
                 wasBlightPaid = spellOnStack.wasBlightPaid,
                 sacrificedPermanents = spellOnStack.sacrificedPermanents,
+                discardedAsCostCards = spellOnStack.discardedAsCostCards,
                 chosenEntitySnapshots = spellOnStack.chosenEntitySnapshots,
                 exiledCardCount = spellOnStack.exiledCardCount,
                 additionalCostBlightAmount = spellOnStack.additionalCostBlightAmount,
@@ -136,6 +137,7 @@ internal class StackTextRenderer(
             controllerId = spellOnStack.casterId,
             xValue = spellOnStack.xValue,
             sacrificedPermanents = spellOnStack.sacrificedPermanents,
+            discardedAsCostCards = spellOnStack.discardedAsCostCards,
             exiledCardCount = spellOnStack.exiledCardCount,
             additionalCostBlightAmount = spellOnStack.additionalCostBlightAmount
         )
@@ -268,7 +270,7 @@ internal class StackTextRenderer(
 
     /**
      * Generate runtime text for an activated ability on the stack with dynamic amounts resolved.
-     * Mirrors the cost-payment LKI carried on [ActivatedAbilityOnStackComponent] (sacrificed and
+     * Mirrors the cost-payment LKI carried on [ActivatedAbilityOnStackComponent] (sacrificed, discarded and
      * tapped permanent snapshots, X) into the [EffectContext] so stack text for effects like
      * "draw cards equal to the sacrificed creature's power" renders the actual number instead
      * of falling back to 0. Returns null if evaluation fails or the effect has no dynamic amounts.
@@ -284,6 +286,7 @@ internal class StackTextRenderer(
             targets = chosenTargetsOf(state, abilityEntityId),
             xValue = activated.xValue,
             sacrificedPermanents = activated.sacrificedPermanents,
+            discardedAsCostCards = activated.discardedAsCostCards,
             tappedPermanents = activated.tappedPermanents,
             tappedEntitySnapshots = activated.tappedEntitySnapshots
         )
