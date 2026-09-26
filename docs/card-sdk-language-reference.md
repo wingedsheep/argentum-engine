@@ -12046,6 +12046,17 @@ something other than the source.
   zero. Turn changes make the value read zero and zone changes clear it. For “damage dealt this way”,
   store the value before the damage and subtract it afterward (Brightflame). The stored baseline and
   damage history survive resolution decisions, including optional damage redirection.
+- `EntityProperty(entity, EntityNumericProperty.KeywordValue(keyword))` — the total N across the entity's
+  instances of a numeric keyword ("for each point of bushido it has"); instances add, so bushido 1 plus
+  bushido 2 is 3. Reads the *printed* N, stamped on the entity at creation (`NumericKeywordValuesComponent`)
+  so the layer projection can read it, and counts it only while the projected keyword survives: a
+  permanent that lost all abilities, or a face-down one, counts 0. Numeric keywords projected as
+  `<KEYWORD>_<n>` (granted toxic via `Effects.GrantToxic`) add their N. Keywords settle in layer 6, before
+  every P/T layer, so it is safe per affected creature in a lord — **Takeno, Samurai General**:
+  `GrantDynamicStats(GroupFilter(Creature.withSubtype(Subtype.SAMURAI).youControl()).other(), bonus, bonus)`
+  with `bonus = DynamicAmounts.propertyOf(EffectTarget.AffectedEntity, KeywordValue(Keyword.BUSHIDO))`.
+  Limits: a copy (CR 707) doesn't re-stamp the printed values (same as printed toxic and protection),
+  and there is no effect that grants bushido *with* an N.
 - `EntityProperty(entity, EntityNumericProperty.ExcessMarkedDamage)` — the excess damage (CR 120.4a)
   marked on a creature: `max(0, marked − toughness)`, read from post-damage state. Amount-valued twin of
   the `TargetMarkedDamageExceedsToughness` condition. Read it AFTER a deal-damage step in the same

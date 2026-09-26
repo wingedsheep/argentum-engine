@@ -2,6 +2,7 @@ package com.wingedsheep.sdk.scripting.values
 
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -208,6 +209,25 @@ sealed interface EntityNumericProperty {
     @Serializable
     data object ExcessMarkedDamage : EntityNumericProperty {
         override val description: String = "the excess damage dealt to it this way"
+    }
+
+    /**
+     * The total N across this entity's instances of a numeric keyword ("bushido N", "toxic N") —
+     * Takeno, Samurai General's "for each point of bushido it has". Instances add: a creature with
+     * bushido 1 and bushido 2 has three points of bushido.
+     *
+     * Reads the *printed* N values, gated on the keyword surviving projection: a permanent that has
+     * lost all abilities (layer 6) has no bushido and counts 0, and a face-down permanent counts 0.
+     * Numeric keywords granted in the projected `<KEYWORD>_<n>` form (granted toxic) add their N
+     * too. A keyword granted without an N carries no value — there is no such grant for bushido.
+     *
+     * Keywords are settled in layer 6, before every P/T layer, so a layer-7 static fed this
+     * amount (`EntityProperty(AffectedEntity, KeywordValue(BUSHIDO))`) never depends on itself.
+     */
+    @SerialName("KeywordValue")
+    @Serializable
+    data class KeywordValue(val keyword: Keyword) : EntityNumericProperty {
+        override val description: String = "points of ${keyword.displayName.lowercase()} it has"
     }
 }
 

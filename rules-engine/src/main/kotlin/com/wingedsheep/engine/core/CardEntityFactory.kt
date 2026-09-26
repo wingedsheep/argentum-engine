@@ -214,6 +214,17 @@ object CardEntityFactory {
             result = result.with(ToxicComponent(toxicAmount))
         }
 
+        // Every other numeric keyword's printed N (bushido N), summed per keyword the same way,
+        // for EntityNumericProperty.KeywordValue — see [NumericKeywordValuesComponent].
+        val numericValues = cardDef.keywordAbilities
+            .filterIsInstance<KeywordAbility.Numeric>()
+            .filter { it.keyword != Keyword.TOXIC }
+            .groupBy({ it.keyword }, { it.n })
+            .mapValues { (_, ns) -> ns.sum() }
+        if (numericValues.isNotEmpty()) {
+            result = result.with(NumericKeywordValuesComponent(numericValues))
+        }
+
         return result
     }
 }

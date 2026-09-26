@@ -25,6 +25,7 @@ import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.identity.RoomComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.CharacteristicValue
@@ -1508,7 +1509,37 @@ class DynamicAmountEvaluator(
                 val toughness = projection.getToughness(entityId) ?: return 0
                 (marked - toughness).coerceAtLeast(0)
             }
+
+            is EntityNumericProperty.KeywordValue ->
+                resolveKeywordValue(state, entityId, property.keyword, useProjected, explicitProjected)
         }
+    }
+
+    /**
+     * Total N of a numeric keyword (bushido N). The printed values come from
+     * [com.wingedsheep.engine.state.components.identity.NumericKeywordValuesComponent]; on the
+     * battlefield they count only while the projected keyword survives (layer 6 ability loss, face
+     * down), and any `<KEYWORD>_<n>` projected grant (granted toxic) adds its N.
+     */
+    private fun resolveKeywordValue(
+        state: GameState,
+        entityId: EntityId,
+        keyword: Keyword,
+        useProjected: Boolean,
+        explicitProjected: ProjectedState?
+    ): Int {
+        val entity = state.getEntity(entityId) ?: return 0
+        val printed = entity.get<com.wingedsheep.engine.state.components.identity.NumericKeywordValuesComponent>()
+            ?.values?.get(keyword) ?: 0
+        if (!useProjected || entityId !in state.getBattlefield()) {
+            return if (entity.has<FaceDownComponent>()) 0 else printed
+        }
+        val projection = resolveProjection(state, explicitProjected)
+        val prefix = "${keyword.name}_"
+        val granted = projection.getKeywords(entityId).sumOf {
+            if (it.startsWith(prefix)) it.removePrefix(prefix).toIntOrNull() ?: 0 else 0
+        }
+        return granted + if (projection.hasKeyword(entityId, keyword)) printed else 0
     }
 
     private fun resolveSubtypeCount(

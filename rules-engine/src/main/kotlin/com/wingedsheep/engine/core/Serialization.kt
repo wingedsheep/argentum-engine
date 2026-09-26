@@ -447,6 +447,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ExiledFromZoneComponent::class)
         subclass(GrantsMadnessToOwnedCardsComponent::class)
         subclass(ToxicComponent::class)
+        subclass(NumericKeywordValuesComponent::class)
         subclass(CopyOfComponent::class)
         subclass(RevertCopyAtEndOfTurnComponent::class)
         subclass(RevertCopyAtNextEndStepComponent::class)

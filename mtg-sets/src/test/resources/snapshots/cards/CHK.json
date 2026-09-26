@@ -9046,6 +9046,100 @@
     ]
 }
 
+// Takeno, Samurai General
+{
+    "name": "Takeno, Samurai General",
+    "manaCost": "{5}{W}",
+    "typeLine": "Legendary Creature — Human Samurai",
+    "oracleText": "Bushido 2 (Whenever this creature blocks or becomes blocked, it gets +2/+2 until end of turn.)\nEach other Samurai creature you control gets +1/+1 for each point of bushido it has.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "BUSHIDO"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "BUSHIDO",
+            "n": 2
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Takeno, Samurai General:1",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Bushido 2"
+            },
+            {
+                "id": "Takeno, Samurai General:2",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Bushido 2"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "creature Samurai ctrl:you",
+                    "excludeSelf": true
+                },
+                "powerBonus": {
+                    "type": "EntityProperty",
+                    "entity": "AffectedEntity",
+                    "numericProperty": {
+                        "type": "KeywordValue",
+                        "keyword": "BUSHIDO"
+                    }
+                },
+                "toughnessBonus": {
+                    "type": "EntityProperty",
+                    "entity": "AffectedEntity",
+                    "numericProperty": {
+                        "type": "KeywordValue",
+                        "keyword": "BUSHIDO"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "46",
+        "rarity": "RARE",
+        "artist": "Matt Cavotta",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/0/d038df46-4a30-4125-be0e-8781b16b523e.jpg?1783944332"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Teller of Tales
 {
     "name": "Teller of Tales",
