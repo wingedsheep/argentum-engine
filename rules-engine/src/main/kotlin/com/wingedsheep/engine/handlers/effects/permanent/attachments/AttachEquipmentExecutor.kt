@@ -2,7 +2,9 @@ package com.wingedsheep.engine.handlers.effects.permanent.attachments
 
 import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.handlers.EffectContext
+import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.effects.AttachEquipmentEffect
 import kotlin.reflect.KClass
@@ -15,8 +17,14 @@ import kotlin.reflect.KClass
  * (CR 701.3d), so this reports a PermanentUnattachedEvent — that is how Stitcher's Graft's
  * "sacrifice that permanent" fires when you equip it away — followed by a PermanentAttachedEvent
  * (CR 603.2f). Re-affirming the same host emits nothing. See [AttachmentMover.attach].
+ *
+ * An Equipment whose own "can be attached only to …" restriction rules the target out doesn't move
+ * (CR 701.3b) — the equip ability still targets any creature you control, it just does nothing.
  */
-class AttachEquipmentExecutor : EffectExecutor<AttachEquipmentEffect> {
+class AttachEquipmentExecutor(
+    private val predicateEvaluator: PredicateEvaluator,
+    private val cardRegistry: CardRegistry
+) : EffectExecutor<AttachEquipmentEffect> {
 
     override val effectType: KClass<AttachEquipmentEffect> = AttachEquipmentEffect::class
 
@@ -31,6 +39,9 @@ class AttachEquipmentExecutor : EffectExecutor<AttachEquipmentEffect> {
         val targetId = context.resolveTarget(effect.target, state)
             ?: return EffectResult.error(state, "No valid target for attach equipment")
 
+        if (!AttachmentMover.equipRestrictionAllows(state, predicateEvaluator, cardRegistry, equipmentId, targetId)) {
+            return EffectResult.success(state)
+        }
         val (newState, events) = AttachmentMover.attach(state, equipmentId, targetId, context.controllerId)
         return EffectResult.success(newState, events)
     }

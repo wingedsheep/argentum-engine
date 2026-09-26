@@ -356,7 +356,11 @@ internal class AffectsFilterResolver(
                 is CardPredicate.And -> predicate.predicates.all(::matchesPredicate)
                 is CardPredicate.Or -> predicate.predicates.any(::matchesPredicate)
                 is CardPredicate.Not -> !matchesPredicate(predicate.predicate)
-                is CardPredicate.SharesColorWith -> relationalEvaluator.matchesCardPredicate(
+                // Relational to another permanent (Konda's Banner's "creatures that share a color /
+                // a creature type with equipped creature"): evaluated against the intermediate
+                // projection, so the reference's layer-4/5 types and colors are the ones seen here.
+                is CardPredicate.SharesColorWith,
+                is CardPredicate.SharesCreatureTypeWith -> relationalEvaluator.matchesCardPredicate(
                     state, relationalProjection, entityId, predicate, relationalContext
                 )
                 else -> matchesCardPredicateForProjection(

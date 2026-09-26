@@ -5117,6 +5117,97 @@
     ]
 }
 
+// Konda's Banner
+{
+    "name": "Konda's Banner",
+    "manaCost": "{2}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Konda's Banner can be attached only to a legendary creature.\nCreatures that share a color with equipped creature get +1/+1.\nCreatures that share a creature type with equipped creature get +1/+1.\nEquip {2}",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Konda's Banner:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "EquipmentAttachRestriction",
+                "filter": {
+                    "cardPredicates": [
+                        "IsCreature",
+                        "IsLegendary"
+                    ]
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "SharesColorWith",
+                                "entity": "EquippedCreature"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "SharesCreatureTypeWith",
+                                "entity": "EquippedCreature"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "259",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/759b2f39-e1b1-44aa-b49a-00ef6926a6ac.jpg?1783944278"
+    },
+    "colorIdentityOverride": []
+}
+
 // Konda, Lord of Eiganjo
 {
     "name": "Konda, Lord of Eiganjo",

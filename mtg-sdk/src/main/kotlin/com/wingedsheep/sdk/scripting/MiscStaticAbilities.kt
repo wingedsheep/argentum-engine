@@ -322,6 +322,36 @@ enum class TappedForManaType {
  * The two clauses are flags on one ability rather than two abilities because they are one printed
  * rider on one card; a future card wanting only half sets only that half.
  */
+/**
+ * "This Equipment can be attached only to [filter]." — a printed restriction on what the Equipment
+ * carrying it may equip (Konda's Banner: "can be attached only to a legendary creature"; Gate Smasher,
+ * O-Naginata). It narrows CR 301.5's "an Equipment can be attached to a creature" for this Equipment,
+ * so everything that asks whether an Equipment could equip a permanent honours it:
+ *
+ *  - An equip ability (or any other attach effect) aimed at a creature that doesn't match does
+ *    nothing and the Equipment doesn't move (CR 701.3b). The equip ability's *target* is unchanged —
+ *    its "target creature you control" is the keyword's own wording (CR 702.6a).
+ *  - An Equipment attached to a permanent that stops matching becomes unattached as a state-based
+ *    action (CR 704.5n), exactly like one whose host stops being a creature.
+ *
+ * [filter] is matched against the would-be host on the *projected* state, with the Equipment as the
+ * predicate source and its controller as "you". It is a static ability of the Equipment, so a
+ * face-down Equipment or one that has lost all abilities imposes no restriction. Read by
+ * `AttachmentMover.equipRestrictionAllows`, never through projection.
+ */
+@SerialName("EquipmentAttachRestriction")
+@Serializable
+data class EquipmentAttachRestriction(
+    val filter: GameObjectFilter
+) : StaticAbility {
+    override val description: String = "can be attached only to a ${filter.description}"
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
 @SerialName("CreaturesDamagedBySourceAreDoomed")
 @Serializable
 data class CreaturesDamagedBySourceAreDoomed(

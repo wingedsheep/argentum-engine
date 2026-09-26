@@ -201,7 +201,7 @@ class PermanentExecutors(
         TurnFaceUpExecutor(cardRegistry),
         RevealFaceDownPermanentExecutor(),
         // attachments
-        AttachEquipmentExecutor(),
+        AttachEquipmentExecutor(zones.predicateEvaluator, cardRegistry),
         AttachTargetEquipmentToCreatureExecutor(zones.predicateEvaluator, cardRegistry),
         AttachToChosenHostExecutor(zones.predicateEvaluator, cardRegistry),
         UnattachEquipmentExecutor(),

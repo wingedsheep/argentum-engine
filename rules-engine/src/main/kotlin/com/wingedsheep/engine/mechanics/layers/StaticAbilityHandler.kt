@@ -985,6 +985,9 @@ class StaticAbilityHandler(
             is CantBlockUnlessCoBlocker,
             is CrewSaddleContribution,
 
+            // Attachment legality (AttachmentMover / UnattachedAurasCheck):
+            is com.wingedsheep.sdk.scripting.EquipmentAttachRestriction,
+
             // Combat: damage assignment (CombatDamageManager / CombatDamageUtils / DamageUtils):
             is com.wingedsheep.sdk.scripting.CreaturesDamagedBySourceAreDoomed,
             is AssignCombatDamageAsUnblocked,

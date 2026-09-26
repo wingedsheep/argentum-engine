@@ -4873,7 +4873,11 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   source, which is what makes any source-relative predicate usable there.
 - `.sharingColorWith(entity)` — `CardPredicate.SharesColorWith(entity)`: shares ≥1 (projected) color with
   a referenced entity (e.g. `EffectTarget.TriggeringEntity`). Mirror of `.sharingCreatureTypeWith(entity)`.
-  Colorless entities share no color (never match). Used by Spreading Plague ("destroy all other creatures
+  Colorless entities share no color (never match). Both `.sharingColorWith` and `.sharingCreatureTypeWith`
+  are evaluated for real in a static ability's group filter too, against the intermediate projection —
+  Konda's Banner's "creatures that share a color / a creature type with equipped creature get +1/+1" is
+  `ModifyStats(1, 1, GroupFilter(GameObjectFilter.Creature.sharingColorWith(EffectTarget.EquippedCreature)))`
+  plus its creature-type twin (an unattached Banner has no reference, so nothing matches). Used by Spreading Plague ("destroy all other creatures
   that share a color with it") — pair with `Effects.DestroyAll(filter, excludeTriggering = true)` so the
   triggering creature itself is spared.
 - `.sharingManaValueWith(entity)` — `CardPredicate.SharesManaValueWith(entity)`: mana value **equals**
@@ -8627,6 +8631,16 @@ riders, matching how the engine already treats e.g. City of Brass's damage durin
   per-source provenance survive and the `ManaAddedEvent` reports the real total. Wired on all three read
   sites: `ActivateAbilityHandler` (manual tap), `ManaSolver` via `ManaStaticsIndex.sourceTapMultipliers`
   (auto-pay budgeting), and `ManaAbilityEnumerator` (the button reads "{T}: Add {G}{G}{G}").
+- `EquipmentAttachRestriction(filter)` — "This Equipment can be attached only to [filter]" (Konda's
+  Banner: `EquipmentAttachRestriction(GameObjectFilter.Creature.legendary())`; Gate Smasher, O-Naginata).
+  Narrows what the carrying Equipment may equip (CR 301.5): an equip ability or any other attach effect
+  aimed at a non-matching creature resolves and does nothing — the Equipment doesn't move (CR 701.3b) —
+  and an Equipment attached to a permanent that stops matching becomes unattached as a state-based
+  action (CR 704.5n). The equip ability's own target stays "target creature you control" (CR 702.6a).
+  The host is matched on projected state with the Equipment as predicate source and its controller as
+  "you"; a face-down Equipment or one that has lost all abilities imposes nothing. Read by
+  `AttachmentMover.equipRestrictionAllows` (shared by `canAttach`, `AttachEquipmentExecutor` and
+  `UnattachedAurasCheck`), never through projection.
 - `CreaturesDamagedBySourceAreDoomed(cantBeRegenerated = true, exileInsteadOfDying = true)` —
   creatures this permanent damages are, for the rest of the turn, unable to regenerate and exiled
   instead of dying. Runesword's two riders, granted to the pumped creature for a turn via

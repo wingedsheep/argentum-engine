@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.effects.permanent.attachments
 
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.PermanentAttachedEvent
+import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils
 import com.wingedsheep.engine.handlers.predicates.EnchantRestriction
@@ -11,7 +12,9 @@ import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.EquipmentAttachRestriction
 
 /**
  * The one "attach an Aura or Equipment that is already on the battlefield to a permanent" operation
@@ -25,8 +28,8 @@ object AttachmentMover {
      * meaning the Aura's controller — and the host mustn't have protection from one of its colors
      * (CR 702.16c); an Aura that is also a creature can't enchant anything and can't enchant itself
      * (CR 303.4d). An Equipment can only equip a creature (CR 301.5), not while it is itself a
-     * creature without reconfigure (CR 301.5c), and not a creature with protection from one of its
-     * colors (CR 702.16d). Anything else can't be attached at all (CR 701.3b). Reads the projected
+     * creature without reconfigure (CR 301.5c), not a creature with protection from one of its
+     * colors (CR 702.16d), and not one its own [EquipmentAttachRestriction] rules out. Anything else can't be attached at all (CR 701.3b). Reads the projected
      * state so layer-4 type and control changes are seen.
      */
     fun canAttach(
@@ -55,9 +58,39 @@ object AttachmentMover {
                     !(projected.isCreature(attachmentId) && !projected.hasKeyword(attachmentId, "RECONFIGURE")) &&
                     !EnchantRestriction.hostProtectedFromAttachmentColor(
                         state, projected, cardRegistry, attachmentId, card, hostId
-                    )
+                    ) &&
+                    equipRestrictionAllows(state, predicateEvaluator, cardRegistry, attachmentId, hostId)
             else -> false
         }
+    }
+
+    /**
+     * Whether the Equipment [equipmentId]'s own "can be attached only to …" restrictions
+     * ([EquipmentAttachRestriction]) admit [hostId]. True when it has none — including when it is
+     * face down or has lost all abilities, since the restriction is a static ability of the Equipment.
+     * The host is matched on the projected state with the Equipment as predicate source and its
+     * controller as "you". Shared by [canAttach], the equip ability's resolution and the CR 704.5n
+     * state-based action, so the three can't disagree about a host.
+     */
+    fun equipRestrictionAllows(
+        state: GameState,
+        predicateEvaluator: PredicateEvaluator,
+        cardRegistry: CardRegistry,
+        equipmentId: EntityId,
+        hostId: EntityId
+    ): Boolean {
+        val container = state.getEntity(equipmentId) ?: return true
+        if (container.has<FaceDownComponent>()) return true
+        val projected = state.projectedState
+        if (projected.hasLostAllAbilities(equipmentId)) return true
+        val card = container.get<CardComponent>() ?: return true
+        val restrictions = cardRegistry.getCard(card.cardDefinitionId)?.staticAbilities
+            ?.filterIsInstance<EquipmentAttachRestriction>()
+            .orEmpty()
+        if (restrictions.isEmpty()) return true
+        val controllerId = projected.getController(equipmentId) ?: return false
+        val context = PredicateContext(controllerId = controllerId, sourceId = equipmentId)
+        return restrictions.all { predicateEvaluator.matches(state, projected, hostId, it.filter, context) }
     }
 
     /**

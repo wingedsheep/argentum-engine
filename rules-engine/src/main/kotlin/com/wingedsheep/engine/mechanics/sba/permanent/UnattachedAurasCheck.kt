@@ -4,6 +4,7 @@ import com.wingedsheep.engine.mechanics.targeting.TargetValidator
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.handlers.effects.ZoneMovementUtils.unattachEmittingEvent
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
+import com.wingedsheep.engine.handlers.effects.permanent.attachments.AttachmentMover
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.sba.SbaOrder
 import com.wingedsheep.engine.mechanics.sba.SbaZoneMovementHelper
@@ -26,6 +27,8 @@ import com.wingedsheep.sdk.model.EntityId
  *            - The Equipment itself becomes a creature, so it can't legally equip another
  *              creature unless it has reconfigure (CR 301.5c). E.g. Atomic Microsizer turned
  *              into a 0/0 Robot artifact creature by Tezzeret, Cruel Captain's emblem.
+ *            - The host stops matching the Equipment's own "can be attached only to …"
+ *              restriction (Konda's Banner on a creature that stops being legendary).
  * 704.5p - A battle or creature attached to an object or player becomes unattached but
  *          remains on the battlefield.
  *
@@ -168,7 +171,11 @@ class UnattachedAurasCheck(
                         // CR 301.5c / 704.5n: the Equipment itself became a creature, so it
                         // can't equip a creature unless it has reconfigure.
                         (projected.isCreature(entityId) &&
-                            !projected.hasKeyword(entityId, "RECONFIGURE"))
+                            !projected.hasKeyword(entityId, "RECONFIGURE")) ||
+                        // The host no longer matches the Equipment's own attach restriction.
+                        !AttachmentMover.equipRestrictionAllows(
+                            state, predicateEvaluator, cardRegistry, entityId, attachedTo.targetId
+                        )
                     )
                 ) {
                     // Illegal attachment: the Equipment unattaches but stays on the battlefield.
