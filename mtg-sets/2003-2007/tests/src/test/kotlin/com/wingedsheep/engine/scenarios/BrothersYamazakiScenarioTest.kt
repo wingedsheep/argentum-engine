@@ -71,6 +71,30 @@ class BrothersYamazakiScenarioTest : ScenarioTestBase() {
                 }
             }
 
+            test("an opponent's copy counts toward the battlefield total and switches the exemption off") {
+                val game = scenario()
+                    .withPlayers("Alice", "Bob")
+                    .withCardOnBattlefield(1, "Brothers Yamazaki")
+                    .withCardOnBattlefield(2, "Brothers Yamazaki")
+                    .withCardInHand(1, "Brothers Yamazaki")
+                    .withLandsOnBattlefield(1, "Mountain", 3)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castSpell(1, "Brothers Yamazaki").error shouldBe null
+                game.resolveStack()
+
+                val decision = game.state.pendingDecision
+                decision.shouldBeInstanceOf<SelectCardsDecision>()
+                withClue("only Alice's two copies are hers to choose between") {
+                    decision.options.size shouldBe 2
+                }
+                game.selectCards(listOf(decision.options.first()))
+
+                game.findPermanents("Brothers Yamazaki").size shouldBe 2
+            }
+
             test("a lone Brothers Yamazaki pumps an opponent's copy") {
                 val game = scenario()
                     .withPlayers("Alice", "Bob")
