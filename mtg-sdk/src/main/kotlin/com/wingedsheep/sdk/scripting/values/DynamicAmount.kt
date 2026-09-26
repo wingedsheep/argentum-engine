@@ -1795,6 +1795,20 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
     }
 
     /**
+     * The number of counters the resolving activated ability's costs removed — "the number of aim
+     * counters removed this way" (Hankyu), "the number of +1/+1 counters removed this way" (Molten
+     * Hydra). Summed off the cost's own counter-removal events as the ability is activated, so it is
+     * the number that actually came off, not the permanent's count at resolution (which a
+     * "remove all" cost has just set to zero). Zero for a spell, a triggered ability, or an
+     * activation whose costs removed no counters.
+     */
+    @SerialName("CountersRemovedAsCost")
+    @Serializable
+    data object CountersRemovedAsCost : DynamicAmount {
+        override val description: String = "the number of counters removed this way"
+    }
+
+    /**
      * Total power of the permanents sacrificed by the current resolving effect ("their total
      * power"). The sibling of [PermanentsSacrificedThisWay] over the same
      * `EffectContext.sacrificedPermanents` snapshot list, summing each snapshot's power instead of

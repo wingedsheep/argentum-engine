@@ -40,7 +40,7 @@ private val CONTEXT_SCOPED_SERIAL_NAMES: Set<String> = setOf(
     "XValue", "CastX", "CastChoice", "ContextProperty", "VariableReference", "StoredCardManaValue",
     "DistinctEntitiesInCollections", "DistinctCardTypesInCollections", "ManaValueSumOfCollection",
     "TotalManaSpent", "ManaSpentOnX", "PermanentsSacrificedThisWay",
-    "TotalPowerSacrificedThisWay", "StationCharge",
+    "TotalPowerSacrificedThisWay", "CountersRemovedAsCost", "StationCharge",
     "LastKnownSourceCounters", "LastKnownDamageDealtToSource",
     // EffectTarget
     "ContextTarget", "BoundVariable", "TriggeringEntity", "AttachedToTriggeringPermanent",

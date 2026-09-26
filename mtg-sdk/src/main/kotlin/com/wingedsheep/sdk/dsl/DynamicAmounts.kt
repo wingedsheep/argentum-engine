@@ -176,6 +176,13 @@ object DynamicAmounts {
     fun triggerCountersRemoved(): DynamicAmount =
         DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_COUNTERS_REMOVED_AMOUNT)
 
+    /**
+     * The number of counters this activated ability's costs removed — "the number of aim counters
+     * removed this way" after [Costs.RemoveAllCountersFromGrantingPermanent] /
+     * [Costs.RemoveAllCountersFromSelf].
+     */
+    fun countersRemovedAsCost(): DynamicAmount = DynamicAmount.CountersRemovedAsCost
+
     /** The discover value of the triggering discover. */
     fun triggerDiscoverValue(): DynamicAmount = DynamicAmount.ContextProperty(ContextPropertyKey.TRIGGER_DISCOVER_VALUE)
 

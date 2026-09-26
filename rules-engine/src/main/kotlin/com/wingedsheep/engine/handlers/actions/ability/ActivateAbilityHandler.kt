@@ -398,6 +398,9 @@ class ActivateAbilityHandler(
             // "The discarded card" (Hisoka, Minamo Sensei) — the activation counterpart of a
             // spell's additional discard cost, read at resolution as EffectTarget.DiscardedAsCost.
             discardedAsCostCards = payment.discardedCards,
+            // "The number of aim counters removed this way" (Hankyu) — read as
+            // DynamicAmount.CountersRemovedAsCost once the cost has already taken them off.
+            countersRemovedAsCost = payment.countersRemovedAsCost,
             lastKnownSourceCounters = snapshots.lastKnownSourceCounters,
             lastKnownSourceSnapshot = snapshots.lastKnownSourceSnapshot,
             lastKnownSourceAttachments = snapshots.lastKnownSourceAttachments,

@@ -720,6 +720,14 @@ exist in the cost and charges the life through the shared life-payment service.
   `Costs.Composite`. Per CR 201.5a the name refers only to the granting permanent, so an
   already-tapped (or departed) granter makes the ability unactivatable even with another same-named
   Equipment untapped elsewhere; the enumerator and `ActivateAbilityHandler` both gate on it.
+- `Costs.RemoveAllCountersFromSelf(counterType)` / `Costs.RemoveAllCountersFromGrantingPermanent(counterType)`
+  — "Remove all [kind] counters from ~" (Molten Hydra's `+1/+1`) or from the Equipment/Aura that
+  granted the ability (Hankyu's "Remove all aim counters from Hankyu", the counter member of the
+  granter-cost family — CR 201.5a, only that specific granter). Both build
+  `AbilityCost.RemoveAllCounters(counterType, fromGrantingPermanent)`. Always payable while the
+  permanent is on the battlefield: with none of those counters it removes nothing and the ability
+  still resolves. Pair with `DynamicAmounts.countersRemovedAsCost()` for "the number … removed this
+  way" — the counters are gone by resolution.
 - `Costs.Composite(c1, c2, ...)` — multiple costs paid together.
 - `Costs.RemoveCounters(count = 1, counterType = null, filter = Any)` — remove `count` counters
   from among permanents matching `filter` you control. When `counterType` is set (e.g. `"+1/+1"`),
@@ -11926,6 +11934,14 @@ both spellings, and the ability its bare-noun line grants says "Regenerate this 
   (Rule 608.2h) — which is what the wording has to mean, since they are all in the graveyard by the
   time a later sibling effect reads them. A sacrificed noncreature contributes 0 rather than
   erroring. Evaluates to 0 when nothing was sacrificed.
+- `CountersRemovedAsCost` (facade `DynamicAmounts.countersRemovedAsCost()`) — how many counters the
+  resolving activated ability's **costs** removed: "deals damage to any target equal to the number
+  of aim counters removed this way" (Hankyu, after `Costs.RemoveAllCountersFromGrantingPermanent`).
+  Summed off the cost's own `CountersRemovedEvent`s at activation and carried on the stack
+  (`ActivatedAbilityOnStackComponent.countersRemovedAsCost` → `EffectContext`), so counters added
+  while the ability is on the stack don't change it — which is why reading the permanent's counters
+  is wrong here: a "remove all" cost has just set them to zero. Works for any counter-removal cost,
+  not only "remove all". 0 for spells, triggered abilities, and costs that removed none.
 - `LargestSharedCreatureTypeCount(player = You)` — the size of the largest creature-type tribe among
   the creatures `player` controls, i.e. "the greatest number of creatures you control that have a
   creature type in common." For every creature type present, tally how many of the player's creatures

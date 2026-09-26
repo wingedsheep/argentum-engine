@@ -165,6 +165,12 @@ data class EffectContext(
      * ability carried no discard cost.
      */
     val discardedAsCostCards: List<EntityId> = emptyList(),
+    /**
+     * How many counters the resolving activated ability's costs removed — read by
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CountersRemovedAsCost] ("the number of
+     * aim counters removed this way", Hankyu). Zero for spells and triggered abilities.
+     */
+    val countersRemovedAsCost: Int = 0,
     /** Division announced as the spell/ability went on the stack (CR 601.2d), target ID -> share: damage for
      *  a DividedDamageEffect, counters for a triggered DistributeCountersAmongTargetsEffect. */
     val damageDistribution: Map<EntityId, Int>? = null,

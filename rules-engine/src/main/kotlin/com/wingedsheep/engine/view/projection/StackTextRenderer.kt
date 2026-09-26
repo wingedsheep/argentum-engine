@@ -287,6 +287,7 @@ internal class StackTextRenderer(
             xValue = activated.xValue,
             sacrificedPermanents = activated.sacrificedPermanents,
             discardedAsCostCards = activated.discardedAsCostCards,
+            countersRemovedAsCost = activated.countersRemovedAsCost,
             tappedPermanents = activated.tappedPermanents,
             tappedEntitySnapshots = activated.tappedEntitySnapshots
         )

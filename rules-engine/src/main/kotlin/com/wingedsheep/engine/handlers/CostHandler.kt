@@ -162,6 +162,13 @@ class CostHandler(private val zones: ZoneTransitionService) {
                     granter != null && granterId in state.getBattlefield() && !granter.has<TappedComponent>()
                 }
             }
+            is AbilityCost.RemoveAllCounters -> {
+                // "Remove all" of zero counters removes none, so the only gate is that the permanent
+                // is there. The granter-scoped form defers to payment time when the caller couldn't
+                // resolve the granter, matching TapGrantingPermanent above.
+                val holderId = if (cost.fromGrantingPermanent) granterId else sourceId
+                holderId == null || holderId in state.getBattlefield()
+            }
             is AbilityCost.TapXPermanents -> {
                 // X can be 0, so this is always payable
                 // maxAffordableX is capped by untapped permanent count in LegalActionsCalculator
@@ -424,6 +431,30 @@ class CostHandler(private val zones: ZoneTransitionService) {
                 // tapped" trigger must see an Equipment tapped to pay a granted ability's cost.
                 val (newState, event) = tap(state, granterId)
                 CostPaymentResult.success(newState, manaPool, listOfNotNull(event))
+            }
+            is AbilityCost.RemoveAllCounters -> {
+                val holderId = if (cost.fromGrantingPermanent) {
+                    choices.granterId
+                        ?: return CostPaymentResult.failure("Granting permanent not provided for cost")
+                } else sourceId
+                val holder = state.getEntity(holderId)
+                    ?: return CostPaymentResult.failure("Permanent not found")
+                if (holderId !in state.getBattlefield()) {
+                    return CostPaymentResult.failure("Permanent is not on the battlefield")
+                }
+                val counters = holder.get<CountersComponent>() ?: CountersComponent()
+                val removed = counters.getCount(cost.counterType)
+                // Removing all of none is a paid cost that changes nothing and emits nothing — the
+                // resolving ability then reads zero removed this way.
+                if (removed <= 0) return CostPaymentResult.success(state, manaPool)
+                val newState = state.updateEntity(holderId) { c ->
+                    c.with(counters.withRemoved(cost.counterType, removed))
+                }
+                val name = holder.get<CardComponent>()?.name ?: "Permanent"
+                CostPaymentResult.success(
+                    newState, manaPool,
+                    listOf(CountersRemovedEvent(holderId, cost.counterType, removed, name, remainingCount = 0)),
+                )
             }
             is AbilityCost.SacrificeGrantingPermanent -> {
                 val granterId = choices.granterId

@@ -185,6 +185,7 @@ class DynamicAmountEvaluator(
         is DynamicAmount.ManaSpentOnX,
         is DynamicAmount.ManaValueSumOfCollection,
         DynamicAmount.PermanentsSacrificedThisWay,
+        DynamicAmount.CountersRemovedAsCost,
         is DynamicAmount.PlayerCount,
         is DynamicAmount.PlayerCounterCount,
         is DynamicAmount.Speed,
@@ -875,6 +876,7 @@ class DynamicAmountEvaluator(
             }
 
             is DynamicAmount.PermanentsSacrificedThisWay -> context.sacrificedPermanents.size
+            is DynamicAmount.CountersRemovedAsCost -> context.countersRemovedAsCost
 
             // "Their total power" over the same snapshots — last-known power as each permanent was
             // sacrificed (Rule 608.2h), because they are all in the graveyard by the time a later

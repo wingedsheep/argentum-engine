@@ -249,6 +249,24 @@ object Costs {
     val TapGrantingPermanent: AbilityCost = AbilityCost.TapGrantingPermanent
 
     /**
+     * Remove all [counterType] counters from this permanent — "{T}, Remove all +1/+1 counters from
+     * Molten Hydra: It deals damage to any target equal to the number of +1/+1 counters removed
+     * this way." Read the count with [DynamicAmounts.countersRemovedAsCost].
+     */
+    fun RemoveAllCountersFromSelf(counterType: CounterType): AbilityCost =
+        AbilityCost.RemoveAllCounters(counterType)
+
+    /**
+     * Remove all [counterType] counters from the permanent that granted this activated ability —
+     * the counter member of the granter-cost family: Hankyu grants the equipped creature "{T},
+     * Remove all aim counters from Hankyu: This creature deals damage to any target equal to the
+     * number of aim counters removed this way." Read the count with
+     * [DynamicAmounts.countersRemovedAsCost].
+     */
+    fun RemoveAllCountersFromGrantingPermanent(counterType: CounterType): AbilityCost =
+        AbilityCost.RemoveAllCounters(counterType, fromGrantingPermanent = true)
+
+    /**
      * Sacrifice a creature of the type chosen when this permanent entered the battlefield.
      * Used by cards like Doom Cannon.
      */

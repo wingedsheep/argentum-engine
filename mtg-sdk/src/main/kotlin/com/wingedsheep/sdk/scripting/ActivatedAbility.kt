@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.scripting
 
 import com.wingedsheep.sdk.core.Color
+import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.costs.CostAtom
@@ -535,6 +536,29 @@ sealed interface AbilityCost : TextReplaceable<AbilityCost> {
     @Serializable
     data object TapGrantingPermanent : AbilityCost {
         override val description: String = "Tap the granting permanent"
+    }
+
+    /**
+     * Remove every [counterType] counter from a permanent as part of the activation cost — "Remove
+     * all +1/+1 counters from Molten Hydra" on the ability's own source, or, with
+     * [fromGrantingPermanent], "Remove all aim counters from Hankyu" on the Equipment whose static
+     * ability granted the equipped creature this ability (CR 201.5a: the name refers only to that
+     * specific granter, as with [TapGrantingPermanent]).
+     *
+     * Always payable while the permanent is on the battlefield — removing all of zero counters
+     * removes none, and the ability still resolves. How many came off is read at resolution with
+     * `DynamicAmount.CountersRemovedAsCost` ("the number of aim counters removed this way"); the
+     * counters are gone by then, so reading the permanent's counters would see zero.
+     */
+    @SerialName("CostRemoveAllCounters")
+    @Serializable
+    data class RemoveAllCounters(
+        val counterType: CounterType,
+        val fromGrantingPermanent: Boolean = false,
+    ) : AbilityCost {
+        override val description: String =
+            "Remove all ${counterType.printed} counters from " +
+                if (fromGrantingPermanent) "the granting permanent" else "this permanent"
     }
 
     /**

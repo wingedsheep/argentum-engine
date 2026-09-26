@@ -320,6 +320,7 @@ class CreateDelayedTriggerExecutor(
         is DynamicAmount.ManaSpentFromSubtype,
         is DynamicAmount.ManaSpentOnX,
         DynamicAmount.PermanentsSacrificedThisWay,
+        DynamicAmount.CountersRemovedAsCost,
         is DynamicAmount.PlayerCount,
         is DynamicAmount.PlayerCounterCount,
         is DynamicAmount.Speed,

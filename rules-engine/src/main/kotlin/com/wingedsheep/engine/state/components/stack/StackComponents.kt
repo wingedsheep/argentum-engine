@@ -324,6 +324,12 @@ data class ActivatedAbilityOnStackComponent(
      */
     val discardedAsCostCards: List<EntityId> = emptyList(),
     /**
+     * How many counters this activation's costs removed, read at resolution as
+     * [com.wingedsheep.sdk.scripting.values.DynamicAmount.CountersRemovedAsCost] ("the number of
+     * aim counters removed this way", Hankyu). Zero when the costs removed none.
+     */
+    val countersRemovedAsCost: Int = 0,
+    /**
      * Counters (kind → count) the source had the moment a self-exile /
      * self-sacrifice cost was paid (CR 113.7a). Captured before the cost wipes them so the
      * resolving effect can read the pre-cost count via

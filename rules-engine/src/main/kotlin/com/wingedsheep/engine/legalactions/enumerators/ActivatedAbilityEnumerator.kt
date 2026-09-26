@@ -254,6 +254,13 @@ class ActivatedAbilityEnumerator(
                     is AbilityCost.TapGrantingPermanent -> {
                         if (!granterIsUntapped(state, granterByAbilityId[ability.id])) continue
                     }
+                    // "Remove all aim counters from Hankyu" names the granter just as "Tap Fishing
+                    // Pole" does; it must still be there, though with no counters it pays nothing.
+                    is AbilityCost.RemoveAllCounters -> {
+                        if (effectiveCost.fromGrantingPermanent &&
+                            granterByAbilityId[ability.id]?.let { it in state.getBattlefield() } != true
+                        ) continue
+                    }
                     is AbilityCost.Atom -> when (val atom = effectiveCost.atom) {
                         is CostAtom.Mana -> {
                             if (!context.manaSolver.canPay(state, playerId, atom.cost, precomputedSources = context.availableManaSources, spellContext = abilityContext)) {
@@ -702,6 +709,16 @@ class ActivatedAbilityEnumerator(
                                 // "{1}, {T}, Tap Fishing Pole:".
                                 is AbilityCost.TapGrantingPermanent -> {
                                     if (!granterIsUntapped(state, granterByAbilityId[ability.id])) {
+                                        costCanBePaid = false
+                                        break
+                                    }
+                                }
+                                // "{T}, Remove all aim counters from Hankyu:" — the granter must
+                                // still be on the battlefield to have its counters removed.
+                                is AbilityCost.RemoveAllCounters -> {
+                                    if (subCost.fromGrantingPermanent &&
+                                        granterByAbilityId[ability.id]?.let { it in state.getBattlefield() } != true
+                                    ) {
                                         costCanBePaid = false
                                         break
                                     }

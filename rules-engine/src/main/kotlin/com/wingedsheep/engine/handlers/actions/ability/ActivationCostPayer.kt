@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.actions.ability
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.CardsDiscardedEvent
+import com.wingedsheep.engine.core.CountersRemovedEvent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LoyaltyChangedEvent
 import com.wingedsheep.engine.core.PaymentStrategy
@@ -61,6 +62,11 @@ internal data class ActivationPayment(
      * atoms' own discard events, so a mana ability tapped to pay the mana portion never adds one.
      */
     val discardedCards: List<EntityId>,
+    /**
+     * How many counters the cost atoms removed — summed off their own [CountersRemovedEvent]s, so
+     * it is exactly what came off ("the number of aim counters removed this way", Hankyu).
+     */
+    val countersRemovedAsCost: Int,
     val snapshots: ActivationCostSnapshots,
 )
 
@@ -247,6 +253,7 @@ internal class ActivationCostPayer(
                 firstTapSlice = firstTapSlice,
                 exileChoices = exileChoices,
                 discardedCards = costResult.events.filterIsInstance<CardsDiscardedEvent>().flatMap { it.cardIds },
+                countersRemovedAsCost = costResult.events.filterIsInstance<CountersRemovedEvent>().sumOf { it.amount },
                 snapshots = snapshots,
             )
         )
