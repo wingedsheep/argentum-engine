@@ -4873,13 +4873,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   source, which is what makes any source-relative predicate usable there.
 - `.sharingColorWith(entity)` — `CardPredicate.SharesColorWith(entity)`: shares ≥1 (projected) color with
   a referenced entity (e.g. `EffectTarget.TriggeringEntity`). Mirror of `.sharingCreatureTypeWith(entity)`.
-  Colorless entities share no color (never match). Both `.sharingColorWith` and `.sharingCreatureTypeWith`
-  are evaluated for real in a static ability's group filter too, against the intermediate projection —
+  Colorless entities share no color (never match). Used by Spreading Plague ("destroy all other creatures
+  that share a color with it") — pair with `Effects.DestroyAll(filter, excludeTriggering = true)` so the
+  triggering creature itself is spared. Both `.sharingColorWith` and `.sharingCreatureTypeWith` are
+  evaluated for real in a static ability's group filter too, against the intermediate projection —
   Konda's Banner's "creatures that share a color / a creature type with equipped creature get +1/+1" is
   `ModifyStats(1, 1, GroupFilter(GameObjectFilter.Creature.sharingColorWith(EffectTarget.EquippedCreature)))`
-  plus its creature-type twin (an unattached Banner has no reference, so nothing matches). Used by Spreading Plague ("destroy all other creatures
-  that share a color with it") — pair with `Effects.DestroyAll(filter, excludeTriggering = true)` so the
-  triggering creature itself is spared.
+  plus its creature-type twin (an unattached Banner has no reference, so nothing matches).
 - `.sharingManaValueWith(entity)` — `CardPredicate.SharesManaValueWith(entity)`: mana value **equals**
   the referenced entity's. The mana-value sibling of `.sharingColorWith(entity)` over the same
   `EffectTarget.SingleEntity` vocabulary, so "shares a color **or** mana value with X" is the two of them OR-ed at
