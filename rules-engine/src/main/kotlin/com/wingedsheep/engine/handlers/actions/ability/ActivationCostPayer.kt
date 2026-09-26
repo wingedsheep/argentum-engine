@@ -436,7 +436,11 @@ internal class ActivationCostPayer(
         } else {
             emptyList()
         }
-        val sacrificeTargetIds = chosenSacrifices + forcedSacrifices +
+        // "Sacrifice all …" chooses nothing either — every matching permanent goes.
+        val sacrificeAllTargets = effectiveCost.extractSacrificeAllCost()
+            ?.let { costHandler.sacrificeAllCandidates(state, it, action.playerId, action.sourceId) }
+            .orEmpty()
+        val sacrificeTargetIds = chosenSacrifices + forcedSacrifices + sacrificeAllTargets +
             (action.costPayment?.variableCostPermanents ?: emptyList())
         val sacrificedSnapshots = captureEntitySnapshots(sacrificeTargetIds, state.projectedState)
 

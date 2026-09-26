@@ -214,6 +214,14 @@ internal fun AbilityCost.extractSacrificeCost(): CostAtom.Sacrifice? = when (thi
     else -> null
 }
 
+internal fun AbilityCost.extractSacrificeAllCost(): CostAtom.SacrificeAll? = when (this) {
+    is AbilityCost.Atom -> atom as? CostAtom.SacrificeAll
+    is AbilityCost.Composite -> costs.firstNotNullOfOrNull {
+        (it as? AbilityCost.Atom)?.atom as? CostAtom.SacrificeAll
+    }
+    else -> null
+}
+
 /**
  * Pull the [CostAtom.VariablePermanents] variable-count sub-cost out of an ability cost, or null if
  * none. Drives the two-step activation flow for "Exile one or more other [filter] you control
