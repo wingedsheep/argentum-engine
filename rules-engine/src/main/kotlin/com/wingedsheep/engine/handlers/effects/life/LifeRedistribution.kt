@@ -154,10 +154,19 @@ object LifeRedistribution {
                     sourceName = sourceId?.let { state.getEntity(it)?.get<CardComponent>()?.name },
                     phase = DecisionPhase.RESOLUTION,
                 ),
-                options = choices.map { value -> if (value == own) "$value life (unchanged)" else "$value life" },
+                options = choices.map { value ->
+                    if (value == own) "$value life (unchanged)"
+                    else "$value life (${holdersOf(state, progress, value)}'s)"
+                },
             )
         }
     }
+
+    /** Who held [value] when the effect began, so an option reads as whose total it hands over. */
+    private fun holdersOf(state: GameState, progress: RedistributeLifeTotalsContinuation, value: Int): String =
+        progress.players.indices
+            .filter { progress.originalTotals[it] == value }
+            .joinToString(" / ") { playerName(state, progress.players[it]) }
 
     private fun playerName(state: GameState, playerId: EntityId): String =
         state.getEntity(playerId)?.get<PlayerComponent>()?.name ?: "Player"

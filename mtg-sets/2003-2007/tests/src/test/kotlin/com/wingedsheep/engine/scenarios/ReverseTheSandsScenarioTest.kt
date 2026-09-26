@@ -54,9 +54,9 @@ class ReverseTheSandsScenarioTest : ScenarioTestBase() {
                 val decision = game.state.pendingDecision.shouldBeInstanceOf<ChooseOptionDecision>()
                 withClue("only the two whole totals are offered for Alice") {
                     decision.prompt shouldBe "Choose the life total Alice gets"
-                    decision.options shouldBe listOf("15 life", "5 life (unchanged)")
+                    decision.options shouldBe listOf("15 life (Bob's)", "5 life (unchanged)")
                 }
-                game.choose("15 life")
+                game.choose("15 life (Bob's)")
 
                 game.state.pendingDecision shouldBe null
                 game.getLifeTotal(1) shouldBe 15
