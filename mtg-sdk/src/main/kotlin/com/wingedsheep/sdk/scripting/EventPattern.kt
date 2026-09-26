@@ -1001,15 +1001,25 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * creatures" is one event no matter how many are blocked. SELF binding only — the detector's
      * ANY branch fans out per blocker and has no count to read — and `Triggers.<subject>.blocks(attackerFilter, minBlockedAttackers)` rejects the
      * other combinations rather than silently misfiring.
+     *
+     * [batch] is the "whenever one or more [filter] block" wording (Tide of War): one trigger per
+     * block declaration however many matching creatures block, and none when no matching creature
+     * blocks (CR 603.2c). ANY binding only; incompatible with [attackerFilter] and
+     * [minBlockedAttackers], which are per-blocker questions.
      */
     @SerialName("BlockEvent")
     @Serializable
     data class BlockEvent(
         val filter: GameObjectFilter? = null,
         val attackerFilter: GameObjectFilter? = null,
-        val minBlockedAttackers: Int = 1
+        val minBlockedAttackers: Int = 1,
+        val batch: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
+            if (batch) {
+                append(if (filter != null) "one or more ${filter.description} block" else "one or more creatures block")
+                return@buildString
+            }
             append(if (filter != null) "a ${filter.description} blocks" else "a creature blocks")
             if (minBlockedAttackers > 1) {
                 append(" $minBlockedAttackers or more creatures")

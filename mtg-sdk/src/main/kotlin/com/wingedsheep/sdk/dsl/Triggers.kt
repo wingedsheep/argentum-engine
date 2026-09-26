@@ -571,6 +571,16 @@ class BatchTriggerSubject internal constructor(
     fun leaveWithoutDying(): TriggerSpec =
         spec(LeaveBattlefieldWithoutDyingEvent(filter = filter, excludeSelf = excludeSource))
 
+    /**
+     * "block" — once per block declaration however many matching creatures block, and not at all
+     * when none does (Tide of War: `oneOrMore(GameObjectFilter.Creature).block()`). The filter
+     * reads the blockers with no implicit controller.
+     */
+    fun block(): TriggerSpec {
+        noOther("block")
+        return spec(BlockEvent(filter = filter, batch = true))
+    }
+
     /** "deal combat damage to a player". */
     fun dealCombatDamageToAPlayer(): TriggerSpec {
         noOther("dealCombatDamageToAPlayer")

@@ -9719,6 +9719,90 @@
     ]
 }
 
+// Tide of War
+{
+    "name": "Tide of War",
+    "manaCost": "{4}{R}{R}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever one or more creatures block, flip a coin. If you win the flip, each blocking creature is sacrificed by its controller. If you lose the flip, each blocked creature is sacrificed by its controller.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Tide of War:1",
+                "trigger": {
+                    "type": "BlockEvent",
+                    "filter": "creature",
+                    "batch": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "FlipCoin",
+                    "wonEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": "creature blocking"
+                                },
+                                "storeAs": "sacrificeAll_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "sacrificeAll_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Sacrifice"
+                            }
+                        ]
+                    },
+                    "lostEffect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "BattlefieldMatching",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            "IsCreature"
+                                        ],
+                                        "statePredicates": [
+                                            "IsBlocked"
+                                        ]
+                                    }
+                                },
+                                "storeAs": "sacrificeAll_gathered"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "sacrificeAll_gathered",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Sacrifice"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "194",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/3/43b5bd60-87ed-41d2-bbcb-bd4a40a772c9.jpg?1783944293"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Time Stop
 {
     "name": "Time Stop",

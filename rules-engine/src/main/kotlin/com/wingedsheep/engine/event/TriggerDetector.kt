@@ -1258,8 +1258,33 @@ class TriggerDetector(
                     // create one trigger per matching blocker.
                     else if (ability.trigger is EventPattern.BlockEvent && ability.binding == TriggerBinding.ANY &&
                         event is com.wingedsheep.engine.core.BlockersDeclaredEvent) {
-                        val blockFilter = (ability.trigger as EventPattern.BlockEvent).filter
-                        for (blockerId in event.blockers.keys) {
+                        val blockTrigger = ability.trigger as EventPattern.BlockEvent
+                        val blockFilter = blockTrigger.filter
+                        // "one or more … block" (batch): a block declaration is one simultaneous
+                        // event, so fire once if any declared blocker matches, and never on a
+                        // declaration with no matching blocker (CR 603.2c). No single blocker is
+                        // "the" triggering creature.
+                        val blockerIds = if (!blockTrigger.batch) event.blockers.keys else {
+                            val anyMatches = event.blockers.keys.any { blockerId ->
+                                blockFilter == null || predicateEvaluator.matches(
+                                    state, projected, blockerId, blockFilter,
+                                    PredicateContext(controllerId = controllerId, sourceId = entityId)
+                                )
+                            }
+                            if (anyMatches) {
+                                triggers.add(
+                                    PendingTrigger(
+                                        ability = ability,
+                                        sourceId = entityId,
+                                        sourceName = cardComponent.name,
+                                        controllerId = controllerId,
+                                        triggerContext = TriggerContext()
+                                    )
+                                )
+                            }
+                            emptySet()
+                        }
+                        for (blockerId in blockerIds) {
                             if (blockFilter != null) {
                                 if (predicateEvaluator.matches(
                                         state, projected, blockerId, blockFilter,

@@ -6106,6 +6106,15 @@ The shapes in this family, with their engine notes.
   once per blocked attacker, and is SELF-only and incompatible with `attackerFilter` (both rejected
   at construction). Read off `BlockersDeclaredEvent`, so a block count raised mid-combat by a later
   effect does not re-check it.
+- `Triggers.oneOrMore(filter).block()` — the **batch** wording "whenever one or more [filter] block"
+  (`BlockEvent(filter, batch = true)`, CR 603.2c): fires **once** per block declaration however many
+  matching creatures block, and not at all when no matching creature blocks. The filter reads the
+  blockers with no implicit controller (`GameObjectFilter.Creature` = anyone's creatures;
+  `.youControl()` narrows it to yours). There is no triggering entity — read the blockers at
+  resolution with `GameObjectFilter.Creature.blocking()` / the attackers with `.blocked()`. Tide of
+  War: `oneOrMore(GameObjectFilter.Creature).block()` + `Effects.FlipCoin(SacrificeAll(Creature.blocking()),
+  SacrificeAll(Creature.blocked()))`. `oneOrMoreOther(…).block()` is rejected. Contrast
+  `Triggers.a(filter).blocks()`, which fires once per matching blocker.
 - `Triggers.<subject>.becomesBlocked()` — Replaces the old
   `CreatureYouControlBecomesBlocked` and `FilteredBecomesBlocked(filter)`.
 - `Triggers.<subject>.blocksOrBecomesBlocked(by, oncePerCombat)` — either direction,
