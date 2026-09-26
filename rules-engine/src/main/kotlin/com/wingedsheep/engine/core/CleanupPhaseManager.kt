@@ -411,11 +411,16 @@ class CleanupPhaseManager(
      * These expire when any of the affected entities are controlled by the active player,
      * meaning the affected creature's controller just had their untap step.
      */
-    fun expireAffectedControllersNextUntapEffects(state: GameState, activePlayer: EntityId): GameState {
+    fun expireAffectedControllersNextUntapEffects(
+        state: GameState,
+        activePlayer: EntityId,
+        skippedUntapStep: Set<EntityId> = emptySet()
+    ): GameState {
         val projected = state.projectedState
         // Both heads untap on the team's turn (CR 805.4), so either head counts as "the
-        // affected creature's controller just had their untap step".
-        val activeTeam = state.sharedTurnTeam(activePlayer).toHashSet()
+        // affected creature's controller just had their untap step" — unless that head skipped
+        // it (CR 614.10a: the effect waits for the first untap step that isn't skipped).
+        val activeTeam = state.sharedTurnTeam(activePlayer).toHashSet() - skippedUntapStep
         val remaining = state.floatingEffects.filter { floatingEffect ->
             if (floatingEffect.duration !is Duration.UntilAfterAffectedControllersNextUntap) return@filter true
             // Expire if any affected entity is controlled by the active team

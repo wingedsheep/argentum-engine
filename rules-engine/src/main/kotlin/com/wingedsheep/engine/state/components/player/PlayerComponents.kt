@@ -517,6 +517,18 @@ data class SkipUntapComponent(
 ) : Component
 
 /**
+ * This player skips their next [steps] untap steps entirely — Shisato, Whispering Hunter. Stacks
+ * per CR 614.10a: each skip effect is satisfied by one skipped occurrence.
+ *
+ * Read by `BeginningPhaseManager.performUntapStep`, which leaves the marked player out of every
+ * untap-step action (phasing, untapping, their own [SkipUntapComponent]), and decremented by
+ * `TurnManager.finishUntapStep` once the step is over. Because the skipped step never happened,
+ * a [SkipUntapComponent] and any "until your next untap step" effect wait for the next real one.
+ */
+@Serializable
+data class SkipNextUntapStepComponent(val steps: Int = 1) : Component
+
+/**
  * The parts of the *current* turn this player skips every instance of — Fatespinner's "the player
  * skips each instance of the chosen step or phase this turn".
  *

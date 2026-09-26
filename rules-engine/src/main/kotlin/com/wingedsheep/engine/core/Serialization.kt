@@ -608,6 +608,7 @@ val engineSerializersModule = SerializersModule {
         subclass(SkipDrawStepComponent::class)
         subclass(SkippedTurnPartsComponent::class)
         subclass(SkipUntapComponent::class)
+        subclass(SkipNextUntapStepComponent::class)
         subclass(PlayerLostComponent::class)
         subclass(AttemptedDrawFromEmptyLibraryComponent::class)
         subclass(PlayerLeftGameComponent::class)

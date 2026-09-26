@@ -304,6 +304,19 @@ internal class PlayerActiveEffectsProjector(
             )
         }
 
+        // Skipped untap steps (Shisato, Whispering Hunter)
+        container.get<SkipNextUntapStepComponent>()?.let { skip ->
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "skip_untap_step",
+                    name = "Skip Untap Step",
+                    description = if (skip.steps == 1) "You skip your next untap step"
+                        else "You skip your next ${skip.steps} untap steps",
+                    icon = "shield-off"
+                )
+            )
+        }
+
         // Check for SkipUntapComponent (Exhaustion effect)
         val skipUntap = container.get<SkipUntapComponent>()
         if (skipUntap != null) {

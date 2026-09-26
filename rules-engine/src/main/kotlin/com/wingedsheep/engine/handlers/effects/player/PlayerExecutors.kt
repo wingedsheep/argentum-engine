@@ -82,6 +82,7 @@ class PlayerExecutors(
         SetDayNightExecutor(cardRegistry),
         SkipCombatPhasesExecutor(),
         SkipNextDrawStepExecutor(),
+        SkipNextUntapStepExecutor(),
         SkipStepOrPhaseThisTurnExecutor(),
         PayAnyAmountOfLifeAsEntersExecutor(amountEvaluator = zones.predicateEvaluator.amounts),
         SkipNextTurnExecutor(amountEvaluator = zones.predicateEvaluator.amounts),

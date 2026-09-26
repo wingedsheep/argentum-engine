@@ -8196,6 +8196,64 @@
     ]
 }
 
+// Shisato, Whispering Hunter
+{
+    "name": "Shisato, Whispering Hunter",
+    "manaCost": "{3}{G}",
+    "typeLine": "Legendary Creature — Snake Warrior",
+    "oracleText": "At the beginning of your upkeep, sacrifice a Snake.\nWhenever Shisato deals combat damage to a player, that player skips their next untap step.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Shisato, Whispering Hunter:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ForceSacrifice",
+                    "filter": "permanent Snake",
+                    "target": "Controller"
+                },
+                "descriptionOverride": "At the beginning of your upkeep, sacrifice a Snake."
+            },
+            {
+                "id": "Shisato, Whispering Hunter:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "Any"
+                    }
+                },
+                "effect": {
+                    "type": "SkipNextUntapStep",
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                },
+                "descriptionOverride": "Whenever Shisato deals combat damage to a player, that player skips their next untap step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "242",
+        "rarity": "RARE",
+        "artist": "John Bolton",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5cc79c9c-f776-4c55-a7d1-9fac33f14630.jpg?1783944282"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Shizo, Death's Storehouse
 {
     "name": "Shizo, Death's Storehouse",

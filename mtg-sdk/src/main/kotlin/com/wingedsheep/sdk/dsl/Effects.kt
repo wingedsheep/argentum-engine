@@ -213,6 +213,7 @@ import com.wingedsheep.sdk.scripting.effects.PreventionScope
 import com.wingedsheep.sdk.scripting.effects.PreventionSourceFilter
 import com.wingedsheep.sdk.scripting.effects.HijackNextTurnEffect
 import com.wingedsheep.sdk.scripting.effects.SkipNextDrawStepEffect
+import com.wingedsheep.sdk.scripting.effects.SkipNextUntapStepEffect
 import com.wingedsheep.sdk.scripting.effects.SkipNextTurnEffect
 import com.wingedsheep.sdk.scripting.effects.ChooseActionEffect
 import com.wingedsheep.sdk.scripting.effects.EffectChoice
@@ -5368,6 +5369,14 @@ object Effects {
      */
     fun SkipNextDrawStep(target: EffectTarget = EffectTarget.Controller): Effect =
         SkipNextDrawStepEffect(target)
+
+    /**
+     * [target] skips their entire next untap step (CR 500.11, 614.10a) — nothing untaps or phases,
+     * and repeated skips stack. Wider than [SkipUntap], which only holds creatures and/or lands
+     * tapped during an untap step that still happens. Used by Shisato, Whispering Hunter.
+     */
+    fun SkipNextUntapStep(target: EffectTarget): Effect =
+        SkipNextUntapStepEffect(target)
 
     /**
      * The target player skips **every** instance of [part] for the rest of this turn — the

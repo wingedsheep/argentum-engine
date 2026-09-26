@@ -96,6 +96,27 @@ data class SkipNextDrawStepEffect(
 }
 
 /**
+ * The player skips their entire next untap step — Shisato, Whispering Hunter's "that player skips
+ * their next untap step".
+ *
+ * Wider than [SkipUntapEffect], which only keeps creatures and/or lands tapped *during* an untap
+ * step that still happens: a skipped step is proceeded past as though it didn't exist (CR 500.11),
+ * so nothing phases in or out, no permanent of any type untaps, and "until your next untap step"
+ * effects wait for the first untap step that isn't skipped (CR 614.10a). Two of these on the same
+ * player skip the next two untap steps.
+ */
+@SerialName("SkipNextUntapStep")
+@Serializable
+data class SkipNextUntapStepEffect(
+    val target: EffectTarget = EffectTarget.PlayerRef(Player.TargetPlayer)
+) : Effect {
+    override val description: String = when (target) {
+        EffectTarget.Controller -> "You skip your next untap step"
+        else -> "${target.description.replaceFirstChar { it.uppercase() }} skips their next untap step"
+    }
+}
+
+/**
  * The target player skips **every** instance of [part] for the rest of this turn — Fatespinner's
  * "the player skips each instance of the chosen step or phase this turn".
  *
