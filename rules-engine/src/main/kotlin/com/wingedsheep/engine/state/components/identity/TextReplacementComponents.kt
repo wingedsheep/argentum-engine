@@ -130,11 +130,12 @@ object TextChanges {
     }
 
     /**
-     * Effective replacements for a card being cast right now: it is a spell from CR 601.2a, before
-     * its modes and targets are chosen (601.2b–c), so the global rules apply to it even though the
-     * card has not reached the stack yet.
+     * Effective replacements for a spell being cast or resolving. It is a spell from CR 601.2a,
+     * before its modes and targets are chosen (601.2b–c), and it is already off the stack by the
+     * time the resolver reads its targets and effect — so neither moment can be told from
+     * [of]'s zone check, and the global rules apply unconditionally.
      */
-    fun forSpellBeingCast(state: GameState, cardId: EntityId): TextReplacementComponent? =
+    fun forSpell(state: GameState, cardId: EntityId): TextReplacementComponent? =
         merge(global(state), state.getEntity(cardId)?.get<TextReplacementComponent>())
 
     /**

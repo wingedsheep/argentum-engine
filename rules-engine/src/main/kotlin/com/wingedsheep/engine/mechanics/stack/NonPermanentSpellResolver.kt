@@ -190,7 +190,7 @@ internal class NonPermanentSpellResolver(
             else -> cardComponent?.spellEffect
         }
         val rawSpellEffect = baseSpellEffect
-        val textReplacement = TextChanges.of(state, spellId)
+        val textReplacement = TextChanges.forSpell(state, spellId)
         return if (rawSpellEffect != null && textReplacement != null) {
             rawSpellEffect.applyTextReplacement(textReplacement)
         } else {

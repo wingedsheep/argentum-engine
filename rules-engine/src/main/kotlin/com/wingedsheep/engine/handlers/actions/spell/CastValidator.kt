@@ -726,7 +726,7 @@ internal class CastValidator(
         }
         // Read through text-changing effects in force (CR 613.1c): the spell exists from 601.2a,
         // before its targets are chosen, so the enumerator offered targets against the changed text.
-        val castText = TextChanges.forSpellBeingCast(state, action.cardId)
+        val castText = TextChanges.forSpell(state, action.cardId)
         val targetRequirements = buildList {
             addAll(baseTargetReqs)
             // The cast-time choice: Dream Leash narrows it to a tapped permanent. The stack captures

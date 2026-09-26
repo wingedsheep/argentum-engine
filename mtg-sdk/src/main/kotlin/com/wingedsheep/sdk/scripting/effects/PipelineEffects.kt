@@ -27,6 +27,23 @@ sealed interface CardSource {
     val description: String
 
     /**
+     * The source with its filter read through a text-changing effect (CR 612) — "destroy all green
+     * creatures" under Swirl the Mists naming red destroys the red ones. Sources without a
+     * [GameObjectFilter] have no words to change.
+     */
+    fun applyTextReplacement(replacer: TextReplacer): CardSource {
+        fun GameObjectFilter.changed() = applyTextReplacement(replacer).takeIf { it !== this }
+        return when (this) {
+            is FromZone -> filter.changed()?.let { copy(filter = it) }
+            is FromMultipleZones -> filter.changed()?.let { copy(filter = it) }
+            is ControlledPermanents -> filter.changed()?.let { copy(filter = it) }
+            is BattlefieldMatching -> filter.changed()?.let { copy(filter = it) }
+            is AttachedTo -> filter.changed()?.let { copy(filter = it) }
+            else -> null
+        } ?: this
+    }
+
+    /**
      * Top N cards of a player's library.
      *
      * [isMill] marks this gather as the library half of a *mill* (top N → graveyard), so the
@@ -863,6 +880,11 @@ data class GatherCardsEffect(
     override val description: String = buildString {
         if (revealed) append("Reveal ") else append("Look at ")
         append(source.description)
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newSource = source.applyTextReplacement(replacer)
+        return if (newSource !== source) copy(source = newSource) else this
     }
 }
 

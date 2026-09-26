@@ -297,7 +297,7 @@ class TargetEnumerationUtils(
         targetReqs: List<TargetRequirement>,
         cardId: EntityId
     ): List<TargetInfo> {
-        val text = com.wingedsheep.engine.state.components.identity.TextChanges.forSpellBeingCast(state, cardId)
+        val text = com.wingedsheep.engine.state.components.identity.TextChanges.forSpell(state, cardId)
         val effective = if (text == null) targetReqs else targetReqs.map { it.applyTextReplacement(text) }
         return buildTargetInfos(state, playerId, effective, cardId)
     }

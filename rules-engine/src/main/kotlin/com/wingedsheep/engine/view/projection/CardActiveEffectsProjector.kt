@@ -103,16 +103,30 @@ internal class CardActiveEffectsProjector(
         )
     }
 
-    /** Check for text replacements. */
-    private fun textReplacementBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> =
-        TextChanges.of(state, entityId)?.replacements?.map { r ->
+    /**
+     * Check for text replacements. A global color-word change (Swirl the Mists) is one badge per
+     * chosen color rather than one per replaced word, so it doesn't stack four badges on every card.
+     */
+    private fun textReplacementBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> {
+        val all = TextChanges.of(state, entityId)?.replacements ?: return emptyList()
+        val own = state.getEntity(entityId)?.get<TextReplacementComponent>()?.replacements.orEmpty()
+        val globalBadges = all.dropLast(own.size).map { it.toWord }.distinct().map { toWord ->
+            ClientCardEffect(
+                effectId = "text_modified_all_colors_$toWord",
+                name = "Text Modified",
+                description = "All color words → $toWord",
+                icon = "text-change"
+            )
+        }
+        return globalBadges + own.map { r ->
             ClientCardEffect(
                 effectId = "text_modified_${r.fromWord}_${r.toWord}",
                 name = "Text Modified",
                 description = "${r.fromWord} → ${r.toWord}",
                 icon = "text-change"
             )
-        } ?: emptyList()
+        }
+    }
 
     /**
      * Damage this creature deals is doubled by an Equipment/Aura attached to it (Mjölnir, Hammer of

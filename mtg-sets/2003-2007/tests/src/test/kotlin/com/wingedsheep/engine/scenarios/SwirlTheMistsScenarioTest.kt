@@ -151,6 +151,52 @@ class SwirlTheMistsScenarioTest : ScenarioTestBase() {
                 game.isInGraveyard(2, "Hill Giant") shouldBe true
             }
 
+            test("a spell's targets are re-checked against the text as it is on resolution") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Swirl the Mists")
+                    .withCardInHand(1, "Doom Blade") // destroy target nonblack creature
+                    .withLandsOnBattlefield(1, "Swamp", 2)
+                    .withCardOnBattlefield(2, "Air Elemental") // blue
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                // No color chosen yet, so "nonblack" still reads "nonblack" and the blue creature is legal.
+                val elemental = game.findPermanent("Air Elemental")!!
+                game.castSpell(1, "Doom Blade", elemental).error shouldBe null
+
+                // The text now reads "nonblue" while Doom Blade waits on the stack.
+                game.chooseSwirlColor(Color.BLUE)
+                game.resolveStack()
+
+                withClue("its only target is illegal on resolution, so Doom Blade does nothing") {
+                    game.isOnBattlefield("Air Elemental") shouldBe true
+                }
+            }
+
+            test("a resolving spell's effect text reads the chosen color") {
+                val game = scenario()
+                    .withPlayers("Player1", "Player2")
+                    .withCardOnBattlefield(1, "Swirl the Mists")
+                    .withCardInHand(1, "Perish") // destroy all green creatures
+                    .withLandsOnBattlefield(1, "Swamp", 3)
+                    .withCardOnBattlefield(2, "Grizzly Bears") // green
+                    .withCardOnBattlefield(2, "Hill Giant") // red
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                game.chooseSwirlColor(Color.RED)
+
+                game.castSpell(1, "Perish").error shouldBe null
+                game.resolveStack()
+
+                withClue("\"green creatures\" reads \"red creatures\"") {
+                    game.isInGraveyard(2, "Hill Giant") shouldBe true
+                    game.isOnBattlefield("Grizzly Bears") shouldBe true
+                }
+            }
+
             test("the change ends as soon as Swirl the Mists leaves the battlefield") {
                 val game = scenario()
                     .withPlayers("Player1", "Player2")
