@@ -20,6 +20,7 @@ import com.wingedsheep.engine.state.components.identity.CantBeCounteredComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderRegistryComponent
 import com.wingedsheep.engine.state.components.player.GrantedSpellKeywordsComponent
+import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
@@ -179,7 +180,7 @@ internal class CastTriggers(
             is ManaSpellRider.CopySpellWhenSpent ->
                 state to copySpellWhenSpent(state, spell, rider.spellFilter)
             is ManaSpellRider.GrantsKeywordWhenSpent ->
-                grantKeywordWhenSpent(state, spell, rider.keyword, rider.spellFilter) to emptyList()
+                grantKeywordWhenSpent(state, spell, rider.keyword, rider.spellFilter, rider.duration) to emptyList()
         }
 
     private fun spellMatches(state: GameState, action: CastSpell, filter: GameObjectFilter): Boolean =
@@ -212,10 +213,27 @@ internal class CastTriggers(
      *
      * The floating effect's source is the spell itself, not the mana's producer — the producer may
      * already have left the battlefield, and the source is only read for the effect's display name.
+     *
+     * A [Duration.Permanent] grant (Hall of the Bandit Lord) is frozen onto the spell's
+     * [SpellOnStackComponent.entryKeywordGrants] instead; `PermanentEntry` grants it as the spell
+     * becomes a permanent. A floating effect keyed to the stack object would outlive a countered
+     * spell and reach the same card if it were later put onto the battlefield.
      */
-    private fun grantKeywordWhenSpent(state: GameState, spell: CastSpellOnStack, keyword: String, spellFilter: GameObjectFilter): GameState {
+    private fun grantKeywordWhenSpent(
+        state: GameState,
+        spell: CastSpellOnStack,
+        keyword: String,
+        spellFilter: GameObjectFilter,
+        duration: Duration,
+    ): GameState {
         val action = spell.action
         if (!spellMatches(state, action, spellFilter)) return state
+        if (duration == Duration.Permanent) {
+            return state.updateEntity(action.cardId) { c ->
+                val onStack = c.get<SpellOnStackComponent>() ?: return@updateEntity c
+                c.with(onStack.copy(entryKeywordGrants = onStack.entryKeywordGrants + keyword))
+            }
+        }
         return state.addFloatingEffect(
             layer = Layer.ABILITY,
             modification = SerializableModification.GrantKeyword(keyword),

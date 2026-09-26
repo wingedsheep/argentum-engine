@@ -7,7 +7,10 @@ import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EntersWithReplacements
 import com.wingedsheep.engine.handlers.effects.FaceDownTurnUp
 import com.wingedsheep.engine.mechanics.daynight.DayNightService
+import com.wingedsheep.engine.mechanics.layers.Layer
+import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.StaticAbilityHandler
+import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.ComponentContainer
 import com.wingedsheep.engine.state.GameState
@@ -33,6 +36,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.EntersTapped
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.effects.MoveTrackedBattlefieldObjectEffect
@@ -135,6 +139,7 @@ internal class PermanentEntry(
         newState = scheduleWarpExile(newState, spellId, spellComponent, cardComponent, controllerId)
         newState = scheduleDashReturn(newState, spellId, spellComponent, cardComponent, controllerId)
         newState = enterPreparedIfKeyworded(newState, spellId, spellComponent, cardDef, controllerId)
+        newState = grantEntryKeywords(newState, spellId, spellComponent, controllerId)
 
         // Entry precedes the counters placed on that battlefield object.
         counterEvents.add(0, ZoneChangeEvent(
@@ -146,6 +151,26 @@ internal class PermanentEntry(
             oldObject = state.objectRef(spellId), newObject = newState.objectRef(spellId),
         ))
         return newState to counterEvents
+    }
+
+    /**
+     * Hall of the Bandit Lord's "if that mana is spent on a creature spell, it gains haste": the
+     * keywords a permanent-duration mana rider froze onto the spell become grants on the permanent,
+     * lasting until it leaves the battlefield (CR 400.7 ends them there).
+     */
+    private fun grantEntryKeywords(
+        state: GameState,
+        spellId: EntityId,
+        spellComponent: SpellOnStackComponent,
+        controllerId: EntityId,
+    ): GameState = spellComponent.entryKeywordGrants.fold(state) { acc, keyword ->
+        acc.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.GrantKeyword(keyword),
+            affectedEntities = setOf(spellId),
+            duration = Duration.Permanent,
+            context = EffectContext(sourceId = spellId, controllerId = controllerId)
+        )
     }
 
     // -------------------------------------------------------------------------

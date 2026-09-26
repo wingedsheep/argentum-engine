@@ -12519,7 +12519,7 @@ the rider twice (Pyromancer's Goggles: "That many copies will be created").
   happens at payment time against the spell's cast characteristics; a non-matching spell is a silent
   no-op. Because the queued trigger's source is the *spell*, it still fires if the mana's producer
   has already left the battlefield.
-- `ManaSpellRider.GrantsKeywordWhenSpent(keyword, spellFilter)` — Carnelian Orb of Dragonkind
+- `ManaSpellRider.GrantsKeywordWhenSpent(keyword, spellFilter, duration = Duration.EndOfTurn)` — Carnelian Orb of Dragonkind
   (`Keyword.HASTE`, `GameObjectFilter.Creature.withSubtype("Dragon")`): "If that mana is spent on a
   [filter] spell, it gains [keyword] until end of turn." The one rider that puts **nothing** on the
   stack — the printed effect is continuous, so it floats a `Layer.ABILITY` `GrantKeyword`
@@ -12529,6 +12529,11 @@ the rider twice (Pyromancer's Goggles: "That many copies will be created").
   apply to. Matching happens at payment time against the spell's cast characteristics, per the
   printed rulings: mana spent on a non-Dragon spell that *becomes* a Dragon later in the turn grants
   nothing, and an instant or sorcery that makes Dragon tokens is not a Dragon creature spell.
+  `duration = Duration.Permanent` (the only other value accepted) drops the end date — Hall of the
+  Bandit Lord's "If that mana is spent on a creature spell, it gains haste." That grant is frozen
+  onto the spell's `SpellOnStackComponent.entryKeywordGrants` rather than floated on the stack
+  object, and granted as the permanent enters, so it lasts until the permanent leaves the
+  battlefield and a countered spell carries nothing into its next zone.
 
 ### `ManaExpiry`<a id="manaexpiry"></a>
 

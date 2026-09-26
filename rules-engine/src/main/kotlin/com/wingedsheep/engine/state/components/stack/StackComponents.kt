@@ -39,6 +39,13 @@ data class SpellOnStackComponent(
      */
     val additionalEntryCounters: AdditionalEntryCounters? = null,
     /**
+     * Keywords the permanent this spell becomes gains with no end date, frozen at payment time by a
+     * `ManaSpellRider.GrantsKeywordWhenSpent` with `Duration.Permanent` (Hall of the Bandit Lord's
+     * "it gains haste"). Granted as the permanent enters; kept here on the stack object rather than
+     * as a floating effect so a spell that never resolves carries nothing into its next zone.
+     */
+    val entryKeywordGrants: List<String> = emptyList(),
+    /**
      * The opponent promised this spell's gift additional cost (CR 702.174a), or null when the gift
      * wasn't promised. A resolving permanent carries the fact onward in its cast-choices bag
      * (ChoiceSlot.GIFT_PROMISED + ChoiceSlot.OPPONENT) so its gift trigger and
