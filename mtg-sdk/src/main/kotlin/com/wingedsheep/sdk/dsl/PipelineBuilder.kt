@@ -35,6 +35,8 @@ import com.wingedsheep.sdk.scripting.effects.NoteCreatureTypeEffect
 import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.effects.PairWithSourceEffect
+import com.wingedsheep.sdk.scripting.effects.RepeatCondition
+import com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectFromCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
@@ -1163,6 +1165,32 @@ class PipelineBuilder private constructor(private val shared: Shared) {
         steps += com.wingedsheep.sdk.scripting.effects.ForEachPlayerCollectingEffect(
             players = players,
             effects = inner.steps.toList(),
+            collectCollections = collected.zip(aggregates).associate { (each, all) -> each.key to all.key }
+        )
+        return aggregates
+    }
+
+    /**
+     * Run [block] as the body of a do-while loop ([com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect])
+     * — once, then again while [repeatCondition] holds — and return, for each collection handle
+     * [block] returns, the union of that collection across every pass. Each pass starts from a
+     * fresh collection scope, so the body re-gathers what it needs; only the returned handles
+     * outlive it. "…then you exile a card from it. Repeat this process until all cards in that
+     * hand have been exiled. That player returns the cards they exiled this way to their hand"
+     * (Struggle for Sanity).
+     */
+    fun repeatCollecting(
+        repeatCondition: RepeatCondition,
+        block: PipelineBuilder.() -> List<CollectionSlot>
+    ): List<CollectionSlot> {
+        nextIndex()
+        val inner = PipelineBuilder(shared)
+        val collected = inner.block()
+        require(inner.steps.isNotEmpty()) { "repeatCollecting { } must add at least one step" }
+        val aggregates = collected.map { CollectionSlot(slotKey("collected", nextIndex(), null)) }
+        steps += RepeatWhileEffect(
+            body = inner.steps.singleOrNull() ?: CompositeEffect(inner.steps.toList()),
+            repeatCondition = repeatCondition,
             collectCollections = collected.zip(aggregates).associate { (each, all) -> each.key to all.key }
         )
         return aggregates

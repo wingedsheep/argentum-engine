@@ -157,11 +157,7 @@ class CoreAutoResumerModule(
             // WhileCondition sees this pass's outputs — matching the synchronous (non-pausing) path.
             val result = com.wingedsheep.engine.handlers.effects.composite.RepeatWhileExecutor.askCondition(
                 state = state,
-                body = continuation.body,
-                repeatCondition = continuation.repeatCondition,
-                resolvedDeciderId = continuation.resolvedDeciderId,
-                context = continuation.effectContext,
-                sourceName = continuation.sourceName,
+                loop = continuation,
                 effectExecutor = services.effectExecutorRegistry::execute,
                 priorEvents = events,
                 bodyOutputs = com.wingedsheep.engine.handlers.effects.composite.RepeatWhileExecutor.Companion.BodyOutputs(
@@ -169,7 +165,12 @@ class CoreAutoResumerModule(
                 ),
                 conditionEvaluator = services.conditionEvaluator
             )
-            mergeAndContinue(result.toExecutionResult(), events = emptyList(), checkForMore)
+            if (result.outcome !is Outcome.Done) {
+                return@autoResumer mergeAndContinue(result.toExecutionResult(), events = emptyList(), checkForMore)
+            }
+            // The loop stopped: its collected aggregates go to the frame beneath (the rest of the
+            // enclosing pipeline), the same hand-off the synchronous path makes via updatedCollections.
+            checkForMore(exposeCollectionsToNextFrame(result.state, result.updatedCollections), result.events)
         },
 
         autoResumer(ModalPreChosenContinuation::class, canResume = { it.remainingEntries.isNotEmpty() }) { state, continuation, events, checkForMore ->

@@ -3,8 +3,8 @@ package com.wingedsheep.engine.handlers.effects.composite
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.DecisionHandler
-import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.EffectExecutor
+import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.model.EntityId
@@ -29,6 +29,11 @@ import kotlin.reflect.KClass
  * For PlayerChooses, askDecider() creates a yes/no decision and pushes
  * AFTER_DECISION continuation. For WhileCondition, evaluates synchronously
  * and either starts another iteration or completes.
+ *
+ * The loop's state between passes is one [RepeatWhileContinuation] value — the same frame that is
+ * pre-pushed around each body — so the synchronous path and both resumers thread exactly the same
+ * data, including the [RepeatWhileContinuation.accumulatedCollections] the effect's
+ * `collectCollections` fold across passes.
  */
 class RepeatWhileExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
@@ -56,11 +61,14 @@ class RepeatWhileExecutor(
 
         return executeIteration(
             state = state,
-            body = effect.body,
-            repeatCondition = effect.repeatCondition,
-            resolvedDeciderId = resolvedDeciderId,
-            context = context,
-            sourceName = sourceName,
+            loop = RepeatWhileContinuation(
+                body = effect.body,
+                repeatCondition = effect.repeatCondition,
+                resolvedDeciderId = resolvedDeciderId,
+                sourceName = sourceName,
+                effectContext = context,
+                collectCollections = effect.collectCollections
+            ),
             effectExecutor = effectExecutor,
             priorEvents = emptyList(),
             conditionEvaluator = conditionEvaluator
@@ -71,33 +79,22 @@ class RepeatWhileExecutor(
         /**
          * Execute one iteration of the repeat loop.
          *
-         * Pre-pushes an AFTER_BODY continuation, then executes the body.
-         * If the body completes synchronously, pops the continuation and asks the condition.
+         * Pre-pushes [loop] (with this pass's [RepeatWhileContinuation.bodyCollections] cleared) as
+         * the AFTER_BODY continuation, then executes the body. If the body completes synchronously,
+         * pops the continuation and asks the condition.
          */
         fun executeIteration(
             state: GameState,
-            body: Effect,
-            repeatCondition: RepeatCondition,
-            resolvedDeciderId: EntityId?,
-            context: EffectContext,
-            sourceName: String?,
+            loop: RepeatWhileContinuation,
             effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
             priorEvents: List<GameEvent>,
             conditionEvaluator: ConditionEvaluator
         ): EffectResult {
-            // Pre-push AFTER_BODY continuation
-            val afterBodyContinuation = RepeatWhileContinuation(
-                body = body,
-                repeatCondition = repeatCondition,
-                resolvedDeciderId = resolvedDeciderId,
-                sourceName = sourceName,
-                effectContext = context
-            )
-
+            val afterBodyContinuation = loop.copy(bodyCollections = emptyMap())
             val stateWithContinuation = state.pushContinuation(afterBodyContinuation)
 
             // Execute the body
-            val result = effectExecutor(stateWithContinuation, body, context)
+            val result = effectExecutor(stateWithContinuation, loop.body, loop.effectContext)
 
             if (result.outcome is Outcome.Paused) {
                 // Body paused — AFTER_BODY continuation is below body's continuation on the stack.
@@ -126,11 +123,7 @@ class RepeatWhileExecutor(
             val (_, stateAfterPop) = result.state.popContinuation()
             return askCondition(
                 state = stateAfterPop,
-                body = body,
-                repeatCondition = repeatCondition,
-                resolvedDeciderId = resolvedDeciderId,
-                context = context,
-                sourceName = sourceName,
+                loop = loop,
                 effectExecutor = effectExecutor,
                 priorEvents = priorEvents + result.events,
                 bodyOutputs = BodyOutputs(
@@ -156,39 +149,61 @@ class RepeatWhileExecutor(
         }
 
         /**
-         * After the body completes, evaluate the repeat condition.
+         * Append this pass's [bodyCollections] onto the loop's running aggregates, per the effect's
+         * `collectCollections` map. A no-op for a loop that collects nothing.
+         */
+        fun foldPass(
+            loop: RepeatWhileContinuation,
+            bodyCollections: Map<String, List<EntityId>>
+        ): RepeatWhileContinuation {
+            if (loop.collectCollections.isEmpty()) return loop
+            var accumulated = loop.accumulatedCollections
+            for ((localName, aggregateName) in loop.collectCollections) {
+                val passOutput = bodyCollections[localName].orEmpty()
+                if (passOutput.isNotEmpty()) {
+                    accumulated = accumulated + (aggregateName to accumulated[aggregateName].orEmpty() + passOutput)
+                }
+            }
+            return loop.copy(accumulatedCollections = accumulated)
+        }
+
+        /**
+         * What the loop publishes once it stops: every aggregate, empty if no pass wrote to it (so a
+         * reader after the loop sees "no cards", never a missing key).
+         */
+        fun published(loop: RepeatWhileContinuation): Map<String, List<EntityId>> =
+            loop.collectCollections.values.associateWith { loop.accumulatedCollections[it].orEmpty() }
+
+        /**
+         * After the body completes, fold its outputs into the aggregates and evaluate the repeat
+         * condition.
          *
          * For PlayerChooses: create yes/no decision and push AFTER_DECISION continuation.
-         * For WhileCondition: evaluate synchronously (against [context] merged with [bodyOutputs])
-         * and either repeat or finish. The recursion uses the pristine [context] so each iteration's
-         * body starts fresh (see executeIteration's note on why stale collections must not leak).
+         * For WhileCondition: evaluate synchronously (against the loop's context merged with
+         * [bodyOutputs]) and either repeat or finish. The recursion uses the pristine context so each
+         * iteration's body starts fresh (see executeIteration's note on why stale collections must
+         * not leak). Finishing returns the aggregates as the result's `updatedCollections`.
          */
         fun askCondition(
             state: GameState,
-            body: Effect,
-            repeatCondition: RepeatCondition,
-            resolvedDeciderId: EntityId?,
-            context: EffectContext,
-            sourceName: String?,
+            loop: RepeatWhileContinuation,
             effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
             priorEvents: List<GameEvent>,
-            conditionEvaluator: com.wingedsheep.engine.handlers.ConditionEvaluator,
+            conditionEvaluator: ConditionEvaluator,
             bodyOutputs: BodyOutputs = BodyOutputs(),
         ): EffectResult {
-            return when (repeatCondition) {
+            val folded = foldPass(loop, bodyOutputs.collections)
+            return when (val repeatCondition = folded.repeatCondition) {
                 is RepeatCondition.PlayerChooses -> {
                     askDecider(
                         state = state,
-                        body = body,
+                        loop = folded,
                         repeatCondition = repeatCondition,
-                        resolvedDeciderId = resolvedDeciderId!!,
-                        context = context,
-                        sourceName = sourceName,
                         priorEvents = priorEvents
                     )
                 }
                 is RepeatCondition.WhileCondition -> {
-                    val evaluator = conditionEvaluator
+                    val context = folded.effectContext
                     val conditionContext = if (bodyOutputs.isEmpty) context else context.copy(
                         pipeline = context.pipeline.copy(
                             storedCollections = context.pipeline.storedCollections + bodyOutputs.collections,
@@ -197,7 +212,7 @@ class RepeatWhileExecutor(
                             chosenValues = context.pipeline.chosenValues + bodyOutputs.chosenValues,
                         )
                     )
-                    val shouldRepeat = evaluator.evaluate(state, repeatCondition.condition, conditionContext)
+                    val shouldRepeat = conditionEvaluator.evaluate(state, repeatCondition.condition, conditionContext)
                     if (shouldRepeat) {
                         // Deepen resolution depth per iteration so a WhileCondition that never goes
                         // false is caught by the EffectExecutorRegistry depth guard (this recursion
@@ -205,17 +220,15 @@ class RepeatWhileExecutor(
                         // it. See GameLimits.MAX_RESOLUTION_DEPTH.
                         executeIteration(
                             state = state,
-                            body = body,
-                            repeatCondition = repeatCondition,
-                            resolvedDeciderId = null,
-                            context = context.copy(resolutionDepth = context.resolutionDepth + 1),
-                            sourceName = sourceName,
+                            loop = folded.copy(
+                                effectContext = context.copy(resolutionDepth = context.resolutionDepth + 1)
+                            ),
                             effectExecutor = effectExecutor,
                             priorEvents = priorEvents,
                             conditionEvaluator = conditionEvaluator
                         )
                     } else {
-                        EffectResult.success(state, priorEvents)
+                        EffectResult(state, priorEvents, updatedCollections = published(folded))
                     }
                 }
             }
@@ -227,27 +240,18 @@ class RepeatWhileExecutor(
          */
         fun askDecider(
             state: GameState,
-            body: Effect,
+            loop: RepeatWhileContinuation,
             repeatCondition: RepeatCondition.PlayerChooses,
-            resolvedDeciderId: EntityId,
-            context: EffectContext,
-            sourceName: String?,
             priorEvents: List<GameEvent>
         ): EffectResult {
             val decisionHandler = DecisionHandler()
-            val continuation = RepeatWhileDecisionContinuation(loop = RepeatWhileContinuation(
-                body = body,
-                repeatCondition = repeatCondition,
-                resolvedDeciderId = resolvedDeciderId,
-                sourceName = sourceName,
-                effectContext = context
-            ))
+            val continuation = RepeatWhileDecisionContinuation(loop = loop.copy(bodyCollections = emptyMap()))
 
             val decisionResult = decisionHandler.createYesNoDecision(
                 state = state,
-                playerId = resolvedDeciderId,
-                sourceId = context.sourceId,
-                sourceName = sourceName,
+                playerId = loop.resolvedDeciderId!!,
+                sourceId = loop.effectContext.sourceId,
+                sourceName = loop.sourceName,
                 prompt = repeatCondition.prompt,
                 yesText = repeatCondition.yesText,
                 noText = repeatCondition.noText,

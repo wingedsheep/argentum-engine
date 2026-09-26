@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.handlers.ConditionEvaluationContext.Projection
 import com.wingedsheep.engine.handlers.ConditionEvaluationContext.Resolution
+import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
 import com.wingedsheep.engine.handlers.effects.linkedexile.LinkedExileLookup
 import com.wingedsheep.engine.state.CastSpellRecord
 import com.wingedsheep.engine.state.GameState
@@ -1178,7 +1179,19 @@ class ConditionEvaluator(
                     com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveDefendingPlayer(it, state)
                 }
             )
-            else -> controllerId?.let { listOf(it) } ?: emptyList()
+            // Everything else — "target player", "that player" (ContextPlayer), a bound or
+            // triggering player — goes through the shared resolver at resolution time. Falling
+            // back to the controller here made "until that player's hand is empty" read *your*
+            // hand (Struggle for Sanity). A static's projection-time gate has no effect context,
+            // so it keeps the controller reading.
+            else -> when (ctx) {
+                is Resolution -> TargetResolutionUtils.resolvePlayerTargets(
+                    EffectTarget.PlayerRef(condition.player),
+                    state,
+                    ctx.effectContext
+                )
+                is Projection -> controllerId?.let { listOf(it) } ?: emptyList()
+            }
         }
 
         var matches = 0

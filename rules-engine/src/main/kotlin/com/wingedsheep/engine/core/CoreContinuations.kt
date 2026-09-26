@@ -398,6 +398,11 @@ data class ForEachContinuation(
  *   on purpose: [effectContext] must stay the pristine pre-loop context so the *next* iteration
  *   re-gathers fresh (a stale collection leaking forward would mask the next pass and the loop
  *   would never terminate — see RepeatWhileExecutor.executeIteration).
+ * @property collectCollections The effect's body-collection → aggregate map
+ *   ([com.wingedsheep.sdk.scripting.effects.RepeatWhileEffect.collectCollections]).
+ * @property accumulatedCollections The aggregates folded from every *completed* pass before this
+ *   one. It rides the frame rather than [effectContext] for the same reason [bodyCollections] does:
+ *   the body must never see it. Published to the frame beneath once the loop stops.
  */
 @Serializable
 data class RepeatWhileContinuation(
@@ -406,7 +411,9 @@ data class RepeatWhileContinuation(
     val resolvedDeciderId: EntityId? = null,
     val sourceName: String?,
     val effectContext: EffectContext,
-    val bodyCollections: Map<String, List<EntityId>> = emptyMap()
+    val bodyCollections: Map<String, List<EntityId>> = emptyMap(),
+    val collectCollections: Map<String, String> = emptyMap(),
+    val accumulatedCollections: Map<String, List<EntityId>> = emptyMap()
 ) : AutomaticContinuation
 
 /** The loop's player-choice phase; the body tail itself is automatic work. */

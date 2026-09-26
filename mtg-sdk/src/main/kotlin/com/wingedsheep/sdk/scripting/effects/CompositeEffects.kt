@@ -1244,14 +1244,24 @@ sealed interface RepeatCondition {
  * )
  * ```
  *
+ * Each iteration's body starts from the pristine pre-loop context, so nothing a pass stores
+ * survives into the next pass — except through [collectCollections], the loop's twin of
+ * [ForEachEffect.collectCollections]: "repeat this process until …; then return the cards
+ * exiled this way" (Struggle for Sanity) needs every pass's picks after the loop ends.
+ *
  * @property body The effect to execute each iteration
  * @property repeatCondition Determines whether to repeat after each body execution
+ * @property collectCollections Per-iteration collection outputs to append across passes. The key
+ *   is the collection written by [body]; the value is the aggregate published to the effects
+ *   after the loop once it stops (an aggregate no pass wrote to is published empty). The repeat
+ *   condition still reads only the pass just run, never the aggregate.
  */
 @SerialName("RepeatWhile")
 @Serializable
 data class RepeatWhileEffect(
     val body: Effect,
-    val repeatCondition: RepeatCondition
+    val repeatCondition: RepeatCondition,
+    val collectCollections: Map<String, String> = emptyMap()
 ) : Effect {
     override val description: String = buildString {
         append(body.description)
