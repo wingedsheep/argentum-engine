@@ -125,6 +125,12 @@ data class ManaSource(
      * riders only to the color the rider-bearing ability actually produces.
      */
     val colorRiders: Map<Color, Set<ManaSpellRider>> = emptyMap(),
+    /**
+     * Spell riders attached to the *colorless* mana this source produces (Boseiju, Who Shelters
+     * All's `{T}, Pay 2 life: Add {C}` carries a filtered [ManaSpellRider.MakesSpellUncounterable]).
+     * The colorless twin of [colorRiders], kept apart because colorless is not a [Color].
+     */
+    val colorlessRiders: Set<ManaSpellRider> = emptySet(),
     /** Per-color mana restrictions. Colors not in this map are unrestricted. */
     val colorRestrictions: Map<Color, ManaRestriction> = emptyMap(),
     /**
@@ -817,7 +823,9 @@ class ManaSolver(
         // one spell fire the rider twice (Pyromancer's Goggles: "That many copies will be
         // created"), so identical riders must not collapse.
         val consumedRiders: List<ManaSpellRider> = usedSources.flatMap { source ->
-            val color = manaProduced[source.entityId]?.color ?: return@flatMap emptyList()
+            val production = manaProduced[source.entityId] ?: return@flatMap emptyList()
+            val color = production.color
+                ?: return@flatMap if (production.colorless > 0) source.colorlessRiders.toList() else emptyList()
             source.colorRiders[color]?.toList() ?: emptyList()
         }
         return ManaSolution(
@@ -1147,6 +1155,7 @@ class ManaSolver(
             // MakesSpellUncounterable on every color it can produce, while its
             // plain `{T}: Add {C}` ability contributes nothing).
             val perColorRiders = mutableMapOf<Color, MutableSet<ManaSpellRider>>()
+            val colorlessRiders = mutableSetOf<ManaSpellRider>()
 
             // Seed the accumulators with a basic land's intrinsic subtype mana (Rule 305.7) when a
             // static grant kept us out of the short-circuit above. The intrinsic ability is
@@ -1337,6 +1346,9 @@ class ManaSolver(
                         val manaAmount = evaluateManaAmount(effect.amount, state, entityId, playerId)
                         maxManaAmount = maxOf(maxManaAmount, manaAmount)
                         recordAmount(listOf(effect.color), colorless = false, amount = manaAmount)
+                        if (effect.riders.isNotEmpty()) {
+                            perColorRiders.getOrPut(effect.color) { mutableSetOf() }.addAll(effect.riders)
+                        }
                         effect.restriction
                     }
                     is AddColorlessManaEffect -> {
@@ -1344,6 +1356,7 @@ class ManaSolver(
                         val manaAmount = evaluateManaAmount(effect.amount, state, entityId, playerId)
                         maxManaAmount = maxOf(maxManaAmount, manaAmount)
                         recordAmount(emptyList(), colorless = true, amount = manaAmount)
+                        colorlessRiders.addAll(effect.riders)
                         effect.restriction
                     }
                     is AddManaOfChoiceEffect -> {
@@ -1526,6 +1539,7 @@ class ManaSolver(
                     bonusManaColorlessPerTap = extraColorlessBonus,
                     restriction = sourceRestriction,
                     colorRiders = perColorRiders.mapValues { (_, v) -> v.toSet() },
+                    colorlessRiders = colorlessRiders.toSet(),
                     colorRestrictions = restrictedColors,
                     colorActivationManaCost = colorActivationCosts,
                     colorPainCost = colorPainCosts,

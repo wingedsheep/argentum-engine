@@ -7,6 +7,7 @@ import com.wingedsheep.engine.handlers.effects.EffectExecutor
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.sdk.scripting.effects.AddColorlessManaEffect
+import com.wingedsheep.sdk.scripting.effects.ManaRestriction
 import kotlin.reflect.KClass
 
 /**
@@ -31,15 +32,19 @@ class AddColorlessManaExecutor(
 
         var newState = state.updateEntity(context.controllerId) { container ->
             val manaPool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
-            val updatedPool = if (effect.restriction != null) {
-                manaPool.addRestricted(null, amount, effect.restriction!!)
-            } else {
-                manaPool.addColorless(amount)
+            // Riders ride on restricted-mana entries, so rider-carrying mana with no restriction is
+            // stored under the no-op AnySpend marker (mirrors AddManaExecutor).
+            val updatedPool = when {
+                effect.restriction != null ->
+                    manaPool.addRestricted(null, amount, effect.restriction!!, effect.riders)
+                effect.riders.isNotEmpty() ->
+                    manaPool.addRestricted(null, amount, ManaRestriction.AnySpend, effect.riders)
+                else -> manaPool.addColorless(amount)
             }
             container.with(updatedPool)
         }
 
-        if (effect.restriction == null) {
+        if (effect.restriction == null && effect.riders.isEmpty()) {
             newState = ManaProvenanceTracker.tagAddedMana(newState, context.controllerId, context.sourceId, amount)
         }
 

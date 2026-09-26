@@ -193,7 +193,15 @@ data class AddManaEffect(
 @Serializable
 data class AddColorlessManaEffect(
     val amount: DynamicAmount,
-    val restriction: ManaRestriction? = null
+    val restriction: ManaRestriction? = null,
+    /**
+     * Side-effects attached to the produced mana — what happens to the *spell* this mana is
+     * eventually spent on (Boseiju, Who Shelters All: "If that mana is spent on an instant or
+     * sorcery spell, that spell can't be countered"). Mirrors [AddManaEffect.riders]: when
+     * non-empty the mana is stored as colorless restricted-mana entries so the riders survive in
+     * the pool, under [ManaRestriction.AnySpend] when [restriction] is null.
+     */
+    val riders: Set<ManaSpellRider> = emptySet()
 ) : Effect {
     constructor(amount: Int, restriction: ManaRestriction? = null) : this(DynamicAmount.Fixed(amount), restriction)
 
@@ -203,6 +211,7 @@ data class AddColorlessManaEffect(
             else -> "Add an amount of {C} equal to ${a.description}"
         })
         if (restriction != null) append(". ${restriction.description}")
+        for (rider in riders) append(". ${rider.description}")
     }
 }
 

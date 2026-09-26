@@ -339,7 +339,7 @@ class ManaSpendingTest : StringSpec({
             color = Color.GREEN,
             amount = DynamicAmount.Fixed(1),
             restriction = ManaRestriction.CreatureSpellsOnly,
-            riders = setOf(com.wingedsheep.sdk.scripting.effects.ManaSpellRider.MakesSpellUncounterable),
+            riders = setOf(com.wingedsheep.sdk.scripting.effects.ManaSpellRider.MakesSpellUncounterable()),
         )
         Grammar.abilityLine.printLine(manaAbility(withRider)) shouldBe null
     }

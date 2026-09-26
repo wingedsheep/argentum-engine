@@ -1940,7 +1940,8 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   `CopySpellWhenSpent`); as with `AddManaOfChoice`, riders without a `restriction` are stored under
   `ManaRestriction.AnySpend` so the rider survives in the pool while the mana stays spendable on
   anything. See [ManaSpellRider](#manaspellrider).
-- `AddColorlessMana(amount, restriction?)` — add colorless.
+- `AddColorlessMana(amount, restriction?, riders?)` — add colorless; `riders` as on `AddMana`
+  (Boseiju, Who Shelters All).
 - `RetainUnspentMana(vararg colors)` — "Until end of turn, you don't lose unspent mana of these colours
   as steps and phases end." The colour-filtered, single-player, turn-scoped one-shot cousin of the
   permanent-static `PreventManaPoolEmptying` (Upwelling, which stops *all* emptying for *everyone*).
@@ -12490,13 +12491,20 @@ controls *what happens to the spell* when it is spent. The cast pipeline either 
 spell directly (e.g. stamps a component) or queues a triggered ability onto the stack above
 the spell when the rider needs the stack (typically because it requires a player decision).
 
-Attach riders via the `riders` parameter of `AddMana`, `AddManaOfChoice` or
-`AddManaOfSourceChosenSubtype`. The set of riders consumed by a payment is collected as a **list**,
+Attach riders via the `riders` parameter of `AddMana`, `AddColorlessMana`, `AddManaOfChoice` or
+`AddManaOfSourceChosenSubtype`. Riders reach the spell on both payment paths — mana floated in the
+pool (restricted entries, `AnySpend` when the mana is otherwise unrestricted) and auto-pay (the solver
+attributes riders per colour via `ManaSource.colorRiders`, and to colorless via `colorlessRiders`). The set of riders consumed by a payment is collected as a **list**,
 not a set — multiplicity is load-bearing, since two rider-carrying mana spent on one spell must fire
 the rider twice (Pyromancer's Goggles: "That many copies will be created").
 
-- `ManaSpellRider.MakesSpellUncounterable` — Cavern of Souls: stamps `CantBeCounteredComponent`
-  on the spell at cast time.
+- `ManaSpellRider.MakesSpellUncounterable(spellFilter = GameObjectFilter.Any)` — stamps
+  `CantBeCounteredComponent` on the spell at cast time when it matches `spellFilter`. Cavern of Souls
+  / Delighted Halfling use the default (their spend restriction already fences the spell); Boseiju,
+  Who Shelters All uses `GameObjectFilter.InstantOrSorcery` on unrestricted `AddColorlessMana(1)`
+  ("If that mana is spent on an instant or sorcery spell, that spell can't be countered") — its {C}
+  spent on a creature spell pays normally and leaves that spell counterable. Matched at payment time
+  against the spell's cast characteristics.
 - `ManaSpellRider.ScryOnSharedTypeWithCommander(amount)` — Path of Ancestry: if the spell is
   a creature spell that shares a creature type with any of the controller's commanders,
   queues a `scry amount` triggered ability above the spell.

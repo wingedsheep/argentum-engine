@@ -2541,10 +2541,14 @@ object Effects {
     ): Effect = AddManaEffect(color, amount, restriction, expiry, riders)
 
     /**
-     * Add colorless mana.
+     * Add colorless mana. [riders] attach side-effects to whatever spell this mana pays for
+     * (Boseiju, Who Shelters All's `ManaSpellRider.MakesSpellUncounterable(InstantOrSorcery)`).
      */
-    fun AddColorlessMana(amount: Int, restriction: ManaRestriction? = null): Effect =
-        AddColorlessManaEffect(amount, restriction)
+    fun AddColorlessMana(
+        amount: Int,
+        restriction: ManaRestriction? = null,
+        riders: Set<ManaSpellRider> = emptySet(),
+    ): Effect = AddColorlessManaEffect(DynamicAmount.Fixed(amount), restriction, riders)
 
     /**
      * Pay a mana cost at resolution — the payment inside a gate or a reflexive trigger ("you may

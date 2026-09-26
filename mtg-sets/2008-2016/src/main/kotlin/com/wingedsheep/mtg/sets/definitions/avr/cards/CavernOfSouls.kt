@@ -38,7 +38,7 @@ val CavernOfSouls = card("Cavern of Souls") {
         cost = AbilityCost.Tap
         effect = Effects.AddAnyColorManaSpendOnChosenType(
             creatureOnly = true,
-            riders = setOf(ManaSpellRider.MakesSpellUncounterable)
+            riders = setOf(ManaSpellRider.MakesSpellUncounterable())
         )
         manaAbility = true
         timing = TimingRule.ManaAbility

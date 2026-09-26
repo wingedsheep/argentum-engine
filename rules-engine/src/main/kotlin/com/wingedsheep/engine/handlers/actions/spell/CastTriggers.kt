@@ -173,7 +173,7 @@ internal class CastTriggers(
     private fun applyManaRider(state: GameState, spell: CastSpellOnStack, rider: ManaSpellRider): Pair<GameState, List<PendingTrigger>> =
         when (rider) {
             is ManaSpellRider.MakesSpellUncounterable ->
-                state.updateEntity(spell.action.cardId) { c -> c.with(CantBeCounteredComponent) } to emptyList()
+                makeUncounterableWhenSpent(state, spell, rider.spellFilter) to emptyList()
             is ManaSpellRider.ScryOnSharedTypeWithCommander ->
                 state to scryOnSharedTypeWithCommander(state, spell, rider.amount)
             is ManaSpellRider.CopySpellWhenSpent ->
@@ -184,6 +184,16 @@ internal class CastTriggers(
 
     private fun spellMatches(state: GameState, action: CastSpell, filter: GameObjectFilter): Boolean =
         predicateEvaluator.matches(state, state.projectedState, action.cardId, filter, PredicateContext(controllerId = action.playerId))
+
+    /**
+     * Cavern of Souls' / Boseiju's rider: if the cast spell matches [spellFilter], it can't be
+     * countered. Matched at payment time against the spell's cast characteristics, like the other
+     * filtered riders — Boseiju's {C} spent on a creature spell leaves that spell counterable.
+     */
+    private fun makeUncounterableWhenSpent(state: GameState, spell: CastSpellOnStack, spellFilter: GameObjectFilter): GameState {
+        if (!spellMatches(state, spell.action, spellFilter)) return state
+        return state.updateEntity(spell.action.cardId) { c -> c.with(CantBeCounteredComponent) }
+    }
 
     /**
      * Carnelian Orb of Dragonkind's rider: if the cast spell matches [spellFilter], float an

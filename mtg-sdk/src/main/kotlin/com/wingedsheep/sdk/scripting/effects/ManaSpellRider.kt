@@ -20,14 +20,25 @@ sealed interface ManaSpellRider {
     val description: String
 
     /**
-     * "That spell can't be countered." (Cavern of Souls)
+     * "That spell can't be countered." (Cavern of Souls, with the default [spellFilter].)
+     * "If that mana is spent on an instant or sorcery spell, that spell can't be countered."
+     * (Boseiju, Who Shelters All, with `spellFilter = GameObjectFilter.InstantOrSorcery`.)
      *
-     * Translates to stamping `CantBeCounteredComponent` on the spell at cast time.
+     * On consumption the cast pipeline matches the spell against [spellFilter] using its cast
+     * characteristics and, on a match, stamps `CantBeCounteredComponent` on it. A non-matching
+     * spell (Boseiju's {C} spent on a creature spell) is left counterable — the rider is a no-op.
+     *
+     * @property spellFilter Which cast spells the rider makes uncounterable. [GameObjectFilter.Any]
+     *   when the mana's restriction already fences where it can be spent (Cavern of Souls).
      */
     @SerialName("MakesSpellUncounterable")
     @Serializable
-    data object MakesSpellUncounterable : ManaSpellRider {
-        override val description: String = "That spell can't be countered"
+    data class MakesSpellUncounterable(
+        val spellFilter: GameObjectFilter = GameObjectFilter.Any
+    ) : ManaSpellRider {
+        override val description: String =
+            if (spellFilter == GameObjectFilter.Any) "That spell can't be countered"
+            else "If that mana is spent on ${article(spellFilter.description)} spell, that spell can't be countered"
     }
 
     /**
@@ -108,3 +119,7 @@ sealed interface ManaSpellRider {
                 "${keyword.lowercase().replace('_', ' ')} until end of turn"
     }
 }
+
+/** "an instant or sorcery", "a creature" — the article a rider description puts before a filter. */
+private fun article(noun: String): String =
+    if (noun.firstOrNull()?.lowercaseChar() in setOf('a', 'e', 'i', 'o', 'u')) "an $noun" else "a $noun"

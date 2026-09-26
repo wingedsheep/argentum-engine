@@ -45,7 +45,7 @@ val DelightedHalfling = card("Delighted Halfling") {
             colorSet = ManaColorSet.AnyColor,
             amount = 1,
             restriction = ManaRestriction.LegendarySpellsOnly,
-            riders = setOf(ManaSpellRider.MakesSpellUncounterable)
+            riders = setOf(ManaSpellRider.MakesSpellUncounterable())
         )
         manaAbility = true
         timing = TimingRule.ManaAbility

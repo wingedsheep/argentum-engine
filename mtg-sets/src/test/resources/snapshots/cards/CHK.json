@@ -561,6 +561,79 @@
     ]
 }
 
+// Boseiju, Who Shelters All
+{
+    "name": "Boseiju, Who Shelters All",
+    "manaCost": "",
+    "typeLine": "Legendary Land",
+    "oracleText": "Boseiju enters tapped.\n{T}, Pay 2 life: Add {C}. If that mana is spent on an instant or sorcery spell, that spell can't be countered.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Boseiju, Who Shelters All:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomPayLife",
+                                "amount": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "riders": [
+                        {
+                            "type": "MakesSpellUncounterable",
+                            "spellFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ],
+        "replacementEffects": [
+            "EntersTapped"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "273",
+        "rarity": "RARE",
+        "artist": "Ralph Horsley",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/0180d9a8-992c-4d55-8ac4-33a587786993.jpg?1783944274",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "The spell can't be countered if the mana produced by Boseiju is spent to cover any cost of the spell, even an additional cost such as a splice cost. This is true even if you pay an additional cost while casting a spell \"without paying its mana cost.\""
+            },
+            {
+                "date": "2004-12-01",
+                "text": "Suppose mana produced by Boseiju is spent on a spell and an effect creates a copy of that spell. The copy can be countered, even though the original can't."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Brothers Yamazaki
 {
     "name": "Brothers Yamazaki",
