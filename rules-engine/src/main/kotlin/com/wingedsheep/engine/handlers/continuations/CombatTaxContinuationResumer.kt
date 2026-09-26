@@ -7,7 +7,7 @@ import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSourceOption
 import com.wingedsheep.engine.core.ManaSourcesSelectedResponse
-import com.wingedsheep.engine.core.tap
+import com.wingedsheep.engine.core.tapForMana
 import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
@@ -177,9 +177,9 @@ class CombatTaxContinuationResumer(
                 val solver = services.manaSolver
                 val solution = solver.solve(currentState, playerId, remainingCost) ?: return null
                 for (source in solution.sources) {
-                    val (tappedState, tapEvent) = tap(currentState, source.entityId)
+                    val (tappedState, tapEvents) = tapForMana(currentState, source.entityId, playerId)
                     currentState = tappedState
-                    tapEvent?.let(events::add)
+                    events.addAll(tapEvents)
                 }
                 for ((_, production) in solution.manaProduced) {
                     pool = if (production.color != null) {
@@ -197,9 +197,9 @@ class CombatTaxContinuationResumer(
                         // to returning null so the caller errors with a clear message.
                         return null
                     }
-                    val (tappedState, tapEvent) = tap(currentState, sourceId)
+                    val (tappedState, tapEvents) = tapForMana(currentState, sourceId, playerId)
                     currentState = tappedState
-                    tapEvent?.let(events::add)
+                    events.addAll(tapEvents)
                     pool = when {
                         source.producesColors.isNotEmpty() -> pool.add(source.producesColors.first())
                         source.producesColorless -> pool.addColorless(1)

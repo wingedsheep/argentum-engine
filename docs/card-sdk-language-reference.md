@@ -5763,7 +5763,7 @@ excludeSacrifice?, asCraftMaterial?)`, `dies()`, `changesZone(from?, to?, exclud
 moves), `attacks(requires)`, `blocks(attackerFilter?, minBlockedAttackers?)`, `becomesBlocked()`,
 `blocksOrBecomesBlocked(by?, oncePerCombat?)`, `attacksAndIsntBlocked()`, `dealsDamage(to, damageType,
 requireExcess, batch, requires)`, `dealsCombatDamage(to, …)`, `isDealtDamage(by)`,
-`damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`,
+`damagedCreatureDies(dying?)`, `becomesTapped(reason?, firstTimeEachTurn?)`, `becomesUntapped()`, `tappedForMana()` (SELF),
 `turnedFaceUp()`, `transforms(intoBackFace?)`, `phasesIn()`, `becomesTarget(of?, byYou, byOpponent,
 spellsOnly, abilitiesOnly, firstTimeEachTurn, includeSpellTargets, includePlayerTargets)`,
 `getsCounters(type?, by?, firstTimeEachTurn?, batch?)`, `losesCounters(type?, lastRemoved?,
@@ -6761,12 +6761,16 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   direction (`null` = either).
 - `Triggers.self.isCycled()` — you cycle source.
 - `Triggers.anyPlayer.cycles()` — anyone cycles.
-- `Triggers.anyPlayer.tapsLandForMana()` / `Triggers.<player>.tapsLandForMana(land)` — **not wired: a
-  trigger authored with these never fires.** `TriggerIndex` gives the pattern no category, because
-  the engine event is emitted on the manual mana-ability path only (auto-pay adds mana via the solver
-  without it), so indexing it would fire inconsistently. No card uses it. The mana-adding family
-  (Mana Flare, Heartbeat of Spring, Groundchuck & Dirtbag) is a triggered mana ability (CR 605.1b)
-  and uses `AdditionalManaOnSourceTap` or the other mana statics in §9.
+- `Triggers.anyPlayer.tapsLandForMana()` / `Triggers.<player>.tapsLandForMana(land)` — "whenever
+  [player] taps a [land] for mana" (`EventPattern.LandTappedForMana`). `Triggers.self.tappedForMana()`
+  is "whenever you tap **this** land for mana" (Forbidden Orchard — SELF only, no subject filter). The
+  engine emits `LandTappedForManaEvent` from the one tap helper every mana-payment path uses
+  (`tapForMana`): a manual activation, solver auto-pay, an explicit source list, and the source-selection
+  prompt all fire it. Only a mana ability with {T} in its cost taps the land *for mana*, and
+  land-ness is read from projected state. These are **non-mana** riders — they use the stack and may
+  target. The mana-adding family (Mana Flare, Heartbeat of Spring, Groundchuck & Dirtbag) is a
+  triggered mana ability (CR 605.1b) and uses `AdditionalManaOnSourceTap` or the other mana statics
+  in §9 instead.
 - `Triggers.you.commitsCrime()` — MKM crime mechanic.
 - `Triggers.you.givesAGift()` — Gift mechanic.
 - `Triggers.you.forages()` — Bloomburrow forage (CR 701.59a). Observes **any** forage by the player, in any

@@ -120,6 +120,40 @@ fun tap(
 }
 
 /**
+ * Tap [sourceId] as the cost of its mana ability — the [tap] atom plus, when the source is a land,
+ * the [LandTappedForManaEvent] that "whenever you tap a land for mana" triggers watch (Forbidden
+ * Orchard). Every path that taps a source to pay mana routes through here — the manual activation
+ * pipeline, the solver's auto-pay, explicit source lists and the source-selection prompt — so the
+ * trigger fires the same way however the player paid. Land-ness is read off projected state.
+ *
+ * Returns `state` and no events when the source was already tapped (see [tap]).
+ */
+fun tapForMana(
+    state: GameState,
+    sourceId: EntityId,
+    tapperId: EntityId,
+): Pair<GameState, List<GameEvent>> {
+    val (tapped, tapEvent) = tap(state, sourceId)
+    if (tapEvent == null) return state to emptyList()
+    return tapped to listOfNotNull(tapEvent, landTappedForManaEvent(state, sourceId, tapperId))
+}
+
+/**
+ * The [LandTappedForManaEvent] for [tapperId] tapping [sourceId] for mana, or null when the source
+ * isn't a land. Split out for the manual mana-ability pipeline, which taps as part of paying the
+ * ability's cost and emits this once the mana has been added.
+ */
+fun landTappedForManaEvent(
+    state: GameState,
+    sourceId: EntityId,
+    tapperId: EntityId,
+): LandTappedForManaEvent? {
+    if (!state.projectedState.hasType(sourceId, "LAND")) return null
+    val name = state.getEntity(sourceId)?.get<CardComponent>()?.name ?: return null
+    return LandTappedForManaEvent(tapperId = tapperId, landId = sourceId, landName = name)
+}
+
+/**
  * How many times [entityId] has already **become tapped this turn** — its
  * [HasBecomeTappedComponent] count, or 0 when it carries no marker or one stamped on an earlier
  * turn. The single place the "a stale stamp means zero taps this turn" rule lives.

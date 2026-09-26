@@ -311,6 +311,18 @@ class ObjectTriggerSubject internal constructor(
     fun becomesUntapped(): TriggerSpec = spec(UntapEvent(filter = filter))
 
     /**
+     * "Whenever you tap this land for mana" — a *non-mana* rider on the land's own mana ability
+     * (Forbidden Orchard). It fires however the land was tapped to pay (manual activation or
+     * auto-pay) and goes on the stack, so it may target. A rider that *adds* mana is a triggered
+     * mana ability (CR 605.1b) — author that as `AdditionalManaOnSourceTap`. [Triggers.self] only.
+     */
+    fun tappedForMana(): TriggerSpec {
+        only("tappedForMana", TriggerBinding.SELF)
+        unfiltered("tappedForMana")
+        return spec(LandTappedForMana(player = Player.You))
+    }
+
+    /**
      * "is turned face up" — this, the attached, or (under an unfiltered [Triggers.a]) any permanent
      * (Aphetto Runecaster). "Whenever a [filter] you control is turned face up", matched on its
      * face-up characteristics, is [PlayerTriggerSubject.permanentTurnedFaceUp].
@@ -867,8 +879,8 @@ class PlayerTriggerSubject internal constructor(private val player: Player) {
         spec(TapEvent(filter = filter, batch = batch, tapper = player))
 
     /**
-     * "taps a [land] for mana". **Not wired in the engine yet** — a mana-adding version (Mana Flare)
-     * is a triggered mana ability; author it as `AdditionalManaOnSourceTap`.
+     * "taps a [land] for mana" — a non-mana rider that uses the stack. A mana-adding version (Mana
+     * Flare) is a triggered mana ability (CR 605.1b); author it as `AdditionalManaOnSourceTap`.
      */
     fun tapsLandForMana(land: GameObjectFilter? = null): TriggerSpec =
         spec(LandTappedForMana(player = player, landFilter = land))

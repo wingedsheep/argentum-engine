@@ -686,9 +686,9 @@ class ManaPaymentContinuationResumer(
                     ?: return ExecutionResult.error(state, "Cannot pay mana cost with auto-pay")
 
                 for (source in solution.sources) {
-                    val (tappedState, tapEvent) = tap(currentState, source.entityId)
+                    val (tappedState, tapEvents) = tapForMana(currentState, source.entityId, playerId)
                     currentState = tappedState
-                    tapEvent?.let(events::add)
+                    events.addAll(tapEvents)
                 }
                 for ((_, production) in solution.manaProduced) {
                     currentPool = if (production.color != null) {
@@ -1083,9 +1083,9 @@ class ManaPaymentContinuationResumer(
                     ?: return ExecutionResult.error(state, "Cannot pay mana cost with auto-pay")
 
                 for (source in solution.sources) {
-                    val (tappedState, tapEvent) = tap(currentState, source.entityId)
+                    val (tappedState, tapEvents) = tapForMana(currentState, source.entityId, playerId)
                     currentState = tappedState
-                    tapEvent?.let(events::add)
+                    events.addAll(tapEvents)
                 }
                 for ((_, production) in solution.manaProduced) {
                     currentPool = if (production.color != null) {
@@ -1257,9 +1257,9 @@ class ManaPaymentContinuationResumer(
                 ?: return ExecutionResult.error(state, "Cannot pay mana cost")
 
             for (source in solution.sources) {
-                val (tappedState, tapEvent) = tap(currentState, source.entityId)
+                val (tappedState, tapEvents) = tapForMana(currentState, source.entityId, playerId)
                 currentState = tappedState
-                tapEvent?.let(events::add)
+                events.addAll(tapEvents)
             }
 
             for ((_, production) in solution.manaProduced) {
@@ -1349,9 +1349,9 @@ class ManaPaymentContinuationResumer(
                     ?: return ExecutionResult.error(state, "Cannot pay mana cost with auto-pay")
 
                 for (source in solution.sources) {
-                    val (tappedState, tapEvent) = tap(currentState, source.entityId)
+                    val (tappedState, tapEvents) = tapForMana(currentState, source.entityId, playerId)
                     currentState = tappedState
-                    tapEvent?.let(events::add)
+                    events.addAll(tapEvents)
                 }
 
                 for ((_, production) in solution.manaProduced) {
@@ -1478,9 +1478,9 @@ class ManaPaymentContinuationResumer(
                 events.add(PermanentsSacrificedEvent(sourceController, listOf(sourceId)))
                 events.addAll(transition.events)
             } else {
-                val (tappedState, tapEvent) = tap(currentState, sourceId)
+                val (tappedState, tapEvents) = tapForMana(currentState, sourceId, fallbackControllerId)
                 currentState = tappedState
-                tapEvent?.let(events::add)
+                events.addAll(tapEvents)
             }
 
             if (source.producesColors.isNotEmpty()) {
@@ -1636,9 +1636,9 @@ class ManaPaymentContinuationResumer(
         // Tap the source and each chosen permanent, then credit the source's mana to the pool.
         var currentState = state
         val events = mutableListOf<GameEvent>()
-        val (headTappedState, headTapEvent) = tap(currentState, headSourceId)
+        val (headTappedState, headTapEvents) = tapForMana(currentState, headSourceId, continuation.payingPlayerId)
         currentState = headTappedState
-        headTapEvent?.let(events::add)
+        events.addAll(headTapEvents)
         for (chosen in response.selectedCards) {
             val (tappedState, tapEvent) = tap(currentState, chosen)
             currentState = tappedState

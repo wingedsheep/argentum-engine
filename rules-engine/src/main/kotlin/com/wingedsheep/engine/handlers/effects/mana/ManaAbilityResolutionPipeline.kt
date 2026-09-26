@@ -3,6 +3,7 @@ package com.wingedsheep.engine.handlers.effects.mana
 import com.wingedsheep.engine.core.ExecutionResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LandTappedForManaEvent
+import com.wingedsheep.engine.core.landTappedForManaEvent
 import com.wingedsheep.engine.core.ManaAddedEvent
 import com.wingedsheep.engine.handlers.ConditionEvaluator
 import com.wingedsheep.engine.handlers.DynamicAmountEvaluator
@@ -14,6 +15,7 @@ import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.battlefield.AttachedToComponent
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
+import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
@@ -132,15 +134,12 @@ class ManaAbilityResolutionPipeline(
         )
         var allManaEvents = onSourceTap.events
 
-        // Emit a "land tapped for mana" event so triggers like Overabundance / Mana Flare
-        // ("whenever a player taps a land for mana") can fire. Manual-tap path only —
-        // automatic cost payment adds mana via the solver without re-entering this pipeline.
-        if (sourceCard?.typeLine?.isLand == true) {
-            allManaEvents = allManaEvents + LandTappedForManaEvent(
-                tapperId = tapperId,
-                landId = sourceId,
-                landName = sourceCard.name
-            )
+        // "Whenever you tap a land for mana" triggers (Forbidden Orchard) watch this event; the
+        // auto-pay paths emit the same one through `tapForMana`. Only a mana ability with {T} in
+        // its cost taps the land for mana — a tapped source is how that shows here, since the
+        // color-choice resume path no longer holds the activation's TappedEvent.
+        if (onSourceTap.state.getEntity(sourceId)?.has<TappedComponent>() == true) {
+            landTappedForManaEvent(onSourceTap.state, sourceId, tapperId)?.let { allManaEvents = allManaEvents + it }
         }
 
         val anyColorBonuses = tappedForManaBonusResolver.collect(onSourceTap.state, sourceId, tapperId)

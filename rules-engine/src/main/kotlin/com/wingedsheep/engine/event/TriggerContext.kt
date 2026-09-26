@@ -406,6 +406,10 @@ data class TriggerContext(
                 is BlockersDeclaredEvent -> TriggerContext()
                 is TappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is UntappedEvent -> TriggerContext(triggeringEntityId = event.entityId)
+                is com.wingedsheep.engine.core.LandTappedForManaEvent -> TriggerContext(
+                    triggeringEntityId = event.landId,
+                    triggeringPlayerId = event.tapperId
+                )
                 is PhasedInEvent -> TriggerContext(triggeringEntityId = event.entityId)
                 is LifeChangedEvent -> TriggerContext(
                     triggeringEntityId = event.playerId,

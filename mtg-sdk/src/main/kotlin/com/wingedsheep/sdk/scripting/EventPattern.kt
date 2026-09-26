@@ -1977,9 +1977,10 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * (relative to the trigger's controller — `Each` for any player, `Opponent`, `You`).
      * [landFilter] optionally restricts which lands count (e.g. only basic lands).
      *
-     * Fires on the manual mana-ability activation path; automatic cost payment adds mana via the
-     * solver and does not emit this event, matching how the engine handles mana-ability side
-     * effects during auto-payment.
+     * Fires however the land was tapped to pay — a manual activation or the auto-payer — but only
+     * for a mana ability with {T} in its cost. [TriggerBinding.SELF] is "whenever you tap this land
+     * for mana" (Forbidden Orchard). A non-mana rider: it uses the stack. A trigger that *adds* mana
+     * is a triggered mana ability (CR 605.1b) — author that as `AdditionalManaOnSourceTap`.
      */
     @SerialName("LandTappedForMana")
     @Serializable

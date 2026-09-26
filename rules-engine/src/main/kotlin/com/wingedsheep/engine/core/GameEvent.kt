@@ -1356,9 +1356,9 @@ data class PermanentUnattachedEvent(
  * A player tapped a land for mana (a land's mana ability resolved).
  *
  * Drives the "Whenever a player taps a land for mana" trigger family
- * ([com.wingedsheep.sdk.scripting.EventPattern.LandTappedForMana]). Emitted only on the manual
- * mana-ability activation path; automatic cost payment adds mana via the solver without emitting
- * this event.
+ * ([com.wingedsheep.sdk.scripting.EventPattern.LandTappedForMana]). Emitted by the manual
+ * mana-ability pipeline and, through [tapForMana], by every auto-pay / explicit-source path, so the
+ * trigger fires however the player paid.
  */
 @Serializable
 @SerialName("LandTappedForManaEvent")

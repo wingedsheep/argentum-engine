@@ -185,8 +185,7 @@ object ManaPaymentWindow {
         fallbackControllerId: EntityId
     ): Pair<GameState, List<GameEvent>> {
         if (!source.requiresSacrifice) {
-            val (tapped, event) = com.wingedsheep.engine.core.tap(state, sourceId)
-            return tapped to listOfNotNull(event)
+            return com.wingedsheep.engine.core.tapForMana(state, sourceId, fallbackControllerId)
         }
         val controller = state.getEntity(sourceId)
             ?.get<com.wingedsheep.engine.state.components.identity.ControllerComponent>()?.playerId

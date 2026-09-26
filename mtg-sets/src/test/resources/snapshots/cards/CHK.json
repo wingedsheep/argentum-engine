@@ -2164,6 +2164,59 @@
     ]
 }
 
+// Forbidden Orchard
+{
+    "name": "Forbidden Orchard",
+    "manaCost": "",
+    "typeLine": "Land",
+    "oracleText": "{T}: Add one mana of any color.\nWhenever you tap this land for mana, target opponent creates a 1/1 colorless Spirit creature token.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Forbidden Orchard:2",
+                "trigger": {
+                    "type": "LandTappedForMana",
+                    "player": "You"
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [],
+                    "creatureTypes": [
+                        "Spirit"
+                    ],
+                    "controller": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetOpponent",
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you tap this land for mana, target opponent creates a 1/1 colorless Spirit creature token."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Forbidden Orchard:1",
+                "cost": "CostTap",
+                "effect": "AddManaOfChoice",
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "276",
+        "rarity": "RARE",
+        "artist": "Dany Orizio",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/88d78261-c8c9-4e0e-b157-f70ed46c3a25.jpg?1783944274"
+    },
+    "colorIdentityOverride": []
+}
+
 // Frostwielder
 {
     "name": "Frostwielder",

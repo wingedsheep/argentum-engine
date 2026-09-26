@@ -99,6 +99,7 @@ enum class TriggerCategory {
     SAGA_CHAPTER_RESOLVED,
     PLAYER_LOST,
     ROOM_FULLY_UNLOCKED,
+    LAND_TAPPED_FOR_MANA,
 }
 
 /**
@@ -345,12 +346,10 @@ class TriggerIndex(
                 // Synthetic: StateTriggerPoller produces these pending triggers directly.
                 is SdkGameEvent.StateConditionMetEvent -> emptyList()
 
-                // Not wired. No card uses it: a mana-adding "whenever you tap a land for mana" is a
-                // triggered mana ability (CR 605.1b), authored as AdditionalManaOnSourceTap so it
-                // resolves off the stack. LandTappedForManaEvent is emitted only on a manual
-                // mana-ability activation, not when the solver auto-pays, so indexing this would
-                // fire inconsistently. Wire both halves together before a card relies on it.
-                is SdkGameEvent.LandTappedForMana -> emptyList()
+                // A *non-mana* "whenever you tap a land for mana" (Forbidden Orchard) — it uses the
+                // stack. A mana-adding one is a triggered mana ability (CR 605.1b), authored as
+                // AdditionalManaOnSourceTap so it resolves immediately instead.
+                is SdkGameEvent.LandTappedForMana -> LAND_TAPPED_FOR_MANA_LIST
             }
         }
 
@@ -483,8 +482,7 @@ class TriggerIndex(
             // No card triggers on a permanent flipping (CR 710); the flip is its own action.
             is com.wingedsheep.engine.core.FlippedEvent -> emptyList()
 
-            // Unwired on purpose — see SdkGameEvent.LandTappedForMana in triggerToCategories.
-            is com.wingedsheep.engine.core.LandTappedForManaEvent -> emptyList()
+            is com.wingedsheep.engine.core.LandTappedForManaEvent -> LAND_TAPPED_FOR_MANA_LIST
         }
 
         // Pre-allocated lists to avoid allocation on every event
@@ -538,6 +536,7 @@ class TriggerIndex(
         private val BECOMES_UNATTACHED_LIST = listOf(TriggerCategory.BECOMES_UNATTACHED)
         private val SAGA_CHAPTER_RESOLVED_LIST = listOf(TriggerCategory.SAGA_CHAPTER_RESOLVED)
         private val PLAYER_LOST_LIST = listOf(TriggerCategory.PLAYER_LOST)
+        private val LAND_TAPPED_FOR_MANA_LIST = listOf(TriggerCategory.LAND_TAPPED_FOR_MANA)
         private val ROOM_FULLY_UNLOCKED_LIST = listOf(TriggerCategory.ROOM_FULLY_UNLOCKED)
     }
 }

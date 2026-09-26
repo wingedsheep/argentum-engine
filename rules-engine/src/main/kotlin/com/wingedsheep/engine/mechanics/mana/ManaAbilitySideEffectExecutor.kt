@@ -5,7 +5,7 @@ import com.wingedsheep.engine.core.EffectResult
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LifeChangeReason
 import com.wingedsheep.engine.core.TappedEvent
-import com.wingedsheep.engine.core.tap
+import com.wingedsheep.engine.core.tapForMana
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
@@ -71,9 +71,9 @@ class ManaAbilitySideEffectExecutor(
         var currentState = state
         val events = mutableListOf<GameEvent>()
         for (source in solution.sources) {
-            val (tappedState, event) = tap(currentState, source.entityId)
+            val (tappedState, tapEvents) = tapForMana(currentState, source.entityId, controllerId)
             currentState = tappedState
-            event?.let(events::add)
+            events.addAll(tapEvents)
 
             val production = solution.manaProduced[source.entityId]
             // Resolved once and shared: both the activation event and the side effects want the
