@@ -2494,6 +2494,85 @@
     ]
 }
 
+// Hisoka, Minamo Sensei
+{
+    "name": "Hisoka, Minamo Sensei",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Legendary Creature — Human Wizard",
+    "oracleText": "{2}{U}, Discard a card: Counter target spell if it has the same mana value as the discarded card.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hisoka, Minamo Sensei:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{U}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": "AtomDiscard"
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": {
+                                "type": "EntityProperty",
+                                "entity": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                },
+                                "numericProperty": "ManaValue"
+                            },
+                            "operator": "EQ",
+                            "right": {
+                                "type": "EntityProperty",
+                                "entity": "DiscardedAsCost",
+                                "numericProperty": "ManaValue"
+                            }
+                        }
+                    },
+                    "then": "Counter"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "66",
+        "rarity": "RARE",
+        "artist": "Donato Giancola",
+        "flavorText": "\"By all rights we should have perished in the Kami War. Our perseverence is a tribute to mortal ingenuity. And perhaps a few forgotten secrets found in the nick of time.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/8/a87aea05-5970-455e-a728-668cf23940a6.jpg?1783944327"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hold the Line
 {
     "name": "Hold the Line",

@@ -158,10 +158,11 @@ data class EffectContext(
     val sacrificedPermanents: List<EntitySnapshot> = emptyList(),
     /**
      * Entity ids of cards discarded to pay this spell's additional discard cost
-     * (`Costs.additional.DiscardCards(...)`). By resolution these cards live in their owner's
-     * graveyard (CR 608.2), so [EffectTarget.DiscardedAsCost] resolves to the id and an
-     * `EntityMatches` reads the card's graveyard characteristics (Grab the Prize). Empty when the
-     * spell carried no discard cost.
+     * (`Costs.additional.DiscardCards(...)`) or this activated ability's discard cost. By
+     * resolution these cards live in their owner's graveyard (CR 608.2), so
+     * [EffectTarget.DiscardedAsCost] resolves to the id and an `EntityMatches` reads the card's
+     * graveyard characteristics (Grab the Prize, Hisoka, Minamo Sensei). Empty when the spell or
+     * ability carried no discard cost.
      */
     val discardedAsCostCards: List<EntityId> = emptyList(),
     /** Division announced as the spell/ability went on the stack (CR 601.2d), target ID -> share: damage for

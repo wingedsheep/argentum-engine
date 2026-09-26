@@ -311,6 +311,12 @@ data class ActivatedAbilityOnStackComponent(
      */
     val exiledAsCostCards: List<EntityId> = emptyList(),
     /**
+     * Cards discarded to pay this activation's cost, carried to resolution for
+     * [com.wingedsheep.sdk.scripting.targets.EffectTarget.DiscardedAsCost] ("the discarded card").
+     * The activated-ability counterpart of [SpellOnStackComponent.discardedAsCostCards].
+     */
+    val discardedAsCostCards: List<EntityId> = emptyList(),
+    /**
      * Counters (kind → count) the source had the moment a self-exile /
      * self-sacrifice cost was paid (CR 113.7a). Captured before the cost wipes them so the
      * resolving effect can read the pre-cost count via

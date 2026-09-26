@@ -309,9 +309,9 @@ sealed interface EffectTarget {
     }
 
     /**
-     * DISCARDED AS COST: a card discarded to pay this spell/ability's additional cost, by index.
-     * The discard counterpart of [SacrificedAsCost] / [TappedAsCost]
-     * (`Costs.additional.DiscardCards(...)`). Resolves to the discarded card's entity id —
+     * DISCARDED AS COST: a card discarded to pay this spell's additional cost
+     * (`Costs.additional.DiscardCards(...)`) or this activated ability's cost (`Costs.Discard(...)`),
+     * by index. The discard counterpart of [SacrificedAsCost] / [TappedAsCost]. Resolves to the discarded card's entity id —
      * the card is in its owner's graveyard by resolution (CR 608.2), so an
      * [com.wingedsheep.sdk.scripting.conditions.EntityMatches] reads that card's graveyard
      * characteristics (land vs nonland, type, color, …).

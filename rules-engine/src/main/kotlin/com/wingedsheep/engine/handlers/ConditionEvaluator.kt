@@ -1093,7 +1093,8 @@ class ConditionEvaluator(
     }
 
     /**
-     * Match the card discarded to pay this spell's additional discard cost
+     * Match the card discarded to pay this spell's additional discard cost (or an activated ability's
+     * discard cost)
      * ([EffectTarget.DiscardedAsCost]) against [filter]. The discarded card is in its owner's
      * graveyard by resolution (CR 608.2), so this reads its graveyard characteristics — exactly
      * the right "land vs nonland" answer for Grab the Prize. Resolution-only; returns false when

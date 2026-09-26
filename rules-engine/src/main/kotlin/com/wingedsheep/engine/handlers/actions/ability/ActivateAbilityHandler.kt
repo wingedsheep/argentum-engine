@@ -395,6 +395,9 @@ class ActivateAbilityHandler(
             // and the plain counted form (Necropolis) alike. Empty for an ability whose cost exiles
             // nothing, so nothing else changes.
             exiledAsCostCards = if (effectiveCost.hasExileAtom()) payment.exileChoices else emptyList(),
+            // "The discarded card" (Hisoka, Minamo Sensei) — the activation counterpart of a
+            // spell's additional discard cost, read at resolution as EffectTarget.DiscardedAsCost.
+            discardedAsCostCards = payment.discardedCards,
             lastKnownSourceCounters = snapshots.lastKnownSourceCounters,
             lastKnownSourceSnapshot = snapshots.lastKnownSourceSnapshot,
             lastKnownSourceAttachments = snapshots.lastKnownSourceAttachments,

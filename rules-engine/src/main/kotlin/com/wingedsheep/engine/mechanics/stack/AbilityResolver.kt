@@ -203,6 +203,7 @@ internal class AbilityResolver(
             tappedPermanents = abilityComponent.tappedPermanents,
             tappedEntitySnapshots = abilityComponent.tappedEntitySnapshots,
             exiledAsCostCards = abilityComponent.exiledAsCostCards,
+            discardedAsCostCards = abilityComponent.discardedAsCostCards,
             lastKnownSourceCounters = abilityComponent.lastKnownSourceCounters,
             lastKnownSourceSnapshot = abilityComponent.lastKnownSourceSnapshot,
             lastKnownSourceAttachments = abilityComponent.lastKnownSourceAttachments,

@@ -4033,11 +4033,15 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   resolves to the controller it last had on the battlefield (CR 608.2h last-known information,
   carried by the engine's `LastKnownPermanentComponent`), falling back to the card's owner.
 - `EffectTarget.DiscardedAsCost(index = 0)` — a card discarded to pay this spell's additional discard
-  cost (`Costs.additional.DiscardCards(...)`). The discarded card is in its owner's graveyard by
-  resolution (CR 608.2), so this resolves to that card's id; pair it with an `EntityMatches` (facade
-  `Conditions.DiscardedCardMatches(filter)`) to test the discarded card's graveyard characteristics —
+  cost (`Costs.additional.DiscardCards(...)`) **or this activated ability's cost** (`Costs.Discard(...)`,
+  random or chosen, or `Costs.DiscardSelf`). The discarded card is in its owner's graveyard by
+  resolution, so this resolves to that card's id; pair it with an `EntityMatches` (facade
+  `Conditions.DiscardedCardMatches(filter)`) to test the discarded card's graveyard characteristics, or
+  read a number off it with `DynamicAmounts.manaValueOf(EffectTarget.DiscardedAsCost())` —
   the cost-referencing sibling of `EffectTarget.SacrificedAsCost` / `TappedAsCost`. Resolution-only. Used
-  by Grab the Prize ("if the discarded card wasn't a land card, …").
+  by Grab the Prize ("if the discarded card wasn't a land card, …") and Hisoka, Minamo Sensei ("counter
+  target spell if it has the same mana value as the discarded card" =
+  `Effects.If(CompareAmounts(targetManaValue(), EQ, manaValueOf(DiscardedAsCost())), Effects.CounterSpell())`).
 - `EffectTarget.SacrificedAsCost(index = 0)` — a permanent **sacrificed to pay this spell's or
   ability's cost** ("the sacrificed creature"). Read as a value it uses the snapshot taken as the cost
   was paid — `EntityProperty(SacrificedAsCost(), ManaValue)` for "the sacrificed creature's mana
@@ -11240,7 +11244,7 @@ default to "you" so card authors don't need to pass it explicitly.
   after the spell leaves the stack). General "whenever you cast a spell, if it's a/an X ..." gate.
   Backed by `EntityMatches(EffectTarget.TriggeringEntity, filter)`.
 - `DiscardedCardMatches(filter, index = 0)` — the card discarded to pay this spell's additional
-  discard cost (`Costs.additional.DiscardCards(...)`) matches `filter`. The discarded card is in its
+  discard cost (`Costs.additional.DiscardCards(...)`) or this activated ability's discard cost matches `filter`. The discarded card is in its
   owner's graveyard by resolution (CR 608.2), so the filter checks the graveyard card's
   characteristics. Resolution-only; backed by `EntityMatches(EffectTarget.DiscardedAsCost(index),
   filter)`. Wrap in `Not` for "wasn't a [type]" — e.g. Grab the Prize: "if the discarded card wasn't

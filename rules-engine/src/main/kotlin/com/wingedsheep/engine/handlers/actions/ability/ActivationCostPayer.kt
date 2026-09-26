@@ -2,6 +2,7 @@ package com.wingedsheep.engine.handlers.actions.ability
 
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ActivateAbility
+import com.wingedsheep.engine.core.CardsDiscardedEvent
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.LoyaltyChangedEvent
 import com.wingedsheep.engine.core.PaymentStrategy
@@ -55,6 +56,11 @@ internal data class ActivationPayment(
     val firstTapSlice: List<EntityId>,
     /** The cards the cost exiled, as fed to payment. */
     val exileChoices: List<EntityId>,
+    /**
+     * The cards the cost atoms discarded — chosen, random, or the source itself — read off the
+     * atoms' own discard events, so a mana ability tapped to pay the mana portion never adds one.
+     */
+    val discardedCards: List<EntityId>,
     val snapshots: ActivationCostSnapshots,
 )
 
@@ -240,6 +246,7 @@ internal class ActivationCostPayer(
                 isTapBatch = isTapBatch,
                 firstTapSlice = firstTapSlice,
                 exileChoices = exileChoices,
+                discardedCards = costResult.events.filterIsInstance<CardsDiscardedEvent>().flatMap { it.cardIds },
                 snapshots = snapshots,
             )
         )
