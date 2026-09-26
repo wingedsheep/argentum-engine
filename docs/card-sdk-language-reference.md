@@ -1274,6 +1274,14 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   modification apply and gain/loss triggers fire. With `drawEqualToLifeLost = true`, the controller
   then draws a card for each point of life they **actually lost** in the swap (Mister Negative). Wrap
   the whole thing in `Effects.May` for "you may exchange".
+- `RedistributeLifeTotals()` — "Redistribute any number of players' life totals" (Reverse the Sands).
+  At resolution the controller hands each player one of the current totals, one player at a time
+  (a `ChooseOptionDecision` per player; a player with one legal total — always the last — is
+  assigned it silently, and a player handed their own total is left out). Totals move whole. A
+  player who can't gain life is never offered a higher total, nor one who can't lose life a lower
+  one (CR 119.7–8), and no offer strands a later player. In a shared-life team game each team's
+  total is one unit (CR 810.9f). Changes apply as ordinary life gain/loss from the pre-effect
+  snapshot, so replacements and gain/loss triggers see them.
 - `LoseHalfLife(roundUp, target, lifePlayer?)` — lose half of life total (round up/down).
 - `LockLifeGain(target?, duration?)` — "target player can't gain life" for `duration` (default
   `Duration.Permanent` = rest of the game; `EndOfTurn` / `UntilYourNextTurn` also honored). A one-shot

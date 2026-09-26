@@ -78,6 +78,7 @@ internal fun AnswerContinuation.objectReferences(): ObjectReferenceEnvironment? 
     is ChooseGuessKindContinuation -> effectContext.objectReferences
     is GuessTopCardKindContinuation -> effectContext.objectReferences
     is GuessConditionContinuation -> effectContext.objectReferences
+    is RedistributeLifeTotalsContinuation -> effectContext.objectReferences
     is ModalContinuation -> objectReferences
     is ModalTargetContinuation -> objectReferences
     is BudgetModalContinuation -> objectReferences
@@ -186,6 +187,7 @@ internal fun AnswerContinuation.withObjectReferences(refs: ObjectReferenceEnviro
     is ChooseGuessKindContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is GuessTopCardKindContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is GuessConditionContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
+    is RedistributeLifeTotalsContinuation -> copy(effectContext = effectContext.copy(objectReferences = refs))
     is ModalContinuation -> copy(objectReferences = refs)
     is ModalTargetContinuation -> copy(objectReferences = refs)
     is BudgetModalContinuation -> copy(objectReferences = refs)

@@ -17,6 +17,7 @@ class LifeExecutors(
         DrainLifeExecutor(amountEvaluator),
         ExchangeLifeAndStatExecutor(),
         ExchangeLifeTotalsExecutor(cardRegistry, predicateEvaluator = zones.predicateEvaluator),
+        RedistributeLifeTotalsExecutor(predicateEvaluator = zones.predicateEvaluator),
         GainLifeExecutor(amountEvaluator),
         LoseLifeExecutor(amountEvaluator),
         OwnerGainsLifeExecutor(predicateEvaluator = zones.predicateEvaluator),

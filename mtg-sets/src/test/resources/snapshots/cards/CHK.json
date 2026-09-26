@@ -7372,6 +7372,37 @@
     ]
 }
 
+// Reverse the Sands
+{
+    "name": "Reverse the Sands",
+    "manaCost": "{6}{W}{W}",
+    "typeLine": "Sorcery",
+    "oracleText": "Redistribute any number of players' life totals. (Each of those players gets one life total back.)",
+    "script": {
+        "spellEffect": "RedistributeLifeTotals"
+    },
+    "metadata": {
+        "collectorNumber": "41",
+        "rarity": "RARE",
+        "artist": "Jeremy Jarvis",
+        "flavorText": "Worse than the years of aging was the burden of memory. The young monk lost his youth and gained a vicarious lifetime of hardship and woe.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/a/aae9c988-5e8c-4d3a-af6d-8ac083698159.jpg?1783944332",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "You choose which player gets which life total when the spell resolves."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "You can't split up a life total when you redistribute it. For example, suppose that in a two-player game your life total is 5 and your opponent's life total is 15 when Reverse the Sands starts to resolve. You can choose to (a) leave the life totals as they are or (b) make your life total 15 and your opponent's 5. You can't choose to make your life total 20 and your opponent's 0."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // River Kaijin
 {
     "name": "River Kaijin",

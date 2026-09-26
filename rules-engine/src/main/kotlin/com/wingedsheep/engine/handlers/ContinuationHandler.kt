@@ -45,6 +45,7 @@ class ContinuationHandler(
         registerModule(ManaPaymentContinuationResumer(services))
         registerModule(LibraryAndZoneContinuationResumer(services, targetFinder = services.targetFinder))
         registerModule(GuessContinuationResumer(services))
+        registerModule(RedistributeLifeContinuationResumer(services))
         registerModule(ModalAndCloneContinuationResumer(services))
         registerModule(RoomDoorContinuationResumer(services))
         registerModule(CastModalContinuationResumer(services))

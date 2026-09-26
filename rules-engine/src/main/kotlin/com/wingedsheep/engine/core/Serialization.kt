@@ -330,6 +330,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChooseGuessKindContinuation::class)
         subclass(GuessTopCardKindContinuation::class)
         subclass(GuessConditionContinuation::class)
+        subclass(RedistributeLifeTotalsContinuation::class)
         subclass(HandSizeDiscardContinuation::class)
         subclass(EachPlayerDiscardsOrLoseLifeContinuation::class)
         subclass(DrawUpToContinuation::class)

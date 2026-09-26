@@ -527,6 +527,12 @@ object Effects {
     ): Effect = com.wingedsheep.sdk.scripting.effects.ExchangeLifeTotalsEffect(target, drawEqualToLifeLost)
 
     /**
+     * "Redistribute any number of players' life totals." — the controller hands each player one of
+     * the current life totals (Reverse the Sands).
+     */
+    fun RedistributeLifeTotals(): Effect = com.wingedsheep.sdk.scripting.effects.RedistributeLifeTotalsEffect
+
+    /**
      * Lose half your life, rounded up.
      * Composes as LoseLifeEffect with Divide(LifeTotal, 2).
      *
