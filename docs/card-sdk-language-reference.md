@@ -8400,6 +8400,13 @@ staticAbility {
   unions grants held by the player (or by a permanent they control) with printed exemptions — the
   one-shot "the legend rule doesn't apply to permanents you control this turn" (Hall of Echoes), which
   outlives the permanent that created it and expires in the cleanup step.
+  Either form may be wrapped in `ConditionalStaticAbility(…, condition)`; `LegendRuleCheck` honours the
+  exemption only while the condition holds at the SBA check, evaluated with the static's source and its
+  controller. **Brothers Yamazaki** — "If there are exactly two permanents named Brothers Yamazaki on the
+  battlefield, the 'legend rule' doesn't apply to them" =
+  `ConditionalStaticAbility(LegendRuleDoesNotApplyTo(Permanent.named(n)),
+  Compare(AggregateBattlefield(Player.Each, Permanent.named(n)), EQ, Fixed(2)))`; a third copy fails the
+  count, so the rule sees all three and the controller keeps one.
 - `SkipDrawStep` — "Skip your draw step." Controller-scoped and standing: `DrawPhaseManager` scans the
   projected battlefield (via `RoomFaceStatics`) as the draw step begins and takes no draw for a player
   who controls one, every turn, without consuming anything. The one-shot counterparts are the

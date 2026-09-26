@@ -1037,7 +1037,10 @@ data class RetainUnspentColoredMana(val color: Color) : StaticAbility {
  * The "legend rule" (CR 704.5j) doesn't apply to permanents matching [filter] that the controller
  * of this permanent controls (Spider-Verse: "The 'legend rule' doesn't apply to Spiders you
  * control"). Such permanents are excluded from the legend-rule duplicate grouping in
- * `LegendRuleCheck`, so the controller may keep multiple same-named copies.
+ * `LegendRuleCheck`, so the controller may keep multiple same-named copies. May be wrapped in a
+ * [ConditionalStaticAbility]; `LegendRuleCheck` then honours it only while the condition holds
+ * (Brothers Yamazaki: "If there are exactly two permanents named Brothers Yamazaki on the
+ * battlefield, …").
  */
 @SerialName("LegendRuleDoesNotApplyTo")
 @Serializable
