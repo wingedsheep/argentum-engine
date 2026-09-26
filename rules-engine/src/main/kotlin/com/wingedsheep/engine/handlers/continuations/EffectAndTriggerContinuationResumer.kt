@@ -7,6 +7,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.engine.state.components.stack.TriggeredAbilityOnStackComponent
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
+import com.wingedsheep.sdk.scripting.effects.DistributeCountersAmongTargetsEffect
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.engine.handlers.effects.composite.asMayDecide
 import com.wingedsheep.sdk.scripting.effects.Effect
@@ -147,25 +148,38 @@ class EffectAndTriggerContinuationResumer(
             return checkForMore(stackResult.newState, stackResult.events.toList())
         }
 
-        // Check if this is a DividedDamageEffect with multiple targets — need distribution.
-        // A dynamicTotal (e.g. Ureni — "X = lands you control") is evaluated now, as the ability
-        // goes on the stack, so the player divides the correct amount among the chosen targets.
-        val effect = continuation.effect
-        if (effect is DividedDamageEffect && selectedTargets.size > 1) {
-            val total = effect.dynamicTotal?.let {
-                amountEvaluator.evaluate(
-                    state,
-                    it,
-                    com.wingedsheep.engine.handlers.EffectContext(
-                        sourceId = continuation.sourceId,
-            objectReferences = continuation.objectReferences,
-                        controllerId = continuation.controllerId,
-                    )
+        // A divided effect with two or more targets announces its division now, as the ability goes
+        // on the stack (CR 603.3d applies CR 601.2d to triggered abilities). A dynamic total (Ureni —
+        // "X = lands you control") is evaluated here so the player divides the correct amount.
+        if (selectedTargets.size > 1) {
+            val division = announcedDivision(continuation.effect)
+            if (division != null) {
+                val amountContext = com.wingedsheep.engine.handlers.EffectContext(
+                    sourceId = continuation.sourceId,
+                    objectReferences = continuation.objectReferences,
+                    controllerId = continuation.controllerId,
                 )
-            } ?: effect.totalDamage
-            return createTriggerDamageDistributionDecision(
-                state, continuation, selectedTargets, total, checkForMore
-            )
+                val (total, prompt, minPerTarget) = when (division) {
+                    is DividedDamageEffect -> {
+                        val total = division.dynamicTotal?.let { amountEvaluator.evaluate(state, it, amountContext) }
+                            ?: division.totalDamage
+                        Triple(total, "Divide $total damage among ${selectedTargets.size} targets", 1)
+                    }
+                    is DistributeCountersAmongTargetsEffect -> {
+                        val total = amountEvaluator.evaluate(state, division.totalCounters, amountContext)
+                        Triple(
+                            total,
+                            "Distribute $total ${division.counterType.printed} " +
+                                "counter${if (total != 1) "s" else ""} among ${selectedTargets.size} targets",
+                            division.minPerTarget
+                        )
+                    }
+                    else -> error("announcedDivision returned ${division::class.simpleName}")
+                }
+                return createTriggerDistributionDecision(
+                    state, continuation, selectedTargets, alignedRequirements, total, prompt, minPerTarget
+                )
+            }
         }
 
         val abilityComponent = TriggeredAbilityOnStackComponent(
@@ -198,15 +212,32 @@ class EffectAndTriggerContinuationResumer(
     }
 
     /**
-     * After targets are selected for a triggered ability with DividedDamageEffect,
-     * pause to ask how to distribute damage among the chosen targets.
+     * The effect whose division a triggered ability announces as it goes on the stack: the ability's
+     * whole effect, or the one divided step of a sequence ("distribute three +1/+1 counters …, then
+     * you gain life …"). Null when there is none, or more than one to tell apart — those divide at
+     * resolution instead.
      */
-    private fun createTriggerDamageDistributionDecision(
+    private fun announcedDivision(effect: Effect): Effect? {
+        fun isDivided(e: Effect) = e is DividedDamageEffect || e is DistributeCountersAmongTargetsEffect
+        return when {
+            isDivided(effect) -> effect
+            effect is CompositeEffect -> effect.effects.filter(::isDivided).singleOrNull()
+            else -> null
+        }
+    }
+
+    /**
+     * After targets are selected for a triggered ability with a divided effect (damage or
+     * counters), pause to ask how to divide it among the chosen targets.
+     */
+    private fun createTriggerDistributionDecision(
         state: GameState,
         continuation: TriggeredAbilityContinuation,
         selectedTargets: List<com.wingedsheep.engine.state.components.stack.ChosenTarget>,
-        totalDamage: Int,
-        checkForMore: CheckForMore
+        alignedRequirements: List<TargetRequirement>,
+        total: Int,
+        prompt: String,
+        minPerTarget: Int,
     ): ExecutionResult {
         val sourceName = continuation.sourceId.let { sourceId ->
             state.getEntity(sourceId)?.get<CardComponent>()?.name
@@ -223,15 +254,15 @@ class EffectAndTriggerContinuationResumer(
         val question = { decisionId: String -> DistributeDecision(
             id = decisionId,
             playerId = continuation.controllerId,
-            prompt = "Divide $totalDamage damage among ${selectedTargets.size} targets",
+            prompt = prompt,
             context = DecisionContext(
                 sourceId = continuation.sourceId,
                 sourceName = sourceName,
                 phase = DecisionPhase.CASTING
             ),
-            totalAmount = totalDamage,
+            totalAmount = total,
             targets = targetEntityIds,
-            minPerTarget = 1
+            minPerTarget = minPerTarget
         ) }
 
         val distributionContinuation = TriggerDamageDistributionContinuation(
@@ -245,8 +276,8 @@ class EffectAndTriggerContinuationResumer(
             abilityIdentity = continuation.abilityIdentity,
             triggerContext = continuation.triggerContext,
             selectedTargets = selectedTargets,
-            targetRequirements = continuation.targetRequirements,
-            totalDamage = totalDamage,
+            targetRequirements = alignedRequirements,
+            totalDamage = total,
             interveningIf = continuation.interveningIf
         )
 
@@ -254,7 +285,7 @@ class EffectAndTriggerContinuationResumer(
     }
 
     /**
-     * Resume after player distributes damage for a triggered ability's DividedDamageEffect.
+     * Resume after the player divides a triggered ability's damage or counters.
      * Put the ability on the stack with the distribution locked in.
      */
     private fun resumeTriggerDamageDistribution(

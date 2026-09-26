@@ -1861,6 +1861,14 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   target creatures" (Grove's Bounty) pair it with
   `TargetObject(unlimited = true, dynamicMaxCount = DynamicAmount.XValue)` — the dynamic cap
   outranks `unlimited` in `TargetValidator`, enforcing CR 601.2d (no more targets than counters).
+  The controller chooses the division, each target getting at least `minPerTarget` (CR 601.2d). A
+  **triggered** ability with two or more targets announces it as it goes on the stack (CR 603.3d) —
+  whether the distribute is the whole effect or the one divided step of a `then` sequence (Glint
+  Weaver) — and the shares are honored verbatim at resolution: a target that became illegal loses its
+  share, never re-divided. A single target takes the whole pool; a spell or activated ability divides
+  at resolution through a `DistributeDecision`. "Any number of target creatures" with a fixed pool is a
+  `count = N, minCount = 0` range — Jugan, the Rising Star: `targets(TargetFilter.Creature, count = 5,
+  minCount = 0)`, where choosing no targets is the "may" declined.
 - `DistributeCountersAmongFiltered(total, type?, filter, minPerTarget?)` — distribute N **new** counters among permanents matching `filter`, chosen at resolution (not the spell's targets); `minPerTarget = 0` models "among any number of". Unlike `DistributeCountersFromSelf` nothing is removed from a source. Crashing Wave: `DistributeCountersAmongFiltered(3, CounterType.STUN, Filters.Creature.tapped().opponentControls())` — "distribute three stun counters among any number of tapped creatures your opponents control."
 - `Proliferate(target?)` — give one more counter of each kind already there. With no argument it is
   proliferate proper (CR 701.34): the controller chooses any number of permanents and/or players with

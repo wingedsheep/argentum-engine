@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.CastSpell
+import com.wingedsheep.engine.core.DistributeDecision
+import com.wingedsheep.engine.core.DistributionResponse
 import com.wingedsheep.engine.core.PaymentStrategy
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
@@ -16,6 +18,7 @@ import com.wingedsheep.sdk.model.EntityId
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.types.shouldBeInstanceOf
 import com.wingedsheep.engine.core.Outcome
 
 /**
@@ -73,7 +76,7 @@ class ElusiveOtterScenarioTest : FunSpec({
         driver.getExile(player) shouldContain card
     }
 
-    test("X counters are split across two targets") {
+    test("X counters are split across two targets as the caster chooses") {
         val driver = newDriver()
         val player = driver.player1
         val card = driver.putCardInHand(player, "Elusive Otter")
@@ -82,11 +85,14 @@ class ElusiveOtterScenarioTest : FunSpec({
         driver.giveMana(player, Color.GREEN, 5) // {X=4}{G}
 
         castGrovesBounty(driver, card, x = 4, targets = listOf(first, second))
-        while (driver.stackSize > 0) driver.bothPass()
+        driver.bothPass()
 
-        countersOn(driver, first) + countersOn(driver, second) shouldBe 4
-        countersOn(driver, first) shouldBe 2
-        countersOn(driver, second) shouldBe 2
+        val decision = driver.pendingDecision.shouldBeInstanceOf<DistributeDecision>()
+        decision.totalAmount shouldBe 4
+        driver.submitDecision(player, DistributionResponse(decision.id, mapOf(first to 1, second to 3)))
+
+        countersOn(driver, first) shouldBe 1
+        countersOn(driver, second) shouldBe 3
     }
 
     test("X = 0 distributes nothing and still exiles on an Adventure") {

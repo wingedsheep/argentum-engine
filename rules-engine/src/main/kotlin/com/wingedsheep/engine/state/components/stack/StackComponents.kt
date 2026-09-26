@@ -233,7 +233,7 @@ data class TriggeredAbilityOnStackComponent(
      * trigger fact.
      */
     val xValue: Int? = null,
-    val damageDistribution: Map<EntityId, Int>? = null,  // For DividedDamageEffect - pre-chosen damage allocation
+    val damageDistribution: Map<EntityId, Int>? = null,  // Division announced as it went on the stack (CR 603.3d) — damage for DividedDamageEffect, counters for DistributeCountersAmongTargetsEffect
     val copyIndex: Int? = null,    // Which copy number this is (1, 2, 3...) for storm/copy effects
     val copyTotal: Int? = null,    // Total number of copies being created
     /**

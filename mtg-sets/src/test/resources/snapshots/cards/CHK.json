@@ -3134,6 +3134,58 @@
     ]
 }
 
+// Jugan, the Rising Star
+{
+    "name": "Jugan, the Rising Star",
+    "manaCost": "{3}{G}{G}{G}",
+    "typeLine": "Legendary Creature — Dragon Spirit",
+    "oracleText": "Flying\nWhen Jugan dies, you may distribute five +1/+1 counters among any number of target creatures.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Jugan, the Rising Star:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "DistributeCountersAmongTargets",
+                    "totalCounters": {
+                        "type": "Fixed",
+                        "amount": 5
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 5,
+                    "minCount": 0,
+                    "filter": {
+                        "baseFilter": "creature"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "217",
+        "rarity": "RARE",
+        "artist": "Shishizaru",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c77814d-c594-45a8-845f-79f608b8cde7.jpg?1783944288"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Jukai Messenger
 {
     "name": "Jukai Messenger",

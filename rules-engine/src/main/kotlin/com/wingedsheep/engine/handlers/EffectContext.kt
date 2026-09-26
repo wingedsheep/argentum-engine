@@ -164,7 +164,8 @@ data class EffectContext(
      * spell carried no discard cost.
      */
     val discardedAsCostCards: List<EntityId> = emptyList(),
-    /** Pre-chosen damage distribution for DividedDamageEffect spells (target ID -> damage amount) */
+    /** Division announced as the spell/ability went on the stack (CR 601.2d), target ID -> share: damage for
+     *  a DividedDamageEffect, counters for a triggered DistributeCountersAmongTargetsEffect. */
     val damageDistribution: Map<EntityId, Int>? = null,
     /**
      * Pre-chosen modes for modal spells/abilities (700.2). Populated at stack resolution
