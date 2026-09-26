@@ -7877,6 +7877,16 @@ staticAbility {
   declaration by `DefenderBypass` (shared by `DefenderAttackRule` and the client's "Can attack
   despite defender" badge), never through projection. The turn-scoped, granted counterpart is
   `Effects.CanAttackDespiteDefenderThisTurn`.
+- `CanBlockAsThoughUntapped(filter = GroupFilter.source())` — creatures matching `filter` can block
+  as though they were untapped, lifting only CR 509.1a's "untapped creatures" requirement. Masako
+  the Humorless's "Tapped creatures you control can block as though they were untapped" is
+  `CanBlockAsThoughUntapped(GroupFilter.AllCreaturesYouControl)`; self, attached and specific scopes
+  work too. Every other restriction still applies (Masako's ruling: a "can't block" creature or a
+  non-flyer facing a flyer still can't), blocking doesn't untap the creature, and a tapped blocker
+  deals combat damage normally. Read at block declaration by `TappedBlockBypass` — shared by
+  `TurnManager.getValidBlockers` (the offered blockers), `BlockPhaseManager` (validation and the
+  block-requirement checks, so Lure/provoke reach a covered tapped creature) and the client's
+  "Can block as though it were untapped" badge — never through projection.
 - `CantBeAttackedBy(attackerFilter)` — the general **defender-side** attack restriction (CR
   508.1c): creatures matching `attackerFilter` can't attack the controller of the permanent carrying
   it. Resolved by `CantBeAttackedByDefenderRule`, which scans the *defending* player's projected

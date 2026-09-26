@@ -5153,6 +5153,41 @@
     ]
 }
 
+// Masako the Humorless
+{
+    "name": "Masako the Humorless",
+    "manaCost": "{2}{W}",
+    "typeLine": "Legendary Creature — Human Advisor",
+    "oracleText": "Flash\nTapped creatures you control can block as though they were untapped.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "CanBlockAsThoughUntapped",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "33",
+        "rarity": "RARE",
+        "artist": "Ben Thompson",
+        "flavorText": "Konda's servants dared not neglect their duties for a moment under Masako's icy gaze, knowing that what she saw, Lord Konda would hear.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/6/d6b2507f-4035-47d5-8295-0a3773f187fb.jpg"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Matsu-Tribe Decoy
 {
     "name": "Matsu-Tribe Decoy",

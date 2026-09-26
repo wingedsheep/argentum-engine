@@ -4,6 +4,7 @@ import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.DamageUtils
 import com.wingedsheep.engine.mechanics.combat.rules.DefenderBypass
+import com.wingedsheep.engine.mechanics.combat.rules.TappedBlockBypass
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.registry.CardRegistry
@@ -67,6 +68,7 @@ internal class CardActiveEffectsProjector(
         effects += grantedAbilityBadges(state, entityId, seenDescriptions)
         effects += blockRestrictionBadges(state, entityId, seenDescriptions)
         effects += defenderBypassBadges(state, entityId, seenDescriptions)
+        effects += tappedBlockBypassBadges(state, entityId)
         return effects
     }
 
@@ -773,6 +775,27 @@ internal class CardActiveEffectsProjector(
                 name = "Can Attack",
                 description = description,
                 icon = "can-attack"
+            )
+        )
+    }
+
+    /**
+     * A tapped creature that a `CanBlockAsThoughUntapped` static (Masako the Humorless) currently
+     * covers. Tapped normally reads as "can't block", so the badge tells the player this one still
+     * can. Shares TappedBlockBypass with the blocker-legality paths so the badge shows exactly when
+     * the block would be allowed.
+     */
+    private fun tappedBlockBypassBadges(state: GameState, entityId: EntityId): List<ClientCardEffect> {
+        val container = state.getEntity(entityId) ?: return emptyList()
+        if (!container.has<TappedComponent>()) return emptyList()
+        if (!state.projectedState.isCreature(entityId)) return emptyList()
+        if (!TappedBlockBypass.isActive(state, entityId, cardRegistry, predicateEvaluator)) return emptyList()
+        return listOf(
+            ClientCardEffect(
+                effectId = "can_block_while_tapped",
+                name = "Can Block",
+                description = "Can block as though it were untapped",
+                icon = "can-block"
             )
         )
     }

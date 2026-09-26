@@ -265,6 +265,7 @@ function getBadgeStyle(icon?: string): React.CSSProperties {
         border: '1px solid rgba(255, 140, 140, 0.5)',
       }
     case 'can-attack':
+    case 'can-block':
       // Positive/green — a Defender that can attack right now (e.g. after an artifact entered).
       return {
         backgroundColor: 'rgba(40, 120, 60, 0.9)',
@@ -339,6 +340,7 @@ function getTooltipBorderColor(icon?: string): string {
     case 'cant-attack':
       return 'rgba(180, 60, 60, 0.5)'
     case 'can-attack':
+    case 'can-block':
       return 'rgba(120, 220, 140, 0.5)'
     case 'must-attack':
       return 'rgba(200, 120, 20, 0.5)'

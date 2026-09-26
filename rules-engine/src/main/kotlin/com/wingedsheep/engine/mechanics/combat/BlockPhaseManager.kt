@@ -7,7 +7,7 @@ import com.wingedsheep.engine.mechanics.mana.ManaPool
 import com.wingedsheep.engine.mechanics.mana.ManaSolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
-import com.wingedsheep.engine.state.components.battlefield.TappedComponent
+import com.wingedsheep.engine.mechanics.combat.rules.TappedBlockBypass
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockedComponent
 import com.wingedsheep.engine.state.components.combat.BlockedThisCombatComponent
@@ -344,7 +344,7 @@ internal class BlockPhaseManager(
             return "You don't control ${cardComponent.name}"
         }
 
-        if (container.has<TappedComponent>()) {
+        if (TappedBlockBypass.tappedPreventsBlocking(state, blockerId, cardRegistry, predicateEvaluator)) {
             return "${cardComponent.name} is tapped and cannot block"
         }
 
@@ -850,7 +850,7 @@ internal class BlockPhaseManager(
 
             val blockerContainer = state.getEntity(blockerId) ?: continue
             if (blockerId !in state.getBattlefield()) continue
-            if (blockerContainer.has<TappedComponent>()) continue
+            if (TappedBlockBypass.tappedPreventsBlocking(state, blockerId, cardRegistry, predicateEvaluator)) continue
 
             val attackerContainer = state.getEntity(attackerId) ?: continue
             if (!attackerContainer.has<AttackingComponent>()) continue
@@ -1030,7 +1030,8 @@ internal class BlockPhaseManager(
     }
 
     /**
-     * Find all potential blockers (untapped creatures controlled by the blocking player).
+     * Find all potential blockers (untapped creatures controlled by the blocking player, plus tapped
+     * ones a [com.wingedsheep.sdk.scripting.CanBlockAsThoughUntapped] covers).
      */
     private fun findPotentialBlockers(state: GameState, blockingPlayer: EntityId): List<EntityId> {
         val projected = state.projectedState
@@ -1043,7 +1044,7 @@ internal class BlockPhaseManager(
                 projected.isCreature(entityId) &&
                     !projected.isBattle(entityId) &&
                     controller == blockingPlayer &&
-                    !container.has<TappedComponent>()
+                    !TappedBlockBypass.tappedPreventsBlocking(state, entityId, cardRegistry, predicateEvaluator)
             }
     }
 

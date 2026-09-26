@@ -4,10 +4,10 @@ import com.wingedsheep.engine.handlers.DecisionHandler
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.mechanics.combat.CombatManager
+import com.wingedsheep.engine.mechanics.combat.rules.TappedBlockBypass
 import com.wingedsheep.engine.mechanics.StateBasedActionChecker
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
-import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.combat.AttackingComponent
 import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.combat.MustAttackPlayerComponent
@@ -1160,7 +1160,7 @@ class TurnManager(
                 return@filter false
             }
 
-            if (container.has<TappedComponent>()) {
+            if (TappedBlockBypass.tappedPreventsBlocking(state, entityId, cardRegistry, zones.predicateEvaluator)) {
                 return@filter false
             }
 
