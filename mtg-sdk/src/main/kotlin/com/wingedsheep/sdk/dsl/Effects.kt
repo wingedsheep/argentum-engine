@@ -171,6 +171,7 @@ import com.wingedsheep.sdk.scripting.effects.BecomeChosenManaColorEffect
 import com.wingedsheep.sdk.scripting.effects.AddColorEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeColorEffect
 import com.wingedsheep.sdk.scripting.effects.ChangeWordInTextEffect
+import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.effects.SelectTargetEffect
 import com.wingedsheep.sdk.scripting.effects.TapUntapEffect
@@ -6291,16 +6292,20 @@ object Effects {
      *
      * @param excludeBasicLandNames When true, the five basic land card names are not
      *   offered ("other than a basic land card name").
+     * @param pool Which registered names are offered — [CardNamePool.NONLAND] for "choose a
+     *   nonland card name" (Cranial Extraction), [CardNamePool.LAND] for "a land card name".
      */
     fun ChooseCardName(
         storeAs: String = "chosenCardName",
         prompt: String? = null,
-        excludeBasicLandNames: Boolean = false
+        excludeBasicLandNames: Boolean = false,
+        pool: CardNamePool = CardNamePool.ANY
     ): Effect = ChooseOptionEffect(
         optionType = OptionType.CARD_NAME,
         storeAs = storeAs,
         prompt = prompt,
-        excludedOptions = if (excludeBasicLandNames) BASIC_LAND_CARD_NAMES else emptyList()
+        excludedOptions = if (excludeBasicLandNames) BASIC_LAND_CARD_NAMES else emptyList(),
+        cardNamePool = pool
     )
 
     /**

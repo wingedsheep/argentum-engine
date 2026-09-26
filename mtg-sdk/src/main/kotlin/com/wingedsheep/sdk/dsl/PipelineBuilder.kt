@@ -32,6 +32,7 @@ import com.wingedsheep.sdk.scripting.effects.LookAudience
 import com.wingedsheep.sdk.scripting.effects.MoveCollectionEffect
 import com.wingedsheep.sdk.scripting.effects.MoveType
 import com.wingedsheep.sdk.scripting.effects.NoteCreatureTypeEffect
+import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.effects.OptionType
 import com.wingedsheep.sdk.scripting.effects.PairWithSourceEffect
 import com.wingedsheep.sdk.scripting.effects.RevealCollectionEffect
@@ -808,15 +809,17 @@ class PipelineBuilder private constructor(private val shared: Shared) {
 
     /**
      * Player names a card ([ChooseOptionEffect] over [OptionType.CARD_NAME]); with
-     * [excludeBasicLandNames], "choose a card name other than a basic land card name".
+     * [excludeBasicLandNames], "choose a card name other than a basic land card name"; with
+     * [pool] = [CardNamePool.NONLAND], "choose a nonland card name".
      */
     fun chooseCardName(
         prompt: String? = null,
         excludeBasicLandNames: Boolean = false,
+        pool: CardNamePool = CardNamePool.ANY,
         name: String? = null
     ): ChosenSlot {
         val slot = ChosenSlot(slotKey("cardName", nextIndex(), name))
-        steps += Effects.ChooseCardName(slot.key, prompt, excludeBasicLandNames)
+        steps += Effects.ChooseCardName(slot.key, prompt, excludeBasicLandNames, pool)
         return slot
     }
 

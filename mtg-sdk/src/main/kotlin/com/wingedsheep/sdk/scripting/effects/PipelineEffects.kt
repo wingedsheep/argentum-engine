@@ -4,6 +4,7 @@ import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.scripting.AdditionalCost
+import com.wingedsheep.sdk.scripting.CardNamePool
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.Condition
 import com.wingedsheep.sdk.scripting.effects.ZonePlacement
@@ -1335,6 +1336,9 @@ enum class OptionType {
  * @property storeAs Key under which the chosen value is stored in EffectContext.chosenValues
  * @property prompt Custom prompt text. If null, a default is generated from the option type.
  * @property excludedOptions Options to exclude from the presented list
+ * @property cardNamePool For [OptionType.CARD_NAME], which registered names are offered —
+ *   every name ([CardNamePool.ANY], "choose a card name"), or only nonland / land names
+ *   ("choose a nonland card name" — Cranial Extraction). Ignored for every other option type.
  */
 @SerialName("ChooseOption")
 @Serializable
@@ -1342,7 +1346,8 @@ data class ChooseOptionEffect(
     val optionType: OptionType,
     val storeAs: String = "chosenOption",
     val prompt: String? = null,
-    val excludedOptions: List<String> = emptyList()
+    val excludedOptions: List<String> = emptyList(),
+    val cardNamePool: CardNamePool = CardNamePool.ANY
 ) : Effect {
     override val description: String = buildString {
         append("Choose ")
@@ -1350,7 +1355,11 @@ data class ChooseOptionEffect(
             OptionType.CREATURE_TYPE -> "a creature type"
             OptionType.COLOR -> "a color"
             OptionType.BASIC_LAND_TYPE -> "a basic land type"
-            OptionType.CARD_NAME -> "a card name"
+            OptionType.CARD_NAME -> when (cardNamePool) {
+                CardNamePool.ANY -> "a card name"
+                CardNamePool.NONLAND -> "a nonland card name"
+                CardNamePool.LAND -> "a land card name"
+            }
         })
     }
 }
