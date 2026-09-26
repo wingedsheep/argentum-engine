@@ -1176,7 +1176,7 @@ class ConditionEvaluator(
             // in scope -> empty (the condition fails rather than leaking to other players).
             is Player.DefendingPlayer -> listOfNotNull(
                 (ctx as? Resolution)?.effectContext?.let {
-                    com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveDefendingPlayer(it, state)
+                    TargetResolutionUtils.resolveDefendingPlayer(it, state)
                 }
             )
             // Everything else — "target player", "that player" (ContextPlayer), a bound or
@@ -1388,7 +1388,7 @@ class ConditionEvaluator(
             // AttackingComponent by resolveDefendingPlayer) — Preacher of the Schism's "attacks the
             // player with the most life".
             is Player.DefendingPlayer -> (ctx as? Resolution)?.effectContext?.let {
-                com.wingedsheep.engine.handlers.effects.TargetResolutionUtils.resolveDefendingPlayer(it, state)
+                TargetResolutionUtils.resolveDefendingPlayer(it, state)
             }
             is Player.Candidate -> (ctx as? Resolution)?.effectContext?.candidatePlayerId
             is Player.ChosenOpponent -> ctx.sourceId?.let { sourceId ->
