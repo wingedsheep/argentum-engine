@@ -14,9 +14,12 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Subtype
+import com.wingedsheep.sdk.dsl.Effects
+import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.model.EntityId
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 
@@ -43,9 +46,20 @@ class HallOfTheBanditLordScenarioTest : FunSpec({
         toughness = 2,
     )
 
+    /** Copies a creature spell; the copy wasn't cast, so no Hall mana was spent on it. */
+    val twin = card("Test Hall Twin") {
+        manaCost = "{U}"
+        typeLine = "Instant"
+        oracleText = "Copy target creature spell."
+        spell {
+            val t = target(TargetFilter.CreatureSpellOnStack)
+            effect = Effects.CopyTargetSpell(target = t)
+        }
+    }
+
     fun createDriver(): GameTestDriver {
         val driver = GameTestDriver()
-        driver.registerCards(TestCards.all + listOf(HallOfTheBanditLord, bandit))
+        driver.registerCards(TestCards.all + listOf(HallOfTheBanditLord, bandit, twin))
         driver.initMirrorMatch(deck = Deck.of("Island" to 40), startingLife = 20)
         return driver
     }
@@ -131,5 +145,33 @@ class HallOfTheBanditLordScenarioTest : FunSpec({
         // The card keeps its entity id in the graveyard, so a grant left floating on it would
         // reach it if it were later put onto the battlefield (CR 400.7 says it must not).
         driver.state.floatingEffects.none { creature in it.effect.affectedEntities } shouldBe true
+    }
+
+    test("a copy of the creature spell doesn't inherit the haste — no mana was spent on it") {
+        val driver = createDriver()
+        val you = driver.activePlayer!!
+        driver.passPriorityUntil(Step.PRECOMBAT_MAIN)
+
+        val hall = driver.putPermanentOnBattlefield(you, "Hall of the Bandit Lord")
+        val creature = driver.putCardInHand(you, "Test Hall Bandit")
+        val copier = driver.putCardInHand(you, "Test Hall Twin")
+        tapHall(driver, you, hall)
+        driver.castSpell(you, creature).error shouldBe null
+        driver.giveMana(you, Color.BLUE, 1)
+        driver.submit(
+            CastSpell(
+                you, copier,
+                targets = listOf(ChosenTarget.Spell(creature)),
+                paymentStrategy = PaymentStrategy.FromPool,
+            )
+        ).error shouldBe null
+        driver.bothPass() // copier resolves, putting the copy on the stack
+        driver.bothPass() // the copy resolves into a token
+        driver.bothPass() // the original resolves
+
+        val projected = projector.project(driver.state)
+        val bandits = driver.getCreatures(you).filter { driver.getCardName(it) == "Test Hall Bandit" }
+        bandits.size shouldBe 2
+        bandits.filter { projected.hasKeyword(it, Keyword.HASTE) } shouldBe listOf(creature)
     }
 })

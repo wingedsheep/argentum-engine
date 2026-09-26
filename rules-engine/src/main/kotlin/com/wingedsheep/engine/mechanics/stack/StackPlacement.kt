@@ -154,9 +154,11 @@ internal object StackPlacement {
         // manaSpent{White,Blue,Black,Red,Green,Colorless} colors. Only the caster
         // (copy controller) and modal fields (which the caller may retarget) are
         // overridden explicitly. Payment events (ManaSpentEvent, SpellCastEvent) are
-        // deliberately not re-emitted — a copy isn't cast (707.10).
+        // deliberately not re-emitted — a copy isn't cast (707.10). For the same reason no mana
+        // was spent on the copy, so a mana rider's entry keyword grant stays with the original.
         val copiedSpellComp = sourceSpell.copy(
             casterId = copyController,
+            entryKeywordGrants = emptyList(),
             chosenModes = effectiveModes,
             modeTargetsOrdered = effectiveModeTargets,
             modeTargetRequirements = effectiveModeRequirements
