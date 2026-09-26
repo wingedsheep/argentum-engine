@@ -229,6 +229,18 @@ class KeywordValueAmountScenarioTest : ScenarioTestBase() {
                 game.keywordValue(card, Keyword.BUSHIDO) shouldBe 3
                 game.keywordValue(card, Keyword.TOXIC) shouldBe 0
             }
+
+            test("a toxic card in hand reads its printed toxic") {
+                val game = scenario()
+                    .withPlayers("Alice", "Bob")
+                    .withCardInHand(1, "Test Toxic Two")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                val card = game.findCardsInHand(1, "Test Toxic Two").single()
+                game.keywordValue(card, Keyword.TOXIC) shouldBe 2
+            }
         }
     }
 }

@@ -20,9 +20,11 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.state.components.identity.FaceDownComponent
 import com.wingedsheep.engine.state.components.identity.LifeTotalComponent
+import com.wingedsheep.engine.state.components.identity.NumericKeywordValuesComponent
 import com.wingedsheep.engine.state.components.identity.PlayerComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.identity.RoomComponent
+import com.wingedsheep.engine.state.components.identity.ToxicComponent
 import com.wingedsheep.engine.state.components.stack.SpellOnStackComponent
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.core.Keyword
@@ -1517,7 +1519,7 @@ class DynamicAmountEvaluator(
 
     /**
      * Total N of a numeric keyword (bushido N). The printed values come from
-     * [com.wingedsheep.engine.state.components.identity.NumericKeywordValuesComponent]; on the
+     * [NumericKeywordValuesComponent]; on the
      * battlefield they count only while the projected keyword survives (layer 6 ability loss, face
      * down), and any `<KEYWORD>_<n>` projected grant (granted toxic) adds its N.
      */
@@ -1529,10 +1531,12 @@ class DynamicAmountEvaluator(
         explicitProjected: ProjectedState?
     ): Int {
         val entity = state.getEntity(entityId) ?: return 0
-        val printed = entity.get<com.wingedsheep.engine.state.components.identity.NumericKeywordValuesComponent>()
-            ?.values?.get(keyword) ?: 0
+        val printed = entity.get<NumericKeywordValuesComponent>()?.values?.get(keyword) ?: 0
         if (!useProjected || entityId !in state.getBattlefield()) {
-            return if (entity.has<FaceDownComponent>()) 0 else printed
+            if (entity.has<FaceDownComponent>()) return 0
+            // Printed toxic lives on ToxicComponent, not in the numeric-values map.
+            val printedToxic = if (keyword == Keyword.TOXIC) entity.get<ToxicComponent>()?.amount ?: 0 else 0
+            return printed + printedToxic
         }
         val projection = resolveProjection(state, explicitProjected)
         val prefix = "${keyword.name}_"
