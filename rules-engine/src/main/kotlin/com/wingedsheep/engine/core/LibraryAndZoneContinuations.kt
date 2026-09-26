@@ -282,6 +282,25 @@ data class PutOnTopOrBottomContinuation(
 ) : AnswerContinuation
 
 /**
+ * Resume after a counter's controller chose where in its owner's library the countered spell
+ * goes — Hinder's "your choice of the top or bottom" ([com.wingedsheep.sdk.scripting.effects.CounterDestination.Library]
+ * with several positions). The spell is still on the stack; the resumer counters it into the
+ * chosen position.
+ *
+ * @property spellId The spell being countered
+ * @property countererId The controller of the countering spell or ability — the one choosing
+ * @property sourceId The countering spell or ability
+ * @property positions The offered positions, one per option index
+ */
+@Serializable
+data class CounterToLibraryPositionContinuation(
+    val spellId: EntityId,
+    val countererId: EntityId,
+    val sourceId: EntityId?,
+    val positions: List<com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition>,
+) : AnswerContinuation
+
+/**
  * Resume after player chooses a card to return from a linked exile.
  *
  * Used for effects like Dimensional Breach's upkeep trigger: the active player

@@ -19,6 +19,7 @@ import com.wingedsheep.sdk.core.ManaCost
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.effects.CounterDestination
+import com.wingedsheep.engine.handlers.effects.stack.counterSpellToLibrary
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.composite.asOptionalManaPayment
 import com.wingedsheep.engine.handlers.effects.composite.payManaCostFromPool
@@ -599,7 +600,13 @@ class ManaPaymentContinuationResumer(
                 services.stackResolver.counterSpellToHand(state, spellEntityId, countererId = controllerId)
             CounterDestination.Graveyard ->
                 services.stackResolver.counterSpellOrAbility(state, spellEntityId, countererId = controllerId)
+            is CounterDestination.Library -> counterSpellToLibrary(
+                state, services.spellCounterer, spellEntityId, destination, controllerId, sourceId = null
+            )
         }
+        // A destination that needs the counterer's choice (Hinder's top or bottom) pauses; its
+        // resumer finishes the counter and the settle.
+        if (result.outcome is Outcome.Paused) return ExecutionResult.propagatePause(result.newState, precedingEvents + result.events)
         return checkForMore(result.newState, precedingEvents + result.events)
     }
 

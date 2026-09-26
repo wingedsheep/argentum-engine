@@ -107,6 +107,9 @@ class CounterEffectExecutor(
                     state, entityId, dest.grantFreeCast, context.controllerId
                 )
                 CounterDestination.Hand -> counterer.counterSpellToHand(state, entityId, context.controllerId)
+                is CounterDestination.Library -> counterSpellToLibrary(
+                    state, counterer, entityId, dest, context.controllerId, context.sourceId
+                )
             }
             CounterTarget.SpellOrAbility -> error("unreachable — resolved above")
         })

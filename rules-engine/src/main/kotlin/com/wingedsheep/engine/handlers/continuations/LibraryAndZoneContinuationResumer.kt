@@ -50,6 +50,7 @@ class LibraryAndZoneContinuationResumer(
         resumer(PutOntoBattlefieldAttachedToChosenContinuation::class, ::resumePutOntoBattlefieldAttachedToChosen),
         resumer(AttachToChosenHostContinuation::class, ::resumeAttachToChosenHost),
         resumer(PutOnTopOrBottomContinuation::class, ::resumePutOnTopOrBottom),
+        resumer(CounterToLibraryPositionContinuation::class, ::resumeCounterToLibraryPosition),
         resumer(CascadeMayCastContinuation::class, ::resumeCascadeMayCast),
         resumer(DiscoverMayCastContinuation::class, ::resumeDiscoverMayCast),
         resumer(CastFromCollectionTargetsContinuation::class, ::resumeCastFromCollectionTargets),
@@ -804,6 +805,30 @@ class LibraryAndZoneContinuationResumer(
             .markRevealed(transitionResult.state, listOf(cardId), transitionResult.state.turnOrder.toSet())
 
         return checkForMore(finalState, transitionResult.events)
+    }
+
+    /**
+     * Resume after a counter's controller chose top or bottom for Hinder-style
+     * [com.wingedsheep.sdk.scripting.effects.CounterDestination.Library]: counter the spell into
+     * that end of its owner's library. If the spell left the stack in the meantime there is
+     * nothing to counter.
+     */
+    fun resumeCounterToLibraryPosition(
+        state: GameState,
+        continuation: CounterToLibraryPositionContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for counter-to-library position")
+        }
+        val position = continuation.positions.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid option index: ${response.optionIndex}")
+        if (continuation.spellId !in state.stack) return checkForMore(state, emptyList())
+        val result = services.spellCounterer.counterSpellToLibrary(
+            state, continuation.spellId, position, continuation.countererId
+        )
+        return checkForMore(result.newState, result.events)
     }
 
     /**

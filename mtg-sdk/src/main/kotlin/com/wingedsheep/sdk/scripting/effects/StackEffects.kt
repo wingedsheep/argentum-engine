@@ -95,6 +95,25 @@ sealed interface CounterDestination {
     @SerialName("CounterDestination.Hand")
     @Serializable
     data object Hand : CounterDestination
+
+    /**
+     * Spell is put into its owner's **library** instead of their graveyard. One position is a
+     * fixed placement (Memory Lapse's "on top"); several are a choice made by the *counter's*
+     * controller, not the countered spell's (Hinder's 2020-08-07 ruling — "your choice of the
+     * top or bottom").
+     *
+     * Still a genuine counter, like [Hand]: an uncounterable spell is untouched and no choice is
+     * asked, a `SpellCounteredEvent` fires, and a counter replacement or a flashback card's own
+     * exile rider wins over the library. That is why this is a [CounterDestination] rather than
+     * `PutOnLibraryPositionOfChoiceEffect` on a spell, which moves it without countering it.
+     */
+    @SerialName("CounterDestination.Library")
+    @Serializable
+    data class Library(val positions: List<LibraryChoicePosition>) : CounterDestination {
+        init {
+            require(positions.isNotEmpty()) { "CounterDestination.Library needs at least one position" }
+        }
+    }
 }
 
 /**
@@ -207,6 +226,18 @@ data class CounterEffect(
                             append(". If countered, put it into its owner's hand")
                         } else {
                             append(". If that spell is countered this way, put it into its owner's hand instead of into that player's graveyard")
+                        }
+                    }
+                    is CounterDestination.Library -> {
+                        val where = if (dest.positions.size == 1) {
+                            "on the ${dest.positions.single().phrase} of its owner's library"
+                        } else {
+                            "on your choice of the ${dest.positions.joinToString(" or ") { it.phrase }} of its owner's library"
+                        }
+                        if (condition is CounterCondition.UnlessPaysMana || condition is CounterCondition.UnlessPaysDynamic) {
+                            append(". If countered, put it $where")
+                        } else {
+                            append(". If that spell is countered this way, put that card $where instead of into that player's graveyard")
                         }
                     }
                 }

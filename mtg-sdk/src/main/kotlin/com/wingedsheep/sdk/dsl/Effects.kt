@@ -1364,7 +1364,7 @@ object Effects {
 
     /**
      * Owner chooses to put target second from the top or on the bottom of their library.
-     * Used by Hinder/Spell Crumple-style effects (e.g., Temporal Cleansing).
+     * Used by Temporal Cleansing.
      */
     fun PutSecondFromTopOrBottomOfLibrary(target: EffectTarget): Effect =
         PutOnLibraryPositionOfChoiceEffect(
@@ -4533,6 +4533,17 @@ object Effects {
      */
     fun CounterSpellToHand(): Effect =
         CounterEffect(counterDestination = CounterDestination.Hand)
+
+    /**
+     * Counter target spell. If countered, put it into its owner's library instead of their
+     * graveyard — at the one position given (Memory Lapse: `Top`), or at the counter's
+     * controller's choice among several (Hinder: `Top, Bottom`).
+     *
+     * A real counter, like [CounterSpellToHand]. Prefer [PutOnTopOrBottomOfLibrary] only for
+     * cards that move a spell into its library without countering it (Swat Away).
+     */
+    fun CounterSpellToLibrary(vararg positions: LibraryChoicePosition): Effect =
+        CounterEffect(counterDestination = CounterDestination.Library(positions.toList()))
 
     /**
      * Counter the spell that triggered this ability (non-targeted).

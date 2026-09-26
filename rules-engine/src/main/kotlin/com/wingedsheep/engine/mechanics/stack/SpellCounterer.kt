@@ -3,6 +3,7 @@ package com.wingedsheep.engine.mechanics.stack
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
+import com.wingedsheep.engine.handlers.effects.library.LibraryRevealUtils
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
@@ -22,6 +23,7 @@ import com.wingedsheep.engine.state.permissions.addMayPlayPermission
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.GrantCantBeCountered
+import com.wingedsheep.sdk.scripting.effects.LibraryChoicePosition
 import com.wingedsheep.sdk.scripting.targets.*
 
 /**
@@ -150,12 +152,57 @@ class SpellCounterer(
      * an [AfterResolveDestinationComponent] that applies on a counter (a flashback card's exile
      * replacement) still wins over the hand, exactly as it does over the graveyard in
      * [counterSpell].
-     *
-     * A hand is not a public zone reachable by `RedirectZoneChange` replacements the way a
-     * graveyard is (those key on "put into a graveyard from anywhere"), so no redirect check runs
-     * here; the rider is the only thing that can move the destination.
      */
-    fun counterSpellToHand(state: GameState, spellId: EntityId, countererId: EntityId? = null): ExecutionResult {
+    fun counterSpellToHand(state: GameState, spellId: EntityId, countererId: EntityId? = null): ExecutionResult =
+        counterSpellIntoOwnersZone(state, spellId, countererId, Zone.HAND, position = null)
+
+    /**
+     * Counter a spell on the stack and put it into its owner's **library** at [position] instead
+     * of their graveyard (Memory Lapse's top, Hinder's chosen end). The library sibling of
+     * [counterSpellToHand], with the same counter semantics: an uncounterable spell is untouched,
+     * a counter replacement (Guile) or a flashback rider still wins, and a
+     * [SpellCounteredEvent] fires.
+     *
+     * Everyone saw the spell and where it went, so the card is marked revealed to every player at
+     * its new slot — the same courtesy the non-counter "put target spell on top or bottom" move
+     * gives.
+     */
+    fun counterSpellToLibrary(
+        state: GameState,
+        spellId: EntityId,
+        position: LibraryChoicePosition,
+        countererId: EntityId? = null
+    ): ExecutionResult = counterSpellIntoOwnersZone(state, spellId, countererId, Zone.LIBRARY, position)
+
+    /**
+     * Whether countering [spellId] now would actually send it to the countering effect's printed
+     * destination — it can be countered, and no counter replacement ([ExileCounteredSpellInstead])
+     * would exile it instead. A destination that needs a choice (Hinder's top or bottom) asks only
+     * when this holds, so an uncounterable spell never prompts for a pointless choice.
+     */
+    fun wouldReachCounterDestination(state: GameState, spellId: EntityId, countererId: EntityId?): Boolean {
+        val container = state.getEntity(spellId) ?: return false
+        if (spellId !in state.stack) return false
+        if (container.has<CantBeCounteredComponent>() || isGrantedCantBeCountered(state, spellId)) return false
+        return findExileInsteadReplacement(state, countererId) == null
+    }
+
+    /**
+     * The shared body of [counterSpellToHand] and [counterSpellToLibrary]: a counter whose printed
+     * destination is one of the owner's non-graveyard zones.
+     *
+     * Neither a hand nor a library is reachable by `RedirectZoneChange` replacements the way a
+     * graveyard is (those key on "put into a graveyard from anywhere"), so no redirect check runs
+     * here; an on-counter [AfterResolveDestinationComponent] (flashback's exile) is the only thing
+     * that can move the destination.
+     */
+    private fun counterSpellIntoOwnersZone(
+        state: GameState,
+        spellId: EntityId,
+        countererId: EntityId?,
+        printedZone: Zone,
+        position: LibraryChoicePosition?
+    ): ExecutionResult {
         if (spellId !in state.stack) {
             return ExecutionResult.error(state, "Spell not on stack: $spellId")
         }
@@ -182,12 +229,27 @@ class SpellCounterer(
         // overrides the printed destination — the same precedence [counterSpell] gives it.
         val riderOnCounter = container.get<AfterResolveDestinationComponent>()
             ?.takeIf { !it.onlyIfResolved }
-        val destZone = riderOnCounter?.zone ?: Zone.HAND
-        newState = newState.addToZone(ZoneKey(ownerId, destZone), spellId)
+        val destZone = riderOnCounter?.zone ?: printedZone
+        val destZoneKey = ZoneKey(ownerId, destZone)
+        newState = if (destZone == Zone.LIBRARY && position != null) {
+            val librarySize = newState.getZone(destZoneKey).size
+            val index = when (position) {
+                LibraryChoicePosition.Top -> 0
+                LibraryChoicePosition.SecondFromTop -> minOf(1, librarySize)
+                LibraryChoicePosition.Bottom -> librarySize
+            }
+            newState.insertIntoZone(destZoneKey, spellId, index)
+        } else {
+            newState.addToZone(destZoneKey, spellId)
+        }
         val destinationObject = newState.objectRef(spellId)
 
         newState = newState.updateEntity(spellId) { c ->
             c.without<SpellOnStackComponent>().without<TargetsComponent>()
+        }
+        if (destZone == Zone.LIBRARY) {
+            newState = LibraryRevealUtils
+                .markRevealed(newState, listOf(spellId), newState.turnOrder.toSet())
         }
 
         return ExecutionResult.success(
@@ -470,33 +532,7 @@ class SpellCounterer(
         spellId: EntityId,
         countererId: EntityId?
     ): ExecutionResult? {
-        if (countererId == null) return null
-        val projected = state.projectedState
-        var host: EntityId? = null
-        var hostController: EntityId? = null
-        var replacement: ExileCounteredSpellInstead? = null
-        search@ for (entityId in state.getBattlefield()) {
-            val effects = state.getEntity(entityId)?.get<ReplacementEffectSourceComponent>()?.replacementEffects
-                ?: continue
-            val controller = projected.getController(entityId)
-                ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
-                ?: continue
-            for (effect in effects) {
-                if (effect !is ExileCounteredSpellInstead) continue
-                val pattern = effect.appliesTo as? EventPattern.CounterSpellEvent ?: continue
-                val countererMatches = when (pattern.counterer) {
-                    Player.You -> countererId == controller
-                    Player.EachOpponent -> countererId != controller
-                    else -> true
-                }
-                if (!countererMatches) continue
-                host = entityId
-                hostController = controller
-                replacement = effect
-                break@search
-            }
-        }
-        if (host == null || hostController == null || replacement == null) return null
+        val (host, hostController, replacement) = findExileInsteadReplacement(state, countererId) ?: return null
 
         val container = state.getEntity(spellId) ?: return null
         val cardComponent = container.get<CardComponent>()
@@ -535,6 +571,33 @@ class SpellCounterer(
                 )
             )
         )
+    }
+
+    /** The first battlefield [ExileCounteredSpellInstead] that applies to [countererId]'s counter: host, its controller, the replacement. */
+    private fun findExileInsteadReplacement(
+        state: GameState,
+        countererId: EntityId?
+    ): Triple<EntityId, EntityId, ExileCounteredSpellInstead>? {
+        if (countererId == null) return null
+        val projected = state.projectedState
+        for (entityId in state.getBattlefield()) {
+            val effects = state.getEntity(entityId)?.get<ReplacementEffectSourceComponent>()?.replacementEffects
+                ?: continue
+            val controller = projected.getController(entityId)
+                ?: state.getEntity(entityId)?.get<ControllerComponent>()?.playerId
+                ?: continue
+            for (effect in effects) {
+                if (effect !is ExileCounteredSpellInstead) continue
+                val pattern = effect.appliesTo as? EventPattern.CounterSpellEvent ?: continue
+                val countererMatches = when (pattern.counterer) {
+                    Player.You -> countererId == controller
+                    Player.EachOpponent -> countererId != controller
+                    else -> true
+                }
+                if (countererMatches) return Triple(entityId, controller, effect)
+            }
+        }
+        return null
     }
 
     private fun isGrantedCantBeCountered(state: GameState, spellId: EntityId): Boolean {

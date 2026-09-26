@@ -2418,6 +2418,52 @@
     ]
 }
 
+// Hinder
+{
+    "name": "Hinder",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target spell. If that spell is countered this way, put that card on your choice of the top or bottom of its owner's library instead of into that player's graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Counter",
+            "counterDestination": {
+                "type": "CounterDestination.Library",
+                "positions": [
+                    "Top",
+                    "Bottom"
+                ]
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {},
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "65",
+        "rarity": "UNCOMMON",
+        "artist": "Wayne Reynolds",
+        "flavorText": "\"Do not react to force in kind. Turn it aside. Direct it to where it can do no harm.\"\n—Meloku the Clouded Mirror",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/c/dc7befed-805b-4a02-a87d-7df3a95db8a0.jpg?1783944326",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "Hinder's controller, not necessarily the controller of the countered spell, chooses where the countered spell goes."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hisoka's Defiance
 {
     "name": "Hisoka's Defiance",

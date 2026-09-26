@@ -320,6 +320,7 @@ val engineSerializersModule = SerializersModule {
         subclass(AttachToChosenHostContinuation::class)
         subclass(PutOnBottomOfLibraryContinuation::class)
         subclass(PutOnTopOrBottomContinuation::class)
+        subclass(CounterToLibraryPositionContinuation::class)
         subclass(ReturnFromLinkedExileContinuation::class)
         subclass(CascadeMayCastContinuation::class)
         subclass(DiscoverMayCastContinuation::class)

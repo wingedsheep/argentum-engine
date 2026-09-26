@@ -564,6 +564,14 @@ enum class LibraryChoicePosition {
             SecondFromTop -> "Second from top of library"
             Bottom -> "Bottom of library"
         }
+
+    /** Lower-case phrase for rules text — "the top of its owner's library". */
+    val phrase: String
+        get() = when (this) {
+            Top -> "top"
+            SecondFromTop -> "second from the top"
+            Bottom -> "bottom"
+        }
 }
 
 /**
@@ -575,7 +583,8 @@ enum class LibraryChoicePosition {
  * or creature") — the executor handles each case.
  *
  * Common configurations:
- * - `[Top, Bottom]` (default) — Hinder/Spell Crumple style
+ * - `[Top, Bottom]` (default) — Dire Downdraft / Swat Away style (for *countering* a spell
+ *   into its library — Hinder — use `CounterDestination.Library` instead)
  * - `[SecondFromTop, Bottom]` — Temporal Cleansing style
  *
  * @property target The entity to put into its owner's library
