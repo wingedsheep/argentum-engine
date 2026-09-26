@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.text.TextReplaceable
 import com.wingedsheep.sdk.scripting.text.TextReplacer
 import com.wingedsheep.sdk.scripting.util.numberToWord
@@ -1267,6 +1268,22 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
             val newSubfilter = subfilter.applyTextReplacement(replacer)
             return if (newSubfilter !== subfilter) copy(subfilter = newSubfilter) else this
         }
+    }
+
+    /**
+     * Matches a spell or ability on the stack at least one of whose chosen targets is a player
+     * that [player] names, read relative to the filter's chooser — the player half of
+     * [TargetsMatching], which skips player targets. [Player.You]
+     * is "an instant or sorcery spell that targets you" (Shell of the Last Kappa);
+     * [Player.EachOpponent] is "that targets an opponent".
+     *
+     * It asks only whether *some* chosen target is that player, so a spell that targets you and
+     * a creature still matches.
+     */
+    @SerialName("TargetsPlayer")
+    @Serializable
+    data class TargetsPlayer(val player: Player) : CardPredicate {
+        override val description: String = "that targets ${player.description}"
     }
 
     /**

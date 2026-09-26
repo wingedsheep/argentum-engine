@@ -4330,6 +4330,10 @@ so a changeling object *has* every creature type and is correctly excluded),
 `.targetsMatching(subfilter)` (a spell/ability on the stack that targets at least one object matching
 `subfilter` — `CardPredicate.TargetsMatching`; e.g. `GameObjectFilter.InstantOrSorcery.targetsMatching(GameObjectFilter.Creature)`
 for "an instant or sorcery spell that targets a creature" — Forum Necroscribe, Lecturing Scornmage);
+`.targetsPlayer(player)` (the player half — a spell/ability on the stack with at least one chosen target
+that is a player `player` names, read relative to the filter's chooser — `CardPredicate.TargetsPlayer`;
+`TargetFilter.InstantOrSorcerySpellOnStack.targetsPlayer(Player.You)` is "target instant or sorcery spell
+that targets you" — Shell of the Last Kappa; `Player.EachOpponent` is "that targets an opponent");
 `.abilitySourceMatches(subfilter)` (an activated/triggered ability on the stack whose *source* matches
 `subfilter` — `CardPredicate.AbilitySourceMatches`; e.g.
 `TargetFilter.ActivatedOrTriggeredAbilityOnStack.youControl().abilitySourceMatches(GameObjectFilter.Creature)`

@@ -8507,6 +8507,125 @@
     ]
 }
 
+// Shell of the Last Kappa
+{
+    "name": "Shell of the Last Kappa",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact",
+    "oracleText": "{3}, {T}: Exile target instant or sorcery spell that targets you. (The spell has no effect.)\n{3}, {T}, Sacrifice Shell of the Last Kappa: You may cast a spell from among cards exiled with Shell of the Last Kappa without paying its mana cost.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Shell of the Last Kappa:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ExileTargetSpell",
+                    "linkToSource": true
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            "IsInstant",
+                                            "IsSorcery"
+                                        ]
+                                    },
+                                    {
+                                        "type": "TargetsPlayer",
+                                        "player": "You"
+                                    }
+                                ]
+                            },
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Exile target instant or sorcery spell that targets you."
+            },
+            {
+                "id": "Shell of the Last Kappa:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{3}"
+                            }
+                        },
+                        "CostTap",
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "FromLinkedExile",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a card exiled with Shell of the Last Kappa to cast without paying its mana cost"
+                        },
+                        {
+                            "type": "CastFromCollectionWithoutPayingCost",
+                            "from": "selected1"
+                        }
+                    ]
+                },
+                "descriptionOverride": "You may cast a spell from among cards exiled with Shell of the Last Kappa without paying its mana cost."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "269",
+        "rarity": "RARE",
+        "artist": "David Martin",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d80f3e7-c3f0-462f-8ae9-8b27a7c15fcd.jpg?1783944275",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "Shell of the Last Kappa's first ability can only target a spell that targets you."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "Exiling a spell prevents that spell from resolving, but it doesn't technically \"counter\" anything. This means that Shell of the Last Kappa can exile spells which \"can't be countered.\""
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Shinka, the Bloodsoaked Keep
 {
     "name": "Shinka, the Bloodsoaked Keep",

@@ -84,6 +84,14 @@ interface ObjectFilterBuilder<out Self> {
         withCardPredicate(CardPredicate.TargetsMatching(subfilter))
 
     /**
+     * Restrict to spells/abilities on the stack that target at least one player [player] names —
+     * `targetsPlayer(Player.You)` is "an instant or sorcery spell that targets you" (Shell of the
+     * Last Kappa). The player half of [targetsMatching]. See [CardPredicate.TargetsPlayer].
+     */
+    fun targetsPlayer(player: Player) =
+        withCardPredicate(CardPredicate.TargetsPlayer(player))
+
+    /**
      * Restrict to activated/triggered abilities on the stack whose *source* (CR 113.7) matches
      * [subfilter] — "from a creature source" (Echo, Perceptive Prodigy), "from an artifact source"
      * (Scientist Supreme of A.I.M.). Read with last known information when the source has already

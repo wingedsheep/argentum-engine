@@ -397,6 +397,7 @@ class PredicateEvaluator(
             CardPredicate.SharesNameWithLinkedExile,
             is CardPredicate.SharesNameWithPermanentYouControl,
             is CardPredicate.TargetsMatching,
+            is CardPredicate.TargetsPlayer,
             is CardPredicate.TotalPowerAndToughnessAtMost,
             is CardPredicate.ToughnessAtLeast,
             is CardPredicate.ToughnessAtMost,
@@ -577,6 +578,16 @@ class PredicateEvaluator(
                     is ChosenTarget.Player -> return@any false
                 }
                 matches(state, projected, targetEntityId, predicate.subfilter, subContext)
+            }
+        }
+        // The player half of the above: "a spell that targets you" asks whether some chosen
+        // target is a player the predicate names, relative to the filter's chooser.
+        if (predicate is CardPredicate.TargetsPlayer) {
+            val targets = container.get<TargetsComponent>()?.targets ?: return false
+            val subContext = context ?: return false
+            return targets.any { chosen ->
+                chosen is ChosenTarget.Player &&
+                    matchesPlayer(state, projected, predicate.player, chosen.playerId, subContext)
             }
         }
         // Ability-source predicate ("copy target ability ... from a creature source"): an ability on
@@ -1309,6 +1320,7 @@ class PredicateEvaluator(
             CardPredicate.IsTriggeredAbility -> false
             CardPredicate.IsActivatedAbility -> false
             is CardPredicate.TargetsMatching -> false
+            is CardPredicate.TargetsPlayer -> false
             is CardPredicate.AbilitySourceMatches -> false
         }
     }
@@ -2408,6 +2420,7 @@ class PredicateEvaluator(
             // Stack-relative targeting predicate — historical cast records have no
             // chosen-target snapshot, so this always returns false here.
             is CardPredicate.TargetsMatching -> false
+            is CardPredicate.TargetsPlayer -> false
 
             // Ability-source predicate — a cast-spell record is not an ability and has no source
             // object to inspect.

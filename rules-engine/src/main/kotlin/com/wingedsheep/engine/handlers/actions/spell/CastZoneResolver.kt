@@ -998,6 +998,7 @@ class CastZoneResolver(
                 is CardPredicate.DoesNotShareCreatureTypeWithPermanentYouControl,
                 is CardPredicate.DoesNotShareLandTypeWithPermanentYouControl,
                 is CardPredicate.TargetsMatching,
+                is CardPredicate.TargetsPlayer,
                 is CardPredicate.AbilitySourceMatches,
                 is CardPredicate.IsActivatedOrTriggeredAbility,
                 is CardPredicate.IsTriggeredAbility,
