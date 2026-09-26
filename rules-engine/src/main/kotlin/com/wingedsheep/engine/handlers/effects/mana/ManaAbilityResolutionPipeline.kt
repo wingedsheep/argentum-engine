@@ -113,8 +113,9 @@ class ManaAbilityResolutionPipeline(
      * The tap payoffs, in resolution order: aura bonuses attached to the source
      * ([AdditionalManaOnTap] — Elvish Guidance), global "whenever a matching source is tapped for
      * mana" statics ([AdditionalManaOnSourceTap] — Lavaleaper, Badgermole Cub, Overabundance), the
-     * [LandTappedForManaEvent] that Mana Flare-style triggers watch, and finally the any-color tap
-     * bonuses (Fertile Ground), which may pause for a color decision.
+     * [LandTappedForManaEvent] that non-mana "whenever you tap a land for mana" triggers watch
+     * (Forbidden Orchard), and finally the any-color tap bonuses (Fertile Ground), which may pause
+     * for a color decision.
      *
      * [manaEvent] describes what the ability itself produced; it gates the `whenProducing` clause
      * and supplies the color a mirror bonus copies. [carriedEvents] is the event list to append to
