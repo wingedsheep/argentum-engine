@@ -742,6 +742,106 @@
     ]
 }
 
+// Bushi Tenderfoot
+{
+    "name": "Bushi Tenderfoot",
+    "manaCost": "{W}",
+    "typeLine": "Creature — Human Soldier",
+    "oracleText": "When a creature dealt damage by this creature this turn dies, flip this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bushi Tenderfoot:1",
+                "trigger": "CreatureDealtDamageBySourceDiesEvent",
+                "effect": "Flip",
+                "descriptionOverride": "When a creature dealt damage by this creature this turn dies, flip this creature."
+            }
+        ]
+    },
+    "flipSide": {
+        "name": "Kenzo the Hardhearted",
+        "manaCost": "{W}",
+        "typeLine": "Legendary Creature — Human Samurai",
+        "oracleText": "Double strike; bushido 2 (Whenever this creature blocks or becomes blocked, it gets +2/+2 until end of turn.)",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 4
+        },
+        "keywords": [
+            "DOUBLE_STRIKE",
+            "BUSHIDO"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Numeric",
+                "keyword": "BUSHIDO",
+                "n": 2
+            }
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Kenzo the Hardhearted:1",
+                    "trigger": "BlockEvent",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "Bushido 2"
+                },
+                {
+                    "id": "Kenzo the Hardhearted:2",
+                    "trigger": "BecomesBlockedEvent",
+                    "effect": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": "Self"
+                    },
+                    "descriptionOverride": "Bushido 2"
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "2",
+            "rarity": "UNCOMMON",
+            "artist": "Mark Zug",
+            "imageUri": "https://cards.scryfall.io/normal/front/8/6/864ad989-19a6-4930-8efc-bbc077a18c32.jpg?1783944342"
+        },
+        "colorIdentityOverride": [
+            "WHITE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "2",
+        "rarity": "UNCOMMON",
+        "artist": "Mark Zug",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/6/864ad989-19a6-4930-8efc-bbc077a18c32.jpg?1783944342"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ],
+    "layout": "FLIP"
+}
+
 // Cage of Hands
 {
     "name": "Cage of Hands",
@@ -2386,6 +2486,71 @@
     ]
 }
 
+// Gibbering Kami
+{
+    "name": "Gibbering Kami",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nSoulshift 3 (When this creature dies, you may return target Spirit card with mana value 3 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gibbering Kami:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 3 (When this creature dies, you may return target Spirit card with mana value 3 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=3 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Soulshift 3 (When this creature dies, you may return target Spirit card with mana value 3 or less from your graveyard to your hand.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Jim Pavelec",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/a/9a3e988f-314c-4e83-b279-c2a736933e64.jpg?1783944315"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Glacial Ray
 {
     "name": "Glacial Ray",
@@ -2819,6 +2984,147 @@
         "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f22a88a-4f04-4500-9e05-909b54ad43e3.jpg?1783944279"
     },
     "colorIdentityOverride": []
+}
+
+// He Who Hungers
+{
+    "name": "He Who Hungers",
+    "manaCost": "{4}{B}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "Flying\n{1}, Sacrifice a Spirit: Target opponent reveals their hand. You choose a card from it. That player discards that card. Activate only as a sorcery.\nSoulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 4
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "He Who Hungers:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=4 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "Soulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "He Who Hungers:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "permanent Spirit"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected1",
+                            "prompt": "Choose a card for that player to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "114",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/c/1ccf0f8d-f988-45ec-b75b-d97206326cfb.jpg?1783944315"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Hearth Kami
@@ -3468,6 +3774,71 @@
     ]
 }
 
+// Hundred-Talon Kami
+{
+    "name": "Hundred-Talon Kami",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nSoulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "FLYING",
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 4
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hundred-Talon Kami:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=4 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Soulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "16",
+        "artist": "Paolo Parente",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7b2892a-5c16-4624-9a47-6a47f10e2466.jpg?1783944339"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Indomitable Will
 {
     "name": "Indomitable Will",
@@ -3501,6 +3872,139 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Initiate of Blood
+{
+    "name": "Initiate of Blood",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Ogre Shaman",
+    "oracleText": "{T}: This creature deals 1 damage to target creature that was dealt damage this turn. When that creature dies this turn, flip this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Initiate of Blood:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "CreateDelayedTrigger",
+                            "effect": "Flip",
+                            "trigger": {
+                                "event": {
+                                    "type": "ZoneChangeEvent",
+                                    "from": "Battlefield",
+                                    "to": "Graveyard"
+                                }
+                            },
+                            "watchedTarget": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "WasDealtDamageThisTurn"
+                                ]
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: This creature deals 1 damage to target creature that was dealt damage this turn. When that creature dies this turn, flip this creature."
+            }
+        ]
+    },
+    "flipSide": {
+        "name": "Goka the Unjust",
+        "manaCost": "{3}{R}",
+        "typeLine": "Legendary Creature — Ogre Shaman",
+        "oracleText": "{T}: Goka deals 4 damage to target creature that was dealt damage this turn.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Goka the Unjust:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 4
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        "WasDealtDamageThisTurn"
+                                    ]
+                                }
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{T}: Goka deals 4 damage to target creature that was dealt damage this turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "173",
+            "rarity": "UNCOMMON",
+            "artist": "Carl Critchlow",
+            "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3523b8e-065f-427c-8d5b-eb731ca91ede.jpg?1783944299"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "173",
+        "rarity": "UNCOMMON",
+        "artist": "Carl Critchlow",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/3/b3523b8e-065f-427c-8d5b-eb731ca91ede.jpg?1783944299"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "FLIP"
 }
 
 // Innocence Kami
@@ -4150,6 +4654,72 @@
     ]
 }
 
+// Kami of Lunacy
+{
+    "name": "Kami of Lunacy",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying\nSoulshift 5 (When this creature dies, you may return target Spirit card with mana value 5 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 1
+    },
+    "keywords": [
+        "FLYING",
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 5
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kami of Lunacy:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 5 (When this creature dies, you may return target Spirit card with mana value 5 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=5 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Soulshift 5 (When this creature dies, you may return target Spirit card with mana value 5 or less from your graveyard to your hand.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "119",
+        "rarity": "UNCOMMON",
+        "artist": "Daren Bader",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/b/4baef070-d265-4c6d-9b4b-3cafbd3b34c3.jpg?1783944313"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Kami of Old Stone
 {
     "name": "Kami of Old Stone",
@@ -4275,6 +4845,129 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Kami of the Painted Road
+{
+    "name": "Kami of the Painted Road",
+    "manaCost": "{4}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Whenever you cast a Spirit or Arcane spell, this creature gains protection from the color of your choice until end of turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kami of the Painted Road:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Spirit"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Arcane"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "ChooseColorThen",
+                    "then": {
+                        "type": "GrantProtectionFromChosenColor",
+                        "target": "Self"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "23",
+        "artist": "Ron Spencer",
+        "flavorText": "In ancient times, precepts of kami law were inscribed onto bridges as a gesture of respect. During the war, humans regarded them as warnings of where not to travel.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/0/7068739c-0a6a-49a1-88c3-68d7abc58ee2.jpg?1783944337"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Kami of the Palace Fields
+{
+    "name": "Kami of the Palace Fields",
+    "manaCost": "{5}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Flying, first strike\nSoulshift 5 (When this creature dies, you may return target Spirit card with mana value 5 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE",
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 5
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Kami of the Palace Fields:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 5 (When this creature dies, you may return target Spirit card with mana value 5 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=5 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Soulshift 5 (When this creature dies, you may return target Spirit card with mana value 5 or less from your graveyard to your hand.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "24",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Cavotta",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/690980ce-bbdc-4d52-b34e-2bad11e436a1.jpg?1783944337"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -6544,6 +7237,142 @@
     ]
 }
 
+// Nezumi Graverobber
+{
+    "name": "Nezumi Graverobber",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Rat Rogue",
+    "oracleText": "{1}{B}: Exile target card from an opponent's graveyard. If no cards are in that graveyard, flip this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nezumi Graverobber:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{B}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": {
+                                            "type": "OwnerOf",
+                                            "targetDescription": "target card"
+                                        },
+                                        "zone": "Graveyard"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": "Flip"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "own:opponent",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{B}: Exile target card from an opponent's graveyard. If no cards are in that graveyard, flip this creature."
+            }
+        ]
+    },
+    "flipSide": {
+        "name": "Nighteyes the Desecrator",
+        "manaCost": "{1}{B}",
+        "typeLine": "Legendary Creature — Rat Wizard",
+        "oracleText": "{4}{B}: Put target creature card from a graveyard onto the battlefield under your control.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 2
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Nighteyes the Desecrator:1",
+                    "cost": {
+                        "type": "CostAtomWrapper",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{4}{B}"
+                        }
+                    },
+                    "effect": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Battlefield",
+                        "controllerOverride": "Controller"
+                    },
+                    "targetRequirements": [
+                        {
+                            "type": "TargetObject",
+                            "filter": {
+                                "baseFilter": "creature",
+                                "zone": "Graveyard"
+                            },
+                            "id": "t0"
+                        }
+                    ],
+                    "descriptionOverride": "{4}{B}: Put target creature card from a graveyard onto the battlefield under your control."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "129",
+            "rarity": "UNCOMMON",
+            "artist": "Jim Nelson",
+            "imageUri": "https://cards.scryfall.io/normal/front/7/7/77ffd913-8efa-48e5-a5cf-293d3068dbbf.jpg?1783944311"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "129",
+        "rarity": "UNCOMMON",
+        "artist": "Jim Nelson",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77ffd913-8efa-48e5-a5cf-293d3068dbbf.jpg?1783944311"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "FLIP"
+}
+
 // Nezumi Ronin
 {
     "name": "Nezumi Ronin",
@@ -6611,6 +7440,181 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Nezumi Shortfang
+{
+    "name": "Nezumi Shortfang",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Rat Rogue",
+    "oracleText": "{1}{B}, {T}: Target opponent discards a card. Then if that player has no cards in hand, flip this creature.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nezumi Shortfang:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "chooser": "TargetPlayer",
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            "moveType": "Discard"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "Count",
+                                        "player": {
+                                            "type": "BoundVariable",
+                                            "name": "t0"
+                                        },
+                                        "zone": "Hand"
+                                    },
+                                    "operator": "EQ",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 0
+                                    }
+                                }
+                            },
+                            "then": "Flip"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetOpponent",
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{B}, {T}: Target opponent discards a card. Then if that player has no cards in hand, flip this creature."
+            }
+        ]
+    },
+    "flipSide": {
+        "name": "Stabwhisker the Odious",
+        "manaCost": "{1}{B}",
+        "typeLine": "Legendary Creature — Rat Shaman",
+        "oracleText": "At the beginning of each opponent's upkeep, that player loses 1 life for each card fewer than three in their hand.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Stabwhisker the Odious:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "UPKEEP",
+                        "player": "EachOpponent"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "LoseLife",
+                        "amount": {
+                            "type": "Max",
+                            "left": {
+                                "type": "Fixed",
+                                "amount": 0
+                            },
+                            "right": {
+                                "type": "Subtract",
+                                "left": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "right": {
+                                    "type": "Count",
+                                    "player": "TriggeringPlayer",
+                                    "zone": "Hand"
+                                }
+                            }
+                        },
+                        "target": {
+                            "type": "PlayerRef",
+                            "player": "TriggeringPlayer"
+                        }
+                    },
+                    "descriptionOverride": "At the beginning of each opponent's upkeep, that player loses 1 life for each card fewer than three in their hand."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "131",
+            "rarity": "RARE",
+            "artist": "Daren Bader",
+            "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8265c39-d287-4c5a-baba-f2f09dd80a1c.jpg?1783944311"
+        },
+        "colorIdentityOverride": [
+            "BLACK"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "131",
+        "rarity": "RARE",
+        "artist": "Daren Bader",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/8/c8265c39-d287-4c5a-baba-f2f09dd80a1c.jpg?1783944311"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ],
+    "layout": "FLIP"
 }
 
 // Night of Souls' Betrayal
@@ -8100,6 +9104,107 @@
     ]
 }
 
+// Rootrunner
+{
+    "name": "Rootrunner",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "{G}{G}, Sacrifice this creature: Put target land on top of its owner's library.\nSoulshift 3 (When this creature dies, you may return target Spirit card with mana value 3 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rootrunner:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 3 (When this creature dies, you may return target Spirit card with mana value 3 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=3 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "Soulshift 3 (When this creature dies, you may return target Spirit card with mana value 3 or less from your graveyard to your hand.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Rootrunner:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{G}{G}"
+                            }
+                        },
+                        "CostSacrificeSelf"
+                    ]
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Library",
+                    "placement": "Top"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "237",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Rex",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/3/23e5502b-acae-4320-ac01-4d711cb2c49a.jpg?1783944283"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Ryusei, the Falling Star
 {
     "name": "Ryusei, the Falling Star",
@@ -8351,6 +9456,101 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Scuttling Death
+{
+    "name": "Scuttling Death",
+    "manaCost": "{4}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Sacrifice this creature: Target creature gets -1/-1 until end of turn.\nSoulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 2
+    },
+    "keywords": [
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 4
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Scuttling Death:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=4 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "Soulshift 4 (When this creature dies, you may return target Spirit card with mana value 4 or less from your graveyard to your hand.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Scuttling Death:1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "Sacrifice this creature: Target creature gets -1/-1 until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "142",
+        "artist": "Thomas M. Baxa",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8d9bf4e-3bb1-4154-b1ff-a3d8a2810c1b.jpg?1783944307"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -9934,6 +11134,72 @@
     ]
 }
 
+// Student of Elements
+{
+    "name": "Student of Elements",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "When this creature has flying, flip it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "stateTriggeredAbilities": [
+            {
+                "id": "Student of Elements:1",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": "kw:flying"
+                },
+                "effect": "Flip",
+                "descriptionOverride": "When this creature has flying, flip it."
+            }
+        ]
+    },
+    "flipSide": {
+        "name": "Tobita, Master of Winds",
+        "manaCost": "{1}{U}",
+        "typeLine": "Legendary Creature — Human Wizard",
+        "oracleText": "Creatures you control have flying.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "FLYING",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "93",
+            "rarity": "UNCOMMON",
+            "artist": "Ittoku",
+            "imageUri": "https://cards.scryfall.io/normal/front/9/d/9de1eebf-5725-438c-bcf0-f3a4d8a89fb0.jpg?1783944320"
+        },
+        "colorIdentityOverride": [
+            "BLUE"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "UNCOMMON",
+        "artist": "Ittoku",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9de1eebf-5725-438c-bcf0-f3a4d8a89fb0.jpg?1783944320"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ],
+    "layout": "FLIP"
+}
+
 // Swallowing Plague
 {
     "name": "Swallowing Plague",
@@ -10563,6 +11829,71 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Thousand-legged Kami
+{
+    "name": "Thousand-legged Kami",
+    "manaCost": "{6}{G}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Soulshift 7 (When this creature dies, you may return target Spirit card with mana value 7 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 7
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thousand-legged Kami:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 7 (When this creature dies, you may return target Spirit card with mana value 7 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=7 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Soulshift 7 (When this creature dies, you may return target Spirit card with mana value 7 or less from your graveyard to your hand.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "246",
+        "rarity": "UNCOMMON",
+        "artist": "Nottsuo",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/c/5c88355e-dff0-4d51-a33c-08e14d6217d4.jpg?1783944281"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -11212,6 +12543,71 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Vine Kami
+{
+    "name": "Vine Kami",
+    "manaCost": "{6}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nSoulshift 6 (When this creature dies, you may return target Spirit card with mana value 6 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "MENACE",
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 6
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Vine Kami:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 6 (When this creature dies, you may return target Spirit card with mana value 6 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=6 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Soulshift 6 (When this creature dies, you may return target Spirit card with mana value 6 or less from your graveyard to your hand.)"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "249",
+        "artist": "Tsutomu Kawade",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa5241c8-7f50-413e-9ac0-9ab0ad5c884c.jpg?1783944280"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
