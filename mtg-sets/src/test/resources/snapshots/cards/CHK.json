@@ -564,6 +564,52 @@
     ]
 }
 
+// Blessed Breath
+{
+    "name": "Blessed Breath",
+    "manaCost": "{W}",
+    "typeLine": "Instant — Arcane",
+    "oracleText": "Target creature you control gains protection from the color of your choice until end of turn.\nSplice onto Arcane {W} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)",
+    "keywords": [
+        "SPLICE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Splice",
+            "cost": "{W}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "ChooseColorThen",
+            "then": {
+                "type": "GrantProtectionFromChosenColor",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                }
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "artist": "Tsutomu Kawade",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9e2d8650-b8c3-4e89-9aa2-424a98715c38.jpg?1783944343"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Blind with Anger
 {
     "name": "Blind with Anger",
@@ -3149,6 +3195,93 @@
     ]
 }
 
+// Eight-and-a-Half-Tails
+{
+    "name": "Eight-and-a-Half-Tails",
+    "manaCost": "{W}{W}",
+    "typeLine": "Legendary Creature — Fox Cleric",
+    "oracleText": "{1}{W}: Target permanent you control gains protection from white until end of turn.\n{1}: Target spell or permanent becomes white until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Eight-and-a-Half-Tails:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}{W}"
+                    }
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "PROTECTION_FROM_WHITE",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "permanent ctrl:you"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{1}{W}: Target permanent you control gains protection from white until end of turn."
+            },
+            {
+                "id": "Eight-and-a-Half-Tails:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "ChangeColor",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "colors": [
+                        "WHITE"
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetSpellOrPermanent",
+                        "id": "t1"
+                    }
+                ],
+                "descriptionOverride": "{1}: Target spell or permanent becomes white until end of turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "8",
+        "rarity": "RARE",
+        "artist": "Daren Bader",
+        "flavorText": "\"Virtue is an inner light that can prevail in every soul.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/b/5bc72076-fb6c-420b-9c88-faabb9b91a03.jpg?1783944340",
+        "rulings": [
+            {
+                "date": "2016-06-08",
+                "text": "A permanent spell that becomes white this way will enter the battlefield and continue to be white until end of turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Ember-Fist Zubera
 {
     "name": "Ember-Fist Zubera",
@@ -5094,6 +5227,92 @@
     ]
 }
 
+// Hikari, Twilight Guardian
+{
+    "name": "Hikari, Twilight Guardian",
+    "manaCost": "{3}{W}{W}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "Flying\nWhenever you cast a Spirit or Arcane spell, you may exile Hikari. If you do, return it to the battlefield under its owner's control at the beginning of the next end step.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Hikari, Twilight Guardian:1",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Spirit"
+                                    },
+                                    {
+                                        "type": "HasSubtype",
+                                        "subtype": "Arcane"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Exile"
+                            },
+                            {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "MoveToZone",
+                                    "target": "Self",
+                                    "destination": "Battlefield"
+                                }
+                            }
+                        ]
+                    }
+                },
+                "descriptionOverride": "Whenever you cast a Spirit or Arcane spell, you may exile Hikari. If you do, return it to the battlefield under its owner's control at the beginning of the next end step."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "12",
+        "rarity": "RARE",
+        "artist": "Glen Angus",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/2/e2dc7ba1-6194-45ba-97c5-ad14331cc3a6.jpg?1783944341",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "You may choose not to exile Hikari."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "If you exile Hikari, it leaves the battlefield before the spell that triggered it resolves its ability, so it will be unaffected by that spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Hinder
 {
     "name": "Hinder",
@@ -5768,6 +5987,100 @@
         "flavorText": "\"Just looking at it fills me with dread . . . . Yet since it arrived, I've done little else. My blades have dulled and my business has failed, and still I cannot look away.\"\n—Keisaku, master swordmaker",
         "imageUri": "https://cards.scryfall.io/normal/front/9/1/91c33332-8a72-4b81-a8e9-a73aaac6013c.jpg?1783944279"
     }
+}
+
+// Iname, Life Aspect
+{
+    "name": "Iname, Life Aspect",
+    "manaCost": "{4}{G}{G}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "When Iname dies, you may exile it. If you do, return any number of target Spirit cards from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Iname, Life Aspect:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Exile"
+                            }
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": "ChosenTargets",
+                                    "storeAs": "gathered0"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "gathered0",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "descriptionOverride": "You may exile Iname. If you do, return any number of target Spirit cards from your graveyard to your hand."
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "unlimited": true,
+                    "filter": {
+                        "baseFilter": "Spirit own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "215",
+        "rarity": "RARE",
+        "artist": "Justin Sweet",
+        "flavorText": "Iname rejoices in the dawn of a new life, but soon becomes jealous of the simple joys denied him by his station. So the cycle begins anew.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/e/be027e3c-8891-46f0-bca7-d28a94ca281a.jpg?1783944289",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "The targets of Iname, Life Aspect's ability are chosen when the ability is put onto the stack, but you don't choose whether to exile Iname, Life Aspect until the ability resolves."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "You may target Iname, Life Aspect. However, this doesn't do anything since the card will no longer be in your graveyard when the creature cards are returned to your hand."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "You can exile the card even if you choose no targets."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
 }
 
 // Indomitable Will
@@ -7661,6 +7974,43 @@
     "layout": "FLIP"
 }
 
+// Kitsune Riftwalker
+{
+    "name": "Kitsune Riftwalker",
+    "manaCost": "{1}{W}{W}",
+    "typeLine": "Creature — Fox Wizard",
+    "oracleText": "Protection from Spirits and from Arcane",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywordAbilities": [
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Subtype",
+                "subtype": "Spirit"
+            }
+        },
+        {
+            "type": "Protection",
+            "scope": {
+                "type": "ProtectionScope.Subtype",
+                "subtype": "Arcane"
+            }
+        }
+    ],
+    "metadata": {
+        "collectorNumber": "29",
+        "artist": "Pete Venters",
+        "flavorText": "The wake of his passage shoved aside the influence of the kami.",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/5/f545d9d0-52d8-4b90-a8bb-178f4ba3c4b7.jpg?1783944336"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Kodama of the North Tree
 {
     "name": "Kodama of the North Tree",
@@ -8010,6 +8360,117 @@
         "imageUri": "https://cards.scryfall.io/normal/front/7/5/759b2f39-e1b1-44aa-b49a-00ef6926a6ac.jpg?1783944278"
     },
     "colorIdentityOverride": []
+}
+
+// Konda's Hatamoto
+{
+    "name": "Konda's Hatamoto",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Human Samurai",
+    "oracleText": "Bushido 1 (Whenever this creature blocks or becomes blocked, it gets +1/+1 until end of turn.)\nAs long as you control a legendary Samurai, this creature gets +1/+2 and has vigilance. (Attacking doesn't cause this creature to tap.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "keywords": [
+        "BUSHIDO"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "BUSHIDO",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Konda's Hatamoto:1",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Bushido 1"
+            },
+            {
+                "id": "Konda's Hatamoto:2",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Bushido 1"
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "CompositeStaticAbility",
+                    "abilities": [
+                        {
+                            "type": "ModifyStats",
+                            "powerBonus": 1,
+                            "toughnessBonus": 2,
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "VIGILANCE",
+                            "filter": {
+                                "baseFilter": "permanent",
+                                "scope": "Self"
+                            }
+                        }
+                    ]
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsPermanent",
+                            "IsLegendary",
+                            {
+                                "type": "HasSubtype",
+                                "subtype": "Samurai"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "Lars Grant-West",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/3/83425cf6-f6ad-4302-8f07-099eabdd4b40.jpg?1783944335"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // Konda, Lord of Eiganjo
@@ -9350,6 +9811,115 @@
     ]
 }
 
+// Myojin of Cleansing Fire
+{
+    "name": "Myojin of Cleansing Fire",
+    "manaCost": "{5}{W}{W}{W}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "Myojin of Cleansing Fire enters with a divinity counter on it if you cast it from your hand.\nMyojin of Cleansing Fire has indestructible as long as it has a divinity counter on it.\nRemove a divinity counter from Myojin of Cleansing Fire: Destroy all other creatures.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 6
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Myojin of Cleansing Fire:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "DIVINITY",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsCreature"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "StateNot",
+                                            "predicate": "IsSource"
+                                        }
+                                    ]
+                                }
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Remove a divinity counter from this creature: Destroy all other creatures."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "DIVINITY"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "DIVINITY",
+                "count": 1,
+                "selfOnly": true,
+                "condition": "WasCastFromHand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "35",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/0/a0570ba0-2877-46f6-acea-6913f8915d6d.jpg?1783944334",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "In a Commander game where this card is your commander, casting it from the command zone does not count as casting it from your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Myojin of Infinite Rage
 {
     "name": "Myojin of Infinite Rage",
@@ -9446,6 +10016,112 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Myojin of Life's Web
+{
+    "name": "Myojin of Life's Web",
+    "manaCost": "{6}{G}{G}{G}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "Myojin of Life's Web enters with a divinity counter on it if you cast it from your hand.\nMyojin of Life's Web has indestructible as long as it has a divinity counter on it.\nRemove a divinity counter from Myojin of Life's Web: Put any number of creature cards from your hand onto the battlefield.",
+    "creatureStats": {
+        "power": 8,
+        "toughness": 8
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Myojin of Life's Web:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "DIVINITY",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "creature"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "putting",
+                            "prompt": "Put any number of creature cards from your hand onto the battlefield"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Remove a divinity counter from this creature: Put any number of creature cards from your hand onto the battlefield."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "DIVINITY"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "DIVINITY",
+                "count": 1,
+                "selfOnly": true,
+                "condition": "WasCastFromHand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/f/efb926ad-e762-4883-8841-73e034d8e21e.jpg?1783944286",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "In a Commander game where this card is your commander, casting it from the Command zone does not count as casting it from your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -9708,6 +10384,72 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Nature's Will
+{
+    "name": "Nature's Will",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever one or more creatures you control deal combat damage to a player, tap all lands that player controls and untap all lands you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Nature's Will:1",
+                "trigger": "OneOrMoreDealCombatDamageToPlayerEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "land ctrl:triggering-player"
+                                }
+                            },
+                            "body": {
+                                "type": "TapUntap",
+                                "target": "IterationEntity"
+                            }
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "land ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "Whenever one or more creatures you control deal combat damage to a player, tap all lands that player controls and untap all lands you control."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "Mitch Cotie",
+        "flavorText": "\"Without the kami to speak to nature on our behalf, we must beg help from nature directly.\"\n—Seshiro the Anointed",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/5/75a291a0-db0d-4ccc-b7ae-240cafa41883.jpg?1783944286",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "The lands are tapped and untapped once each time combat damage is dealt (usually once each turn, but first strike, double strike, and multiple combat phases can change that), not once for each creature that deals combat damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -11687,6 +12429,98 @@
     ]
 }
 
+// Pious Kitsune
+{
+    "name": "Pious Kitsune",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Fox Cleric",
+    "oracleText": "At the beginning of your upkeep, put a devotion counter on this creature. Then if a creature named Eight-and-a-Half-Tails is on the battlefield, you gain 1 life for each devotion counter on this creature.\n{T}, Remove a devotion counter from this creature: You gain 1 life.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Pious Kitsune:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "DEVOTION",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Exists",
+                                    "player": "Each",
+                                    "zone": "Battlefield",
+                                    "filter": "creature name:Eight-and-a-Half-Tails"
+                                }
+                            },
+                            "then": {
+                                "type": "GainLife",
+                                "amount": {
+                                    "type": "EntityProperty",
+                                    "entity": "Self",
+                                    "numericProperty": {
+                                        "type": "CounterCount",
+                                        "counterType": "DEVOTION"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Pious Kitsune:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "DEVOTION",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "38",
+        "artist": "Anthony S. Waters",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/b/bb4124b9-5169-471e-b805-ceeffeec9184.jpg?1783944334"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Psychic Puppetry
 {
     "name": "Psychic Puppetry",
@@ -12616,6 +13450,86 @@
         "artist": "Mitch Cotie",
         "flavorText": "From the moment they swore their oaths, they belonged to their lord, sword and soul.",
         "imageUri": "https://cards.scryfall.io/normal/front/8/b/8b2be3fe-87a2-47b2-8af1-b99a48622c7b.jpg?1783944332"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
+// Samurai of the Pale Curtain
+{
+    "name": "Samurai of the Pale Curtain",
+    "manaCost": "{W}{W}",
+    "typeLine": "Creature — Fox Samurai",
+    "oracleText": "Bushido 1 (Whenever this creature blocks or becomes blocked, it gets +1/+1 until end of turn.)\nIf a permanent would be put into a graveyard, exile it instead.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "BUSHIDO"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "BUSHIDO",
+            "n": 1
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Samurai of the Pale Curtain:1",
+                "trigger": "BlockEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Bushido 1"
+            },
+            {
+                "id": "Samurai of the Pale Curtain:2",
+                "trigger": "BecomesBlockedEvent",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                },
+                "descriptionOverride": "Bushido 1"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "RedirectZoneChange",
+                "newDestination": "Exile",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "43",
+        "rarity": "UNCOMMON",
+        "artist": "Christopher Moeller",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/ead15cf8-f692-4cb9-ac86-0dff00236145.jpg?1783944332"
     },
     "colorIdentityOverride": [
         "WHITE"
@@ -15875,6 +16789,61 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c571f66-7a00-4cb0-9da9-8271083f49d3.jpg?1783944272"
     },
     "colorIdentityOverride": []
+}
+
+// Vassal's Duty
+{
+    "name": "Vassal's Duty",
+    "manaCost": "{3}{W}",
+    "typeLine": "Enchantment",
+    "oracleText": "{1}: The next 1 damage that would be dealt to target legendary creature you control this turn is dealt to you instead.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Vassal's Duty:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "RedirectNextDamage",
+                    "protectedTargets": [
+                        {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    ],
+                    "redirectTo": "Controller",
+                    "amount": 1
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "IsLegendary"
+                                ],
+                                "controllerPredicate": "ControlledByYou"
+                            }
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "48",
+        "rarity": "RARE",
+        "artist": "Dave Dorman",
+        "flavorText": "\"My life is yours, my lord. There is no greater service than to yield it for your safety.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/e/8ef25165-2458-4c00-8b7c-0ad6fd98e3af.jpg?1783944331"
+    }
 }
 
 // Venerable Kumo
