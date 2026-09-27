@@ -217,7 +217,8 @@ class PredicateEvaluator(
      * A [Recipient.Player] reads its [Player] reference relative to [context] — `You` is
      * [PredicateContext.controllerId], `EachOpponent` a real opponent of that player (a teammate in
      * a team game is not one, CR 102.3), `EnchantedPlayer` the player the context's source is
-     * attached to. A [Recipient.Object] is a [matches] of its filter against the live object, with
+     * attached to. [Recipient.AnotherPlayer] is any player but that controller — teammates
+     * included. A [Recipient.Object] is a [matches] of its filter against the live object, with
      * the context's [PredicateContext.sourceId] answering `sourceItself()` /
      * `attachedToBySource()`; an object that isn't on the battlefield yet (a creature entering with
      * counters) reads its own characteristics, as [matches] always does off the battlefield.
@@ -241,6 +242,7 @@ class PredicateEvaluator(
         }
         is Recipient.Player ->
             entityId in state.turnOrder && matchesPlayer(state, projected, recipient.player, entityId, context)
+        Recipient.AnotherPlayer -> entityId in state.turnOrder && entityId != context.controllerId
         is Recipient.Object -> when {
             entityId in state.turnOrder -> false
             lastKnown != null && entityId !in state.getBattlefield() ->

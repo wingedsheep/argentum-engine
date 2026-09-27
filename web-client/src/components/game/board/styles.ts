@@ -2357,6 +2357,7 @@ const passiveCounterPalette: Record<string, CounterBadgePalette> = {
   INVITATION: { bg: 'rgba(50, 40, 50, 0.95)', border: 'rgba(225, 190, 225, 0.7)', color: '#efd6ef' },
   IMPOSTOR: { bg: 'rgba(36, 30, 44, 0.95)', border: 'rgba(170, 140, 200, 0.7)', color: '#cdb8e6' },
   DEVOTION: { bg: 'rgba(40, 18, 30, 0.95)', border: 'rgba(190, 90, 140, 0.7)', color: '#e3a9c8' },
+  THEFT: { bg: 'rgba(24, 22, 30, 0.95)', border: 'rgba(150, 140, 110, 0.7)', color: '#d8cfa8' },
   MINUS_ZERO_MINUS_ONE: { bg: 'rgba(60, 20, 20, 0.95)', border: 'rgba(220, 120, 120, 0.7)', color: '#e09c9c' },
 }
 

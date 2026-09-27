@@ -610,6 +610,12 @@ value class CounterType(val name: String) {
          */
         val DEVOTION = CounterType("DEVOTION")
 
+        /**
+         * Theft counter (CHK — Night Dealings). A tally with no inherent rule: damage your sources
+         * deal to other players adds them, and an activated cost removes X of them.
+         */
+        val THEFT = CounterType("THEFT")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -720,6 +726,7 @@ value class CounterType(val name: String) {
             INVITATION,
             IMPOSTOR,
             DEVOTION,
+            THEFT,
         )
 
         /**

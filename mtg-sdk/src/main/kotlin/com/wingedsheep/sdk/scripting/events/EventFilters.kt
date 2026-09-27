@@ -52,6 +52,18 @@ sealed interface Recipient {
         override val description: String get() = filter.description
     }
 
+    /**
+     * "Another player" — any player other than the observing ability's controller. Wider than
+     * [Opponent]: in a team game a teammate is another player but not an opponent (CR 102.3), so
+     * Night Dealings' "a source you control deals damage to another player" counts damage to a
+     * Two-Headed Giant teammate that [Opponent] would skip.
+     */
+    @SerialName("RecipientAnotherPlayer")
+    @Serializable
+    data object AnotherPlayer : Recipient {
+        override val description: String = "another player"
+    }
+
     /** Any of [options] — the heterogeneous "player or object" unions. */
     @SerialName("RecipientAnyOf")
     @Serializable

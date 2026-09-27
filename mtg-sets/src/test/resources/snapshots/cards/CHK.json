@@ -9382,6 +9382,114 @@
     "layout": "FLIP"
 }
 
+// Night Dealings
+{
+    "name": "Night Dealings",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a source you control deals damage to another player, put that many theft counters on this enchantment.\n{2}{B}{B}, Remove X theft counters from this enchantment: Search your library for a nonland card with mana value X, reveal it, put it into your hand, then shuffle.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Night Dealings:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": "RecipientAnotherPlayer",
+                    "sourceFilter": "ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddDynamicCounters",
+                    "counterType": "THEFT",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": "Self"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Night Dealings:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}{B}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomRemoveCounters",
+                                "counterType": "THEFT",
+                                "count": "XValue",
+                                "self": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Library",
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsNonland",
+                                        "ManaValueEqualsX"
+                                    ]
+                                }
+                            },
+                            "storeAs": "searchable",
+                            "search": true
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "searchable",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "found"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "found",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            },
+                            "revealed": true
+                        },
+                        "ShuffleLibrary",
+                        "EmitLibrarySearchedEvent"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "RARE",
+        "artist": "Darrell Riche",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58d012ee-9523-469f-8ddb-f4b664093c13.jpg?1783944310"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Night of Souls' Betrayal
 {
     "name": "Night of Souls' Betrayal",

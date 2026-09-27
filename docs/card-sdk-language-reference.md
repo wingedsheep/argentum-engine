@@ -1856,6 +1856,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   `CounterType.REVIVAL` (Nine-Lives Familiar — a "lives left" counter: it enters with eight if you cast it and its
   dies trigger reads the last-known count to come back with one fewer),
   `CounterType.DEVOTION` (Bloodthirsty Ogre — one tap ability adds it, the other shrinks a creature by the count),
+  `CounterType.THEFT` (Night Dealings — damage your sources deal to other players adds them, `Costs.RemoveXCounters(THEFT, self = true)` spends them),
   `CounterType.JUDGMENT` (Faithbound Judge // Sinner's Judgment — both faces count to three, the
   creature face to shed defender and the Aura face to make the enchanted player lose the game),
   `CounterType.NET`, `CounterType.FIRE`, `CounterType.CONQUEROR`, `CounterType.POINT` (Contested Game Ball — its
@@ -5284,6 +5285,9 @@ already exist:
 - `Recipient.Player(player: Player)` — a player named by a `Player` reference (`You`, `EachOpponent`,
   `Any`, `EnchantedPlayer`, …).
 - `Recipient.Object(filter: GameObjectFilter)` — an object matching the filter.
+- `Recipient.AnotherPlayer` — "another player": any player but the observing ability's controller.
+  Wider than `Opponent` — a Two-Headed Giant teammate is another player but not an opponent
+  (CR 102.3). Night Dealings: `Triggers.a(Any.youControl()).dealsDamage(Recipient.AnotherPlayer)`.
 - `Recipient.AnyOf(options)` — a heterogeneous union ("a player or planeswalker").
 
 Named constants keep card code readable: `Any` (default — any player or object), `AnyPlayer`, `You`,

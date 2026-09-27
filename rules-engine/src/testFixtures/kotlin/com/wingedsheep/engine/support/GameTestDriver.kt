@@ -167,6 +167,8 @@ class GameTestDriver {
      * @param commanders Commander card name per seat, positionally matched to [decks]. Empty for a
      *   non-commander game. As in a real game the commander is *not* part of its deck list —
      *   `GameInitializer` instantiates it separately into that seat's command zone.
+     * @param teams Seat indices per team (`listOf(listOf(0, 1), listOf(2, 3))` with
+     *   `Format.TwoHeadedGiant`); null for a free-for-all.
      */
     fun initMultiplayer(
         decks: List<Deck>,
@@ -175,6 +177,7 @@ class GameTestDriver {
         startingPlayer: Int = 0,
         format: com.wingedsheep.sdk.core.Format = com.wingedsheep.sdk.core.Format.Standard,
         commanders: List<String> = emptyList(),
+        teams: List<List<Int>>? = null,
     ): List<EntityId> {
         val initializer = GameInitializer(cardRegistry)
         val result = initializer.initializeGame(
@@ -187,7 +190,8 @@ class GameTestDriver {
                     )
                 },
                 skipMulligans = skipMulligans,
-                startingPlayerIndex = startingPlayer
+                startingPlayerIndex = startingPlayer,
+                teams = teams,
             )
         )
 
