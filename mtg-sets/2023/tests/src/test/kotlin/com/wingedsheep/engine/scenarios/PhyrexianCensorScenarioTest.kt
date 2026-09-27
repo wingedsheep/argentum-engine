@@ -64,6 +64,25 @@ class PhyrexianCensorScenarioTest : ScenarioTestBase() {
             game.isOnBattlefield("Grizzly Bears") shouldBe true
         }
 
+        test("a non-Phyrexian spell cast before the Censor entered still counts") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardsInHand(1, "Grizzly Bears", 2)
+                .withCardInHand(1, "Phyrexian Censor")
+                .withLandsOnBattlefield(1, "Forest", 4)
+                .withLandsOnBattlefield(1, "Plains", 3)
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+            game.castSpell(1, "Grizzly Bears").error shouldBe null
+            game.resolveStack()
+            game.castSpell(1, "Phyrexian Censor").error shouldBe null
+            game.resolveStack()
+            game.isOnBattlefield("Phyrexian Censor") shouldBe true
+
+            game.offersCast("Grizzly Bears") shouldBe false
+        }
+
         test("a Phyrexian spell is still castable after the non-Phyrexian one") {
             val game = board()
             game.castSpell(1, "Grizzly Bears").error shouldBe null
