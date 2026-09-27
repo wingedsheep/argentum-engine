@@ -451,6 +451,15 @@ internal class AffectsFilterResolver(
             sourceController != null && defenderId != null &&
                 defenderId in state.getOpponents(sourceController)
         }
+        // "Attacking a battle": read the defender's *base* card types, since this resolver runs
+        // while the projection is being built (same reasoning as the branch below).
+        StatePredicate.IsAttackingABattle -> {
+            val defenderId = container.get<AttackingComponent>()?.defenderId
+            defenderId != null && state.getEntity(defenderId)
+                ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
+                ?.typeLine?.cardTypes
+                ?.contains(com.wingedsheep.sdk.core.CardType.BATTLE) == true
+        }
         // The defender-side mirror: attacking the static's controller themself, or a planeswalker
         // that player controls. Reads the *base* controller of the defender rather than a
         // projection — this resolver runs while the projection is being built, and a planeswalker's
@@ -576,6 +585,15 @@ internal class AffectsFilterResolver(
                 state.getEntity(it)
                     ?.get<PlayerAttackersThisTurnComponent>()
                     ?.attackerIds
+            } ?: emptySet()
+            entityId in attackerSet
+        }
+        StatePredicate.AttackedABattleThisTurn -> {
+            val controllerId = projectedController(state, entityId, projectedValues)
+            val attackerSet = controllerId?.let {
+                state.getEntity(it)
+                    ?.get<PlayerAttackersThisTurnComponent>()
+                    ?.battleAttackerIds
             } ?: emptySet()
             entityId in attackerSet
         }

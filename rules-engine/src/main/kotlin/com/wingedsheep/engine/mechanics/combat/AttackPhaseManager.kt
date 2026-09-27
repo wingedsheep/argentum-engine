@@ -240,6 +240,9 @@ internal class AttackPhaseManager(
         // kind is fixed at declaration and the event carries no per-attacker defender identity,
         // so the fact is stamped here. `defenderId in turnOrder` is the player-identity idiom.
         val attackersAgainstPlayer = attackers.filterValues { it in state.turnOrder }.keys
+        // The battle-defender sibling: backs AttackPredicate.DefenderIsBattle ("attacks a battle")
+        // and the per-turn record behind StatePredicate.AttackedABattleThisTurn (War Historian).
+        val attackersAgainstBattle = attackers.filterValues { Battles.isBattle(state, it) }.keys
 
         // CR 805.10b — the active team has ONE combined attack, and CR 805.10a makes every
         // player on it an attacking player. So the declaration is recorded on every member of
@@ -256,8 +259,13 @@ internal class AttackPhaseManager(
                     .with(AttackersDeclaredThisTurnComponent)
                 if (attackers.isNotEmpty()) {
                     updated = updated.with(PlayerAttackedThisTurnComponent)
-                    val previous = container.get<PlayerAttackersThisTurnComponent>()?.attackerIds ?: emptySet()
-                    updated = updated.with(PlayerAttackersThisTurnComponent(previous + attackers.keys))
+                    val previous = container.get<PlayerAttackersThisTurnComponent>()
+                    updated = updated.with(
+                        PlayerAttackersThisTurnComponent(
+                            attackerIds = (previous?.attackerIds ?: emptySet()) + attackers.keys,
+                            battleAttackerIds = (previous?.battleAttackerIds ?: emptySet()) + attackersAgainstBattle
+                        )
+                    )
                     if (defendingPlayers.isNotEmpty()) {
                         val previousDefenders = container
                             .get<com.wingedsheep.engine.state.components.combat.PlayerAttackedPlayersThisTurnComponent>()
@@ -282,7 +290,8 @@ internal class AttackPhaseManager(
                     attackerNames,
                     attackingPlayer,
                     firstTimeAttackers = firstTimeAttackers,
-                    attackersAgainstPlayer = attackersAgainstPlayer
+                    attackersAgainstPlayer = attackersAgainstPlayer,
+                    attackersAgainstBattle = attackersAgainstBattle
                 )
             )
         )

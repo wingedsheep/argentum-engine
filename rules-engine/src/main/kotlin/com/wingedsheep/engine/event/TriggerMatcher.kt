@@ -1783,6 +1783,8 @@ class TriggerMatcher(
         // Per-attacker: the trigger's own source was declared as attacking a player (not a
         // planeswalker or battle). Stamped on the event at declaration (CR 508.1 defender kind).
         AttackPredicate.DefenderIsPlayer -> boundEntityId in event.attackersAgainstPlayer
+        // Per-attacker: the trigger's own source was declared as attacking a battle.
+        AttackPredicate.DefenderIsBattle -> boundEntityId in event.attackersAgainstBattle
         // Training (CR 702.149a): the source attacked, and at least one *other* declared attacker
         // has strictly greater PROJECTED power (Rule 613 layers — so an anthem/aura on the other
         // attacker counts). Read every power through the cached projected state, never raw
@@ -2277,6 +2279,7 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttacking,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingAlone,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingAnOpponent,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingABattle,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingYouOrYourPlaneswalkers,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsAttackingEnchantedPlayer,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlocking,
@@ -2298,6 +2301,7 @@ class TriggerMatcher(
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.WasDealtDamageBySourceThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.DealtDamageToSourceControllerThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttackedThisTurn,
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttackedABattleThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.CouldNotHaveAttackedThisTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttackedLastTurn,
         com.wingedsheep.sdk.scripting.predicates.StatePredicate.AttackedThisCombat,

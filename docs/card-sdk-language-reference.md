@@ -5465,6 +5465,10 @@ work for abilities-on-stack (which carry no `CardComponent`).
   attacking your opponent matches, and one attacking *you* doesn't. Fails closed without controller context,
   and has no last-known fallback (the exit snapshot records *that* it was attacking, not whom). Oviya,
   Automech Artisan: `GrantKeyword(Keyword.TRAMPLE, GroupFilter(GameObjectFilter.Creature.attackingAnOpponent()))`.
+- `IsAttackingABattle` (filter builder `attackingABattle()`) — the attacker's declared defender is a
+  **battle** (projected type, CR 310), not a player or planeswalker. No last-known fallback, for
+  `IsAttackingAnOpponent`'s reason. Rampaging Geoderm reads it on resolution to choose between its two
+  outcomes: `Effects.If(Conditions.TargetMatchesFilter(GameObjectFilter.Creature.attackingABattle(), t), then = AddCounters(…), otherwise = ModifyStats(…))`.
 - `IsAttackingYouOrYourPlaneswalkers` (filter builder `attackingYouOrYourPlaneswalkers()`) — the
   defender-side mirror of `IsAttackingAnOpponent`: the defender is either *you* (the controller of the
   ability applying the filter) or a planeswalker *you* control. Battles are excluded — "planeswalkers
@@ -6246,6 +6250,10 @@ Adding a new attack-time mechanic is one new sealed-case + one matcher branch
   already scopes to one creature). The defender kind is fixed at declaration, so it's
   captured on `AttackersDeclaredEvent.attackersAgainstPlayer` rather than re-derived
   from post-declaration state. Prefer the `Triggers.self.attacks(setOf(AttackPredicate.DefenderIsPlayer))` sugar.
+- `AttackPredicate.DefenderIsBattle` — the battle sibling of `DefenderIsPlayer`: the trigger's own
+  attacker was declared as attacking a **battle** (CR 508.1). Stamped on
+  `AttackersDeclaredEvent.attackersAgainstBattle` at declaration. Per-attacker (`SELF` binding).
+  Thrashing Frontliner / War-Trained Slasher: `Triggers.self.attacks(setOf(AttackPredicate.DefenderIsBattle))`.
 - `AttackPredicate.AttackedAlongsideGreaterPower` — the trigger's own attacker was declared
   **and** at least one *other* declared attacker has strictly greater **projected** power than
   the trigger's attacker (CR 702.149a, the Training condition). Unlike the count/stamped-set
@@ -10847,6 +10855,12 @@ answer it and would silently return `false`.
   `EnteredWithValueComponent`, not cleared at cleanup, and stripped on a zone change — a permanent
   that leaves and returns chooses afresh (CR 400.7). The effect bounds the choice by the controller's
   life total as well as by `maxAmount`, and a ceiling of 0 records 0 without prompting.
+- `AttackedABattleThisTurn` (filter builder `attackedABattleThisTurn()`) — declared as attacking a
+  **battle** at least once this turn. The battle-scoped sibling of `AttackedThisTurn`, read from the
+  same controller-side `PlayerAttackersThisTurnComponent` (its `battleAttackerIds`), stamped at
+  declaration and cleared in cleanup, so it holds for the rest of the turn whatever happens to the
+  battle or to combat. Works in projection, so it can gate a static. War Historian:
+  `ConditionalStaticAbility(GrantKeyword(Keyword.INDESTRUCTIBLE, GroupFilter.source()), Conditions.SourceMatches(GameObjectFilter.Any.attackedABattleThisTurn()))`.
 - `CouldNotHaveAttackedThisTurn` (filter builders `couldNotHaveAttackedThisTurn()` /
   `couldHaveAttackedThisTurn()`, and the plain negation `didntAttackThisTurn()`) — the "except for
   creatures that couldn't attack" exemption of **Season of the Witch**

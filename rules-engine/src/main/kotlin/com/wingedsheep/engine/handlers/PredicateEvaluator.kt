@@ -1642,6 +1642,12 @@ class PredicateEvaluator(
                 val defenderId = container.get<AttackingComponent>()?.defenderId
                 you != null && defenderId != null && defenderId in state.getOpponents(you)
             }
+            // "Attacking a battle": the declared defender is a battle in projected state (CR 310).
+            // Same no-last-known policy as IsAttackingAnOpponent.
+            StatePredicate.IsAttackingABattle -> {
+                val defenderId = container.get<AttackingComponent>()?.defenderId
+                defenderId != null && projected.isBattle(defenderId)
+            }
             // "Attacking you and/or planeswalkers you control": the defender is either the asking
             // ability's controller themself, or a planeswalker that player controls. Battles are
             // excluded — a battle's protector is a player, not its controller, so `defendingPlayerOf`
@@ -1892,6 +1898,16 @@ class PredicateEvaluator(
                 val attackerSet = state.getEntity(controllerId)
                     ?.get<PlayerAttackersThisTurnComponent>()
                     ?.attackerIds ?: emptySet()
+                entityId in attackerSet
+            }
+            // The battle-scoped sibling, read from the same controller-side record.
+            StatePredicate.AttackedABattleThisTurn -> {
+                val controllerId = projected.getController(entityId)
+                    ?: container.get<ControllerComponent>()?.playerId
+                    ?: return false
+                val attackerSet = state.getEntity(controllerId)
+                    ?.get<PlayerAttackersThisTurnComponent>()
+                    ?.battleAttackerIds ?: emptySet()
                 entityId in attackerSet
             }
 

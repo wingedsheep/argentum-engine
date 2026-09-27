@@ -2078,6 +2078,95 @@
     ]
 }
 
+// Rampaging Geoderm
+{
+    "name": "Rampaging Geoderm",
+    "manaCost": "{2}{R}{G}",
+    "typeLine": "Creature — Dinosaur Beast",
+    "oracleText": "Trample, haste\nWhenever you attack, target attacking creature gets +1/+1 until end of turn. If it's attacking a battle, put a +1/+1 counter on it instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rampaging Geoderm:1",
+                "trigger": "YouAttackEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsAttackingABattle"
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "ModifyStats",
+                        "powerModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "toughnessModifier": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature attacking"
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "Whenever you attack, target attacking creature gets +1/+1 until end of turn. If it's attacking a battle, put a +1/+1 counter on it instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "251",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Vargas",
+        "flavorText": "The Phyrexian juggernaut found itself crushed between a rock and a hard place.",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/9/a973e70f-9e3e-47a3-94b9-7bb8a198a438.jpg?1783916939"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Rampaging Raptor
 {
     "name": "Rampaging Raptor",
@@ -2406,6 +2495,55 @@
     ]
 }
 
+// Thrashing Frontliner
+{
+    "name": "Thrashing Frontliner",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Phyrexian Lizard",
+    "oracleText": "Trample\nWhenever this creature attacks a battle, it gets +1/+1 until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Thrashing Frontliner:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksDefenderIsBattle"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 1
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "167",
+        "artist": "Pavel Kolomeyets",
+        "flavorText": "With Urabrask in hiding, the masterless Furnace Host was unleashed on the Multiverse to spread mayhem and destruction.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/7/77fd9ccb-2cb0-4fe1-9eb0-ba929bb527be.jpg?1783916980"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Thunderhead Squadron
 {
     "name": "Thunderhead Squadron",
@@ -2542,6 +2680,110 @@
         "imageUri": "https://cards.scryfall.io/normal/front/f/f/ff5f302e-d884-4995-ba3c-8c22f9045318.jpg?1783916934"
     },
     "colorIdentityOverride": []
+}
+
+// War Historian
+{
+    "name": "War Historian",
+    "manaCost": "{2}{G}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "Reach\nThis creature has indestructible as long as it attacked a battle this turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "keywords": [
+        "REACH"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "AttackedABattleThisTurn"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "214",
+        "artist": "Ryan Valle",
+        "flavorText": "All children on Kamigawa learn of the Kami War. Hostilities with beings from another reality were understood, and no time was wasted in disbelief.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/0007efdf-417d-48a7-b119-3a2fda3e1158.jpg?1783916958",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "War Historian's last ability starts to apply as soon as it's declared as an attacker that's attacking a battle, and it applies for the entire turn. It doesn't matter what happens to the battle after that point."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// War-Trained Slasher
+{
+    "name": "War-Trained Slasher",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Wolverine Dinosaur",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhenever this creature attacks a battle, double its power until end of turn.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "War-Trained Slasher:1",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksDefenderIsBattle"
+                    ]
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": "Power"
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "172",
+        "artist": "Francis Tneh",
+        "flavorText": "\"That's my girl. Just don't eat it—wouldn't want you getting an upset stomach again.\"\n—Jalina, Ikorian bonder",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/2/c2a87c5d-5efc-4ceb-b165-27f807117f71.jpg?1783916979"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
 }
 
 // Wary Thespian

@@ -566,6 +566,21 @@ sealed interface AttackPredicate {
     }
 
     /**
+     * The attacker was declared as attacking a **battle** — the defender-kind sibling of
+     * [DefenderIsPlayer] (CR 508.1: an attacker is declared as attacking a player, planeswalker,
+     * or battle). "Whenever this creature attacks a battle" (Thrashing Frontliner, War-Trained
+     * Slasher). Like [DefenderIsPlayer] the defender kind is fixed at declaration, so the matcher
+     * reads the stamped `AttackersDeclaredEvent.attackersAgainstBattle` set.
+     *
+     * Per-attacker by design: use it with a `SELF` binding.
+     */
+    @SerialName("AttacksDefenderIsBattle")
+    @Serializable
+    data object DefenderIsBattle : AttackPredicate {
+        override val description = "a battle"
+    }
+
+    /**
      * The attacker was declared as attacking **and** at least one *other* declared attacker has
      * strictly greater **projected** power than the attacker's own projected power. This is the
      * Training trigger condition (CR 702.149a: "Whenever this creature and at least one other

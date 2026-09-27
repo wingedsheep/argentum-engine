@@ -148,6 +148,20 @@ sealed interface StatePredicate {
     }
 
     /**
+     * Attacking a **battle** rather than a player or planeswalker (Rampaging Geoderm: "If it's
+     * attacking a battle, put a +1/+1 counter on it instead"). Reads the attacker's declared
+     * defender and asks whether that permanent is a battle in projected state (CR 310).
+     *
+     * No last-known fallback, for [IsAttackingAnOpponent]'s reason: the frozen snapshot records
+     * only *that* the permanent was attacking, never whom.
+     */
+    @SerialName("IsAttackingABattle")
+    @Serializable
+    data object IsAttackingABattle : Entity {
+        override val description: String = "attacking a battle"
+    }
+
+    /**
      * The defender-side mirror of [IsAttackingAnOpponent]: attacking *you* or a planeswalker
      * *you* control (Tomik, Wielder of Law: "if two or more of those creatures are attacking you
      * and/or planeswalkers you control"). "You" is the controller of the ability doing the asking,
@@ -536,6 +550,19 @@ sealed interface StatePredicate {
     @Serializable
     data object AttackedThisTurn : History {
         override val description: String = "attacked this turn"
+    }
+
+    /**
+     * Was declared as attacking a **battle** at least once during the current turn — "as long as
+     * it attacked a battle this turn" (War Historian). The battle-scoped sibling of
+     * [AttackedThisTurn], backed by the same controller-side per-turn attacker record (its
+     * `battleAttackerIds`), stamped at declaration (CR 508.1) and cleared in cleanup. Stays true
+     * after the creature leaves combat or the battle it attacked is defeated.
+     */
+    @SerialName("AttackedABattleThisTurn")
+    @Serializable
+    data object AttackedABattleThisTurn : History {
+        override val description: String = "attacked a battle this turn"
     }
 
     /**

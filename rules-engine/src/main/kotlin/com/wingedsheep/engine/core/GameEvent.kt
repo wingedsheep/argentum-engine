@@ -1034,6 +1034,8 @@ data class TargetsChosenEvent(
  * `AttackPredicate.DefenderIsPlayer` ("attacks an opponent"): the defender kind is fixed at
  * declaration and the event doesn't otherwise carry per-attacker defender identity, so the
  * player-vs-permanent fact is stamped here rather than re-derived downstream.
+ * [attackersAgainstBattle] is the battle-defender sibling, backing
+ * `AttackPredicate.DefenderIsBattle` ("attacks a battle").
  */
 @Serializable
 @SerialName("AttackersDeclaredEvent")
@@ -1042,7 +1044,8 @@ data class AttackersDeclaredEvent(
     val attackerNames: List<String> = emptyList(),
     val attackingPlayerId: EntityId? = null,
     val firstTimeAttackers: Set<EntityId> = emptySet(),
-    val attackersAgainstPlayer: Set<EntityId> = emptySet()
+    val attackersAgainstPlayer: Set<EntityId> = emptySet(),
+    val attackersAgainstBattle: Set<EntityId> = emptySet()
 ) : GameEvent
 
 /**

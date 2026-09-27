@@ -495,6 +495,9 @@ interface ObjectFilterBuilder<out Self> {
      */
     fun attackingAnOpponent() = withStatePredicate(StatePredicate.IsAttackingAnOpponent)
 
+    /** Must be attacking a battle, not a player or planeswalker (Rampaging Geoderm). */
+    fun attackingABattle() = withStatePredicate(StatePredicate.IsAttackingABattle)
+
     /**
      * The defender-side mirror of [attackingAnOpponent]: must be attacking *you* or a planeswalker
      * *you* control (Tomik, Wielder of Law). "You" is the controller of whatever ability applies
@@ -515,6 +518,12 @@ interface ObjectFilterBuilder<out Self> {
      * Survives leaving combat; cleared at end-of-turn cleanup.
      */
     fun attackedThisTurn() = withStatePredicate(StatePredicate.AttackedThisTurn)
+
+    /**
+     * Was declared as attacking a battle at least once this turn (War Historian). The
+     * battle-scoped sibling of [attackedThisTurn]; cleared at end-of-turn cleanup.
+     */
+    fun attackedABattleThisTurn() = withStatePredicate(StatePredicate.AttackedABattleThisTurn)
 
     /** Was **not** declared as an attacker at any point this turn. Negation of [attackedThisTurn]. */
     fun didntAttackThisTurn() = withStatePredicate(StatePredicate.Not(StatePredicate.AttackedThisTurn))

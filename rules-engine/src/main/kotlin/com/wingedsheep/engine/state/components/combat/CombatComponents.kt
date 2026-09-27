@@ -266,10 +266,14 @@ data object PlayerAttackedThisTurnComponent : Component
  * (e.g., Deepway Navigator: "as long as you attacked with three or more Merfolk this turn").
  *
  * The set is the union across all combat phases this turn. Cleared at end of turn.
+ *
+ * [battleAttackerIds] is the subset declared as attacking a **battle** (CR 508.1) in any combat
+ * this turn — backs `StatePredicate.AttackedABattleThisTurn` (War Historian).
  */
 @Serializable
 data class PlayerAttackersThisTurnComponent(
-    val attackerIds: Set<EntityId>
+    val attackerIds: Set<EntityId>,
+    val battleAttackerIds: Set<EntityId> = emptySet()
 ) : Component
 
 /**
