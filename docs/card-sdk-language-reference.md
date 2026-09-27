@@ -5354,7 +5354,7 @@ Named constants keep card code readable: `Any` (default — any player or object
 `CreatureOpponentControls`, `PermanentYouControl`, `Self` (`Object(Any.sourceItself())`),
 `EnchantedCreature` / `EquippedCreature` (`Object(Any.attachedToBySource())`),
 `AnyPlayerOrPlaneswalker`, `AnyPlayerOrBattle` ("deals combat damage to a player or battle" — Beamtown
-Beatstick), `CreatureOrPlayer`, `OpponentOrPermanentTheyControl`. Anything else is
+Beatstick), `OpponentOrBattle` ("deals damage to an opponent or battle" — Bloodfeather Phoenix), `CreatureOrPlayer`, `OpponentOrPermanentTheyControl`. Anything else is
 spelled with the constructors: `Recipient.Object(GameObjectFilter.Creature.withSubtype("Vampire"))`.
 
 Every reading is relative to the observing permanent: "you" is its controller, `sourceItself()` /
@@ -5969,6 +5969,13 @@ A self-bound `EventPattern.ZoneChangeEvent(from = Zone.GRAVEYARD, to = Zone.HAND
 A dedicated event-source pass inspects the returned card, retaining owner control and firing once
 if a later effect in the same resolution discards it again. Resident-zone scans defer that event
 to this pass; the ability does not need to be active in hand.
+
+Damage observers (`Triggers.a(filter).dealsDamage(…)`, `binding = ANY`) function from `GRAVEYARD` and
+`COMMAND` too: the index files them into the same observer lists as a battlefield observer, since the
+per-event matcher never matches a damage pattern. Bloodfeather Phoenix — "whenever an instant or sorcery
+spell you control deals damage to an opponent or battle, you may pay {R}. If you do, return this card
+from your graveyard to the battlefield" — is `Triggers.a(InstantOrSorcery.youControl()).dealsDamage(
+Recipient.OpponentOrBattle)` + `triggerZone = Zone.GRAVEYARD` + `Effects.MayPay(…, then = Move(Self, BATTLEFIELD))`.
 
 Exile has no general per-event pass on purpose: suspend, madness and paradigm each already have a
 dedicated detector, and a general pass would fire them twice.

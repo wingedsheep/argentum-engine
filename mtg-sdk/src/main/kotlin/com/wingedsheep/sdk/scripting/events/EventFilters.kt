@@ -124,6 +124,9 @@ sealed interface Recipient {
         /** "A player or battle" — the March of the Machine combat-damage wording (Archpriest of Shadows). */
         val AnyPlayerOrBattle: Recipient = AnyOf(listOf(AnyPlayer, Object(GameObjectFilter.Battle)))
 
+        /** "An opponent or battle" — Bloodfeather Phoenix's "deals damage to an opponent or battle". */
+        val OpponentOrBattle: Recipient = AnyOf(listOf(Opponent, Object(GameObjectFilter.Battle)))
+
         /** "A creature or player" — Ertha Jo, Frontier Mentor's "an ability that targets a creature or player". */
         val CreatureOrPlayer: Recipient = AnyOf(listOf(Object(GameObjectFilter.Creature), AnyPlayer))
 

@@ -769,6 +769,86 @@
     ]
 }
 
+// Bloodfeather Phoenix
+{
+    "name": "Bloodfeather Phoenix",
+    "manaCost": "{1}{R}",
+    "typeLine": "Creature — Phoenix",
+    "oracleText": "Flying\nThis creature can't block.\nWhenever an instant or sorcery spell you control deals damage to an opponent or battle, you may pay {R}. If you do, return this card from your graveyard to the battlefield. It gains haste until end of turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Bloodfeather Phoenix:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "EachOpponent"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "battle"
+                            }
+                        ]
+                    },
+                    "sourceFilter": "instant|sorcery ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayPay",
+                        "cost": {
+                            "type": "PayManaCost",
+                            "cost": "{R}"
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveToZone",
+                                "target": "Self",
+                                "destination": "Battlefield"
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": "Self"
+                            }
+                        ]
+                    }
+                },
+                "activeZones": [
+                    "Graveyard"
+                ]
+            }
+        ],
+        "staticAbilities": [
+            "CantBlock"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "132",
+        "rarity": "RARE",
+        "artist": "Rudy Siswanto",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/d/ed97bf6f-726c-40aa-bc1c-14fa801da96a.jpg?1783916997"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Bonded Herdbeast
 {
     "name": "Bonded Herdbeast",
