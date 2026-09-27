@@ -836,6 +836,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.BLOODLINE,
   CounterType.INVITATION,
   CounterType.IMPOSTOR,
+  // Champions of Kamigawa. Bloodthirsty Ogre's devotion tally is the size of its -X/-X.
+  CounterType.DEVOTION,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

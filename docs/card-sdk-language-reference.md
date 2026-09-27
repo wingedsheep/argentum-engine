@@ -1855,6 +1855,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   three flip it into Shadows' Lair), `CounterType.BORE` (Brass's Tunnel-Grinder — three flip it into Tecutlan),
   `CounterType.REVIVAL` (Nine-Lives Familiar — a "lives left" counter: it enters with eight if you cast it and its
   dies trigger reads the last-known count to come back with one fewer),
+  `CounterType.DEVOTION` (Bloodthirsty Ogre — one tap ability adds it, the other shrinks a creature by the count),
   `CounterType.JUDGMENT` (Faithbound Judge // Sinner's Judgment — both faces count to three, the
   creature face to shed defender and the Aura face to make the enchanted player lose the game),
   `CounterType.NET`, `CounterType.FIRE`, `CounterType.CONQUEROR`, `CounterType.POINT` (Contested Game Ball — its

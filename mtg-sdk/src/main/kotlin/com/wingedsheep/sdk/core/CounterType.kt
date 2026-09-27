@@ -604,6 +604,12 @@ value class CounterType(val name: String) {
          */
         val IMPOSTOR = CounterType("IMPOSTOR")
 
+        /**
+         * Devotion counter (CHK — Bloodthirsty Ogre). A tally with no inherent rule: one tap
+         * ability adds one, another reads the count back as the size of a -X/-X.
+         */
+        val DEVOTION = CounterType("DEVOTION")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -713,6 +719,7 @@ value class CounterType(val name: String) {
             BLOODLINE,
             INVITATION,
             IMPOSTOR,
+            DEVOTION,
         )
 
         /**

@@ -765,6 +765,96 @@
     ]
 }
 
+// Bloodthirsty Ogre
+{
+    "name": "Bloodthirsty Ogre",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Ogre Warrior Shaman",
+    "oracleText": "{T}: Put a devotion counter on this creature.\n{T}: Target creature gets -X/-X until end of turn, where X is the number of devotion counters on this creature. Activate only if you control a Demon.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bloodthirsty Ogre:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "DEVOTION",
+                    "count": 1,
+                    "target": "Self"
+                }
+            },
+            {
+                "id": "Bloodthirsty Ogre:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": {
+                                "type": "CounterCount",
+                                "counterType": "DEVOTION"
+                            }
+                        },
+                        "multiplier": -1
+                    },
+                    "toughnessModifier": {
+                        "type": "Multiply",
+                        "amount": {
+                            "type": "EntityProperty",
+                            "entity": "Self",
+                            "numericProperty": {
+                                "type": "CounterCount",
+                                "counterType": "DEVOTION"
+                            }
+                        },
+                        "multiplier": -1
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    {
+                        "type": "ActivationOnlyIfCondition",
+                        "condition": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "permanent Demon"
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "Thomas M. Baxa",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c557f035-f93b-41ce-b8de-dea79dcf15be.jpg?1783944317"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Boseiju, Who Shelters All
 {
     "name": "Boseiju, Who Shelters All",
