@@ -22,10 +22,8 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * {T}: Target creature gets -X/-X until end of turn, where X is the number of devotion counters on
  * this creature. Activate only if you control a Demon.
  *
- * Devotion is a passive tally ([CounterType.DEVOTION]). X is read as the shrink resolves; the
- * `Self` counter read falls back to last-known information, so an Ogre that left the battlefield in
- * response still shrinks by the counters it had. "A Demon" is the bare tribal noun — any permanent
- * with the subtype.
+ * Devotion is a passive tally ([CounterType.DEVOTION]). X is read as the shrink resolves. "A Demon"
+ * is the bare tribal noun — any permanent with the subtype.
  */
 val BloodthirstyOgre = card("Bloodthirsty Ogre") {
     manaCost = "{2}{B}"
