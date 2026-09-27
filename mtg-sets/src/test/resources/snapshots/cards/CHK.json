@@ -405,6 +405,42 @@
     ]
 }
 
+// Azusa, Lost but Seeking
+{
+    "name": "Azusa, Lost but Seeking",
+    "manaCost": "{2}{G}",
+    "typeLine": "Legendary Creature — Human Monk",
+    "oracleText": "You may play two additional lands on each of your turns.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 2
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantAdditionalLandDrop",
+                "count": 2
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "rarity": "RARE",
+        "artist": "Todd Lockwood",
+        "flavorText": "\"I do not miss Jukai Forest. It is not my home. My home is Kamigawa, its people my family. Wherever I set my pack and rest my head, I am home.\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/e/9ed862a2-d3e2-4543-81a6-453a96399d14.jpg?1783944292",
+        "rulings": [
+            {
+                "date": "2020-06-23",
+                "text": "Azusa's ability is cumulative with other effects that allow you to play additional lands, such as that of Song of Creation (from the Ikoria: Lair of Behemoths set)."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Battle-Mad Ronin
 {
     "name": "Battle-Mad Ronin",
@@ -3225,6 +3261,115 @@
     ]
 }
 
+// Feast of Worms
+{
+    "name": "Feast of Worms",
+    "manaCost": "{3}{G}{G}",
+    "typeLine": "Sorcery — Arcane",
+    "oracleText": "Destroy target land. If that land was legendary, its controller sacrifices another land of their choice.",
+    "script": {
+        "spellEffect": {
+            "type": "Gated",
+            "gate": {
+                "type": "Gate.WhenCondition",
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "filter": {
+                        "cardPredicates": [
+                            "IsLand",
+                            "IsLegendary"
+                        ]
+                    }
+                }
+            },
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "BattlefieldMatching",
+                            "filter": "land",
+                            "player": {
+                                "type": "ControllerOf",
+                                "targetDescription": "target land"
+                            },
+                            "excludeChosenTargets": true
+                        },
+                        "storeAs": "gathered0"
+                    },
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    },
+                    {
+                        "type": "SelectFromCollection",
+                        "from": "gathered0",
+                        "selection": {
+                            "type": "ChooseExactly",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "chooser": "ControllerOfSelection",
+                        "storeSelected": "selected2",
+                        "prompt": "Choose a land to sacrifice",
+                        "useTargetingUI": true
+                    },
+                    {
+                        "type": "MoveCollection",
+                        "from": "selected2",
+                        "destination": {
+                            "type": "ToZone",
+                            "zone": "Graveyard"
+                        },
+                        "moveType": "Sacrifice"
+                    }
+                ],
+                "descriptionOverride": "Destroy target land. Its controller sacrifices another land of their choice."
+            },
+            "otherwise": {
+                "type": "MoveToZone",
+                "target": {
+                    "type": "BoundVariable",
+                    "name": "t0"
+                },
+                "destination": "Graveyard",
+                "byDestruction": true
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "land"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "207",
+        "rarity": "UNCOMMON",
+        "artist": "Chippy",
+        "flavorText": "\"The dust beneath our feet was once part of a mighty civilization. Shall we too provide the path for a future generation?\"\n—Sensei Golden-Tail",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/3/33119e6a-d69b-4039-add2-97fe35a89e8e.jpg?1783944290"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Feral Deceiver
 {
     "name": "Feral Deceiver",
@@ -3805,6 +3950,166 @@
     ]
 }
 
+// Glimpse of Nature
+{
+    "name": "Glimpse of Nature",
+    "manaCost": "{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Whenever you cast a creature spell this turn, draw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "CreateDelayedTrigger",
+            "effect": {
+                "type": "DrawCards",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 1
+                }
+            },
+            "trigger": {
+                "event": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    }
+                },
+                "binding": "ANY"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "210",
+        "rarity": "RARE",
+        "artist": "Shishizaru",
+        "flavorText": "Dosan sat in repose for many hours. He made no motion, no sound at all. And as he sat, nature revealed itself to him.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/d/1ddcd76b-a7a1-4ae6-bf4a-f929c6574bdc.jpg?1783944290",
+        "rulings": [
+            {
+                "date": "2026-03-20",
+                "text": "The delayed triggered ability created by Glimpse of Nature resolves before the spell that caused it to trigger. It resolves even if that spell is countered or otherwise leaves the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Godo, Bandit Warlord
+{
+    "name": "Godo, Bandit Warlord",
+    "manaCost": "{5}{R}",
+    "typeLine": "Legendary Creature — Human Barbarian",
+    "oracleText": "When Godo enters, you may search your library for an Equipment card, put it onto the battlefield, then shuffle.\nWhenever Godo attacks for the first time each turn, untap it and all Samurai you control. After this phase, there is an additional combat phase.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Godo, Bandit Warlord:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "artifact Equipment"
+                                },
+                                "storeAs": "searchable",
+                                "search": true
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "searchable",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "found"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "found",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            },
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
+                        ]
+                    }
+                }
+            },
+            {
+                "id": "Godo, Bandit Warlord:2",
+                "trigger": {
+                    "type": "AttackEvent",
+                    "requires": [
+                        "AttacksFirstTimeEachTurn"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "TapUntap",
+                            "target": "Self",
+                            "tap": false
+                        },
+                        {
+                            "type": "ForEach",
+                            "space": {
+                                "type": "IterationSpace.Group",
+                                "filter": {
+                                    "baseFilter": "Samurai ctrl:you"
+                                }
+                            },
+                            "body": {
+                                "type": "TapUntap",
+                                "target": "IterationEntity",
+                                "tap": false
+                            }
+                        },
+                        "AddCombatPhase"
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "169",
+        "rarity": "RARE",
+        "artist": "Paolo Parente",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/c/fcff0b92-edd0-4197-965b-3fd86bc884d8.jpg?1783944299",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "Unlike many effects that grant additional combat phases, you don't get an additional main phase with Godo, Bandit Warlord's ability. The additional combat phase happens immediately after the first combat phase."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Graceful Adept
 {
     "name": "Graceful Adept",
@@ -4188,6 +4493,107 @@
     ]
 }
 
+// Hanabi Blast
+{
+    "name": "Hanabi Blast",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Instant",
+    "oracleText": "Hanabi Blast deals 2 damage to any target. Return Hanabi Blast to its owner's hand, then discard a card at random.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": "Self",
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand",
+                                "player": "OwnerOfSource"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "Random",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "AnyTarget",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "170",
+        "rarity": "UNCOMMON",
+        "artist": "Paolo Parente",
+        "flavorText": "The most powerful of akki fire spells were developed at the cost of blood, toil, tears, sweat, and usually a nose or two.",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/8/881fecf4-8c14-4614-84bd-c1a3dcdbb5ff.jpg?1783944300",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "If another player casts a Hanabi Blast that you own, it returns to your hand, and then that player discards a card at random."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Hankyu
 {
     "name": "Hankyu",
@@ -4536,6 +4942,42 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Heartbeat of Spring
+{
+    "name": "Heartbeat of Spring",
+    "manaCost": "{2}{G}",
+    "typeLine": "Enchantment",
+    "oracleText": "Whenever a player taps a land for mana, that player adds one mana of any type that land produced.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "AdditionalManaOnSourceTap",
+                "sourceFilter": "land"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "212",
+        "rarity": "RARE",
+        "artist": "Rob Alexander",
+        "flavorText": "\"It is true that we monks hold the key to paradise, but most don't understand that the paradise we guard is the one within.\"\n—Diary of Azusa",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6be3ba05-dce0-463b-bfe6-d51df63cc1a8.jpg?1783944290",
+        "rulings": [
+            {
+                "date": "2020-08-07",
+                "text": "If you tap a land for more than one mana, you choose one type that was produced and add one mana of that type."
+            },
+            {
+                "date": "2020-08-07",
+                "text": "Heartbeat of Spring doesn't care about any restrictions or riders your lands put on the mana they produce, such as those of Unclaimed Territory and Cavern of Souls. It just produces one mana of the appropriate type, with no restrictions or riders."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -8176,6 +8618,66 @@
     "colorIdentityOverride": []
 }
 
+// Mana Seism
+{
+    "name": "Mana Seism",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Sacrifice any number of lands, then add that much {C}.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "BattlefieldMatching",
+                        "filter": "land",
+                        "player": "You"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": "ChooseAnyNumber",
+                    "storeSelected": "selected1",
+                    "prompt": "Choose any number of lands to sacrifice",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    },
+                    "moveType": "Sacrifice"
+                },
+                {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "DistinctEntitiesInCollections",
+                        "collections": [
+                            "selected1"
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "179",
+        "rarity": "UNCOMMON",
+        "artist": "Edward P. Beard, Jr.",
+        "flavorText": "\"It is the nature of humanity not to worry about tomorrow, especially when there's a good chance they won't live to see the end of today.\"\n—Kiku, Night's Flower",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1bde4cba-57b2-485f-9724-0f79d156d664.jpg?1783944298"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Marrow-Gnawer
 {
     "name": "Marrow-Gnawer",
@@ -8543,6 +9045,103 @@
     ]
 }
 
+// Mindblaze
+{
+    "name": "Mindblaze",
+    "manaCost": "{5}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Choose a nonland card name and a number greater than 0. Target player reveals their library. If that library contains exactly the chosen number of cards with the chosen name, Mindblaze deals 8 damage to that player. Then that player shuffles.",
+    "script": {
+        "spellEffect": {
+            "type": "ChooseNumberThen",
+            "then": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "ChooseOption",
+                        "optionType": "CARD_NAME",
+                        "storeAs": "cardName0",
+                        "cardNamePool": "NONLAND"
+                    },
+                    {
+                        "type": "GatherCards",
+                        "source": {
+                            "type": "FromZone",
+                            "zone": "Library",
+                            "player": "TargetPlayer"
+                        },
+                        "storeAs": "gathered1"
+                    },
+                    {
+                        "type": "RevealCollection",
+                        "from": "gathered1"
+                    },
+                    {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "Count",
+                                    "player": "TargetPlayer",
+                                    "zone": "Library",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "NameEqualsChosen",
+                                                "variableName": "cardName0"
+                                            }
+                                        ]
+                                    }
+                                },
+                                "operator": "EQ",
+                                "right": "XValue"
+                            }
+                        },
+                        "then": {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 8
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    },
+                    {
+                        "type": "ShuffleLibrary",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                ]
+            },
+            "minValue": 1,
+            "maxValue": 99,
+            "prompt": "Choose a number greater than 0"
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "180",
+        "rarity": "RARE",
+        "artist": "John Avon",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/9/59418766-5567-4ec4-af1f-1cb2db2958d0.jpg?1783944297"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Moonring Mirror
 {
     "name": "Moonring Mirror",
@@ -8748,6 +9347,105 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Myojin of Infinite Rage
+{
+    "name": "Myojin of Infinite Rage",
+    "manaCost": "{7}{R}{R}{R}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "Myojin of Infinite Rage enters with a divinity counter on it if you cast it from your hand.\nMyojin of Infinite Rage has indestructible as long as it has a divinity counter on it.\nRemove a divinity counter from Myojin of Infinite Rage: Destroy all lands.",
+    "creatureStats": {
+        "power": 7,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Myojin of Infinite Rage:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "DIVINITY",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "land"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                },
+                "descriptionOverride": "Remove a divinity counter from this creature: Destroy all lands."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "DIVINITY"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "DIVINITY",
+                "count": 1,
+                "selfOnly": true,
+                "condition": "WasCastFromHand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "181",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/f/df630ae9-aa17-46e9-95e7-4980f4a76ade.jpg?1783944297",
+        "rulings": [
+            {
+                "date": "2024-11-08",
+                "text": "In a Commander game where this card is your commander, casting it from the command zone does not count as casting it from your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -12329,6 +13027,81 @@
     "colorIdentityOverride": []
 }
 
+// Shimatsu the Bloodcloaked
+{
+    "name": "Shimatsu the Bloodcloaked",
+    "manaCost": "{3}{R}",
+    "typeLine": "Legendary Creature — Demon Spirit",
+    "oracleText": "As Shimatsu enters, sacrifice any number of permanents. Shimatsu enters with that many +1/+1 counters on it.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 0
+    },
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "OnEnterRunEffect",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "permanent",
+                                "player": "You",
+                                "excludeSelf": true
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "gathered0",
+                            "selection": "ChooseAnyNumber",
+                            "storeSelected": "selected1",
+                            "prompt": "Sacrifice any number of permanents for Shimatsu",
+                            "useTargetingUI": true
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected1",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Sacrifice"
+                        },
+                        {
+                            "type": "AddDynamicCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "amount": {
+                                "type": "DistinctEntitiesInCollections",
+                                "collections": [
+                                    "selected1"
+                                ]
+                            },
+                            "target": "Self"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "186",
+        "rarity": "RARE",
+        "artist": "Dave Allsop",
+        "flavorText": "Their dominion over dark and destructive forces twisted the oni into beings of pure malevolence.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/1/71de0e2c-61ca-496e-8990-ed0e6f6521a6.jpg?1783944296",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "You sacrifice the permanents before Shimatsu enters, so you can't sacrifice any creatures that enter at the same time it does."
+            }
+        ]
+    }
+}
+
 // Shinka, the Bloodsoaked Keep
 {
     "name": "Shinka, the Bloodsoaked Keep",
@@ -12524,6 +13297,43 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Sideswipe
+{
+    "name": "Sideswipe",
+    "manaCost": "{1}{R}",
+    "typeLine": "Instant",
+    "oracleText": "You may change any targets of target Arcane spell.",
+    "script": {
+        "spellEffect": {
+            "type": "ChangeTriggeringObjectTargets",
+            "spell": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "Arcane",
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "187",
+        "rarity": "UNCOMMON",
+        "artist": "Ron Spears",
+        "flavorText": "Hisoka's wizards struggled for years to master the art of redirection that came so naturally to the shamans of Ganzan Pass.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/b/6bd611b7-7bd3-4a76-bd69-34a7235965ae.jpg?1783944296"
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -13401,6 +14211,60 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Strange Inversion
+{
+    "name": "Strange Inversion",
+    "manaCost": "{2}{R}",
+    "typeLine": "Instant — Arcane",
+    "oracleText": "Switch target creature's power and toughness until end of turn.\nSplice onto Arcane {1}{R} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)",
+    "keywords": [
+        "SPLICE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Splice",
+            "cost": "{1}{R}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "SwitchPowerToughness",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "192",
+        "rarity": "UNCOMMON",
+        "artist": "Khang Le",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/316a78af-a991-4a5e-bdc2-f39947b89bb2.jpg?1783944295",
+        "rulings": [
+            {
+                "date": "2021-03-19",
+                "text": "Effects that switch a creature's power and toughness apply after all other effects, regardless of when those effects began to apply. For instance, if you target a 1/2 creature then give it +2/+0 later in the turn, it's a 2/3 creature, not a 4/1 creature."
+            },
+            {
+                "date": "2021-03-19",
+                "text": "Because damage remains marked on a creature until the damage is removed as the turn ends, nonlethal damage dealt to a creature may become lethal if you switch its power and toughness during that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
     ]
 }
 
@@ -15541,6 +16405,93 @@
         "collectorNumber": "198",
         "artist": "Christopher Moeller",
         "imageUri": "https://cards.scryfall.io/normal/front/1/a/1a9bacba-55c4-4b92-bdd9-01b6035ed1b2.jpg?1783944293"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Yamabushi's Storm
+{
+    "name": "Yamabushi's Storm",
+    "manaCost": "{1}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Yamabushi's Storm deals 1 damage to each creature. If a creature dealt damage this way would die this turn, exile it instead.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Group",
+                "filter": {
+                    "baseFilter": "creature"
+                }
+            },
+            "body": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "MarkExileOnDeath",
+                        "target": "IterationEntity"
+                    },
+                    {
+                        "type": "DealDamage",
+                        "amount": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "target": "IterationEntity"
+                    }
+                ]
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "199",
+        "artist": "Wayne England",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0a5a930d-ae59-47e2-9b98-f703e308b5c0.jpg?1783944293"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Zo-Zu the Punisher
+{
+    "name": "Zo-Zu the Punisher",
+    "manaCost": "{1}{R}{R}",
+    "typeLine": "Legendary Creature — Goblin Warrior",
+    "oracleText": "Whenever a land enters, Zo-Zu deals 2 damage to that land's controller.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zo-Zu the Punisher:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "land",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": "ControllerOfTriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "200",
+        "rarity": "RARE",
+        "artist": "Matt Cavotta",
+        "flavorText": "\"He can cause a lot of pain and do it with no fuss. That's all good, but I just wish he didn't do it to us!\"\n—Ku-Ku, akki poet",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa4666b6-76f2-4c25-989e-d6a0e50be94d.jpg?1783944293"
     },
     "colorIdentityOverride": [
         "RED"

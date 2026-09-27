@@ -2638,6 +2638,51 @@
     ]
 }
 
+// Lure
+{
+    "name": "Lure",
+    "manaCost": "{1}{G}{G}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nAll creatures able to block enchanted creature do so.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "MustBeBlockedStatic",
+                "allCreatures": true,
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "AttachedTo"
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "211",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/a/2a87b26e-0431-42e9-b44f-94ba8546111a.jpg?1783948673",
+        "rulings": [
+            {
+                "date": "2017-11-17",
+                "text": "Lure doesn't give any creatures the ability to block the target creature. It just forces those creatures that are already able to block the creature to do so."
+            },
+            {
+                "date": "2017-11-17",
+                "text": "As blockers are declared, any creature that's tapped or affected by a spell or ability that says it can't block doesn't block. If there's a cost associated with having the creature block, no player is forced to pay that cost, so it doesn't block if that cost isn't paid."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Mahamoti Djinn
 {
     "name": "Mahamoti Djinn",
