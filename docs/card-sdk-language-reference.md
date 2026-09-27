@@ -5181,6 +5181,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   projection / trigger matching / cost calculation report `false` (no X context). Underlying
   predicate: `CardPredicate.PowerAtLeastX`.
 - `.tapped()` / `.untapped()` — tap state.
+- `.activatedThisTurn()` — `StatePredicate.ActivatedThisTurn`: one of the permanent's activated abilities
+  (loyalty, mana, crew/saddle or any other) was activated this turn. Stamped at activation on
+  `AbilityActivatedThisTurnComponent.anyActivated`, so it stays true once the ability has left the stack
+  or the permanent has lost it; cleared at end-of-turn cleanup. Cut Short: `TargetFilter(
+  GameObjectFilter.Planeswalker.activatedThisTurn() or GameObjectFilter.Creature.tapped())` for "target
+  planeswalker that was activated this turn or tapped creature".
 - `.prepared()` — `StatePredicate.IsPrepared`: the permanent is prepared (Secrets of Strixhaven
   prepare — its `PreparedComponent` names a castable exile copy of its prepare spell). Only a card
   with a prepare spell can be prepared, so it matches nothing else.

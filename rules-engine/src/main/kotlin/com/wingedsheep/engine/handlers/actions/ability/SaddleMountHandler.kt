@@ -11,6 +11,7 @@ import com.wingedsheep.engine.handlers.actions.ActionHandler
 import com.wingedsheep.engine.mechanics.stack.StackResolver
 import com.wingedsheep.engine.registry.CardRegistry
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent
 import com.wingedsheep.engine.state.components.battlefield.CrewSaddleContributorsComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
@@ -148,7 +149,9 @@ class SaddleMountHandler(
         // Union across activations: saddle may be activated again even while already saddled.
         currentState = currentState.updateEntity(action.mountId) { c ->
             val existing = c.get<CrewSaddleContributorsComponent>()
-            c.with(
+            // Crew and saddle are activated abilities too — "was activated this turn".
+            val activated = c.get<AbilityActivatedThisTurnComponent>() ?: AbilityActivatedThisTurnComponent()
+            c.with(activated.withAnyActivated()).with(
                 CrewSaddleContributorsComponent(
                     creatureIds = (existing?.creatureIds ?: emptySet()) + action.saddleCreatures,
                     crewActivations = existing?.crewActivations ?: 0

@@ -801,6 +801,7 @@ interface ObjectFilterBuilder<out Self> {
 
     /** Must have entered the battlefield this turn */
     fun enteredThisTurn() = withStatePredicate(StatePredicate.EnteredThisTurn)
+    fun activatedThisTurn() = withStatePredicate(StatePredicate.ActivatedThisTurn)
 
     /**
      * Must currently be in a graveyard *and* have been put there from the battlefield

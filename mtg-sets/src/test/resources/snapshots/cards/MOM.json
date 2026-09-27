@@ -1172,6 +1172,75 @@
     ]
 }
 
+// Cut Short
+{
+    "name": "Cut Short",
+    "manaCost": "{2}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nDestroy target planeswalker that was activated this turn or tapped creature.",
+    "keywords": [
+        "CONVOKE"
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "anyOf": [
+                            {
+                                "cardPredicates": [
+                                    "IsPlaneswalker"
+                                ],
+                                "statePredicates": [
+                                    "ActivatedThisTurn"
+                                ]
+                            },
+                            {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "IsTapped"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "10",
+        "artist": "Tran Nguyen",
+        "flavorText": "With one swift, merciful stroke, Tamiyo's story came to an end.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/0/b0a45d4d-d16a-43c6-843c-916d4629aae1.jpg?1783917065",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "A planeswalker was \"activated\" during a turn if one of its abilities was activated that turn. This includes its loyalty abilities and any other activated abilities it may have. That ability may still be on the stack, or it could have resolved, failed to resolve, been countered, or have been removed from the stack some other way."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Once an ability of a planeswalker is activated, it doesn't matter if the planeswalker loses that ability. That planeswalker has still been \"activated\" that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Deadly Derision
 {
     "name": "Deadly Derision",

@@ -623,8 +623,17 @@ data class AbilityActivatedThisTurnComponent(
      * Battleflies' "Activate no more than twice each turn"). Distinct from [abilityIds],
      * which only records whether an ability was activated at all (once-per-turn).
      */
-    val activationCounts: Map<AbilityId, Int> = emptyMap()
+    val activationCounts: Map<AbilityId, Int> = emptyMap(),
+    /**
+     * Whether *any* activated ability of this permanent was activated this turn, restricted or
+     * not — the "planeswalker that was activated this turn" of Cut Short. Stamped on every
+     * activation, unlike [abilityIds], which only records abilities whose restrictions need it.
+     */
+    val anyActivated: Boolean = false
 ) : Component {
+    fun withAnyActivated(): AbilityActivatedThisTurnComponent =
+        if (anyActivated) this else copy(anyActivated = true)
+
     fun withActivated(abilityId: AbilityId): AbilityActivatedThisTurnComponent =
         copy(
             abilityIds = abilityIds + abilityId,

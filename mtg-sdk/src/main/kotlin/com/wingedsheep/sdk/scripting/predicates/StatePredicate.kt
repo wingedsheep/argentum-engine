@@ -327,6 +327,17 @@ sealed interface StatePredicate {
         override val description: String = "entered the battlefield this turn"
     }
 
+    /**
+     * One of its activated abilities was activated this turn — loyalty, mana, crew or any other
+     * (Cut Short's "planeswalker that was activated this turn"). Stays true after the ability
+     * leaves the stack or the permanent loses the ability.
+     */
+    @SerialName("ActivatedThisTurn")
+    @Serializable
+    data object ActivatedThisTurn : Entity {
+        override val description: String = "was activated this turn"
+    }
+
     // =============================================================================
     // Tap History (History)
     // =============================================================================
