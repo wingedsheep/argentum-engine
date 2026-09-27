@@ -606,6 +606,15 @@ class BatchTriggerSubject internal constructor(
         return spec(OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter = filter))
     }
 
+    /**
+     * "deal combat damage to a player or battle" — once per player or battle hit; the matching
+     * creatures that hit it are the captured collection (Zurgo and Ojutai).
+     */
+    fun dealCombatDamageToAPlayerOrBattle(): TriggerSpec {
+        noOther("dealCombatDamageToAPlayerOrBattle")
+        return spec(OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter = filter, orBattle = true))
+    }
+
     /** "deal combat damage to you" — defensive; fires once per combat-damage batch. */
     fun dealCombatDamageToYou(): TriggerSpec {
         noOther("dealCombatDamageToYou")

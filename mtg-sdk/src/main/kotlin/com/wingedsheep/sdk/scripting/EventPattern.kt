@@ -2913,19 +2913,29 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * to a player. Batching trigger — fires at most once per event batch regardless of how
      * many matching creatures connected.
      *
+     * It fires once per damaged recipient: each player (and, with [orBattle], each battle) dealt
+     * combat damage by one or more matching creatures. The matching creatures that hit that
+     * recipient are the trigger's captured collection ("one of those Dragons").
+     *
      * Examples:
      *   → OneOrMoreDealCombatDamageToPlayerEvent(sourceFilter = GameObjectFilter.Creature.withSubtype("Bird"))
      *     "Whenever one or more Birds you control deal combat damage to a player"
+     *   → OneOrMoreDealCombatDamageToPlayerEvent(GameObjectFilter.Creature.withSubtype("Dragon"), orBattle = true)
+     *     "Whenever one or more Dragons you control deal combat damage to a player or battle"
+     *     (Zurgo and Ojutai)
      */
     @SerialName("OneOrMoreDealCombatDamageToPlayerEvent")
     @Serializable
     data class OneOrMoreDealCombatDamageToPlayerEvent(
-        val sourceFilter: GameObjectFilter = GameObjectFilter.Companion.Creature
+        val sourceFilter: GameObjectFilter = GameObjectFilter.Companion.Creature,
+        /** Also count combat damage dealt to a battle — "to a player or battle". */
+        val orBattle: Boolean = false
     ) : EventPattern {
         override val description: String = buildString {
             append("one or more ")
             append(describeObjectForEvent(sourceFilter))
             append(" you control deal combat damage to a player")
+            if (orBattle) append(" or battle")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {

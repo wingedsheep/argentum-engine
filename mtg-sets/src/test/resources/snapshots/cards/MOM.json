@@ -4017,3 +4017,167 @@
         "WHITE"
     ]
 }
+
+// Zurgo and Ojutai
+{
+    "name": "Zurgo and Ojutai",
+    "manaCost": "{2}{U}{R}{W}",
+    "typeLine": "Legendary Creature — Orc Dragon",
+    "oracleText": "Flying, haste\nZurgo and Ojutai has hexproof as long as it entered this turn.\nWhenever one or more Dragons you control deal combat damage to a player or battle, look at the top three cards of your library. Put one of them into your hand and the rest on the bottom of your library in any order. You may return one of those Dragons to its owner's hand.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zurgo and Ojutai:1",
+                "trigger": {
+                    "type": "OneOrMoreDealCombatDamageToPlayerEvent",
+                    "sourceFilter": "creature Dragon",
+                    "orBattle": true
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                }
+                            },
+                            "storeAs": "looked"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "looked",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "kept",
+                            "storeRemainder": "rest",
+                            "selectedLabel": "Put in hand",
+                            "remainderLabel": "Put on bottom"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "kept",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "rest",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "ControllerChooses"
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "FilterCollection",
+                                    "from": "trigger.captured",
+                                    "filter": {
+                                        "statePredicates": [
+                                            {
+                                                "type": "InZone",
+                                                "zone": "Battlefield"
+                                            }
+                                        ]
+                                    },
+                                    "storeMatching": "matching0"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "matching0",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "selected1",
+                                    "prompt": "You may return one of those Dragons to its owner's hand"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "selected1",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "HEXPROOF",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            "EnteredThisTurn"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "258",
+        "rarity": "MYTHIC",
+        "artist": "Daarken",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/a/eacbcd82-36e6-424c-bd4e-ec3a584836c5.jpg?1783916936",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "The triggered ability will trigger once for each player or battle dealt combat damage by Dragons you control, no matter how many Dragons were involved. For example, if you attack a player with three Dragons and a battle that player protects with two Dragons, and they all connect, the ability will trigger twice."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Because creatures with first strike deal combat damage before creatures without first strike, it's also possible to have the ability trigger twice in the same combat by your Dragons dealing combat damage to one player at different times. This can also happen if an attacking Dragon you control has double strike."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "You choose whether to return one of the Dragons that dealt combat damage to the player or battle as the triggered ability is resolving. This doesn't target any of those Dragons."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE",
+        "RED",
+        "WHITE"
+    ]
+}

@@ -2983,18 +2983,22 @@ class TriggerDetector(
     ) {
         // Collect all combat damage-to-player events, grouped by the controller of the damage
         // source (offensive batch) and, separately, by the damaged player (defensive batch).
-        data class CombatDamageInfo(val sourceId: EntityId, val targetPlayerId: EntityId)
+        // Damage to a battle is collected alongside, flagged, for the "to a player or battle"
+        // variant only; every other batch here is about players.
+        data class CombatDamageInfo(val sourceId: EntityId, val targetPlayerId: EntityId, val toBattle: Boolean = false)
         val combatDamageByController = mutableMapOf<EntityId, MutableList<CombatDamageInfo>>()
         val combatDamageByDamagedPlayer = mutableMapOf<EntityId, MutableList<CombatDamageInfo>>()
         for (event in events) {
-            if (event is DamageDealtEvent && event.isCombatDamage && event.sourceId != null &&
-                event.targetId in state.turnOrder) {
-                val sourceContainer = state.getEntity(event.sourceId) ?: continue
-                val controller = sourceContainer.get<ControllerComponent>()?.playerId ?: continue
-                val info = CombatDamageInfo(event.sourceId, event.targetId)
-                combatDamageByController.getOrPut(controller) { mutableListOf() }.add(info)
-                combatDamageByDamagedPlayer.getOrPut(event.targetId) { mutableListOf() }.add(info)
-            }
+            if (event !is DamageDealtEvent || !event.isCombatDamage || event.sourceId == null) continue
+            val toPlayer = event.targetId in state.turnOrder
+            // Read the recipient's snapshot: a battle the same damage defeated is already gone
+            // (combat-damage SBAs run before detection), but it was still dealt the damage.
+            if (!toPlayer && event.targetLastKnown?.typeLine?.isBattle != true) continue
+            val sourceContainer = state.getEntity(event.sourceId) ?: continue
+            val controller = sourceContainer.get<ControllerComponent>()?.playerId ?: continue
+            val info = CombatDamageInfo(event.sourceId, event.targetId, toBattle = !toPlayer)
+            combatDamageByController.getOrPut(controller) { mutableListOf() }.add(info)
+            if (toPlayer) combatDamageByDamagedPlayer.getOrPut(event.targetId) { mutableListOf() }.add(info)
         }
         if (combatDamageByController.isEmpty()) return
 
@@ -3063,6 +3067,7 @@ class TriggerDetector(
                 // predicates (e.g. +1/+1 counters) and any other card/controller predicates are
                 // honored — not just the handful of card predicates handled inline.
                 val matchingInfos = damageEvents.filter { info ->
+                    if (info.toBattle && !trigger.orBattle) return@filter false
                     val sourceContainer = state.getEntity(info.sourceId) ?: return@filter false
                     sourceContainer.get<CardComponent>() ?: return@filter false
                     if (!projected.isCreature(info.sourceId)) return@filter false
@@ -3083,7 +3088,10 @@ class TriggerDetector(
                 // can reference "that player" (Vaan, Street Thief); `triggeringEntityId` is an
                 // arbitrary matching source for that player — batch triggers don't dispatch
                 // per source, so cards needing per-source dispatch use a singular trigger event.
-                for ((damagedPlayerId, infos) in matchingInfos.groupBy { it.targetPlayerId }) {
+                // The "or battle" variant also fires once per battle hit (no triggering player).
+                // Either way the matching sources that hit that recipient are captured, so a
+                // payoff can act on "those creatures" (Zurgo and Ojutai).
+                for ((recipientId, infos) in matchingInfos.groupBy { it.targetPlayerId }) {
                     triggers.add(
                         PendingTrigger(
                             ability = ability,
@@ -3092,7 +3100,8 @@ class TriggerDetector(
                             controllerId = controllerId,
                             triggerContext = TriggerContext(
                                 triggeringEntityId = infos.first().sourceId,
-                                triggeringPlayerId = damagedPlayerId
+                                triggeringPlayerId = recipientId.takeUnless { infos.first().toBattle },
+                                capturedEntityIds = infos.map { it.sourceId }.distinct()
                             )
                         )
                     )

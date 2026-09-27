@@ -530,10 +530,8 @@ object Triggers {
      * declined lines puts the payoff at 6 readable lines out of 48; the rest are blocked on "that
      * many" and "them" regardless.
      *
-     * **The missing facade.** `OneOrMoreDealCombatDamageToPlayerEvent` is the one event here with
-     * no `dsl.Triggers` factory — the five hand-written cards that use it write the raw
-     * `TriggerSpec`, and so does the row below, which keeps the grammar and the cards one
-     * definition. Naming it would be the right change and it is an `mtg-sdk` one.
+     * `OneOrMoreDealCombatDamageToPlayerEvent` carries two readings, "to a player" and "to a
+     * player or battle" (its `orBattle` flag); each row reads back only its own.
      */
     private data class Scope(val words: String, val predicate: ControllerPredicate?)
 
@@ -656,12 +654,20 @@ object Triggers {
             reader = { (it as? EventPattern.CreaturesYouControlDiedEvent)?.let { e -> e.filter to e.excludeSelf } },
         ) { filter, other -> batchSubject(filter, other).die() } +
         listOf(
-            // The one row whose event has no facade; see this family's KDoc.
+            // "…or battle" first: the player-only row is its prefix.
+            batchRule(
+                "whenever one or more {filter} you control deal combat damage to a player or battle",
+                "whenever one or more creatures you control deal combat damage to a player or battle",
+                Filters.pluralSubject,
+                { (it as? EventPattern.OneOrMoreDealCombatDamageToPlayerEvent)?.takeIf { e -> e.orBattle }?.sourceFilter },
+            ) {
+                SdkTriggers.oneOrMore(it).dealCombatDamageToAPlayerOrBattle()
+            },
             batchRule(
                 "whenever one or more {filter} you control deal combat damage to a player",
                 "whenever one or more creatures you control deal combat damage to a player",
                 Filters.pluralSubject,
-                { (it as? EventPattern.OneOrMoreDealCombatDamageToPlayerEvent)?.sourceFilter },
+                { (it as? EventPattern.OneOrMoreDealCombatDamageToPlayerEvent)?.takeUnless { e -> e.orBattle }?.sourceFilter },
             ) {
                 SdkTriggers.oneOrMore(it).dealCombatDamageToAPlayer()
             },
