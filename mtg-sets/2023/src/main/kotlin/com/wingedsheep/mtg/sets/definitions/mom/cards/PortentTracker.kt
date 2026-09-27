@@ -18,7 +18,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * {T}: Choose target battle. If an opponent protects it, remove a defense counter from it.
  * Otherwise, put a defense counter on it. Activate only as a sorcery.
  *
- * "An opponent protects it" reads the battle's protector (CR 310.8), not its controller — a Siege
+ * "An opponent protects it" reads the battle's protector (CR 310.9), not its controller — a Siege
  * you cast is controlled by you but protected by an opponent — so the branch is a resolution-time
  * [Conditions.TargetMatchesFilter] over `Battle.protectedBy()`. "Otherwise" covers every battle an
  * opponent doesn't protect, i.e. one you protect.

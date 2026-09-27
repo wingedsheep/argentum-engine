@@ -696,6 +696,8 @@ internal class AffectsFilterResolver(
                     ControllerPredicate.ControlledByOpponent -> protector != sourceController
                     ControllerPredicate.ControlledByAny -> true
                     ControllerPredicate.ControlledByActivePlayer -> protector == state.activePlayerId
+                    ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent,
+                    ControllerPredicate.OwnedByTargetPlayer, ControllerPredicate.OwnedByTriggeringPlayer -> false
                     else -> null
                 }
             }
