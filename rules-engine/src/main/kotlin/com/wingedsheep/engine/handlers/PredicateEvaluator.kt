@@ -1,6 +1,9 @@
 package com.wingedsheep.engine.handlers
 
 import com.wingedsheep.engine.state.components.battlefield.chosenCreatureType
+import com.wingedsheep.sdk.scripting.ChoiceSlot
+import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
+import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.battlefield.chosenColor
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.ChoiceValue
@@ -421,6 +424,7 @@ class PredicateEvaluator(
             is CardPredicate.SharesCreatureTypeWith,
             CardPredicate.SharesCreatureTypeWithSource,
             CardPredicate.SharesCreatureTypeWithTriggeringEntity,
+            CardPredicate.ConvokedSource,
             is CardPredicate.SharesManaValueWith,
             is CardPredicate.SharesNameWith,
             CardPredicate.SharesNameWithLinkedExile,
@@ -1069,6 +1073,20 @@ class PredicateEvaluator(
                     ?: (card.typeLine.hasSubtype(Subtype(chosenType)) ||
                         projected.crossZoneGrantedSubtypes(state, entityId).any { it.equals(chosenType, ignoreCase = true) })
                 !hasSubtype
+            }
+
+            // CR 702.51c: tapped to pay for the source's convoke — and still that same object
+            // (CR 400.7), which the entry stamp recorded at the tap tells apart from a blink.
+            CardPredicate.ConvokedSource -> {
+                val sourceId = context?.sourceId ?: return false
+                val source = state.getEntity(sourceId) ?: return false
+                val convoked = source.entitiesChoice(ChoiceSlot.CONVOKED_CREATURES)?.entryStamps
+                    ?: source.get<SpellOnStackComponent>()?.convokedCreatures
+                    ?: return false
+                val stamp = convoked[entityId] ?: return false
+                val current = state.getEntity(entityId)
+                    ?.get<BattlefieldEntryTimestampComponent>()?.timestamp ?: 0L
+                entityId in state.getBattlefield() && current == stamp
             }
 
             CardPredicate.SharesCreatureTypeWithSource -> {
@@ -2464,7 +2482,8 @@ class PredicateEvaluator(
 
             // Source-relative and context predicates — not applicable
             CardPredicate.NotOfSourceChosenType, CardPredicate.SharesCreatureTypeWithSource,
-            CardPredicate.SharesCreatureTypeWithTriggeringEntity, CardPredicate.HasChosenSubtype,
+            CardPredicate.SharesCreatureTypeWithTriggeringEntity,
+            CardPredicate.ConvokedSource, CardPredicate.HasChosenSubtype,
             CardPredicate.HasChosenColor, CardPredicate.SharesChosenColorWithSource,
             CardPredicate.SharesColorWithRecipient,
             is CardPredicate.SharesCreatureTypeWith,

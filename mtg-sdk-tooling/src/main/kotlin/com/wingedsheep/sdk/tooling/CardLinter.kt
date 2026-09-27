@@ -107,6 +107,10 @@ object CardLinter {
         // declared), so declarations and reads are collected across all faces before any check.
         val slots = SlotUsage()
         collectSlots(fullTree, slots)
+        // Convoke (CR 702.51c) records the creatures that convoked the spell — a keyword, not a node.
+        if (Keyword.CONVOKE in card.keywords || card.cardFaces.any { Keyword.CONVOKE in it.keywords }) {
+            slots.declared.add("CONVOKED_CREATURES")
+        }
 
         lintDefinition(card.name, fullTree, explicitTree, slots, findings)
         checkSlots(card.name, slots, findings)
@@ -862,6 +866,7 @@ object CardLinter {
         "SneakCostWasPaid" to "SNEAK",
         "SourceChosenModeIs" to "MODE",
         "CardTypeEqualsChosenComponent" to "CARD_TYPE",
+        "ConvokedSource" to "CONVOKED_CREATURES",
     )
 
     /** Node types whose `slot` field names the slot they read. */

@@ -29,7 +29,12 @@ import com.wingedsheep.sdk.scripting.KeywordAbility
 data class AlternativePaymentResult(
     val reducedCost: ManaCost,
     val newState: GameState,
-    val events: List<GameEvent>
+    val events: List<GameEvent>,
+    /**
+     * The creatures actually tapped for convoke (CR 702.51c — they "convoked" the spell), each with
+     * its battlefield-entry stamp, in tap order. Empty when convoke paid nothing.
+     */
+    val convokedCreatures: Map<EntityId, Long> = emptyMap()
 )
 
 /**
@@ -224,6 +229,7 @@ class AlternativePaymentHandler(
         var currentState = state
         var reducedCost = cost
         val events = mutableListOf<GameEvent>()
+        var convoked: Map<EntityId, Long> = emptyMap()
 
         // Handle Delve
         if (payment.delvedCards.isNotEmpty()) {
@@ -244,6 +250,7 @@ class AlternativePaymentHandler(
                 currentState = convokeResult.newState
                 reducedCost = convokeResult.reducedCost
                 events.addAll(convokeResult.events)
+                convoked = convokeResult.convokedCreatures
             }
         }
 
@@ -256,7 +263,7 @@ class AlternativePaymentHandler(
             events.addAll(harmonizeResult.events)
         }
 
-        return AlternativePaymentResult(reducedCost, currentState, events)
+        return AlternativePaymentResult(reducedCost, currentState, events, convoked)
     }
 
     /**
@@ -326,6 +333,7 @@ class AlternativePaymentHandler(
         // offered the client and `validateForSpell` accepted — so an animated land convokes.
         // Tapping changes neither, so the starting state's projection serves every creature.
         val projected = state.projectedState
+        val convoked = linkedMapOf<EntityId, Long>()
 
         for ((creatureId, payment) in convokedCreatures) {
             // Validation already rejected anything illegal; these guards only keep a direct engine
@@ -337,6 +345,9 @@ class AlternativePaymentHandler(
             if (projected.getController(creatureId) != playerId) continue
 
             // Tap the creature
+            convoked[creatureId] = container
+                .get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()
+                ?.timestamp ?: 0L
             val (tappedState, tapEvent) = tap(currentState, creatureId)
             currentState = tappedState
             tapEvent?.let(events::add)
@@ -352,7 +363,7 @@ class AlternativePaymentHandler(
             }
         }
 
-        return AlternativePaymentResult(reducedCost, currentState, events)
+        return AlternativePaymentResult(reducedCost, currentState, events, convoked)
     }
 
     /**

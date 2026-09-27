@@ -121,6 +121,12 @@ data class SpellOnStackComponent(
     val wasMayhem: Boolean = false,
     val beheldCards: List<EntityId> = emptyList(),  // Cards chosen via Behold (stored in pipeline as named collection)
     /**
+     * The creatures that convoked this spell (CR 702.51c), each with the battlefield-entry stamp it
+     * had when tapped, in tap order. Carried onto the resolving permanent's cast-choices bag under
+     * [ChoiceSlot.CONVOKED_CREATURES]. Empty when convoke paid nothing.
+     */
+    val convokedCreatures: Map<EntityId, Long> = emptyMap(),
+    /**
      * Entity ids of cards discarded to pay this spell's additional discard cost
      * (`Costs.additional.DiscardCards(...)`). Read at resolution via
      * [com.wingedsheep.sdk.scripting.targets.EffectTarget.DiscardedAsCost] so a condition can

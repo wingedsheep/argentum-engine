@@ -146,6 +146,21 @@ enum class ChoiceSlot {
     BLIGHT_AMOUNT,
 
     /**
+     * The creatures that **convoked** the spell (CR 702.51c — "a creature tapped to pay for mana in
+     * a spell's total cost this way is said to have 'convoked' that spell"), recorded as the convoke
+     * taps are paid and carried onto the resolving permanent. Stored as an entity list together with
+     * each creature's battlefield-entry stamp, so a creature that left and returned since is a new
+     * object (CR 400.7) that didn't convoke anything. Absent when nothing convoked the spell.
+     *
+     * Read two ways: [com.wingedsheep.sdk.scripting.values.DynamicAmount.CastChoice] counts the
+     * recorded creatures — "where X is the number of creatures that convoked it" (Knight-Errant of
+     * Eos, Ancient Imperiosaur), which keeps counting a creature that has since left — and
+     * [com.wingedsheep.sdk.scripting.predicates.CardPredicate.ConvokedSource] matches the ones that
+     * are still that same object, for "each creature that convoked it" (Zephyr Singer).
+     */
+    CONVOKED_CREATURES,
+
+    /**
      * Whether the spell's optional **waterbend** additional cost was paid when cast (Avatar: The
      * Last Airbender, e.g. Ruinous Waterbending / Spirit Water Revival). A present value means
      * "you may waterbend {N}" was paid. Read back through

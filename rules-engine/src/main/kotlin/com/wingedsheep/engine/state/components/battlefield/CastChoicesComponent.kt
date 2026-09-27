@@ -35,6 +35,17 @@ sealed interface ChoiceValue {
     @Serializable
     data class NumberChoice(val amount: Int) : ChoiceValue
 
+    /**
+     * An ordered set of entities, each with the battlefield-entry stamp it had when recorded, so a
+     * reader can tell whether an entity is still that same object (CR 400.7) — e.g. the creatures
+     * that convoked a spell ([ChoiceSlot.CONVOKED_CREATURES]).
+     */
+    @SerialName("ChoiceValue.Entities")
+    @Serializable
+    data class EntitiesChoice(val entryStamps: Map<EntityId, Long>) : ChoiceValue {
+        val entityIds: Set<EntityId> get() = entryStamps.keys
+    }
+
     /** A boolean choice that is simply present or absent (e.g. "this spell was kicked"). */
     @SerialName("ChoiceValue.Flag")
     @Serializable
@@ -129,6 +140,10 @@ fun ComponentContainer.blightAmountChoice(): Int? =
 /** The number chosen and stored under [slot] (e.g. [ChoiceSlot.CHOSEN_NUMBER]), or null. */
 fun ComponentContainer.numberChoice(slot: ChoiceSlot): Int? =
     (get<CastChoicesComponent>()?.chosen?.get(slot) as? ChoiceValue.NumberChoice)?.amount
+
+/** The entities recorded under [slot] with their entry stamps (e.g. [ChoiceSlot.CONVOKED_CREATURES]), or null. */
+fun ComponentContainer.entitiesChoice(slot: ChoiceSlot): ChoiceValue.EntitiesChoice? =
+    get<CastChoicesComponent>()?.chosen?.get(slot) as? ChoiceValue.EntitiesChoice
 
 /** Return a container with [slot] set to [value] in its (possibly new) [CastChoicesComponent]. */
 fun ComponentContainer.withCastChoice(slot: ChoiceSlot, value: ChoiceValue): ComponentContainer {

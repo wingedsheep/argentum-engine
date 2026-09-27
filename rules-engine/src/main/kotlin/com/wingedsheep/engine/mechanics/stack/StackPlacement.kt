@@ -150,7 +150,8 @@ internal object StackPlacement {
         // Clone cast-time state; per 707.10 the copy inherits every decision made for
         // the original. The data-class copy preserves: xValue, declaredCostSlot, wasBlightPaid,
         // wasWarped, wasEvoked, sacrificedPermanents (snapshots of P/T + subtypes), damageDistribution,
-        // chosenCreatureType, exiledCardCount, castFromZone, beheldCards, and the
+        // chosenCreatureType, exiledCardCount, castFromZone, beheldCards, convokedCreatures (CR 707.10: an
+        // effect of the copy that refers to objects used to pay its costs uses the original's), and the
         // manaSpent{White,Blue,Black,Red,Green,Colorless} colors. Only the caster
         // (copy controller) and modal fields (which the caller may retarget) are
         // overridden explicitly. Payment events (ManaSpentEvent, SpellCastEvent) are

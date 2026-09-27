@@ -734,6 +734,10 @@ sealed interface DynamicAmount : TextReplaceable<DynamicAmount> {
      * resolution context so a spell that never becomes a permanent (an instant/sorcery) still
      * resolves it from the value paid at cast.
      *
+     * An entity-list slot reads as its size: `CastChoice(ChoiceSlot.CONVOKED_CREATURES)` is "the
+     * number of creatures that convoked it" (CR 702.51c), counting every creature that tapped for
+     * convoke even if it has since left the battlefield.
+     *
      * The non-numeric slots (color, creature type, mode) are read by conditions
      * ([com.wingedsheep.sdk.scripting.conditions.CastChoiceMade] /
      * [com.wingedsheep.sdk.scripting.conditions.CastChoiceIs]) or consumed directly by effects

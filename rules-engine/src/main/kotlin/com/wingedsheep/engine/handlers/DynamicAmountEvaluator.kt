@@ -13,6 +13,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CastChoicesComponent
 import com.wingedsheep.engine.state.components.battlefield.blightAmountChoice
 import com.wingedsheep.engine.state.components.battlefield.numberChoice
+import com.wingedsheep.engine.state.components.battlefield.entitiesChoice
 import com.wingedsheep.engine.state.components.battlefield.chosenOpponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.GrantsStationUsingToughnessComponent
@@ -267,6 +268,13 @@ class DynamicAmountEvaluator(
                 when (amount.slot) {
                     com.wingedsheep.sdk.scripting.ChoiceSlot.BLIGHT_AMOUNT ->
                         source?.blightAmountChoice() ?: context.additionalCostBlightAmount
+                    // "The number of creatures that convoked it" (CR 702.51c) — every creature
+                    // that tapped, even one that has since left; the spell's own record while it
+                    // is still on the stack.
+                    com.wingedsheep.sdk.scripting.ChoiceSlot.CONVOKED_CREATURES ->
+                        source?.entitiesChoice(amount.slot)?.entityIds?.size
+                            ?: source?.get<SpellOnStackComponent>()?.convokedCreatures?.size
+                            ?: 0
                     // Any other numeric slot (e.g. CHOSEN_NUMBER for Shapeshifter) is read
                     // generically off the durable cast-choices bag as a NumberChoice.
                     else -> source?.numberChoice(amount.slot) ?: 0

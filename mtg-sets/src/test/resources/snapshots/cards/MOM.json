@@ -146,6 +146,62 @@
     ]
 }
 
+// Ancient Imperiosaur
+{
+    "name": "Ancient Imperiosaur",
+    "manaCost": "{5}{G}{G}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nTrample, ward {2}\nThis creature enters with two +1/+1 counters on it for each creature that convoked it.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 6
+    },
+    "keywords": [
+        "CONVOKE",
+        "TRAMPLE",
+        "WARD"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Ward",
+            "cost": {
+                "type": "WardCost.Mana",
+                "manaCost": "{2}"
+            }
+        }
+    ],
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "count": {
+                    "type": "Multiply",
+                    "amount": {
+                        "type": "CastChoice",
+                        "slot": "CONVOKED_CREATURES"
+                    },
+                    "multiplier": 2
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "174",
+        "rarity": "RARE",
+        "artist": "Piotr Foksowicz",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/8/687d3261-dfbf-4c49-986f-20117b7ab5e7.jpg?1783916978",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "You can't tap more creatures to convoke Ancient Imperiosaur than is necessary to pay for the spell. In most cases, this means seven creatures. However, if there are any additional costs to cast Ancient Imperiosaur, you may use convoke to pay those additional costs as well."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Artistic Refusal
 {
     "name": "Artistic Refusal",
@@ -3100,6 +3156,69 @@
     "colorIdentityOverride": [
         "BLACK",
         "GREEN"
+    ]
+}
+
+// Zephyr Singer
+{
+    "name": "Zephyr Singer",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Siren Pirate",
+    "oracleText": "Convoke (Your creatures can help cast this spell. Each creature you tap while casting this spell pays for {1} or one mana of that creature's color.)\nFlying, vigilance\nWhen this creature enters, put a flying counter on each creature that convoked it.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "CONVOKE",
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Zephyr Singer:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature",
+                                    "ConvokedSource"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "AddCounters",
+                        "counterType": "FLYING",
+                        "count": 1,
+                        "target": "IterationEntity"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "86",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/6/9678966b-65f1-405c-b8db-5f2d4f434933.jpg?1783917021",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "You can't tap more creatures to convoke Zephyr Singer than is necessary to pay for the spell. In most cases, this means four creatures. However, if there are any additional costs to cast Zephyr Singer, you may use convoke to pay those additional costs as well."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 

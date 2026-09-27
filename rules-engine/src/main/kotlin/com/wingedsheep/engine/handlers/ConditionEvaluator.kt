@@ -1787,6 +1787,7 @@ class ConditionEvaluator(
             is ChoiceValue.TextChoice -> cv.text
             is ChoiceValue.NumberChoice -> cv.amount.toString()
             is ChoiceValue.EntityChoice -> cv.entityId.toString()
+            is ChoiceValue.EntitiesChoice -> cv.entityIds.size.toString()
             ChoiceValue.Flag -> "true"
         }
         return actual.equals(value, ignoreCase = true)

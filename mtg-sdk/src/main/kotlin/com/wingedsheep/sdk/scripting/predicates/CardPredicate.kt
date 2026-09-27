@@ -946,6 +946,20 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "that shares a creature type with this creature"
     }
 
+    /**
+     * Matches a permanent that **convoked** the source object (CR 702.51c) — "each creature that
+     * convoked it" (Zephyr Singer). Reads [com.wingedsheep.sdk.scripting.ChoiceSlot.CONVOKED_CREATURES]
+     * off the source (its cast-choices bag on the battlefield, or the spell while it is still on the
+     * stack) and requires the candidate to be the *same object* that tapped: one that left the
+     * battlefield and came back since is a new object (CR 400.7) and doesn't match. Fails closed with
+     * no source, and during layer projection.
+     */
+    @SerialName("ConvokedSource")
+    @Serializable
+    data object ConvokedSource : CardPredicate {
+        override val description: String = "that convoked it"
+    }
+
     /** Matches creatures that share a creature subtype with the triggering entity */
     @SerialName("SharesCreatureTypeWithTriggeringEntity")
     @Serializable

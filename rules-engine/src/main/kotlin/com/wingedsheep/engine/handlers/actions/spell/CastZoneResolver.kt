@@ -988,6 +988,7 @@ class CastZoneResolver(
                 is CardPredicate.NotOfSourceChosenType,
                 is CardPredicate.SharesCreatureTypeWithSource,
                 is CardPredicate.SharesCreatureTypeWithTriggeringEntity,
+                is CardPredicate.ConvokedSource,
                 is CardPredicate.SharesCreatureTypeWith,
                 is CardPredicate.SharesCardTypeWith,
                 is CardPredicate.SharesColorWith,

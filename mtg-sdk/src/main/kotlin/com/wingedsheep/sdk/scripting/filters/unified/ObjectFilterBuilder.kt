@@ -364,6 +364,9 @@ interface ObjectFilterBuilder<out Self> {
     /** Must include the color chosen on the source permanent (CastChoicesComponent) */
     fun sharingChosenColorWithSource() = withCardPredicate(CardPredicate.SharesChosenColorWithSource)
 
+    /** Must have convoked the source object (CR 702.51c) — "each creature that convoked it" */
+    fun thatConvokedSource() = withCardPredicate(CardPredicate.ConvokedSource)
+
     /** Must share a creature type with the referenced entity */
     fun sharingCreatureTypeWith(entity: EffectTarget.SingleEntity) =
         withCardPredicate(CardPredicate.SharesCreatureTypeWith(entity))

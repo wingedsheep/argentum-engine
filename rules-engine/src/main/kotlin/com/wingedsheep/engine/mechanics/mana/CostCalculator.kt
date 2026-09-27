@@ -1371,6 +1371,8 @@ class CostCalculator(
             }
 
             CardPredicate.SharesCreatureTypeWithTriggeringEntity -> true
+            // A spell being cast is never a creature that convoked the cost source — fail closed.
+            CardPredicate.ConvokedSource -> false
             CardPredicate.HasChosenSubtype -> {
                 if (sourceEntityId == null || state == null) return false
                 val chosenType = state.getEntity(sourceEntityId)

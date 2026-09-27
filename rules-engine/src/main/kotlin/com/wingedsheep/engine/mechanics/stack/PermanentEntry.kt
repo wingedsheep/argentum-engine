@@ -370,6 +370,16 @@ internal class PermanentEntry(
                 com.wingedsheep.engine.state.components.battlefield.ChoiceValue.EntityChoice(recipient)
             )
         }
+        // Convoke (CR 702.51c): the creatures that convoked the spell, for "the number of creatures
+        // that convoked it" and "each creature that convoked it" for the permanent's whole life.
+        if (spellComponent.convokedCreatures.isNotEmpty()) {
+            bag = bag.withChoice(
+                com.wingedsheep.sdk.scripting.ChoiceSlot.CONVOKED_CREATURES,
+                com.wingedsheep.engine.state.components.battlefield.ChoiceValue.EntitiesChoice(
+                    spellComponent.convokedCreatures
+                )
+            )
+        }
         if (spellComponent.additionalCostBlightAmount > 0) {
             bag = bag.withChoice(
                 com.wingedsheep.sdk.scripting.ChoiceSlot.BLIGHT_AMOUNT,
