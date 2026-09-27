@@ -1209,13 +1209,14 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   lethal (CR 120.4a) is dealt to that creature's controller instead (the creature is marked only with
   the lethal portion). Backed by `DealDamageEffect.excessToController`. Used by Gandalf's Sanction.
 - `DealXDamage(target)` — deal X damage (spell's X).
-- `AmplifyNoncombatDamageThisTurn(bonus)` — install an until-end-of-turn replacement (CR 616): every
-  source you control deals `bonus` *additional* noncombat damage to any permanent or player this turn.
-  Combat damage is unaffected; no opponent restriction. `bonus` (a `DynamicAmount`) is resolved once at
-  resolution and baked in (typically `DynamicAmount.XValue` from an `{X}` cost); multiple installs stack
-  additively. Read at damage time by the engine's static-amplification path, then cleaned up at end of
-  turn. Distinct from the opponent-only, permanent-tied `NoncombatDamageBonus` static. Taii Wakeen,
-  Perfect Shot: `{X}, {T}: … it deals that much damage plus X instead.`
+- `AmplifyDamageThisTurn(bonus, appliesTo: EventPattern.DamageEvent)` — install an until-end-of-turn
+  replacement (CR 616): every damage instance matching `appliesTo` deals `bonus` *additional* damage this
+  turn. `appliesTo`'s `source` / `recipient` / `damageType` / `amount` are matched by the same matchers as
+  `ModifyDamageAmount`, with the effect's controller as "you". `bonus` (a `DynamicAmount`) is resolved once
+  at resolution and baked in; multiple installs stack additively; the effect outlives its source and is
+  cleaned up at end of turn. Taii Wakeen, Perfect Shot:
+  `AmplifyDamageThisTurn(xValue(), DamageEvent(source = Any.youControl(), damageType = NonCombat))`;
+  Rankle and Torbran: `AmplifyDamageThisTurn(fixed(2), DamageEvent(recipient = Recipient.AnyPlayerOrBattle))`.
 - `DoubleDamageToPlayer(target, duration = UntilYourNextTurn)` — install a duration-bounded replacement
   (CR 616) that *doubles* all damage — any source, combat or noncombat — dealt to `target` (a player,
   e.g. `EffectTarget.PlayerRef(Player.TriggeringPlayer)`) and to any permanent that player controls. The

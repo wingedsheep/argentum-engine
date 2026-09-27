@@ -248,7 +248,7 @@ The single largest untouched cluster — 19 effects, none mapped.
 `GrantKeywordToAttackersBlockedBy`, `MarkMustAttackThisTurn`, `Provoke`,
 `RedirectCombatDamageToController`, `SetSuspected`
 
-Plus from removal/damage: `CantBeRegenerated`, `AmplifyNoncombatDamageThisTurn`,
+Plus from removal/damage: `CantBeRegenerated`, `AmplifyDamageThisTurn`,
 `DealDamagePerEntityInZone`, `DoubleDamageToPlayer`, `RemoveDamageShield`
 
 ### 2.6 Types & colors

@@ -7,6 +7,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.events.DamageType
@@ -58,7 +59,13 @@ val TaiiWakeenPerfectShot = card("Taii Wakeen, Perfect Shot") {
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{X}"), Costs.Tap)
-        effect = Effects.AmplifyNoncombatDamageThisTurn(DynamicAmounts.xValue())
+        effect = Effects.AmplifyDamageThisTurn(
+            DynamicAmounts.xValue(),
+            EventPattern.DamageEvent(
+                source = GameObjectFilter.Any.youControl(),
+                damageType = DamageType.NonCombat,
+            ),
+        )
         description = "{X}, {T}: If a source you control would deal noncombat damage to a permanent " +
             "or player this turn, it deals that much damage plus X instead."
     }

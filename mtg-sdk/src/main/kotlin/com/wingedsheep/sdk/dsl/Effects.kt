@@ -327,14 +327,18 @@ object Effects {
     )
 
     /**
-     * Install a turn-duration replacement that adds [bonus] to every noncombat damage instance
-     * a source you control would deal to any permanent or player this turn (CR 616).
-     * Combat damage is unaffected. Multiple installs stack additively.
+     * Install a turn-duration replacement that adds [bonus] to every damage instance matching
+     * [appliesTo] for the rest of the turn (CR 616). The bonus is fixed at resolution; multiple
+     * installs stack additively. [appliesTo]'s `source` / `recipient` / `damageType` are "you"-relative
+     * to the effect's controller.
      *
-     * Taii Wakeen, Perfect Shot: `AmplifyNoncombatDamageThisTurn(DynamicAmount.XValue)`.
+     * - Taii Wakeen, Perfect Shot: `AmplifyDamageThisTurn(DynamicAmounts.xValue(),
+     *   DamageEvent(source = GameObjectFilter.Any.youControl(), damageType = DamageType.NonCombat))`.
+     * - Rankle and Torbran: `AmplifyDamageThisTurn(DynamicAmounts.fixed(2),
+     *   DamageEvent(recipient = Recipient.AnyPlayerOrBattle))`.
      */
-    fun AmplifyNoncombatDamageThisTurn(bonus: DynamicAmount): Effect =
-        com.wingedsheep.sdk.scripting.effects.AmplifyNoncombatDamageThisTurnEffect(bonus)
+    fun AmplifyDamageThisTurn(bonus: DynamicAmount, appliesTo: EventPattern.DamageEvent): Effect =
+        com.wingedsheep.sdk.scripting.effects.AmplifyDamageThisTurnEffect(bonus, appliesTo)
 
     /**
      * Install a duration-bounded replacement that doubles all damage — any source, combat or

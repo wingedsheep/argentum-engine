@@ -149,14 +149,14 @@ class TaiiWakeenPerfectShotScenarioTest : FunSpec({
 
         // The amplification floating effect is live this turn.
         driver.state.floatingEffects.count {
-            it.effect.modification is SerializableModification.AmplifyNoncombatDamage
+            it.effect.modification is SerializableModification.AmplifyDamage
         } shouldBe 1
 
         // Advance to the next turn — the until-end-of-turn effect is cleaned up.
         driver.passPriorityUntil(Step.UPKEEP)
 
         driver.state.floatingEffects.count {
-            it.effect.modification is SerializableModification.AmplifyNoncombatDamage
+            it.effect.modification is SerializableModification.AmplifyDamage
         } shouldBe 0
     }
 })

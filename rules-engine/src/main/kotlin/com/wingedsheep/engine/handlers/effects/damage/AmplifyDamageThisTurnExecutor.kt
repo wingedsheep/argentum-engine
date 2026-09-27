@@ -9,32 +9,34 @@ import com.wingedsheep.engine.mechanics.layers.SerializableModification
 import com.wingedsheep.engine.mechanics.layers.addFloatingEffect
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.sdk.scripting.Duration
-import com.wingedsheep.sdk.scripting.effects.AmplifyNoncombatDamageThisTurnEffect
+import com.wingedsheep.sdk.scripting.effects.AmplifyDamageThisTurnEffect
 import kotlin.reflect.KClass
 
 /**
- * Executor for [AmplifyNoncombatDamageThisTurnEffect].
+ * Executor for [AmplifyDamageThisTurnEffect].
  *
  * Resolves the bonus amount once (e.g. the `{X}` paid for the activating ability, read via
  * `DynamicAmount.XValue` → [EffectContext.xValue]) and installs an until-end-of-turn
- * [SerializableModification.AmplifyNoncombatDamage] floating effect controlled by the resolver.
- * `DamageUtils.applyStaticDamageAmplification` reads it for every noncombat damage instance from a
- * source the controller controls (CR 616). Combat damage is unaffected. The floating effect is
- * cleared automatically by the cleanup step ([Duration.EndOfTurn]).
+ * [SerializableModification.AmplifyDamage] floating effect controlled by the resolver, carrying the
+ * effect's `appliesTo` pattern. `DamageUtils.applyStaticDamageAmplification` reads it for every
+ * damage instance, matching the pattern with that controller as "you" (CR 616). The floating effect
+ * is cleared automatically by the cleanup step ([Duration.EndOfTurn]).
  *
  * Taii Wakeen, Perfect Shot: "{X}, {T}: If a source you control would deal noncombat damage to a
  * permanent or player this turn, it deals that much damage plus X instead."
+ * Rankle and Torbran: "If a source would deal damage to a player or battle this turn, it deals that
+ * much damage plus 2 instead."
  */
-class AmplifyNoncombatDamageThisTurnExecutor(
+class AmplifyDamageThisTurnExecutor(
     private val amountEvaluator: DynamicAmountEvaluator
-) : EffectExecutor<AmplifyNoncombatDamageThisTurnEffect> {
+) : EffectExecutor<AmplifyDamageThisTurnEffect> {
 
-    override val effectType: KClass<AmplifyNoncombatDamageThisTurnEffect> =
-        AmplifyNoncombatDamageThisTurnEffect::class
+    override val effectType: KClass<AmplifyDamageThisTurnEffect> =
+        AmplifyDamageThisTurnEffect::class
 
     override fun execute(
         state: GameState,
-        effect: AmplifyNoncombatDamageThisTurnEffect,
+        effect: AmplifyDamageThisTurnEffect,
         context: EffectContext
     ): EffectResult {
         val bonus = amountEvaluator.evaluate(state, effect.bonus, context)
@@ -43,7 +45,7 @@ class AmplifyNoncombatDamageThisTurnExecutor(
 
         val newState = state.addFloatingEffect(
             layer = Layer.ABILITY,
-            modification = SerializableModification.AmplifyNoncombatDamage(bonus),
+            modification = SerializableModification.AmplifyDamage(bonus, effect.appliesTo),
             // affectedEntities is unused for this read-at-damage-time modification; the controller
             // (ActiveFloatingEffect.controllerId, set from context.controllerId) is what scopes it.
             affectedEntities = setOf(context.controllerId),

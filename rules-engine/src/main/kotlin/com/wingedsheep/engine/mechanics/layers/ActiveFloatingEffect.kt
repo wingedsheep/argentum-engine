@@ -718,15 +718,17 @@ sealed interface SerializableModification {
     ) : SerializableModification
 
     /**
-     * Turn-duration noncombat-damage amplification (CR 616): every source the effect's controller
-     * controls deals [bonus] additional noncombat damage to any permanent or player this turn.
-     * Combat damage is unaffected; there is no opponent restriction. Read directly during damage
-     * resolution by `DamageUtils.applyStaticDamageAmplification` (not a layer modification). The
-     * effect's [ActiveFloatingEffect.controllerId] identifies whose sources benefit. Installed by
-     * Taii Wakeen, Perfect Shot's "{X}, {T}" ability with [bonus] = the X paid.
+     * Turn-duration damage amplification (CR 616): every damage instance matching [appliesTo] is
+     * increased by [bonus] this turn. [appliesTo]'s source / recipient filters are "you"-relative to
+     * [ActiveFloatingEffect.controllerId]. Read directly during damage resolution by
+     * `DamageUtils.applyStaticDamageAmplification` (not a layer modification). Installed by
+     * `AmplifyDamageThisTurnEffect` — Taii Wakeen, Perfect Shot; Rankle and Torbran.
      */
     @Serializable
-    data class AmplifyNoncombatDamage(val bonus: Int) : SerializableModification
+    data class AmplifyDamage(
+        val bonus: Int,
+        val appliesTo: EventPattern.DamageEvent,
+    ) : SerializableModification
 
     /**
      * Duration-bounded damage-doubling scoped to a single player (CR 616): all damage — any source,
@@ -859,8 +861,8 @@ fun SerializableModification.toModification(): Modification = when (this) {
     is SerializableModification.PreventAllDamageFromSource -> Modification.NoOp
     // PreventNextDamageInstanceFromSource is checked during damage resolution directly (no layer mod)
     is SerializableModification.PreventNextDamageInstanceFromSource -> Modification.NoOp
-    // AmplifyNoncombatDamage doesn't map to a layer modification - it's read during damage resolution directly
-    is SerializableModification.AmplifyNoncombatDamage -> Modification.NoOp
+    // AmplifyDamage doesn't map to a layer modification - it's read during damage resolution directly
+    is SerializableModification.AmplifyDamage -> Modification.NoOp
     // DoubleDamageToPlayer doesn't map to a layer modification - it's read during damage resolution directly
     is SerializableModification.DoubleDamageToPlayer -> Modification.NoOp
     // OverrideImage is display-only - it changes no characteristic, read directly by ClientStateTransformer

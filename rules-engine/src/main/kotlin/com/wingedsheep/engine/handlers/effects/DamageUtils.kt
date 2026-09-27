@@ -2452,21 +2452,35 @@ object DamageUtils {
             }
         }
 
-        // Turn-duration noncombat-damage amplification (Taii Wakeen, Perfect Shot): every source
-        // the effect's controller controls deals +bonus noncombat damage to any permanent or
-        // player this turn (CR 616). No opponent restriction — applies to the controller's own
-        // permanents too. Multiple installs stack additively.
-        if (sourceId != null && !isCombatDamage) {
-            val sourceController = projected.getController(sourceId)
-                ?: state.getEntity(sourceId)?.get<ControllerComponent>()?.playerId
-            if (sourceController != null) {
-                for (floating in state.floatingEffects) {
-                    val mod = floating.effect.modification
-                    if (mod !is com.wingedsheep.engine.mechanics.layers.SerializableModification.AmplifyNoncombatDamage) continue
-                    if (floating.controllerId != sourceController) continue
-                    amplifiedAmount += mod.bonus
-                }
+        // Turn-duration damage amplification (Taii Wakeen, Perfect Shot; Rankle and Torbran): a
+        // floating +bonus replacement (CR 616) scoped by its own DamageEvent pattern, "you" being the
+        // effect's controller. It outlives the source that installed it, which still answers "this
+        // permanent" when the pattern names it. Multiple installs stack additively.
+        for (floating in state.floatingEffects) {
+            val mod = floating.effect.modification
+            if (mod !is com.wingedsheep.engine.mechanics.layers.SerializableModification.AmplifyDamage) continue
+            val damageEvent = mod.appliesTo
+            val damageTypeMatches = when (damageEvent.damageType) {
+                is DamageType.Any -> true
+                is DamageType.Combat -> isCombatDamage
+                is DamageType.NonCombat -> !isCombatDamage
             }
+            if (!damageTypeMatches) continue
+            if (!damageEvent.amount.matches(amplifiedAmount)) continue
+            val hostId = floating.sourceId ?: floating.controllerId
+            if (!damageSourceMatches(
+                    state, projected, damageEvent.source, sourceId,
+                    hostId = hostId, hostControllerId = floating.controllerId, recipientId = targetId,
+                    predicateEvaluator = predicateEvaluator
+                )
+            ) continue
+            if (!damageRecipientMatches(
+                    state, projected, damageEvent.recipient, targetId,
+                    hostId = hostId, hostControllerId = floating.controllerId,
+                    predicateEvaluator = predicateEvaluator
+                )
+            ) continue
+            amplifiedAmount += mod.bonus
         }
 
         // Cap damage replacements (Divine Presence): clamp the would-be amount to a maximum.

@@ -18597,8 +18597,14 @@
                     ]
                 },
                 "effect": {
-                    "type": "AmplifyNoncombatDamageThisTurn",
-                    "bonus": "XValue"
+                    "type": "AmplifyDamageThisTurn",
+                    "bonus": "XValue",
+                    "appliesTo": {
+                        "source": {
+                            "controllerPredicate": "ControlledByYou"
+                        },
+                        "damageType": "DamageNonCombat"
+                    }
                 },
                 "descriptionOverride": "{X}, {T}: If a source you control would deal noncombat damage to a permanent or player this turn, it deals that much damage plus X instead."
             }

@@ -3215,6 +3215,124 @@
     ]
 }
 
+// Rankle and Torbran
+{
+    "name": "Rankle and Torbran",
+    "manaCost": "{1}{B}{B}{R}{R}",
+    "typeLine": "Legendary Creature — Faerie Dwarf",
+    "oracleText": "Flying, first strike, haste\nWhenever Rankle and Torbran deals combat damage to a player or battle, choose any number —\n• Each player creates a Treasure token.\n• Each player sacrifices a creature of their choice.\n• If a source would deal damage to a player or battle this turn, it deals that much damage plus 2 instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING",
+        "FIRST_STRIKE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rankle and Torbran:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "battle"
+                            }
+                        ]
+                    }
+                },
+                "effect": {
+                    "type": "Modal",
+                    "modes": [
+                        {
+                            "effect": {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Players",
+                                    "players": "ActivePlayerFirst"
+                                },
+                                "body": {
+                                    "type": "CreatePredefinedToken",
+                                    "tokenType": "Treasure"
+                                }
+                            },
+                            "description": "Each player creates a Treasure token"
+                        },
+                        {
+                            "effect": {
+                                "type": "ForceSacrifice",
+                                "filter": "creature",
+                                "target": {
+                                    "type": "PlayerRef",
+                                    "player": "Each"
+                                }
+                            },
+                            "description": "Each player sacrifices a creature of their choice"
+                        },
+                        {
+                            "effect": {
+                                "type": "AmplifyDamageThisTurn",
+                                "bonus": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "appliesTo": {
+                                    "recipient": {
+                                        "type": "RecipientAnyOf",
+                                        "options": [
+                                            {
+                                                "type": "RecipientPlayer",
+                                                "player": "Any"
+                                            },
+                                            {
+                                                "type": "RecipientObject",
+                                                "filter": "battle"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "description": "If a source would deal damage to a player or battle this turn, it deals that much damage plus 2 instead"
+                        }
+                    ],
+                    "chooseCount": 3,
+                    "minChooseCount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "252",
+        "rarity": "RARE",
+        "artist": "Viko Menezes",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/9/d92c191e-329c-41f5-ae4f-1bb91fc001a0.jpg?1783916938",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "You may choose none of the modes, some of them, or all of them. Any modes chosen will happen in order."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "The additional 2 damage is dealt by the same source as the original source of damage. The damage isn't dealt by Rankle and Torbran unless Rankle and Torbran is the original source of damage."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Ravenous Sailback
 {
     "name": "Ravenous Sailback",

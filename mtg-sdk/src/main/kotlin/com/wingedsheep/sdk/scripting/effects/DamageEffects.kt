@@ -3,6 +3,7 @@ package com.wingedsheep.sdk.scripting.effects
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.Duration
+import com.wingedsheep.sdk.scripting.EventPattern
 import com.wingedsheep.sdk.scripting.references.Player
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.text.TextReplacer
@@ -84,33 +85,39 @@ data class DealDamageEffect(
 }
 
 /**
- * Install a turn-duration (until end of turn) replacement effect that increases the amount of
- * *noncombat* damage every source the controller controls would deal to any permanent or player
- * (CR 616 — a damage-amount replacement; combat damage is unaffected).
+ * Install a turn-duration (until end of turn) replacement effect that adds [bonus] to every damage
+ * instance matching [appliesTo] for the rest of the turn (CR 616 — a damage-amount replacement:
+ * "it deals that much damage plus N instead").
  *
- * The bonus is resolved once at resolution (typically [DynamicAmount.XValue] from an `{X}` cost)
- * and baked into the floating effect, so it reads the same amount for every damage instance the
- * rest of the turn. Multiple activations stack — each installs its own additive bonus.
+ * [appliesTo] carries the whole scope — `source`, `recipient`, `damageType` and `amount` — matched by
+ * the same shared matchers as [com.wingedsheep.sdk.scripting.ModifyDamageAmount], with the effect's
+ * controller as "you" (the source that installed it answers "this permanent"). The bonus is resolved
+ * once at resolution (typically [DynamicAmount.XValue] from an `{X}` cost) and baked into the floating
+ * effect, so it reads the same amount for every damage instance the rest of the turn and outlives the
+ * source that created it (CR 611.2c). Multiple installs stack — each adds its own bonus.
  *
- * Taii Wakeen, Perfect Shot: "{X}, {T}: If a source you control would deal noncombat damage to a
- * permanent or player this turn, it deals that much damage plus X instead."
+ * - Taii Wakeen, Perfect Shot: "{X}, {T}: If a source you control would deal noncombat damage to a
+ *   permanent or player this turn, it deals that much damage plus X instead." —
+ *   `appliesTo = DamageEvent(source = Any.youControl(), damageType = NonCombat)`.
+ * - Rankle and Torbran: "If a source would deal damage to a player or battle this turn, it deals that
+ *   much damage plus 2 instead." — `appliesTo = DamageEvent(recipient = Recipient.AnyPlayerOrBattle)`.
  *
- * Modelled as its own effect (not the opponent-only, permanent-tied
- * [com.wingedsheep.sdk.scripting.NoncombatDamageBonus] static) because it (a) is turn-duration,
- * (b) applies to *any* recipient — no opponent restriction — and (c) takes a dynamic bonus.
+ * A floating effect rather than the permanent-hosted [com.wingedsheep.sdk.scripting.ModifyDamageAmount]
+ * because it is turn-duration and bakes its bonus at resolution.
  */
-@SerialName("AmplifyNoncombatDamageThisTurn")
+@SerialName("AmplifyDamageThisTurn")
 @Serializable
-data class AmplifyNoncombatDamageThisTurnEffect(
-    val bonus: DynamicAmount
+data class AmplifyDamageThisTurnEffect(
+    val bonus: DynamicAmount,
+    val appliesTo: EventPattern.DamageEvent,
 ) : Effect {
-    override val description: String =
-        "Until end of turn, if a source you control would deal noncombat damage to a permanent or " +
-            "player, it deals that much damage plus ${bonus.description} instead"
+    override val description: String = describe(bonus.description)
 
     override fun runtimeDescription(resolver: (DynamicAmount) -> Int?): String =
-        "Until end of turn, if a source you control would deal noncombat damage to a permanent or " +
-            "player, it deals that much damage plus ${resolver(bonus) ?: bonus.description} instead"
+        describe(resolver(bonus)?.toString() ?: bonus.description)
+
+    private fun describe(amount: String): String =
+        "Until end of turn, if ${appliesTo.description}, it's that much damage plus $amount instead"
 
     override fun applyTextReplacement(replacer: TextReplacer): Effect {
         val newBonus = bonus.applyTextReplacement(replacer)
