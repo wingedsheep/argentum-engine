@@ -78,7 +78,7 @@ class TriggersSubjectVerbTest : DescribeSpec({
 
     describe("a verb never drops what it can't carry") {
         it("rejects a filtered subject on an event with no filter axis") {
-            shouldThrow<IllegalArgumentException> { Triggers.a(GameObjectFilter.Creature).transforms() }
+            shouldThrow<IllegalArgumentException> { Triggers.a(GameObjectFilter.Creature).trains() }
             shouldThrow<IllegalArgumentException> { Triggers.a(GameObjectFilter.Creature).crews() }
         }
 
