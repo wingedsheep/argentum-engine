@@ -1015,6 +1015,100 @@
     ]
 }
 
+// Corruption of Towashi
+{
+    "name": "Corruption of Towashi",
+    "manaCost": "{4}{U}",
+    "typeLine": "Enchantment",
+    "oracleText": "When this enchantment enters, incubate 4. (Create an Incubator token with four +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\nWhenever a permanent you control transforms or a permanent you control enters transformed, you may draw a card. Do this only once each turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Corruption of Towashi:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 4,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Corruption of Towashi:2",
+                "trigger": {
+                    "type": "AnyOfEvents",
+                    "events": [
+                        {
+                            "type": "TransformEvent",
+                            "filter": "permanent ctrl:you"
+                        },
+                        {
+                            "type": "ZoneChangeEvent",
+                            "filter": "permanent transformed ctrl:you",
+                            "to": "Battlefield"
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    }
+                },
+                "effectOncePerTurn": true
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "rarity": "UNCOMMON",
+        "artist": "Artur Nakhodkin",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/e/0e896a87-2a93-488c-a0c9-0bed8404da44.jpg?1783917039",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Only a transforming double-faced permanent can enter the battlefield \"transformed,\" and only if it enters with its back face up. Notably, melded permanents can't enter transformed, and modal double-faced permanents can't enter transformed, even if they enter with their back faces up."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Similarly, only transforming double-faced permanents (including transforming double-faced cards and Incubator tokens) can transform. A face-up permanent turning face down doesn't count as transforming, nor does a face-down permanent turning face up."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "The last ability of Corruption of Towashi will trigger if a permanent you control transforms in either direction, going from front face up to back face up or vice versa."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Once you've chosen to draw a card because of the last ability (which is likely as soon as possible, but there may be situations in which you don't want to draw immediately), that ability will stop triggering for the duration of that turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Deadly Derision
 {
     "name": "Deadly Derision",
@@ -2395,6 +2489,80 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Norn's Inquisitor
+{
+    "name": "Norn's Inquisitor",
+    "manaCost": "{1}{W}",
+    "typeLine": "Creature — Phyrexian Knight",
+    "oracleText": "When this creature enters, incubate 2. (Create an Incubator token with two +1/+1 counters on it and \"{2}: Transform this token.\" It transforms into a 0/0 Phyrexian artifact creature.)\nWhenever a permanent you control transforms into a Phyrexian, put a +1/+1 counter on it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Norn's Inquisitor:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "CreatePredefinedToken",
+                            "tokenType": "Incubator"
+                        },
+                        {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 2,
+                            "target": {
+                                "type": "PipelineTarget",
+                                "collectionName": "createdTokens"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Norn's Inquisitor:2",
+                "trigger": {
+                    "type": "TransformEvent",
+                    "filter": "permanent Phyrexian ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "TriggeringEntity"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "29",
+        "rarity": "UNCOMMON",
+        "artist": "Denis Zhbankov",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/3/d387b608-ba4e-49c8-bd81-37594290a352.jpg?1783917054",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Only transforming double-faced permanents (including transforming double-faced cards and Incubator tokens) can transform. A face-up permanent turning face down doesn't count as transforming, nor does a face-down permanent turning face up."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "The last ability of Norn's Inquisitor will trigger if a permanent you control transforms in either direction, going from front face up to back face up or vice versa, as long as it's a Phyrexian after doing so."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 

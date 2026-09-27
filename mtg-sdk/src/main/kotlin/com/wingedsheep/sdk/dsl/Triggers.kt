@@ -332,11 +332,14 @@ class ObjectTriggerSubject internal constructor(
         return spec(TurnFaceUpEvent)
     }
 
-    /** "transforms" — [intoBackFace] `true` to the back face, `false` to the front, `null` either way. */
-    fun transforms(intoBackFace: Boolean? = null): TriggerSpec {
-        unfiltered("transforms")
-        return spec(TransformEvent(intoBackFace = intoBackFace))
-    }
+    /**
+     * "transforms" — [intoBackFace] `true` to the back face, `false` to the front, `null` either way.
+     * Under [Triggers.a] / [Triggers.another] the subject's filter is matched against the permanent's
+     * post-transform characteristics: `Triggers.a(Permanent.youControl().withSubtype("Phyrexian"))
+     * .transforms()` is "whenever a permanent you control transforms into a Phyrexian".
+     */
+    fun transforms(intoBackFace: Boolean? = null): TriggerSpec =
+        spec(TransformEvent(intoBackFace = intoBackFace, filter = filter ?: GameObjectFilter.Any))
 
     /** "phases in" (CR 702.26). */
     fun phasesIn(): TriggerSpec = spec(PhasesInEvent(filter = filter))

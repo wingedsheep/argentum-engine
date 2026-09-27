@@ -760,12 +760,20 @@ class TriggerMatcher(
             }
             is EventPattern.TransformEvent -> {
                 if (event !is TransformedEvent) return false
-                // SELF binding must match the transforming permanent
+                // SELF binding must match the transforming permanent; OTHER must not
                 if (binding == TriggerBinding.SELF && event.entityId != sourceId) return false
+                if (binding == TriggerBinding.OTHER && event.entityId == sourceId) return false
                 // intoBackFace==null matches any transform; true/false filters by direction
-                val directionMatches = trigger.intoBackFace == null ||
-                    trigger.intoBackFace == event.intoBackFace
-                directionMatches
+                if (trigger.intoBackFace != null && trigger.intoBackFace != event.intoBackFace) return false
+                // "a permanent you control transforms into a Phyrexian" — the turn-over has already
+                // happened by detection time, so the projected state holds the new face.
+                trigger.filter == GameObjectFilter.Any || predicateEvaluator.matches(
+                    state,
+                    state.projectedState,
+                    event.entityId,
+                    trigger.filter,
+                    com.wingedsheep.engine.handlers.PredicateContext(controllerId = controllerId, sourceId = sourceId)
+                )
             }
             // These are handled separately in their own detect* methods
             is EventPattern.ControlChangeEvent -> false

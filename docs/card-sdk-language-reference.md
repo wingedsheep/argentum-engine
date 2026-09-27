@@ -5876,7 +5876,7 @@ minLoyaltyRemoved, exhaust, includeManaAbilities, excludeManaAbilities, withoutT
 `isTemptedByTheRing(bearerChosen?)`, `bends(types)`, `manifestsDread()`, `expends(n)`,
 `fullyUnlocksARoom()`, `sagaChapterResolves(finalOnly?)`.
 
-A verb whose event has no room for the subject's filter (`transforms`, `crews`, …) rejects a
+A verb whose event has no room for the subject's filter (`crews`, …) rejects a
 filtered subject rather than dropping the filter; SELF-only verbs (`isCast`, `becomesPlotted`, …)
 reject other subjects. `Triggers.or(a, b, …)` still joins same-binding triggers. The catalog below
 keeps the engine notes for each shape, written in these spellings.
@@ -6850,6 +6850,14 @@ Triggers.you.casts(GameObjectFilter.Noncreature or
   detected by `AttachmentTriggerDetector` like every other ATTACHED trigger — a transform flips the
   permanent in place, so the Aura/Equipment is still attached when the event fires. `intoBackFace` filters
   direction (`null` = either).
+- `Triggers.a(filter).transforms()` / `Triggers.another(filter).transforms()` — "**whenever a [filter]
+  transforms**" (`TransformEvent.filter`). The filter is matched against the permanent's characteristics
+  *after* it turned over, so "transforms into a Phyrexian" is a subtype on the filter and fires in either
+  direction as long as the new face matches; "you control" resolves against the trigger's controller.
+  `TriggeringEntity` is the transformed permanent. Norn's Inquisitor:
+  `Triggers.a(Permanent.youControl().withSubtype("Phyrexian")).transforms()` → counter on `TriggeringEntity`.
+  "**Enters transformed**" (CR 701.27g) is the enter trigger over `.transformed()` —
+  `Triggers.a(Permanent.youControl().transformed()).enters()`; Corruption of Towashi `Triggers.or`s the two.
 - `Triggers.self.isCycled()` — you cycle source.
 - `Triggers.anyPlayer.cycles()` — anyone cycles.
 - `Triggers.anyPlayer.tapsLandForMana()` / `Triggers.<player>.tapsLandForMana(land)` — "whenever
