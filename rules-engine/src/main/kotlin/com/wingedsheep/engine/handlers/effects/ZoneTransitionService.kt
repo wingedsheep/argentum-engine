@@ -23,6 +23,7 @@ import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.engine.state.components.identity.CommanderZoneChoiceAskedComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
+import com.wingedsheep.engine.handlers.effects.permanent.types.restoreDfcFrontFace
 import com.wingedsheep.engine.handlers.effects.permanent.types.stampDoubleFacedFrontFace
 import com.wingedsheep.engine.handlers.effects.permanent.types.withFaceIntrinsicComponents
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
@@ -794,21 +795,7 @@ class ZoneTransitionService(
         // 7b. Rule 712.8a: while a DFC is in a zone other than the battlefield or stack, it has
         // only the characteristics of its front face. Restore the saved front-face CardComponent.
         if (actualDestZone != Zone.BATTLEFIELD && actualDestZone != Zone.STACK) {
-            val entityContainer = newState.getEntity(entityId)
-            if (entityContainer != null) {
-                val dfc = entityContainer.get<DoubleFacedComponent>()
-                if (dfc != null && dfc.isBack && dfc.frontFaceCard != null) {
-                    // The front face's own "from anywhere" self-replacements come back with it —
-                    // and, just as importantly, the back face's stop applying. A disturbed creature
-                    // that is exiled by its own back-face clause reverts to a plain front face.
-                    val frontDef = cardRegistry.getCard(dfc.frontCardDefinitionId)
-                    newState = newState.updateEntity(entityId) { c ->
-                        val reverted = c.with(dfc.frontFaceCard)
-                            .with(dfc.copy(currentFace = DoubleFacedComponent.Face.FRONT, frontFaceCard = null))
-                        if (frontDef != null) withFaceIntrinsicComponents(reverted, frontDef) else reverted
-                    }
-                }
-            }
+            newState = restoreDfcFrontFace(newState, cardRegistry, entityId)
         }
 
         // 7b'. CR 710.4: a flipped permanent that leaves the battlefield retains no memory of its

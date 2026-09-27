@@ -917,7 +917,7 @@ internal class AffectsFilterResolver(
         // Double-faced-ness is likewise a static whole-card characteristic, not a projected type.
         CardPredicate.IsDoubleFaced -> card.isDoubleFaced
         CardPredicate.HasNoAbilities -> card.oracleText.isBlank()
-        CardPredicate.IsPermanent -> types.any { it in setOf("CREATURE", "LAND", "ARTIFACT", "ENCHANTMENT", "PLANESWALKER") }
+        CardPredicate.IsPermanent -> types.any { it in com.wingedsheep.sdk.core.CardType.PERMANENT_TYPE_NAMES }
         CardPredicate.IsNonland -> "LAND" !in types
         CardPredicate.IsNoncreature -> "CREATURE" !in types
         CardPredicate.IsNonenchantment -> "ENCHANTMENT" !in types

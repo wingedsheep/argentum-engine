@@ -790,6 +790,38 @@ data class CardDefinition(
         }
 
         /**
+         * Creates a transforming double-faced card whose **back face is an instant or sorcery** — the
+         * March of the Machine Sieges Invasion of Kylem // Valor's Reach Tag Team and Invasion of
+         * Alara // Awaken the Maelstrom.
+         *
+         * The only way to reach such a back face is to *cast* the card transformed (CR 712.11a); a
+         * Siege's defeat trigger does exactly that from exile. The back face then resolves like any
+         * other instant or sorcery and goes to its owner's graveyard, where it has only its front
+         * face's characteristics again (CR 712.8a). Every other route to the back face is closed by
+         * the rules, and the engine honours each: a transform instruction does nothing (CR 712.10),
+         * a card told to enter the battlefield transformed stays in its current zone (CR 712.14a with
+         * CR 400.4a), and a resolving front-face spell told to enter transformed goes to the
+         * graveyard instead (CR 712.13a).
+         *
+         * The back face carries no mana cost of its own — as a nonmodal DFC's back face, its mana
+         * value on the stack is the front face's (CR 712.8c) — and takes its colours from a colour
+         * indicator. Write its rules text as a `spell { }` block like any other instant or sorcery.
+         *
+         * @param frontFace The front face (must be a permanent).
+         * @param backFace The back face (must be an instant or sorcery).
+         */
+        fun doubleFacedWithSpellBack(
+            frontFace: CardDefinition,
+            backFace: CardDefinition
+        ): CardDefinition {
+            require(frontFace.isPermanent) { "Front face must be a permanent: ${frontFace.name}" }
+            require(backFace.typeLine.isInstant || backFace.typeLine.isSorcery) {
+                "Back face must be an instant or sorcery: ${backFace.name}"
+            }
+            return frontFace.copy(backFace = backFace)
+        }
+
+        /**
          * Creates a **modal** double-faced card whose back face is a permanent (CR 712.3), for the
          * Marvel Super Heroes hero cycle: Jennifer Walters // The Sensational She-Hulk, Bruce
          * Banner // The Incredible Hulk, and the rest.

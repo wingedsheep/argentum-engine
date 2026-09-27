@@ -1990,6 +1990,146 @@
     ]
 }
 
+// Invasion of Kylem
+{
+    "name": "Invasion of Kylem",
+    "manaCost": "{2}{R}{W}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, up to two target creatures each get +2/+0 and gain vigilance and haste until end of turn.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Kylem:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "Fixed",
+                                    "amount": 2
+                                },
+                                "toughnessModifier": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                },
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "VIGILANCE",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            },
+                            {
+                                "type": "GrantKeyword",
+                                "keyword": "HASTE",
+                                "target": {
+                                    "type": "ContextTarget",
+                                    "index": 0
+                                }
+                            }
+                        ]
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "count": 2,
+                    "optional": true,
+                    "filter": {
+                        "baseFilter": "creature"
+                    }
+                },
+                "descriptionOverride": "When this Siege enters, up to two target creatures each get +2/+0 and gain vigilance and haste until end of turn."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Valor's Reach Tag Team",
+        "manaCost": "",
+        "typeLine": "Sorcery",
+        "oracleText": "Create two 3/2 red and white Warrior creature tokens with \"Whenever this token and at least one other creature token attack, put a +1/+1 counter on this token.\"",
+        "script": {
+            "spellEffect": {
+                "type": "CreateToken",
+                "count": {
+                    "type": "Fixed",
+                    "amount": 2
+                },
+                "power": 3,
+                "toughness": 2,
+                "colors": [
+                    "RED",
+                    "WHITE"
+                ],
+                "creatureTypes": [
+                    "Warrior"
+                ],
+                "imageUri": "https://cards.scryfall.io/normal/front/a/2/a2661ea2-7ff6-4188-9d40-f18bb625ed52.jpg?1783916668",
+                "triggeredAbilities": [
+                    {
+                        "id": "Valor's Reach Tag Team:1",
+                        "trigger": "AttackEvent",
+                        "effect": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        },
+                        "triggerRestriction": {
+                            "type": "Exists",
+                            "player": "You",
+                            "zone": "Battlefield",
+                            "filter": "creature token attacking",
+                            "excludeSelf": true
+                        },
+                        "descriptionOverride": "Whenever this token and at least one other creature token attack, put a +1/+1 counter on this token."
+                    }
+                ]
+            }
+        },
+        "metadata": {
+            "collectorNumber": "235",
+            "rarity": "UNCOMMON",
+            "artist": "Johann Bodin",
+            "flavorText": "\"Let's give these creeps the old one-two!\"",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/7/a7ac3a39-b6a6-4647-bb6e-e82057704f8b.jpg?1783916950"
+        },
+        "colorIdentityOverride": [
+            "RED",
+            "WHITE"
+        ],
+        "colorIndicator": [
+            "RED",
+            "WHITE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "235",
+        "rarity": "UNCOMMON",
+        "artist": "Johann Bodin",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/7/a7ac3a39-b6a6-4647-bb6e-e82057704f8b.jpg?1783916950"
+    },
+    "startingDefense": 5,
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Invasion of Pyrulea
 {
     "name": "Invasion of Pyrulea",

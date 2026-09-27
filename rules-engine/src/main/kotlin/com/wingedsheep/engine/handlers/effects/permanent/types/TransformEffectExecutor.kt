@@ -143,6 +143,9 @@ internal fun flipDfcInPlace(
         DoubleFacedComponent.Face.BACK -> dfc.backCardDefinitionId
     }
     val nextCardDef = cardRegistry.getCard(nextDefinitionId) ?: return null
+    // CR 712.10 — transforming into an instant or sorcery face does nothing (a Siege whose back is
+    // a sorcery, Invasion of Kylem). That face is reachable only by casting the card transformed.
+    if (!nextCardDef.isPermanent) return null
 
     // A DFC on the battlefield always has a controller; fall back to owner, and treat a truly
     // owner-less object as un-flippable (null → the caller's no-op contract) rather than fabricate an id.
@@ -235,6 +238,37 @@ internal fun setDfcFace(
         updated = staticAbilityHandler.addReplacementEffectComponent(updated, nextCardDef)
         updated = withFaceIntrinsicComponents(updated, nextCardDef)
         updated
+    }
+}
+
+/**
+ * Turn [entityId] back to its front face if it is a double-faced card sitting on its back face —
+ * CR 712.8a: outside the battlefield and the stack a double-faced card has only its front face's
+ * characteristics. Restores the front-face [CardComponent] stashed on the [DoubleFacedComponent]
+ * when the card went to its back face; a no-op for anything else.
+ *
+ * The front face's own "from anywhere" self-replacements come back with it — and, just as
+ * importantly, the back face's stop applying. A disturbed creature that is exiled by its own
+ * back-face clause reverts to a plain front face.
+ *
+ * [ZoneTransitionService] calls this on every move to a zone other than the battlefield or stack.
+ * The spell resolver's own graveyard moves call it too: a card cast transformed whose back face is
+ * an instant or sorcery (Invasion of Kylem's Valor's Reach Tag Team) leaves the stack through them,
+ * not through the service.
+ */
+internal fun restoreDfcFrontFace(
+    state: GameState,
+    cardRegistry: CardRegistry,
+    entityId: EntityId,
+): GameState {
+    val dfc = state.getEntity(entityId)?.get<DoubleFacedComponent>() ?: return state
+    val frontFaceCard = dfc.frontFaceCard ?: return state
+    if (!dfc.isBack) return state
+    val frontDef = cardRegistry.getCard(dfc.frontCardDefinitionId)
+    return state.updateEntity(entityId) { c ->
+        val reverted = c.with(frontFaceCard)
+            .with(dfc.copy(currentFace = DoubleFacedComponent.Face.FRONT, frontFaceCard = null))
+        if (frontDef != null) withFaceIntrinsicComponents(reverted, frontDef) else reverted
     }
 }
 
@@ -473,6 +507,9 @@ internal fun prepareDfcFaceSwap(
     }
     val destinationDef = cardRegistry.getCard(destinationDefinitionId)
         ?: return null
+    // CR 712.14a with CR 400.4a — a card told to enter the battlefield with an instant or sorcery
+    // face up stays in its current zone; `null` is exactly the callers' "don't move it" answer.
+    if (!destinationDef.isPermanent) return null
 
     // `currentCard` is the front face here (Rule 712.8a — the entity reverted to it on leaving the
     // battlefield), so it supplies the CR 712.8e mana value a nonmodal back face keeps.

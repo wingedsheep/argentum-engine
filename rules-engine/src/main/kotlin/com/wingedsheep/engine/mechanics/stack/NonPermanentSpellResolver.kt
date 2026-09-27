@@ -8,6 +8,7 @@ import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.handlers.effects.ZoneTransitionService
 import com.wingedsheep.engine.handlers.effects.composite.PreTargetedEffectContext
 import com.wingedsheep.engine.handlers.effects.composite.processPreTargetedEffectQueue
+import com.wingedsheep.engine.handlers.effects.permanent.types.restoreDfcFrontFace
 import com.wingedsheep.engine.handlers.effects.permanent.types.returnDfcFace
 import com.wingedsheep.engine.mechanics.FlashbackGrants
 import com.wingedsheep.engine.mechanics.HarmonizeGrants
@@ -382,6 +383,9 @@ internal class NonPermanentSpellResolver(
         }
         newState = newState.removeMayPlayPermissionsForCard(spellId)
         newState = newState.addToZone(destZoneKey, spellId)
+        // CR 712.8a — a card cast transformed with an instant or sorcery back face leaves the stack
+        // here, so it turns back to its front face here.
+        newState = restoreDfcFrontFace(newState, cardRegistry, spellId)
         val destinationObject = newState.objectRef(spellId)
         newState = applyOwnDestinationRiders(
             state, newState, spellId, spellComponent, cardComponent, ownerId, resolvedScript, destinationZone,

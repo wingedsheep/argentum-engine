@@ -19,6 +19,12 @@ enum class CardType(val displayName: String) {
         get() = this in listOf(CREATURE, ENCHANTMENT, ARTIFACT, LAND, PLANESWALKER, BATTLE)
 
     companion object {
+        /**
+         * Names of the permanent card types (CR 110.4), for matchers that read types as the
+         * projected type-name strings rather than as [CardType] values.
+         */
+        val PERMANENT_TYPE_NAMES: Set<String> = entries.filter { it.isPermanent }.map { it.name }.toSet()
+
         fun fromString(value: String): CardType? =
             entries.find { it.displayName.equals(value, ignoreCase = true) }
     }

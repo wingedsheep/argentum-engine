@@ -226,6 +226,15 @@ The engine supplies the rest; **do not** write any of it onto the card:
   face's own abilities and nothing else. Two consequences worth knowing: a Siege that never had a defense
   counter (a permanent that became a copy of one) can't have its "last" removed, so CR 704.5v bins it and
   nothing is exiled or cast; and a Siege with no transforming back face is exiled and simply stays there.
+- **A Siege whose back face is an instant or sorcery** (Invasion of Kylem // Valor's Reach Tag Team,
+  Invasion of Alara // Awaken the Maelstrom) is built with
+  `CardDefinition.doubleFacedWithSpellBack(front, back)` instead of `doubleFacedPermanent` — write the back
+  as a `spell { }` with a color indicator and an empty mana cost. The defeat trigger casts it transformed
+  (CR 712.11a): the back face's own targets are chosen as it is cast, it resolves like any sorcery, and it
+  goes to its owner's graveyard front face up (CR 712.8a). Every other route to that back face is closed,
+  as the rules require: a transform instruction does nothing (CR 712.10), a card told to return to the
+  battlefield transformed stays where it is (CR 712.14a, CR 400.4a), and a front-face spell told to enter
+  transformed goes to the graveyard (CR 712.13a).
 
 Engine-side helpers all live on `com.wingedsheep.engine.mechanics.battle.Battles` (`protectorOf`,
 `defenseOf`, `eligibleProtectors`, `canBeAttackedBy`); `ProjectedState.isBattle(entityId)` is the type
