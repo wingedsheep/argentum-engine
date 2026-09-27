@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.predicates
 
+import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
@@ -83,7 +84,8 @@ object EnchantRestriction {
     ): Boolean {
         val colors: Set<String> = if (attachmentId in state.getBattlefield()) projected.getColors(attachmentId)
         else attachmentCard.colors.map { it.name }.toSet()
-        if (colors.isEmpty()) return false
+        // A colorless attachment meets protection from colorless (CR 105.2c, 702.16c/d).
+        if (colors.isEmpty()) return projected.hasKeyword(hostId, ColorProtection.PROTECTION_FROM_COLORLESS)
         val statics = cardRegistry.getCard(attachmentCard.cardDefinitionId)?.staticAbilities.orEmpty()
         if (statics.any { it is GrantProtectionFromControlledColors || it is GrantProtectionFromChosenColorToGroup }) {
             return false

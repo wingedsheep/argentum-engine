@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat.rules
 
+import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.mechanics.layers.SerializableModification
@@ -479,12 +480,9 @@ class ProtectionFromColorRule : BlockEvasionRule {
         val attackerName = ctx.state.getEntity(ctx.attackerId)?.get<CardComponent>()?.name ?: "Creature"
         val blockerName = ctx.state.getEntity(ctx.blockerId)?.get<CardComponent>()?.name ?: "Creature"
 
-        for (colorName in ctx.projected.getColors(ctx.blockerId)) {
-            if (ctx.projected.hasKeyword(ctx.attackerId, "PROTECTION_FROM_$colorName")) {
-                return "$attackerName has protection from ${colorName.lowercase()} and can't be blocked by $blockerName"
-            }
-        }
-        return null
+        val quality = ColorProtection.matchedQuality(ctx.projected, ctx.attackerId, ctx.projected.getColors(ctx.blockerId))
+            ?: return null
+        return "$attackerName has protection from ${ColorProtection.describe(quality)} and can't be blocked by $blockerName"
     }
 }
 

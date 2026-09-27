@@ -405,7 +405,7 @@ class TargetValidator(
         if (cantBeEnchantedError != null) return cantBeEnchantedError
 
         // Check protection from color and creature subtype (Rule 702.16)
-        return checkProtection(state, target, sourceColors, sourceSubtypes)
+        return checkProtection(state, target, sourceColors, sourceSubtypes, sourceKnown = sourceId != null && state.getEntity(sourceId) != null)
     }
 
     /**
@@ -671,9 +671,11 @@ class TargetValidator(
         state: GameState,
         target: ChosenTarget,
         sourceColors: Set<Color>,
-        sourceSubtypes: Set<String> = emptySet()
+        sourceSubtypes: Set<String> = emptySet(),
+        sourceKnown: Boolean = false
     ): String? {
-        if (sourceColors.isEmpty() && sourceSubtypes.isEmpty()) return null
+        // A known source with no colors is colorless (CR 105.2c) and still meets protection from colorless.
+        if (sourceColors.isEmpty() && sourceSubtypes.isEmpty() && !sourceKnown) return null
 
         val entityId = when (target) {
             is ChosenTarget.Permanent -> target.entityId
@@ -685,10 +687,10 @@ class TargetValidator(
         if (entityId !in state.getBattlefield()) return null
 
         val projected = state.projectedState
-        for (color in sourceColors) {
-            if (projected.hasKeyword(entityId, "PROTECTION_FROM_${color.name}")) {
+        if (sourceKnown || sourceColors.isNotEmpty()) {
+            ColorProtection.matchedQuality(projected, entityId, sourceColors.map { it.name })?.let { quality ->
                 val cardName = state.getEntity(entityId)?.get<CardComponent>()?.name ?: "target"
-                return "$cardName has protection from ${color.displayName.lowercase()}"
+                return "$cardName has protection from ${ColorProtection.describe(quality)}"
             }
         }
         for (subtype in sourceSubtypes) {

@@ -202,6 +202,69 @@
     ]
 }
 
+// Angelic Intervention
+{
+    "name": "Angelic Intervention",
+    "manaCost": "{1}{W}",
+    "typeLine": "Instant",
+    "oracleText": "Target creature or planeswalker you control gains protection from colorless or from the color of your choice until end of turn. If it's a creature, put a +1/+1 counter on it. (It can't be blocked, targeted, dealt damage, enchanted, or equipped by anything with that quality.)",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GrantProtectionFromColorlessOrChosenColor",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "filter": "creature"
+                        }
+                    },
+                    "then": {
+                        "type": "AddCounters",
+                        "counterType": "PLUS_ONE_PLUS_ONE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature|planeswalker ctrl:you"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "5",
+        "artist": "Awanqi (Angela Wang)",
+        "flavorText": "Elspeth shone like a sixth sun, inspiring hope in the Mirrans and terror in New Phyrexia.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/9/09fb5876-5b47-4a05-be57-7ad3890c8953.jpg?1783917071"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Artistic Refusal
 {
     "name": "Artistic Refusal",

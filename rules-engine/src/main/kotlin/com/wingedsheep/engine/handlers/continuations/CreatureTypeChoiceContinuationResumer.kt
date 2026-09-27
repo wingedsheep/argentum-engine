@@ -19,6 +19,7 @@ class CreatureTypeChoiceContinuationResumer(
         resumer(NoteCreatureTypePipelineContinuation::class, ::resumeNoteCreatureType),
         resumer(BecomeCreatureTypeContinuation::class, ::resumeBecomeCreatureType),
         resumer(ChooseCardTypeForProtectionContinuation::class, ::resumeChooseCardTypeForProtection),
+        resumer(ChooseColorOrColorlessForProtectionContinuation::class, ::resumeChooseColorOrColorlessForProtection),
         resumer(EachPlayerChoosesCreatureTypeContinuation::class, ::resumeEachPlayerChoosesCreatureType)
     )
 
@@ -68,6 +69,55 @@ class CreatureTypeChoiceContinuationResumer(
                 targetId = targetId,
                 targetName = targetName,
                 keyword = "Protection from ${chosenType.lowercase()}s",
+                sourceName = continuation.sourceName ?: "Unknown"
+            )
+        )
+
+        return checkForMore(newState, events)
+    }
+
+    /**
+     * Resume after the controller chose colorless or a color for
+     * [com.wingedsheep.sdk.scripting.effects.GrantProtectionFromColorlessOrChosenColorEffect]
+     * (Angelic Intervention). Grants the target a floating `PROTECTION_FROM_<QUALITY>` keyword.
+     */
+    fun resumeChooseColorOrColorlessForProtection(
+        state: GameState,
+        continuation: ChooseColorOrColorlessForProtectionContinuation,
+        response: DecisionResponse,
+        checkForMore: CheckForMore
+    ): ExecutionResult {
+        if (response !is OptionChosenResponse) {
+            return ExecutionResult.error(state, "Expected option choice response for protection quality selection")
+        }
+
+        val quality = continuation.qualities.getOrNull(response.optionIndex)
+            ?: return ExecutionResult.error(state, "Invalid protection quality index: ${response.optionIndex}")
+
+        val targetId = continuation.targetId
+        if (targetId !in state.getBattlefield()) {
+            return checkForMore(state, emptyList())
+        }
+
+        val targetName = state.getEntity(targetId)?.get<CardComponent>()?.name ?: "permanent"
+        val context = EffectContext(
+            sourceId = continuation.sourceId,
+            objectReferences = continuation.objectReferences,
+            controllerId = continuation.controllerId
+        )
+        val newState = state.addFloatingEffect(
+            layer = Layer.ABILITY,
+            modification = SerializableModification.GrantProtectionFromColor(quality),
+            affectedEntities = setOf(targetId),
+            duration = continuation.duration,
+            context = context
+        )
+
+        val events = listOf(
+            KeywordGrantedEvent(
+                targetId = targetId,
+                targetName = targetName,
+                keyword = "Protection from ${quality.lowercase()}",
                 sourceName = continuation.sourceName ?: "Unknown"
             )
         )

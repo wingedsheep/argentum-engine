@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.combat
 
+import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.PredicateContext
 import com.wingedsheep.engine.handlers.effects.TargetResolutionUtils
@@ -1697,9 +1698,8 @@ internal class CombatDamageManager(
                                 val tgtController = projected.getController(targetId)
                                 srcController != null && tgtController != null && srcController != tgtController
                             }
-                        val blockerProtected = !damageCantBePrevented && (attackerColors.any {
-                            projected.hasKeyword(targetId, "PROTECTION_FROM_$it")
-                        } || attackerSubtypes.any {
+                        val blockerProtected = !damageCantBePrevented && (
+                            ColorProtection.isProtected(projected, targetId, attackerColors) || attackerSubtypes.any {
                             projected.hasKeyword(targetId, "PROTECTION_FROM_SUBTYPE_${it.uppercase()}")
                         } || attackerTypes.any {
                             projected.hasKeyword(targetId, "PROTECTION_FROM_CARDTYPE_${it.uppercase()}")

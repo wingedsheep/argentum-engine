@@ -371,6 +371,7 @@ val engineSerializersModule = SerializersModule {
         subclass(ChooseReplacementContinuation::class)
         subclass(BecomeCreatureTypeContinuation::class)
         subclass(ChooseCardTypeForProtectionContinuation::class)
+        subclass(ChooseColorOrColorlessForProtectionContinuation::class)
         subclass(EachPlayerChoosesCreatureTypeContinuation::class)
         subclass(CastWithCreatureTypeContinuation::class)
         subclass(CollectEvidenceContinuation::class)

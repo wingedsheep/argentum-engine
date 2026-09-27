@@ -3702,6 +3702,17 @@ object Effects {
     ): Effect = GrantProtectionFromChosenCardTypeEffect(target, duration)
 
     /**
+     * Grant "protection from colorless or from the color of your choice" to a target (CR 702.16).
+     * Self-contained like [GrantProtectionFromChosenCardType]: the executor offers Colorless plus
+     * the five colors and grants a floating `PROTECTION_FROM_COLORLESS` / `PROTECTION_FROM_<COLOR>`
+     * keyword. Used by Angelic Intervention.
+     */
+    fun GrantProtectionFromColorlessOrChosenColor(
+        target: EffectTarget,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = com.wingedsheep.sdk.scripting.effects.GrantProtectionFromColorlessOrChosenColorEffect(target, duration)
+
+    /**
      * Grant a **player** protection from [scope] for [duration] (CR 702.16) — the
      * player-level counterpart of the creature protection statics. Defaults model
      * The One Ring: the controller gains protection from everything until their next turn.

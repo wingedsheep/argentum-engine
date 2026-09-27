@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.effects
 
+import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.engine.core.CountersAddedEvent
 import com.wingedsheep.engine.core.DamageDealtEvent
@@ -248,12 +249,17 @@ object DamageUtils {
             }
 
             val projected = state.projectedState
-            val sourceColors = projected.getColors(sourceId)
-            for (colorName in sourceColors) {
-                if (projected.hasKeyword(targetId, "PROTECTION_FROM_$colorName")) {
-                    // Damage is prevented — return success with no state change
-                    return EffectResult.success(state)
-                }
+            // A permanent's colors are projected; a spell's are its card's unless an effect
+            // recolored it on the stack. A source with no card can't be judged colorless.
+            val sourceCard = state.getEntity(sourceId)?.get<CardComponent>()
+            val sourceColors = projected.getColors(sourceId).ifEmpty {
+                if (sourceId in state.getBattlefield()) emptySet() else sourceCard?.colors?.map { it.name }?.toSet().orEmpty()
+            }
+            if ((sourceCard != null || sourceColors.isNotEmpty()) &&
+                ColorProtection.isProtected(projected, targetId, sourceColors)
+            ) {
+                // Damage is prevented — return success with no state change
+                return EffectResult.success(state)
             }
             val sourceSubtypes = projected.getSubtypes(sourceId)
             for (subtype in sourceSubtypes) {

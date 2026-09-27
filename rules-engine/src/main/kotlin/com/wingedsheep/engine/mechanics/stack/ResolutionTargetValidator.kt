@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.mechanics.stack
 
+import com.wingedsheep.engine.mechanics.targeting.ColorProtection
 import com.wingedsheep.engine.core.*
 import com.wingedsheep.engine.handlers.EffectContext
 import com.wingedsheep.engine.handlers.PredicateContext
@@ -272,10 +273,11 @@ internal class ResolutionTargetValidator(
         sourceSubtypes: Set<String>
     ): Boolean {
         // Check protection from source colors/subtypes (Rule 702.16)
-        for (color in sourceColors) {
-            if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_${color.name}")) {
-                return false
-            }
+        val sourceKnown = sourceId != null && state.getEntity(sourceId) != null
+        if ((sourceKnown || sourceColors.isNotEmpty()) &&
+            ColorProtection.isProtected(projected, target.entityId, sourceColors.map { it.name })
+        ) {
+            return false
         }
         for (subtype in sourceSubtypes) {
             if (projected.hasKeyword(target.entityId, "PROTECTION_FROM_SUBTYPE_${subtype.uppercase()}")) {
