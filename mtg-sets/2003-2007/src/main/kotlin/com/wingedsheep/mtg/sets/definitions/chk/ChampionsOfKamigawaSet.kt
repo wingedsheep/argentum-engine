@@ -19,7 +19,6 @@ object ChampionsOfKamigawaSet : MtgSet {
     override val displayName = "Champions of Kamigawa"
     override val releaseDate = "2004-10-01"
     override val block = "Kamigawa"
-    override val sealedSupported = false
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)

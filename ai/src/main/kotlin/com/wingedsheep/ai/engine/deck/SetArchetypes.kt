@@ -133,6 +133,29 @@ object SetArchetypes {
                     creatureTypes = listOf("Myr")),
             )
         ),
+        "CHK" to SetSynergies(
+            setCode = "CHK",
+            setName = "Champions of Kamigawa",
+            archetypes = listOf(
+                Archetype("Bushido Samurai", listOf(Color.RED, Color.WHITE),
+                    "Bushido Samurai and Kitsune clerics win combat on the attack, growing whenever they block or become blocked. Cheap removal like Yamabushi's Flame clears the way while Konda's Hatamoto and Samurai of the Pale Curtain hold the line.",
+                    creatureTypes = listOf("Samurai")),
+                Archetype("Soratami Skies", listOf(Color.WHITE, Color.BLUE),
+                    "Moonfolk fliers return your own lands to hand to fuel their abilities, Mothrider Samurai joins them in the air and Kami of Ancient Law holds the ground. Tap down blockers, hold up Hisoka's Defiance and peck the opponent out of the sky.",
+                    creatureTypes = listOf("Moonfolk")),
+                Archetype("Arcane Splice", listOf(Color.BLUE, Color.RED),
+                    "Splice Glacial Ray and other Arcane spells onto each other so every instant does double duty, and let spiritcraft creatures trigger off each one. Burn and bounce keep the board clear until the card advantage buries the opponent."),
+                Archetype("Rats and Ogres", listOf(Color.BLACK, Color.RED),
+                    "Fearsome Nezumi Rats and Akki Goblins attack early and trade freely, while hard-hitting Ogres and removal like Rend Flesh and Glacial Ray clear the way. A fast, aggressive deck that punishes slow starts.",
+                    creatureTypes = listOf("Rat", "Ogre")),
+                Archetype("Soulshift Spirits", listOf(Color.BLACK, Color.GREEN),
+                    "Every Spirit that dies with soulshift returns a smaller Spirit from your graveyard to hand, so trades always come out ahead. Grind the opponent down with removal and a steady stream of recycled Kami.",
+                    creatureTypes = listOf("Spirit")),
+                Archetype("Snake Ramp", listOf(Color.GREEN),
+                    "Orochi Snakes and Kodama's Reach accelerate into huge Spirits, Hondens and Myojin. Pair with any color for removal while the big green threats take over the late game.",
+                    creatureTypes = listOf("Snake")),
+            )
+        ),
         "RAV" to SetSynergies(
             setCode = "RAV",
             setName = "Ravnica: City of Guilds",

@@ -245,6 +245,53 @@ const SET_SYNERGIES: Record<string, SetSynergies> = {
       },
     ],
   },
+  CHK: {
+    setCode: 'CHK',
+    setName: 'Champions of Kamigawa',
+    archetypes: [
+      {
+        name: 'Bushido Samurai',
+        colors: ['R', 'W'],
+        creatureTypes: ['Samurai'],
+        keyCard: 'Takeno, Samurai General',
+        description: "Bushido Samurai and Kitsune clerics win combat on the attack, growing whenever they block or become blocked. Cheap removal like Yamabushi's Flame clears the way while Konda's Hatamoto and Samurai of the Pale Curtain hold the line.",
+      },
+      {
+        name: 'Soratami Skies',
+        colors: ['W', 'U'],
+        creatureTypes: ['Moonfolk'],
+        keyCard: 'Soratami Mirror-Guard',
+        description: "Moonfolk fliers return your own lands to hand to fuel their abilities, Mothrider Samurai joins them in the air and Kami of Ancient Law holds the ground. Tap down blockers, hold up Hisoka's Defiance and peck the opponent out of the sky.",
+      },
+      {
+        name: 'Arcane Splice',
+        colors: ['U', 'R'],
+        keyCard: 'Glacial Ray',
+        description: 'Splice Glacial Ray and other Arcane spells onto each other so every instant does double duty, and let spiritcraft creatures trigger off each one. Burn and bounce keep the board clear until the card advantage buries the opponent.',
+      },
+      {
+        name: 'Rats and Ogres',
+        colors: ['B', 'R'],
+        creatureTypes: ['Rat', 'Ogre'],
+        keyCard: 'Nezumi Cutthroat',
+        description: 'Fearsome Nezumi Rats and Akki Goblins attack early and trade freely, while hard-hitting Ogres and removal like Rend Flesh and Glacial Ray clear the way. A fast, aggressive deck that punishes slow starts.',
+      },
+      {
+        name: 'Soulshift Spirits',
+        colors: ['B', 'G'],
+        creatureTypes: ['Spirit'],
+        keyCard: 'Thousand-legged Kami',
+        description: 'Every Spirit that dies with soulshift returns a smaller Spirit from your graveyard to hand, so trades always come out ahead. Grind the opponent down with removal and a steady stream of recycled Kami.',
+      },
+      {
+        name: 'Snake Ramp',
+        colors: ['G'],
+        creatureTypes: ['Snake'],
+        keyCard: 'Sakura-Tribe Elder',
+        description: "Orochi Snakes and Kodama's Reach accelerate into huge Spirits, Hondens and Myojin. Pair with any color for removal while the big green threats take over the late game.",
+      },
+    ],
+  },
   RAV: {
     setCode: 'RAV',
     setName: 'Ravnica: City of Guilds',
