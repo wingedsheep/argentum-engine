@@ -119,6 +119,19 @@ data class ActiveDamageDoubler(
 )
 
 /**
+ * What [DamageUtils.applyDamagePreventionShields] did to one damage instance.
+ *
+ * @property lifeGains life owed to each life-gaining shield's controller for the damage those
+ *   shields prevented ("you gain life equal to the damage prevented this way", Candles' Glow). The
+ *   caller grants it, so a combat damage step can credit a whole simultaneous event as one gain.
+ */
+data class PreventionShieldResult(
+    val state: GameState,
+    val remainingDamage: Int,
+    val lifeGains: Map<EntityId, Int> = emptyMap(),
+)
+
+/**
  * Utility functions for dealing damage, applying damage prevention/amplification/redirection,
  * tracking damage for triggers, and checking life gain prevention.
  */
@@ -341,6 +354,7 @@ object DamageUtils {
 
         // Events from a reflect shield (Eye for an Eye) that fired but let the damage proceed.
         var reflectEvents: List<EngineGameEvent> = emptyList()
+        val preventionLifeEvents = mutableListOf<EngineGameEvent>()
         if (!cantBePrevented) {
             // Check for deflection/reflection shields (Deflecting Palm, Eye for an Eye).
             if (sourceId != null) {
@@ -368,15 +382,23 @@ object DamageUtils {
                 }
             }
 
-            val (shieldState, reducedAmount) = applyDamagePreventionShields(newState, targetId, effectiveAmount, sourceId = sourceId, predicateEvaluator = zones.predicateEvaluator)
-            newState = shieldState
-            effectiveAmount = reducedAmount
+            val shieldResult = applyDamagePreventionShields(newState, targetId, effectiveAmount, sourceId = sourceId, predicateEvaluator = zones.predicateEvaluator)
+            newState = shieldResult.state
+            effectiveAmount = shieldResult.remainingDamage
+            // "You gain life equal to the damage prevented this way" (Candles' Glow): this instance
+            // is its own damage event, so each shield controller gains once for it.
+            for ((controllerId, gained) in shieldResult.lifeGains) {
+                val (gainedState, gainEvent) = gainLife(newState, controllerId, gained, predicateEvaluator = zones.predicateEvaluator)
+                newState = gainedState
+                gainEvent?.let { preventionLifeEvents.add(it) }
+            }
         }
-        if (effectiveAmount <= 0) return EffectResult.success(newState, shieldCounterEvents + reflectEvents)
+        if (effectiveAmount <= 0) return EffectResult.success(newState, shieldCounterEvents + reflectEvents + preventionLifeEvents)
 
         val events = mutableListOf<EngineGameEvent>()
         events.addAll(shieldCounterEvents)
         events.addAll(reflectEvents)
+        events.addAll(preventionLifeEvents)
         // Excess damage (CR 120.4a) is computed below for the non-wither creature branch (above
         // lethal), the planeswalker branch (above its loyalty) and the battle branch (above its
         // defense) — the wither path (damage dealt as -1/-1 counters) is not yet modelled and
@@ -1385,7 +1407,8 @@ object DamageUtils {
      * @param state The current game state
      * @param targetId The entity receiving damage
      * @param amount The incoming damage amount
-     * @return Pair of (updated state with consumed shields, remaining damage after prevention)
+     * @return the state with consumed shields, the damage left after prevention, and the life each
+     *   life-gaining shield's controller is owed for what it prevented (see [PreventionShieldResult])
      */
     fun applyDamagePreventionShields(
         state: GameState,
@@ -1394,11 +1417,13 @@ object DamageUtils {
         isCombatDamage: Boolean = false,
         sourceId: EntityId? = null,
         predicateEvaluator: PredicateEvaluator
-    ): Pair<GameState, Int> {
+    ): PreventionShieldResult {
         // CR 615.12 — when damage can't be prevented, prevention shields aren't reduced and prevent
         // nothing. When any battlefield "damage can't be prevented" (Spider-Punk) or the "this turn"
         // one-shot (Fear, Fire, Foes!) is active, no shield applies and the damage passes through in full.
-        if (isDamagePreventionDisabled(state, targetId, sourceId, predicateEvaluator = predicateEvaluator)) return state to amount
+        if (isDamagePreventionDisabled(state, targetId, sourceId, predicateEvaluator = predicateEvaluator)) {
+            return PreventionShieldResult(state, amount)
+        }
 
         var remainingDamage = amount
         val updatedEffects = state.floatingEffects.toMutableList()
@@ -1410,12 +1435,13 @@ object DamageUtils {
                     (!mod.combatOnly || isCombatDamage) &&
                     targetId in it.effect.affectedEntities
             }) {
-            return state to 0
+            return PreventionShieldResult(state, 0)
         }
 
         if (isPreventedByRecipientGroupShield(state, targetId, sourceId, isCombatDamage, predicateEvaluator = predicateEvaluator)) {
-            return state to 0
+            return PreventionShieldResult(state, 0)
         }
+        val lifeGains = linkedMapOf<EntityId, Int>()
 
         for (i in updatedEffects.indices) {
             if (remainingDamage <= 0) break
@@ -1426,14 +1452,15 @@ object DamageUtils {
                 if (mod.onlyFromSource != null && mod.onlyFromSource != sourceId) continue
                 val prevented = minOf(mod.remainingAmount, remainingDamage)
                 remainingDamage -= prevented
+                if (mod.controllerGainsLife && prevented > 0) {
+                    lifeGains.merge(effect.controllerId, prevented, Int::plus)
+                }
                 val newRemaining = mod.remainingAmount - prevented
                 if (newRemaining <= 0) {
                     toRemove.add(i)
                 } else {
                     updatedEffects[i] = effect.copy(
-                        effect = effect.effect.copy(
-                            modification = SerializableModification.PreventNextDamage(newRemaining, mod.onlyFromSource)
-                        )
+                        effect = effect.effect.copy(modification = mod.copy(remainingAmount = newRemaining))
                     )
                 }
             }
@@ -1497,7 +1524,9 @@ object DamageUtils {
         var newState = state.copy(floatingEffects = updatedEffects)
 
         // Apply static damage reduction from permanents with ReplacementEffectSourceComponent
-        return applyStaticDamageReduction(newState, targetId, remainingDamage, isCombatDamage, sourceId, predicateEvaluator = predicateEvaluator)
+        val (reducedState, reducedDamage) =
+            applyStaticDamageReduction(newState, targetId, remainingDamage, isCombatDamage, sourceId, predicateEvaluator = predicateEvaluator)
+        return PreventionShieldResult(reducedState, reducedDamage, lifeGains)
     }
 
     /**

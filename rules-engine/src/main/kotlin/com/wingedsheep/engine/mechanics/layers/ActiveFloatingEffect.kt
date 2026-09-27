@@ -319,12 +319,18 @@ sealed interface SerializableModification {
      * Damage prevention shield: prevent the next X damage that would be dealt to target creature/player.
      * Used by Battlefield Medic and similar effects.
      * The shield is consumed as damage is dealt and removed when fully used or at end of turn.
+     *
+     * When [controllerGainsLife] is set, the shield's controller gains life equal to the damage it
+     * actually prevents ("you gain life equal to the damage prevented this way", Candles' Glow) —
+     * once per noncombat damage event, and once per combat damage step for everything the
+     * controller's shields prevented in it.
      */
     @Serializable
     data class PreventNextDamage(
         val remainingAmount: Int,
         /** If set, only prevents damage from this specific source (used for CR 615.7 prevention distribution) */
-        val onlyFromSource: EntityId? = null
+        val onlyFromSource: EntityId? = null,
+        val controllerGainsLife: Boolean = false
     ) : SerializableModification
 
     /**

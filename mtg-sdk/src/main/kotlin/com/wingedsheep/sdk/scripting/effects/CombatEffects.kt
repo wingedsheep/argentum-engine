@@ -174,9 +174,11 @@ data class PreventDamageEffect(
      * the shield *actually* prevented, never a precomputed total, so damage some other effect
      * prevented or replaced first gains nothing.
      *
-     * Currently honoured by the source-side group shield — [PreventionSourceFilter.Matching] with
+     * Honoured by the source-side group shield — [PreventionSourceFilter.Matching] with
      * [PreventionDirection.FromTarget] and no [recipientGroup] ("prevent all damage that would be
-     * dealt by creatures this turn"). The Samite Ministration colour-scoped cousin is
+     * dealt by creatures this turn") — and by the [amount] shield on a single [target] with
+     * [PreventionSourceFilter.AnySource] ("prevent the next 3 damage that would be dealt to any
+     * target this turn", Candles' Glow). The Samite Ministration colour-scoped cousin is
      * [gainLifeFromColors].
      */
     val gainLifeFromPrevented: Boolean = false

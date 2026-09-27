@@ -230,13 +230,19 @@ class CombatContinuationResumer(
 
         val timestamp = originalShield?.timestamp ?: state.timestamp
         var workingState = state
+        val gainsLife = (originalShield?.effect?.modification as? SerializableModification.PreventNextDamage)
+            ?.controllerGainsLife ?: false
         for ((sourceId, preventionAmount) in response.distribution) {
             if (preventionAmount <= 0) continue
             val (effectId, advanced) = workingState.newEntity()
             workingState = advanced
             val splitEffectData = FloatingEffectData(
                 layer = Layer.ABILITY,
-                modification = SerializableModification.PreventNextDamage(preventionAmount, onlyFromSource = sourceId),
+                modification = SerializableModification.PreventNextDamage(
+                    preventionAmount,
+                    onlyFromSource = sourceId,
+                    controllerGainsLife = gainsLife
+                ),
                 affectedEntities = setOf(continuation.recipientId)
             )
             updatedEffects.add(

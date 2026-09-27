@@ -302,7 +302,8 @@ class PreventDamageExecutor(
                 modification = SerializableModification.PreventAllDamageDealtBy
             }
 
-            // Amount-based prevention (prevent next N damage to target)
+            // Amount-based prevention (prevent next N damage to target), optionally gaining the
+            // controller life for what it prevents (Candles' Glow).
             effect.amount != null -> {
                 val targetId = context.resolveTarget(effect.target)
                     ?: return EffectResult.error(state, "Could not resolve target for PreventDamageEffect")
@@ -310,7 +311,10 @@ class PreventDamageExecutor(
                 val amount = amountEvaluator.evaluate(state, effectAmount, context)
                 if (amount <= 0) return EffectResult.success(state)
                 affectedEntities = setOf(targetId)
-                modification = SerializableModification.PreventNextDamage(amount)
+                modification = SerializableModification.PreventNextDamage(
+                    amount,
+                    controllerGainsLife = effect.gainLifeFromPrevented
+                )
             }
 
             // Prevent all damage TO target.
