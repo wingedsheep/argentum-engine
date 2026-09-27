@@ -196,10 +196,8 @@ object PlayerLeavesGameProcessor {
             container.get<BlockingComponent>()?.let { blocking ->
                 val kept = blocking.blockedAttackerIds.filter { it !in removed }
                 if (kept.size != blocking.blockedAttackerIds.size) {
-                    s = s.updateEntity(id) { c ->
-                        if (kept.isEmpty()) c.without<BlockingComponent>()
-                        else c.with(BlockingComponent(kept))
-                    }
+                    // Still a blocking creature with nothing left to block (CR 509.1g).
+                    s = s.updateEntity(id) { c -> c.with(BlockingComponent(kept)) }
                 }
             }
 

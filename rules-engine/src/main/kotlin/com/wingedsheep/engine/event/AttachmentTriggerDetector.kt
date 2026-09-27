@@ -46,7 +46,7 @@ class AttachmentTriggerDetector(
             val live = index.aurasByTarget[entityId].orEmpty()
             // When the attached permanent left the battlefield, the live links may already be torn
             // down — see [lastKnownAttachments].
-            val entries = live + lastKnownAttachments(state, event, index, live)
+            val entries = live + lastKnownAttachments(state, event, entityId, index, live)
             for (entry in entries) {
                 for (ability in entry.abilities) {
                     if (ability.binding != TriggerBinding.ATTACHED) continue
@@ -89,17 +89,32 @@ class AttachmentTriggerDetector(
      * handled from its own [ZoneChangeEvent] by
      * [DeathAndLeaveTriggerDetector.detectDeadAuraAttachmentTriggers].
      *
+     * The same SBA pass strands a damage trigger: an equipped creature that dies to the very combat
+     * damage it dealt (or was dealt) is unattached before detection, yet the ability triggered when
+     * the damage happened (CR 603.2). So a [DamageDealtEvent] carries the attachments its source
+     * and its recipient had at that instant — [DamageDealtEvent.sourceAttachmentIds] for [hostId]
+     * as the source, the recipient's [DamageDealtEvent.targetLastKnown] for [hostId] as the
+     * recipient.
+     *
      * [live] entries are excluded so an attachment the index still knows about is never counted
      * twice.
      */
     private fun lastKnownAttachments(
         state: GameState,
         event: EngineGameEvent,
+        hostId: com.wingedsheep.sdk.model.EntityId,
         index: TriggerIndex,
         live: List<TriggerIndex.IndexedEntity>,
     ): List<TriggerIndex.IndexedEntity> {
-        if (event !is ZoneChangeEvent) return emptyList()
-        val attachmentIds = event.lastKnown?.attachmentIds.orEmpty()
+        val attachmentIds = when (event) {
+            is ZoneChangeEvent -> event.lastKnown?.attachmentIds.orEmpty()
+            is DamageDealtEvent -> when (hostId) {
+                event.sourceId -> event.sourceAttachmentIds
+                event.targetId -> event.targetLastKnown?.attachmentIds.orEmpty()
+                else -> emptyList()
+            }
+            else -> emptyList()
+        }
         if (attachmentIds.isEmpty()) return emptyList()
 
         val alreadyLive = live.mapTo(mutableSetOf()) { it.entityId }

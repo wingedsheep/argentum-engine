@@ -173,14 +173,18 @@ class PredicateEvaluator(
      * P/T comparisons, "has a non-mana activated ability", …) reports
      * *unanswerable* rather than guessing — see [matchesSnapshotPredicate] — and an unanswerable
      * predicate makes the whole filter fail to match, which is the same answer the caller got before
-     * any snapshot existed. State predicates (tapped, attacking, …) describe a battlefield presence
-     * the object no longer has, so a filter carrying one never matches a snapshot.
+     * any snapshot existed. Of the state predicates only the combat status the snapshot freezes —
+     * attacking, blocking — is answered (see [matchesSnapshotState]): a blocker killed by the damage
+     * is still "a blocking creature" to the trigger that damage fired (CR 603.10). Every other state
+     * predicate (tapped, …) describes a battlefield presence the object no longer has and is
+     * unanswerable.
      *
      * **Caller invariant: pass a snapshot captured with the state-aware
      * [com.wingedsheep.engine.state.components.stack.captureEntitySnapshots] overload** (the
      * `(ids, state)` one), and populate [EntitySnapshot.typeLine] and [EntitySnapshot.keywords] on
      * top of it. The unanswerable-reports-null discipline above cannot cover
-     * [EntitySnapshot.wasToken] or [EntitySnapshot.keywords]: both default to a *legitimate* value
+     * [EntitySnapshot.wasToken], [EntitySnapshot.keywords], [EntitySnapshot.wasAttacking] or
+     * [EntitySnapshot.wasBlocking]: each defaults to a *legitimate* value
      * (`false` / empty) with no "was never captured" state, so a snapshot taken by the projection-
      * only overload answers `IsToken` false, `IsNontoken` true and every `HasKeyword` false with
      * full confidence rather than reporting unknown. There is one caller today
@@ -197,7 +201,7 @@ class PredicateEvaluator(
         filter.controllerPredicate?.let { controllerPred ->
             if (!matchesSnapshotController(state, snapshot, controllerPred, context)) return false
         }
-        if (filter.statePredicates.isNotEmpty()) return false
+        if (!filter.statePredicates.all { matchesSnapshotState(snapshot, it) == true }) return false
         if (!filter.cardPredicates.all { matchesSnapshotPredicate(snapshot, it) == true }) return false
         if (filter.anyOf.isNotEmpty()) {
             return filter.anyOf.any { matchesSnapshot(state, snapshot, it, context) }
@@ -266,6 +270,28 @@ class PredicateEvaluator(
                 ?: resolveReferencedPlayerFromState(state, projected, reference, context)) == playerId
         }
     }
+
+    /**
+     * Tri-state evaluation of one [StatePredicate] against frozen last-known information — the
+     * state-predicate sibling of [matchesSnapshotPredicate], with the same null-means-unknown
+     * discipline. Only the combat status [EntitySnapshot] freezes is answered: attacking
+     * ([EntitySnapshot.wasAttacking]) and blocking ([EntitySnapshot.wasBlocking]).
+     */
+    private fun matchesSnapshotState(snapshot: EntitySnapshot, predicate: StatePredicate): Boolean? =
+        when (predicate) {
+            StatePredicate.IsAttacking -> snapshot.wasAttacking
+            StatePredicate.IsBlocking -> snapshot.wasBlocking
+            is StatePredicate.Not -> matchesSnapshotState(snapshot, predicate.predicate)?.not()
+            is StatePredicate.And -> {
+                val results = predicate.predicates.map { matchesSnapshotState(snapshot, it) }
+                if (false in results) false else if (null in results) null else true
+            }
+            is StatePredicate.Or -> {
+                val results = predicate.predicates.map { matchesSnapshotState(snapshot, it) }
+                if (true in results) true else if (null in results) null else false
+            }
+            else -> null
+        }
 
     /**
      * Tri-state evaluation of one [CardPredicate] against frozen last-known information:
@@ -1629,7 +1655,11 @@ class PredicateEvaluator(
                 val defenderId = container.get<AttackingComponent>()?.defenderId
                 enchanted != null && defenderId == enchanted
             }
-            StatePredicate.IsBlocking -> container.has<BlockingComponent>()
+            // Same last-known fallback as IsAttacking: a blocker the damage killed has left the
+            // battlefield (and combat) by the time a trigger resolves (CR 608.2h).
+            StatePredicate.IsBlocking ->
+                container.has<BlockingComponent>() ||
+                    container.get<LastKnownPermanentComponent>()?.snapshot?.wasBlocking == true
             StatePredicate.IsBlocked -> CombatStatusQueries.isBlockedAttacker(state, entityId, container)
             StatePredicate.IsUnblocked ->
                 CombatStatusQueries.isUnblockedAttacker(state, entityId, container, projected::getController)

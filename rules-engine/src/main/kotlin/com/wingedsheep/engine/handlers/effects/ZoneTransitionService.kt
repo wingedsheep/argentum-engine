@@ -244,6 +244,7 @@ class ZoneTransitionService(
         var lastKnownAttachedTo = options.lastKnownAttachedTo
         var lastKnownBlockingOrBlockedByIds: List<EntityId> = emptyList()
         var lastKnownWasAttacking = false
+        var lastKnownWasBlocking = false
         var lastKnownAttackedDefenderId: EntityId? = null
         var lastKnownWasToken = false
         var lastKnownCreatedBy: EntityId? = null
@@ -287,6 +288,7 @@ class ZoneTransitionService(
             // attacking" (Garna, Bloodfist of Keld) resolves after the death, so it can only read
             // last known information (CR 608.2h).
             lastKnownWasAttacking = container.has<AttackingComponent>()
+            lastKnownWasBlocking = container.has<BlockingComponent>()
             // …and *what* it was attacking. CR 802.2a keeps naming a defending player after the
             // creature "is no longer attacking" — the player it *was* attacking before it left
             // combat — so an ability that outlives its own attacking source still has an answer.
@@ -445,6 +447,7 @@ class ZoneTransitionService(
                 wasEnchanted = lastKnownWasEnchanted,
                 blockingOrBlockedByIds = lastKnownBlockingOrBlockedByIds,
                 wasAttacking = lastKnownWasAttacking,
+                wasBlocking = lastKnownWasBlocking,
                 attackedDefenderId = lastKnownAttackedDefenderId,
                 wasToken = lastKnownWasToken,
                 createdBy = lastKnownCreatedBy,

@@ -2,7 +2,10 @@ package com.wingedsheep.engine.state.components.stack
 
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
+import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
+import com.wingedsheep.engine.state.components.combat.AttackingComponent
+import com.wingedsheep.engine.state.components.combat.BlockingComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageSourceLki
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.identity.TokenComponent
@@ -150,6 +153,15 @@ data class EntitySnapshot(
      */
     val wasAttacking: Boolean = false,
     /**
+     * True if this permanent was a blocking creature (CR 509.1g) at capture time — the blocking
+     * half of [wasAttacking]. Frozen because damage that kills a blocker moves it (and tears down
+     * its `BlockingComponent`) before triggers are detected, so "whenever equipped creature deals
+     * damage to a blocking creature" (Kusari-Gama) can only recognise that blocker from last-known
+     * information (CR 603.10). Backs the last-known leg of
+     * [com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsBlocking].
+     */
+    val wasBlocking: Boolean = false,
+    /**
      * What this permanent was attacking when it left the battlefield — the player, planeswalker or
      * battle its `AttackingComponent` named. The id half of [wasAttacking], and CR 802.2a is why it
      * has to be frozen: when the creature "is no longer attacking", the defending player its
@@ -273,15 +285,30 @@ fun captureEntitySnapshots(
  * One permanent's last-known information, complete enough for
  * [com.wingedsheep.engine.handlers.PredicateEvaluator.matchesSnapshot]: the state-aware
  * [captureEntitySnapshots] (token-ness, name) plus the projected type line, keywords and
- * card-definition id that call's invariant asks for. Take it *before* the event that may remove the
+ * card-definition id that call's invariant asks for, and the combat status (attacking / blocking)
+ * that [com.wingedsheep.engine.handlers.PredicateEvaluator.matchesSnapshot] answers state
+ * predicates from. Take it *before* the event that may remove the
  * permanent — a self-sacrifice cost, the damage that kills it — while the projection still has it.
  */
-fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot =
-    captureEntitySnapshots(listOf(entityId), state).single().copy(
+fun captureLastKnown(state: GameState, entityId: EntityId): EntitySnapshot {
+    val container = state.getEntity(entityId)
+    return captureEntitySnapshots(listOf(entityId), state).single().copy(
         typeLine = projectedTypeLine(state, entityId),
         keywords = state.projectedState.getKeywords(entityId),
-        cardDefinitionId = state.getEntity(entityId)?.get<CardComponent>()?.cardDefinitionId,
+        cardDefinitionId = container?.get<CardComponent>()?.cardDefinitionId,
+        wasAttacking = container?.has<AttackingComponent>() ?: false,
+        wasBlocking = container?.has<BlockingComponent>() ?: false,
+        attachmentIds = attachmentIdsOf(state, entityId),
     )
+}
+
+/**
+ * The Auras/Equipment attached to [entityId] right now, in attachment order — the value frozen into
+ * [EntitySnapshot.attachmentIds] and [com.wingedsheep.engine.core.DamageDealtEvent.sourceAttachmentIds]
+ * so an attachment trigger still finds its host after a state-based action tears the link down.
+ */
+fun attachmentIdsOf(state: GameState, entityId: EntityId?): List<EntityId> =
+    entityId?.let { state.getEntity(it)?.get<AttachmentsComponent>()?.attachedIds }.orEmpty()
 
 /**
  * The permanent's **projected** type line: its printed types overlaid with whatever continuous

@@ -282,12 +282,10 @@ object ZoneMovementUtils {
                         var updated = blockerContainer
                         val updatedBlocking = updated.get<BlockingComponent>()
                         if (updatedBlocking != null) {
-                            val updatedIds = updatedBlocking.blockedAttackerIds - leavingEntityId
-                            updated = if (updatedIds.isEmpty()) {
-                                updated.without<BlockingComponent>()
-                            } else {
-                                updated.with(BlockingComponent(updatedIds))
-                            }
+                            // The blocker stays a blocking creature even once every attacker it
+                            // blocked is gone: only the blocker's *own* removal from combat ends
+                            // that (CR 509.1g). It just assigns no combat damage (CR 510.1d).
+                            updated = updated.with(BlockingComponent(updatedBlocking.blockedAttackerIds - leavingEntityId))
                         }
                         val attackerOrder = updated.get<AttackerOrderComponent>()
                         if (attackerOrder != null) {
@@ -1109,12 +1107,9 @@ object ZoneMovementUtils {
             for ((otherId, components) in newState.entities) {
                 val blockingComponent = components.get<BlockingComponent>() ?: continue
                 if (entityId in blockingComponent.blockedAttackerIds) {
+                    // The blocker stays a blocking creature, blocking nothing (CR 509.1g).
                     val updatedIds = blockingComponent.blockedAttackerIds - entityId
-                    newState = if (updatedIds.isEmpty()) {
-                        newState.updateEntity(otherId) { c -> c.without<BlockingComponent>() }
-                    } else {
-                        newState.updateEntity(otherId) { c -> c.with(BlockingComponent(updatedIds)) }
-                    }
+                    newState = newState.updateEntity(otherId) { c -> c.with(BlockingComponent(updatedIds)) }
                 }
             }
         }

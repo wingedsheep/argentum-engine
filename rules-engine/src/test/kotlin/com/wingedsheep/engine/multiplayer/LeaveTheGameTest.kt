@@ -222,7 +222,7 @@ class LeaveTheGameTest : FunSpec({
         afterLeave.stack shouldNotContain abilityId
     }
 
-    test("combat continues when the leaver's attacker is removed (its blocker stops blocking it)") {
+    test("combat continues when the leaver's attacker is removed (its blocker blocks nothing)") {
         val (base, players) = initGame(4)
         // players[1] attacks with a creature; players[0] blocks it.
         val attackerId = EntityId.generate()
@@ -249,8 +249,9 @@ class LeaveTheGameTest : FunSpec({
         ).newState
 
         afterLeave.getEntity(attackerId).shouldBeNull()
-        // The blocker no longer references the departed attacker (combat can proceed).
-        afterLeave.getEntity(blockerId)?.has<BlockingComponent>() shouldBe false
+        // The blocker no longer references the departed attacker (combat can proceed), but it is
+        // still a blocking creature (CR 509.1g).
+        afterLeave.getEntity(blockerId)?.get<BlockingComponent>()?.blockedAttackerIds shouldBe emptyList()
     }
 
     test("attackers aimed at the leaver are removed from combat; the rest of the attack stands (CR 800.4e)") {

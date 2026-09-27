@@ -3725,7 +3725,7 @@ one-off pipeline belongs inline in the card file via `Effects.Pipeline { }` (§5
   gather the group twice, so a filter the first pass can change ("creatures with power 2 or less")
   matches a different set the second time.
 - `grantKeywordToAll(keyword, filter, duration?)` / `removeKeywordFromAll(...)`; `tapAll(filter)` / `untapGroup(filter?)`; `dealDamageToAll(amount, filter)`; `destroyAll(filter, noRegenerate?)`; `gainControlOfGroup(filter?, duration?)`.
-- `GroupFilter` exclusion flags: `excludeSelf` (`.other()`) drops the resolving **source** from the group; `excludeTarget` (`.otherThanTarget()`) drops the spell/ability's **first chosen target**. Combine `GameObjectFilter.Creature.targetPlayerControls(EffectTarget.TargetController)` with `.otherThanTarget()` for "each other creature with the same controller [as the target]" — Fear, Fire, Foes!: `dealDamageToAll(1, GroupFilter(Creature.targetPlayerControls(TargetController)).otherThanTarget())`.
+- `GroupFilter` exclusion flags: `excludeSelf` (`.other()`) drops the resolving **source** from the group; `excludeTarget` (`.otherThanTarget()`) drops the spell/ability's **first chosen target**; `excludeTriggeringEntity` (`.otherThanTriggeringEntity()`) drops the trigger's **triggering entity** — for a damage trigger that is the damaged recipient. Kusari-Gama's "deals that much damage to each other creature defending player controls": `Triggers.attached.dealsDamage(Recipient.Object(Creature.blocking()))` + `dealDamageToAll(triggerDamageAmount(), GroupFilter(Creature.targetPlayerControls(EffectTarget.ControllerOfTriggeringEntity)).otherThanTriggeringEntity())`. Combine `GameObjectFilter.Creature.targetPlayerControls(EffectTarget.TargetController)` with `.otherThanTarget()` for "each other creature with the same controller [as the target]" — Fear, Fire, Foes!: `dealDamageToAll(1, GroupFilter(Creature.targetPlayerControls(TargetController)).otherThanTarget())`.
 
 ---
 
@@ -5297,8 +5297,10 @@ Every reading is relative to the observing permanent: "you" is its controller, `
 `PredicateEvaluator.matchesRecipient` — for damage triggers, every damage-replacement scan
 (prevention, redirection, doubling, capping, flooring, damage-to-counters/mill), counter-placement
 replacements and ability-target triggers. An object recipient that has left the battlefield by the
-time a damage trigger is matched is read from the damage event's last-known snapshot (CR 603.10); a
-creature still entering with counters reads its own characteristics (CR 614.12). "An opponent" is a
+time a damage trigger is matched is read from the damage event's last-known snapshot (CR 603.10) —
+its characteristics plus the combat status it had, so `Recipient.Object(Creature.blocking())` still
+matches a blocker the damage killed (Kusari-Gama); every other state predicate (tapped, …) is
+unanswerable there and never matches; a creature still entering with counters reads its own characteristics (CR 614.12). "An opponent" is a
 real opponent test (a Two-Headed Giant teammate is not one, CR 102.3), and "a creature" means a
 creature — damage to a planeswalker or battle doesn't satisfy `AnyCreature`.
 

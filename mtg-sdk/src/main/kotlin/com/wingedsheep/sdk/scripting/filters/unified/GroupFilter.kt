@@ -92,6 +92,15 @@ data class GroupFilter(
      */
     val excludeTarget: Boolean = false,
     /**
+     * When true, excludes the trigger's *triggering entity* from the group — the [GroupFilter]
+     * counterpart of [TargetFilter.excludeTriggeringEntity]. Use for "each other X" relative to the
+     * object the event is about rather than the source or a target. Example: Kusari-Gama — "deals
+     * that much damage to each other creature defending player controls" leaves out the blocking
+     * creature the equipped creature damaged (a damage trigger binds the recipient as its
+     * triggering entity).
+     */
+    val excludeTriggeringEntity: Boolean = false,
+    /**
      * Where this filter applies. Defaults to scanning the battlefield. Use
      * [Scope.Self] for "this creature", [Scope.AttachedTo] for "enchanted/equipped
      * creature", or [Scope.Specific] for a bound entity. When non-Battlefield,
@@ -109,7 +118,7 @@ data class GroupFilter(
         is Scope.Specific -> "the chosen permanent"
         is Scope.Battlefield -> buildString {
             append("all ")
-            if (excludeSelf || excludeTarget) append("other ")
+            if (excludeSelf || excludeTarget || excludeTriggeringEntity) append("other ")
             append(baseFilter.description)
             if (!baseFilter.description.endsWith("s")) {
                 append("s")  // Pluralize simple types
@@ -237,6 +246,9 @@ data class GroupFilter(
 
     /** Exclude the spell/ability's first chosen target (for "each other X" relative to a target) */
     fun otherThanTarget() = copy(excludeTarget = true)
+
+    /** Exclude the trigger's triggering entity (for "each other X" relative to the event's object) */
+    fun otherThanTriggeringEntity() = copy(excludeTriggeringEntity = true)
 
     override fun applyTextReplacement(replacer: TextReplacer): GroupFilter {
         val newBase = baseFilter.applyTextReplacement(replacer)

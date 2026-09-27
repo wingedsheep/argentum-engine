@@ -77,8 +77,8 @@ class GustcloakSaviorTest : FunSpec({
         // Grizzly Bears should not be marked as blocked
         driver.state.getEntity(attackingCreature)?.has<BlockedComponent>() shouldBe false
 
-        // The blocker should no longer be blocking
-        driver.state.getEntity(blocker)?.has<BlockingComponent>() shouldBe false
+        // The blocker is still a blocking creature, now blocking nothing (CR 509.1g)
+        driver.state.getEntity(blocker)?.get<BlockingComponent>()?.blockedAttackerIds shouldBe emptyList()
 
         // Advance through combat - no damage
         driver.passPriorityUntil(Step.POSTCOMBAT_MAIN)

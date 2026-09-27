@@ -27,6 +27,7 @@ import com.wingedsheep.engine.state.components.battlefield.AttachmentsComponent
 import com.wingedsheep.engine.state.components.battlefield.CountersComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageComponent
 import com.wingedsheep.engine.state.components.battlefield.LastKnownPermanentComponent
+import com.wingedsheep.engine.state.components.stack.attachmentIdsOf
 import com.wingedsheep.engine.state.components.stack.captureLastKnown
 import com.wingedsheep.engine.state.components.battlefield.DealtDamageToThisGameComponent
 import com.wingedsheep.engine.state.components.battlefield.DamageDealtByPlayersThisTurnComponent
@@ -559,6 +560,7 @@ object DamageUtils {
                 excessAmount = creatureExcessDamage,
                 targetToughnessAtDamage = targetToughnessAtDamage,
                 sourceTargetIdsAtDamage = sourceTargetIds,
+                sourceAttachmentIds = attachmentIdsOf(state, sourceId),
             )
         )
 

@@ -167,7 +167,15 @@ data class DamageDealtEvent(
      * their TargetsComponent before event-trigger detection, so target/recipient relationship
      * predicates consume this event-side snapshot instead of consulting later state.
      */
-    val sourceTargetIdsAtDamage: List<EntityId>? = null
+    val sourceTargetIdsAtDamage: List<EntityId>? = null,
+    /**
+     * The Auras/Equipment attached to the damage source at the instant the damage was dealt
+     * (CR 603.2: an ability triggers when its event happens, not when it's detected). An equipped
+     * creature that dies to the same combat damage is unattached by state-based actions before
+     * trigger detection runs, so "whenever equipped creature deals damage" (Kusari-Gama, Armadillo
+     * Cloak's Equipment kin) finds its Equipment through this snapshot rather than the live links.
+     */
+    val sourceAttachmentIds: List<EntityId> = emptyList(),
 ) : GameEvent
 
 /**
