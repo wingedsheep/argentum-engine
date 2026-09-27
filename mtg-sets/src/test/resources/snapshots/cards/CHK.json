@@ -6201,7 +6201,8 @@
                                     "zone": "Library",
                                     "filter": "Spirit"
                                 },
-                                "storeAs": "gathered0"
+                                "storeAs": "gathered0",
+                                "search": true
                             },
                             {
                                 "type": "SelectFromCollection",
@@ -6218,7 +6219,8 @@
                                     "zone": "Graveyard"
                                 }
                             },
-                            "ShuffleLibrary"
+                            "ShuffleLibrary",
+                            "EmitLibrarySearchedEvent"
                         ]
                     }
                 }

@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.effects.CardSource
+import com.wingedsheep.sdk.scripting.effects.EmitLibrarySearchedEventEffect
 import com.wingedsheep.sdk.scripting.references.Player
 
 /**
@@ -37,7 +38,8 @@ val InameDeathAspect = card("Iname, Death Aspect") {
         effect = Effects.May(
             Effects.Pipeline {
                 val searchable = gather(
-                    CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any.withSubtype(Subtype.SPIRIT))
+                    CardSource.FromZone(Zone.LIBRARY, Player.You, GameObjectFilter.Any.withSubtype(Subtype.SPIRIT)),
+                    search = true
                 )
                 val found = chooseAnyNumber(
                     from = searchable,
@@ -45,6 +47,7 @@ val InameDeathAspect = card("Iname, Death Aspect") {
                 )
                 toGraveyard(found)
                 run(Effects.ShuffleLibrary())
+                run(EmitLibrarySearchedEventEffect)
             }
         )
     }
