@@ -4215,6 +4215,13 @@ A resolving nonpermanent spell retains its stack instance through serialized eff
   printed "its" refers to the loop variable. It survives the pay-or-decline pause: a `PayOrSufferEffect`
   nested in the loop carries the iteration binding into its continuation, so the consequence still knows
   which creature "its" meant after the toll is declined.
+- `Player.ControllerOfAffectedEntity` — the controller of the permanent a **continuous effect is
+  currently modifying** (the player-side twin of `EffectTarget.AffectedEntity`): "enchanted creature gets
+  -X/-0, where X is the number of cards in **its controller's** graveyard" (Disturbing Conversion) is
+  `GrantDynamicStats(attachedCreature(), -cardsInYourGraveyard(Player.ControllerOfAffectedEntity), 0)`.
+  Projector-safe: it reads the projected controller, so a layer-2 control change moves the count with
+  the creature. Distinct from `Player.You` / `ControllerOfSource`, which stay the Aura's controller.
+  Null outside a per-affected-entity evaluation.
 - `Player.ControllerOfSource` — "you", but read off the **source permanent** rather than off the
   resolution context's `controllerId`. Normally identical to `Player.You`, and `Player.You` stays the
   right reference; this one exists for the case where the context's controller has been **rebound to

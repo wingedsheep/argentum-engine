@@ -302,6 +302,9 @@ object TargetResolutionUtils {
             // effect's source or its chosen target.
             Player.ControllerOfIterationEntity -> context.iterationEntityId
                 ?.let { controllerOf(state, it) }
+            // "its controller" for the permanent a continuous effect is modifying.
+            Player.ControllerOfAffectedEntity -> context.affectedEntityId
+                ?.let { controllerOf(state, it) }
             // The other end of a becomes-target trigger: whoever controls the spell or ability
             // that did the targeting (Fractured Loyalty). The trigger context carries the
             // targeting stack object; [stackObjectController] reads it while it is still on the

@@ -237,6 +237,23 @@ sealed interface Player {
         override val description: String = "its controller"
     }
 
+    /**
+     * Controller of the permanent a continuous effect is currently modifying — "enchanted creature
+     * gets -X/-0, where X is the number of cards in **its controller's** graveyard" (Disturbing
+     * Conversion). Pairs with [com.wingedsheep.sdk.scripting.targets.EffectTarget.AffectedEntity]:
+     * the layer projector re-evaluates the amount per affected permanent, and this reads that
+     * permanent's (projected) controller rather than the effect source's.
+     *
+     * Distinct from [You] / [ControllerOfSource], which stay the Aura's controller, and from
+     * [ControllerOf], which reads a chosen target the projector has no copy of. Null outside a
+     * per-affected-entity evaluation.
+     */
+    @SerialName("ControllerOfAffectedEntity")
+    @Serializable
+    data object ControllerOfAffectedEntity : Player {
+        override val description: String = "its controller"
+    }
+
     /** Owner of a permanent (used with EffectTarget) */
     @SerialName("OwnerOf")
     @Serializable
@@ -365,6 +382,7 @@ sealed interface Player {
             TargetOpponent -> "target opponent's"
             TargetPlayer -> "target player's"
             ControllerOfIterationEntity -> "its controller's"
+            ControllerOfAffectedEntity -> "its controller's"
             EachTargetedPlayer -> "those players'"
             is InCollection -> "those players'"
             Each -> "each player's"
