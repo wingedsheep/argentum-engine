@@ -41,6 +41,7 @@ import com.wingedsheep.engine.state.components.player.CardsLeftGraveyardThisTurn
 import com.wingedsheep.engine.state.components.player.CardsPutIntoExileThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreatureSubtypesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.OpponentCreaturesExiledThisTurnComponent
@@ -946,6 +947,16 @@ class ZoneTransitionService(
                 val existing = playerContainer.get<ArtifactsDiedThisTurnComponent>()
                     ?: ArtifactsDiedThisTurnComponent()
                 playerContainer.with(ArtifactsDiedThisTurnComponent(existing.count + 1))
+            }
+        }
+
+        // 8b1a. Track permanents of any type put into a graveyard from the battlefield (Ashen
+        // Reaper). The type-agnostic sibling of 8b / 8b1, credited to the same last-known controller.
+        if (leavingBattlefield && actualDestZone == Zone.GRAVEYARD) {
+            newState = newState.updateEntity(controllerId) { playerContainer ->
+                val existing = playerContainer.get<PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent>()
+                    ?: PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent()
+                playerContainer.with(PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent(existing.count + 1))
             }
         }
 

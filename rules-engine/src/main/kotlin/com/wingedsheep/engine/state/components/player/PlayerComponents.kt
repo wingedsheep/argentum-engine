@@ -1127,6 +1127,17 @@ data class ArtifactsDiedThisTurnComponent(
 ) : Component
 
 /**
+ * Tracks the number of permanents of any type (including tokens) put into a graveyard from the
+ * battlefield under this player's control during the current turn — the type-agnostic sibling of
+ * [ArtifactsDiedThisTurnComponent], cleared with it at end of turn. Summed across all players it
+ * is the game-wide "a permanent was put into a graveyard from the battlefield this turn".
+ */
+@Serializable
+data class PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent(
+    val count: Int = 0
+) : Component
+
+/**
  * Records the last-known subtypes of each creature that died under this player's control during
  * the current turn — one [diedSubtypeSets] entry per death, in death order. Subtypes are stored
  * as their raw strings (e.g. "Zombie"), captured from the dying creature's projected type line at

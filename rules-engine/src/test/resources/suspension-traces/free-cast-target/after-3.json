@@ -39,6 +39,10 @@
                 "type": "com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent",
                 "count": 1
             },
+            "com.wingedsheep.engine.state.components.player.PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent": {
+                "type": "com.wingedsheep.engine.state.components.player.PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent",
+                "count": 1
+            },
             "com.wingedsheep.engine.state.components.player.PlayerDescendedThisTurnComponent": {
                 "type": "com.wingedsheep.engine.state.components.player.PlayerDescendedThisTurnComponent",
                 "count": 1

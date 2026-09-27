@@ -576,7 +576,11 @@ class BatchTriggerSubject internal constructor(
     /** "enter" (the battlefield). The matching members are the payoff's captured collection. */
     fun enter(): TriggerSpec = spec(PermanentsEnteredEvent(filter = filter, excludeSource = excludeSource))
 
-    /** "die" — once per death batch (CR 603.3b), so a board wipe fires it once. */
+    /**
+     * "die" — once per death batch, so a board wipe fires it once. The filter picks the types:
+     * with a noncreature filter it reads "are put into a graveyard from the battlefield"
+     * (`oneOrMore(GameObjectFilter.CreatureOrArtifact.youControl()).die()`, Seer of Stolen Sight).
+     */
     fun die(): TriggerSpec = spec(CreaturesYouControlDiedEvent(filter = filter, excludeSelf = excludeSource))
 
     /** "leave the battlefield without dying" — to any zone but a graveyard. */

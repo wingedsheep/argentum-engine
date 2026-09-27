@@ -640,6 +640,7 @@ val engineSerializersModule = SerializersModule {
         subclass(CardsPutIntoExileThisTurnComponent::class)
         subclass(CreaturesDiedThisTurnComponent::class)
         subclass(ArtifactsDiedThisTurnComponent::class)
+        subclass(PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent::class)
         subclass(CreatureSubtypesDiedThisTurnComponent::class)
         subclass(PermanentLeftBattlefieldThisTurnComponent::class)
         subclass(CreatureLeftBattlefieldThisTurnComponent::class)

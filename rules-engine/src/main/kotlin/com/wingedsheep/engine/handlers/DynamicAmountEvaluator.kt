@@ -589,6 +589,11 @@ class DynamicAmountEvaluator(
                             ?.get<com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent>()
                             ?.count ?: 0
                     }
+                    TurnTracker.PERMANENTS_PUT_INTO_GRAVEYARD_FROM_BATTLEFIELD -> playerIds.sumOf { playerId ->
+                        state.getEntity(playerId)
+                            ?.get<com.wingedsheep.engine.state.components.player.PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent>()
+                            ?.count ?: 0
+                    }
                     TurnTracker.NONTOKEN_CREATURES_DIED -> playerIds.sumOf { playerId ->
                         state.getEntity(playerId)
                             ?.get<com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent>()

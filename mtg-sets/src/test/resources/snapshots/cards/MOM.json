@@ -1428,6 +1428,66 @@
     ]
 }
 
+// Ichor Shade
+{
+    "name": "Ichor Shade",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Phyrexian Shade",
+    "oracleText": "At the beginning of your end step, if an artifact or creature was put into a graveyard from the battlefield this turn, put a +1/+1 counter on this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ichor Shade:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "AddCounters",
+                    "counterType": "PLUS_ONE_PLUS_ONE",
+                    "count": 1,
+                    "target": "Self"
+                },
+                "interveningIf": {
+                    "type": "Compare",
+                    "left": {
+                        "type": "Add",
+                        "left": {
+                            "type": "TurnTracking",
+                            "player": "Each",
+                            "tracker": "CREATURES_DIED"
+                        },
+                        "right": {
+                            "type": "TurnTracking",
+                            "player": "Each",
+                            "tracker": "ARTIFACTS_DIED"
+                        }
+                    },
+                    "operator": "GT",
+                    "right": {
+                        "type": "Fixed",
+                        "amount": 0
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "112",
+        "artist": "Nicholas Gregory",
+        "flavorText": "As oil seeped into their funeral shrouds, Tolvada's dead rose to join the invaders' ranks.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/f/0fd86fbf-eac2-456b-b4bb-437ff9be9b58.jpg?1783917006"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Interdisciplinary Mascot
 {
     "name": "Interdisciplinary Mascot",
@@ -1525,6 +1585,132 @@
     },
     "colorIdentityOverride": [
         "BLUE"
+    ]
+}
+
+// Invasion of Azgol
+{
+    "name": "Invasion of Azgol",
+    "manaCost": "{B}{R}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, target player sacrifices a creature or planeswalker of their choice and loses 1 life.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Azgol:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "ForceSacrifice",
+                            "filter": "creature|planeswalker",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this Siege enters, target player sacrifices a creature or planeswalker of their choice and loses 1 life."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Ashen Reaper",
+        "manaCost": "",
+        "typeLine": "Creature — Zombie Elemental",
+        "oracleText": "Menace\nAt the beginning of your end step, put a +1/+1 counter on this creature if a permanent was put into a graveyard from the battlefield this turn.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 1
+        },
+        "keywords": [
+            "MENACE"
+        ],
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Ashen Reaper:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "END"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.WhenCondition",
+                            "condition": {
+                                "type": "Compare",
+                                "left": {
+                                    "type": "TurnTracking",
+                                    "player": "Each",
+                                    "tracker": "PERMANENTS_PUT_INTO_GRAVEYARD_FROM_BATTLEFIELD"
+                                },
+                                "operator": "GT",
+                                "right": {
+                                    "type": "Fixed",
+                                    "amount": 0
+                                }
+                            }
+                        },
+                        "then": {
+                            "type": "AddCounters",
+                            "counterType": "PLUS_ONE_PLUS_ONE",
+                            "count": 1,
+                            "target": "Self"
+                        }
+                    },
+                    "descriptionOverride": "At the beginning of your end step, put a +1/+1 counter on this creature if a permanent was put into a graveyard from the battlefield this turn."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "232",
+            "rarity": "UNCOMMON",
+            "artist": "Joshua Raphael",
+            "flavorText": "Eternal hatred fuels eternal fire.",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/e/ae2e1244-f05b-45f9-8afc-59f190524798.jpg?1783916952"
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "RED"
+        ],
+        "colorIndicator": [
+            "BLACK",
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "232",
+        "rarity": "UNCOMMON",
+        "artist": "Joshua Raphael",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/e/ae2e1244-f05b-45f9-8afc-59f190524798.jpg?1783916952"
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
     ]
 }
 
@@ -2905,6 +3091,46 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Seer of Stolen Sight
+{
+    "name": "Seer of Stolen Sight",
+    "manaCost": "{2}{B}",
+    "typeLine": "Creature — Phyrexian Warlock",
+    "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)\nWhenever one or more artifacts and/or creatures you control are put into a graveyard from the battlefield, surveil 1. (Look at the top card of your library. You may put that card into your graveyard.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "MENACE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Seer of Stolen Sight:1",
+                "trigger": {
+                    "type": "CreaturesYouControlDiedEvent",
+                    "filter": "creature|artifact ctrl:you"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Surveil",
+                    "count": 1
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "330",
+        "rarity": "UNCOMMON",
+        "artist": "Betty Jiang",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/d/9d0b3232-44ee-481d-81d9-46432f853a7d.jpg?1783916902"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

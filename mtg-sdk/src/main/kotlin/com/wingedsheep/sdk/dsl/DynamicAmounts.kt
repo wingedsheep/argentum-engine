@@ -723,6 +723,14 @@ object DynamicAmounts {
     fun artifactsDiedThisTurn(player: Player = Player.Each): DynamicAmount =
         DynamicAmount.TurnTracking(player, TurnTracker.ARTIFACTS_DIED)
 
+    /**
+     * Permanents of any type (tokens included) put into a graveyard from the battlefield this
+     * turn. Defaults to [Player.Each], the game-wide count ("if a permanent was put into a
+     * graveyard from the battlefield this turn", Ashen Reaper).
+     */
+    fun permanentsPutIntoGraveyardFromBattlefieldThisTurn(player: Player = Player.Each): DynamicAmount =
+        DynamicAmount.TurnTracking(player, TurnTracker.PERMANENTS_PUT_INTO_GRAVEYARD_FROM_BATTLEFIELD)
+
     fun opponentsWhoLostLifeThisTurn(): DynamicAmount =
         DynamicAmount.TurnTracking(Player.You, TurnTracker.OPPONENTS_WHO_LOST_LIFE)
 

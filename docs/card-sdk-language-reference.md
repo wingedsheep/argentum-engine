@@ -6094,7 +6094,12 @@ The shapes in this family, with their engine notes.
   payoff — draw a card, make a token, gain life — correctly still resolves on a board wipe that
   also kills the source. The `filter`'s controller predicate scopes which players' deaths count
   (mirrors the enter-batch trigger): no predicate means "you control"; `.opponentControls()` scopes
-  to your opponents.
+  to your opponents. The `filter` picks the permanent types — it isn't creature-only, and every
+  predicate is matched against last-known information (tokens swept by 704.5d included) by the same
+  matcher as the per-object zone-change trigger. With a noncreature filter it is "one or more
+  [filter] are put into a graveyard from the battlefield": Seer of Stolen Sight is
+  `Triggers.oneOrMore(GameObjectFilter.CreatureOrArtifact.youControl()).die()`, and a dying
+  noncreature artifact token counts.
 - `Triggers.oneOrMore(filter.opponentControls()).die()` — the opponent-scoped variant of the
   above (sugar for `Triggers.oneOrMore(filter).die()` / `Triggers.oneOrMoreOther(filter).die()`): batched, fires at
   most once per death batch, so it pairs with `oncePerTurn` without over-firing on mass removal —
@@ -12692,6 +12697,13 @@ of `AddMana`. The engine empties pools at end of turn, so:
   ("the number of artifacts that were put into graveyards from the battlefield this turn"). Every
   such artifact had exactly one controller, so the sum double-counts nothing; there is deliberately
   no separate game-scoped component.
+- `PERMANENTS_PUT_INTO_GRAVEYARD_FROM_BATTLEFIELD` — permanents of **any** type (lands, tokens,
+  battles…) put into a graveyard from the battlefield this turn, credited to the last-known
+  controller. `DynamicAmounts.permanentsPutIntoGraveyardFromBattlefieldThisTurn()` defaults to
+  `Player.Each`, the game-wide "if a permanent was put into a graveyard from the battlefield this
+  turn" (Ashen Reaper). "An artifact or creature was put into a graveyard from the battlefield this
+  turn" (Ichor Shade) composes as `Conditions.Or` of `CREATURES_DIED` and `ARTIFACTS_DIED` over
+  `Player.Each`.
 - `NONTOKEN_CREATURES_DIED` — nontoken creatures that died this turn.
 - `CREATURES_LEFT_BATTLEFIELD` — creatures (incl. tokens) that left the battlefield under the
   player's control this turn, regardless of destination (death, exile, bounce, …). The creature-scoped

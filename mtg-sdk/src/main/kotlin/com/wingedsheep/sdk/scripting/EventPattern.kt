@@ -3021,6 +3021,13 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
      * [excludeSelf] models the "other" in "one or more *other* creatures you control die":
      * the trigger's own source death does not count toward the batch.
      *
+     * The [filter] decides which permanent types count — it is not creature-only. With a
+     * noncreature filter this is "one or more [filter] are put into a graveyard from the
+     * battlefield": `GameObjectFilter.CreatureOrArtifact` is Seer of Stolen Sight's "one or more
+     * artifacts and/or creatures you control are put into a graveyard from the battlefield", and a
+     * dying noncreature artifact token counts. The filter is matched against each permanent's
+     * last-known information, by the same matcher as the per-object zone-change trigger.
+     *
      * Detection is handled specially by TriggerDetector: after processing individual events,
      * it groups battlefield→graveyard zone changes by each creature's last-known controller,
      * checks the creature filter, and fires the trigger at most once per qualifying controller.
@@ -3044,12 +3051,15 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
             append(
                 when (filter.controllerPredicate) {
                     com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByOpponent ->
-                        " an opponent controls die"
-                    com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByAny ->
-                        " die"
-                    else -> " you control die"
+                        " an opponent controls"
+                    com.wingedsheep.sdk.scripting.predicates.ControllerPredicate.ControlledByAny -> ""
+                    else -> " you control"
                 }
             )
+            // "Die" is creature vocabulary (CR 700.4); anything wider is spelled out.
+            val creaturesOnly = filter.anyOf.isEmpty() &&
+                com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature in filter.cardPredicates
+            append(if (creaturesOnly) " die" else " are put into a graveyard from the battlefield")
         }
 
         override fun applyTextReplacement(replacer: TextReplacer): EventPattern {

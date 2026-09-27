@@ -76,6 +76,7 @@ import com.wingedsheep.engine.state.components.player.CombatDamageReceivedThisTu
 import com.wingedsheep.engine.state.components.player.WasDealtCombatDamageThisTurnComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
 import com.wingedsheep.engine.state.components.player.ArtifactsDiedThisTurnComponent
+import com.wingedsheep.engine.state.components.player.PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent
 import com.wingedsheep.engine.state.components.player.CreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.NonTokenCreaturesDiedThisTurnComponent
 import com.wingedsheep.engine.state.components.player.PermanentLeftBattlefieldThisTurnComponent
@@ -748,6 +749,9 @@ class CleanupPhaseManager(
                 }
                 if (result.has<ArtifactsDiedThisTurnComponent>()) {
                     result = result.without<ArtifactsDiedThisTurnComponent>()
+                }
+                if (result.has<PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent>()) {
+                    result = result.without<PermanentsPutIntoGraveyardFromBattlefieldThisTurnComponent>()
                 }
                 if (result.has<CreatureSubtypesDiedThisTurnComponent>()) {
                     result = result.without<CreatureSubtypesDiedThisTurnComponent>()

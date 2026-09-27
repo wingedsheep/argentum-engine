@@ -3174,11 +3174,10 @@ class TriggerDetector(
 
     private data class CreatureDeathInfo(
         val entityId: EntityId,
-        val typeLine: com.wingedsheep.sdk.core.TypeLine?,
-        /** Power the instant the creature left the battlefield (CR 603.10 LKI), for batch power sums. */
-        val lastKnownPower: Int? = null,
-        /** Whether the dead creature was a token, so the filter's nontoken/token predicate is honored. */
-        val wasToken: Boolean = false
+        /** The battlefield→graveyard move itself — its LKI snapshot answers the trigger's filter. */
+        val event: ZoneChangeEvent,
+        /** Power the instant the permanent left the battlefield (CR 603.10 LKI), for batch power sums. */
+        val lastKnownPower: Int? = null
     )
 
     /**
@@ -3207,22 +3206,21 @@ class TriggerDetector(
         triggers: MutableList<PendingTrigger>,
         index: TriggerIndex
     ) {
-        // Collect creature deaths (battlefield → graveyard), grouped by last-known controller.
+        // Collect every permanent put into a graveyard from the battlefield, grouped by last-known
+        // controller. Not only creatures: the trigger's filter decides which types count, so
+        // "one or more artifacts and/or creatures you control are put into a graveyard from the
+        // battlefield" (Seer of Stolen Sight) sees a dying noncreature artifact token.
         val deathsByController = mutableMapOf<EntityId, MutableList<CreatureDeathInfo>>()
         for (event in events) {
             if (event !is ZoneChangeEvent) continue
             if (event.fromZone != Zone.BATTLEFIELD || event.toZone != Zone.GRAVEYARD) continue
-            val typeLine = event.lastKnown?.typeLine
-                ?: state.getEntity(event.entityId)?.get<CardComponent>()?.typeLine
-            if (typeLine?.isCreature != true) continue
             val controllerId = event.lastKnown?.controllerId ?: event.ownerId
             deathsByController.getOrPut(controllerId) { mutableListOf() }
                 .add(
                     CreatureDeathInfo(
                         entityId = event.entityId,
-                        typeLine = typeLine,
-                        lastKnownPower = event.lastKnown?.power,
-                        wasToken = event.lastKnown?.wasToken ?: false
+                        event = event,
+                        lastKnownPower = event.lastKnown?.power
                     )
                 )
         }
@@ -3332,23 +3330,19 @@ class TriggerDetector(
         if (relevantDeaths.isEmpty()) return
 
         // Which of the batch's deaths satisfy the trigger's filter. Evaluated against last-known
-        // information (the creatures are already in the graveyard) — including the token/nontoken
-        // predicate, so "one or more *nontoken* creatures you control die" (The Skullspore Nexus,
-        // Ghoulish Procession) ignores dying tokens both for firing and for the power sum below.
+        // information (the permanents are already in the graveyard, and a token may already be
+        // swept by 704.5d) through the same LKI-aware matcher as the per-object zone-change
+        // trigger — so composites (`Creature or Artifact`), token/nontoken, subtypes and keywords
+        // all read the snapshot. Controller scoping was already applied above, relative to the
+        // observer, so the controller predicate is stripped before delegating.
+        val cardFilter = trigger.filter.copy(controllerPredicate = null)
+        val zonePattern = EventPattern.ZoneChangeEvent(
+            filter = cardFilter, from = Zone.BATTLEFIELD, to = Zone.GRAVEYARD
+        )
         fun deathMatchesFilter(info: CreatureDeathInfo): Boolean =
-            trigger.filter.cardPredicates.all { predicate ->
-                when (predicate) {
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsCreature ->
-                        info.typeLine?.isCreature == true
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.HasSubtype ->
-                        info.typeLine?.hasSubtype(predicate.subtype) == true
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsNontoken ->
-                        !info.wasToken
-                    is com.wingedsheep.sdk.scripting.predicates.CardPredicate.IsToken ->
-                        info.wasToken
-                    else -> true
-                }
-            }
+            matcher.matchesZoneChangeTrigger(
+                zonePattern, TriggerBinding.ANY, info.event, sourceId, controllerId, state
+            )
 
         val matchingDeaths = relevantDeaths.filter { deathMatchesFilter(it) }
         if (matchingDeaths.isEmpty()) return
