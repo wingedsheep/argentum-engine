@@ -80,6 +80,14 @@ class EffectAndTriggerContinuationResumer(
                 )
                 val legal = DependentTargetSelection.legalNext(state, requirements, chosen, context, targetFinder = services.targetFinder)
                 val next = requirements[chosen.size]
+                // An optional remaining slot with nothing to offer ends the selection without an empty prompt.
+                if (legal.isEmpty() && DependentTargetSelection.canStopAt(requirements, chosen.size)) {
+                    return resumeTriggeredAbility(
+                        state, continuation.copy(sequentialTargets = null),
+                        response.copy(selectedTargets = chosen.withIndex().associate { (index, ids) -> index to ids }),
+                        checkForMore,
+                    )
+                }
                 return com.wingedsheep.engine.handlers.DecisionHandler().createTargetDecision(
                     state, continuation.controllerId, continuation.sourceId, continuation.sourceName,
                     requirements = listOf(TargetRequirementInfo(

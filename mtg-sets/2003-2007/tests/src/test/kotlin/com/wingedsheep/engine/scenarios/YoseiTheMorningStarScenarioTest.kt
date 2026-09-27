@@ -92,6 +92,27 @@ class YoseiTheMorningStarScenarioTest : ScenarioTestBase() {
                 game.isTapped(game.findPermanent("Grizzly Bears")!!) shouldBe false
             }
 
+            test("a player with no permanents skips the empty permanents prompt") {
+                val game = scenario()
+                    .withPlayers("Alice", "Bob")
+                    .withCardOnBattlefield(1, "Yosei, the Morning Star")
+                    .withLandsOnBattlefield(1, "Swamp", 3)
+                    .withCardInHand(1, "Murder")
+                    .withCardInLibrary(1, "Swamp")
+                    .withCardInLibrary(2, "Forest")
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+                game.killYosei()
+                game.selectTargets(listOf(game.player2Id)).error shouldBe null
+                withClue("Bob controls nothing, so the trigger goes straight to the stack") {
+                    (game.getPendingDecision() is ChooseTargetsDecision) shouldBe false
+                }
+                game.resolveStack()
+
+                game.state.getEntity(game.player2Id)!!.get<SkipNextUntapStepComponent>()?.steps shouldBe 1
+            }
+
             test("choosing yourself offers only your own permanents") {
                 val game = yoseiGame()
                 val giant = game.findPermanent("Hill Giant")!!
