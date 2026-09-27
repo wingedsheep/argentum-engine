@@ -61,8 +61,9 @@ data class TriggeredAbilityContinuation(
     val triggerContext: com.wingedsheep.engine.event.TriggerContext? = null,
     val elseEffect: Effect? = null,
     val targetRequirements: List<TargetRequirement> = emptyList(),
-    /** Non-null while dependent targets are being chosen, one requirement at a time. */
-    val sequentialTargets: List<EntityId>? = null,
+    /** Non-null while dependent targets are being chosen, one requirement at a time — the targets
+     *  chosen so far, one list per requirement slot (a trailing "up to five" slot holds several). */
+    val sequentialTargets: List<List<EntityId>>? = null,
     /** Pipeline state carried from a `ReflexiveTriggerEffect`'s action half, preserved across target
      *  selection so the stack object built on resume carries it (CR 603.12). Null otherwise. */
     val carriedPipeline: com.wingedsheep.engine.handlers.PipelineState? = null,

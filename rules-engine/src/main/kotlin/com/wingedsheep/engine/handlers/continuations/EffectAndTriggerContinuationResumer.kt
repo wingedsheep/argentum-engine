@@ -58,14 +58,14 @@ class EffectAndTriggerContinuationResumer(
 
         continuation.sequentialTargets?.let { prefix ->
             val requirements = continuation.targetRequirements
-            val selected = response.selectedTargets[0]?.singleOrNull()
+            val selected = response.selectedTargets[0].orEmpty()
             // Declining an "up to one" slot ends the selection; `canStopAt` guarantees every
             // later slot is optional too, so no later target shifts into its position.
-            if (selected == null && !DependentTargetSelection.canStopAt(requirements, prefix.size)) {
+            if (selected.isEmpty() && !DependentTargetSelection.canStopAt(requirements, prefix.size)) {
                 return ExecutionResult.error(state, "Choose one target")
             }
-            val chosen = if (selected == null) prefix else prefix + selected
-            if (selected != null && chosen.size < requirements.size) {
+            val chosen = if (selected.isEmpty()) prefix else prefix + listOf(selected)
+            if (selected.isNotEmpty() && chosen.size < requirements.size) {
                 val pipeline = continuation.carriedPipeline
                 val context = com.wingedsheep.engine.handlers.PredicateContext(
                     controllerId = continuation.controllerId,
@@ -79,13 +79,16 @@ class EffectAndTriggerContinuationResumer(
                     storedSubtypeGroups = pipeline?.storedSubtypeGroups ?: emptyMap(),
                 )
                 val legal = DependentTargetSelection.legalNext(state, requirements, chosen, context, targetFinder = services.targetFinder)
+                val next = requirements[chosen.size]
                 return com.wingedsheep.engine.handlers.DecisionHandler().createTargetDecision(
                     state, continuation.controllerId, continuation.sourceId, continuation.sourceName,
                     requirements = listOf(TargetRequirementInfo(
                         index = 0,
-                        description = requirements[chosen.size].description,
-                        minTargets = if (DependentTargetSelection.canStopAt(requirements, chosen.size)) 0 else 1,
-                        maxTargets = 1,
+                        description = next.description,
+                        minTargets = if (DependentTargetSelection.canStopAt(requirements, chosen.size)) 0
+                            else maxOf(1, next.effectiveMinCount),
+                        // Only the last slot may take several (DependentTargetSelection).
+                        maxTargets = if (next.unlimited) legal.size else next.count,
                     )),
                     legalTargets = mapOf(0 to legal),
                     effectHint = continuation.description,
@@ -94,7 +97,7 @@ class EffectAndTriggerContinuationResumer(
             }
             return resumeTriggeredAbility(
                 state, continuation.copy(sequentialTargets = null),
-                response.copy(selectedTargets = chosen.mapIndexed { index, id -> index to listOf(id) }.toMap()),
+                response.copy(selectedTargets = chosen.withIndex().associate { (index, ids) -> index to ids }),
                 checkForMore,
             )
         }

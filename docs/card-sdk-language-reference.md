@@ -4770,6 +4770,13 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   `PlayerRef(Player.EnchantedPlayer)` (below). The predicate's own description follows the target,
   so these read as "defending player controls" / "enchanted player controls" rather than the fixed
   "target player controls" — neither is targeting anyone.
+  On a **triggered ability's** target slot bound to an earlier target of the same ability
+  (`targetPlayerControls(player)` after `val player = target(Targets.Player)`), the trigger chooses
+  its targets one slot at a time, offering each slot only what the earlier choices allow
+  (`DependentTargetSelection`). Every such slot is single-target except the **last**, which may take
+  several: Yosei, the Morning Star's "target player skips their next untap step. Tap up to five
+  target permanents that player controls" is
+  `targets(TargetFilter(Permanent.targetPlayerControls(player)), count = 5, optional = true)`.
 - `.controlledByEnchantedPlayer()` — controlled by the player the filtering ability's **source Aura
   is attached to** (CR 303 enchant player): "Creatures enchanted player controls enter tapped"
   (Radiant Restraints). A named recipe over `.targetPlayerControls(PlayerRef(Player.EnchantedPlayer))`,

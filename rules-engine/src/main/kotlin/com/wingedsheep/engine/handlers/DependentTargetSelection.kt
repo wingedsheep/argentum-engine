@@ -10,12 +10,17 @@ import com.wingedsheep.sdk.scripting.predicates.ControllerPredicate
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 import com.wingedsheep.sdk.scripting.targets.TargetRequirement
+import com.wingedsheep.sdk.scripting.targets.withCount
 
 /**
  * Select single targets in order when a filter reads an earlier target — an object's
  * characteristics ("power less than that creature's") or the player it names ("target creature
  * that player controls", Ravager of the Fells). A slot may be optional only when every slot after
  * it is optional too, so declining one ends the selection without shifting a later target.
+ *
+ * Every slot picks one target except the last, which may pick several ("tap up to five target
+ * permanents that player controls", Yosei, the Morning Star): nothing after it reads its choices,
+ * so it needs no completion search of its own. Chosen targets travel as one list per slot.
  */
 object DependentTargetSelection {
     fun isRequired(requirements: List<TargetRequirement>): Boolean = requirements.any {
@@ -68,30 +73,36 @@ object DependentTargetSelection {
     fun legalNext(
         state: GameState,
         requirements: List<TargetRequirement>,
-        chosen: List<EntityId>,
+        chosen: List<List<EntityId>>,
         context: PredicateContext,
         targetFinder: TargetFinder
     ): List<EntityId> {
-        require(requirements.all { req ->
-            req.count == 1 && !req.unlimited && (req !is TargetObject || req.filter.zone == Zone.BATTLEFIELD)
-        }) {
-            "Dependent target selection requires single-target slots over players or permanents"
+        require(requirements.all { req -> req !is TargetObject || req.filter.zone == Zone.BATTLEFIELD } &&
+            requirements.dropLast(1).all { req -> req.count == 1 && !req.unlimited }) {
+            "Dependent target selection requires players or permanents, single-target except the last slot"
         }
-        val finder = targetFinder
-        fun candidates(prefix: List<EntityId>): List<EntityId> = finder.findLegalTargets(
-            state, requirements[prefix.size], context.controllerId,
-            sourceId = context.sourceId,
-            targetingSourceType = TargetingSourceType.ABILITY,
-            triggeringEntityId = context.triggeringEntityId,
-            pipelineContext = prefix.map { entityIdToChosenTarget(state, it) }.let { chosen ->
-                context.copy(
-                    targets = chosen,
-                    namedTargets = EffectContext.buildNamedTargets(requirements.take(chosen.size), chosen),
-                )
-            },
-        )
-        fun canComplete(prefix: List<EntityId>): Boolean =
-            canStopAt(requirements, prefix.size) || candidates(prefix).any { canComplete(prefix + it) }
-        return candidates(chosen).filter { canComplete(chosen + it) }
+        fun candidates(prefix: List<List<EntityId>>): List<EntityId> {
+            val prefixTargets = prefix.flatten().map { entityIdToChosenTarget(state, it) }
+            val prefixRequirements = requirements.take(prefix.size)
+                .mapIndexed { index, req -> req.withCount(prefix[index].size) }
+            return targetFinder.findLegalTargets(
+                state, requirements[prefix.size], context.controllerId,
+                sourceId = context.sourceId,
+                targetingSourceType = TargetingSourceType.ABILITY,
+                triggeringEntityId = context.triggeringEntityId,
+                pipelineContext = context.copy(
+                    targets = prefixTargets,
+                    namedTargets = EffectContext.buildNamedTargets(prefixRequirements, prefixTargets),
+                ),
+            )
+        }
+        fun canComplete(prefix: List<List<EntityId>>): Boolean {
+            if (canStopAt(requirements, prefix.size)) return true
+            val next = requirements[prefix.size]
+            // The multi-target last slot completes with enough legal targets for its minimum.
+            if (prefix.size == requirements.lastIndex) return candidates(prefix).size >= next.effectiveMinCount
+            return candidates(prefix).any { canComplete(prefix + listOf(listOf(it))) }
+        }
+        return candidates(chosen).filter { canComplete(chosen + listOf(listOf(it))) }
     }
 }

@@ -10,6 +10,8 @@ import com.wingedsheep.sdk.model.Deck
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.EffectTarget
 import io.kotest.core.spec.style.FunSpec
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.matchers.collections.shouldContainExactlyInAnyOrder
 import io.kotest.matchers.shouldBe
 import com.wingedsheep.sdk.scripting.targets.TargetObject
 
@@ -29,7 +31,7 @@ class DependentTargetSelectionTest : FunSpec({
             controllerId = d.player1,
             effect = com.wingedsheep.sdk.dsl.Effects.DrawCards(1),
             description = "Test dependent targets",
-            sequentialTargets = listOf(chosen),
+            sequentialTargets = listOf(listOf(chosen)),
         )
         val json = kotlinx.serialization.json.Json {
             serializersModule = com.wingedsheep.engine.core.engineSerializersModule
@@ -51,7 +53,7 @@ class DependentTargetSelectionTest : FunSpec({
         val context = PredicateContext(controllerId = d.player1)
         DependentTargetSelection.isRequired(requirements) shouldBe true
         DependentTargetSelection.legalNext(d.state, requirements, emptyList(), context, targetFinder = TargetFinder(PredicateEvaluator(cardRegistry = null))) shouldBe listOf(green)
-        DependentTargetSelection.legalNext(d.state, requirements, listOf(green), context, targetFinder = TargetFinder(PredicateEvaluator(cardRegistry = null))) shouldBe listOf(partner)
+        DependentTargetSelection.legalNext(d.state, requirements, listOf(listOf(green)), context, targetFinder = TargetFinder(PredicateEvaluator(cardRegistry = null))) shouldBe listOf(partner)
     }
 
     test("lookahead checks all remaining slots rather than only the next slot") {
@@ -66,7 +68,56 @@ class DependentTargetSelectionTest : FunSpec({
         )
         val context = PredicateContext(controllerId = d.player1)
         DependentTargetSelection.legalNext(d.state, requirements, emptyList(), context, targetFinder = TargetFinder(PredicateEvaluator(cardRegistry = null))) shouldBe listOf(large)
-        DependentTargetSelection.legalNext(d.state, requirements, listOf(large), context, targetFinder = TargetFinder(PredicateEvaluator(cardRegistry = null))) shouldBe listOf(middle)
-        DependentTargetSelection.legalNext(d.state, requirements, listOf(large, middle), context, targetFinder = TargetFinder(PredicateEvaluator(cardRegistry = null))) shouldBe listOf(small)
+        DependentTargetSelection.legalNext(d.state, requirements, listOf(listOf(large)), context, targetFinder = TargetFinder(PredicateEvaluator(cardRegistry = null))) shouldBe listOf(middle)
+        DependentTargetSelection.legalNext(d.state, requirements, listOf(listOf(large), listOf(middle)), context, targetFinder = TargetFinder(PredicateEvaluator(cardRegistry = null))) shouldBe listOf(small)
+    }
+
+    test("the last slot may take several targets, all controlled by the chosen player") {
+        val d = driver()
+        d.putCreatureOnBattlefield(d.player1, "Hill Giant")
+        val bears = d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        val elves = d.putCreatureOnBattlefield(d.player2, "Llanowar Elves")
+        val requirements = listOf(
+            com.wingedsheep.sdk.scripting.targets.TargetPlayer(),
+            TargetObject(
+                count = 5,
+                optional = true,
+                filter = TargetFilter.Creature.targetPlayerControls(EffectTarget.ContextTarget(0)),
+            ),
+        )
+        val context = PredicateContext(controllerId = d.player1)
+        val finder = TargetFinder(PredicateEvaluator(cardRegistry = null))
+        DependentTargetSelection.isRequired(requirements) shouldBe true
+        DependentTargetSelection.legalNext(d.state, requirements, emptyList(), context, targetFinder = finder) shouldContainExactlyInAnyOrder
+            listOf(d.player1, d.player2)
+        DependentTargetSelection.legalNext(d.state, requirements, listOf(listOf(d.player2)), context, targetFinder = finder) shouldContainExactlyInAnyOrder
+            listOf(bears, elves)
+    }
+
+    test("a required multi-target last slot rules out a first choice that can't fill its minimum") {
+        val d = driver()
+        d.putCreatureOnBattlefield(d.player1, "Hill Giant")
+        d.putCreatureOnBattlefield(d.player2, "Grizzly Bears")
+        d.putCreatureOnBattlefield(d.player2, "Llanowar Elves")
+        val requirements = listOf(
+            com.wingedsheep.sdk.scripting.targets.TargetPlayer(),
+            TargetObject(count = 2, filter = TargetFilter.Creature.targetPlayerControls(EffectTarget.ContextTarget(0))),
+        )
+        val context = PredicateContext(controllerId = d.player1)
+        val finder = TargetFinder(PredicateEvaluator(cardRegistry = null))
+        DependentTargetSelection.legalNext(d.state, requirements, emptyList(), context, targetFinder = finder) shouldBe
+            listOf(d.player2)
+    }
+
+    test("a multi-target slot before the last is rejected") {
+        val d = driver()
+        val requirements = listOf(
+            TargetObject(count = 2, filter = TargetFilter.CreatureYouControl),
+            TargetObject(filter = TargetFilter.CreatureOpponentControls.powerLessThanEntity(EffectTarget.ContextTarget(0))),
+        )
+        shouldThrow<IllegalArgumentException> {
+            DependentTargetSelection.legalNext(d.state, requirements, emptyList(), PredicateContext(controllerId = d.player1),
+                targetFinder = TargetFinder(PredicateEvaluator(cardRegistry = null)))
+        }
     }
 })
