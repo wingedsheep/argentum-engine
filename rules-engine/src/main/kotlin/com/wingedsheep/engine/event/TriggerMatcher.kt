@@ -2250,6 +2250,9 @@ class TriggerMatcher(
         // Graveyard-zone-only predicates; trigger gating never sees a stamped entity here.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.PutIntoGraveyardThisTurn -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false
+        // No controller context here to resolve the protector predicate's "you"/"that player"; fail
+        // closed rather than matching every battle.
+        is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsProtectedBy -> false
         // No granter context in trigger gating — granter-relative exclusion is resolution-time only.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsGrantingPermanent -> false
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.Or ->

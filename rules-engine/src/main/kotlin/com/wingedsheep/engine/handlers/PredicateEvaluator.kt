@@ -1423,37 +1423,53 @@ class PredicateEvaluator(
                     // from the graveyard.
                     ?: container.get<LastKnownPermanentComponent>()?.snapshot?.controllerId
                     ?: return false
-                when (predicate) {
-                    ControllerPredicate.ControlledByYou -> controllerId == context.controllerId
-                    ControllerPredicate.ControlledByOpponent -> controllerId != context.controllerId
-                    ControllerPredicate.ControlledByAny -> true
-                    ControllerPredicate.ControlledByActivePlayer -> controllerId == state.activePlayerId
-                    ControllerPredicate.ControlledByTargetOpponent -> {
-                        context.targetOpponentId?.let { controllerId == it } ?: false
-                    }
-                    ControllerPredicate.ControlledByTargetPlayer -> {
-                        context.targetPlayerId?.let { controllerId == it } ?: false
-                    }
-                    ControllerPredicate.ControlledByTriggeringPlayer -> {
-                        // Mirror OwnedByTriggeringPlayer's resolution: the damaged player rides on
-                        // triggeringEntityId for a damage trigger (triggeringPlayerId is only set by
-                        // triggers that name a distinct player), so fall back to it. A non-player
-                        // triggeringEntityId (e.g. a creature) can never equal a controller playerId.
-                        val triggeringPlayer = context.triggeringPlayerId ?: context.triggeringEntityId
-                        triggeringPlayer != null && controllerId == triggeringPlayer
-                    }
-                    is ControllerPredicate.ControlledByReferencedPlayer -> {
-                        val referenced = context.resolvePlayerTarget(predicate.target)
-                            ?: resolveReferencedPlayerFromState(state, projected, predicate.target, context)
-                        referenced?.let { controllerId == it } ?: false
-                    }
-                    // Already handled above
-                    ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent,
-                    ControllerPredicate.OwnedByTriggeringPlayer,
-                    is ControllerPredicate.And, is ControllerPredicate.Or, is ControllerPredicate.Not -> true
-                }
+                playerMatchesControlLeaf(state, projected, controllerId, predicate, context)
             }
         }
+    }
+
+    /**
+     * Whether [playerId] is the player a control-based [ControllerPredicate] leaf names — the shared
+     * leaf semantics for "controller of the candidate" ([matchesControllerPredicate]) and "protector of
+     * the battle" ([StatePredicate.IsProtectedBy]). Combinators recurse; owner-based leaves say
+     * nothing about a player standing in for a controller and never match.
+     */
+    private fun playerMatchesControlLeaf(
+        state: GameState,
+        projected: ProjectedState,
+        playerId: EntityId,
+        predicate: ControllerPredicate,
+        context: PredicateContext
+    ): Boolean = when (predicate) {
+        is ControllerPredicate.And ->
+            predicate.predicates.all { playerMatchesControlLeaf(state, projected, playerId, it, context) }
+        is ControllerPredicate.Or ->
+            predicate.predicates.any { playerMatchesControlLeaf(state, projected, playerId, it, context) }
+        is ControllerPredicate.Not ->
+            !playerMatchesControlLeaf(state, projected, playerId, predicate.predicate, context)
+        ControllerPredicate.ControlledByYou -> playerId == context.controllerId
+        ControllerPredicate.ControlledByOpponent -> playerId != context.controllerId
+        ControllerPredicate.ControlledByAny -> true
+        ControllerPredicate.ControlledByActivePlayer -> playerId == state.activePlayerId
+        ControllerPredicate.ControlledByTargetOpponent ->
+            context.targetOpponentId?.let { playerId == it } ?: false
+        ControllerPredicate.ControlledByTargetPlayer ->
+            context.targetPlayerId?.let { playerId == it } ?: false
+        ControllerPredicate.ControlledByTriggeringPlayer -> {
+            // Mirror OwnedByTriggeringPlayer's resolution: the damaged player rides on
+            // triggeringEntityId for a damage trigger (triggeringPlayerId is only set by
+            // triggers that name a distinct player), so fall back to it. A non-player
+            // triggeringEntityId (e.g. a creature) can never equal a playerId.
+            val triggeringPlayer = context.triggeringPlayerId ?: context.triggeringEntityId
+            triggeringPlayer != null && playerId == triggeringPlayer
+        }
+        is ControllerPredicate.ControlledByReferencedPlayer -> {
+            val referenced = context.resolvePlayerTarget(predicate.target)
+                ?: resolveReferencedPlayerFromState(state, projected, predicate.target, context)
+            referenced?.let { playerId == it } ?: false
+        }
+        ControllerPredicate.OwnedByYou, ControllerPredicate.OwnedByOpponent,
+        ControllerPredicate.OwnedByTargetPlayer, ControllerPredicate.OwnedByTriggeringPlayer -> false
     }
 
     /**
@@ -2062,6 +2078,16 @@ class PredicateEvaluator(
                         }
                     }
                 }
+            }
+
+            // "a battle an opponent protects" — the protector (CR 310.9) stands in for the controller
+            // in the reused ControllerPredicate. Fail closed with no context (no "you") or no
+            // protector (a non-battle, or a battle the protector SBA hasn't assigned yet).
+            is StatePredicate.IsProtectedBy -> {
+                val ctx = context ?: return false
+                val protector = com.wingedsheep.engine.mechanics.battle.Battles.protectorOf(state, entityId)
+                    ?: return false
+                playerMatchesControlLeaf(state, projected, protector, predicate.protector, ctx)
             }
 
             StatePredicate.IsModified -> com.wingedsheep.engine.handlers.predicates.isModified(state, entityId)

@@ -685,6 +685,21 @@ internal class AffectsFilterResolver(
                 }
             }
         }
+        // "battles an opponent protects" — the protector (CR 310.9) is plain per-entity state, not a
+        // layered characteristic, so read it straight off the battle and resolve the leaf against the
+        // static's controller, as IsEnchantedByAura does for the Aura's controller.
+        is StatePredicate.IsProtectedBy -> {
+            val protector = com.wingedsheep.engine.mechanics.battle.Battles.protectorOf(state, entityId)
+            protector != null && sourceController != null && predicate.protector.evaluateWith { leaf ->
+                when (leaf) {
+                    ControllerPredicate.ControlledByYou -> protector == sourceController
+                    ControllerPredicate.ControlledByOpponent -> protector != sourceController
+                    ControllerPredicate.ControlledByAny -> true
+                    ControllerPredicate.ControlledByActivePlayer -> protector == state.activePlayerId
+                    else -> null
+                }
+            }
+        }
         StatePredicate.IsModified -> com.wingedsheep.engine.handlers.predicates.isModified(state, entityId)
         // A general "attached to <filter>" host constraint whose nested filter may carry a controller
         // predicate ("a creature you control"). Group-static projection has no ability controller to

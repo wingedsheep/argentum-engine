@@ -913,6 +913,31 @@ sealed interface StatePredicate {
         }
     }
 
+    /**
+     * A battle whose protector (CR 310.9) satisfies [protector] — the battle's analogue of the
+     * controller predicate. Battles are protected, not controlled, by the player whose side of the
+     * table they defend, and a Siege is controlled by its caster but protected by an opponent, so
+     * "a battle an opponent protects" can't be spelled with [ControllerPredicate] on the battle.
+     *
+     * The [ControllerPredicate] vocabulary is reused, evaluated against the protecting player
+     * instead of the controller: `ControlledByOpponent` reads "an opponent protects",
+     * `ControlledByYou` "you protect", `ControlledByTriggeringPlayer` "that player protects"
+     * (Rampaging Raptor). Owner-based leaves never match. A permanent with no protector (a
+     * non-battle, or a battle before the protector SBA has run) never matches.
+     */
+    @SerialName("IsProtectedBy")
+    @Serializable
+    data class IsProtectedBy(val protector: ControllerPredicate) : Entity {
+        override val description: String = when (protector) {
+            ControllerPredicate.ControlledByYou -> "you protect"
+            ControllerPredicate.ControlledByOpponent -> "an opponent protects"
+            ControllerPredicate.ControlledByTriggeringPlayer -> "that player protects"
+            ControllerPredicate.ControlledByTargetPlayer -> "target player protects"
+            ControllerPredicate.ControlledByTargetOpponent -> "target opponent protects"
+            else -> "protected by ${protector.description.removeSuffix(" controls")}"
+        }
+    }
+
     /** Has an Equipment attached, an Aura attached, or any counter (MTG "modified" definition) */
     @SerialName("IsModified")
     @Serializable

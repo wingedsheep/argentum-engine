@@ -922,6 +922,15 @@ interface ObjectFilterBuilder<out Self> {
         withStatePredicate(StatePredicate.IsEnchantedByAura(auraController))
 
     /**
+     * A battle protected by [protector] — "battle an opponent protects" (Joyful Stormsculptor),
+     * "battle that player protects" (Rampaging Raptor). Compose with a battle type filter; the
+     * [ControllerPredicate] is evaluated against the protecting player, not the controller. See
+     * [StatePredicate.IsProtectedBy].
+     */
+    fun protectedBy(protector: ControllerPredicate = ControllerPredicate.ControlledByOpponent) =
+        withStatePredicate(StatePredicate.IsProtectedBy(protector))
+
+    /**
      * Must be marked as a "warped card in exile" (CR 702.185b) — i.e., the
      * engine wrote a `WarpExiledComponent` when the warped permanent left the
      * battlefield at end of turn. Use this when filtering candidates in the

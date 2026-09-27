@@ -5665,6 +5665,19 @@ work for abilities-on-stack (which carry no `CardComponent`).
   `PredicateEvaluator` (targets/conditions) and `AffectsFilterResolver` (layer-7c group projection).
   Also available as a `TargetFilter` chainer — `TargetFilter.CreatureYouControl.enchanted()` for
   "target enchanted creature you control" (Graceful Takedown).
+- `IsProtectedBy(protector)` (filter builder `protectedBy(protector = ControlledByOpponent)`) — a battle
+  whose **protector** (CR 310.9) matches the given `ControllerPredicate`, evaluated against the protecting
+  player instead of the controller. Battles are protected, not controlled, and a Siege is controlled by its
+  caster but protected by an opponent, so "a battle an opponent protects" can't be spelled as a controller
+  predicate on the battle. `ControlledByOpponent` reads "an opponent protects", `ControlledByYou` "you
+  protect", `ControlledByTriggeringPlayer` "that player protects": Rampaging Raptor's "target
+  planeswalker that player controls or battle that player protects" is
+  `GameObjectFilter.Planeswalker.controlledByTriggeringPlayer() or
+  GameObjectFilter.Battle.protectedBy(ControlledByTriggeringPlayer)`; Portent Tracker's "if an opponent
+  protects it" is `Conditions.TargetMatchesFilter(GameObjectFilter.Battle.protectedBy())`. Owner-based
+  leaves never match, and a permanent with no protector never matches. Resolves in `PredicateEvaluator`
+  (targets/conditions/groups) and `AffectsFilterResolver` (group statics, `You`/`Opponent`/`Any`/active
+  player leaves); trigger-filter gating fails closed.
 - `IsEnchantedByAura(auraController)` (filter builder `enchantedByAura(controller = ControlledByYou)`)
   — the aura-control-scoped `IsEnchanted`: has at least one attached Aura whose **controller** matches
   the given `ControllerPredicate`. "Enchanted by Auras you control" (Archon of the Wild Rose) is a

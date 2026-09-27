@@ -1822,6 +1822,108 @@
     ]
 }
 
+// Portent Tracker
+{
+    "name": "Portent Tracker",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Satyr Scout",
+    "oracleText": "{T}: Untap target land.\n{T}: Choose target battle. If an opponent protects it, remove a defense counter from it. Otherwise, put a defense counter on it. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Portent Tracker:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "TapUntap",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "tap": false
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "land"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            },
+            {
+                "id": "Portent Tracker:2",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": {
+                                "type": "BoundVariable",
+                                "name": "t1"
+                            },
+                            "filter": {
+                                "cardPredicates": [
+                                    "IsBattle"
+                                ],
+                                "statePredicates": [
+                                    {
+                                        "type": "IsProtectedBy",
+                                        "protector": "ControlledByOpponent"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "RemoveCounters",
+                        "counterType": "DEFENSE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    },
+                    "otherwise": {
+                        "type": "AddCounters",
+                        "counterType": "DEFENSE",
+                        "count": 1,
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        }
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "battle"
+                        },
+                        "id": "t1"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "201",
+        "artist": "Caroline Gariba",
+        "flavorText": "In the days before the invasion, the symbol of its perpetrator appeared in strange places all across the Multiverse.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/c/bc6104d4-d0af-40da-8227-14243d778e96.jpg?1783916963"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Preening Champion
 {
     "name": "Preening Champion",
@@ -1968,6 +2070,114 @@
             {
                 "date": "2024-01-12",
                 "text": "When calculating a spell's total cost, include any alternative costs, additional costs, or anything else that increases or reduces the cost to cast the spell. Convoke applies after the total cost is calculated. Convoke doesn't change a spell's mana cost or mana value."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Rampaging Raptor
+{
+    "name": "Rampaging Raptor",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Creature — Dinosaur",
+    "oracleText": "Trample, haste\n{2}{R}: This creature gets +2/+0 until end of turn.\nWhenever this creature deals combat damage to an opponent, it deals that much damage to target planeswalker that player controls or battle that player protects.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE",
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Rampaging Raptor:2",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "anyOf": [
+                                {
+                                    "cardPredicates": [
+                                        "IsPlaneswalker"
+                                    ],
+                                    "controllerPredicate": "ControlledByTriggeringPlayer"
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsBattle"
+                                    ],
+                                    "statePredicates": [
+                                        {
+                                            "type": "IsProtectedBy",
+                                            "protector": "ControlledByTriggeringPlayer"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Rampaging Raptor:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}{R}"
+                    }
+                },
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 0
+                    },
+                    "target": "Self"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "160",
+        "rarity": "RARE",
+        "artist": "Denys Tsiperko",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/4/64b80ddb-ce55-4ebc-b587-77843abc8bad.jpg?1783916985",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "Unlike many similar abilities, Rampaging Raptor's triggered ability triggers whenever it deals combat damage to an opponent, not to a player. If it happens to deal combat damage to you (usually due to a redirection effect, which would be unusual), the ability won't trigger."
             }
         ]
     },
