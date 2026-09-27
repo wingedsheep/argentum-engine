@@ -126,9 +126,27 @@ internal class ActivationCostPayer(
         val xValue = activation.effectiveXValue ?: 0
 
         // Pay mana costs before paying other costs
-        val (afterAlternative, manaCost) =
+        val (afterAlternative, reducedManaCost) =
             applyAlternativePayments(currentState, activation, effectiveCost.extractManaCost(), events)
         currentState = afterAlternative
+
+        // Phyrexian pips paid with 2 life instead of mana (CR 107.4f): the player's explicit
+        // choice, or on auto-pay the fewest pips mana can't cover. What's left is the mana owed.
+        val phyrexianLifePayments = when {
+            reducedManaCost == null -> emptyList()
+            action.paymentStrategy is PaymentStrategy.Explicit -> action.paymentStrategy.phyrexianLifePayments
+            else -> manaSolver.choosePhyrexianLifePayments(
+                currentState, action.playerId, reducedManaCost, if (reducedManaCost.hasX) xValue else 0,
+                excludeSources = if (effectiveCost.hasTapCost()) setOf(action.sourceId) else emptySet(),
+                spellContext = paymentContext, xManaRestriction = ability.xManaRestriction
+            ) ?: emptyList()
+        }
+        val phyrexianLife = phyrexianLifePayments.size * 2
+        if (phyrexianLife > currentState.lifeTotal(action.playerId)) {
+            return ActivationPaymentOutcome.Failed("Insufficient life for Phyrexian mana payment")
+        }
+        val manaCost = if (reducedManaCost == null) null else reducedManaCost.withPhyrexianPaidByLife(phyrexianLifePayments)
+            ?: return ActivationPaymentOutcome.Failed("Invalid Phyrexian mana payment")
 
         if (manaCost != null) {
             when (val tapped = activateManaAbilities(currentState, activation, manaPool, manaCost, xValue, paymentContext)) {
@@ -179,9 +197,11 @@ internal class ActivationCostPayer(
         // When convoke was applied, replace the mana portion with the reduced cost.
         val costForPayment = if (action.paymentStrategy is PaymentStrategy.Explicit) {
             effectiveCost.stripManaCost()
-        } else if ((ability.hasConvoke || ability.hasWaterbend) && action.alternativePayment != null && !action.alternativePayment.isEmpty && manaCost != null) {
-            // Convoke/waterbend reduced the mana cost — update the cost structure so payAbilityCost
-            // deducts the reduced amount from the pool instead of the original full amount
+        } else if (manaCost != null && (phyrexianLifePayments.isNotEmpty() ||
+                ((ability.hasConvoke || ability.hasWaterbend) && action.alternativePayment != null && !action.alternativePayment.isEmpty))
+        ) {
+            // Convoke/waterbend or Phyrexian life reduced the mana cost — update the cost structure
+            // so payAbilityCost deducts the reduced amount from the pool instead of the full amount
             effectiveCost.withManaPortion(manaCost)
         } else {
             effectiveCost
@@ -207,6 +227,13 @@ internal class ActivationCostPayer(
 
         // Collect events from cost payment (e.g., sacrifice events)
         events.addAll(costResult.events)
+
+        if (phyrexianLife > 0) {
+            val (afterLife, lifeEvents) = costHandler.payLife(currentState, action.playerId, phyrexianLife)
+                ?: return ActivationPaymentOutcome.Failed("Unable to pay life for Phyrexian mana")
+            currentState = afterLife
+            events.addAll(lifeEvents)
+        }
 
         // Deduct X mana from the pool. ManaPool.pay() skips X symbols ("handled by caller"),
         // so we must explicitly spend the X portion here (same pattern as CastSpellHandler.autoPay).

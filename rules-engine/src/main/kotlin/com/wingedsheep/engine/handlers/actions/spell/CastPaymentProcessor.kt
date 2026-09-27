@@ -130,7 +130,15 @@ class CastPaymentProcessor(
         spellContext: SpellPaymentContext? = null,
         xManaRestriction: Set<Color> = emptySet()
     ): PaymentResult {
-        val lifePayments = (action.paymentStrategy as? PaymentStrategy.Explicit)?.phyrexianLifePayments.orEmpty()
+        // Phyrexian pips paid with 2 life (CR 107.4f): the caster's explicit choice, or on auto-pay
+        // the fewest pips mana can't cover — the same split `ManaSolver.canPay` deemed affordable.
+        val lifePayments = when (val strategy = action.paymentStrategy) {
+            is PaymentStrategy.Explicit -> strategy.phyrexianLifePayments
+            is PaymentStrategy.AutoPay -> manaSolver.choosePhyrexianLifePayments(
+                state, action.playerId, effectiveCost, xValue, spellContext = spellContext, xManaRestriction = xManaRestriction
+            ).orEmpty()
+            is PaymentStrategy.FromPool -> emptyList()
+        }
         val lifeToPay = lifePayments.size * 2
         val currentLife = state.lifeTotal(action.playerId)
         if (lifeToPay > currentLife) {

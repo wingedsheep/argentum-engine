@@ -386,10 +386,16 @@ excluded.
 
 ## 3. Costs (`Costs.*`)
 
-Spell mana costs containing Phyrexian symbols (for example `{B/P}`) are paid per pip with either
-one mana of that color or 2 life. Manual payment records the chosen life-paid pip colors as a
-multiset on `PaymentStrategy.Explicit.phyrexianLifePayments`; the engine validates that those pips
-exist in the cost and charges the life through the shared life-payment service.
+Mana costs containing Phyrexian symbols (for example `{B/P}`) are paid per pip with either one mana
+of that color or 2 life (CR 107.4f) — on spells *and* on activated abilities, so
+`Costs.Mana("{4}{R/P}")` is the whole spelling of March of the Machine's "{4}{R/P}: Transform this
+creature" (Bonded Herdbeast). Manual payment records the chosen life-paid pip colors as a multiset on
+`PaymentStrategy.Explicit.phyrexianLifePayments` (the same field for `CastSpell` and
+`ActivateAbility`); the engine validates that those pips exist in the cost and that the player has the
+life (CR 119.4), and charges it through the shared life-payment service. Auto-pay asks
+`ManaSolver.choosePhyrexianLifePayments` — the fewest pips to pay with life so mana covers the rest —
+so it spends life only on a pip no available source can make, and pays exactly the split `canPay`
+counted as affordable.
 
 > **One cost vocabulary (`CostAtom`).** The payable things shared across cost *contexts* — mana, life,
 > sacrifice, discard, exile-from-zone, tap, return-to-hand, reveal — are defined **once** in the

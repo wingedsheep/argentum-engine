@@ -465,6 +465,73 @@
     ]
 }
 
+// Bonded Herdbeast
+{
+    "name": "Bonded Herdbeast",
+    "manaCost": "{4}{G}",
+    "typeLine": "Creature — Beast",
+    "oracleText": "{4}{R/P}: Transform this creature. Activate only as a sorcery. ({R/P} can be paid with either {R} or 2 life.)",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 5
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Bonded Herdbeast:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{4}{R/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Plated Kilnbeast",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Beast",
+        "oracleText": "Menace (This creature can't be blocked except by two or more creatures.)",
+        "creatureStats": {
+            "power": 7,
+            "toughness": 5
+        },
+        "keywords": [
+            "MENACE"
+        ],
+        "metadata": {
+            "collectorNumber": "178",
+            "artist": "Jokubas Uogintas",
+            "flavorText": "Now, united by the Great Work, they knew what it meant to be truly bonded.",
+            "imageUri": "https://cards.scryfall.io/normal/back/6/1/61972ddb-3421-4f22-a47a-89cea944dd02.jpg?1783916982"
+        },
+        "colorIdentityOverride": [
+            "RED",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "RED",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "178",
+        "artist": "Jokubas Uogintas",
+        "flavorText": "Though both had lost their families, the *eludha*—the spiritual connection between the monsters of Ikoria and their human bonders—gave them something greater.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/1/61972ddb-3421-4f22-a47a-89cea944dd02.jpg?1783916982"
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Chrome Host Seedshark
 {
     "name": "Chrome Host Seedshark",
@@ -1045,6 +1112,79 @@
         ]
     },
     "colorIdentityOverride": []
+}
+
+// Harried Artisan
+{
+    "name": "Harried Artisan",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Human Artificer",
+    "oracleText": "Haste\n{3}{W/P}: Transform this creature. Activate only as a sorcery. ({W/P} can be paid with either {W} or 2 life.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 3
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Harried Artisan:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{3}{W/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform this creature."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Phyrexian Skyflayer",
+        "manaCost": "",
+        "typeLine": "Creature — Phyrexian Artificer",
+        "oracleText": "Flying, haste",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 4
+        },
+        "keywords": [
+            "FLYING",
+            "HASTE"
+        ],
+        "metadata": {
+            "collectorNumber": "143",
+            "rarity": "UNCOMMON",
+            "artist": "Caio Monteiro",
+            "flavorText": "Soaring in Realmbreaker's embrace, he finally understood what perfection was.",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/3/73e92389-4bd2-492e-b4d6-d7cb6baedc41.jpg?1783916997"
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "RED"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "UNCOMMON",
+        "artist": "Caio Monteiro",
+        "flavorText": "As strange portals roared open across Theros, Lydus gathered his prototype and fled. He was so close to perfecting his design.",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73e92389-4bd2-492e-b4d6-d7cb6baedc41.jpg?1783916997"
+    },
+    "colorIdentityOverride": [
+        "WHITE",
+        "RED"
+    ]
 }
 
 // Interdisciplinary Mascot

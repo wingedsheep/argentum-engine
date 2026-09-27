@@ -2129,6 +2129,57 @@ class ManaSolver(
         if (pain > 0 && !source.hasPainCost) 15 + pain else 0
 
     /**
+     * The Phyrexian pips of [cost] an auto-payer should pay with 2 life each (CR 107.4f) — the
+     * fewest that leave the rest of [cost] payable with mana, so life is only spent when mana
+     * can't cover a pip. Empty when mana alone pays the whole cost (or it has no Phyrexian pips);
+     * null when no split of life and mana pays it.
+     *
+     * This is the choice the player makes explicitly with [com.wingedsheep.engine.core.PaymentStrategy.Explicit.phyrexianLifePayments];
+     * the auto-pay paths ask here so they spend exactly what [canPay] promised was affordable.
+     */
+    fun choosePhyrexianLifePayments(
+        state: GameState,
+        playerId: EntityId,
+        cost: ManaCost,
+        xValue: Int = 0,
+        excludeSources: Set<EntityId> = emptySet(),
+        spellContext: SpellPaymentContext? = null,
+        xManaRestriction: Set<Color> = emptySet()
+    ): List<Color>? {
+        val pipColors = cost.phyrexianSymbols.map { it.color }
+        if (pipColors.isEmpty()) return emptyList()
+        val life = state.lifeTotal(playerId)
+        for (lifePips in 0..pipColors.size) {
+            // A player can't pay more life than they have (CR 119.4).
+            if (lifePips * 2 > life) return null
+            for (choice in colorMultisets(pipColors, lifePips)) {
+                val reduced = cost.withPhyrexianPaidByLife(choice) ?: continue
+                if (canPay(
+                        state, playerId, reduced, xValue, excludeSources, spellContext,
+                        xManaRestriction = xManaRestriction, allowPhyrexianLife = false
+                    )) return choice
+            }
+        }
+        return null
+    }
+
+    /** Every distinct multiset of [size] colors drawn from [pool] (itself a multiset). */
+    private fun colorMultisets(pool: List<Color>, size: Int): List<List<Color>> {
+        val counts = pool.groupingBy { it }.eachCount().entries.toList()
+        val out = mutableListOf<List<Color>>()
+        fun extend(index: Int, remaining: Int, acc: List<Color>) {
+            if (remaining == 0) { out.add(acc); return }
+            if (index == counts.size) return
+            val (color, available) = counts[index]
+            for (take in minOf(available, remaining) downTo 0) {
+                extend(index + 1, remaining - take, acc + List(take) { color })
+            }
+        }
+        extend(0, size, emptyList())
+        return out
+    }
+
+    /**
      * Checks if a player can pay a mana cost (from floating mana pool + auto-pay).
      * Considers floating mana first, then checks if remaining can be paid by tapping sources.
      */
@@ -2143,13 +2194,15 @@ class ManaSolver(
         /** Colors that may pay the `{X}` portion ("spend only [colors] on X"); empty = any. */
         xManaRestriction: Set<Color> = emptySet(),
         /** Internal recursion tally for Phyrexian pips tentatively paid with life. */
-        phyrexianLifePipsCommitted: Int = 0
+        phyrexianLifePipsCommitted: Int = 0,
+        /** False to ask whether mana alone pays [cost], every Phyrexian pip included. */
+        allowPhyrexianLife: Boolean = true
     ): Boolean {
         // A Phyrexian pip may be paid with 2 life instead of its color. Try each distinct pip
         // choice before the mana-only solver below; recursive calls see a strictly smaller cost.
         // Paying down to exactly 0 is legal, though state-based actions will make the player lose.
         val life = state.lifeTotal(playerId)
-        if ((phyrexianLifePipsCommitted + 1) * 2 <= life) {
+        if (allowPhyrexianLife && (phyrexianLifePipsCommitted + 1) * 2 <= life) {
             val triedColors = mutableSetOf<Color>()
             for (pip in cost.phyrexianSymbols) {
                 if (!triedColors.add(pip.color)) continue

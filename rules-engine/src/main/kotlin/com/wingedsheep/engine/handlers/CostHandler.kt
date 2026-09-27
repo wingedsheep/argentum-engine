@@ -39,6 +39,13 @@ class CostHandler(private val zones: ZoneTransitionService) {
     val predicateEvaluator: PredicateEvaluator get() = zones.predicateEvaluator
 
     /**
+     * Pay [amount] life toward a cost outside a cost atom — the Phyrexian pips of an ability's mana
+     * cost paid with life (CR 107.4f). Null when the payer has no life total.
+     */
+    fun payLife(state: GameState, payerId: EntityId, amount: Int): Pair<GameState, List<GameEvent>>? =
+        LifePaymentService.pay(zones, state, payerId, amount)
+
+    /**
      * Check if a mana cost can be paid from a player's mana pool.
      */
     fun canPayManaCost(manaPool: ManaPool, cost: ManaCost): Boolean {
