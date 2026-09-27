@@ -7,6 +7,7 @@ import com.wingedsheep.engine.mechanics.HarmonizeGrants
 import com.wingedsheep.engine.mechanics.layers.ProjectedState
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.ZoneKey
+import com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent
 import com.wingedsheep.engine.state.components.battlefield.TappedComponent
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.sdk.core.Color
@@ -346,7 +347,7 @@ class AlternativePaymentHandler(
 
             // Tap the creature
             convoked[creatureId] = container
-                .get<com.wingedsheep.engine.state.components.battlefield.BattlefieldEntryTimestampComponent>()
+                .get<BattlefieldEntryTimestampComponent>()
                 ?.timestamp ?: 0L
             val (tappedState, tapEvent) = tap(currentState, creatureId)
             currentState = tappedState
