@@ -154,6 +154,21 @@ class PhyrexianActivationCostTest : FunSpec({
         driver.isTapped(island) shouldBe false
     }
 
+    test("an explicit life payment for a pip the cost doesn't have is rejected") {
+        val (driver, me) = newDriver()
+        val source = driver.putPermanentOnBattlefield(me, "Phyrexian Test Siphon")
+        val island = driver.putLandOnBattlefield(me, "Island")
+
+        driver.submit(
+            ActivateAbility(
+                playerId = me, sourceId = source, abilityId = driver.abilityId("Phyrexian Test Siphon"),
+                paymentStrategy = PaymentStrategy.Explicit(listOf(island), phyrexianLifePayments = listOf(Color.BLACK))
+            )
+        ).error shouldNotBe null
+        driver.getLifeTotal(me) shouldBe 20
+        driver.isTapped(island) shouldBe false
+    }
+
     test("paying down to exactly 0 life is allowed") {
         val (driver, me) = newDriver()
         val source = driver.putPermanentOnBattlefield(me, "Phyrexian Test Siphon")
