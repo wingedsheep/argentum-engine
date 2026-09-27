@@ -12702,8 +12702,8 @@ of `AddMana`. The engine empties pools at end of turn, so:
   controller. `DynamicAmounts.permanentsPutIntoGraveyardFromBattlefieldThisTurn()` defaults to
   `Player.Each`, the game-wide "if a permanent was put into a graveyard from the battlefield this
   turn" (Ashen Reaper). "An artifact or creature was put into a graveyard from the battlefield this
-  turn" (Ichor Shade) composes as `Conditions.Or` of `CREATURES_DIED` and `ARTIFACTS_DIED` over
-  `Player.Each`.
+  turn" (Ichor Shade) composes as `CREATURES_DIED + ARTIFACTS_DIED` over `Player.Each`, compared
+  `GT 0` (an artifact creature counts twice, which an "any" check doesn't mind).
 - `NONTOKEN_CREATURES_DIED` — nontoken creatures that died this turn.
 - `CREATURES_LEFT_BATTLEFIELD` — creatures (incl. tokens) that left the battlefield under the
   player's control this turn, regardless of destination (death, exile, bounce, …). The creature-scoped
