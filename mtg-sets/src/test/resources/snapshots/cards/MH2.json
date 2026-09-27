@@ -1348,44 +1348,6 @@
             "n": 2
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Jade Avenger:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 2"
-            },
-            {
-                "id": "Jade Avenger:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 2"
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "167",
         "artist": "Chris Seaman",

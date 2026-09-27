@@ -15,17 +15,15 @@ import io.kotest.matchers.shouldBe
  * Oracle: "Bushido 2 (Whenever this creature blocks or becomes blocked, it gets +2/+2 until end of
  * turn.)"
  *
- * **The first bushido card in the corpus.** `Keyword.BUSHIDO` is display-only vocabulary — nothing
- * in `rules-engine` reads it — so the ability CR 702.45a spells out is lowered by hand on the card
- * as two triggers over the two distinct events (`Triggers.self.blocks()` and `Triggers.self.becomesBlocked()`),
- * each pumping `EffectTarget.IterationEntity`. These tests pin that lowering end to end, because a card that
- * carried only the keyword would compile, read correctly in the client, and do nothing.
+ * The card carries only the keyword; the engine derives the CR 702.45a trigger from it (see
+ * `sdk/scripting/Bushido.kt`). These tests pin that derivation end to end, because a keyword the
+ * engine didn't read would compile, read correctly in the client, and do nothing.
  *
  * Covered:
  *  1. Blocking fires bushido — the Avenger is a 4/4 for the rest of the turn.
  *  2. Being blocked fires it too — the other half of the same printed ability.
- *  3. Attacking *unblocked* fires neither, so the split into two triggers can't double-count or
- *     leak a bonus into a combat where bushido does nothing.
+ *  3. Attacking *unblocked* doesn't fire it, so no bonus leaks into a combat where bushido does
+ *     nothing.
  */
 class JadeAvengerScenarioTest : FunSpec({
 
@@ -98,7 +96,7 @@ class JadeAvengerScenarioTest : FunSpec({
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Test 3: control — an unblocked attack fires neither half
+    // Test 3: control — an unblocked attack doesn't fire bushido
     // ─────────────────────────────────────────────────────────────────────────
     test("attacking unblocked leaves Jade Avenger a 2/2") {
         val driver = createDriver()

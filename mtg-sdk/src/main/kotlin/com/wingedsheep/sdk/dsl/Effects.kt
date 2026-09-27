@@ -3601,6 +3601,18 @@ object Effects {
     ): Effect = GrantKeywordEffect("TOXIC_$amount", target, duration)
 
     /**
+     * "[target] gains bushido [amount]" (Sensei Golden-Tail) — [GrantKeywordEffect] with the
+     * `BUSHIDO_<n>` string keyword ([com.wingedsheep.sdk.scripting.Bushido.grantedKeyword]). The
+     * engine derives the CR 702.45a trigger from it and `KeywordValue(BUSHIDO)` counts it, exactly
+     * as for printed bushido; see [com.wingedsheep.sdk.scripting.Bushido].
+     */
+    fun GrantBushido(
+        amount: Int,
+        target: EffectTarget,
+        duration: Duration = Duration.EndOfTurn
+    ): Effect = GrantKeywordEffect(com.wingedsheep.sdk.scripting.Bushido.grantedKeyword(amount), target, duration)
+
+    /**
      * Grant Harmonize (CR 702.180) to a target instant or sorcery card in a graveyard.
      * "Target instant or sorcery card in your graveyard gains harmonize until end of turn. Its
      * harmonize cost is equal to its mana cost." — Songcrafter Mage.

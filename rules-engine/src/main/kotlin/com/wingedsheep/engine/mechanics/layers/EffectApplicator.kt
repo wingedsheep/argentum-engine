@@ -32,6 +32,30 @@ internal class EffectApplicator(
 ) {
     private val dynamicAmountEvaluator = conditionEvaluator.amounts
 
+    /**
+     * Adds a granted keyword string. A numeric grant `<KEYWORD>_<n>` (granted toxic, granted
+     * bushido) is *summed* into any `<KEYWORD>_<m>` already there rather than added beside it: the
+     * projected keyword set can't hold two equal strings, so two "gains toxic 1" grants — or a
+     * printed toxic 2 plus a granted toxic 2 — would otherwise collapse to one and lose the N the
+     * readers sum (CR 702.164b's total toxic value, `KeywordValue`).
+     */
+    private fun addKeyword(keywords: MutableSet<String>, keyword: String) {
+        val split = keyword.lastIndexOf('_')
+        val n = if (split > 0) keyword.substring(split + 1).toIntOrNull() else null
+        if (n == null) {
+            keywords.add(keyword)
+            return
+        }
+        val prefix = keyword.substring(0, split + 1)
+        val existing = keywords.firstOrNull { it.startsWith(prefix) && it.substring(prefix.length).toIntOrNull() != null }
+        if (existing == null) {
+            keywords.add(keyword)
+        } else {
+            keywords.remove(existing)
+            keywords.add(prefix + (existing.substring(prefix.length).toInt() + n))
+        }
+    }
+
     fun applyEffect(
         effect: ContinuousEffect,
         state: GameState,
@@ -118,7 +142,7 @@ internal class EffectApplicator(
                     values.name = mod.name
                 }
                 is Modification.GrantKeyword -> {
-                    values.keywords.add(mod.keyword)
+                    addKeyword(values.keywords, mod.keyword)
                     // Changeling grants all creature types (Rule 702.73)
                     if (mod.keyword == Keyword.CHANGELING.name) {
                         values.subtypes.addAll(com.wingedsheep.sdk.core.Subtype.ALL_CREATURE_TYPES)

@@ -7,7 +7,6 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.CardDefinition
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Bushi Tenderfoot // Kenzo the Hardhearted (Champions of Kamigawa #2) — a flip card (CR 710).
@@ -17,9 +16,6 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * Kenzo the Hardhearted — Legendary Creature — Human Samurai 3/4
  * "Double strike; bushido 2"
- *
- * Bushido is display-only vocabulary, so it is lowered to its two trigger halves (blocks /
- * becomes blocked), following `DevotedRetainer`.
  */
 private val BushiTenderfootUpright = card("Bushi Tenderfoot") {
     manaCost = "{W}"
@@ -54,20 +50,6 @@ private val KenzoTheHardhearted = card("Kenzo the Hardhearted") {
 
     keywords(Keyword.DOUBLE_STRIKE)
     keywordAbility(KeywordAbility.bushido(2))
-
-    // Bushido 2, half one: "Whenever this creature blocks …"
-    triggeredAbility {
-        trigger = Triggers.self.blocks()
-        effect = Effects.ModifyStats(2, 2, EffectTarget.Self)
-        description = "Bushido 2"
-    }
-
-    // Bushido 2, half two: "… or becomes blocked, it gets +2/+2 until end of turn."
-    triggeredAbility {
-        trigger = Triggers.self.becomesBlocked()
-        effect = Effects.ModifyStats(2, 2, EffectTarget.Self)
-        description = "Bushido 2"
-    }
 
     metadata {
         rarity = Rarity.UNCOMMON

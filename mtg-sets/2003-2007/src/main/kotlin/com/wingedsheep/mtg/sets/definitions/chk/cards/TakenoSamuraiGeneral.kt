@@ -3,8 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.chk.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.dsl.DynamicAmounts
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
@@ -22,9 +20,9 @@ import com.wingedsheep.sdk.scripting.values.EntityNumericProperty
  * Bushido 2 (Whenever this creature blocks or becomes blocked, it gets +2/+2 until end of turn.)
  * Each other Samurai creature you control gets +1/+1 for each point of bushido it has.
  *
- * Bushido is lowered to its two triggers as in [NumaiOutcast]. The anthem reads each affected
- * Samurai's own bushido total through `KeywordValue(BUSHIDO)` on [EffectTarget.AffectedEntity], so
- * instances add and a Samurai that has lost its abilities gets nothing.
+ * The anthem reads each affected Samurai's own bushido total through `KeywordValue(BUSHIDO)` on
+ * [EffectTarget.AffectedEntity], so instances add, a granted bushido (Sensei Golden-Tail) counts,
+ * and a Samurai that has lost its abilities gets nothing.
  */
 val TakenoSamuraiGeneral = card("Takeno, Samurai General") {
     manaCost = "{5}{W}"
@@ -36,18 +34,6 @@ val TakenoSamuraiGeneral = card("Takeno, Samurai General") {
         "Each other Samurai creature you control gets +1/+1 for each point of bushido it has."
 
     keywordAbility(KeywordAbility.bushido(2))
-
-    triggeredAbility {
-        trigger = Triggers.self.blocks()
-        effect = Effects.ModifyStats(2, 2, EffectTarget.Self)
-        description = "Bushido 2"
-    }
-
-    triggeredAbility {
-        trigger = Triggers.self.becomesBlocked()
-        effect = Effects.ModifyStats(2, 2, EffectTarget.Self)
-        description = "Bushido 2"
-    }
 
     staticAbility {
         val bonus = DynamicAmounts.propertyOf(

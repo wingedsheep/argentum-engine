@@ -133,6 +133,11 @@ class TriggerAbilityResolver(
         // gates it, the printed KeywordAbility.Numeric supplies N.
         val renownAbilities = getRenownTriggeredAbilities(entityId, cardDefinitionId, state)
 
+        // Bushido N (CR 702.45) — the blocks-or-becomes-blocked pump is intrinsic to the keyword,
+        // printed on no card as a separate line. Printed instances as renown; a granted
+        // `BUSHIDO_<n>` (Sensei Golden-Tail) adds one more trigger for its N.
+        val bushidoAbilities = getBushidoTriggeredAbilities(entityId, cardDefinitionId, state)
+
         val allGranted = buildList {
             addAll(grantedAbilities)
             addAll(staticGrantedAbilities)
@@ -147,6 +152,7 @@ class TriggerAbilityResolver(
             addAll(vanishingAbilities)
             addAll(fabricateAbilities)
             addAll(renownAbilities)
+            addAll(bushidoAbilities)
         }
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
@@ -355,6 +361,11 @@ class TriggerAbilityResolver(
         // gates it, the printed KeywordAbility.Numeric supplies N.
         val renownAbilities = getRenownTriggeredAbilities(entityId, cardDefinitionId, state)
 
+        // Bushido N (CR 702.45) — the blocks-or-becomes-blocked pump is intrinsic to the keyword,
+        // printed on no card as a separate line. Printed instances as renown; a granted
+        // `BUSHIDO_<n>` (Sensei Golden-Tail) adds one more trigger for its N.
+        val bushidoAbilities = getBushidoTriggeredAbilities(entityId, cardDefinitionId, state)
+
         val allGranted = buildList {
             addAll(grantedAbilities)
             addAll(staticGrantedAbilities)
@@ -369,6 +380,7 @@ class TriggerAbilityResolver(
             addAll(vanishingAbilities)
             addAll(fabricateAbilities)
             addAll(renownAbilities)
+            addAll(bushidoAbilities)
         }
         val combined = if (allGranted.isNotEmpty()) base + allGranted else base
 
@@ -859,6 +871,40 @@ class TriggerAbilityResolver(
             .mapIndexed { instance, n ->
                 com.wingedsheep.sdk.scripting.Renown.combatDamageTrigger(n, instance)
             }
+    }
+
+    /**
+     * Bushido N (CR 702.45) as the keyword-derived triggered ability it is — the shape of
+     * [getRenownTriggeredAbilities], plus the granted half renown lacks. See
+     * [com.wingedsheep.sdk.scripting.Bushido].
+     *
+     * - **Printed**: gated on the projected bare `BUSHIDO` keyword (stripped by "loses all
+     *   abilities"), one trigger per printed instance (CR 702.45b), N from the printed
+     *   [KeywordAbility.Numeric].
+     * - **Granted**: a projected `BUSHIDO_<n>` carries its own N, so it needs no printed source;
+     *   projection sums repeated grants into one string, so this adds a single trigger for the
+     *   total.
+     */
+    private fun getBushidoTriggeredAbilities(
+        entityId: EntityId,
+        cardDefinitionId: String,
+        state: GameState,
+    ): List<TriggeredAbility> {
+        val keywords = state.projectedState.getKeywords(entityId)
+        if (keywords.isEmpty()) return emptyList()
+        val bushido = com.wingedsheep.sdk.core.Keyword.BUSHIDO.name
+        val printed = if (bushido in keywords) {
+            cardRegistry.getCard(cardDefinitionId)
+                ?.let { com.wingedsheep.sdk.scripting.Bushido.printedCounts(it) }
+                .orEmpty()
+                .mapIndexed { instance, n -> com.wingedsheep.sdk.scripting.Bushido.trigger(n, instance) }
+        } else {
+            emptyList()
+        }
+        val prefix = "${bushido}_"
+        val grantedN = keywords.sumOf { if (it.startsWith(prefix)) it.removePrefix(prefix).toIntOrNull() ?: 0 else 0 }
+        return if (grantedN > 0) printed + com.wingedsheep.sdk.scripting.Bushido.trigger(grantedN, granted = true)
+        else printed
     }
 
     private fun createWardTriggeredAbility(cost: WardCost, source: String): TriggeredAbility {

@@ -2,7 +2,6 @@ package com.wingedsheep.mtg.sets.definitions.chk.cards
 
 import com.wingedsheep.sdk.dsl.Costs
 import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.KeywordAbility
@@ -20,16 +19,6 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * `CostComposite(AtomMana, AtomPayLife)`. "Regenerate this creature" is [RegenerateEffect] on
  * [EffectTarget.Self]; there is no `Effects.Regenerate` facade, the effect class is the shipped
  * spelling (`m10/cards/CudgelTroll.kt`).
- *
- * **Bushido is lowered here, not handled by the engine.** [KeywordAbility.bushido] is display-only
- * vocabulary — nothing in the rules engine reads `Keyword.BUSHIDO` — so the ability it abbreviates is
- * wired explicitly, following `mh2/cards/JadeAvenger.kt`. CR 702.45a defines bushido N as one
- * triggered ability; the SDK has no single event covering "blocks or becomes blocked" from the
- * source's point of view, so it is written as two triggers over the two distinct events. They are
- * mutually exclusive in any one combat, so the pump never doubles.
- *
- * The pump targets [EffectTarget.Self] rather than `TriggeringEntity` because `Triggers.self.blocks()` fires
- * off a block event that does not bind the source as the triggering entity.
  */
 val NumaiOutcast = card("Numai Outcast") {
     manaCost = "{3}{B}"
@@ -41,20 +30,6 @@ val NumaiOutcast = card("Numai Outcast") {
         "{B}, Pay 5 life: Regenerate this creature."
 
     keywordAbility(KeywordAbility.bushido(2))
-
-    // Bushido 2, half one: "Whenever this creature blocks …"
-    triggeredAbility {
-        trigger = Triggers.self.blocks()
-        effect = Effects.ModifyStats(2, 2, EffectTarget.Self)
-        description = "Bushido 2"
-    }
-
-    // Bushido 2, half two: "… or becomes blocked, it gets +2/+2 until end of turn."
-    triggeredAbility {
-        trigger = Triggers.self.becomesBlocked()
-        effect = Effects.ModifyStats(2, 2, EffectTarget.Self)
-        description = "Bushido 2"
-    }
 
     activatedAbility {
         cost = Costs.Composite(Costs.Mana("{B}"), Costs.PayLife(5))

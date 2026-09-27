@@ -616,6 +616,12 @@ value class CounterType(val name: String) {
          */
         val THEFT = CounterType("THEFT")
 
+        /**
+         * Training counter (CHK — Sensei Golden-Tail). A marker with no inherent rule: it records
+         * which creatures the Sensei trained; removing it undoes nothing.
+         */
+        val TRAINING = CounterType("TRAINING")
+
         /** Every counter kind the SDK names, in declaration order. */
         val KNOWN: List<CounterType> = listOf(
             PLUS_ONE_PLUS_ONE,
@@ -727,6 +733,7 @@ value class CounterType(val name: String) {
             IMPOSTOR,
             DEVOTION,
             THEFT,
+            TRAINING,
         )
 
         /**

@@ -3,8 +3,6 @@ package com.wingedsheep.mtg.sets.definitions.chk.cards
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.dsl.Conditions
 import com.wingedsheep.sdk.dsl.DynamicAmounts
-import com.wingedsheep.sdk.dsl.Effects
-import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
@@ -16,7 +14,6 @@ import com.wingedsheep.sdk.scripting.ModifyStats
 import com.wingedsheep.sdk.scripting.conditions.ComparisonOperator
 import com.wingedsheep.sdk.scripting.filters.unified.GroupFilter
 import com.wingedsheep.sdk.scripting.references.Player
-import com.wingedsheep.sdk.scripting.targets.EffectTarget
 
 /**
  * Brothers Yamazaki
@@ -43,18 +40,6 @@ val BrothersYamazaki = card("Brothers Yamazaki") {
         "Each other creature named Brothers Yamazaki gets +2/+2 and has haste."
 
     keywordAbility(KeywordAbility.bushido(1))
-
-    triggeredAbility {
-        trigger = Triggers.self.blocks()
-        effect = Effects.ModifyStats(1, 1, EffectTarget.Self)
-        description = "Bushido 1"
-    }
-
-    triggeredAbility {
-        trigger = Triggers.self.becomesBlocked()
-        effect = Effects.ModifyStats(1, 1, EffectTarget.Self)
-        description = "Bushido 1"
-    }
 
     staticAbility {
         val brothers = GameObjectFilter.Permanent.named("Brothers Yamazaki")

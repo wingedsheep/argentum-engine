@@ -840,6 +840,8 @@ export const PASSIVE_COUNTER_TYPES: readonly CounterType[] = [
   CounterType.DEVOTION,
   // Night Dealings' theft tally is spent as X to tutor a card.
   CounterType.THEFT,
+  // Sensei Golden-Tail's training marker records which creatures it trained.
+  CounterType.TRAINING,
   CounterType.PLUS_ONE_PLUS_TWO,
   CounterType.PLUS_TWO_PLUS_TWO,
   CounterType.MINUS_TWO_MINUS_TWO,

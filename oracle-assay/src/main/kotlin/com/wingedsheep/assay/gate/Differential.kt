@@ -141,7 +141,7 @@ class Differential(private val touchstone: Touchstone = Touchstone()) {
 
         // The other half of fail-closed scoping. Assay reading every *line* is not the same as Assay
         // modelling every *slot*: a keyword the SDK lowers to a triggered ability at authoring time
-        // (rampage, bushido, modular) leaves content in a slot the grammar cannot produce, and
+        // (rampage, modular) leaves content in a slot the grammar cannot produce, and
         // confirming such a card would be claiming to have checked a lowering nobody compared.
         // Stated as "everything outside the modelled slots is still default", so widening the
         // grammar is one edit here and the check tightens with it.

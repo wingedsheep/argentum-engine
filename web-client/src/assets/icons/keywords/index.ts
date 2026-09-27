@@ -195,4 +195,5 @@ export const counterManaClass: Record<string, string> = {
   IMPOSTOR: 'counter-shield',
   DEVOTION: 'counter-devotion',
   THEFT: 'counter-gold',
+  TRAINING: 'counter-shield',
 }

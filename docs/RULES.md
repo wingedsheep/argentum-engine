@@ -77,8 +77,11 @@ doubt, leave it out — the planner will conservatively schedule a rule-plan.
 - Eerie (ability-word prefix wired to enchantment-ETB + room-fully-unlocked triggers)
 
 ### Numeric keywords (printed text + payload; engine wires them where used)
-- Annihilator N, Bushido N, Rampage N, Absorb N, Afflict N, Modular N,
+- Annihilator N, Rampage N, Absorb N, Afflict N, Modular N,
   Fading N, Renown N, Fabricate N, Tribute N
+- Bushido N — fully wired (CR 702.45): declaring the keyword ability is the whole
+  implementation; the engine supplies the blocks-or-becomes-blocked trigger, and
+  `Effects.GrantBushido` grants it with its N.
 - Vanishing N — fully wired (CR 702.62): declaring the keyword ability is the whole
   implementation; the engine supplies the enters-with-counters replacement and both triggers.
   (catalog entries with display text and N; only the ones above with their own

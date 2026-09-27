@@ -24,16 +24,6 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  * permanent filter — the same spelling `chk/cards/CallToGlory.kt` uses for the identical phrase, and
  * the same shape Assay compiles (`ForEach` over an `IterationSpace.Group` whose body is
  * `ModifyStats` on the iterated entity). Nagao is a Samurai creature himself, so he pumps too.
- *
- * **Bushido is lowered here, not handled by the engine.** [KeywordAbility.bushido] is display-only
- * vocabulary — nothing in the rules engine reads `Keyword.BUSHIDO` — so the ability it abbreviates is
- * wired explicitly, following `mh2/cards/JadeAvenger.kt`. CR 702.45a defines bushido N as one
- * triggered ability; the SDK has no single event covering "blocks or becomes blocked" from the
- * source's point of view, so it is written as two triggers over the two distinct events. They are
- * mutually exclusive in any one combat, so the pump never doubles.
- *
- * The bushido pump targets [EffectTarget.Self] rather than `TriggeringEntity` because
- * `Triggers.self.blocks()` fires off a block event that does not bind the source as the triggering entity.
  */
 val NagaoBoundByHonor = card("Nagao, Bound by Honor") {
     manaCost = "{3}{W}"
@@ -45,20 +35,6 @@ val NagaoBoundByHonor = card("Nagao, Bound by Honor") {
         "Whenever Nagao attacks, Samurai creatures you control get +1/+1 until end of turn."
 
     keywordAbility(KeywordAbility.bushido(1))
-
-    // Bushido 1, half one: "Whenever this creature blocks …"
-    triggeredAbility {
-        trigger = Triggers.self.blocks()
-        effect = Effects.ModifyStats(1, 1, EffectTarget.Self)
-        description = "Bushido 1"
-    }
-
-    // Bushido 1, half two: "… or becomes blocked, it gets +1/+1 until end of turn."
-    triggeredAbility {
-        trigger = Triggers.self.becomesBlocked()
-        effect = Effects.ModifyStats(1, 1, EffectTarget.Self)
-        description = "Bushido 1"
-    }
 
     triggeredAbility {
         trigger = Triggers.self.attacks()

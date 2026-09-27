@@ -462,42 +462,6 @@
         }
     ],
     "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Battle-Mad Ronin:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 2"
-            },
-            {
-                "id": "Battle-Mad Ronin:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 2"
-            }
-        ],
         "staticAbilities": [
             "MustAttack"
         ]
@@ -1031,42 +995,6 @@
         }
     ],
     "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Brothers Yamazaki:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            },
-            {
-                "id": "Brothers Yamazaki:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            }
-        ],
         "staticAbilities": [
             {
                 "type": "ConditionalStaticAbility",
@@ -1524,44 +1452,6 @@
                 "n": 2
             }
         ],
-        "script": {
-            "triggeredAbilities": [
-                {
-                    "id": "Kenzo the Hardhearted:1",
-                    "trigger": "BlockEvent",
-                    "effect": {
-                        "type": "ModifyStats",
-                        "powerModifier": {
-                            "type": "Fixed",
-                            "amount": 2
-                        },
-                        "toughnessModifier": {
-                            "type": "Fixed",
-                            "amount": 2
-                        },
-                        "target": "Self"
-                    },
-                    "descriptionOverride": "Bushido 2"
-                },
-                {
-                    "id": "Kenzo the Hardhearted:2",
-                    "trigger": "BecomesBlockedEvent",
-                    "effect": {
-                        "type": "ModifyStats",
-                        "powerModifier": {
-                            "type": "Fixed",
-                            "amount": 2
-                        },
-                        "toughnessModifier": {
-                            "type": "Fixed",
-                            "amount": 2
-                        },
-                        "target": "Self"
-                    },
-                    "descriptionOverride": "Bushido 2"
-                }
-            ]
-        },
         "metadata": {
             "collectorNumber": "2",
             "rarity": "UNCOMMON",
@@ -2386,45 +2276,9 @@
         }
     ],
     "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Cursed Ronin:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            },
-            {
-                "id": "Cursed Ronin:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            }
-        ],
         "activatedAbilities": [
             {
-                "id": "Cursed Ronin:3",
+                "id": "Cursed Ronin:1",
                 "cost": {
                     "type": "CostAtomWrapper",
                     "atom": {
@@ -2677,44 +2531,6 @@
             "n": 1
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Devoted Retainer:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            },
-            {
-                "id": "Devoted Retainer:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "7",
         "artist": "Greg Hildebrandt",
@@ -7740,44 +7556,6 @@
             "n": 1
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Kitsune Blademaster:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            },
-            {
-                "id": "Kitsune Blademaster:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "25",
         "artist": "Keith Garletts",
@@ -8429,42 +8207,6 @@
         }
     ],
     "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Konda's Hatamoto:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            },
-            {
-                "id": "Konda's Hatamoto:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            }
-        ],
         "staticAbilities": [
             {
                 "type": "ConditionalStaticAbility",
@@ -8541,44 +8283,6 @@
             "n": 5
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Konda, Lord of Eiganjo:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 5
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 5
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 5"
-            },
-            {
-                "id": "Konda, Lord of Eiganjo:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 5
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 5
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 5"
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "30",
         "rarity": "RARE",
@@ -9808,44 +9512,6 @@
             "n": 1
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Mothrider Samurai:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            },
-            {
-                "id": "Mothrider Samurai:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "34",
         "artist": "Mark Zug",
@@ -10362,40 +10028,6 @@
         "triggeredAbilities": [
             {
                 "id": "Nagao, Bound by Honor:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            },
-            {
-                "id": "Nagao, Bound by Honor:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            },
-            {
-                "id": "Nagao, Bound by Honor:3",
                 "trigger": "AttackEvent",
                 "effect": {
                     "type": "ForEach",
@@ -10783,44 +10415,6 @@
             "n": 1
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Nezumi Ronin:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            },
-            {
-                "id": "Nezumi Ronin:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "130",
         "artist": "Scott M. Fischer",
@@ -11283,45 +10877,9 @@
         }
     ],
     "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Numai Outcast:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 2"
-            },
-            {
-                "id": "Numai Outcast:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 2"
-            }
-        ],
         "activatedAbilities": [
             {
-                "id": "Numai Outcast:3",
+                "id": "Numai Outcast:1",
                 "cost": {
                     "type": "CostComposite",
                     "costs": [
@@ -13098,44 +12656,6 @@
             "n": 1
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Ronin Houndmaster:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            },
-            {
-                "id": "Ronin Houndmaster:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "184",
         "artist": "Edward P. Beard, Jr.",
@@ -13452,44 +12972,6 @@
             "n": 2
         }
     ],
-    "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Samurai Enforcers:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 2"
-            },
-            {
-                "id": "Samurai Enforcers:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 2"
-            }
-        ]
-    },
     "metadata": {
         "collectorNumber": "42",
         "rarity": "UNCOMMON",
@@ -13523,42 +13005,6 @@
         }
     ],
     "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Samurai of the Pale Curtain:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            },
-            {
-                "id": "Samurai of the Pale Curtain:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 1
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 1"
-            }
-        ],
         "replacementEffects": [
             {
                 "type": "RedirectZoneChange",
@@ -13674,6 +13120,98 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Sensei Golden-Tail
+{
+    "name": "Sensei Golden-Tail",
+    "manaCost": "{1}{W}",
+    "typeLine": "Legendary Creature — Fox Samurai",
+    "oracleText": "Bushido 1 (Whenever this creature blocks or becomes blocked, it gets +1/+1 until end of turn.)\n{1}{W}, {T}: Put a training counter on target creature. That creature gains bushido 1 and becomes a Samurai in addition to its other creature types. Activate only as a sorcery.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "keywords": [
+        "BUSHIDO"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "BUSHIDO",
+            "n": 1
+        }
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Sensei Golden-Tail:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{W}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "AddCounters",
+                            "counterType": "TRAINING",
+                            "count": 1,
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GrantKeyword",
+                            "keyword": "BUSHIDO_1",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "duration": "Permanent"
+                        },
+                        {
+                            "type": "AddCreatureType",
+                            "subtype": "Samurai",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "timing": "SorcerySpeed"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "44",
+        "rarity": "RARE",
+        "artist": "Stephen Tappin",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/9/b93dd897-3fb5-48b1-bdff-9383ce1feb21.jpg?1783944332"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
     ]
 }
 
@@ -15594,42 +15132,6 @@
         }
     ],
     "script": {
-        "triggeredAbilities": [
-            {
-                "id": "Takeno, Samurai General:1",
-                "trigger": "BlockEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 2"
-            },
-            {
-                "id": "Takeno, Samurai General:2",
-                "trigger": "BecomesBlockedEvent",
-                "effect": {
-                    "type": "ModifyStats",
-                    "powerModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "toughnessModifier": {
-                        "type": "Fixed",
-                        "amount": 2
-                    },
-                    "target": "Self"
-                },
-                "descriptionOverride": "Bushido 2"
-            }
-        ],
         "staticAbilities": [
             {
                 "type": "GrantDynamicStats",

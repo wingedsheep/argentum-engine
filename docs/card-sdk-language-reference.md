@@ -1867,6 +1867,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   dies trigger reads the last-known count to come back with one fewer),
   `CounterType.DEVOTION` (Bloodthirsty Ogre — one tap ability adds it, the other shrinks a creature by the count),
   `CounterType.THEFT` (Night Dealings — damage your sources deal to other players adds them, `Costs.RemoveXCounters(THEFT, self = true)` spends them),
+  `CounterType.TRAINING` (Sensei Golden-Tail — a marker only; removing it undoes nothing),
   `CounterType.JUDGMENT` (Faithbound Judge // Sinner's Judgment — both faces count to three, the
   creature face to shed defender and the Aura face to make the enchanted player lose the game),
   `CounterType.NET`, `CounterType.FIRE`, `CounterType.CONQUEROR`, `CounterType.POINT` (Contested Game Ball — its
@@ -3320,6 +3321,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `ModalEffect.chooseOneNotYetChosen(*modes)` — "choose one that hasn't been chosen"; source remembers used modes across the game (Gandalf the Grey). Flag: `excludePreviouslyChosenModes` (per-source `ChosenModesEverComponent`, never cleared).
 - `ModalEffect.chooseOneNotYetChosenThisTurn(*modes)` — "choose one that hasn't been chosen **this turn**"; the turn-scoped sibling. The source remembers modes chosen during the current turn (per-source `ChosenModesThisTurnComponent`, cleared each cleanup step) and excludes them from later triggers *this turn*, so across all of a turn's triggers each mode is chosen at most once; the memory resets next turn. Once every mode is chosen this turn the ability has no legal mode and resolves as a no-op. Keyed to the source object, so two copies track modes independently. Flag: `excludeModesChosenThisTurn` (mutually exclusive with `excludePreviouslyChosenModes`). Repeatable modal triggered/activated abilities only — not modal spells (Breeches, Eager Pillager).
 - `ChooseActionEffect(choices, player = Controller)` — `player` picks from a list of labeled effects; infeasible options (per each `EffectChoice.feasibilityCheck`) are filtered out, and if one remains it auto-runs. `player` may be any `EffectTarget`, including the state-relational `EffectTarget.TargetController` — routing the choice to the controller of the ability's chosen permanent (a "[do X to target permanent] unless its controller [accepts an avoidance]" choice). Combustion Man: "destroy target permanent unless its controller has Combustion Man deal damage to them equal to his power" — `player = TargetController`, with choices `DealDamage(sourcePower(), target = TargetController, damageSource = Self)` and `Destroy(<the permanent>)`.
+- `GrantBushido(amount, target, duration = EndOfTurn)` — "[target] gains bushido N"; a thin recipe over `GrantKeyword("BUSHIDO_<n>")`, the same `<KEYWORD>_<n>` form as `GrantToxic`. The engine derives the bushido trigger from it and `KeywordValue(BUSHIDO)` counts it. Sensei Golden-Tail: `AddCounters(TRAINING, 1, t) then GrantBushido(1, t, Duration.Permanent) then AddCreatureType("Samurai", t)`.
 - `GrantProtectionFromColor(color, target, duration)` — grant protection from a **fixed** color to a target (no player choice); a thin recipe over `GrantKeyword("PROTECTION_FROM_<COLOR>")`. "{W}: Target creature gains protection from red until end of turn." (Crimson Acolyte).
 - `GrantProtectionFromCardType(cardType, target, duration)` — the card-type sibling: grant protection from a **fixed** `CardType` (no player choice), a thin recipe over `GrantKeyword("PROTECTION_FROM_CARDTYPE_<TYPE>")` — the same projected keyword the printed `Protection(ProtectionScope.CardType(...))` static and the player-chosen `GrantProtectionFromChosenCardType` produce, so targeting, blocking, and combat damage all read one keyword. Reach for it when the card names the type outright rather than letting the player pick ("gains protection from artifacts" — Razor Barrier).
 - `GrantPlayerProtection(scope = ProtectionScope.Everything, duration = Duration.UntilYourNextTurn, target = Controller)` — grant a **player** protection from a `ProtectionScope` (CR 702.16); the player-level counterpart of the creature protection statics. For a player only the **D**amage and **T**argeting parts of DEBT apply: a protected player can't be the target of, nor be dealt damage by, a source matching the scope. Adds/merges a `PlayerProtectionComponent` (multiple grants stack their scopes); the targeting validator, target enumerator, and `DamageUtils` all consult the shared `PlayerProtectionRules`. `Duration.UntilYourNextTurn` clears it after the untap step of the player's next turn. "You gain protection from everything until your next turn." (The One Ring).
@@ -9914,7 +9916,15 @@ composite abilities).
   annihilator eats any permanent, and the *defending player* chooses, which is why it's the edict
   facade rather than a targeted sacrifice.
 - `Absorb(n)` — prevent N damage each time it would be dealt to this.
-- `Bushido(n)` — +N/+N when blocking or blocked.
+- `Bushido(n)` — **engine-live.** Declare it and nothing else: `keywordAbility(KeywordAbility.bushido(2))`
+  (Numai Outcast). The engine supplies the CR 702.45a trigger from
+  [`Bushido`](../mtg-sdk/src/main/kotlin/com/wingedsheep/sdk/scripting/Bushido.kt) — partner-less
+  `BlocksOrBecomesBlockedByEvent(oncePerCombat = true)` on `SELF`, effect `ModifyStats(n, n, Self)` — so
+  it fires once per combat however many creatures block it. Derived like renown: gated on the projected
+  `BUSHIDO` keyword (lost with all abilities), one trigger per printed instance (CR 702.45b). A **granted**
+  bushido (`Effects.GrantBushido(n, target, duration)`, Sensei Golden-Tail) floats `BUSHIDO_<n>` and adds
+  one more trigger for its N; repeated grants sum into one `BUSHIDO_<total>` string, so they trigger once
+  for the total rather than once each.
 - `Rampage(n)` — +N/+N for each blocker past the first. Display-only; wire the behavior with the
   `card { rampage(n) }` builder helper, which adds this keyword ability plus a "becomes blocked"
   triggered ability granting `+n/+n × (blockers − 1)` until end of turn (mirrors `prowess()`).
@@ -12155,12 +12165,12 @@ something other than the source.
   bushido 2 is 3. Reads the *printed* N, stamped on the entity at creation (`NumericKeywordValuesComponent`)
   so the layer projection can read it, and counts it only while the projected keyword survives: a
   permanent that lost all abilities, or a face-down one, counts 0. Numeric keywords projected as
-  `<KEYWORD>_<n>` (granted toxic via `Effects.GrantToxic`) add their N. Keywords settle in layer 6, before
+  `<KEYWORD>_<n>` (granted toxic via `Effects.GrantToxic`, granted bushido via `Effects.GrantBushido`) add
+  their N; projection sums repeated numeric grants into one string, so two "gains toxic 1" grants are toxic 2. Keywords settle in layer 6, before
   every P/T layer, so it is safe per affected creature in a lord — **Takeno, Samurai General**:
   `GrantDynamicStats(GroupFilter(Creature.withSubtype(Subtype.SAMURAI).youControl()).other(), bonus, bonus)`
   with `bonus = DynamicAmounts.propertyOf(EffectTarget.AffectedEntity, KeywordValue(Keyword.BUSHIDO))`.
-  Limits: a copy (CR 707) doesn't re-stamp the printed values (same as printed toxic and protection),
-  and there is no effect that grants bushido *with* an N.
+  Limit: a copy (CR 707) doesn't re-stamp the printed values (same as printed toxic and protection).
 - `EntityProperty(entity, EntityNumericProperty.ExcessMarkedDamage)` — the excess damage (CR 120.4a)
   marked on a creature: `max(0, marked − toughness)`, read from post-damage state. Amount-valued twin of
   the `TargetMarkedDamageExceedsToughness` condition. Read it AFTER a deal-damage step in the same
