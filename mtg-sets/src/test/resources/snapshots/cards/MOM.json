@@ -310,6 +310,161 @@
     ]
 }
 
+// Atraxa's Fall
+{
+    "name": "Atraxa's Fall",
+    "manaCost": "{1}{G}",
+    "typeLine": "Sorcery",
+    "oracleText": "Destroy target artifact, battle, enchantment, or creature with flying.",
+    "script": {
+        "spellEffect": {
+            "type": "MoveToZone",
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            },
+            "destination": "Graveyard",
+            "byDestruction": true
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            {
+                                "type": "Or",
+                                "predicates": [
+                                    {
+                                        "type": "Or",
+                                        "predicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    "IsArtifact",
+                                                    "IsBattle"
+                                                ]
+                                            },
+                                            "IsEnchantment"
+                                        ]
+                                    },
+                                    {
+                                        "type": "And",
+                                        "predicates": [
+                                            "IsCreature",
+                                            {
+                                                "type": "HasKeyword",
+                                                "keyword": "FLYING"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "176",
+        "artist": "Xavier Ribeiro",
+        "flavorText": "\"Fallen angels should stay fallen.\"\n—Henzie \"Toolbox\" Torre",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/0/e08ed414-77bf-402a-82a8-9d4e1bd627a1.jpg?1783916977"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Beamtown Beatstick
+{
+    "name": "Beamtown Beatstick",
+    "manaCost": "{R}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+0 and has menace. (It can't be blocked except by two or more creatures.)\nWhenever equipped creature deals combat damage to a player or battle, create a Treasure token.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Beamtown Beatstick:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "damageType": "DamageCombat",
+                    "recipient": {
+                        "type": "RecipientAnyOf",
+                        "options": [
+                            {
+                                "type": "RecipientPlayer",
+                                "player": "Any"
+                            },
+                            {
+                                "type": "RecipientObject",
+                                "filter": "battle"
+                            }
+                        ]
+                    }
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "CreatePredefinedToken",
+                    "tokenType": "Treasure"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Beamtown Beatstick:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 0
+            },
+            {
+                "type": "GrantKeyword",
+                "keyword": "MENACE"
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "131",
+        "artist": "Konstantin Porubov",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/4/2443cb94-b27e-4a96-93cb-ac7880149bcc.jpg?1783916998"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Chrome Host Seedshark
 {
     "name": "Chrome Host Seedshark",

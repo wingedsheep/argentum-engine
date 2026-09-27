@@ -64,6 +64,7 @@ object FilterQueryLanguage {
         "nontoken" to "IsNontoken",
         "basicland" to "IsBasicLand",
         "planeswalker" to "IsPlaneswalker",
+        "battle" to "IsBattle",
     )
 
     // Reverse: SerialName → query term

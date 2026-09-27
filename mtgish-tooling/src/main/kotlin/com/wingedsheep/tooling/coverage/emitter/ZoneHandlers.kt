@@ -1168,6 +1168,7 @@ private fun cardsPredicateDsl(node: JsonElement?): String? {
             "Instant" -> "CardPredicate.IsInstant"
             "Sorcery" -> "CardPredicate.IsSorcery"
             "Planeswalker" -> "CardPredicate.IsPlaneswalker"
+            "Battle" -> "CardPredicate.IsBattle"
             else -> null
         }
         // "a card with {X} in its mana cost" (Paradox Surveyor) — inspects the printed cost's {X}.

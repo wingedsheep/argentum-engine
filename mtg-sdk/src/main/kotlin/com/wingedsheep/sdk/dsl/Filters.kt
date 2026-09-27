@@ -120,10 +120,6 @@ object Filters {
      * One filter per **permanent type** (CR 110.4), in the order the rules list them — the
      * canonical expansion of "of each permanent type" (Liliana, Dreadhorde General's −9).
      *
-     * CR 110.4 names six permanent types; battle is omitted because the engine has no `Battle`
-     * card type yet (see [com.wingedsheep.sdk.core.CardType]). When battles land, add the filter
-     * here and every card reading "each permanent type" picks it up.
-     *
      * A permanent with several types satisfies each of them, and one that has lost all its
      * permanent types (CR 110.4c) satisfies none — both fall out of matching each filter
      * independently.
@@ -133,7 +129,8 @@ object Filters {
         GameObjectFilter.Creature,
         GameObjectFilter.Enchantment,
         GameObjectFilter.Land,
-        GameObjectFilter.Planeswalker
+        GameObjectFilter.Planeswalker,
+        GameObjectFilter.Battle
     )
 
     /**
@@ -215,6 +212,7 @@ object Filters {
         val artifact: GameObjectFilter = GameObjectFilter.Artifact
         val enchantment: GameObjectFilter = GameObjectFilter.Enchantment
         val planeswalker: GameObjectFilter = GameObjectFilter.Planeswalker
+        val battle: GameObjectFilter = GameObjectFilter.Battle
         val instant: GameObjectFilter = GameObjectFilter.Instant
         val sorcery: GameObjectFilter = GameObjectFilter.Sorcery
         val permanent: GameObjectFilter = GameObjectFilter.Permanent
@@ -300,6 +298,7 @@ object Filters {
         val enchantment: TargetFilter = TargetFilter.Enchantment
         val land: TargetFilter = TargetFilter.Land
         val planeswalker: TargetFilter = TargetFilter.Planeswalker
+        val battle: TargetFilter = TargetFilter.Battle
 
         // Graveyard targets
         val cardInGraveyard: TargetFilter = TargetFilter.CardInGraveyard

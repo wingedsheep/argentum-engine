@@ -854,6 +854,7 @@ class CastZoneResolver(
                 is CardPredicate.IsLand -> card.typeLine.isLand
                 is CardPredicate.IsNonland -> !card.typeLine.isLand
                 is CardPredicate.IsPlaneswalker -> card.isPlaneswalker
+                is CardPredicate.IsBattle -> card.isBattle
                 is CardPredicate.IsPermanent -> card.typeLine.isPermanent
                 is CardPredicate.IsBasicLand -> card.typeLine.isBasicLand
                 is CardPredicate.HasAdventure -> card.hasAdventure

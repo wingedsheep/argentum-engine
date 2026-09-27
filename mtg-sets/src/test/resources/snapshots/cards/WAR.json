@@ -2253,6 +2253,11 @@
                                     "cardPredicates": [
                                         "IsPlaneswalker"
                                     ]
+                                },
+                                {
+                                    "cardPredicates": [
+                                        "IsBattle"
+                                    ]
                                 }
                             ],
                             "storeAs": "kept1"

@@ -145,6 +145,7 @@ data class GameObjectFilter(
         val Artifact = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsArtifact))
         val Enchantment = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsEnchantment))
         val Planeswalker = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsPlaneswalker))
+        val Battle = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsBattle))
         val Instant = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsInstant))
         val Sorcery = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsSorcery))
         val Permanent = GameObjectFilter(cardPredicates = listOf(CardPredicate.IsPermanent))
@@ -176,6 +177,12 @@ data class GameObjectFilter(
         val CreatureOrPlaneswalker = GameObjectFilter(
             cardPredicates = listOf(
                 CardPredicate.Or(listOf(CardPredicate.IsCreature, CardPredicate.IsPlaneswalker))
+            )
+        )
+        /** "Creature, planeswalker, or battle" — the March of the Machine damage-spell wording. */
+        val CreaturePlaneswalkerOrBattle = GameObjectFilter(
+            cardPredicates = listOf(
+                CardPredicate.Or(listOf(CardPredicate.IsCreature, CardPredicate.IsPlaneswalker, CardPredicate.IsBattle))
             )
         )
         val CreatureOrLand = GameObjectFilter(

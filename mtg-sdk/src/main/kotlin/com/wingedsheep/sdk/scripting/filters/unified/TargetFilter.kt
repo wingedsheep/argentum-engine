@@ -203,6 +203,12 @@ data class TargetFilter(
         /** Target planeswalker */
         val Planeswalker = TargetFilter(GameObjectFilter.Companion.Planeswalker)
 
+        /** Target battle (CR 310). */
+        val Battle = TargetFilter(GameObjectFilter.Companion.Battle)
+
+        /** Target creature, planeswalker, or battle (Volcanic Spite, Shatter the Source). */
+        val CreaturePlaneswalkerOrBattle = TargetFilter(GameObjectFilter.Companion.CreaturePlaneswalkerOrBattle)
+
         // =============================================================================
         // Pre-built Graveyard Targets
         // =============================================================================

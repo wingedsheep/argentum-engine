@@ -1,6 +1,7 @@
 package com.wingedsheep.sdk.dsl
 
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 import com.wingedsheep.sdk.scripting.targets.AnyTarget
 import com.wingedsheep.sdk.scripting.targets.TargetChooser
 import com.wingedsheep.sdk.scripting.targets.TargetCreatureOrPlaneswalker
@@ -76,6 +77,9 @@ object Targets {
      * construct [TargetPermanentOrPlayer] with a `permanentFilter`.
      */
     val PermanentOrPlayer: TargetRequirement = TargetPermanentOrPlayer()
+
+    /** Target player or battle (Onakke Javelineer). */
+    val PlayerOrBattle: TargetRequirement = TargetPermanentOrPlayer(permanentFilter = TargetFilter.Battle)
 
     /** Target creature or planeswalker. */
     val CreatureOrPlaneswalker: TargetRequirement = TargetCreatureOrPlaneswalker()

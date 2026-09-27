@@ -171,6 +171,7 @@ class FilterQueryLanguageTest : DescribeSpec({
                 "nontoken" to "IsNontoken",
                 "basicland" to "IsBasicLand",
                 "planeswalker" to "IsPlaneswalker",
+                "battle" to "IsBattle",
             )
             for ((term, expected) in types) {
                 val obj = FilterQueryLanguage.parseFilter(term)
