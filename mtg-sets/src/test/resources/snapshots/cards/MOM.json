@@ -2838,6 +2838,76 @@
     ]
 }
 
+// Phyrexian Censor
+{
+    "name": "Phyrexian Censor",
+    "manaCost": "{2}{W}",
+    "typeLine": "Creature — Phyrexian Wizard",
+    "oracleText": "Each player can't cast more than one non-Phyrexian spell each turn.\nNon-Phyrexian creatures enter tapped.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "RestrictSpellsCastPerTurn",
+                "eachPlayer": true,
+                "spellFilter": {
+                    "cardPredicates": [
+                        {
+                            "type": "NotSubtype",
+                            "subtype": "Phyrexian"
+                        }
+                    ]
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PermanentsEnterTapped",
+                "appliesTo": {
+                    "type": "ZoneChangeEvent",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            {
+                                "type": "NotSubtype",
+                                "subtype": "Phyrexian"
+                            }
+                        ]
+                    },
+                    "to": "Battlefield"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "31",
+        "rarity": "UNCOMMON",
+        "artist": "Alexey Kruglov",
+        "flavorText": "Quintorius muffled a sob as he watched the thing that was once Professor Pitnik \"confiscate\" yet another priceless historical tome.",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/5/150e17b1-b9fd-4ec4-b305-19596fed14d1.jpg?1783917052",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "A \"non-Phyrexian spell\" is any spell that doesn't have the Phyrexian creature type, even if \"Phyrexian\" appears in its name. Artifact spells, battle spells, and Goblin creature spells are examples of non-Phyrexian spells."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Phyrexian Censor looks at the entire turn to see if a player has cast a non-Phyrexian spell, even if Phyrexian Censor wasn't on the battlefield when that spell was cast. Phyrexian Censor is a Phyrexian spell, so you could cast it and then a non-Phyrexian spell in the same turn."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If a player casts a non-Phyrexian spell that was countered, they can't cast another non-Phyrexian spell during the same turn."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
+}
+
 // Pile On
 {
     "name": "Pile On",

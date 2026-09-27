@@ -58,8 +58,10 @@ class CastPermissionUtils(
     private val conditionEvaluator: ConditionEvaluator
 ) {
     /**
-     * Whether [playerId] has already cast as many spells this turn as a [RestrictSpellsCastPerTurn]
-     * permanent allows. Two scopes are folded:
+     * Whether [playerId] has already cast as many spells this turn as an *unfiltered*
+     * [RestrictSpellsCastPerTurn] permanent allows — the blanket lock that blocks every spell.
+     * Filtered caps (Phyrexian Censor's "non-Phyrexian") depend on which spell is being cast and
+     * live in [hasReachedFilteredSpellCastLimit]. Two scopes are folded:
      *
      *  - **controller-scoped** ([RestrictSpellsCastPerTurn.eachPlayer] = false) — only counts
      *    permanents [playerId] themselves controls (Yawgmoth's Agenda: "You can't cast more than
@@ -73,30 +75,42 @@ class CastPermissionUtils(
      * [playerId].
      */
     fun hasReachedSpellCastLimit(state: GameState, playerId: EntityId): Boolean {
-        var limit: Int? = null
-        // Permanents the player controls restrict them whether eachPlayer is true or false.
-        for (entityId in state.getBattlefield(playerId)) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            for (sa in cardDef.script.staticAbilities) {
-                if (sa is RestrictSpellsCastPerTurn) {
-                    limit = minOf(limit ?: sa.maxPerTurn, sa.maxPerTurn)
-                }
-            }
-        }
-        // Global (eachPlayer) restrictions bind every player regardless of who controls them.
-        for (entityId in state.getBattlefield()) {
-            val card = state.getEntity(entityId)?.get<CardComponent>() ?: continue
-            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: continue
-            for (sa in cardDef.script.staticAbilities) {
-                if (sa is RestrictSpellsCastPerTurn && sa.eachPlayer) {
-                    limit = minOf(limit ?: sa.maxPerTurn, sa.maxPerTurn)
-                }
-            }
-        }
-        if (limit == null) return false
+        val limit = spellCastCapsBinding(state, playerId)
+            .filter { it.spellFilter == GameObjectFilter.Any }
+            .minOfOrNull { it.maxPerTurn } ?: return false
         val castThisTurn = state.playerSpellsCastThisTurn[playerId] ?: 0
         return castThisTurn >= limit
+    }
+
+    /**
+     * The per-spell half of the [RestrictSpellsCastPerTurn] cap: true when some *filtered* cap
+     * binding [playerId] matches [spellCardId] and [playerId] has already cast
+     * [RestrictSpellsCastPerTurn.maxPerTurn] spells matching the same filter this turn (read off
+     * the turn's cast records). A spell the filter doesn't match is never blocked by it.
+     */
+    fun hasReachedFilteredSpellCastLimit(state: GameState, playerId: EntityId, spellCardId: EntityId): Boolean {
+        val caps = spellCastCapsBinding(state, playerId).filter { it.spellFilter != GameObjectFilter.Any }
+        if (caps.isEmpty()) return false
+        val records = state.spellsCastThisTurnByPlayer[playerId] ?: emptyList()
+        val context = PredicateContext(controllerId = playerId)
+        return caps.any { cap ->
+            predicateEvaluator.matches(state, state.projectedState, spellCardId, cap.spellFilter, context) &&
+                records.count { predicateEvaluator.matchesFilter(it, cap.spellFilter, context) } >= cap.maxPerTurn
+        }
+    }
+
+    /**
+     * Every [RestrictSpellsCastPerTurn] binding [playerId]: the controller-scoped ones on permanents
+     * they control plus the global ([RestrictSpellsCastPerTurn.eachPlayer]) ones anywhere.
+     */
+    private fun spellCastCapsBinding(state: GameState, playerId: EntityId): List<RestrictSpellsCastPerTurn> {
+        val controlled = state.getBattlefield(playerId).toSet()
+        return state.getBattlefield().flatMap { entityId ->
+            val card = state.getEntity(entityId)?.get<CardComponent>() ?: return@flatMap emptyList()
+            val cardDef = cardRegistry.getCard(card.cardDefinitionId) ?: return@flatMap emptyList()
+            cardDef.script.staticAbilities.filterIsInstance<RestrictSpellsCastPerTurn>()
+                .filter { it.eachPlayer || entityId in controlled }
+        }
     }
 
     /**
@@ -140,6 +154,9 @@ class CastPermissionUtils(
         }
         if (hasReachedSpellCastLimit(state, playerId)) {
             return "You can't cast another spell this turn"
+        }
+        if (hasReachedFilteredSpellCastLimit(state, playerId, spellCardId)) {
+            return "You can't cast another spell of that kind this turn"
         }
         if (sharesColorWithMostRecentCast(state, spellCardId)) {
             return "You can't cast a spell that shares a color with the spell most recently cast this turn"
@@ -193,11 +210,13 @@ class CastPermissionUtils(
      */
     fun spellSpecificallyRestricted(state: GameState, playerId: EntityId, spellCardId: EntityId): Boolean =
         sharesColorWithMostRecentCast(state, spellCardId) ||
+            hasReachedFilteredSpellCastLimit(state, playerId, spellCardId) ||
             blockedByPlayersCantCastSpells(state, playerId, spellCardId)
 
     /**
      * Cheap guard: does any battlefield permanent carry a per-spell cast restriction
-     * ([CantCastSpellsSharingColorWithLastCast] or [PlayersCantCastSpells])? Lets enumeration skip
+     * ([CantCastSpellsSharingColorWithLastCast], [PlayersCantCastSpells], a filtered
+     * [RestrictSpellsCastPerTurn])? Lets enumeration skip
      * the per-card [spellSpecificallyRestricted] scan entirely in the common case where none is in
      * play. Cached once per enumeration pass by [EnumerationContext].
      */
@@ -206,7 +225,8 @@ class CastPermissionUtils(
             val cardDef = state.getEntity(id)?.get<CardComponent>()
                 ?.let { cardRegistry.getCard(it.cardDefinitionId) }
             cardDef?.script?.staticAbilities?.any {
-                it is CantCastSpellsSharingColorWithLastCast || it is PlayersCantCastSpells
+                it is CantCastSpellsSharingColorWithLastCast || it is PlayersCantCastSpells ||
+                    (it is RestrictSpellsCastPerTurn && it.spellFilter != GameObjectFilter.Any)
             } == true
         }
 

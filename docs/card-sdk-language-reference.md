@@ -8635,12 +8635,15 @@ staticAbility {
   targets. Each coin really flipped emits a `CoinFlipEvent`, with the discarded ones carrying
   `ignored = true` so the log and the client animation show what was flipped without reporting a win
   nobody got. Not a Rule 613 continuous effect.
-- `RestrictSpellsCastPerTurn(maxPerTurn, eachPlayer = false)` — a per-turn cap on spells cast.
-  `eachPlayer = false` (default) limits only the source's controller (Yawgmoth's Agenda: "You can't
-  cast more than one spell each turn."); `eachPlayer = true` is a *global* restriction binding every
-  player (High Noon: "Each player can't cast more than one spell each turn."). The most restrictive
-  `maxPerTurn` applies when several are in play. Already-cast spells count, even those cast before this
-  permanent entered.
+- `RestrictSpellsCastPerTurn(maxPerTurn, eachPlayer = false, spellFilter = GameObjectFilter.Any)` — a
+  per-turn cap on spells cast. `eachPlayer = false` (default) limits only the source's controller
+  (Yawgmoth's Agenda: "You can't cast more than one spell each turn."); `eachPlayer = true` is a
+  *global* restriction binding every player (High Noon: "Each player can't cast more than one spell
+  each turn."). The most restrictive `maxPerTurn` applies when several are in play. Already-cast spells
+  count, even those cast before this permanent entered. A `spellFilter` narrows the cap to matching
+  spells (Phyrexian Censor: `spellFilter = GameObjectFilter.Any.notSubtype(Subtype.PHYREXIAN)` for
+  "one non-Phyrexian spell"): only matching spells cast this turn count, matched against the turn's
+  cast records, and only a matching spell is blocked — the rest stay castable.
 - `CantCastSpellsSharingColorWithLastCast` — *global* (all players): can't cast a spell that shares a
   color with the spell most recently cast this turn. Backed by `GameState.lastCastSpellColors` (the
   colors of the last spell cast, cleared each turn). Never blocks the first spell of the turn; a

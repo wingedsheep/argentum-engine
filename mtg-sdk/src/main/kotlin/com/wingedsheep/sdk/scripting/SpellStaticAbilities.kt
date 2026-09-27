@@ -680,24 +680,38 @@ data class GraveyardCreaturesHaveSneak(
  * spells and activated/triggered abilities are not "cast" and do not count. When several such
  * permanents are in play, the most restrictive (smallest [maxPerTurn]) applies.
  *
+ * A non-[GameObjectFilter.Any] [spellFilter] narrows the cap to the spells it matches ("Each
+ * player can't cast more than one non-Phyrexian spell each turn." — Phyrexian Censor): only
+ * matching spells cast this turn count toward the cap, and only a matching spell is blocked once
+ * it's reached, so non-matching spells stay castable. The count is read off the turn's cast
+ * records (characteristics as cast), so a spell counts by what it was, not what it later became.
+ *
  * @property maxPerTurn The maximum number of spells a restricted player may cast each turn.
  * @property eachPlayer Whether the restriction binds every player (true) or only the controller (false).
+ * @property spellFilter Which spells are capped and counted; [GameObjectFilter.Any] caps every spell.
  */
 @SerialName("RestrictSpellsCastPerTurn")
 @Serializable
 data class RestrictSpellsCastPerTurn(
     val maxPerTurn: Int = 1,
-    val eachPlayer: Boolean = false
+    val eachPlayer: Boolean = false,
+    val spellFilter: GameObjectFilter = GameObjectFilter.Any
 ) : StaticAbility {
     override val description: String
         get() {
+            val spell = if (spellFilter == GameObjectFilter.Any) "spell" else "${spellFilter.description} spell"
             val plural = if (maxPerTurn == 1) "" else "s"
             return if (eachPlayer) {
-                "Each player can't cast more than $maxPerTurn spell$plural each turn"
+                "Each player can't cast more than $maxPerTurn $spell$plural each turn"
             } else {
-                "You can't cast more than $maxPerTurn spell$plural each turn"
+                "You can't cast more than $maxPerTurn $spell$plural each turn"
             }
         }
+
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = spellFilter.applyTextReplacement(replacer)
+        return if (newFilter === spellFilter) this else copy(spellFilter = newFilter)
+    }
 }
 
 /**
