@@ -2112,6 +2112,11 @@ sealed interface EventPattern : TextReplaceable<EventPattern> {
                 null -> {}
             }
         }
+
+        override fun applyTextReplacement(replacer: TextReplacer): EventPattern {
+            val newFilter = filter.applyTextReplacement(replacer)
+            return if (newFilter !== filter) copy(filter = newFilter) else this
+        }
     }
 
     /**
