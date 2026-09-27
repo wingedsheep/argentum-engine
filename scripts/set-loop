@@ -18,12 +18,15 @@ the gap analysis at $RUNS/$CODE-gaps.md, and GitHub. Do exactly ONE of the steps
 The set is built in three phases: gap analysis once, then every engine gap one PR at a time, then the
 cards in big batches — by then every remaining card composes from existing primitives.
 
-Find our open PR for this set: \`gh pr list --author @me --state open --search 'agent-loop in:title'\`
-and keep only one whose files touch definitions/$CODE/ or whose title names this set. Work on it in its
-worktree under $REPO/.claude/worktrees/ (create one with \`git worktree add\` if missing). Never work in the
-main checkout.
+Other loops may be running for other sets at the same time, so everything this set owns is named by its prefix
+'loop-$CODE-': every branch you create is 'loop-$CODE-<short-slug>', and its worktree is
+$REPO/.claude/worktrees/loop-$CODE-<short-slug>. Find our open PR for this set by branch name only:
+\`gh pr list --author @me --state open --json number,headRefName --jq '.[] | select(.headRefName | startswith("loop-$CODE-"))'\`
+— never by the files it touches or its title (a reprint's canonical can land in another set's definitions/, and
+that PR belongs to the other loop). Never touch a PR, branch or worktree without our prefix. Work on our PR in its
+worktree (recreate it with \`git worktree add\` if missing). Never work in the main checkout.
 
-0. No $RUNS/$CODE-gaps.md yet -> gap analysis, no PR. From a fresh worktree off origin/main, list the
+0. No $RUNS/$CODE-gaps.md yet -> gap analysis, no PR. From a fresh worktree 'loop-$CODE-gaps' off origin/main, list the
    unimplemented cards (\`just card-status --set $CODE --list\`; \`just assay-ready $CODE\` marks the ones that are
    already free). If backlog/$CODE-engine-gaps.md or the set's backlog/sets/*/mechanics.md exists, start from
    it but re-verify every claim against the current SDK — they go stale. Fan the cards out to subagents in
@@ -43,12 +46,12 @@ main checkout.
 4. PR open, CI green, reviewed, nothing pushed since -> \`gh pr merge --squash --delete-branch\` (from $REPO, after
    \`git worktree remove\` of its worktree), mark the unit done in the ledger. If it closed a gap, tick it \`[x]\`
    in the gaps file and move the cards it unlocked (minus any it shipped) into '## Ready'.
-5. No PR open, an unticked gap whose deps are all \`[x]\` -> engine gap. \`git fetch\`, new worktree + branch from
-   origin/main. Take the first such gap, mark it \`[~]\`, and build it with the add-feature skill: the capability,
+5. No PR open, an unticked gap whose deps are all \`[x]\` -> engine gap. \`git fetch\`, new worktree + 'loop-$CODE-' branch
+   from origin/main. Take the first such gap, mark it \`[~]\`, and build it with the add-feature skill: the capability,
    its SDK reference entry, engine tests, plus one or two of the cards it unlocks as proof (one scenario test file
    per card). Gate, commit, push, open a PR titled '[agent-loop: $MODEL] <capability> for <set name>' whose body
    names the gap, the cards it unlocks, the gate run, and that nothing was play-tested. Record the unit in the ledger.
-6. No PR open, no buildable gap left -> card batch. \`git fetch\`, new worktree + branch from origin/main. Take up
+6. No PR open, no buildable gap left -> card batch. \`git fetch\`, new worktree + 'loop-$CODE-' branch from origin/main. Take up
    to 15 unimplemented cards from '## Ready', grouped by colour or theme. Fan them out to subagents, one card each,
    with the add-card skill (one definition file and one scenario test file per card). A card that turns out to need
    new vocabulary is dropped from the batch and added to '## Gaps' as a new \`[ ]\` gap — the next iteration builds
@@ -56,11 +59,21 @@ main checkout.
    '[agent-loop: $MODEL] Add <N> <set name> cards' whose body lists the cards, the gate run, and that nothing was
    play-tested. Record the unit in the ledger.
 
+PR open, CI still pending or running -> do nothing; don't poll or wait on it — the loop waits for CI
+between sessions. Answer WAITING_CI.
+
 If a step fails twice for the same PR, comment on it, mark it needs-human in the ledger (and the gap \`[!]\` if it
 was one), and move on. Cards blocked on a \`[!]\` gap are skipped. When the only cards left are blocked on \`[!]\`
 gaps, answer STUCK naming those gaps; when \`card-status\` shows the set complete, answer SET_COMPLETE.
 Follow AGENTS.md. Never revert or stash work that isn't yours.
-End your reply with exactly one line: STEP <n> DONE | SET_COMPLETE | STUCK <reason>"
+
+A human watches your text live, one line at a time, so keep them posted in short lines (under 150 chars each):
+- once you know which step you're taking: 'Working on: <step and unit, e.g. step 5, G3 splice onto Arcane>'
+- whenever you learn something that changes the plan — a gap found, a card dropped as needing vocabulary, a
+  failure's cause, a review finding you fixed or declined: 'Finding: <one line>'
+- just before your final line, one to three lines: 'Summary: <what you did / what's next>'
+No other long prose.
+End your reply with exactly one line: STEP <n> DONE | WAITING_CI | SET_COMPLETE | STUCK <reason>"
 
 # Everything the loop prints also goes to the run log.
 LOGDIR="$RUNS/$CODE-logs"
@@ -70,7 +83,11 @@ log() { echo "[$(date '+%F %T')] $*"; }
 
 # One line per action the session takes, streamed live: its messages and each tool call.
 PRETTY='select(.type == "assistant") | .message.content[]? |
-  (if .type == "text" then "   💬 " + (.text | split("\n")[0] | .[0:160])
+  (if .type == "text" then
+     ([.text | split("\n")[] | select(test("^(Working on|Finding|Summary):"))]) as $m
+     | if ($m | length) > 0 then $m[]
+         | (if startswith("Working on") then "   🔨 " elif startswith("Finding") then "   🔎 " else "   📋 " end) + .[0:200]
+       else "   💬 " + (.text | split("\n")[0] | .[0:160]) end
    elif .type == "tool_use" then "   → " + .name + ": " +
      ((.input.description // .input.command // .input.skill // .input.file_path // .input.pattern
        // .input.prompt // "") | tostring | split("\n")[0] | .[0:140])
@@ -81,8 +98,8 @@ N=0
 while [ ! -e "$RUNS/$CODE.stop" ]; do
   N=$((N + 1))
   # Wait on CI for free instead of spending a session on it.
-  PR=$(gh pr list --author @me --state open --search 'agent-loop in:title' --json number,files \
-        --jq "[.[] | select([.files[].path] | any(test(\"definitions/$CODE/\")))][0].number // empty")
+  PR=$(gh pr list --author @me --state open --json number,headRefName \
+        --jq "[.[] | select(.headRefName | startswith(\"loop-$CODE-\"))][0].number // empty")
   if [ -n "$PR" ]; then
     log "waiting for CI on PR #$PR"
     sleep 60
@@ -105,6 +122,7 @@ while [ ! -e "$RUNS/$CODE.stop" ]; do
     log "no result or limit reached — waiting 30 min"; sleep 1800; continue
   fi
   case $LAST in
+    WAITING_CI*)   log "session saw CI pending — waiting on it next iteration" ;;
     SET_COMPLETE*) log "set $CODE complete"; exit 0 ;;
     STUCK*)        log "stuck — see the ledger at $RUNS/$CODE-cards.md"; exit 1 ;;
   esac
