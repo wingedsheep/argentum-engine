@@ -24,7 +24,7 @@ import com.wingedsheep.engine.state.components.identity.CommanderComponent
 import com.wingedsheep.engine.state.components.identity.CommanderZoneChoiceAskedComponent
 import com.wingedsheep.engine.state.components.identity.ControllerComponent
 import com.wingedsheep.engine.handlers.effects.permanent.types.stampDoubleFacedFrontFace
-import com.wingedsheep.engine.handlers.effects.permanent.types.withDfcFaceSelfRedirects
+import com.wingedsheep.engine.handlers.effects.permanent.types.withFaceIntrinsicComponents
 import com.wingedsheep.engine.state.components.identity.DoubleFacedComponent
 import com.wingedsheep.engine.state.components.identity.FlippedComponent
 import com.wingedsheep.engine.state.components.identity.PutIntoGraveyardThisTurnComponent
@@ -801,7 +801,7 @@ class ZoneTransitionService(
                     newState = newState.updateEntity(entityId) { c ->
                         val reverted = c.with(dfc.frontFaceCard)
                             .with(dfc.copy(currentFace = DoubleFacedComponent.Face.FRONT, frontFaceCard = null))
-                        if (frontDef != null) withDfcFaceSelfRedirects(reverted, frontDef) else reverted
+                        if (frontDef != null) withFaceIntrinsicComponents(reverted, frontDef) else reverted
                     }
                 }
             }
@@ -815,7 +815,7 @@ class ZoneTransitionService(
                 val uprightDef = cardRegistry.getCard(flipped.unflippedCard.cardDefinitionId)
                 newState = newState.updateEntity(entityId) { c ->
                     val reverted = c.with(flipped.unflippedCard).without<FlippedComponent>()
-                    if (uprightDef != null) withDfcFaceSelfRedirects(reverted, uprightDef) else reverted
+                    if (uprightDef != null) withFaceIntrinsicComponents(reverted, uprightDef) else reverted
                 }
             }
         }

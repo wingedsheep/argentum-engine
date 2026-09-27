@@ -86,7 +86,7 @@ internal fun flipPermanent(
             .without<ReplacementEffectSourceComponent>()
         updated = staticAbilityHandler.addContinuousEffectComponent(updated, flipDef)
         updated = staticAbilityHandler.addReplacementEffectComponent(updated, flipDef)
-        withDfcFaceSelfRedirects(updated, flipDef)
+        withFaceIntrinsicComponents(updated, flipDef)
     }
     return newState to FlippedEvent(entityId = entityId, newName = flipDef.name, controllerId = controllerId)
 }

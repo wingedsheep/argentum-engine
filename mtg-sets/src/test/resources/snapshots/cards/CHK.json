@@ -107,6 +107,97 @@
     ]
 }
 
+// Akki Lavarunner
+{
+    "name": "Akki Lavarunner",
+    "manaCost": "{3}{R}",
+    "typeLine": "Creature — Goblin Warrior",
+    "oracleText": "Haste\nWhenever this creature deals damage to an opponent, flip it.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "keywords": [
+        "HASTE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Akki Lavarunner:1",
+                "trigger": {
+                    "type": "DealsDamageEvent",
+                    "recipient": {
+                        "type": "RecipientPlayer",
+                        "player": "EachOpponent"
+                    }
+                },
+                "effect": "Flip"
+            }
+        ]
+    },
+    "flipSide": {
+        "name": "Tok-Tok, Volcano Born",
+        "manaCost": "{3}{R}",
+        "typeLine": "Legendary Creature — Goblin Shaman",
+        "oracleText": "Protection from red\nIf a red source would deal damage to a player, it deals that much damage plus 1 to that player instead.",
+        "creatureStats": {
+            "power": 2,
+            "toughness": 2
+        },
+        "keywordAbilities": [
+            {
+                "type": "Protection",
+                "scope": {
+                    "type": "ProtectionScope.Color",
+                    "color": "RED"
+                }
+            }
+        ],
+        "script": {
+            "replacementEffects": [
+                {
+                    "type": "ModifyDamageAmount",
+                    "modifier": 1,
+                    "appliesTo": {
+                        "type": "DamageEvent",
+                        "recipient": {
+                            "type": "RecipientPlayer",
+                            "player": "Any"
+                        },
+                        "source": {
+                            "cardPredicates": [
+                                {
+                                    "type": "HasColor",
+                                    "color": "RED"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "153",
+            "rarity": "RARE",
+            "artist": "Matt Cavotta",
+            "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ee6cd34-c117-4d7e-97d1-8f8464bfaac8.jpg?1783944304"
+        },
+        "colorIdentityOverride": [
+            "RED"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "153",
+        "rarity": "RARE",
+        "artist": "Matt Cavotta",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/e/6ee6cd34-c117-4d7e-97d1-8f8464bfaac8.jpg?1783944304"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ],
+    "layout": "FLIP"
+}
+
 // Akki Rockspeaker
 {
     "name": "Akki Rockspeaker",
@@ -739,6 +830,257 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Budoka Gardener
+{
+    "name": "Budoka Gardener",
+    "manaCost": "{1}{G}",
+    "typeLine": "Creature — Human Monk",
+    "oracleText": "{T}: You may put a land card from your hand onto the battlefield. If you control ten or more lands, flip this creature.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Budoka Gardener:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "land"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "Compare",
+                                    "left": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "land"
+                                    },
+                                    "operator": "GTE",
+                                    "right": {
+                                        "type": "Fixed",
+                                        "amount": 10
+                                    }
+                                }
+                            },
+                            "then": "Flip"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{T}: You may put a land card from your hand onto the battlefield. If you control ten or more lands, flip this creature."
+            }
+        ]
+    },
+    "flipSide": {
+        "name": "Dokai, Weaver of Life",
+        "manaCost": "{1}{G}",
+        "typeLine": "Legendary Creature — Human Monk",
+        "oracleText": "{4}{G}{G}, {T}: Create an X/X green Elemental creature token, where X is the number of lands you control.",
+        "creatureStats": {
+            "power": 3,
+            "toughness": 3
+        },
+        "script": {
+            "activatedAbilities": [
+                {
+                    "id": "Dokai, Weaver of Life:1",
+                    "cost": {
+                        "type": "CostComposite",
+                        "costs": [
+                            {
+                                "type": "CostAtomWrapper",
+                                "atom": {
+                                    "type": "AtomMana",
+                                    "cost": "{4}{G}{G}"
+                                }
+                            },
+                            "CostTap"
+                        ]
+                    },
+                    "effect": {
+                        "type": "CreateToken",
+                        "power": 0,
+                        "toughness": 0,
+                        "colors": [
+                            "GREEN"
+                        ],
+                        "creatureTypes": [
+                            "Elemental"
+                        ],
+                        "imageUri": "https://cards.scryfall.io/normal/front/c/5/c5ad13b4-bbf5-4c98-868f-4d105eaf8833.jpg?1783934351",
+                        "dynamicPower": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land"
+                        },
+                        "dynamicToughness": {
+                            "type": "AggregateBattlefield",
+                            "player": "You",
+                            "filter": "land"
+                        }
+                    },
+                    "descriptionOverride": "{4}{G}{G}, {T}: Create an X/X green Elemental creature token, where X is the number of lands you control."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "202",
+            "rarity": "RARE",
+            "artist": "Kev Walker",
+            "imageUri": "https://cards.scryfall.io/normal/front/4/9/49999b95-5e62-414c-b975-4191b9c1ab39.jpg?1783944292"
+        },
+        "colorIdentityOverride": [
+            "GREEN"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "202",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/9/49999b95-5e62-414c-b975-4191b9c1ab39.jpg?1783944292",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "Budoka Gardener flips if you control ten or more lands when its ability resolves, even if you don't use its ability to put a land onto the battlefield."
+            },
+            {
+                "date": "2013-07-01",
+                "text": "Budoka Gardener flips even if you put a second copy of a legendary land onto the battlefield. You'll have ten lands on the battlefield while the ability is resolving, so the Gardener flips. Then you will choose one of the legendary lands to keep and put the other into its owner's graveyard as a state-based action."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ],
+    "layout": "FLIP"
+}
+
+// Burr Grafter
+{
+    "name": "Burr Grafter",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "Sacrifice this creature: Target creature gets +2/+2 until end of turn.\nSoulshift 3 (When this creature dies, you may return target Spirit card with mana value 3 or less from your graveyard to your hand.)",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "keywords": [
+        "SOULSHIFT"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Numeric",
+            "keyword": "SOULSHIFT",
+            "n": 3
+        }
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Burr Grafter:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Hand"
+                    },
+                    "descriptionOverride": "Soulshift 3 (When this creature dies, you may return target Spirit card with mana value 3 or less from your graveyard to your hand.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "Spirit mv<=3 own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t1"
+                },
+                "descriptionOverride": "Soulshift 3 (When this creature dies, you may return target Spirit card with mana value 3 or less from your graveyard to your hand.)"
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Burr Grafter:1",
+                "cost": "CostSacrificeSelf",
+                "effect": {
+                    "type": "ModifyStats",
+                    "powerModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "toughnessModifier": {
+                        "type": "Fixed",
+                        "amount": 2
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "203",
+        "artist": "Heather Hudson",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/935e52a1-a651-4d88-99a8-7de074a01576.jpg?1783944291"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
     ]
 }
 
@@ -2457,6 +2799,77 @@
     ]
 }
 
+// General's Kabuto
+{
+    "name": "General's Kabuto",
+    "manaCost": "{4}",
+    "typeLine": "Artifact — Equipment",
+    "oracleText": "Equipped creature has shroud. (It can't be the target of spells or abilities.)\nPrevent all combat damage that would be dealt to equipped creature.\nEquip {2} ({2}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "General's Kabuto:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "SHROUD"
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "PreventDamage",
+                "appliesTo": {
+                    "type": "DamageEvent",
+                    "recipient": {
+                        "type": "RecipientObject",
+                        "filter": {
+                            "statePredicates": [
+                                "IsAttachedToBySource"
+                            ]
+                        }
+                    },
+                    "damageType": "DamageCombat"
+                }
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "251",
+        "rarity": "RARE",
+        "artist": "Alex Horley-Orlandelli",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/3/1382c339-256f-4ba1-a4cc-6307d0859964.jpg?1783944280"
+    },
+    "colorIdentityOverride": []
+}
+
 // Ghostly Prison
 {
     "name": "Ghostly Prison",
@@ -3686,6 +4099,59 @@
     ]
 }
 
+// Honor-Worn Shaku
+{
+    "name": "Honor-Worn Shaku",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: Add {C}.\nTap an untapped legendary permanent you control: Untap this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Honor-Worn Shaku:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "AddColorlessMana",
+                    "amount": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                },
+                "timing": "ManaAbility",
+                "isManaAbility": true
+            },
+            {
+                "id": "Honor-Worn Shaku:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomTapPermanents",
+                        "filter": {
+                            "cardPredicates": [
+                                "IsPermanent",
+                                "IsLegendary"
+                            ]
+                        }
+                    }
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "Self",
+                    "tap": false
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "254",
+        "rarity": "UNCOMMON",
+        "artist": "Tony Szczudlo",
+        "flavorText": "Before being presented to its lord, each shaku is blessed by every hero of every region within that lord's domain.",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/a/babe91f2-06be-4501-a95b-20968e906e1b.jpg?1783944279"
+    },
+    "colorIdentityOverride": []
+}
+
 // Horizon Seed
 {
     "name": "Horizon Seed",
@@ -3837,6 +4303,30 @@
     "colorIdentityOverride": [
         "WHITE"
     ]
+}
+
+// Imi Statue
+{
+    "name": "Imi Statue",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Players can't untap more than one artifact during their untap steps.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "UntapLimitPerStep",
+                "filter": "artifact",
+                "max": 1
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "255",
+        "rarity": "RARE",
+        "artist": "Todd Lockwood",
+        "flavorText": "\"Just looking at it fills me with dread . . . . Yet since it arrived, I've done little else. My blades have dulled and my business has failed, and still I cannot look away.\"\n—Keisaku, master swordmaker",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/1/91c33332-8a72-4b81-a8e9-a73aaac6013c.jpg?1783944279"
+    }
 }
 
 // Indomitable Will
@@ -4353,6 +4843,78 @@
     "colorIdentityOverride": [
         "GREEN"
     ]
+}
+
+// Junkyo Bell
+{
+    "name": "Junkyo Bell",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "At the beginning of your upkeep, you may have target creature you control get +X/+X until end of turn, where X is the number of creatures you control. If you do, sacrifice that creature at the beginning of the next end step.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Junkyo Bell:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "ModifyStats",
+                                "powerModifier": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "creature"
+                                },
+                                "toughnessModifier": {
+                                    "type": "AggregateBattlefield",
+                                    "player": "You",
+                                    "filter": "creature"
+                                },
+                                "target": {
+                                    "type": "BoundVariable",
+                                    "name": "t0"
+                                }
+                            },
+                            {
+                                "type": "CreateDelayedTrigger",
+                                "step": "END",
+                                "effect": {
+                                    "type": "SacrificeTarget",
+                                    "target": {
+                                        "type": "BoundVariable",
+                                        "name": "t0"
+                                    }
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Have the target creature get +X/+X until end of turn, where X is the number of creatures you control? (If you do, sacrifice it at the beginning of the next end step.)"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "creature ctrl:you"
+                    },
+                    "id": "t0"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "258",
+        "rarity": "RARE",
+        "artist": "Kensuke Okabayashi",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/b/7bd002c7-21ec-4f77-81be-2788fa267f21.jpg?1783944278"
+    },
+    "colorIdentityOverride": []
 }
 
 // Jushi Apprentice
@@ -6386,6 +6948,51 @@
     ]
 }
 
+// Long-Forgotten Gohei
+{
+    "name": "Long-Forgotten Gohei",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "Arcane spells you cast cost {1} less to cast.\nSpirit creatures you control get +1/+1.",
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ModifySpellCost",
+                "target": {
+                    "type": "YouCast",
+                    "filter": "Arcane"
+                },
+                "modification": {
+                    "type": "ReduceGeneric",
+                    "amount": 1
+                }
+            },
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1,
+                "filter": {
+                    "baseFilter": "creature Spirit ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "261",
+        "rarity": "RARE",
+        "artist": "Alan Pollack",
+        "flavorText": "Long ago, the priests would wave the gohei to call down the gods. Now it lies forgotten, but the spirits still feel its pull.",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/f/6fc4b500-ca74-4b90-9a8c-d4efa80ebe2c.jpg?1783944278",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "The cost reduction applies to the total cost of the Arcane spell, including any additional costs from cards spliced onto it. However, the cost reduction applies only once to each Arcane spell."
+            }
+        ]
+    },
+    "colorIdentityOverride": []
+}
+
 // Marrow-Gnawer
 {
     "name": "Marrow-Gnawer",
@@ -6751,6 +7358,120 @@
     "colorIdentityOverride": [
         "BLUE"
     ]
+}
+
+// Moonring Mirror
+{
+    "name": "Moonring Mirror",
+    "manaCost": "{5}",
+    "typeLine": "Artifact",
+    "oracleText": "Whenever you draw a card, exile the top card of your library face down.\nAt the beginning of your upkeep, you may exile all cards from your hand face down. If you do, put all other cards you own exiled with this artifact into your hand.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Moonring Mirror:1",
+                "trigger": "DrawEvent",
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true,
+                            "faceDown": "HIDDEN"
+                        }
+                    ]
+                }
+            },
+            {
+                "id": "Moonring Mirror:2",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "FromLinkedExile",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "FilterCollection",
+                                "from": "gathered0",
+                                "filter": "own:you",
+                                "storeMatching": "matching1"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "gathered2"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Exile"
+                                },
+                                "linkToSource": true,
+                                "faceDown": "HIDDEN"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "matching1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                }
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "You may exile all cards from your hand face down. If you do, put all other cards you own exiled with this artifact into your hand."
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "262",
+        "rarity": "RARE",
+        "artist": "Christopher Rush",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/d/8d36357a-97f6-4b2f-abbf-43f84c29609d.jpg?1783944276",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "Note that Moonring Mirror's first ability is not a replacement effect."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "If you choose to use Moonring Mirror's second ability, you return all the cards you own exiled by both of its abilities, but not any of the cards you just exiled from your hand."
+            }
+        ]
+    }
 }
 
 // Moss Kami
@@ -7647,6 +8368,63 @@
     ]
 }
 
+// Nine-Ringed Bo
+{
+    "name": "Nine-Ringed Bo",
+    "manaCost": "{3}",
+    "typeLine": "Artifact",
+    "oracleText": "{T}: This artifact deals 1 damage to target Spirit creature. If that creature would die this turn, exile it instead.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Nine-Ringed Bo:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MarkExileOnDeath",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 1
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature Spirit"
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "descriptionOverride": "{T}: Deal 1 damage to target Spirit creature. If it would die this turn, exile it instead."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "263",
+        "rarity": "UNCOMMON",
+        "artist": "Ralph Horsley",
+        "flavorText": "\"We received an anonymous letter suggesting that Kumano holds a secret to defeating the kami, but he is nowhere to be found.\"\n—General Takeno, letter to Lord Konda",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/4/445e60aa-1a0a-499e-9887-7d17a1f80a02.jpg?1783944276"
+    },
+    "colorIdentityOverride": []
+}
+
 // No-Dachi
 {
     "name": "No-Dachi",
@@ -7804,6 +8582,110 @@
     "colorIdentityOverride": [
         "BLACK"
     ]
+}
+
+// Oathkeeper, Takeno's Daisho
+{
+    "name": "Oathkeeper, Takeno's Daisho",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +3/+1.\nWhenever equipped creature dies, return that card to the battlefield under your control if it's a Samurai card.\nWhen Oathkeeper is put into a graveyard from the battlefield, exile equipped creature.\nEquip {2}",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oathkeeper, Takeno's Daisho:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "EntityMatches",
+                            "entity": "TriggeringEntity",
+                            "filter": "Samurai"
+                        }
+                    },
+                    "then": {
+                        "type": "MoveToZone",
+                        "target": "TriggeringEntity",
+                        "destination": "Battlefield",
+                        "controllerOverride": "Controller",
+                        "fromZone": "Graveyard"
+                    }
+                },
+                "descriptionOverride": "Whenever equipped creature dies, return that card to the battlefield under your control if it's a Samurai card."
+            },
+            {
+                "id": "Oathkeeper, Takeno's Daisho:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "from": "Battlefield",
+                    "to": "Graveyard"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "EquippedCreature",
+                    "destination": "Exile"
+                },
+                "descriptionOverride": "When Oathkeeper is put into a graveyard from the battlefield, exile equipped creature."
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Oathkeeper, Takeno's Daisho:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 3,
+                "toughnessBonus": 1
+            }
+        ]
+    },
+    "equipCost": "{2}",
+    "metadata": {
+        "collectorNumber": "265",
+        "rarity": "RARE",
+        "artist": "Arnie Swekel",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01b7c8e4-db88-48f3-bfd5-8d990f449b1c.jpg?1783944277",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "Oathkeeper's second ability checks whether the card's creature type is Samurai, not whether the creature was a Samurai when it left the battlefield."
+            }
+        ]
+    }
 }
 
 // Okina, Temple to the Grandfathers
@@ -8188,6 +9070,68 @@
         "GREEN"
     ],
     "layout": "FLIP"
+}
+
+// Orochi Hatchery
+{
+    "name": "Orochi Hatchery",
+    "manaCost": "{X}{X}",
+    "typeLine": "Artifact",
+    "oracleText": "This artifact enters with X charge counters on it.\n{5}, {T}: Create a 1/1 green Snake creature token for each charge counter on this artifact.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Orochi Hatchery:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{5}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "CreateToken",
+                    "count": {
+                        "type": "EntityProperty",
+                        "entity": "Self",
+                        "numericProperty": {
+                            "type": "CounterCount",
+                            "counterType": "CHARGE"
+                        }
+                    },
+                    "power": 1,
+                    "toughness": 1,
+                    "colors": [
+                        "GREEN"
+                    ],
+                    "creatureTypes": [
+                        "Snake"
+                    ]
+                },
+                "descriptionOverride": "{5}, {T}: Create a 1/1 green Snake creature token for each charge counter on this artifact."
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithDynamicCounters",
+                "counterType": "CHARGE",
+                "count": "CastX"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "266",
+        "rarity": "RARE",
+        "artist": "Alex Horley-Orlandelli",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/e/7e662e2e-f706-4d79-86ed-48b60787a5d0.jpg?1783944276"
+    },
+    "colorIdentityOverride": []
 }
 
 // Orochi Leafcaller
@@ -11581,6 +12525,91 @@
     ]
 }
 
+// Tenza, Godo's Maul
+{
+    "name": "Tenza, Godo's Maul",
+    "manaCost": "{3}",
+    "typeLine": "Legendary Artifact — Equipment",
+    "oracleText": "Equipped creature gets +1/+1. As long as it's legendary, it gets an additional +2/+2. As long as it's red, it has trample.\nEquip {1} ({1}: Attach to target creature you control. Equip only as a sorcery.)",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Tenza, Godo's Maul:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "AttachEquipment",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "creature you control"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you"
+                        },
+                        "id": "creature you control"
+                    }
+                ],
+                "timing": "SorcerySpeed",
+                "isEquipAbility": true
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ModifyStats",
+                "powerBonus": 1,
+                "toughnessBonus": 1
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "ModifyStats",
+                    "powerBonus": 2,
+                    "toughnessBonus": 2
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EquippedCreature",
+                    "filter": {
+                        "cardPredicates": [
+                            "IsCreature",
+                            "IsLegendary"
+                        ]
+                    }
+                }
+            },
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE"
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "EquippedCreature",
+                    "filter": "creature red"
+                }
+            }
+        ]
+    },
+    "equipCost": "{1}",
+    "metadata": {
+        "collectorNumber": "271",
+        "rarity": "UNCOMMON",
+        "artist": "Paolo Parente",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1aa03d7-ac4f-4793-8f8d-5ffd2f8f38b1.jpg?1783944275"
+    },
+    "colorIdentityOverride": []
+}
+
 // Terashi's Cry
 {
     "name": "Terashi's Cry",
@@ -12230,6 +13259,76 @@
         "WHITE",
         "GREEN"
     ]
+}
+
+// Uba Mask
+{
+    "name": "Uba Mask",
+    "manaCost": "{4}",
+    "typeLine": "Artifact",
+    "oracleText": "If a player would draw a card, that player exiles that card face up instead.\nEach player may play lands and cast spells from among cards they exiled with this artifact this turn.",
+    "script": {
+        "replacementEffects": [
+            {
+                "type": "ReplaceDrawWith",
+                "replacementEffect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "gathered0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            },
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "GrantMayPlayFromExile",
+                            "from": "gathered0",
+                            "condition": {
+                                "type": "SourceInZone",
+                                "zones": [
+                                    "Battlefield"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "appliesTo": {
+                    "type": "DrawEvent",
+                    "player": "Each"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "272",
+        "rarity": "RARE",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/a/fa3ecb4e-d08f-4fac-8842-c3e772b95bd5.jpg?1783944275",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "You can't play cards you exiled with Uba Mask on previous turns."
+            },
+            {
+                "date": "2004-12-01",
+                "text": "Any cards you don't play just remain exiled when the turn ends."
+            }
+        ]
+    }
 }
 
 // Uncontrollable Anger

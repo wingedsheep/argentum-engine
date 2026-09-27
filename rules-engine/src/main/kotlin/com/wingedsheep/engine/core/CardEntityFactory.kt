@@ -139,39 +139,7 @@ object CardEntityFactory {
         val dredgeAmounts = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Dredge>().map { it.amount }
         if (dredgeAmounts.isNotEmpty()) result = result.with(DredgeComponent(dredgeAmounts))
 
-        val protections = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Protection>()
-        val protectionColors = protections.flatMap { p ->
-            when (val s = p.scope) {
-                is ProtectionScope.Color -> listOf(s.color)
-                is ProtectionScope.Colors -> s.colors
-                else -> emptyList()
-            }
-        }.toSet()
-        val protectionSubtypes = protections.mapNotNull {
-            (it.scope as? ProtectionScope.Subtype)?.subtype
-        }.toSet()
-        val protectionSupertypes = protections.mapNotNull {
-            (it.scope as? ProtectionScope.Supertype)?.supertype
-        }.toSet()
-        // "Protection from instants" (Emrakul, the Promised End). Normalized to the uppercase card
-        // type name here so the projector can emit `PROTECTION_FROM_CARDTYPE_<TYPE>` — the same
-        // keyword the *granted* card-type protections (Sword of Wealth and Power, Pippin) project,
-        // so every consumer downstream already honors it.
-        val protectionCardTypes = protections.mapNotNull {
-            (it.scope as? ProtectionScope.CardType)?.cardType?.uppercase()
-        }.toSet()
-        if (protectionColors.isNotEmpty() || protectionSubtypes.isNotEmpty() ||
-            protectionSupertypes.isNotEmpty() || protectionCardTypes.isNotEmpty()
-        ) {
-            result = result.with(
-                ProtectionComponent(
-                    protectionColors,
-                    protectionSubtypes,
-                    protectionSupertypes,
-                    protectionCardTypes
-                )
-            )
-        }
+        protectionComponentFor(cardDef)?.let { result = result.with(it) }
 
         // Card-intrinsic "would be put into [zone] from anywhere → redirect instead" self-replacements
         // (Darksteel Colossus, Progenitus, Wilt-Leaf Liege). Carried on the card entity so they
@@ -226,5 +194,40 @@ object CardEntityFactory {
         }
 
         return result
+    }
+
+    /**
+     * The printed protection keywords of [cardDef] as a [ProtectionComponent], or null when it
+     * prints none. Built at entity creation and re-derived on every face change (flip, transform)
+     * by `withFaceIntrinsicComponents`, since a new face can gain or lose protection (Tok-Tok,
+     * Volcano Born).
+     */
+    fun protectionComponentFor(cardDef: CardDefinition): ProtectionComponent? {
+        val protections = cardDef.keywordAbilities.filterIsInstance<KeywordAbility.Protection>()
+        if (protections.isEmpty()) return null
+        val protectionColors = protections.flatMap { p ->
+            when (val s = p.scope) {
+                is ProtectionScope.Color -> listOf(s.color)
+                is ProtectionScope.Colors -> s.colors
+                else -> emptyList()
+            }
+        }.toSet()
+        val protectionSubtypes = protections.mapNotNull {
+            (it.scope as? ProtectionScope.Subtype)?.subtype
+        }.toSet()
+        val protectionSupertypes = protections.mapNotNull {
+            (it.scope as? ProtectionScope.Supertype)?.supertype
+        }.toSet()
+        // "Protection from instants" (Emrakul, the Promised End). Normalized to the uppercase card
+        // type name here so the projector can emit `PROTECTION_FROM_CARDTYPE_<TYPE>` — the same
+        // keyword the *granted* card-type protections (Sword of Wealth and Power, Pippin) project,
+        // so every consumer downstream already honors it.
+        val protectionCardTypes = protections.mapNotNull {
+            (it.scope as? ProtectionScope.CardType)?.cardType?.uppercase()
+        }.toSet()
+        if (protectionColors.isEmpty() && protectionSubtypes.isEmpty() &&
+            protectionSupertypes.isEmpty() && protectionCardTypes.isEmpty()
+        ) return null
+        return ProtectionComponent(protectionColors, protectionSubtypes, protectionSupertypes, protectionCardTypes)
     }
 }
