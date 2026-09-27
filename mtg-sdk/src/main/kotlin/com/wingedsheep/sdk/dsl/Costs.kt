@@ -653,6 +653,27 @@ object Costs {
             AdditionalCost.Atom(CostAtom.SacrificeAll(filter))
 
         /**
+         * Sacrifice a variable number (at least [minCount]) of permanents matching [filter] — the
+         * spell-cost twin of [Costs.SacrificePermanents]. The default floor of 0 is "you may
+         * sacrifice any number of Spirits" (Devouring Greed): choosing none is a legal payment.
+         * The sacrificed permanents' last-known snapshots feed
+         * `DynamicAmounts.permanentsSacrificedThisWay()` ("for each Spirit sacrificed this way")
+         * and `DynamicAmounts.totalPowerSacrificedThisWay()`.
+         */
+        fun SacrificePermanents(
+            filter: GameObjectFilter = GameObjectFilter.Creature,
+            minCount: Int = 0
+        ): AdditionalCost = AdditionalCost.Atom(
+            CostAtom.VariablePermanents(
+                filter = filter,
+                minCount = minCount,
+                excludeSelf = false,
+                action = PermanentCostAction.SACRIFICE,
+                xMeasure = VariableCostMeasure.COUNT
+            )
+        )
+
+        /**
          * Tap any number of permanents matching [filter] you control whose **total projected
          * power** is [totalPower] or more — the "tap creatures for total power N" selection crew
          * and saddle already use, re-exposed as a spell's additional cost (Teamwork N,

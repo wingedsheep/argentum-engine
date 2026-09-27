@@ -2598,6 +2598,145 @@
     ]
 }
 
+// Devouring Greed
+{
+    "name": "Devouring Greed",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Sorcery — Arcane",
+    "oracleText": "As an additional cost to cast this spell, you may sacrifice any number of Spirits.\nTarget player loses 2 life plus 2 life for each Spirit sacrificed this way. You gain that much life.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "Add",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "right": {
+                            "type": "Multiply",
+                            "amount": "PermanentsSacrificedThisWay",
+                            "multiplier": 2
+                        }
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                {
+                    "type": "GainLife",
+                    "amount": {
+                        "type": "Add",
+                        "left": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "right": {
+                            "type": "Multiply",
+                            "amount": "PermanentsSacrificedThisWay",
+                            "multiplier": 2
+                        }
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomVariablePermanents",
+                    "filter": "permanent Spirit",
+                    "minCount": 0,
+                    "excludeSelf": false,
+                    "action": "SACRIFICE",
+                    "xMeasure": "COUNT"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "110",
+        "artist": "Vance Kovacs",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a72347d-91cd-45a8-a026-a655e5507322.jpg?1783944315"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Devouring Rage
+{
+    "name": "Devouring Rage",
+    "manaCost": "{4}{R}",
+    "typeLine": "Instant — Arcane",
+    "oracleText": "As an additional cost to cast this spell, you may sacrifice any number of Spirits.\nTarget creature gets +3/+0 until end of turn. For each Spirit sacrificed this way, that creature gets an additional +3/+0 until end of turn.",
+    "script": {
+        "spellEffect": {
+            "type": "ModifyStats",
+            "powerModifier": {
+                "type": "Add",
+                "left": {
+                    "type": "Fixed",
+                    "amount": 3
+                },
+                "right": {
+                    "type": "Multiply",
+                    "amount": "PermanentsSacrificedThisWay",
+                    "multiplier": 3
+                }
+            },
+            "toughnessModifier": {
+                "type": "Fixed",
+                "amount": 0
+            },
+            "target": {
+                "type": "BoundVariable",
+                "name": "t0"
+            }
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "creature"
+                },
+                "id": "t0"
+            }
+        ],
+        "additionalCosts": [
+            {
+                "type": "AdditionalAtom",
+                "atom": {
+                    "type": "AtomVariablePermanents",
+                    "filter": "permanent Spirit",
+                    "minCount": 0,
+                    "excludeSelf": false,
+                    "action": "SACRIFICE",
+                    "xMeasure": "COUNT"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "164",
+        "artist": "Vance Kovacs",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/0/608a6e1e-3e95-4ce4-aaf6-5f14c0456850.jpg?1783944301"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Distress
 {
     "name": "Distress",

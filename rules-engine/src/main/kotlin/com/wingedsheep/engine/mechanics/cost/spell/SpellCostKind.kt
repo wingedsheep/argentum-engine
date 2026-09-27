@@ -141,6 +141,8 @@ class SpellCostOffer {
     val sacrificeTargets = mutableListOf<EntityId>()
     var variableSacrificeTargets = emptyList<EntityId>()
     var variableSacrificeReduction = 0
+    var variablePermanentsCost: CostAtom.VariablePermanents? = null
+    var variablePermanentsTargets = emptyList<EntityId>()
     var exileTargets = emptyList<EntityId>()
     var exileMinCount = 0
     var collectEvidenceCost: CostAtom.CollectEvidence? = null

@@ -609,8 +609,10 @@ internal object ReturnToHandCostKind : SpellCostKind<CostAtom.ReturnToHand> {
 }
 
 /**
- * A variable-count permanent cost — Teamwork N's "tap any number of creatures you control with
- * total power N or more" (CR 702.194a). Enumerated on the optional-cost rail, not here.
+ * A variable-count permanent cost. Teamwork N's "tap any number of creatures you control with
+ * total power N or more" (CR 702.194a) is a declared optional cost, enumerated on the optional-cost
+ * rail rather than here. A spell's own printed "you may sacrifice any number of Spirits" (Devouring
+ * Greed) is offered on the main rail through [enumerate], as the `SacrificeVariable` picker.
  */
 internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePermanents> {
     // Payable when the payer has enough candidates to clear both floors. No `sourceId` is passed —
@@ -618,6 +620,40 @@ internal object VariablePermanentsCostKind : SpellCostKind<CostAtom.VariablePerm
     // sets `excludeSelf = false` anyway).
     override fun canPay(state: GameState, payerId: EntityId, cost: CostAtom.VariablePermanents, costHandler: CostHandler) =
         VariablePermanentsCost.canPay(state, payerId, cost, predicateEvaluator = costHandler.predicateEvaluator)
+
+    // Only the sacrifice action has a main-rail picker; exile and tap as a spell's printed
+    // additional cost have no card yet, and teamwork's tap is offered on the optional-cost rail.
+    override fun enumerate(env: SpellCostEnumeration, cost: CostAtom.VariablePermanents, offer: SpellCostOffer): Boolean {
+        if (cost.action == PermanentCostAction.SACRIFICE) {
+            offer.variablePermanentsCost = cost
+            offer.variablePermanentsTargets = candidates(env, cost)
+        }
+        return VariablePermanentsCost.canPay(env.state, env.playerId, cost, predicateEvaluator = env.predicateEvaluator)
+    }
+
+    override fun candidates(env: SpellCostEnumeration, cost: CostAtom.VariablePermanents) =
+        VariablePermanentsCost.candidates(env.state, env.playerId, cost, predicateEvaluator = env.predicateEvaluator)
+
+    override fun selectionCount(cost: CostAtom.VariablePermanents) = cost.selectionCount
+
+    override fun canPayFrom(env: SpellCostEnumeration, cost: CostAtom.VariablePermanents, candidates: List<EntityId>) =
+        VariablePermanentsCost.canPay(env.state, env.playerId, cost, predicateEvaluator = env.predicateEvaluator)
+
+    override fun present(env: SpellCostEnumeration, cost: CostAtom.VariablePermanents, candidates: List<EntityId>) =
+        if (cost.action != PermanentCostAction.SACRIFICE) null
+        else "Sacrifice" to sacrificeVariableData(cost, candidates)
+
+    /**
+     * The `SacrificeVariable` picker: choose between [CostAtom.VariablePermanents.minCount] and all
+     * of [candidates]. The chosen ids come back as `additionalCostPayment.variableCostPermanents`.
+     */
+    fun sacrificeVariableData(cost: CostAtom.VariablePermanents, candidates: List<EntityId>) =
+        AdditionalCostData(
+            description = cost.leadingDescription,
+            costType = "SacrificeVariable",
+            validSacrificeTargets = candidates,
+            sacrificeCount = cost.minCount,
+        )
 
     override fun selectionSupplied(cost: CostAtom.VariablePermanents, payment: AdditionalCostPayment) =
         payment.variableCostPermanents.isNotEmpty()

@@ -788,6 +788,16 @@ definitions construct these through the facade, e.g. `Costs.additional.Sacrifice
   `DynamicAmounts.totalPowerSacrificedThisWay()` / `permanentsSacrificedThisWay()` read them at
   resolution. Casting-context only for now: as a `PayCost` it is reported unpayable (no printed
   "unless you sacrifice all …" exists), and there is no activated-ability facade.
+- `Costs.additional.SacrificePermanents(filter = GameObjectFilter.Creature, minCount = 0)` — "as an
+  additional cost to cast this spell, you may sacrifice any number of Spirits" (Devouring Greed,
+  Devouring Rage). A `CostAtom.VariablePermanents` with `action = SACRIFICE` and `xMeasure = COUNT`, the
+  spell-cost twin of the ability-cost `Costs.SacrificePermanents`. The enumerator offers a
+  `costType = "SacrificeVariable"` picker (`validSacrificeTargets`, `sacrificeCount` = the floor); the
+  client returns the picks in `additionalCostPayment.variableCostPermanents`. The default floor of 0
+  makes choosing none a legal payment, and with no candidates there is no picker at all. Each
+  sacrificed permanent is snapshotted, so "for each Spirit sacrificed this way" is
+  `DynamicAmounts.permanentsSacrificedThisWay()`. For "… this spell costs {2} less for each" use
+  `SacrificeCreaturesForCostReduction` instead.
 - `Costs.additional.TapForTotalPower(totalPower, filter = GameObjectFilter.Creature)` — "tap any number of
   creatures you control with total power N or more" (Teamwork N, CR 702.194a). A
   `CostAtom.VariablePermanents` with `action = TAP`, `xMeasure = TOTAL_POWER`, `minMeasure = N` and

@@ -815,6 +815,10 @@ class Strategist(
             )
             "BouncePermanent" -> existing.copy(bouncedPermanents = info.validBounceTargets.take(info.bounceCount))
             "ExileFromGraveyard" -> existing.copy(exiledCards = info.validExileTargets.take(info.exileMinCount))
+            // "Sacrifice any number of …": only the floor, so a zero-floor cost sacrifices nothing.
+            "SacrificeVariable" -> existing.copy(
+                variableCostPermanents = info.validSacrificeTargets.take(info.sacrificeCount)
+            )
             // Teamwork N (CR 702.194a): tap as *few* creatures as will clear the total-power
             // threshold, and among equally-few selections the *smallest* bodies — a board with a
             // 5/5 and a 1/1 paying teamwork 1 should turn the 1/1 sideways and keep the better

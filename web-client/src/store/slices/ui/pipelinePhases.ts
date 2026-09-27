@@ -255,6 +255,7 @@ export function computePhases(actionInfo: LegalActionInfo, options?: ComputePhas
       'SacrificePermanent',
       'SacrificeSelf',
       'SacrificeForCostReduction',
+      'SacrificeVariable',
       'TapPermanents',
       'BouncePermanent',
       'DiscardCard',
@@ -500,8 +501,9 @@ export function mergeResult(
         if (costType === 'Conspire') {
           return { ...action, conspiredCreatures: selectedTargets }
         }
-        // Teamwork (CR 702.194a) pays through the shared variable-count permanent channel.
-        if (costType === 'TapForTotalPower') {
+        // Teamwork (CR 702.194a) and "sacrifice any number of Spirits" (Devouring Greed) pay
+        // through the shared variable-count permanent channel.
+        if (costType === 'TapForTotalPower' || costType === 'SacrificeVariable') {
           return {
             ...action,
             additionalCostPayment: {
@@ -912,6 +914,13 @@ export function enterPhase(
         case 'SacrificeForCostReduction':
           validTargets = [...(costInfo.validSacrificeTargets ?? [])]
           minTargets = 0
+          maxTargets = validTargets.length
+          flags.isSacrificeSelection = true
+          flags.targetDescription = costInfo.description
+          break
+        case 'SacrificeVariable':
+          validTargets = [...(costInfo.validSacrificeTargets ?? [])]
+          minTargets = costInfo.sacrificeCount ?? 0
           maxTargets = validTargets.length
           flags.isSacrificeSelection = true
           flags.targetDescription = costInfo.description
