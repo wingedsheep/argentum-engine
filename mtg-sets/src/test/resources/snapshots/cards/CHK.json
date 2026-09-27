@@ -362,6 +362,62 @@
     ]
 }
 
+// Aura of Dominion
+{
+    "name": "Aura of Dominion",
+    "manaCost": "{U}{U}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\n{1}, Tap an untapped creature you control: Untap enchanted creature.",
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Aura of Dominion:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomTapPermanents",
+                                "filter": "creature"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "TapUntap",
+                    "target": "EnchantedCreature",
+                    "tap": false
+                },
+                "descriptionOverride": "{1}, Tap an untapped creature you control: Untap enchanted creature."
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "51",
+        "rarity": "UNCOMMON",
+        "artist": "Randy Gallegos",
+        "flavorText": "\"Lies and deceit do yield results, but legitimate authority is the ultimate form of control.\"\n—Meloku the Clouded Mirror",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/6/26913c27-5794-42c7-a2a2-af565ce84fd1.jpg?1783944330"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Azami, Lady of Scrolls
 {
     "name": "Azami, Lady of Scrolls",
@@ -2313,6 +2369,58 @@
     ]
 }
 
+// Cut the Tethers
+{
+    "name": "Cut the Tethers",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "For each Spirit, return it to its owner's hand unless that player pays {3}.",
+    "script": {
+        "spellEffect": {
+            "type": "ForEach",
+            "space": {
+                "type": "IterationSpace.Players",
+                "players": "ActivePlayerFirst"
+            },
+            "body": {
+                "type": "ForEach",
+                "space": {
+                    "type": "IterationSpace.Group",
+                    "filter": {
+                        "baseFilter": "permanent Spirit own:you"
+                    }
+                },
+                "body": {
+                    "type": "PayOrSuffer",
+                    "cost": {
+                        "type": "PayAtom",
+                        "atom": {
+                            "type": "AtomMana",
+                            "cost": "{3}"
+                        }
+                    },
+                    "suffer": {
+                        "type": "MoveToZone",
+                        "target": "IterationEntity",
+                        "destination": "Hand"
+                    },
+                    "consequenceDescription": "have this Spirit returned to your hand"
+                }
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "56",
+        "rarity": "UNCOMMON",
+        "artist": "Ron Spears",
+        "flavorText": "\"You cannot bar the path of gods. You can only divert their journey for a while.\"\n—Sensei Hisoka",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4ff18307-9ef8-4e3a-89e9-cb8c04997222.jpg?1783944328"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Dampen Thought
 {
     "name": "Dampen Thought",
@@ -3901,6 +4009,106 @@
     ]
 }
 
+// Gifts Ungiven
+{
+    "name": "Gifts Ungiven",
+    "manaCost": "{3}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Search your library for up to four cards with different names and reveal them. Target opponent chooses two of those cards. Put the chosen cards into your graveyard and the rest into your hand. Then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Library"
+                    },
+                    "storeAs": "gathered0",
+                    "search": true
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 4
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "prompt": "Search for up to four cards with different names",
+                    "restrictions": [
+                        "OnePerCardName"
+                    ]
+                },
+                {
+                    "type": "RevealCollection",
+                    "from": "selected1"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "selected1",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "selected3",
+                    "storeRemainder": "remainder3",
+                    "prompt": "Choose two of the revealed cards. Those go into their owner's graveyard; the rest go into their hand.",
+                    "selectedLabel": "Graveyard",
+                    "remainderLabel": "Hand"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard"
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder3",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Hand"
+                    }
+                },
+                "ShuffleLibrary",
+                "EmitLibrarySearchedEvent"
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "62",
+        "rarity": "RARE",
+        "artist": "D. Alexander Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/2/32b91eb5-ea53-4a21-a2e5-9c545a42fa30.jpg?1783944328",
+        "rulings": [
+            {
+                "date": "2017-03-14",
+                "text": "You can choose to find fewer than four cards if you want. If you find one or two cards, your opponent must choose for them to be put into your graveyard, even if they don't want to."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Glacial Ray
 {
     "name": "Glacial Ray",
@@ -5251,6 +5459,68 @@
     ]
 }
 
+// Hisoka's Guard
+{
+    "name": "Hisoka's Guard",
+    "manaCost": "{1}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "You may choose not to untap this creature during your untap step.\n{1}{U}, {T}: Target creature you control other than this creature has shroud for as long as this creature remains tapped. (It can't be the target of spells or abilities.)",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "flags": [
+        "MAY_NOT_UNTAP"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Hisoka's Guard:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{U}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "GrantKeyword",
+                    "keyword": "SHROUD",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "duration": "WhileSourceTapped"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature ctrl:you",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "68",
+        "artist": "Wayne England",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/d/4d7aec86-7b12-4025-af06-1c1928e56c19.jpg?1783944326"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Hisoka, Minamo Sensei
 {
     "name": "Hisoka, Minamo Sensei",
@@ -5738,6 +6008,55 @@
     ]
 }
 
+// Horobi, Death's Wail
+{
+    "name": "Horobi, Death's Wail",
+    "manaCost": "{2}{B}{B}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "Flying\nWhenever a creature becomes the target of a spell or ability, destroy that creature.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Horobi, Death's Wail:1",
+                "trigger": {
+                    "type": "BecomesTargetEvent",
+                    "targetFilter": "creature"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "TriggeringEntity",
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "117",
+        "rarity": "RARE",
+        "artist": "John Bolton",
+        "flavorText": "\"From the ashes of Reito rose a new kami. And thereafter at every battle came Horobi, Death's Wail.\"\n—The History of Kamigawa",
+        "imageUri": "https://cards.scryfall.io/normal/front/b/4/b41983cb-c4e4-4384-bd69-df3fc6e74cd0.jpg?1783944314",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "If the creature is the only target of the spell or ability, that spell or ability won't resolve."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Humble Budoka
 {
     "name": "Humble Budoka",
@@ -5849,6 +6168,73 @@
         "flavorText": "\"Just looking at it fills me with dread . . . . Yet since it arrived, I've done little else. My blades have dulled and my business has failed, and still I cannot look away.\"\n—Keisaku, master swordmaker",
         "imageUri": "https://cards.scryfall.io/normal/front/9/1/91c33332-8a72-4b81-a8e9-a73aaac6013c.jpg?1783944279"
     }
+}
+
+// Iname, Death Aspect
+{
+    "name": "Iname, Death Aspect",
+    "manaCost": "{4}{B}{B}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "When Iname enters, you may search your library for any number of Spirit cards, put them into your graveyard, then shuffle.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Iname, Death Aspect:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Library",
+                                    "filter": "Spirit"
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": "ChooseAnyNumber",
+                                "storeSelected": "selected1",
+                                "prompt": "Search your library for any number of Spirit cards"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                }
+                            },
+                            "ShuffleLibrary"
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "118",
+        "rarity": "RARE",
+        "artist": "Justin Sweet",
+        "flavorText": "Iname revels in sadistic glee at the crushing of souls, but soon mourns the lives so cruelly cut short. So the cycle begins anew.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/d/2dd67e11-3dad-4e59-b15d-02911e53fbbf.jpg?1783944313"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
 }
 
 // Iname, Life Aspect
@@ -9957,6 +10343,91 @@
     ]
 }
 
+// Myojin of Seeing Winds
+{
+    "name": "Myojin of Seeing Winds",
+    "manaCost": "{7}{U}{U}{U}",
+    "typeLine": "Legendary Creature — Spirit",
+    "oracleText": "Myojin of Seeing Winds enters with a divinity counter on it if you cast it from your hand.\nMyojin of Seeing Winds has indestructible as long as it has a divinity counter on it.\nRemove a divinity counter from Myojin of Seeing Winds: Draw a card for each permanent you control.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Myojin of Seeing Winds:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomRemoveCounters",
+                        "counterType": "DIVINITY",
+                        "self": true
+                    }
+                },
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "AggregateBattlefield",
+                        "player": "You",
+                        "filter": "permanent"
+                    }
+                },
+                "descriptionOverride": "Remove a divinity counter from this creature: Draw a card for each permanent you control."
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantKeyword",
+                    "keyword": "INDESTRUCTIBLE",
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "EntityMatches",
+                    "entity": "Self",
+                    "filter": {
+                        "statePredicates": [
+                            {
+                                "type": "HasCounter",
+                                "counterType": "DIVINITY"
+                            }
+                        ]
+                    }
+                }
+            }
+        ],
+        "replacementEffects": [
+            {
+                "type": "EntersWithCounters",
+                "counterType": "DIVINITY",
+                "count": 1,
+                "selfOnly": true,
+                "condition": "WasCastFromHand"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "75",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "imageUri": "https://cards.scryfall.io/normal/front/8/f/8f5f8d3a-95e7-4dd9-8510-43517eb02693.jpg?1783944324",
+        "rulings": [
+            {
+                "date": "2013-07-01",
+                "text": "In a Commander game where this card is your commander, casting it from the Command zone does not count as casting it from your hand."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Mystic Restraints
 {
     "name": "Mystic Restraints",
@@ -11956,6 +12427,90 @@
     ]
 }
 
+// Petals of Insight
+{
+    "name": "Petals of Insight",
+    "manaCost": "{4}{U}",
+    "typeLine": "Sorcery — Arcane",
+    "oracleText": "Look at the top three cards of your library. You may put those cards on the bottom of your library in any order. If you do, return Petals of Insight to its owner's hand. Otherwise, draw three cards.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.MayDecide",
+                        "prompt": "Put the top three cards of your library on the bottom in any order and return Petals of Insight to your hand? (Otherwise, draw three cards.)"
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "ControllerChooses"
+                            },
+                            {
+                                "type": "GatherCards",
+                                "source": "Self",
+                                "storeAs": "gathered2"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered2",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand",
+                                    "player": "OwnerOfSource"
+                                }
+                            }
+                        ]
+                    },
+                    "otherwise": {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 3
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "79",
+        "rarity": "UNCOMMON",
+        "artist": "Anthony S. Waters",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/0/00f59a16-45a8-4b52-a8df-ea96abafd8ff.jpg?1783944323",
+        "rulings": [
+            {
+                "date": "2013-06-07",
+                "text": "If you choose to put the three cards on the bottom of your library, Petals of Insight will return to your hand directly from the stack. It never goes to a graveyard."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Pinecrest Ridge
 {
     "name": "Pinecrest Ridge",
@@ -12615,6 +13170,133 @@
     ]
 }
 
+// Reweave
+{
+    "name": "Reweave",
+    "manaCost": "{5}{U}",
+    "typeLine": "Instant — Arcane",
+    "oracleText": "Target permanent's controller sacrifices it. If the player does, they reveal cards from the top of their library until they reveal a permanent card that shares a card type with the sacrificed permanent, put that card onto the battlefield, then shuffle.\nSplice onto Arcane {2}{U}{U} (As you cast an Arcane spell, you may reveal this card from your hand and pay its splice cost. If you do, add this card's effects to that spell.)",
+    "keywords": [
+        "SPLICE"
+    ],
+    "keywordAbilities": [
+        {
+            "type": "Splice",
+            "cost": "{2}{U}{U}"
+        }
+    ],
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "SacrificeTarget",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "sacrificedByItsController": true
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Compare",
+                            "left": "PermanentsSacrificedThisWay",
+                            "operator": "GTE",
+                            "right": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherUntilMatch",
+                                "player": {
+                                    "type": "ControllerOf",
+                                    "targetDescription": "target permanent"
+                                },
+                                "filter": {
+                                    "cardPredicates": [
+                                        "IsPermanent",
+                                        {
+                                            "type": "SharesCardTypeWith",
+                                            "entity": {
+                                                "type": "BoundVariable",
+                                                "name": "t0"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "storeMatch": "matched0",
+                                "storeRevealed": "revealed0"
+                            },
+                            {
+                                "type": "RevealCollection",
+                                "from": "revealed0",
+                                "fromZone": "Library",
+                                "toZone": "Battlefield"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "matched0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield",
+                                    "player": {
+                                        "type": "ControllerOf",
+                                        "targetDescription": "target permanent"
+                                    }
+                                }
+                            },
+                            {
+                                "type": "ShuffleLibrary",
+                                "target": "TargetController"
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": "permanent"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "82",
+        "rarity": "RARE",
+        "artist": "Alex Horley-Orlandelli",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/f/4ff68016-80b4-4801-b796-5c5fdbc8faa1.jpg?1783944322",
+        "rulings": [
+            {
+                "date": "2008-04-01",
+                "text": "Reweave has received errata so that the effect looks for a permanent card that shares a type with the sacrificed permanent. A permanent card is a card that could be put onto the battlefield, which is any card that isn't an instant or sorcery."
+            },
+            {
+                "date": "2005-11-01",
+                "text": "The player reveals cards only if the targeted permanent gets sacrificed."
+            },
+            {
+                "date": "2005-04-01",
+                "text": "When Reweave resolves it uses the type(s) that the permanent had right before it was sacrificed."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // River Kaijin
 {
     "name": "River Kaijin",
@@ -13117,6 +13799,68 @@
         "collectorNumber": "142",
         "artist": "Thomas M. Baxa",
         "imageUri": "https://cards.scryfall.io/normal/front/d/8/d8d9bf4e-3bb1-4154-b1ff-a3d8a2810c1b.jpg?1783944307"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Seizan, Perverter of Truth
+{
+    "name": "Seizan, Perverter of Truth",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Legendary Creature — Demon Spirit",
+    "oracleText": "At the beginning of each player's upkeep, that player loses 2 life and draws two cards.",
+    "creatureStats": {
+        "power": 6,
+        "toughness": 5
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Seizan, Perverter of Truth:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP",
+                    "player": "Each"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "LoseLife",
+                            "amount": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            },
+                            "target": {
+                                "type": "PlayerRef",
+                                "player": "TriggeringPlayer"
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "143",
+        "rarity": "RARE",
+        "artist": "Kev Walker",
+        "flavorText": "\"If you would taste the wisdom of the oni, be prepared to salt it with your blood.\"\n—Kiku, Night's Flower",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/1/e1e61750-f7d7-4e6d-9d68-e1e357868a8d.jpg?1783944308"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -13832,6 +14576,133 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Sift Through Sands
+{
+    "name": "Sift Through Sands",
+    "manaCost": "{1}{U}{U}",
+    "typeLine": "Instant — Arcane",
+    "oracleText": "Draw two cards, then discard a card.\nIf you've cast a spell named Peer Through Depths and a spell named Reach Through Mists this turn, you may search your library for a card named The Unspeakable, put it onto the battlefield, then shuffle.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 2
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand"
+                            },
+                            "storeAs": "hand"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "hand",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "discarded",
+                            "prompt": "Choose 1 card to discard"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "discarded",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Discard"
+                        }
+                    ]
+                },
+                {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "All",
+                            "conditions": [
+                                {
+                                    "type": "PlayerCastSpellsThisTurn",
+                                    "filter": "name:Peer Through Depths",
+                                    "atLeast": 1
+                                },
+                                {
+                                    "type": "PlayerCastSpellsThisTurn",
+                                    "filter": "name:Reach Through Mists",
+                                    "atLeast": 1
+                                }
+                            ]
+                        }
+                    },
+                    "then": {
+                        "type": "Gated",
+                        "gate": "Gate.MayDecide",
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "filter": "name:The Unspeakable"
+                                    },
+                                    "storeAs": "searchable",
+                                    "search": true
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "found"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Battlefield"
+                                    }
+                                },
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "84",
+        "artist": "Anthony S. Waters",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/077bde4d-4cdb-42db-acc5-441ed8fa4a5b.jpg?1783944322"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -14709,6 +15580,62 @@
     },
     "colorIdentityOverride": [
         "BLACK"
+    ]
+}
+
+// Squelch
+{
+    "name": "Squelch",
+    "manaCost": "{1}{U}",
+    "typeLine": "Instant",
+    "oracleText": "Counter target activated ability. (Mana abilities can't be targeted.)\nDraw a card.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "Counter",
+                    "target": "CounterTarget.Ability"
+                },
+                {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetObject",
+                "filter": {
+                    "baseFilter": {
+                        "cardPredicates": [
+                            "IsActivatedAbility"
+                        ]
+                    },
+                    "zone": "Stack"
+                },
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "92",
+        "rarity": "UNCOMMON",
+        "artist": "Matt Cavotta",
+        "flavorText": "Oku-Doku had gone through all the motions: the same akki cursewords, the same ingredients with their horrid stink, the same rude gestures. Yet not a person died.",
+        "imageUri": "https://cards.scryfall.io/normal/front/2/9/29421dd2-70a7-4623-afe0-ca4cb415ec87.jpg?1783944321",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "Squelch can't target a mana ability because mana abilities don't use the stack."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
     ]
 }
 
@@ -16337,6 +17264,80 @@
         "imageUri": "https://cards.scryfall.io/normal/front/3/c/3c571f66-7a00-4cb0-9da9-8271083f49d3.jpg?1783944272"
     },
     "colorIdentityOverride": []
+}
+
+// Uyo, Silent Prophet
+{
+    "name": "Uyo, Silent Prophet",
+    "manaCost": "{4}{U}{U}",
+    "typeLine": "Legendary Creature — Moonfolk Wizard",
+    "oracleText": "Flying\n{2}, Return two lands you control to their owner's hand: Copy target instant or sorcery spell. You may choose new targets for the copy.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Uyo, Silent Prophet:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}"
+                            }
+                        },
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomReturnToHand",
+                                "filter": "land",
+                                "count": 2
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "CopyTargetSpell",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "instant|sorcery",
+                            "zone": "Stack"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "99",
+        "rarity": "RARE",
+        "artist": "John Bolton",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/b/cbfb3c53-1e68-48ce-8008-93bc49e188dd.jpg?1783944318",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "If you copy an Arcane spell that has cards spliced onto it, you'll copy the spliced text as well as the original spell text."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
 }
 
 // Vassal's Duty

@@ -10,9 +10,6 @@ import com.wingedsheep.sdk.model.TokenPrinting
 /**
  * Champions of Kamigawa (2004)
  *
- * mtgish-tooling auto-generated seed: only the cards relocated here as their canonical
- * earliest printing. Intentionally incomplete relative to the official set.
- *
  * Set Code: CHK
  * Release Date: 2004-10-01
  */
@@ -23,7 +20,6 @@ object ChampionsOfKamigawaSet : MtgSet {
     override val releaseDate = "2004-10-01"
     override val block = "Kamigawa"
     override val sealedSupported = false
-    override val incomplete = true
 
     override val cards: List<CardDefinition> by lazy {
         CardDiscovery.findIn(CARDS_PACKAGE)
