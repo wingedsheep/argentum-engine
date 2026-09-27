@@ -2194,6 +2194,12 @@ class TriggerMatcher(
             val entity = state.getEntity(entityId) ?: return false
             entity.has<FaceDownComponent>()
         }
+        // Transformed permanent (CR 701.27g) — the same live read as PredicateEvaluator: back face
+        // up and on the battlefield (a projection entry; a back-face-up spell has none).
+        com.wingedsheep.sdk.scripting.predicates.StatePredicate.IsTransformed ->
+            state.getEntity(entityId)
+                ?.get<com.wingedsheep.engine.state.components.identity.DoubleFacedComponent>()?.isBack == true &&
+                state.projectedState.getProjectedValues(entityId) != null
         // Relative to a referenced entity a trigger filter has no context to resolve; no trigger
         // uses it, so fail closed rather than matching every creature.
         is com.wingedsheep.sdk.scripting.predicates.StatePredicate.BlockedOrWasBlockedByEntityThisTurn -> false

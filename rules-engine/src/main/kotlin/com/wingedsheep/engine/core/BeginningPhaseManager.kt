@@ -497,6 +497,9 @@ class BeginningPhaseManager(
         StatePredicate.PutIntoGraveyardFromBattlefieldThisTurn -> false
         // Combat-partner history is cleared at cleanup, so nothing has blocked anything yet this turn.
         is StatePredicate.BlockedOrWasBlockedByEntityThisTurn -> false
+        // Untap candidates are battlefield permanents, so back face up is the whole CR 701.27g test.
+        StatePredicate.IsTransformed ->
+            container.get<com.wingedsheep.engine.state.components.identity.DoubleFacedComponent>()?.isBack == true
         // No granter context in untap filtering — granter-relative exclusion is resolution-time only.
         StatePredicate.IsGrantingPermanent -> false
         // Counter history is plain per-entity state, so answer it exactly rather than falling open.

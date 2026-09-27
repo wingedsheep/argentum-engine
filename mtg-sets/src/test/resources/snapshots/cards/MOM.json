@@ -1710,6 +1710,158 @@
     ]
 }
 
+// Invasion of Pyrulea
+{
+    "name": "Invasion of Pyrulea",
+    "manaCost": "{G}{U}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, scry 3, then reveal the top card of your library. If it's a land or double-faced card, draw a card.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Pyrulea:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "Scry",
+                            "count": 3
+                        },
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered1",
+                            "revealed": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "gathered1",
+                                    "filter": {
+                                        "cardPredicates": [
+                                            {
+                                                "type": "Or",
+                                                "predicates": [
+                                                    "IsLand",
+                                                    "IsDoubleFaced"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "then": {
+                                "type": "DrawCards",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Siege enters, scry 3, then reveal the top card of your library. If it's a land or double-faced card, draw a card."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Gargantuan Slabhorn",
+        "manaCost": "",
+        "typeLine": "Creature — Beast",
+        "oracleText": "Trample, ward {2}\nOther transformed permanents you control have trample and ward {2}.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "keywords": [
+            "TRAMPLE",
+            "WARD"
+        ],
+        "keywordAbilities": [
+            {
+                "type": "Ward",
+                "cost": {
+                    "type": "WardCost.Mana",
+                    "manaCost": "{2}"
+                }
+            }
+        ],
+        "script": {
+            "staticAbilities": [
+                {
+                    "type": "GrantKeyword",
+                    "keyword": "TRAMPLE",
+                    "filter": {
+                        "baseFilter": "permanent transformed ctrl:you",
+                        "excludeSelf": true
+                    }
+                },
+                {
+                    "type": "GrantWard",
+                    "cost": {
+                        "type": "WardCost.Mana",
+                        "manaCost": "{2}"
+                    },
+                    "filter": {
+                        "baseFilter": "permanent transformed ctrl:you",
+                        "excludeSelf": true
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "240",
+            "rarity": "UNCOMMON",
+            "artist": "Nicholas Gregory",
+            "flavorText": "To the slabhorn, the branches of the Invasion Tree were as brittle as the stems of a Pyrulean fern.",
+            "imageUri": "https://cards.scryfall.io/normal/back/5/0/50180fda-6d67-41e9-8b2b-2e7c5876b8ab.jpg?1783916949"
+        },
+        "colorIdentityOverride": [
+            "GREEN",
+            "BLUE"
+        ],
+        "colorIndicator": [
+            "GREEN",
+            "BLUE"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "240",
+        "rarity": "UNCOMMON",
+        "artist": "Nicholas Gregory",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/0/50180fda-6d67-41e9-8b2b-2e7c5876b8ab.jpg?1783916949",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "If you reveal a land or double-faced card for Invasion of Pyrulea's ability, that revealed card will be the one you draw."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "A \"transformed permanent\" is a double-faced permanent with its back face up. Notably, modal double-faced permanents and melded permanents are never transformed permanents, no matter which faces are up."
+            }
+        ]
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Iridescent Blademaster
 {
     "name": "Iridescent Blademaster",
@@ -1924,6 +2076,59 @@
         ]
     },
     "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Mutagen Connoisseur
+{
+    "name": "Mutagen Connoisseur",
+    "manaCost": "{1}{G}{U}",
+    "typeLine": "Creature — Vedalken Mutant",
+    "oracleText": "Flying, vigilance\nThis creature gets +1/+0 for each transformed permanent you control.",
+    "creatureStats": {
+        "power": 0,
+        "toughness": 5
+    },
+    "keywords": [
+        "FLYING",
+        "VIGILANCE"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "GrantDynamicStats",
+                "filter": {
+                    "baseFilter": "permanent",
+                    "scope": "Self"
+                },
+                "powerBonus": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "permanent transformed"
+                },
+                "toughnessBonus": {
+                    "type": "Fixed",
+                    "amount": 0
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "248",
+        "rarity": "UNCOMMON",
+        "artist": "Alex Brock",
+        "flavorText": "Much to the Phyrexians' delight, sheer curiosity drove many to willingly surrender to *compleation*.",
+        "imageUri": "https://cards.scryfall.io/normal/front/4/a/4a84b6d7-3944-4223-ac16-aa5e59ac84cb.jpg?1783916941",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "A \"transformed permanent\" is a double-faced permanent with its back face up. Notably, modal double-faced permanents and melded permanents are never transformed permanents, no matter which faces are up."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "GREEN",
         "BLUE"
     ]
 }

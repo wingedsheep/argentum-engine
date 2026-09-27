@@ -5291,6 +5291,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
 - `.nontoken()` / `.token()` — token vs printed.
 - `.monocolored()` — restrict to monocolored objects (exactly one color, CR 105.2); colorless objects don't match. ("for each color among monocolored permanents you control" — Tarnation Vista.)
 - `.faceDown()` — face-down state.
+- `.transformed()` — a **transformed permanent** (CR 701.27g): back face up on the battlefield. "Each transformed permanent you control" (Mutagen Connoisseur), "other transformed permanents you control have …" (Gargantuan Slabhorn). Not `Filters.DoubleFaced` — that is the *card*, true in every zone and of a front-face werewolf too.
 - `.withMorph()` — has a morph *procedure*: the printed keyword (`HasMorphAbilityComponent`, any
   zone) **or** a turn-up procedure whose mechanic is morph. "Creature with a morph ability"
   (Backslide) — a manifested/cloaked/disguised permanent carries turn-up data too, so the runtime
@@ -5658,6 +5659,12 @@ work for abilities-on-stack (which carry no `CardComponent`).
   `Creature` card predicate alongside it on a dies trigger **narrows** it wrongly: the zone-change
   path evaluates card predicates against the printed type line, which for a cloaked or manifested
   land card is not a creature.
+- `IsTransformed` (filter builder `transformed()`) — a transformed permanent (CR 701.27g): a
+  nonmodal double-faced permanent on the battlefield with its back face up (`DoubleFacedComponent.isBack`).
+  A front-face-up permanent never matches, even if it was transformed earlier; a spell cast
+  transformed (a Siege's back face on the stack) isn't a permanent yet; modal double-faced and
+  melded permanents never match (MOM release notes). Read live — a zone-change trigger off the
+  battlefield has no last-known "was transformed" field yet, so it answers false there.
 - `HasCounter(type)` — has at least one counter of `type`.
 - `IsEquipped` (filter builder `equipped()`) — has at least one Equipment attached.
 - `IsEnchanted` (filter builder `enchanted()`) — has at least one **Aura** attached, i.e. the MTG

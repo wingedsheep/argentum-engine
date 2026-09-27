@@ -2031,6 +2031,15 @@ class PredicateEvaluator(
             StatePredicate.IsFaceDown -> container.has<FaceDownComponent>()
             StatePredicate.IsFaceUp -> !container.has<FaceDownComponent>()
 
+            // Transformed permanent (CR 701.27g) — back face up *on the battlefield*. A card cast
+            // transformed also carries a back-face `DoubleFacedComponent` while it is a spell, but
+            // a spell isn't a permanent; every battlefield permanent has a projection entry and a
+            // stack object never does, so the entry is the zone test. MDFCs don't carry the
+            // component at all (their faces live in `cardFaces`), so they never match.
+            StatePredicate.IsTransformed ->
+                container.get<com.wingedsheep.engine.state.components.identity.DoubleFacedComponent>()?.isBack == true &&
+                    projected.getProjectedValues(entityId) != null
+
             // Morph ability — check both the runtime turn-up data (face-down permanents) and the
             // card definition tag (cards in hand/library/graveyard). Manifested, cloaked and
             // disguised permanents carry turn-up data too, so the runtime check asks whether one

@@ -648,6 +648,10 @@ internal class AffectsFilterResolver(
         is StatePredicate.BlockedOrWasBlockedByEntityThisTurn -> false
         StatePredicate.IsFaceDown -> isFaceDown
         StatePredicate.IsFaceUp -> !isFaceDown
+        // Transformed permanent (CR 701.27g). Every candidate here comes off the battlefield, so
+        // "back face up" is the whole test — PredicateEvaluator adds the zone check it needs.
+        StatePredicate.IsTransformed ->
+            container.get<com.wingedsheep.engine.state.components.identity.DoubleFacedComponent>()?.isBack == true
         // "Creature with a morph ability" (Backslide) means *morph* specifically — a manifested,
         // cloaked or disguised permanent also carries turn-up data, so match on the procedure's
         // mechanic rather than on the component's presence.

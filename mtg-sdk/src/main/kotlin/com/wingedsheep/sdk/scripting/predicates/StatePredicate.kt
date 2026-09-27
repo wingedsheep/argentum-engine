@@ -762,6 +762,22 @@ sealed interface StatePredicate {
         override val description: String = "face-up"
     }
 
+    /**
+     * Is a **transformed permanent** (CR 701.27g): a nonmodal double-faced permanent on the
+     * battlefield with its back face up — a Siege cast transformed, a werewolf flipped at night, a
+     * saga that exiled itself back transformed. A permanent sitting on its front face is never
+     * transformed, even if it was back-face-up earlier; modal double-faced permanents and melded
+     * permanents never are either, whichever face is up (MOM release notes).
+     *
+     * This is the *state*, not the card: [CardPredicate.IsDoubleFaced] answers "is this a
+     * double-faced card" in every zone, and is true of a front-face-up werewolf too.
+     */
+    @SerialName("IsTransformed")
+    @Serializable
+    data object IsTransformed : Entity {
+        override val description: String = "transformed"
+    }
+
     /** Has a morph ability (has MorphDataComponent) */
     @SerialName("HasMorphAbility")
     @Serializable

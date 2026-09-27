@@ -848,6 +848,9 @@ interface ObjectFilterBuilder<out Self> {
     /** Must be face-up (not face-down) */
     fun faceUp() = withStatePredicate(StatePredicate.IsFaceUp)
 
+    /** Must be a transformed permanent (back face up, CR 701.27g) — see [StatePredicate.IsTransformed] */
+    fun transformed() = withStatePredicate(StatePredicate.IsTransformed)
+
     /** Must have a morph ability */
     fun withMorph() = withStatePredicate(StatePredicate.HasMorphAbility)
 
