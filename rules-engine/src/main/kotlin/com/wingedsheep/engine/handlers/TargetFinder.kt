@@ -409,7 +409,8 @@ class TargetFinder(
 
         // Add all players (excluding those with shroud or hexproof from opponents)
         targets.addAll(state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) &&
-            !playerHasHexproofAgainst(state, it, controllerId) })
+            !playerHasHexproofAgainst(state, it, controllerId) &&
+            (!requirement.opponentsOnly || state.isOpponentOf(it, controllerId)) })
 
         // Add all permanents matching the filter
         targets.addAll(

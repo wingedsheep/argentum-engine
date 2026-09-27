@@ -81,6 +81,10 @@ object Targets {
     /** Target player or battle (Onakke Javelineer). */
     val PlayerOrBattle: TargetRequirement = TargetPermanentOrPlayer(permanentFilter = TargetFilter.Battle)
 
+    /** Target opponent or battle (Ayara, Widow of the Realm). */
+    val OpponentOrBattle: TargetRequirement =
+        TargetPermanentOrPlayer(permanentFilter = TargetFilter.Battle, opponentsOnly = true)
+
     /** Target creature or planeswalker. */
     val CreatureOrPlaneswalker: TargetRequirement = TargetCreatureOrPlaneswalker()
 

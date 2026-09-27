@@ -157,7 +157,9 @@ class ChangeTargetExecutor(
                         state, projected, entityId, requirement.permanentFilter.baseFilter, predContext
                     )
                 }
-                val players = state.turnOrder.filter { state.hasEntity(it) }
+                val players = state.turnOrder.filter {
+                    state.hasEntity(it) && (!requirement.opponentsOnly || state.isOpponentOf(it, controllerId))
+                }
                 (permanents + players).filter { it != currentTargetId }
             }
 

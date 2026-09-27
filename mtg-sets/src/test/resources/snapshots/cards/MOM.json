@@ -378,6 +378,191 @@
     ]
 }
 
+// Ayara, Widow of the Realm
+{
+    "name": "Ayara, Widow of the Realm",
+    "manaCost": "{1}{B}{B}",
+    "typeLine": "Legendary Creature — Elf Noble",
+    "oracleText": "{T}, Sacrifice another creature or artifact: Ayara deals X damage to target opponent or battle and you gain X life, where X is the sacrificed permanent's mana value.\n{5}{R/P}: Transform Ayara. Activate only as a sorcery. ({R/P} can be paid with either {R} or 2 life.)",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Ayara, Widow of the Realm:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "creature|artifact",
+                                "excludeSelf": true
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "DealDamage",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "SacrificedAsCost",
+                                "numericProperty": "ManaValue"
+                            },
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            }
+                        },
+                        {
+                            "type": "GainLife",
+                            "amount": {
+                                "type": "EntityProperty",
+                                "entity": "SacrificedAsCost",
+                                "numericProperty": "ManaValue"
+                            }
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetPermanentOrPlayer",
+                        "id": "t0",
+                        "permanentFilter": {
+                            "baseFilter": "battle"
+                        },
+                        "opponentsOnly": true
+                    }
+                ],
+                "descriptionOverride": "Ayara deals X damage to target opponent or battle and you gain X life, where X is the sacrificed permanent's mana value."
+            },
+            {
+                "id": "Ayara, Widow of the Realm:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{5}{R/P}"
+                    }
+                },
+                "effect": "Transform",
+                "timing": "SorcerySpeed",
+                "descriptionOverride": "Transform Ayara."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Ayara, Furnace Queen",
+        "manaCost": "",
+        "typeLine": "Legendary Creature — Phyrexian Elf Noble",
+        "oracleText": "At the beginning of combat on your turn, return up to one target artifact or creature card from your graveyard to the battlefield. It gains haste. Exile it at the beginning of the next end step.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Ayara, Furnace Queen:1",
+                    "trigger": {
+                        "type": "StepEvent",
+                        "step": "BEGIN_COMBAT"
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": "ChosenTargets",
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "gathered0",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                },
+                                "storeMovedAs": "moved1"
+                            },
+                            {
+                                "type": "ForEach",
+                                "space": {
+                                    "type": "IterationSpace.Collection",
+                                    "collection": "moved1"
+                                },
+                                "body": {
+                                    "type": "Composite",
+                                    "effects": [
+                                        {
+                                            "type": "GrantKeyword",
+                                            "keyword": "HASTE",
+                                            "target": "IterationEntity",
+                                            "duration": "Permanent"
+                                        },
+                                        {
+                                            "type": "CreateDelayedTrigger",
+                                            "step": "END",
+                                            "effect": {
+                                                "type": "MoveToZone",
+                                                "target": "IterationEntity",
+                                                "destination": "Exile"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "targetRequirement": {
+                        "type": "TargetObject",
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": "creature|artifact own:you",
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0"
+                    }
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "90",
+            "rarity": "RARE",
+            "artist": "Anna Podedworna",
+            "flavorText": "Ayara cherished her new machine servitors just as much as she once did her many suitors: not at all.",
+            "imageUri": "https://cards.scryfall.io/normal/back/a/2/a21b1734-a773-4107-95c1-b44d5ccdfd82.jpg?1783917027"
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "RED"
+        ],
+        "colorIndicator": [
+            "BLACK",
+            "RED"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "90",
+        "rarity": "RARE",
+        "artist": "Anna Podedworna",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/2/a21b1734-a773-4107-95c1-b44d5ccdfd82.jpg?1783917027"
+    },
+    "colorIdentityOverride": [
+        "BLACK",
+        "RED"
+    ]
+}
+
 // Beamtown Beatstick
 {
     "name": "Beamtown Beatstick",

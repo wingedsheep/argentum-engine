@@ -854,6 +854,8 @@ class TargetValidator(
         return when (target) {
             is ChosenTarget.Player -> {
                 if (!state.hasEntity(target.playerId)) "Target player not found"
+                else if (requirement.opponentsOnly && !state.isOpponentOf(target.playerId, casterId))
+                    "Target must be an opponent"
                 else if (playerHasShroud(state, target.playerId)) "Target player has shroud"
                 else if (playerHasHexproofAgainst(state, target.playerId, casterId)) "Target player has hexproof"
                 else null
@@ -862,7 +864,8 @@ class TargetValidator(
                 validateObjectTarget(
                     state, target, requirement.permanentFilter, casterId, sourceId, xValue, chosenPlayerTarget
                 )
-            else -> "Target must be a ${requirement.permanentFilter.description} or player"
+            else -> "Target must be a ${requirement.permanentFilter.description} or " +
+                if (requirement.opponentsOnly) "opponent" else "player"
         }
     }
 

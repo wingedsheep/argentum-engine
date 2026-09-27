@@ -65,7 +65,8 @@ class TargetEnumerationUtils(
             is TargetPermanentOrPlayer -> {
                 val permanents = findValidPermanentTargets(state, playerId, requirement.permanentFilter, sourceId)
                 val players = state.turnOrder.filter { state.hasEntity(it) && !playerHasShroud(state, it) &&
-                    !playerHasHexproofAgainst(state, it, playerId) && !playerHasProtectionFrom(state, it, sourceId, playerId) }
+                    !playerHasHexproofAgainst(state, it, playerId) && !playerHasProtectionFrom(state, it, sourceId, playerId) &&
+                    (!requirement.opponentsOnly || state.isOpponentOf(it, playerId)) }
                 permanents + players
             }
             is TargetPlayerOrPlaneswalker -> {

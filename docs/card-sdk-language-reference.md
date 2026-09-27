@@ -4309,7 +4309,8 @@ non-object shapes are the `Targets.*` presets.
 - `Targets.PermanentOrPlayer` — "target permanent or player" (Powerful Broker). The general member of
   the "object or player" family: `TargetPermanentOrPlayer(permanentFilter = …)` narrows the permanent
   half ("target artifact or player") while each half keeps the legality checks of its single-kind
-  counterpart. The older, narrower `Targets.CreatureOrPlayer` stays as-is for cards already using it.
+  counterpart. `opponentsOnly = true` narrows the player half to the controller's opponents —
+  team-aware (CR 102.3), so a Two-Headed Giant teammate is not a legal pick. The older, narrower `Targets.CreatureOrPlayer` stays as-is for cards already using it.
 - `target(TargetFilter.NonlandPermanent)` — any nonland permanent.
 - `target(TargetFilter.OtherNonlandPermanent)` — "another target nonland permanent"; excludes the source (Braided Net).
 - `target(TargetFilter.Artifact)` — any artifact.
@@ -4460,7 +4461,8 @@ spell {
   `Targets.AnyOtherThanEnchantedCreature`, `Targets.CreatureOrPlayer`, `Targets.PermanentOrPlayer`,
   `Targets.CreatureOrPlaneswalker`, `Targets.PlayerOrPlaneswalker`, `Targets.OpponentOrPlaneswalker`,
   `Targets.PlayerOrBattle` (`TargetPermanentOrPlayer(permanentFilter = TargetFilter.Battle)` — Onakke
-  Javelineer).
+  Javelineer), `Targets.OpponentOrBattle` (the same with `opponentsOnly = true` — Ayara, Widow of the
+  Realm).
   `target(requirement, optional = true)` makes any of them "up to one"; a requirement with its own
   parameters (`TargetPlayer(unlimited = true)`, `TargetOther(…)`, `TargetSpellOrPermanent(…)`) passes
   through `target(requirement)` / `targets(requirement)` as-is.

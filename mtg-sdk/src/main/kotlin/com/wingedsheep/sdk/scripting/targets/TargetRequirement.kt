@@ -260,6 +260,10 @@ data class TargetCreatureOrPlayer(
  * Legality is the union of the two halves — a permanent target is checked for
  * hexproof/shroud/protection like any permanent, a player target like any player — and, being a
  * target, it is chosen on announcement (CR 601.2c) and re-checked on resolution (CR 608.2b).
+ *
+ * [opponentsOnly] narrows the player half to the controller's opponents — "target opponent or
+ * battle" (Ayara, Widow of the Realm). Opponency is team-aware: a Two-Headed Giant teammate is not
+ * a legal pick.
  */
 @SerialName("TargetPermanentOrPlayer")
 @Serializable
@@ -268,19 +272,23 @@ data class TargetPermanentOrPlayer(
     override val optional: Boolean = false,
     override val id: String? = null,
     val permanentFilter: TargetFilter = TargetFilter.Permanent,
-    private val descriptionOverride: String? = null
+    private val descriptionOverride: String? = null,
+    val opponentsOnly: Boolean = false
 ) : TargetRequirement {
     override val description: String = descriptionOverride
         ?: run {
             val noun = permanentFilter.description
+            val player = if (opponentsOnly) "opponent" else "player"
             when {
-                count == 1 -> "target $noun or player"
+                // "target opponent or battle" — the player half leads, as printed.
+                count == 1 && opponentsOnly -> "target $player or $noun"
+                count == 1 -> "target $noun or $player"
                 // Suffixing "s" only reads correctly for a bare noun; a longer filter
                 // description ("artifact creature you control") would come out as
                 // "... you controls". Leave those singular and let a card pass a
                 // descriptionOverride if it needs better.
-                !noun.contains(' ') -> "$count targets (${noun}s or players)"
-                else -> "$count targets ($noun or player)"
+                !noun.contains(' ') -> "$count targets (${noun}s or ${player}s)"
+                else -> "$count targets ($noun or $player)"
             }
         }
 
