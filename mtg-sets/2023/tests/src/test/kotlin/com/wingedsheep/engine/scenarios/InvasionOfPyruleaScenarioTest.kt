@@ -154,12 +154,14 @@ class InvasionOfPyruleaScenarioTest : ScenarioTestBase() {
                 val wolf = game.findPermanent("Smoldering Werewolf")!!
                 withClue("a front-face Werewolf is not a transformed permanent") {
                     game.state.projectedState.hasKeyword(wolf, Keyword.TRAMPLE) shouldBe false
+                    game.state.projectedState.hasKeyword(wolf, Keyword.WARD) shouldBe false
                 }
 
                 game.advanceToPhase(Phase.POSTCOMBAT_MAIN, Step.POSTCOMBAT_MAIN)
                 game.transformWerewolf()
-                withClue("the flipped Erupting Dreadwolf gains trample") {
+                withClue("the flipped Erupting Dreadwolf gains trample and ward") {
                     game.state.projectedState.hasKeyword(wolf, Keyword.TRAMPLE) shouldBe true
+                    game.state.projectedState.hasKeyword(wolf, Keyword.WARD) shouldBe true
                 }
             }
         }
