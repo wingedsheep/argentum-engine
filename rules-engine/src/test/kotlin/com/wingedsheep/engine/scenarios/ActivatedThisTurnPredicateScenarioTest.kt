@@ -14,7 +14,7 @@ import io.kotest.matchers.shouldBe
 /**
  * `StatePredicate.ActivatedThisTurn` — "a permanent that was activated this turn" (Cut Short). The
  * card's own behaviour lives in `CutShortScenarioTest`; these pin the axis: *any* activation counts
- * (an unrestricted mana ability, crew), not just the restricted abilities whose ids the per-turn
+ * (an unrestricted mana ability, manual or auto-tapped; crew), not just the restricted abilities whose ids the per-turn
  * tracker already records, and the mark is cleared when the turn ends.
  */
 class ActivatedThisTurnPredicateScenarioTest : ScenarioTestBase() {
@@ -51,6 +51,42 @@ class ActivatedThisTurnPredicateScenarioTest : ScenarioTestBase() {
 
             game.passUntilPhase(Phase.ENDING, Step.END)
             game.passUntilPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+            game.wasActivated(elves) shouldBe false
+        }
+
+        test("a mana source auto-tapped to pay for a spell is marked too") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Llanowar Elves")
+                .withCardOnBattlefield(1, "Forest")
+                .withCardInHand(1, "Grizzly Bears")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val elves = game.findPermanent("Llanowar Elves").shouldNotBeNull()
+            game.castSpell(1, "Grizzly Bears").error shouldBe null
+            game.wasActivated(elves) shouldBe true
+        }
+
+        test("a permanent that leaves the battlefield loses the mark (CR 400.7)") {
+            val game = scenario()
+                .withPlayers("Player", "Opponent")
+                .withCardOnBattlefield(1, "Llanowar Elves")
+                .withCardOnBattlefield(1, "Island")
+                .withCardInHand(1, "Unsummon")
+                .withActivePlayer(1)
+                .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                .build()
+
+            val elves = game.findPermanent("Llanowar Elves").shouldNotBeNull()
+            val manaAbility = cardRegistry.getCard("Llanowar Elves")!!.script.activatedAbilities.single().id
+            game.execute(ActivateAbility(game.player1Id, elves, manaAbility)).error shouldBe null
+            game.wasActivated(elves) shouldBe true
+
+            game.castSpell(1, "Unsummon", elves).error shouldBe null
+            game.resolveStack()
+            game.isOnBattlefield("Llanowar Elves") shouldBe false
             game.wasActivated(elves) shouldBe false
         }
 

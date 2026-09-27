@@ -477,6 +477,9 @@ object ZoneMovementUtils {
             .without<WasDealtDamageThisTurnComponent>()
             .without<HasDealtDamageComponent>()
             .without<com.wingedsheep.engine.state.components.battlefield.DamageDealtThisTurnComponent>()
+            // Per-turn activation tallies and "was activated this turn" belong to this object; one
+            // that leaves and returns is a new object with fresh activations (CR 400.7).
+            .without<com.wingedsheep.engine.state.components.battlefield.AbilityActivatedThisTurnComponent>()
             // The number chosen as it entered (Nameless Race) belongs to *this* object; one
             // that leaves and returns chooses afresh as it enters (CR 400.7).
             .without<com.wingedsheep.engine.state.components.battlefield.EnteredWithValueComponent>()

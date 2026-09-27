@@ -287,8 +287,9 @@ class ActivateAbilityHandler(
         var currentState = state
 
         // "Was activated this turn" (Cut Short): any activation of any of its abilities counts, and
-        // it stays counted even if the permanent later loses the ability.
-        if (currentState.getEntity(action.sourceId) != null) {
+        // it stays counted even if the permanent later loses the ability. Only a permanent is
+        // "activated" — a cycled or graveyard-activated card must not carry the mark onward.
+        if (action.sourceId in currentState.getBattlefield()) {
             currentState = currentState.updateEntity(action.sourceId) { c ->
                 val tracker = c.get<AbilityActivatedThisTurnComponent>() ?: AbilityActivatedThisTurnComponent()
                 c.with(tracker.withAnyActivated())
