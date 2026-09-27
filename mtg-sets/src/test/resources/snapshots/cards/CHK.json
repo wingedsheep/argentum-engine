@@ -652,6 +652,119 @@
     ]
 }
 
+// Blood Speaker
+{
+    "name": "Blood Speaker",
+    "manaCost": "{3}{B}",
+    "typeLine": "Creature — Ogre Shaman",
+    "oracleText": "At the beginning of your upkeep, you may sacrifice this creature. If you do, search your library for a Demon card, reveal that card, put it into your hand, then shuffle.\nWhenever a Demon you control enters, return this card from your graveyard to your hand.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Blood Speaker:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": "Gate.MayDecide",
+                    "then": {
+                        "type": "Gated",
+                        "gate": {
+                            "type": "Gate.DoAction",
+                            "action": {
+                                "type": "SacrificeTarget",
+                                "target": "Self"
+                            },
+                            "successCriterion": "SuccessCriterion.PermanentsSacrificed"
+                        },
+                        "then": {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Library",
+                                        "filter": "Demon"
+                                    },
+                                    "storeAs": "searchable",
+                                    "search": true
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "searchable",
+                                    "selection": {
+                                        "type": "ChooseUpTo",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "storeSelected": "found"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "found",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Hand"
+                                    },
+                                    "revealed": true
+                                },
+                                "ShuffleLibrary",
+                                "EmitLibrarySearchedEvent"
+                            ]
+                        }
+                    },
+                    "descriptionOverride": "At the beginning of your upkeep, you may sacrifice this creature. If you do, search your library for a Demon card, reveal it, put it into your hand, then shuffle."
+                },
+                "descriptionOverride": "At the beginning of your upkeep, you may sacrifice this creature. If you do, search your library for a Demon card, reveal it, put it into your hand, then shuffle."
+            },
+            {
+                "id": "Blood Speaker:2",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "filter": "permanent Demon ctrl:you",
+                    "to": "Battlefield"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": "Self",
+                    "destination": "Hand",
+                    "fromZone": "Graveyard"
+                },
+                "activeZones": [
+                    "Graveyard"
+                ],
+                "descriptionOverride": "Whenever a Demon you control enters, return this card from your graveyard to your hand."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "103",
+        "rarity": "UNCOMMON",
+        "artist": "Adam Rex",
+        "imageUri": "https://cards.scryfall.io/normal/front/f/2/f218bb94-d5a2-41f6-8bca-b689dcd09a43.jpg?1783944317",
+        "rulings": [
+            {
+                "date": "2004-12-01",
+                "text": "The return-to-hand triggered ability triggers while Blood Speaker is in your graveyard, no matter how it got there."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Boseiju, Who Shelters All
 {
     "name": "Boseiju, Who Shelters All",
@@ -827,6 +940,121 @@
         "rarity": "UNCOMMON",
         "artist": "Ron Spears",
         "imageUri": "https://cards.scryfall.io/normal/front/a/c/acef8c94-469b-4a76-b507-25b51f2501ab.jpg?1783944303"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Brutal Deceiver
+{
+    "name": "Brutal Deceiver",
+    "manaCost": "{2}{R}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "{1}: Look at the top card of your library.\n{2}: Reveal the top card of your library. If it's a land card, this creature gets +1/+0 and gains first strike until end of turn. Activate only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Brutal Deceiver:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}: Look at the top card of your library."
+            },
+            {
+                "id": "Brutal Deceiver:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "gathered0",
+                                    "filter": "land"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 0
+                                        },
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "FIRST_STRIKE",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "{2}: Reveal the top card of your library. If it's a land card, this creature gets +1/+0 and gains first strike until end of turn. Activate only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "161",
+        "artist": "Jon Foster",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/3/e3d532b3-4bd6-4c1d-974d-789976117497.jpg?1783944302"
     },
     "colorIdentityOverride": [
         "RED"
@@ -1308,6 +1536,118 @@
     ]
 }
 
+// Callous Deceiver
+{
+    "name": "Callous Deceiver",
+    "manaCost": "{2}{U}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "{1}: Look at the top card of your library.\n{2}: Reveal the top card of your library. If it's a land card, this creature gets +1/+0 and gains flying until end of turn. Activate only once each turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 3
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Callous Deceiver:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}: Look at the top card of your library."
+            },
+            {
+                "id": "Callous Deceiver:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "gathered0",
+                                    "filter": "land"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 0
+                                        },
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "FLYING",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "{2}: Reveal the top card of your library. If it's a land card, this creature gets +1/+0 and gains flying until end of turn. Activate only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "53",
+        "artist": "Kensuke Okabayashi",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/2/628d3058-d32e-438c-9a86-3e9c2be73c4a.jpg?1783944329"
+    }
+}
+
 // Cleanfall
 {
     "name": "Cleanfall",
@@ -1642,6 +1982,119 @@
         "rarity": "RARE",
         "artist": "Dave Allsop",
         "imageUri": "https://cards.scryfall.io/normal/front/a/8/a8cad7a3-777e-4c84-b404-5f504844ab3b.jpg?1783944317"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Cruel Deceiver
+{
+    "name": "Cruel Deceiver",
+    "manaCost": "{1}{B}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "{1}: Look at the top card of your library.\n{2}: Reveal the top card of your library. If it's a land card, this creature gains \"Whenever this creature deals damage to a creature, destroy that creature\" until end of turn. Activate only once each turn.",
+    "creatureStats": {
+        "power": 2,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Cruel Deceiver:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}: Look at the top card of your library."
+            },
+            {
+                "id": "Cruel Deceiver:3",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "gathered0",
+                                    "filter": "land"
+                                }
+                            },
+                            "then": {
+                                "type": "GrantTriggeredAbility",
+                                "ability": {
+                                    "id": "Cruel Deceiver:2",
+                                    "trigger": {
+                                        "type": "DealsDamageEvent",
+                                        "recipient": {
+                                            "type": "RecipientObject",
+                                            "filter": "creature"
+                                        }
+                                    },
+                                    "effect": {
+                                        "type": "MoveToZone",
+                                        "target": "TriggeringEntity",
+                                        "destination": "Graveyard",
+                                        "byDestruction": true
+                                    }
+                                },
+                                "target": "Self"
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "{2}: Reveal the top card of your library. If it's a land card, this creature gains \"Whenever this creature deals damage to a creature, destroy that creature\" until end of turn. Activate only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "106",
+        "artist": "Nottsuo",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/c/7cc6972a-5305-423f-a936-16ee0fbf9200.jpg?1783944316"
     },
     "colorIdentityOverride": [
         "BLACK"
@@ -2543,6 +2996,121 @@
     ]
 }
 
+// Feral Deceiver
+{
+    "name": "Feral Deceiver",
+    "manaCost": "{3}{G}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "{1}: Look at the top card of your library.\n{2}: Reveal the top card of your library. If it's a land card, this creature gets +2/+2 and gains trample until end of turn. Activate only once each turn.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Feral Deceiver:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}: Look at the top card of your library."
+            },
+            {
+                "id": "Feral Deceiver:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "gathered0",
+                                    "filter": "land"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 2
+                                        },
+                                        "target": "Self"
+                                    },
+                                    {
+                                        "type": "GrantKeyword",
+                                        "keyword": "TRAMPLE",
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "{2}: Reveal the top card of your library. If it's a land card, this creature gets +2/+2 and gains trample until end of turn. Activate only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "208",
+        "artist": "Glen Angus",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/c/6c49d705-9b0c-4c2e-9c27-46eec35deb92.jpg?1783944291"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
 // Field of Reality
 {
     "name": "Field of Reality",
@@ -3106,6 +3674,93 @@
     ]
 }
 
+// Gutwrencher Oni
+{
+    "name": "Gutwrencher Oni",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Demon Spirit",
+    "oracleText": "Trample\nAt the beginning of your upkeep, discard a card if you don't control an Ogre.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "TRAMPLE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Gutwrencher Oni:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "permanent Ogre"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand"
+                                },
+                                "storeAs": "hand"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "hand",
+                                "selection": {
+                                    "type": "ChooseExactly",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "discarded",
+                                "prompt": "Choose 1 card to discard"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "discarded",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Graveyard"
+                                },
+                                "moveType": "Discard"
+                            }
+                        ]
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "113",
+        "rarity": "UNCOMMON",
+        "artist": "Hideaki Takamura",
+        "flavorText": "\"Blood drips. Blood sings. Blood devours all and only blood remains.\"\n—Ogre chant",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/6/7698a5da-5c70-4818-927b-3a923314e537.jpg?1783944316"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Hair-Strung Koto
 {
     "name": "Hair-Strung Koto",
@@ -3397,6 +4052,121 @@
         "imageUri": "https://cards.scryfall.io/normal/front/6/f/6f22a88a-4f04-4500-9e05-909b54ad43e3.jpg?1783944279"
     },
     "colorIdentityOverride": []
+}
+
+// Harsh Deceiver
+{
+    "name": "Harsh Deceiver",
+    "manaCost": "{3}{W}",
+    "typeLine": "Creature — Spirit",
+    "oracleText": "{1}: Look at the top card of your library.\n{2}: Reveal the top card of your library. If it's a land card, untap this creature and it gets +1/+1 until end of turn. Activate only once each turn.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 4
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Harsh Deceiver:1",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{1}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0"
+                        }
+                    ]
+                },
+                "descriptionOverride": "{1}: Look at the top card of your library."
+            },
+            {
+                "id": "Harsh Deceiver:2",
+                "cost": {
+                    "type": "CostAtomWrapper",
+                    "atom": {
+                        "type": "AtomMana",
+                        "cost": "{2}"
+                    }
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeAs": "gathered0",
+                            "revealed": true
+                        },
+                        {
+                            "type": "Gated",
+                            "gate": {
+                                "type": "Gate.WhenCondition",
+                                "condition": {
+                                    "type": "CollectionContainsMatch",
+                                    "collection": "gathered0",
+                                    "filter": "land"
+                                }
+                            },
+                            "then": {
+                                "type": "Composite",
+                                "effects": [
+                                    {
+                                        "type": "TapUntap",
+                                        "target": "Self",
+                                        "tap": false
+                                    },
+                                    {
+                                        "type": "ModifyStats",
+                                        "powerModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "toughnessModifier": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        },
+                                        "target": "Self"
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    "OncePerTurn"
+                ],
+                "descriptionOverride": "{2}: Reveal the top card of your library. If it's a land card, untap this creature and it gets +1/+1 until end of turn. Activate only once each turn."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "11",
+        "artist": "Heather Hudson",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/1/01e19753-b94b-458f-a51b-c8ec8fbec6c8.jpg?1783944341"
+    },
+    "colorIdentityOverride": [
+        "WHITE"
+    ]
 }
 
 // He Who Hungers
@@ -5846,6 +6616,76 @@
     },
     "colorIdentityOverride": [
         "RED"
+    ]
+}
+
+// Kiku, Night's Flower
+{
+    "name": "Kiku, Night's Flower",
+    "manaCost": "{B}{B}",
+    "typeLine": "Legendary Creature — Human Assassin",
+    "oracleText": "{2}{B}{B}, {T}: Target creature deals damage to itself equal to its power.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Kiku, Night's Flower:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "DealDamage",
+                    "amount": {
+                        "type": "EntityProperty",
+                        "entity": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "numericProperty": "Power"
+                    },
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "damageSource": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature"
+                        },
+                        "id": "t0"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "121",
+        "rarity": "RARE",
+        "artist": "Jim Murray",
+        "flavorText": "\"A wanderer has told me of an assassin in the Takenuma Swamp who uses her dark arts to animate her enemies' shadows against them. A wild tale, but it explains much.\"\n—Diary of Azusa",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/7/07e18994-d08b-4a8e-abfb-b5531fd6f816.jpg?1783944312"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
@@ -8879,6 +9719,68 @@
     ]
 }
 
+// Oni Possession
+{
+    "name": "Oni Possession",
+    "manaCost": "{2}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Enchant creature\nAt the beginning of your upkeep, sacrifice a creature.\nEnchanted creature gets +3/+3 and has trample.\nEnchanted creature is a Demon Spirit.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Oni Possession:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Sacrifice",
+                    "filter": "creature"
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "CompositeStaticAbility",
+                "abilities": [
+                    {
+                        "type": "ModifyStats",
+                        "powerBonus": 3,
+                        "toughnessBonus": 3
+                    },
+                    {
+                        "type": "GrantKeyword",
+                        "keyword": "TRAMPLE"
+                    }
+                ]
+            },
+            {
+                "type": "TransformPermanent",
+                "setSubtypes": [
+                    "Demon",
+                    "Spirit"
+                ]
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "135",
+        "rarity": "UNCOMMON",
+        "artist": "Aleksi Briclot",
+        "imageUri": "https://cards.scryfall.io/normal/front/6/9/695f122d-e1b7-4dd4-a770-a8f206ba42da.jpg?1783944309"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Orbweaver Kumo
 {
     "name": "Orbweaver Kumo",
@@ -9501,6 +10403,62 @@
     ]
 }
 
+// Painwracker Oni
+{
+    "name": "Painwracker Oni",
+    "manaCost": "{3}{B}{B}",
+    "typeLine": "Creature — Demon Spirit",
+    "oracleText": "Fear (This creature can't be blocked except by artifact creatures and/or black creatures.)\nAt the beginning of your upkeep, sacrifice a creature if you don't control an Ogre.",
+    "creatureStats": {
+        "power": 5,
+        "toughness": 4
+    },
+    "keywords": [
+        "FEAR"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Painwracker Oni:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "UPKEEP"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Gated",
+                    "gate": {
+                        "type": "Gate.WhenCondition",
+                        "condition": {
+                            "type": "Not",
+                            "condition": {
+                                "type": "Exists",
+                                "player": "You",
+                                "zone": "Battlefield",
+                                "filter": "permanent Ogre"
+                            }
+                        }
+                    },
+                    "then": {
+                        "type": "Sacrifice",
+                        "filter": "creature"
+                    }
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "136",
+        "rarity": "UNCOMMON",
+        "artist": "Hideaki Takamura",
+        "flavorText": "\"Blood flows. Blood calls. Blood devours all and only blood remains.\"\n—Ogre chant",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/b/1b371b32-7758-4dc9-b4c5-1d1df1f1826a.jpg?1783944309"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
 // Part the Veil
 {
     "name": "Part the Veil",
@@ -9836,6 +10794,118 @@
     },
     "colorIdentityOverride": [
         "WHITE"
+    ]
+}
+
+// Rag Dealer
+{
+    "name": "Rag Dealer",
+    "manaCost": "{B}",
+    "typeLine": "Creature — Human Rogue",
+    "oracleText": "{2}{B}, {T}: Exile up to three target cards from a single graveyard.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Rag Dealer:1",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{2}{B}"
+                            }
+                        },
+                        "CostTap"
+                    ]
+                },
+                "effect": {
+                    "type": "ForEach",
+                    "space": "IterationSpace.Targets",
+                    "body": {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "ContextTarget",
+                            "index": 0
+                        },
+                        "destination": "Exile"
+                    }
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "count": 3,
+                        "optional": true,
+                        "filter": {
+                            "baseFilter": {},
+                            "zone": "Graveyard"
+                        },
+                        "id": "t0",
+                        "sameOwner": true
+                    }
+                ],
+                "descriptionOverride": "Exile up to three target cards from a single graveyard."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "138",
+        "artist": "Ralph Horsley",
+        "flavorText": "\"After General Takeno found the Oathkeeper amidst the bamboo marshes, more scavengers braved the swamp's nezumi, oni, and kami in hopes of glory.\"\n—The History of Kamigawa",
+        "imageUri": "https://cards.scryfall.io/normal/front/1/8/18ef007a-fcf4-4293-933e-4f9f7f602002.jpg?1783944308"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
+    ]
+}
+
+// Ragged Veins
+{
+    "name": "Ragged Veins",
+    "manaCost": "{1}{B}",
+    "typeLine": "Enchantment — Aura",
+    "oracleText": "Flash\nEnchant creature\nWhenever enchanted creature is dealt damage, its controller loses that much life.",
+    "keywords": [
+        "FLASH"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Ragged Veins:1",
+                "trigger": "DamageReceivedEvent",
+                "binding": "ATTACHED",
+                "effect": {
+                    "type": "LoseLife",
+                    "amount": {
+                        "type": "ContextProperty",
+                        "key": "TRIGGER_DAMAGE_AMOUNT"
+                    },
+                    "target": {
+                        "type": "PlayerRef",
+                        "player": "TriggeringPlayer"
+                    }
+                }
+            }
+        ],
+        "auraTarget": {
+            "type": "TargetObject",
+            "filter": {
+                "baseFilter": "creature"
+            }
+        }
+    },
+    "metadata": {
+        "collectorNumber": "139",
+        "artist": "Chippy",
+        "imageUri": "https://cards.scryfall.io/normal/front/c/7/c7f3312f-71d0-4dfd-ba39-c2a2ff8d5bd0.jpg?1783944308"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 
