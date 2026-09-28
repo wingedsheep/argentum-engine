@@ -1,6 +1,8 @@
 package com.wingedsheep.engine.scenarios
 
+import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.ChooseTargetsDecision
+import com.wingedsheep.engine.handlers.continuations.entityIdToChosenTarget
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
@@ -75,6 +77,41 @@ class InvasionOfLorwynScenarioTest : ScenarioTestBase() {
                 game.selectTargets(listOf(game.findPermanent("Scaled Wurm")!!)).error shouldBe null
                 game.resolveStack()
                 game.isInGraveyard(2, "Scaled Wurm") shouldBe true
+            }
+
+            test("the cap is re-read on resolution — losing a land in response makes the target illegal") {
+                val game = scenario()
+                    .withPlayers("Player", "Opponent")
+                    .withCardInHand(1, "Invasion of Lorwyn")
+                    .withLandsOnBattlefield(1, "Swamp", 4)
+                    .withLandsOnBattlefield(1, "Forest", 3)
+                    .withCardOnBattlefield(2, "Scaled Wurm")
+                    .withCardOnBattlefield(2, "Strip Mine", summoningSickness = false)
+                    .withActivePlayer(1)
+                    .inPhase(Phase.PRECOMBAT_MAIN, Step.PRECOMBAT_MAIN)
+                    .build()
+
+                game.castInvasion()
+                game.selectTargets(listOf(game.findPermanent("Scaled Wurm")!!)).error shouldBe null
+                game.passPriority().error shouldBe null
+
+                // With the trigger on the stack, the opponent Strip Mines a Swamp: 7 lands become 6.
+                val stripMine = cardRegistry.getCard("Strip Mine")!!.script.activatedAbilities[1]
+                game.execute(
+                    ActivateAbility(
+                        playerId = game.player2Id,
+                        sourceId = game.findPermanent("Strip Mine")!!,
+                        abilityId = stripMine.id,
+                        targets = listOf(entityIdToChosenTarget(game.state, game.findPermanent("Swamp")!!)),
+                    )
+                ).error shouldBe null
+                game.resolveStack()
+
+                game.isInGraveyard(1, "Swamp") shouldBe true
+                game.state.stack.isEmpty() shouldBe true
+                withClue("power 7 is over the new cap of 6, so the trigger's only target is illegal") {
+                    game.isOnBattlefield("Scaled Wurm") shouldBe true
+                }
             }
         }
 
