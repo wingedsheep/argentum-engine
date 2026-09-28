@@ -839,6 +839,70 @@
     ]
 }
 
+// Coastal Wizard
+{
+    "name": "Coastal Wizard",
+    "manaCost": "{2}{U}{U}",
+    "typeLine": "Creature — Human Wizard",
+    "oracleText": "{T}: Return this creature and another target creature to their owners' hands. Activate only during your turn, before attackers are declared.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Coastal Wizard:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Hand"
+                        },
+                        {
+                            "type": "MoveToZone",
+                            "target": "Self",
+                            "destination": "Hand"
+                        }
+                    ]
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": "creature",
+                            "excludeSelf": true
+                        },
+                        "id": "t0"
+                    }
+                ],
+                "restrictions": [
+                    "OnlyDuringYourTurn",
+                    {
+                        "type": "BeforeStep",
+                        "step": "DECLARE_ATTACKERS"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "34",
+        "rarity": "RARE",
+        "artist": "Edward P. Beard, Jr.",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/b/0b8c7377-1404-44a4-9689-1fc6cdc286c8.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Cruel Edict
 {
     "name": "Cruel Edict",
@@ -1188,6 +1252,91 @@
         "collectorNumber": "38",
         "artist": "Douglas Shuler",
         "imageUri": "https://cards.scryfall.io/normal/front/6/4/641f4e66-b46b-4da3-a053-f3763400d4f5.jpg?1783946486"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
+// Eye Spy
+{
+    "name": "Eye Spy",
+    "manaCost": "{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Look at the top card of target player's library. You may put that card into their graveyard.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "TopOfLibrary",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        },
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseUpTo",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "selectedLabel": "Put into their graveyard",
+                    "remainderLabel": "Leave on top of their library"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "selected1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Graveyard",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    }
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "remainder1",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Library",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "placement": "Top"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetPlayer",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "39",
+        "rarity": "UNCOMMON",
+        "artist": "DiTerlizzi",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/e/ee109b81-96ef-494a-9d6d-0ea4a49b76a0.jpg?1783946489"
     },
     "colorIdentityOverride": [
         "BLUE"
@@ -1660,6 +1809,76 @@
         "artist": "Matt Stawicki",
         "flavorText": "\"I seen lots o' fights. To win ya gotta bash hard and not get bashed back.\"\n—Goblin grunt",
         "imageUri": "https://cards.scryfall.io/normal/front/6/8/68fe9691-d788-42cb-8d13-005724939b62.jpg"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
+// Goblin War Cry
+{
+    "name": "Goblin War Cry",
+    "manaCost": "{2}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Target opponent chooses a creature they control. Other creatures they control can't block this turn.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "ControlledPermanents",
+                        "player": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        },
+                        "filter": "creature"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "SelectFromCollection",
+                    "from": "gathered0",
+                    "selection": {
+                        "type": "ChooseExactly",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 1
+                        }
+                    },
+                    "chooser": "TargetPlayer",
+                    "storeSelected": "selected1",
+                    "storeRemainder": "remainder1",
+                    "prompt": "Choose a creature you control. Your other creatures can't block this turn.",
+                    "useTargetingUI": true
+                },
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Collection",
+                        "collection": "remainder1"
+                    },
+                    "body": {
+                        "type": "CantBlockTargetCreatures",
+                        "target": "IterationEntity"
+                    }
+                }
+            ]
+        },
+        "targetRequirements": [
+            {
+                "type": "TargetOpponent",
+                "id": "t0"
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "104",
+        "rarity": "UNCOMMON",
+        "artist": "Anson Maddocks",
+        "flavorText": "\"Goblins cry, soldiers fly.\nStones fly, soldiers die!\"",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/8/3822880c-a559-409c-8390-6d57eacc3a7c.jpg?1783946463"
     },
     "colorIdentityOverride": [
         "RED"
@@ -2143,6 +2362,78 @@
         "artist": "Rebecca Guay",
         "flavorText": "\"'Air superiority?' Not while our archers scan the skies.\"\n—Elvish scout",
         "imageUri": "https://cards.scryfall.io/normal/front/c/5/c545fa63-d0dd-422b-8d3b-88b444f13fce.jpg"
+    },
+    "colorIdentityOverride": [
+        "GREEN"
+    ]
+}
+
+// Norwood Priestess
+{
+    "name": "Norwood Priestess",
+    "manaCost": "{2}{G}{G}",
+    "typeLine": "Creature — Elf Druid",
+    "oracleText": "{T}: You may put a green creature card from your hand onto the battlefield. Activate only during your turn, before attackers are declared.",
+    "creatureStats": {
+        "power": 1,
+        "toughness": 1
+    },
+    "script": {
+        "activatedAbilities": [
+            {
+                "id": "Norwood Priestess:1",
+                "cost": "CostTap",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "FromZone",
+                                "zone": "Hand",
+                                "filter": "creature green"
+                            },
+                            "storeAs": "put_candidates"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "put_candidates",
+                            "selection": {
+                                "type": "ChooseUpTo",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "putting",
+                            "prompt": "Put a green creature onto the battlefield?"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "putting",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Battlefield"
+                            }
+                        }
+                    ]
+                },
+                "restrictions": [
+                    "OnlyDuringYourTurn",
+                    {
+                        "type": "BeforeStep",
+                        "step": "DECLARE_ATTACKERS"
+                    }
+                ],
+                "descriptionOverride": "{T}: You may put a green creature card from your hand onto the battlefield. Activate only during your turn, before attackers are declared."
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "137",
+        "rarity": "RARE",
+        "artist": "Melissa A. Benson",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/a/7afd472f-1ede-4e78-b44c-3298ee4c8694.jpg?1783946451"
     },
     "colorIdentityOverride": [
         "GREEN"
@@ -2855,6 +3146,69 @@
     },
     "colorIdentityOverride": [
         "GREEN"
+    ]
+}
+
+// Return of the Nightstalkers
+{
+    "name": "Return of the Nightstalkers",
+    "manaCost": "{5}{B}{B}",
+    "typeLine": "Sorcery",
+    "oracleText": "Return all Nightstalker permanent cards from your graveyard to the battlefield. Then destroy all Swamps you control.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "GatherCards",
+                    "source": {
+                        "type": "FromZone",
+                        "zone": "Graveyard",
+                        "filter": "permanent Nightstalker"
+                    },
+                    "storeAs": "gathered0"
+                },
+                {
+                    "type": "MoveCollection",
+                    "from": "gathered0",
+                    "destination": {
+                        "type": "ToZone",
+                        "zone": "Battlefield"
+                    }
+                },
+                {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "BattlefieldMatching",
+                                "filter": "land Swamp ctrl:you"
+                            },
+                            "storeAs": "destroyAll_gathered"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "destroyAll_gathered",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard"
+                            },
+                            "moveType": "Destroy"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "88",
+        "rarity": "RARE",
+        "artist": "Randy Gallegos",
+        "imageUri": "https://cards.scryfall.io/normal/front/e/8/e85d85c2-9f34-4375-adcd-a1c5b487cacc.jpg?1783946471"
+    },
+    "colorIdentityOverride": [
+        "BLACK"
     ]
 }
 

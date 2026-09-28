@@ -843,6 +843,54 @@
     ]
 }
 
+// Relentless Assault
+{
+    "name": "Relentless Assault",
+    "manaCost": "{2}{R}{R}",
+    "typeLine": "Sorcery",
+    "oracleText": "Untap all creatures that attacked this turn. After this main phase, there is an additional combat phase followed by an additional main phase.",
+    "script": {
+        "spellEffect": {
+            "type": "Composite",
+            "effects": [
+                {
+                    "type": "ForEach",
+                    "space": {
+                        "type": "IterationSpace.Group",
+                        "filter": {
+                            "baseFilter": {
+                                "cardPredicates": [
+                                    "IsCreature"
+                                ],
+                                "statePredicates": [
+                                    "AttackedThisTurn"
+                                ]
+                            }
+                        }
+                    },
+                    "body": {
+                        "type": "TapUntap",
+                        "target": "IterationEntity",
+                        "tap": false
+                    }
+                },
+                "AddCombatPhase",
+                "AddMainPhase"
+            ]
+        }
+    },
+    "metadata": {
+        "collectorNumber": "91",
+        "rarity": "RARE",
+        "artist": "Geofrey Darrow & I. Rabarot",
+        "flavorText": "Flog and Squee / Up the tree / See the army / Flee, flee, flee.\n—Goblin nursery rhyme/war cry",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/4/747161ea-cb65-4960-84dd-a05bfe5f3ba0.jpg?1783946986"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // River Boa
 {
     "name": "River Boa",
