@@ -52,9 +52,10 @@ class AddManaExecutor(
             container.with(updatedPool)
         }
 
-        // Treasure tagging only applies to ordinary, plain-counter mana (the `add` branch above).
-        if (effect.restriction == null && effect.riders.isEmpty() && effect.expiry == ManaExpiry.END_OF_TURN) {
-            newState = ManaProvenanceTracker.tagAddedMana(newState, context.controllerId, context.sourceId, amount)
+        newState = if (effect.restriction == null && effect.riders.isEmpty() && effect.expiry == ManaExpiry.END_OF_TURN) {
+            ManaProvenanceTracker.tagAddedMana(newState, context.controllerId, context.sourceId, amount)
+        } else {
+            ManaProvenanceTracker.tagAddedRestrictedMana(newState, context.controllerId, context.sourceId, amount)
         }
 
         return EffectResult.success(newState)

@@ -47,3 +47,9 @@ and the targeting prompt is derived from the requirement. The only edits were th
 binding name `"target"` → `"t0"` (requirement `id` and the `BoundVariable` reading it) and the
 recorded prompt `"target"` → `"target artifact or enchantment"` (Naturalize's derived wording).
 No action or event payload changed, and no gameplay was rerun.
+
+Edited on 2026-09-28 when mana provenance gained a producing-source card-type axis
+(`ManaPoolComponent.manaByCardType`, `SpellOnStackComponent.manaSpentByCardType`,
+`RestrictedManaEntry.source`). The new keys were inserted with their defaults in the
+`encodeDefaults = true` captures; the one tagged pool — Birds of Paradise's floating mana in
+`suspended-mana-window/after-1.json` — carries `{"CREATURE": 1}`, as the engine now records.

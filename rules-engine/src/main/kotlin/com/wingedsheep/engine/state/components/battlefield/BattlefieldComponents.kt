@@ -310,7 +310,9 @@ data class CastRecordComponent(
      * when the spell resolved, so an enters-the-battlefield payoff (Bat Colony's "a Bat for each mana
      * from a Cave spent to cast it") can read it after the spell object is gone. See [ManaSpentReader].
      */
-    val manaSpentBySubtype: Map<com.wingedsheep.sdk.core.Subtype, Int> = emptyMap()
+    val manaSpentBySubtype: Map<com.wingedsheep.sdk.core.Subtype, Int> = emptyMap(),
+    /** Producing-source card type → count of mana carrying it spent to cast this permanent. */
+    val manaSpentByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap()
 ) : Component
 
 /**

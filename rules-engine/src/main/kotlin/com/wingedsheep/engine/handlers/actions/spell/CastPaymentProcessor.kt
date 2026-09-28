@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.spell
 
+import com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker
 import com.wingedsheep.engine.core.GameEvent
 import com.wingedsheep.engine.core.ManaSpentEvent
 import com.wingedsheep.engine.core.PaymentStrategy
@@ -75,7 +76,8 @@ class CastPaymentProcessor(
         colorless = component.colorless,
         restrictedMana = component.restrictedMana,
         manaBySubtype = component.manaBySubtype,
-        manaBySource = component.manaBySource
+        manaBySource = component.manaBySource,
+        manaByCardType = component.manaByCardType
     )
 
     private fun toComponent(pool: ManaPool) = ManaPoolComponent(
@@ -87,38 +89,30 @@ class CastPaymentProcessor(
         colorless = pool.colorless,
         restrictedMana = pool.restrictedMana,
         manaBySubtype = pool.manaBySubtype,
-        manaBySource = pool.manaBySource
+        manaBySource = pool.manaBySource,
+        manaByCardType = pool.manaByCardType
     )
 
     /**
      * Provenance of mana freshly tapped by the solver during a payment (AutoPay / Explicit). The
-     * floating-pool tags don't cover it — this mana never entered the pool — so we read each tapped
-     * source's subtypes from state and pair them with the source id. Combined with the pool's
-     * consumed provenance to form the full [SpentManaProvenance] for the payment.
+     * floating-pool tags don't cover it — this mana never entered the pool — so we snapshot each
+     * tapped source the same way [ManaProvenanceTracker] does at production. Combined with the
+     * pool's consumed provenance to form the full [SpentManaProvenance] for the payment.
      */
     private fun tappedSourceProvenance(state: GameState, manaProduced: Map<EntityId, com.wingedsheep.engine.mechanics.mana.ManaProduction>): SpentManaProvenance {
         if (manaProduced.isEmpty()) return SpentManaProvenance()
         val bySubtype = mutableMapOf<com.wingedsheep.sdk.core.Subtype, Int>()
+        val byCardType = mutableMapOf<com.wingedsheep.sdk.core.CardType, Int>()
         val sourceIds = mutableSetOf<EntityId>()
         for ((sourceId, production) in manaProduced) {
             val amount = production.amount + production.colorless
             if (amount <= 0) continue
             sourceIds.add(sourceId)
-            val subtypes = state.getEntity(sourceId)
-                ?.get<com.wingedsheep.engine.state.components.identity.CardComponent>()
-                ?.typeLine?.subtypes ?: emptySet()
-            for (subtype in subtypes) bySubtype[subtype] = (bySubtype[subtype] ?: 0) + amount
+            val tag = ManaProvenanceTracker.sourceTag(state, sourceId)
+            for (subtype in tag.subtypes) bySubtype.merge(subtype, amount, Int::plus)
+            for (cardType in tag.cardTypes) byCardType.merge(cardType, amount, Int::plus)
         }
-        return SpentManaProvenance(bySubtype, sourceIds)
-    }
-
-    /** Merge two provenance snapshots (summing subtype counts, unioning source ids). */
-    private fun mergeProvenance(a: SpentManaProvenance, b: SpentManaProvenance): SpentManaProvenance {
-        if (a.isEmpty) return b
-        if (b.isEmpty) return a
-        val bySubtype = a.bySubtype.toMutableMap()
-        for ((subtype, count) in b.bySubtype) bySubtype[subtype] = (bySubtype[subtype] ?: 0) + count
-        return SpentManaProvenance(bySubtype, a.sourceIds + b.sourceIds)
+        return SpentManaProvenance(bySubtype, sourceIds, byCardType)
     }
 
     fun processPayment(
@@ -268,11 +262,13 @@ class CastPaymentProcessor(
             return PaymentResult(state, emptyList(), "Insufficient mana in pool for X cost")
         }
 
-        // Consume provenance tags proportional to unrestricted mana pulled from the pool.
-        // Restricted mana doesn't participate (tagged mana is always unrestricted). Everything is
-        // paid from the pool here, so there is no freshly-tapped-source provenance to add.
+        // Consume provenance tags proportional to unrestricted mana pulled from the pool, plus the
+        // tags on each restricted unit spent. Everything is paid from the pool here, so there is
+        // no freshly-tapped-source provenance to add.
         val unrestrictedSpent = (whiteSpent + blueSpent + blackSpent + redSpent + greenSpent + colorlessSpent) - restrictedSpent
-        val (poolWithProvenanceUpdated, spentProvenance) = poolAfterPayment.consumeProvenance(maxOf(0, unrestrictedSpent))
+        val (poolWithProvenanceUpdated, unrestrictedProvenance) = poolAfterPayment.consumeProvenance(maxOf(0, unrestrictedSpent))
+        val spentProvenance = unrestrictedProvenance +
+            SpentManaProvenance.ofConsumedRestricted(poolComponent.restrictedMana, poolAfterPayment.restrictedMana)
 
         val newState = state.updateEntity(playerId) { container ->
             container.with(toComponent(poolWithProvenanceUpdated))
@@ -400,7 +396,8 @@ class CastPaymentProcessor(
                 (poolComponent.colorless - poolAfterPayment.colorless)
         )
         val (poolWithProvenanceUpdated, poolProvenance) = poolAfterPayment.consumeProvenance(poolUnrestrictedSpent)
-        var spentProvenance = poolProvenance
+        var spentProvenance = poolProvenance +
+            SpentManaProvenance.ofConsumedRestricted(poolComponent.restrictedMana, poolAfterPayment.restrictedMana)
 
         currentState = currentState.updateEntity(playerId) { container ->
             container.with(toComponent(poolWithProvenanceUpdated))
@@ -414,7 +411,7 @@ class CastPaymentProcessor(
             solutionConsumedRiders = solution.consumedRiders
             // Mana tapped directly for this payment carries the provenance of its source (read from
             // the pre-payment [state], where every tapped source still exists with its type line).
-            spentProvenance = mergeProvenance(spentProvenance, tappedSourceProvenance(state, solution.manaProduced))
+            spentProvenance = spentProvenance + tappedSourceProvenance(state, solution.manaProduced)
             // Fold the X portion the solver tapped (allowed colors only) into the X-by-color tally.
             for ((color, amount) in solution.xRestrictedManaSpent) {
                 xSpentByColor[color] = (xSpentByColor[color] ?: 0) + amount

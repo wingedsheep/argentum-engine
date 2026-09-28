@@ -1831,6 +1831,9 @@ class TriggerMatcher(
         SpellCastPredicate.WasKicked -> event.declaredCostSlot == ChoiceSlot.KICKED
         is SpellCastPredicate.PaidWithManaFromSubtype -> predicate.subtype in event.spentManaSubtypes
         is SpellCastPredicate.PaidWithManaFromSource -> sourceId in event.spentManaSourceIds
+        is SpellCastPredicate.PaidWithManaFromCardType ->
+            com.wingedsheep.engine.handlers.ManaSpentReader.cardTypeSpent(state, event.spellEntityId, predicate.cardType) >=
+                predicate.atLeast
         SpellCastPredicate.IsModal -> event.chosenModesCount > 0
         // "casts an instant or sorcery *card*": a cast copy of a card (CR 707.12) is a stack-style
         // copy — `CopyOfComponent` with no pre-copy snapshot — or a prepare-spell copy; neither

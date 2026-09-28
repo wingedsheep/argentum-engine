@@ -46,7 +46,12 @@ data class ManaPoolComponent(
      * `treasureMana`. Powers Alchemist's Talent level 3, Bat Colony, and the LCI mana-source lands.
      */
     val manaBySubtype: Map<com.wingedsheep.sdk.core.Subtype, Int> = emptyMap(),
-    val manaBySource: Map<EntityId, Int> = emptyMap()
+    val manaBySource: Map<EntityId, Int> = emptyMap(),
+    /**
+     * Producing-source card type → floating units carrying it (Inga and Esika: "mana from
+     * creatures"). Same snapshot-at-production, proportional-consumption rules as [manaBySubtype].
+     */
+    val manaByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap()
 ) : Component {
     /**
      * Add mana of a specific color.
@@ -104,24 +109,40 @@ data class ManaPoolComponent(
     val total: Int get() = white + blue + black + red + green + colorless + restrictedMana.size
 
     /**
-     * Add mana provenance tags for [amount] units produced by [sourceId] carrying [subtypes].
-     * Increments the per-source counter and each per-subtype counter. See [ManaProvenanceTracker].
+     * Add mana provenance tags for [amount] units produced by the source [tag] describes.
+     * Increments the per-source counter and each per-subtype / per-card-type counter. See [ManaProvenanceTracker].
      */
-    fun withProvenance(sourceId: EntityId, subtypes: Set<com.wingedsheep.sdk.core.Subtype>, amount: Int): ManaPoolComponent {
+    fun withProvenance(tag: ManaSourceTag, amount: Int): ManaPoolComponent {
         if (amount <= 0) return this
-        val newBySource = manaBySource + (sourceId to ((manaBySource[sourceId] ?: 0) + amount))
-        val newBySubtype = if (subtypes.isEmpty()) manaBySubtype else buildMap {
+        val newBySource = manaBySource + (tag.sourceId to ((manaBySource[tag.sourceId] ?: 0) + amount))
+        val newBySubtype = if (tag.subtypes.isEmpty()) manaBySubtype else buildMap {
             putAll(manaBySubtype)
-            subtypes.forEach { put(it, (get(it) ?: 0) + amount) }
+            tag.subtypes.forEach { put(it, (get(it) ?: 0) + amount) }
         }
-        return copy(manaBySubtype = newBySubtype, manaBySource = newBySource)
+        val newByCardType = if (tag.cardTypes.isEmpty()) manaByCardType else buildMap {
+            putAll(manaByCardType)
+            tag.cardTypes.forEach { put(it, (get(it) ?: 0) + amount) }
+        }
+        return copy(manaBySubtype = newBySubtype, manaBySource = newBySource, manaByCardType = newByCardType)
+    }
+
+    /**
+     * Tag the last [amount] restricted entries — the ones a mana effect just appended — with the
+     * producing source, so restricted mana answers provenance questions like unrestricted mana does.
+     */
+    fun withRestrictedProvenance(tag: ManaSourceTag, amount: Int): ManaPoolComponent {
+        if (amount <= 0 || restrictedMana.isEmpty()) return this
+        val firstTagged = (restrictedMana.size - amount).coerceAtLeast(0)
+        return copy(restrictedMana = restrictedMana.mapIndexed { i, entry ->
+            if (i >= firstTagged) entry.copy(source = tag) else entry
+        })
     }
 
     /**
      * Check if pool is empty. Includes the provenance tags so a stale tag without backing mana
      * still triggers the end-of-step pool reset.
      */
-    val isEmpty: Boolean get() = total == 0 && manaBySubtype.isEmpty() && manaBySource.isEmpty()
+    val isEmpty: Boolean get() = total == 0 && manaBySubtype.isEmpty() && manaBySource.isEmpty() && manaByCardType.isEmpty()
 
     /**
      * Add restricted mana to the pool.
@@ -248,7 +269,20 @@ data class RestrictedManaEntry(
     val color: Color?,
     val restriction: ManaRestriction,
     val riders: Set<ManaSpellRider> = emptySet(),
-    val expiry: ManaExpiry = ManaExpiry.END_OF_TURN
+    val expiry: ManaExpiry = ManaExpiry.END_OF_TURN,
+    /** The source that produced this unit, snapshotted at production; null when untracked. */
+    val source: ManaSourceTag? = null
+)
+
+/**
+ * What produced a unit of mana, snapshotted when it was made: the source's id, subtypes and card
+ * types. See [com.wingedsheep.engine.handlers.effects.mana.ManaProvenanceTracker].
+ */
+@Serializable
+data class ManaSourceTag(
+    val sourceId: EntityId,
+    val subtypes: Set<com.wingedsheep.sdk.core.Subtype> = emptySet(),
+    val cardTypes: Set<com.wingedsheep.sdk.core.CardType> = emptySet()
 )
 
 /**

@@ -3,11 +3,13 @@ package com.wingedsheep.engine.handlers.effects.mana
 import com.wingedsheep.engine.state.GameState
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.state.components.player.ManaPoolComponent
+import com.wingedsheep.engine.state.components.player.ManaSourceTag
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.model.EntityId
 
 /**
  * Tags mana added to a player's pool with its provenance — which source produced it and what
- * subtypes that source had — so payoffs can later ask "which kind of source produced the mana spent
+ * subtypes and card types that source had — so payoffs can later ask "which kind of source produced the mana spent
  * to cast this?".
  *
  * The [ManaPoolComponent.manaBySubtype] / [ManaPoolComponent.manaBySource] counters record, per
@@ -26,18 +28,48 @@ import com.wingedsheep.sdk.model.EntityId
 object ManaProvenanceTracker {
 
     /**
-     * Increment the producing player's provenance counters when [sourceId] produced [amount] mana.
-     * Snapshots the source's subtypes from its base [CardComponent.typeLine] — the source may already
-     * be in the graveyard (a Treasure's `{T}, Sacrifice this` pays the cost before the mana effect
-     * resolves), but the entity persists with its base type line intact. A source with no card
-     * component (or a null [sourceId]) still tags the source id if present, contributing no subtypes.
+     * Snapshot what [sourceId] is right now. Subtypes come from the base [CardComponent.typeLine] —
+     * the source may already be in the graveyard (a Treasure's `{T}, Sacrifice this` pays the cost
+     * before the mana effect resolves), but the entity persists with its base type line intact.
+     * Card types read the *projected* type line while the source is on the battlefield, so an
+     * animated land's mana is mana from a creature, and fall back to the base type line once it
+     * has left (a creature sacrificed for its own mana still made creature mana).
+     */
+    fun sourceTag(state: GameState, sourceId: EntityId): ManaSourceTag {
+        val typeLine = state.getEntity(sourceId)?.get<CardComponent>()?.typeLine
+        val projectedTypes = state.projectedState.getTypes(sourceId)
+        val cardTypes = if (projectedTypes.isNotEmpty()) {
+            CardType.entries.filterTo(mutableSetOf()) { it.name in projectedTypes }
+        } else {
+            typeLine?.cardTypes ?: emptySet()
+        }
+        return ManaSourceTag(sourceId, typeLine?.subtypes?.toSet() ?: emptySet(), cardTypes)
+    }
+
+    /**
+     * Increment the producing player's provenance counters when [sourceId] produced [amount]
+     * unrestricted mana. A null [sourceId] contributes nothing.
      */
     fun tagAddedMana(state: GameState, playerId: EntityId, sourceId: EntityId?, amount: Int): GameState {
         if (amount <= 0 || sourceId == null) return state
-        val subtypes = state.getEntity(sourceId)?.get<CardComponent>()?.typeLine?.subtypes?.toSet() ?: emptySet()
+        val tag = sourceTag(state, sourceId)
         return state.updateEntity(playerId) { container ->
             val pool = container.get<ManaPoolComponent>() ?: ManaPoolComponent()
-            container.with(pool.withProvenance(sourceId, subtypes, amount))
+            container.with(pool.withProvenance(tag, amount))
+        }
+    }
+
+    /**
+     * Tag the [amount] restricted entries [sourceId] just appended to the player's pool, so
+     * restricted mana ("spend this mana only to cast a creature spell") carries its provenance
+     * into the payment like unrestricted mana does.
+     */
+    fun tagAddedRestrictedMana(state: GameState, playerId: EntityId, sourceId: EntityId?, amount: Int): GameState {
+        if (amount <= 0 || sourceId == null) return state
+        val tag = sourceTag(state, sourceId)
+        return state.updateEntity(playerId) { container ->
+            val pool = container.get<ManaPoolComponent>() ?: return@updateEntity container
+            container.with(pool.withRestrictedProvenance(tag, amount))
         }
     }
 }

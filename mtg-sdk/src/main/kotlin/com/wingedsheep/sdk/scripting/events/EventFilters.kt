@@ -1,5 +1,6 @@
 package com.wingedsheep.sdk.scripting.events
 
+import com.wingedsheep.sdk.core.CardType
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Subtype
 import com.wingedsheep.sdk.core.Zone
@@ -302,6 +303,22 @@ sealed interface SpellCastPredicate {
     @Serializable
     data class PaidWithManaFromSubtype(val subtype: Subtype) : SpellCastPredicate {
         override val description = "using mana from a ${subtype.value}"
+    }
+
+    /**
+     * At least [atLeast] mana produced by a source of card type [cardType] was spent on the cast —
+     * Inga and Esika's "if three or more mana from creatures was spent to cast it" is
+     * `PaidWithManaFromCardType(CardType.CREATURE, atLeast = 3)`. The source's card types are
+     * snapshotted when the mana is produced (projected, so an animated land counts as a creature),
+     * and restricted mana ("spend this mana only to cast a creature spell") carries the tag too.
+     * The spell's payment never changes, so as a trigger condition this reads the same when the
+     * trigger is put on the stack and when it resolves.
+     */
+    @SerialName("SpellPaidWithManaFromCardType")
+    @Serializable
+    data class PaidWithManaFromCardType(val cardType: CardType, val atLeast: Int = 1) : SpellCastPredicate {
+        override val description = if (atLeast <= 1) "using mana from a ${cardType.displayName.lowercase()}"
+            else "with $atLeast or more mana from ${cardType.displayName.lowercase()}s spent to cast it"
     }
 
     /**

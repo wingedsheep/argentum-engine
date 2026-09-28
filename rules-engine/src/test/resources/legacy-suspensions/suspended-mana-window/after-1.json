@@ -24,6 +24,9 @@
                 },
                 "manaBySource": {
                     "card-1001": 1
+                },
+                "manaByCardType": {
+                    "CREATURE": 1
                 }
             },
             "com.wingedsheep.engine.state.components.player.LandDropsComponent": {
@@ -52,7 +55,8 @@
                 "colorless": 0,
                 "restrictedMana": [],
                 "manaBySubtype": {},
-                "manaBySource": {}
+                "manaBySource": {},
+                "manaByCardType": {}
             },
             "com.wingedsheep.engine.state.components.player.LandDropsComponent": {
                 "type": "com.wingedsheep.engine.state.components.player.LandDropsComponent",

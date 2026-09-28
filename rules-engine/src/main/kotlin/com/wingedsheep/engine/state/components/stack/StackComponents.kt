@@ -175,6 +175,11 @@ data class SpellOnStackComponent(
      */
     val manaSpentBySubtype: Map<com.wingedsheep.sdk.core.Subtype, Int> = emptyMap(),
     /**
+     * Producing-source card type → count of mana from sources of that type spent to cast this
+     * spell (Inga and Esika's "three or more mana from creatures"). Read via [ManaSpentReader].
+     */
+    val manaSpentByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap(),
+    /**
      * Per-color mana spent on the `{X}` portion of this spell, for a color-restricted X
      * (e.g. Soul Burn's "spend only black and/or red mana on X"). Read at resolution via
      * `DynamicAmount.ManaSpentOnX`. Empty when X was unrestricted or the spell has no X.

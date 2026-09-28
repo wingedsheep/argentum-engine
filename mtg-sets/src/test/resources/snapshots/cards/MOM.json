@@ -2085,6 +2085,86 @@
     ]
 }
 
+// Inga and Esika
+{
+    "name": "Inga and Esika",
+    "manaCost": "{2}{G}{U}",
+    "typeLine": "Legendary Creature — Human God",
+    "oracleText": "Creatures you control have vigilance and \"{T}: Add one mana of any color. Spend this mana only to cast a creature spell.\"\nWhenever you cast a creature spell, if three or more mana from creatures was spent to cast it, draw a card.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Inga and Esika:2",
+                "trigger": {
+                    "type": "SpellCastEvent",
+                    "spellFilter": {
+                        "cardPredicates": [
+                            "IsCreature"
+                        ]
+                    },
+                    "requires": [
+                        {
+                            "type": "SpellPaidWithManaFromCardType",
+                            "cardType": "CREATURE",
+                            "atLeast": 3
+                        }
+                    ]
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "DrawCards",
+                    "count": {
+                        "type": "Fixed",
+                        "amount": 1
+                    }
+                }
+            }
+        ],
+        "staticAbilities": [
+            {
+                "type": "GrantKeyword",
+                "keyword": "VIGILANCE",
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            },
+            {
+                "type": "GrantActivatedAbility",
+                "ability": {
+                    "id": "Inga and Esika:1",
+                    "cost": "CostTap",
+                    "effect": {
+                        "type": "AddManaOfChoice",
+                        "restriction": {
+                            "type": "CardTypeSpellsOrAbilitiesOnly",
+                            "cardType": "CREATURE"
+                        }
+                    },
+                    "timing": "ManaAbility",
+                    "isManaAbility": true
+                },
+                "filter": {
+                    "baseFilter": "creature ctrl:you"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "229",
+        "rarity": "RARE",
+        "artist": "Wayne Reynolds",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0aa97506-b943-4443-96b1-1b49f57d80aa.jpg?1783916948"
+    },
+    "colorIdentityOverride": [
+        "GREEN",
+        "BLUE"
+    ]
+}
+
 // Interdisciplinary Mascot
 {
     "name": "Interdisciplinary Mascot",

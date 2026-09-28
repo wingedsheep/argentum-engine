@@ -242,6 +242,7 @@ internal class SpellCaster(
             manaSpentGreen = manaSpentGreen,
             manaSpentColorless = manaSpentColorless,
             manaSpentBySubtype = spentManaProvenance.bySubtype,
+            manaSpentByCardType = spentManaProvenance.byCardType,
             manaSpentOnXByColor = manaSpentOnXByColor,
             faceIndex = faceIndex,
             castTimeFlags = castTimeFlags

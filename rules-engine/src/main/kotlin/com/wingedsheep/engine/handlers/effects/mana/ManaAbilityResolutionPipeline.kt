@@ -104,7 +104,8 @@ class ManaAbilityResolutionPipeline(
             colorless = oldPool.colorless + 1,
             restrictedMana = oldPool.restrictedMana,
             manaBySubtype = oldPool.manaBySubtype,
-            manaBySource = oldPool.manaBySource
+            manaBySource = oldPool.manaBySource,
+            manaByCardType = oldPool.manaByCardType
         )
         return Dampening(state.updateEntity(tapperId) { it.with(dampenedPool) }, true)
     }

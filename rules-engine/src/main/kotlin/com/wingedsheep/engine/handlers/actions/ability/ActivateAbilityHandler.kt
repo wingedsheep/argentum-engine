@@ -496,7 +496,8 @@ class ActivateAbilityHandler(
                 green = repeatPoolComponent.green,
                 colorless = repeatPoolComponent.colorless,
                 manaBySubtype = repeatPoolComponent.manaBySubtype,
-                manaBySource = repeatPoolComponent.manaBySource
+                manaBySource = repeatPoolComponent.manaBySource,
+                manaByCardType = repeatPoolComponent.manaByCardType
             )
 
             // Auto-tap for mana cost
@@ -544,7 +545,8 @@ class ActivateAbilityHandler(
                     green = repeatPool.green,
                     colorless = repeatPool.colorless,
                     manaBySubtype = repeatPoolAfterProvenance.manaBySubtype,
-                    manaBySource = repeatPoolAfterProvenance.manaBySource
+                    manaBySource = repeatPoolAfterProvenance.manaBySource,
+                    manaByCardType = repeatPoolAfterProvenance.manaByCardType
                 ))
             }
 

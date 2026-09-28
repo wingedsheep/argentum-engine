@@ -117,7 +117,8 @@ internal class ActivationCostPayer(
             // floating mana actually spent, so tags for mana floated from earlier sources survive an
             // ability activation instead of being wiped (mirrors CastPaymentProcessor's threading).
             manaBySubtype = poolComponent.manaBySubtype,
-            manaBySource = poolComponent.manaBySource
+            manaBySource = poolComponent.manaBySource,
+            manaByCardType = poolComponent.manaByCardType
         )
 
         // For an VariablePermanents cost, X is the exiled permanents' total mana value (computed at
@@ -607,7 +608,8 @@ internal class ActivationCostPayer(
                 colorless = manaPool.colorless,
                 restrictedMana = manaPool.restrictedMana,
                 manaBySubtype = poolAfterProvenance.manaBySubtype,
-                manaBySource = poolAfterProvenance.manaBySource
+                manaBySource = poolAfterProvenance.manaBySource,
+                manaByCardType = poolAfterProvenance.manaByCardType
             ))
         }
     }

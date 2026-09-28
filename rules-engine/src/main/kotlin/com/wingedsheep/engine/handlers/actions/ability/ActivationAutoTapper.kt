@@ -167,6 +167,7 @@ internal class ActivationAutoTapper(
                 restrictedMana = currentPool.restrictedMana,
                 manaBySubtype = currentPool.manaBySubtype,
                 manaBySource = currentPool.manaBySource,
+                manaByCardType = currentPool.manaByCardType,
             ))
         }
 

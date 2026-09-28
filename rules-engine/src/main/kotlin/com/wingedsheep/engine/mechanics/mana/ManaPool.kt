@@ -172,9 +172,11 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
 @Serializable
 data class SpentManaProvenance(
     val bySubtype: Map<com.wingedsheep.sdk.core.Subtype, Int> = emptyMap(),
-    val sourceIds: Set<com.wingedsheep.sdk.model.EntityId> = emptySet()
+    val sourceIds: Set<com.wingedsheep.sdk.model.EntityId> = emptySet(),
+    /** Producing-source card type → mana units carrying it (Inga and Esika's "mana from creatures"). */
+    val byCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap()
 ) {
-    val isEmpty: Boolean get() = bySubtype.isEmpty() && sourceIds.isEmpty()
+    val isEmpty: Boolean get() = bySubtype.isEmpty() && sourceIds.isEmpty() && byCardType.isEmpty()
 
     /**
      * The producing-source subtypes that had at least one mana unit spent. `bySubtype` only ever
@@ -182,6 +184,49 @@ data class SpentManaProvenance(
      * its key set — named here so the cast/resolve paths don't each re-filter for `> 0`.
      */
     val spentSubtypes: Set<com.wingedsheep.sdk.core.Subtype> get() = bySubtype.keys
+
+    /** Sum two snapshots (adding per-subtype and per-card-type counts, unioning source ids). */
+    operator fun plus(other: SpentManaProvenance): SpentManaProvenance = when {
+        isEmpty -> other
+        other.isEmpty -> this
+        else -> SpentManaProvenance(
+            bySubtype = sumCounts(bySubtype, other.bySubtype),
+            sourceIds = sourceIds + other.sourceIds,
+            byCardType = sumCounts(byCardType, other.byCardType)
+        )
+    }
+
+    companion object {
+        private fun <K> sumCounts(a: Map<K, Int>, b: Map<K, Int>): Map<K, Int> =
+            if (b.isEmpty()) a else a.toMutableMap().apply { b.forEach { (k, n) -> merge(k, n, Int::plus) } }
+
+        /** One unit's worth of provenance for each tag (a mana unit per tag). */
+        fun ofUnits(tags: List<com.wingedsheep.engine.state.components.player.ManaSourceTag>): SpentManaProvenance {
+            if (tags.isEmpty()) return SpentManaProvenance()
+            val bySubtype = mutableMapOf<com.wingedsheep.sdk.core.Subtype, Int>()
+            val byCardType = mutableMapOf<com.wingedsheep.sdk.core.CardType, Int>()
+            for (tag in tags) {
+                tag.subtypes.forEach { bySubtype.merge(it, 1, Int::plus) }
+                tag.cardTypes.forEach { byCardType.merge(it, 1, Int::plus) }
+            }
+            return SpentManaProvenance(bySubtype, tags.mapTo(mutableSetOf()) { it.sourceId }, byCardType)
+        }
+
+        /**
+         * Provenance of the restricted units a payment consumed: the multiset difference between
+         * the pool's restricted entries [before] and [after] the payment, read off each consumed
+         * entry's [RestrictedManaEntry.source].
+         */
+        fun ofConsumedRestricted(before: List<RestrictedManaEntry>, after: List<RestrictedManaEntry>): SpentManaProvenance {
+            if (before.none { it.source != null }) return SpentManaProvenance()
+            val remaining = after.toMutableList()
+            val consumed = before.filter { entry ->
+                val idx = remaining.indexOf(entry)
+                if (idx >= 0) { remaining.removeAt(idx); false } else true
+            }
+            return ofUnits(consumed.mapNotNull { it.source })
+        }
+    }
 }
 
 @Serializable
@@ -198,7 +243,8 @@ data class ManaPool(
      * [com.wingedsheep.engine.state.components.player.ManaPoolComponent.manaBySubtype].
      */
     val manaBySubtype: Map<com.wingedsheep.sdk.core.Subtype, Int> = emptyMap(),
-    val manaBySource: Map<com.wingedsheep.sdk.model.EntityId, Int> = emptyMap()
+    val manaBySource: Map<com.wingedsheep.sdk.model.EntityId, Int> = emptyMap(),
+    val manaByCardType: Map<com.wingedsheep.sdk.core.CardType, Int> = emptyMap()
 ) {
     /**
      * Get amount of mana for a specific color.
@@ -679,25 +725,27 @@ data class ManaPool(
      * can stamp the spell/event. Restricted mana never carries provenance, so it never contributes.
      */
     fun consumeProvenance(unrestrictedSpent: Int): Pair<ManaPool, SpentManaProvenance> {
-        if (unrestrictedSpent <= 0 || (manaBySubtype.isEmpty() && manaBySource.isEmpty())) {
+        if (unrestrictedSpent <= 0 || (manaBySubtype.isEmpty() && manaBySource.isEmpty() && manaByCardType.isEmpty())) {
             return this to SpentManaProvenance()
         }
-        val consumedSubtypes = mutableMapOf<com.wingedsheep.sdk.core.Subtype, Int>()
-        val newSubtype = manaBySubtype.mapNotNull { (subtype, count) ->
-            val consumed = minOf(count, unrestrictedSpent)
-            if (consumed > 0) consumedSubtypes[subtype] = consumed
-            val remaining = count - consumed
-            if (remaining > 0) subtype to remaining else null
-        }.toMap()
-        val consumedSources = mutableSetOf<com.wingedsheep.sdk.model.EntityId>()
-        val newSource = manaBySource.mapNotNull { (sourceId, count) ->
-            val consumed = minOf(count, unrestrictedSpent)
-            if (consumed > 0) consumedSources.add(sourceId)
-            val remaining = count - consumed
-            if (remaining > 0) sourceId to remaining else null
-        }.toMap()
-        return copy(manaBySubtype = newSubtype, manaBySource = newSource) to
-            SpentManaProvenance(consumedSubtypes, consumedSources)
+        val (newSubtype, consumedSubtypes) = consumeCounts(manaBySubtype, unrestrictedSpent)
+        val (newSource, consumedSources) = consumeCounts(manaBySource, unrestrictedSpent)
+        val (newCardType, consumedCardTypes) = consumeCounts(manaByCardType, unrestrictedSpent)
+        return copy(manaBySubtype = newSubtype, manaBySource = newSource, manaByCardType = newCardType) to
+            SpentManaProvenance(consumedSubtypes, consumedSources.keys, consumedCardTypes)
+    }
+
+    /** Reduce each counter by `min(count, spent)`; returns the remaining and the consumed counts. */
+    private fun <K> consumeCounts(counts: Map<K, Int>, spent: Int): Pair<Map<K, Int>, Map<K, Int>> {
+        if (counts.isEmpty()) return counts to emptyMap()
+        val consumed = mutableMapOf<K, Int>()
+        val remaining = mutableMapOf<K, Int>()
+        for ((key, count) in counts) {
+            val used = minOf(count, spent)
+            if (used > 0) consumed[key] = used
+            if (count - used > 0) remaining[key] = count - used
+        }
+        return remaining to consumed
     }
 
     /**

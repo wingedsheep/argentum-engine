@@ -6684,6 +6684,14 @@ matcher branch — `SpellCastEvent` does not grow a new field per axis.
   subtype was spent on the cast (Treasure — Rain of Riches, Alchemist's Talent; Cave; …). The
   producing-source subtype is snapshotted when the mana is produced (`ManaProvenanceTracker`), so a
   Treasure sacrificed to tap for its own mana still counts. Matches `SpellCastEvent.spentManaSubtypes`.
+- `SpellCastPredicate.PaidWithManaFromCardType(cardType, atLeast = 1)` — at least `atLeast` mana
+  produced by a source of that card type was spent on the cast. Inga and Esika: "Whenever you cast
+  a creature spell, if three or more mana from creatures was spent to cast it" is
+  `Triggers.you.casts(GameObjectFilter.Creature, requires = setOf(PaidWithManaFromCardType(CardType.CREATURE, atLeast = 3)))`
+  — the payment never changes, so the intervening "if" is safe as a match-time predicate. Card types
+  are snapshotted at production from the *projected* type line (an animated land's mana is creature
+  mana), and restricted mana carries its source tag too. Read via `ManaSpentReader.cardTypeSpent`
+  (stack spell, then `CastRecordComponent`).
 - `SpellCastPredicate.PaidWithManaFromSource` — mana produced by the trigger's own source permanent
   was spent on the cast ("Whenever you cast a … spell using mana produced by this" — Tecutlan, the
   Searing Rift / Barracks of the Thousand / The Myriad Pools). Matched against the source that made

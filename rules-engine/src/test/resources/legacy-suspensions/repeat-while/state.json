@@ -20,7 +20,8 @@
                 "colorless": 0,
                 "restrictedMana": [],
                 "manaBySubtype": {},
-                "manaBySource": {}
+                "manaBySource": {},
+                "manaByCardType": {}
             },
             "com.wingedsheep.engine.state.components.player.LandDropsComponent": {
                 "type": "com.wingedsheep.engine.state.components.player.LandDropsComponent",
@@ -55,7 +56,8 @@
                 "colorless": 0,
                 "restrictedMana": [],
                 "manaBySubtype": {},
-                "manaBySource": {}
+                "manaBySource": {},
+                "manaByCardType": {}
             },
             "com.wingedsheep.engine.state.components.player.LandDropsComponent": {
                 "type": "com.wingedsheep.engine.state.components.player.LandDropsComponent",

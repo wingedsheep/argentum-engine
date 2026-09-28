@@ -17,6 +17,9 @@
                 },
                 "manaBySource": {
                     "card-1001": 1
+                },
+                "manaByCardType": {
+                    "CREATURE": 1
                 }
             },
             "com.wingedsheep.engine.state.components.player.LandDropsComponent": {

@@ -68,4 +68,16 @@ object ManaSpentReader {
         container.get<CastRecordComponent>()?.let { return it.manaSpentBySubtype[subtype] ?: 0 }
         return 0
     }
+
+    /**
+     * How many mana units produced by a source of [cardType] were spent to cast [entityId] — same
+     * stack-then-cast-record read as [subtypeSpent]. Backs
+     * `SpellCastPredicate.PaidWithManaFromCardType` (Inga and Esika's "mana from creatures").
+     */
+    fun cardTypeSpent(state: GameState, entityId: EntityId, cardType: com.wingedsheep.sdk.core.CardType): Int {
+        val container = state.getEntity(entityId) ?: return 0
+        container.get<SpellOnStackComponent>()?.let { return it.manaSpentByCardType[cardType] ?: 0 }
+        container.get<CastRecordComponent>()?.let { return it.manaSpentByCardType[cardType] ?: 0 }
+        return 0
+    }
 }
