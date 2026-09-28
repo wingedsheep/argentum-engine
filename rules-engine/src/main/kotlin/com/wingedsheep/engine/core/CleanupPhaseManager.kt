@@ -718,6 +718,10 @@ class CleanupPhaseManager(
                 if (loyaltyGrants?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<com.wingedsheep.engine.state.components.player.InstantSpeedLoyaltyGrantsComponent>()
                 }
+                val tapForManaGrants = result.get<com.wingedsheep.engine.state.components.player.TapForManaGrantsComponent>()
+                if (tapForManaGrants?.removeOn == PlayerEffectRemoval.EndOfTurn) {
+                    result = result.without<com.wingedsheep.engine.state.components.player.TapForManaGrantsComponent>()
+                }
                 val flashGrants = result.get<FlashGrantsThisTurnComponent>()
                 if (flashGrants?.removeOn == PlayerEffectRemoval.EndOfTurn) {
                     result = result.without<FlashGrantsThisTurnComponent>()

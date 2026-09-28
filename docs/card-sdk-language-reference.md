@@ -2586,6 +2586,17 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
   offered and when it is activated, so a Jace that enters later that turn is covered. **Jace's Machinations**:
   `planeswalkerFilter = GameObjectFilter.Planeswalker.withSubtype("Jace").youControl()`.
 
+- `TapForManaPermanentsYouDontControlEffect(target, permanentFilter, restriction, duration)` — target may
+  tap permanents they don't control that match `permanentFilter` for mana, for `duration` (default
+  `EndOfTurn`); the mana carries `restriction` (null = unrestricted). Facade:
+  `Effects.TapForManaPermanentsYouDontControl(permanentFilter = Land, restriction, duration, target)`. Lifts
+  CR 602.2's controller-only rule for mana abilities with {T} in their cost only (CR 106.12's "tap for mana");
+  the activator controls the ability (CR 113.8), so the mana goes to them, restriction stacked on any the
+  ability already had (`ManaRestriction.AllOf`). Recorded on the player (`TapForManaGrantsComponent`, removed
+  at cleanup). The borrowed land is offered as a manual mana ability, and auto-pay taps it only for a payment
+  the restriction admits — never for a context-free payment (ward, attack taxes). **Piracy**:
+  `permanentFilter = GameObjectFilter.Land, restriction = ManaRestriction.SpellsOnly`.
+
 ### Forced sacrifice / discard
 
 - `SacrificeTargetEffect(target, sacrificedByItsController = false)` — sacrifice a specific permanent. By
@@ -12680,6 +12691,11 @@ restriction matches the spell context.
   `AddManaOfChoice(riders = ...)` is provided without an explicit restriction, so the rider
   set survives in the pool without limiting where the mana can be spent (Path of Ancestry).
 - `ManaRestriction.InstantOrSorceryOnly` — only instants and sorceries.
+- `ManaRestriction.SpellsOnly` — any spell (`SpellPaymentContext.isSpellCast`); ability activations
+  and special actions (turn face up, unlock a door) never qualify. Piracy.
+- `ManaRestriction.AllOf(restrictions)` — conjunction; every member must be satisfied. The twin of
+  `AnyOf`, built by the engine when a second restriction lands on mana that already carries one
+  (a Piracy grant tapping an opponent's land whose own mana is restricted).
 - `ManaRestriction.KickedSpellsOnly` — only kicked spells.
 - `ManaRestriction.CreatureSpellsOnly` — only creature spells.
 - `ManaRestriction.SpellsWithManaValueAtLeast(minManaValue, orXInCost?, creatureOnly?)` — the

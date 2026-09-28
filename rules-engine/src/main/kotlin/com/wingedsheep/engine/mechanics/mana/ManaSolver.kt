@@ -370,7 +370,9 @@ class ManaSolver(
         val cachedSources = precomputedSources
         val needsContextRebuild = spellContext != null && (
             cachedSources == null ||
-                cachedSources.any { it.hasContextSensitiveAbilities }
+                cachedSources.any { it.hasContextSensitiveAbilities } ||
+                // The cache is context-free, so it never holds borrowed sources (Piracy).
+                BorrowedManaAbilities.hasAny(state, playerId)
             )
         val rawSources = if (needsContextRebuild) {
             findAvailableManaSources(state, playerId, spellContext)
@@ -977,9 +979,17 @@ class ManaSolver(
         // Glorious Sunrise, Hydro-Man, Emrakul, the Exigent Doom's "{T}: Add {C}{C}"), indexed once.
         val runtimeGrants = runtimeGrantedManaAbilities(state)
 
+        // Permanents the player doesn't control but may tap for mana (Piracy), each with the grant
+        // allowing it. Only for a payment the grant's restriction admits — without a payment
+        // context eligibility can't be judged, and the many context-free callers (attack taxes,
+        // ward, the pre-cast picker) must never plan to tap an opponent's land.
+        val borrowed = if (spellContext == null) emptyMap() else
+            BorrowedManaAbilities.borrowable(state, playerId, predicateEvaluator)
+                .filterValues { it.restriction == null || it.restriction.isSatisfiedBy(spellContext) }
+
         // Use projected controller to find all permanents controlled by this player
         // (accounts for control-changing effects like Annex)
-        val battlefieldCards = projected.getBattlefieldControlledBy(playerId)
+        val battlefieldCards = projected.getBattlefieldControlledBy(playerId) + borrowed.keys
 
         return battlefieldCards.mapNotNull { entityId ->
             val container = state.getEntity(entityId) ?: return@mapNotNull null
@@ -1001,7 +1011,10 @@ class ManaSolver(
             // …and by a resolved effect. Both kinds survive the source losing its own abilities.
             val staticGrantedManaAbilities = getStaticGrantedManaAbilities(entityId, state, manaStatics) +
                 runtimeGrants[entityId].orEmpty()
-            val rawManaAbilities = allAbilities.filter { it.isManaAbility } + staticGrantedManaAbilities
+            val rawManaAbilities = (allAbilities.filter { it.isManaAbility } + staticGrantedManaAbilities).let { all ->
+                // A borrowed permanent lends only its {T} mana abilities (CR 106.12).
+                if (entityId in borrowed) all.filter(BorrowedManaAbilities::isTapManaAbility) else all
+            }
 
             // When a spell/ability payment context is provided, drop mana abilities whose
             // restriction is incompatible. Otherwise the combiner below would treat a
@@ -1590,6 +1603,19 @@ class ManaSolver(
             .map { source -> augmentWithSourceTapManaMultiplier(state, source, manaStatics) }
             .let { sources ->
                 if (hasDampLandManaProduction(state)) applyLandManaDampening(sources) else sources
+            }
+            .let { sources ->
+                if (borrowed.isEmpty()) sources
+                else sources.map { source ->
+                    // The grant's restriction rides on the borrowed source's mana, on top of its own.
+                    val added = borrowed[source.entityId]?.restriction ?: return@map source
+                    source.copy(
+                        restriction = BorrowedManaAbilities.combine(source.restriction, added),
+                        colorRestrictions = source.producesColors.associateWith { color ->
+                            BorrowedManaAbilities.combine(source.colorRestrictions[color], added)!!
+                        },
+                    )
+                }
             }
     }
 
@@ -2334,7 +2360,13 @@ class ManaSolver(
         // (Springleaf Drum) are counted below via their dedicated bonus helpers, so skip
         // them here to avoid double-counting.
         val sacrificeManaBySource = sacrificeSelfManaBySource(state, playerId)
-        val autoTappableSources = (precomputedSources ?: findAvailableManaSources(state, playerId))
+        val sourcesForCount = if (spellContext != null && BorrowedManaAbilities.hasAny(state, playerId)) {
+            // Borrowed sources (Piracy) exist only for a context-aware lookup; the cache lacks them.
+            findAvailableManaSources(state, playerId, spellContext)
+        } else {
+            precomputedSources ?: findAvailableManaSources(state, playerId)
+        }
+        val autoTappableSources = sourcesForCount
             .filter { !it.requiresSacrifice && it.tapPermanentsSubCost == null }
         val sourceMana = autoTappableSources
             // A *mixed* source (Ancient Spring — "{T}: Add {U}" plus "{T}, Sacrifice this land:

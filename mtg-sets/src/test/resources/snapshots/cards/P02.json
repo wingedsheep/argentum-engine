@@ -2001,6 +2001,30 @@
     ]
 }
 
+// Piracy
+{
+    "name": "Piracy",
+    "manaCost": "{U}{U}",
+    "typeLine": "Sorcery",
+    "oracleText": "Until end of turn, you may tap lands you don't control for mana. Spend this mana only to cast spells.",
+    "script": {
+        "spellEffect": {
+            "type": "TapForManaPermanentsYouDontControl",
+            "restriction": "SpellsOnly"
+        }
+    },
+    "metadata": {
+        "collectorNumber": "42",
+        "rarity": "RARE",
+        "artist": "Bradley Williams",
+        "flavorText": "The sea gives, and the sea takes. Some just help with the taking.",
+        "imageUri": "https://cards.scryfall.io/normal/front/d/a/daeab88f-2bfc-4f40-8eed-ee44a9e90bd7.jpg"
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Plated Wurm
 {
     "name": "Plated Wurm",

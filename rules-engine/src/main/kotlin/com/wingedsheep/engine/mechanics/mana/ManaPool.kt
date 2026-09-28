@@ -138,6 +138,8 @@ fun ManaRestriction.isSatisfiedBy(context: SpellPaymentContext): Boolean = when 
     is ManaRestriction.AbilityActivationOnly -> context.isAbilityActivation
     is ManaRestriction.EquipAbilityActivationOnly -> context.isEquipAbilityActivation
     is ManaRestriction.AnyOf -> restrictions.any { it.isSatisfiedBy(context) }
+    is ManaRestriction.AllOf -> restrictions.all { it.isSatisfiedBy(context) }
+    is ManaRestriction.SpellsOnly -> context.isSpellCast
     is ManaRestriction.SubtypeSpellsOnly ->
         !context.isAbilityActivation &&
             subtypes.any { sub -> context.subtypes.any { it.equals(sub, ignoreCase = true) } }

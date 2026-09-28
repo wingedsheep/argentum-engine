@@ -457,6 +457,21 @@ internal class PlayerActiveEffectsProjector(
             )
         }
 
+        // Tapping other players' permanents for mana (Piracy).
+        container.get<com.wingedsheep.engine.state.components.player.TapForManaGrantsComponent>()?.let { component ->
+            val rendered = component.grants.joinToString(" or ") { "${it.filter.description}s" }
+            val restrictions = component.grants.mapNotNull { it.restriction?.description }.distinct()
+            val suffix = if (restrictions.isEmpty()) "" else ". " + restrictions.joinToString(". ")
+            effects.add(
+                ClientPlayerEffect(
+                    effectId = "tap_for_mana_you_dont_control",
+                    name = "Borrowed mana",
+                    description = "You may tap $rendered you don't control for mana this turn$suffix",
+                    icon = "lightning"
+                )
+            )
+        }
+
         // Hexproof, from a resolution-time effect (Dawn's Truce) or from a permanent that grants it
         // (Shalai, Voice of Plenty). Same union-and-re-evaluate as shroud above; this used to be
         // two blocks, the second scanning the battlefield on the *base* controller so a stolen

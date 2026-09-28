@@ -1,5 +1,6 @@
 package com.wingedsheep.engine.handlers.actions.ability
 
+import com.wingedsheep.engine.mechanics.mana.BorrowedManaAbilities
 import com.wingedsheep.engine.handlers.PredicateEvaluator
 import com.wingedsheep.engine.core.ActivateAbility
 import com.wingedsheep.engine.core.PaymentStrategy
@@ -207,6 +208,11 @@ internal class ActivationValidator(
     ): String? {
         val anyPlayerMay = LegalityKernel.anyPlayerMay(ability)
         if (anyPlayerMay) return null
+        // "You may tap lands you don't control for mana" (Piracy) — the permission lives on the
+        // activating player, and reaches only {T} mana abilities (CR 106.12).
+        if (BorrowedManaAbilities.isTapManaAbility(ability) &&
+            BorrowedManaAbilities.grantFor(state, action.playerId, action.sourceId, predicateEvaluator) != null
+        ) return null
         // Use projected controller to account for control-changing effects (e.g., Annex)
         val projected = state.projectedState
         val controller = projected.getController(action.sourceId)

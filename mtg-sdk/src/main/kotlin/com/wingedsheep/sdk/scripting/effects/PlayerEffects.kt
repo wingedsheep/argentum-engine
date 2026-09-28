@@ -645,6 +645,56 @@ data class GrantInstantSpeedLoyaltyAbilitiesEffect(
 }
 
 /**
+ * [target] may tap permanents they don't control that match [permanentFilter] for mana, for
+ * [duration]; mana made that way carries [restriction].
+ *
+ * CR 602.2: only an object's controller can activate its activated abilities unless the object
+ * says otherwise — this is the "otherwise", granted from outside. CR 106.12 defines "tap [a
+ * permanent] for mana" as activating a mana ability of it that includes {T} in its cost, so only
+ * those mana abilities are lifted; the ability's controller is the player who activated it
+ * (CR 113.8), so the mana goes to them, and [restriction] rides on it (null = unrestricted). Permanents the grantee already
+ * controls are untouched — they need no permission, and the restriction never reaches their mana.
+ *
+ * Piracy: "Until end of turn, you may tap lands you don't control for mana. Spend this mana only
+ * to cast spells." — `permanentFilter = GameObjectFilter.Land`,
+ * `restriction = ManaRestriction.SpellsOnly`.
+ *
+ * A resolution-time one-shot that records a turn-scoped grant on the player, so it outlives the
+ * sorcery that made it. [permanentFilter] is matched on projected state whenever the permission
+ * is consulted, so a land that changes hands later in the turn is covered.
+ */
+@SerialName("TapForManaPermanentsYouDontControl")
+@Serializable
+data class TapForManaPermanentsYouDontControlEffect(
+    val target: EffectTarget = EffectTarget.Controller,
+    val permanentFilter: GameObjectFilter = GameObjectFilter.Land,
+    val restriction: ManaRestriction? = null,
+    val duration: Duration = Duration.EndOfTurn
+) : Effect {
+    override val description: String = buildString {
+        if (duration != Duration.Permanent) {
+            append(duration.description.replaceFirstChar { it.uppercase() })
+            append(", ")
+            append(target.description)
+        } else {
+            append(target.description.replaceFirstChar { it.uppercase() })
+        }
+        append(" may tap ")
+        append(permanentFilter.description)
+        append("s you don't control for mana")
+        if (restriction != null) {
+            append(". ")
+            append(restriction.description)
+        }
+    }
+
+    override fun applyTextReplacement(replacer: TextReplacer): Effect {
+        val newFilter = permanentFilter.applyTextReplacement(replacer)
+        return if (newFilter !== permanentFilter) copy(permanentFilter = newFilter) else this
+    }
+}
+
+/**
  * Target player loses the game.
  * Used for cards like Phage the Untouchable: "that player loses the game."
  *

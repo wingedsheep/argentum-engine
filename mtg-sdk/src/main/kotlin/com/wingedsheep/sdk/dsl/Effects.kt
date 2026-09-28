@@ -5351,6 +5351,24 @@ object Effects {
     )
 
     /**
+     * "[You] may tap [permanentFilter]s you don't control for mana" for [duration]; the mana carries
+     * [restriction] (Piracy: `restriction = ManaRestriction.SpellsOnly`). Lifts CR 602.2's
+     * controller-only rule for {T} mana abilities alone (CR 106.12); the mana goes to the activator.
+     */
+    fun TapForManaPermanentsYouDontControl(
+        permanentFilter: com.wingedsheep.sdk.scripting.GameObjectFilter =
+            com.wingedsheep.sdk.scripting.GameObjectFilter.Land,
+        restriction: com.wingedsheep.sdk.scripting.effects.ManaRestriction? = null,
+        duration: Duration = Duration.EndOfTurn,
+        target: EffectTarget = EffectTarget.Controller,
+    ): Effect = com.wingedsheep.sdk.scripting.effects.TapForManaPermanentsYouDontControlEffect(
+        target = target,
+        permanentFilter = permanentFilter,
+        restriction = restriction,
+        duration = duration,
+    )
+
+    /**
      * Target player skips their next [count] turns (default one).
      * Used for cards like Lethal Vapors (one turn) and Ral Zarek, Guest Lecturer (a coin-flip
      * tally of turns, via [DynamicAmount.VariableReference]).

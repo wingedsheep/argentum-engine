@@ -8,6 +8,7 @@ import com.wingedsheep.engine.legalactions.AdditionalCostData
 import com.wingedsheep.engine.legalactions.EnumerationContext
 import com.wingedsheep.engine.legalactions.LegalAction
 import com.wingedsheep.engine.mechanics.SummoningSicknessRules
+import com.wingedsheep.engine.mechanics.mana.BorrowedManaAbilities
 import com.wingedsheep.engine.mechanics.mana.IntrinsicManaAbilities
 import com.wingedsheep.engine.mechanics.mana.LandManaColorInspector
 import com.wingedsheep.engine.mechanics.mana.ManaColorSetResolver
@@ -56,7 +57,11 @@ class ManaAbilityEnumerator(
         val playerId = context.playerId
         val projected = context.projected
 
-        for (entityId in context.battlefieldPermanents) {
+        // Permanents the player doesn't control but may tap for mana under a grant (Piracy) —
+        // only their {T} mana abilities are offered (CR 106.12). Empty without a grant.
+        val borrowed = BorrowedManaAbilities.borrowable(state, playerId, predicateEvaluator)
+
+        for (entityId in context.battlefieldPermanents + borrowed.keys) {
             val container = state.getEntity(entityId) ?: continue
             val cardComponent = container.get<CardComponent>() ?: continue
 
@@ -126,7 +131,9 @@ class ManaAbilityEnumerator(
                 cardDef == null -> emptyList()
                 else -> cardDef.script.effectiveActivatedAbilities(classLevel).filter { it.isManaAbility }
             }
-            val manaAbilities = ownManaAbilities + grantedManaAbilities + staticManaAbilities
+            val manaAbilities = (ownManaAbilities + grantedManaAbilities + staticManaAbilities).let { all ->
+                if (entityId in borrowed) all.filter(BorrowedManaAbilities::isTapManaAbility) else all
+            }
 
             // Apply text-changing effects to mana ability costs
             val manaTextReplacement = TextChanges.merge(context.globalTextChanges, container.get<TextReplacementComponent>())

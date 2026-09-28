@@ -193,6 +193,35 @@ sealed interface ManaRestriction {
     }
 
     /**
+     * Conjunction of restrictions — the mana is spendable only in a context that satisfies
+     * *every* one of [restrictions]. The twin of [AnyOf]; the engine builds it when a second
+     * restriction lands on mana that already carries one (Piracy's "spend this mana only to cast
+     * spells" on an opponent's land whose own mana ability is already restricted), so neither
+     * restriction is lost.
+     */
+    @SerialName("AllOf")
+    @Serializable
+    data class AllOf(
+        val restrictions: List<ManaRestriction>
+    ) : ManaRestriction {
+        init {
+            require(restrictions.isNotEmpty()) { "AllOf must have at least one restriction" }
+        }
+
+        override val description: String = restrictions.joinToString(". ") { it.description }
+    }
+
+    /**
+     * "Spend this mana only to cast spells." Any spell qualifies; ability activations and special
+     * actions (turning a permanent face up, unlocking a door) don't. Piracy.
+     */
+    @SerialName("SpellsOnly")
+    @Serializable
+    data object SpellsOnly : ManaRestriction {
+        override val description: String = "Spend this mana only to cast spells"
+    }
+
+    /**
      * "Spend this mana only to activate an ability." Any activated ability of any source
      * qualifies — unlike [CardTypeSpellsOrAbilitiesOnly], which ties abilities to a card type.
      * Compose with [AnyOf] for "... or to activate an ability" clauses (Purple Dragon Punks:

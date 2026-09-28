@@ -1093,6 +1093,29 @@ data class InstantSpeedLoyaltyGrantsComponent(
 ) : Component
 
 /**
+ * One "you may tap [filter] you don't control for mana" permission, and the spending restriction
+ * the mana it makes carries (null = unrestricted).
+ */
+@Serializable
+data class TapForManaGrant(
+    val filter: GameObjectFilter,
+    val restriction: com.wingedsheep.sdk.scripting.effects.ManaRestriction? = null,
+)
+
+/**
+ * A player's turn-scoped permissions to tap permanents they don't control for mana (Piracy), set by
+ * [com.wingedsheep.sdk.scripting.effects.TapForManaPermanentsYouDontControlEffect]. Grants stack by
+ * appending; the component is removed whole at cleanup when [removeOn] is
+ * [PlayerEffectRemoval.EndOfTurn]. Read through
+ * [com.wingedsheep.engine.mechanics.mana.BorrowedManaAbilities].
+ */
+@Serializable
+data class TapForManaGrantsComponent(
+    val grants: List<TapForManaGrant> = emptyList(),
+    val removeOn: PlayerEffectRemoval = PlayerEffectRemoval.EndOfTurn
+) : Component
+
+/**
  * Tracks the total damage dealt to a player during the current turn.
  * Includes both combat and non-combat damage. Prevented damage is not counted.
  * Cleared at end of turn by TurnManager.

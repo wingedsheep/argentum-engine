@@ -32,6 +32,9 @@ import com.wingedsheep.sdk.scripting.effects.AddManaEffect
 import com.wingedsheep.sdk.scripting.effects.AddManaOfChoiceEffect
 import com.wingedsheep.sdk.scripting.effects.CompositeEffect
 import com.wingedsheep.sdk.scripting.effects.Effect
+import com.wingedsheep.sdk.scripting.effects.ManaRestriction
+import com.wingedsheep.sdk.scripting.effects.AddOneManaOfEachColorAmongEffect
+import com.wingedsheep.engine.mechanics.mana.BorrowedManaAbilities
 import com.wingedsheep.sdk.scripting.values.DynamicAmount
 import com.wingedsheep.sdk.scripting.values.ManaColorSet
 
@@ -146,6 +149,17 @@ internal class ActivatedManaAbilityResolver(
             val manaMultiplier = manaProductionMultiplierFor(currentState, action.sourceId)
             if (manaMultiplier > 1) {
                 finalEffect = multiplyManaProduced(finalEffect, manaMultiplier)
+            }
+        }
+        // Tapping a permanent you don't control under a "tap … for mana" grant (Piracy): the
+        // grant's spending restriction rides on the mana, on top of any the ability already had.
+        // Read against the pre-activation state — the grant keyed on who controlled the source then.
+        if (costsTap) {
+            val borrowedRestriction = BorrowedManaAbilities
+                .grantFor(stateBeforeActivation, action.playerId, action.sourceId, predicateEvaluator)
+                ?.restriction
+            if (borrowedRestriction != null) {
+                finalEffect = restrictManaProduced(finalEffect, borrowedRestriction)
             }
         }
         val context = EffectContext(
@@ -427,6 +441,27 @@ internal class ActivatedManaAbilityResolver(
      * [AddOneManaOfEachColorAmongEffect] has no amount to scale (it is "one of each colour among
      * …"), so it is deliberately left alone rather than silently mis-scaled.
      */
+    /**
+     * Adds [restriction] to the mana [effect] produces, keeping any restriction it already carries
+     * (both then apply). Recurses into a [CompositeEffect] like [multiplyManaProduced].
+     *
+     * [AddAnyColorManaSpendOnChosenTypeEffect] derives its restriction at resolution and has no
+     * field to add to, so its mana is left as is.
+     */
+    private fun restrictManaProduced(effect: Effect, restriction: ManaRestriction): Effect = when (effect) {
+        is AddManaEffect -> effect.copy(restriction = BorrowedManaAbilities.combine(effect.restriction, restriction))
+        is AddColorlessManaEffect ->
+            effect.copy(restriction = BorrowedManaAbilities.combine(effect.restriction, restriction))
+        is AddManaOfChoiceEffect ->
+            effect.copy(restriction = BorrowedManaAbilities.combine(effect.restriction, restriction))
+        is AddDynamicManaEffect ->
+            effect.copy(restriction = BorrowedManaAbilities.combine(effect.restriction, restriction))
+        is AddOneManaOfEachColorAmongEffect ->
+            effect.copy(restriction = BorrowedManaAbilities.combine(effect.restriction, restriction))
+        is CompositeEffect -> effect.copy(effects = effect.effects.map { restrictManaProduced(it, restriction) })
+        else -> effect
+    }
+
     private fun multiplyManaProduced(effect: Effect, multiplier: Int): Effect = when (effect) {
         is AddManaEffect -> effect.copy(amount = DynamicAmount.Multiply(effect.amount, multiplier))
         is AddColorlessManaEffect -> effect.copy(amount = DynamicAmount.Multiply(effect.amount, multiplier))
