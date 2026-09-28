@@ -5128,6 +5128,12 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   of lands you control" (*Beseech the Queen*) is the cap. Use it wherever a filter needs the exact
   form; the raw `CardPredicate` constructor is still what a multi-characteristic `Or` reaches for,
   since that clause is not a single filter field.
+- `.powerAtMostDynamic(amount)` (`CardPredicate.PowerAtMostDynamic`) — "power X or less, where X is
+  <a game value>", the power sibling of `.manaValueAtMostDynamic` and the open-ended counterpart of the
+  fixed `.powerAtMost(n)`. The cap resolves exactly like `.manaValueAtMostDynamic`'s (read at target
+  choice and again on resolution, fails closed with no controller, `false` in the layer-projection /
+  cost-calculation / cast-record paths); an object with no power never matches. **Invasion of Lorwyn**:
+  `Creature.notSubtype(Subtype.ELF).opponentControls().powerAtMostDynamic(DynamicAmounts.landsYouControl())`.
 - `CardPredicate.ManaValueEqualsDynamic(amount)` / `PowerEqualsDynamic(amount)` /
   `ToughnessEqualsDynamic(amount)` — *exact* equality against a resolved `DynamicAmount`, the
   open-ended siblings of the fixed `ManaValueEquals`/`PowerEquals`/`ToughnessEquals` and the cast-`{X}`

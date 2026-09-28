@@ -1305,6 +1305,7 @@ class CostCalculator(
             sourceDynamicValue(state, sourceEntityId, predicate.amount)
                 ?.let { cardDef.manaCost.cmc == it } ?: false
         is CardPredicate.PowerEqualsDynamic -> false
+        is CardPredicate.PowerAtMostDynamic -> false
         is CardPredicate.ToughnessEqualsDynamic -> false
             is CardPredicate.PowerGreaterThanEntity -> false
             is CardPredicate.PowerAtMostEntity -> false

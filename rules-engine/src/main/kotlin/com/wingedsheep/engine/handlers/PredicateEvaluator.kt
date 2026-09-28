@@ -408,6 +408,7 @@ class PredicateEvaluator(
             is CardPredicate.PowerAtMostEntity,
             is CardPredicate.PowerEquals,
             is CardPredicate.PowerEqualsDynamic,
+            is CardPredicate.PowerAtMostDynamic,
             CardPredicate.PowerEqualsX,
             CardPredicate.PowerGreaterThanBase,
             is CardPredicate.BasePowerEquals,
@@ -893,6 +894,12 @@ class PredicateEvaluator(
                 val want = evaluateDynamicCap(state, predicate.amount, context) ?: return false
                 // No power at all (a noncreature spell) never matches — `null == want` is false.
                 (projectedValues?.power ?: card.baseStats?.basePower) == want
+            }
+            is CardPredicate.PowerAtMostDynamic -> {
+                val cap = evaluateDynamicCap(state, predicate.amount, context) ?: return false
+                // No power at all (a noncreature spell) never matches.
+                val power = projectedValues?.power ?: card.baseStats?.basePower ?: return false
+                power <= cap
             }
             is CardPredicate.ToughnessEqualsDynamic -> {
                 val want = evaluateDynamicCap(state, predicate.amount, context) ?: return false
@@ -2447,6 +2454,7 @@ class PredicateEvaluator(
             is CardPredicate.ManaValueAtMostDynamic -> false
             is CardPredicate.ManaValueEqualsDynamic -> false
             is CardPredicate.PowerEqualsDynamic -> false
+            is CardPredicate.PowerAtMostDynamic -> false
             is CardPredicate.ToughnessEqualsDynamic -> false
             CardPredicate.ManaValueIsEven -> record.manaValue % 2 == 0
             CardPredicate.ManaValueIsOdd -> record.manaValue % 2 != 0

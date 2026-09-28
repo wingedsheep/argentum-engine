@@ -197,6 +197,14 @@ interface ObjectFilterBuilder<out Self> {
         withCardPredicate(CardPredicate.ManaValueAtMostDynamic(amount))
 
     /**
+     * Power at most a resolved [DynamicAmount] — "power X or less, where X is the number of lands you
+     * control" (Invasion of Lorwyn). Re-read on resolution like [manaValueAtMostDynamic]; an object
+     * with no power never matches.
+     */
+    fun powerAtMostDynamic(amount: DynamicAmount) =
+        withCardPredicate(CardPredicate.PowerAtMostDynamic(amount))
+
+    /**
      * Mana value **exactly** a resolved [DynamicAmount] — "a creature card with mana value equal to
      * the number of harmony counters on this artifact" (Instrument of the Bards).
      *

@@ -2886,6 +2886,110 @@
     ]
 }
 
+// Invasion of Lorwyn
+{
+    "name": "Invasion of Lorwyn",
+    "manaCost": "{4}{B}{G}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, destroy target non-Elf creature an opponent controls with power X or less, where X is the number of lands you control.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Lorwyn:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Graveyard",
+                    "byDestruction": true
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsCreature",
+                                {
+                                    "type": "NotSubtype",
+                                    "subtype": "Elf"
+                                },
+                                {
+                                    "type": "PowerAtMostDynamic",
+                                    "amount": {
+                                        "type": "AggregateBattlefield",
+                                        "player": "You",
+                                        "filter": "land"
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this Siege enters, destroy target non-Elf creature an opponent controls with power X or less, where X is the number of lands you control."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Winnowing Forces",
+        "manaCost": "",
+        "typeLine": "Creature — Elf Warrior",
+        "oracleText": "Winnowing Forces's power and toughness are each equal to the number of lands you control.",
+        "creatureStats": {
+            "power": {
+                "type": "Dynamic",
+                "source": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land"
+                }
+            },
+            "toughness": {
+                "type": "Dynamic",
+                "source": {
+                    "type": "AggregateBattlefield",
+                    "player": "You",
+                    "filter": "land"
+                }
+            }
+        },
+        "metadata": {
+            "collectorNumber": "236",
+            "rarity": "UNCOMMON",
+            "artist": "Dan Murayama Scott",
+            "flavorText": "The Phyrexian appearance was so offensive that perfects and eyeblights worked together in unprecedented kinship to destroy them.",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/3/93f623da-616e-4067-9ea8-5dfbeef8ce0b.jpg?1783916950"
+        },
+        "colorIdentityOverride": [
+            "BLACK",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "BLACK",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "236",
+        "rarity": "UNCOMMON",
+        "artist": "Dan Murayama Scott",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/3/93f623da-616e-4067-9ea8-5dfbeef8ce0b.jpg?1783916950"
+    },
+    "startingDefense": 5,
+    "colorIdentityOverride": [
+        "BLACK",
+        "GREEN"
+    ]
+}
+
 // Invasion of Pyrulea
 {
     "name": "Invasion of Pyrulea",

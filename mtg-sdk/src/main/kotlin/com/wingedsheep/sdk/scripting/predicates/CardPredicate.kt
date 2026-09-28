@@ -596,6 +596,24 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
     }
 
     /**
+     * Power at most a [DynamicAmount] resolved when the predicate is checked — the power sibling of
+     * [ManaValueAtMostDynamic] and the open-ended counterpart of the fixed [PowerAtMost] ("power X or
+     * less, where X is the number of lands you control" — Invasion of Lorwyn). On a target filter
+     * the cap is read when targets are chosen and again on resolution (CR 608.2b). An object with
+     * no power (a noncreature spell) never matches, whatever the amount resolves to.
+     */
+    @SerialName("PowerAtMostDynamic")
+    @Serializable
+    data class PowerAtMostDynamic(val amount: DynamicAmount) : CardPredicate {
+        override val description: String = "with power ${amount.description} or less"
+
+        override fun applyTextReplacement(replacer: TextReplacer): CardPredicate {
+            val newAmount = amount.applyTextReplacement(replacer)
+            return if (newAmount === amount) this else copy(amount = newAmount)
+        }
+    }
+
+    /**
      * Toughness *exactly* equal to a [DynamicAmount] resolved when the predicate is checked — the
      * dynamic counterpart of [ToughnessEquals]. An object with no toughness never matches.
      */
