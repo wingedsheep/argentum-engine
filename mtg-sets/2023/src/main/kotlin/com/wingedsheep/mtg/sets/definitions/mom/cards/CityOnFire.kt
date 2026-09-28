@@ -17,7 +17,7 @@ import com.wingedsheep.sdk.scripting.events.Recipient
  * If a source you control would deal damage to a permanent or player, it deals triple that
  * damage instead.
  *
- * The damage-scaling replacement (CR 616) is [DoubleDamage] with `multiplier = 3`; "a permanent
+ * The damage-scaling replacement (CR 614.1a) is [DoubleDamage] with `multiplier = 3`; "a permanent
  * or player" is the unscoped [Recipient.Any], so combat and noncombat damage to anything —
  * your own permanents included — triples.
  */
