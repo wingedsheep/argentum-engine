@@ -3986,6 +3986,147 @@
     ]
 }
 
+// Quintorius, Loremaster
+{
+    "name": "Quintorius, Loremaster",
+    "manaCost": "{3}{R}{W}",
+    "typeLine": "Legendary Creature — Elephant Cleric",
+    "oracleText": "Vigilance\nAt the beginning of your end step, exile target noncreature, nonland card from your graveyard. Create a 3/2 red and white Spirit creature token.\n{1}{R}{W}, {T}, Sacrifice a Spirit: Choose target card exiled with Quintorius. You may cast that card this turn without paying its mana cost. If that spell would be put into a graveyard, put it on the bottom of its owner's library instead.",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 5
+    },
+    "keywords": [
+        "VIGILANCE"
+    ],
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Quintorius, Loremaster:1",
+                "trigger": {
+                    "type": "StepEvent",
+                    "step": "END"
+                },
+                "binding": "ANY",
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "MoveToZone",
+                            "target": {
+                                "type": "BoundVariable",
+                                "name": "t0"
+                            },
+                            "destination": "Exile",
+                            "linkToSource": true
+                        },
+                        {
+                            "type": "CreateToken",
+                            "power": 3,
+                            "toughness": 2,
+                            "colors": [
+                                "RED",
+                                "WHITE"
+                            ],
+                            "creatureTypes": [
+                                "Spirit"
+                            ],
+                            "imageUri": "https://cards.scryfall.io/normal/front/0/b/0ba7dada-ba7f-4233-ba21-f6f32698997a.jpg?1783916668"
+                        }
+                    ]
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "noncreature nonland own:you",
+                        "zone": "Graveyard"
+                    },
+                    "id": "t0"
+                }
+            }
+        ],
+        "activatedAbilities": [
+            {
+                "id": "Quintorius, Loremaster:2",
+                "cost": {
+                    "type": "CostComposite",
+                    "costs": [
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomMana",
+                                "cost": "{1}{R}{W}"
+                            }
+                        },
+                        "CostTap",
+                        {
+                            "type": "CostAtomWrapper",
+                            "atom": {
+                                "type": "AtomSacrifice",
+                                "filter": "Spirit"
+                            }
+                        }
+                    ]
+                },
+                "effect": {
+                    "type": "GrantFreeCastTargetFromExile",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t1"
+                    },
+                    "insteadOfGraveyard": "BOTTOM_OF_LIBRARY"
+                },
+                "targetRequirements": [
+                    {
+                        "type": "TargetObject",
+                        "filter": {
+                            "baseFilter": {
+                                "statePredicates": [
+                                    "ExiledWithSource"
+                                ]
+                            },
+                            "zone": "Exile"
+                        },
+                        "id": "t1"
+                    }
+                ]
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "250",
+        "rarity": "RARE",
+        "artist": "Lie Setiawan",
+        "imageUri": "https://cards.scryfall.io/normal/front/a/1/a19b152c-8376-42f9-9daf-e139dc29c9ca.jpg?1783916939",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "You must follow all applicable timing rules for casting the exiled card. For example, if the card is a sorcery card, you can cast it only during your main phase while the stack is empty."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Quintorius's last two abilities are linked. The last ability can target only cards exiled by the triggered ability. If a Spirit you sacrifice to activate the last ability ends up being exiled because of a replacement effect, that card can't be targeted by the last ability."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the target of Quintorius's triggered ability is an illegal target at the time the ability tries to resolve, the ability won't resolve and none of its effects will happen. You won't create a Spirit token."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If you cast a card \"without paying its mana cost,\" you can't choose to cast it for any alternative costs. You can, however, pay additional costs. If the card has any mandatory additional costs, you must pay those to cast the card."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If the card has {X} in its mana cost, you must choose 0 as the value of X when casting it without paying its mana cost."
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "RED",
+        "WHITE"
+    ]
+}
+
 // Ral's Reinforcements
 {
     "name": "Ral's Reinforcements",

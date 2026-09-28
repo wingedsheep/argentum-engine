@@ -1423,7 +1423,7 @@ object Effects {
         condition: com.wingedsheep.sdk.scripting.conditions.Condition? = null,
         landEntersTapped: Boolean = false,
         onPlayRider: Effect? = null,
-        exileAfterResolve: Boolean = false,
+        insteadOfGraveyard: AfterResolveDestination? = null,
         nonLandOnly: Boolean = false,
         castFaceIndex: Int? = null,
         ownerControls: Boolean = false,
@@ -1436,7 +1436,7 @@ object Effects {
         condition = condition,
         landEntersTapped = landEntersTapped,
         onPlayRider = onPlayRider,
-        exileAfterResolve = exileAfterResolve,
+        insteadOfGraveyard = insteadOfGraveyard,
         nonLandOnly = nonLandOnly,
         castFaceIndex = castFaceIndex,
         ownerControls = ownerControls,
@@ -1499,14 +1499,14 @@ object Effects {
 
     /**
      * Grant a single target entity in exile permission to be cast without paying its mana cost.
-     * Optionally marks the spell to be exiled instead of going to graveyard after resolution.
-     * Used for effects like "you may cast target card without paying its mana cost. If that
-     * spell would be put into a graveyard, exile it instead."
+     * [insteadOfGraveyard] is the cast-this-way destination rider — "If that spell would be put
+     * into a graveyard, exile it instead" (`EXILE`) or "…put it on the bottom of its owner's
+     * library instead" (`BOTTOM_OF_LIBRARY`, Quintorius, Loremaster).
      */
     fun GrantFreeCastTargetFromExile(
         target: EffectTarget,
-        exileAfterResolve: Boolean = false
-    ): Effect = GrantFreeCastTargetFromExileEffect(target, exileAfterResolve)
+        insteadOfGraveyard: AfterResolveDestination? = null
+    ): Effect = GrantFreeCastTargetFromExileEffect(target, insteadOfGraveyard)
 
     /**
      * Mark a spell on the stack so that it is exiled with the given counters on
@@ -4222,7 +4222,7 @@ object Effects {
         condition: com.wingedsheep.sdk.scripting.conditions.Condition? = null,
         landEntersTapped: Boolean = false,
         onPlayRider: Effect? = null,
-        exileAfterResolve: Boolean = false,
+        insteadOfGraveyard: AfterResolveDestination? = null,
         nonLandOnly: Boolean = false,
         castFaceIndex: Int? = null,
         ownerControls: Boolean = false,
@@ -4239,7 +4239,7 @@ object Effects {
         onPlayRider = onPlayRider,
         ownerControls = ownerControls,
         recipient = recipient,
-        exileAfterResolve = exileAfterResolve,
+        insteadOfGraveyard = insteadOfGraveyard,
         asThoughFlash = asThoughFlash,
         nonLandOnly = nonLandOnly,
         castFaceIndex = castFaceIndex,

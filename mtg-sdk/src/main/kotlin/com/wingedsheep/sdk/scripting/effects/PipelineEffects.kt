@@ -1550,15 +1550,16 @@ data class GrantMayPlayFromExileEffect(
      */
     val recipient: EffectTarget = EffectTarget.Controller,
     /**
-     * When true, each granted card is stamped so that, if a spell cast from this permission would
-     * be put into a graveyard (on resolution, when countered, or when it fizzles), it is exiled
-     * instead. Models the "If that spell would be put into a graveyard, exile it instead" rider on
-     * cards that let you cast a card you don't own out of exile (Nita, Forum Conciliator) — the
-     * same `AfterResolveDestinationComponent` mechanism behind [GrantFreeCastTargetFromExileEffect.exileAfterResolve],
-     * but for a *paid* cast rather than a free one. Defaults to off (impulse-draw cards leave the
-     * card to go to its owner's graveyard normally).
+     * The cast-this-way destination rider: when non-null, each granted card is stamped so that, if
+     * a spell cast from this permission would be put into a graveyard (on resolution, when
+     * countered, or when it fizzles), it goes to this [AfterResolveDestination] instead. Models
+     * "If that spell would be put into a graveyard, exile it instead" on cards that let you cast a
+     * card you don't own out of exile (Nita, Forum Conciliator) — the same
+     * `AfterResolveDestinationComponent` mechanism behind [GrantFreeCastTargetFromExileEffect.insteadOfGraveyard]
+     * and [CastFromCollectionWithoutPayingCostEffect.insteadOfGraveyard]. Defaults to null
+     * (impulse-draw cards leave the card to go to its owner's graveyard normally).
      */
-    val exileAfterResolve: Boolean = false,
+    val insteadOfGraveyard: AfterResolveDestination? = null,
     /**
      * When non-null, each granted card may be cast for this *fixed* mana cost **instead of** its
      * printed mana cost, for as long as it stays exiled. Unlike [GrantPlayWithCostIncreaseEffect]
@@ -1675,7 +1676,7 @@ data class GrantMayPlayFromExileEffect(
         if (asThoughFlash) append(", as though they had flash")
         if (withAnyManaType) append(", and mana of any type can be spent to cast them")
         if (landEntersTapped) append(". Each land played this way enters tapped")
-        if (exileAfterResolve) append(". If a spell cast this way would be put into a graveyard, exile it instead")
+        insteadOfGraveyard?.let { append(it.riderText) }
     }
 }
 
@@ -1831,25 +1832,26 @@ data class GrantPlayWithCostIncreaseEffect(
  * Grant a single target entity in exile permission to be cast without paying
  * its mana cost. The engine registers a MayPlayPermission and stamps
  * PlayWithoutPayingCostComponent on the target. Optionally marks the spell
- * with AfterResolveDestinationComponent so it goes to exile instead of graveyard
- * after resolving or being countered.
+ * with AfterResolveDestinationComponent so it goes to [insteadOfGraveyard] rather than a
+ * graveyard after resolving, being countered, or fizzling.
  *
  * Unlike the collection-based [GrantMayPlayFromExileEffect] + [GrantPlayWithoutPayingCostEffect],
  * this works on a single targeted entity referenced by [EffectTarget].
  *
  * @property target The entity in exile to grant free cast permission to
- * @property exileAfterResolve If true, the spell will be exiled instead of going to
- *   graveyard after resolution (like Flashback). Used for "exile it instead" clauses.
+ * @property insteadOfGraveyard The cast-this-way destination rider, or null for the ordinary
+ *   graveyard. `EXILE` is "exile it instead" (Daring Waverider); `BOTTOM_OF_LIBRARY` is "put it
+ *   on the bottom of its owner's library instead" (Quintorius, Loremaster).
  */
 @SerialName("GrantFreeCastTargetFromExile")
 @Serializable
 data class GrantFreeCastTargetFromExileEffect(
     val target: EffectTarget = EffectTarget.ContextTarget(0),
-    val exileAfterResolve: Boolean = false
+    val insteadOfGraveyard: AfterResolveDestination? = null
 ) : Effect {
     override val description: String = buildString {
         append("You may cast ${target.description} without paying its mana cost")
-        if (exileAfterResolve) append(". If that spell would be put into a graveyard, exile it instead")
+        insteadOfGraveyard?.let { append(it.riderText) }
     }
 }
 

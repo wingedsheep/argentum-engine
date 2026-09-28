@@ -94,11 +94,11 @@ class GrantMayPlayFromExileExecutor : EffectExecutor<GrantMayPlayFromExileEffect
 
         // "If a spell cast this way would be put into a graveyard, exile it instead" (Nita,
         // Forum Conciliator). Stamp the granted cards now; StackResolver honors
-        // AfterResolveDestinationComponent on resolution / counter / fizzle, redirecting to exile.
-        if (effect.exileAfterResolve) {
+        // AfterResolveDestinationComponent on resolution / counter / fizzle, redirecting it.
+        effect.insteadOfGraveyard?.let { destination ->
             for (cardId in collection) {
                 newState = newState.updateEntity(cardId) { container ->
-                    container.with(AfterResolveDestinationComponent())
+                    container.with(AfterResolveDestinationComponent(destination = destination))
                 }
             }
         }

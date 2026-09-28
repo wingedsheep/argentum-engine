@@ -11,6 +11,7 @@ import com.wingedsheep.sdk.scripting.CostReductionSource
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.ModifySpellCost
 import com.wingedsheep.sdk.scripting.SpellCostTarget
+import com.wingedsheep.sdk.scripting.effects.AfterResolveDestination
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
@@ -25,7 +26,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  *
  * Cost reduction reuses [ModifySpellCost] + [CostReductionSource.CardsInGraveyardMatchingFilter]
  * (Eddymurk Crab). The attack trigger mirrors Daring Waverider: move the targeted card to exile,
- * then [Effects.GrantFreeCastTargetFromExile] with `exileAfterResolve = true` so the cast spell
+ * then [Effects.GrantFreeCastTargetFromExile] with `insteadOfGraveyard = AfterResolveDestination.EXILE` so the cast spell
  * is exiled rather than returning to the graveyard.
  */
 val TheDawningArchaic = card("The Dawning Archaic") {
@@ -59,7 +60,7 @@ val TheDawningArchaic = card("The Dawning Archaic") {
         effect = Effects.Move(target, Zone.EXILE) then
             Effects.GrantFreeCastTargetFromExile(
                 target = target,
-                exileAfterResolve = true,
+                insteadOfGraveyard = AfterResolveDestination.EXILE,
             )
     }
 

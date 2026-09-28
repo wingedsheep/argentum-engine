@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.effects.AfterResolveDestination
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
@@ -32,7 +33,7 @@ val DaringWaverider = card("Daring Waverider") {
             // Grant free cast from exile + exile after resolve
             Effects.GrantFreeCastTargetFromExile(
                 target = target,
-                exileAfterResolve = true
+                insteadOfGraveyard = AfterResolveDestination.EXILE
             )
     }
 

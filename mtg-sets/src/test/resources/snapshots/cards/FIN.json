@@ -14291,7 +14291,7 @@
                             "type": "GrantMayPlayFromExile",
                             "from": "gathered1",
                             "withAnyManaType": true,
-                            "exileAfterResolve": true
+                            "insteadOfGraveyard": "EXILE"
                         }
                     ]
                 },
@@ -16734,7 +16734,7 @@
                         {
                             "type": "GrantMayPlayFromExile",
                             "from": "gathered1",
-                            "exileAfterResolve": true
+                            "insteadOfGraveyard": "EXILE"
                         },
                         {
                             "type": "GrantPlayWithoutPayingCost",

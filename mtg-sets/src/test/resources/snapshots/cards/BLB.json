@@ -4359,7 +4359,7 @@
                                 "type": "BoundVariable",
                                 "name": "t0"
                             },
-                            "exileAfterResolve": true
+                            "insteadOfGraveyard": "EXILE"
                         }
                     ]
                 },

@@ -8,6 +8,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.Duration
 import com.wingedsheep.sdk.scripting.GameObjectFilter
+import com.wingedsheep.sdk.scripting.effects.AfterResolveDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.events.AttackPredicate
@@ -31,7 +32,7 @@ import com.wingedsheep.sdk.scripting.events.Recipient
  * "Fire Cross" is an ability word (CR 207.2c) — flavor only, no rules meaning, so it adds no
  * keyword. The second ability mirrors Quistis Trepe's targeted graveyard cast: target an
  * instant/sorcery in *your* graveyard with mana value ≤ 3, move it to exile, gather it into a
- * collection, then grant a may-play-from-exile permission with `exileAfterResolve = true`
+ * collection, then grant a may-play-from-exile permission with `insteadOfGraveyard = AfterResolveDestination.EXILE`
  * (the "if it would be put into a graveyard, exile it instead" rider) paired with
  * [Effects.GrantPlayWithoutPayingCost] (the "without paying its mana cost" clause, where
  * Quistis instead lets any mana type pay). The "you may" is honored by the granted permission
@@ -69,7 +70,7 @@ val SeiferAlmasy = card("Seifer Almasy") {
             run(Effects.GrantMayPlayFromExile(
                 from = fireCross,
                 expiry = MayPlayExpiry.EndOfTurn,
-                exileAfterResolve = true,
+                insteadOfGraveyard = AfterResolveDestination.EXILE,
             ))
             // "... without paying its mana cost."
             run(Effects.GrantPlayWithoutPayingCost(fireCross))

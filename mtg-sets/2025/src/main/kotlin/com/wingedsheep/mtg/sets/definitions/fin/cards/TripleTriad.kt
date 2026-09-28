@@ -31,7 +31,7 @@ import com.wingedsheep.sdk.core.Step
  *    "playableOthers": [GrantMayPlayFromExileEffect] (also permits lands) + [GrantPlayWithoutPayingCostEffect].
  *
  * Defaults are correct as-is: opponents' cards are cast by you (controller-controls) and go to
- * their owner's graveyard after resolving (exileAfterResolve = false). Same gather→exile idiom as
+ * their owner's graveyard after resolving (no `insteadOfGraveyard` rider). Same gather→exile idiom as
  * Alania's Pathmaker; the per-player [Player.Each]/[Player.EachOpponent] reveal mirrors Psychic Battle.
  */
 val TripleTriad = card("Triple Triad") {

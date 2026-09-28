@@ -5,6 +5,7 @@ import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.Triggers
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.effects.AfterResolveDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
@@ -21,7 +22,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * keyword. The card targets an instant/sorcery in *any* graveyard (yours or an opponent's),
  * moves it to exile, then grants a may-play-from-exile permission with `withAnyManaType = true`
  * (the "mana of any type can be spent" clause — you still pay the cost) and
- * `exileAfterResolve = true` (the "if it would be put into a graveyard, exile it instead"
+ * `insteadOfGraveyard = AfterResolveDestination.EXILE` (the "if it would be put into a graveyard, exile it instead"
  * rider). This mirrors Nita, Forum Conciliator's paid cast-from-exile, but as an ETB trigger
  * targeting any graveyard rather than an activated ability limited to opponents'. The "you may"
  * is honored by the cast itself being optional — the granted permission is never forced.
@@ -50,7 +51,7 @@ val QuistisTrepe = card("Quistis Trepe") {
                 from = borrowed,
                 expiry = MayPlayExpiry.EndOfTurn,
                 withAnyManaType = true,
-                exileAfterResolve = true,
+                insteadOfGraveyard = AfterResolveDestination.EXILE,
             ))
         }
         description = "Blue Magic — When Quistis Trepe enters, you may cast target instant or sorcery " +

@@ -22,7 +22,7 @@ import io.kotest.matchers.shouldBe
  *
  * Exercises the ETB borrow-and-cast: Quistis targets an instant in a graveyard, exiles it, and
  * grants a may-play permission with `withAnyManaType` so it can be paid with off-color mana, plus
- * `exileAfterResolve` so the cast spell ends up in exile rather than the graveyard.
+ * `insteadOfGraveyard = EXILE` so the cast spell ends up in exile rather than the graveyard.
  */
 class QuistisTrepeScenarioTest : FunSpec({
 

@@ -9,6 +9,7 @@ import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
 import com.wingedsheep.sdk.scripting.GameObjectFilter
 import com.wingedsheep.sdk.scripting.TimingRule
+import com.wingedsheep.sdk.scripting.effects.AfterResolveDestination
 import com.wingedsheep.sdk.scripting.effects.CardSource
 import com.wingedsheep.sdk.scripting.effects.MayPlayExpiry
 import com.wingedsheep.sdk.scripting.events.SpellCastPredicate
@@ -31,7 +32,7 @@ import com.wingedsheep.sdk.scripting.targets.EffectTarget
  *
  * The activated ability targets an instant/sorcery in an opponent's graveyard, moves it to exile,
  * then grants a may-play-from-exile permission with `withAnyManaType = true` (the "you may cast it
- * this turn / mana of any type" clause — you still pay the cost). `exileAfterResolve = true` carries
+ * this turn / mana of any type" clause — you still pay the cost). `insteadOfGraveyard = AfterResolveDestination.EXILE` carries
  * the "if it would be put into a graveyard, exile it instead" rider so the borrowed card never
  * returns to its owner's graveyard.
  */
@@ -73,7 +74,7 @@ val NitaForumConciliator = card("Nita, Forum Conciliator") {
                 from = borrowed,
                 expiry = MayPlayExpiry.EndOfTurn,
                 withAnyManaType = true,
-                exileAfterResolve = true,
+                insteadOfGraveyard = AfterResolveDestination.EXILE,
             ))
         }
         description = "{2}, Sacrifice another creature: Exile target instant or sorcery card from an " +

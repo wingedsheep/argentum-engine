@@ -18,8 +18,8 @@ import kotlin.reflect.KClass
  * Registers a [MayPlayPermission] for a single target in exile and stamps
  * PlayWithoutPayingCostComponent on it, granting the controller permission to
  * cast it from exile without paying its mana cost. Optionally adds
- * AfterResolveDestinationComponent so the spell goes to exile instead of graveyard
- * after resolution.
+ * AfterResolveDestinationComponent so the spell goes to the effect's `insteadOfGraveyard`
+ * destination rather than a graveyard.
  */
 class GrantFreeCastTargetFromExileExecutor : EffectExecutor<GrantFreeCastTargetFromExileEffect> {
 
@@ -36,8 +36,8 @@ class GrantFreeCastTargetFromExileExecutor : EffectExecutor<GrantFreeCastTargetF
 
         var newState = state.updateEntity(targetId) { container ->
             var updated = container.with(PlayWithoutPayingCostComponent(controllerId = controllerId))
-            if (effect.exileAfterResolve) {
-                updated = updated.with(AfterResolveDestinationComponent())
+            effect.insteadOfGraveyard?.let { destination ->
+                updated = updated.with(AfterResolveDestinationComponent(destination = destination))
             }
             updated
         }

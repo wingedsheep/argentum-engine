@@ -400,16 +400,7 @@ data class CastFromCollectionWithoutPayingCostEffect(
         append("Cast that card")
         if (castTransformed) append(" transformed")
         if (!payManaCost) append(" without paying its mana cost")
-        when (insteadOfGraveyard) {
-            AfterResolveDestination.EXILE ->
-                append(". If that spell would be put into a graveyard, exile it instead")
-            AfterResolveDestination.BOTTOM_OF_LIBRARY ->
-                append(
-                    ". If that spell would be put into a graveyard, put it on the bottom of " +
-                        "its owner's library instead"
-                )
-            null -> Unit
-        }
+        insteadOfGraveyard?.let { append(it.riderText) }
     }
 }
 

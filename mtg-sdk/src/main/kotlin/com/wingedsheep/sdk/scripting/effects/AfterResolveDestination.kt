@@ -27,5 +27,13 @@ enum class AfterResolveDestination {
      * under the rest of the library, which is what "on the bottom of its owner's library" means
      * (contrast the Omen face, which shuffles).
      */
-    BOTTOM_OF_LIBRARY,
+    BOTTOM_OF_LIBRARY;
+
+    /** The printed rider sentence, for effect descriptions: ". If that spell would … instead". */
+    val riderText: String
+        get() = when (this) {
+            EXILE -> ". If that spell would be put into a graveyard, exile it instead"
+            BOTTOM_OF_LIBRARY ->
+                ". If that spell would be put into a graveyard, put it on the bottom of its owner's library instead"
+        }
 }

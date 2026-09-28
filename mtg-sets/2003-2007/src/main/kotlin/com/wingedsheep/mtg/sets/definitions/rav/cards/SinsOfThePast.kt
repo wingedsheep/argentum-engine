@@ -3,6 +3,7 @@ package com.wingedsheep.mtg.sets.definitions.rav.cards
 import com.wingedsheep.sdk.dsl.Effects
 import com.wingedsheep.sdk.dsl.card
 import com.wingedsheep.sdk.model.Rarity
+import com.wingedsheep.sdk.scripting.effects.AfterResolveDestination
 import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
 
 /**
@@ -16,7 +17,7 @@ import com.wingedsheep.sdk.scripting.filters.unified.TargetFilter
  * The card stays in the graveyard: [Effects.GrantFreeCastTargetFromExile] writes a
  * `MayPlayPermission` plus a free-cast stamp on it wherever it is, and the cast-from-zone path
  * honours those in the graveyard too (Malcolm, Alluring Scoundrel). The permission is not
- * `permanent`, so end-of-turn cleanup removes it — "until end of turn". `exileAfterResolve`
+ * `permanent`, so end-of-turn cleanup removes it — "until end of turn". `insteadOfGraveyard = EXILE`
  * stamps `AfterResolveDestinationComponent`, which the stack resolver honours on resolution *and*
  * on counter/fizzle — the first ruling ("never gets put back into your graveyard, even if it's
  * countered"). `selfExile()` is "Exile Sins of the Past".
@@ -33,7 +34,7 @@ val SinsOfThePast = card("Sins of the Past") {
         val target = target(TargetFilter.InstantOrSorceryInGraveyard.ownedByYou())
         effect = Effects.GrantFreeCastTargetFromExile(
             target = target,
-            exileAfterResolve = true
+            insteadOfGraveyard = AfterResolveDestination.EXILE
         )
         selfExile()
     }
