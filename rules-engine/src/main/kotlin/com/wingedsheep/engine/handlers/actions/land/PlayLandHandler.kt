@@ -36,6 +36,7 @@ import com.wingedsheep.sdk.scripting.ChoiceType
 import com.wingedsheep.sdk.scripting.EntersWithChoice
 import com.wingedsheep.sdk.scripting.ConditionalStaticAbility
 import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
+import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
 import com.wingedsheep.engine.state.components.battlefield.ClassLevelComponent
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.engine.legalactions.utils.LandDropUtils
@@ -755,8 +756,8 @@ class PlayLandHandler(
     }
 
     /**
-     * Returns true if the player controls a permanent with [MayPlayLandsFromGraveyard]
-     * (Crucible of Worlds style — no per-turn usage tracking needed).
+     * Returns true if the player controls a permanent — or has an emblem — with
+     * [MayPlayLandsFromGraveyard] (Crucible of Worlds style — no per-turn usage tracking needed).
      */
     private fun hasLandGraveyardPlayPermission(state: GameState, playerId: EntityId): Boolean {
         for (entityId in state.getBattlefield(playerId)) {
@@ -777,7 +778,8 @@ class PlayLandHandler(
                 }
             }
         }
-        return false
+        // An emblem the player has (Wrenn and Realmbreaker's −7) grants it from outside every zone.
+        return state.emblemStaticAbilitiesOf(playerId).any { (_, ability) -> ability is MayPlayLandsFromGraveyard }
     }
 
     /**

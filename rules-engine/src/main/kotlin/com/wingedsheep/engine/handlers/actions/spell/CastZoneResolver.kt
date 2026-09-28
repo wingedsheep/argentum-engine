@@ -33,6 +33,7 @@ import com.wingedsheep.sdk.scripting.GrantFlashToSpellType
 import com.wingedsheep.sdk.scripting.GrantMayCastFromLinkedExile
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
+import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
 import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
@@ -252,6 +253,13 @@ class CastZoneResolver(
                 if (sa is MayCastFromGraveyard && mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa, permId)) {
                     matches.add(permId to sa)
                 }
+            }
+        }
+        // An emblem the player has (Wrenn and Realmbreaker's −7) holds the grant from outside every
+        // zone; the emblem entity is its source. Kept in step with `enumerateGraveyardCast`.
+        for ((emblemId, sa) in state.emblemStaticAbilitiesOf(playerId)) {
+            if (sa is MayCastFromGraveyard && mayCastFromGraveyardGrantApplies(state, playerId, cardId, sa, emblemId)) {
+                matches.add(emblemId to sa)
             }
         }
         // Durational grants recorded in grantedStaticAbilities, in three anchorings. Anchored to

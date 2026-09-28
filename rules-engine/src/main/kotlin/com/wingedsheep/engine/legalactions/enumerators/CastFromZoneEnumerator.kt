@@ -37,6 +37,7 @@ import com.wingedsheep.sdk.scripting.costs.CostAtom
 import com.wingedsheep.sdk.scripting.ChoiceSlot
 import com.wingedsheep.sdk.scripting.KeywordAbility
 import com.wingedsheep.sdk.scripting.MayCastFromGraveyard
+import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
 import com.wingedsheep.sdk.scripting.MayCastSelfFromZones
 import com.wingedsheep.sdk.scripting.effects.DividedDamageEffect
 import com.wingedsheep.engine.mechanics.DisturbCasts
@@ -2238,6 +2239,13 @@ class CastFromZoneEnumerator(
                 if (sa is MayCastFromGraveyard && !grantIsSpent(permId, sa)) {
                     permissions.add(sa to null)
                 }
+            }
+        }
+        // An emblem the player has (Wrenn and Realmbreaker's −7): a player-wide permission held from
+        // outside every zone. Kept in step with `CastZoneResolver.mayCastFromGraveyardGrantsWithSources`.
+        for ((emblemId, sa) in state.emblemStaticAbilitiesOf(playerId)) {
+            if (sa is MayCastFromGraveyard && !grantIsSpent(emblemId, sa)) {
+                permissions.add(sa to null)
             }
         }
         // Durational grants recorded in grantedStaticAbilities, in their two anchorings:

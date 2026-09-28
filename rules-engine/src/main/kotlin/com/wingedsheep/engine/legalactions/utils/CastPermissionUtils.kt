@@ -32,6 +32,7 @@ import com.wingedsheep.sdk.scripting.EquipAbilitiesAtInstantSpeed
 import com.wingedsheep.sdk.scripting.FreeFirstEquipEachTurn
 import com.wingedsheep.sdk.scripting.GrantActivatedAbility
 import com.wingedsheep.sdk.scripting.MayPlayLandsFromGraveyard
+import com.wingedsheep.engine.state.components.identity.emblemStaticAbilitiesOf
 import com.wingedsheep.sdk.scripting.MayPlayPermanentsFromGraveyard
 import com.wingedsheep.sdk.scripting.PlayFromTopOfLibrary
 import com.wingedsheep.sdk.scripting.PlayLandsAndCastFilteredFromTopOfLibrary
@@ -1135,7 +1136,9 @@ class CastPermissionUtils(
                 }
             }
         }
-        return false
+        // An emblem the player has (Wrenn and Realmbreaker's −7) grants it from outside every zone.
+        return typeName == com.wingedsheep.sdk.core.CardType.LAND.name &&
+            state.emblemStaticAbilitiesOf(playerId).any { (_, ability) -> ability is MayPlayLandsFromGraveyard }
     }
 
     /**
