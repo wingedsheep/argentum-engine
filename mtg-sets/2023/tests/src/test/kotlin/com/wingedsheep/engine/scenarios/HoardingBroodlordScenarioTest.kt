@@ -4,6 +4,7 @@ import com.wingedsheep.engine.core.CastSpell
 import com.wingedsheep.engine.core.SelectCardsDecision
 import com.wingedsheep.engine.state.components.identity.CardComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Phase
 import com.wingedsheep.sdk.core.Step
 import com.wingedsheep.sdk.core.Zone
@@ -42,7 +43,7 @@ class HoardingBroodlordScenarioTest : ScenarioTestBase() {
         return pick
     }
 
-    private fun convokeWith(vararg creatures: Pair<EntityId, com.wingedsheep.sdk.core.Color?>) =
+    private fun convokeWith(vararg creatures: Pair<EntityId, Color?>) =
         AlternativePaymentChoice(convokedCreatures = creatures.associate { (id, c) -> id to ConvokePayment(color = c) })
 
     init {
@@ -78,7 +79,7 @@ class HoardingBroodlordScenarioTest : ScenarioTestBase() {
                     CastSpell(
                         playerId = game.player1Id,
                         cardId = bears,
-                        alternativePayment = convokeWith(broodlord to null, elves to com.wingedsheep.sdk.core.Color.GREEN)
+                        alternativePayment = convokeWith(broodlord to null, elves to Color.GREEN)
                     )
                 )
                 withClue("convoke pays for a spell cast from exile: ${cast.error}") { cast.error shouldBe null }
@@ -107,7 +108,7 @@ class HoardingBroodlordScenarioTest : ScenarioTestBase() {
                         cardId = bears,
                         alternativePayment = convokeWith(
                             game.findPermanent("Hoarding Broodlord")!! to null,
-                            game.findPermanent("Llanowar Elves")!! to com.wingedsheep.sdk.core.Color.GREEN
+                            game.findPermanent("Llanowar Elves")!! to Color.GREEN
                         )
                     )
                 )
