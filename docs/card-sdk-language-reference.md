@@ -1453,6 +1453,7 @@ Types that are not effects no longer carry the `Effect` suffix, so the rule has 
 - `ExileGroupAndLink(filter, storeAs?)` — exile all matching permanents into source's linked exile pile.
 - `ExileFromTopRepeating(count, repeatCondition)` — keep exiling top cards while a condition holds.
 - `ExileLibraryUntilManaValue(manaValue)` — exile from library until mana value ≤ N.
+- "Exile cards from the top until you exile **N** matching cards" is the pipeline's `gatherUntilMatch(filter, count = DynamicAmounts.fixed(N))` → `exile(revealed)`; the walk stops at the Nth hit or an empty library. **Invasion of Alara** (N = 2): `CastUpToNFromCollectionWithoutPayingCost(hits, 1)` → `filter(hits, Any.currentlyIn(EXILE))` → `chooseExactly(1)` → `toHand` → `toLibraryBottom(exclude(revealed, hits), Random)` — only the misses go to the bottom; a hit neither cast nor handed stays in exile (its ruling).
 - `Effects.ExileTopCardContest(storeWinnerAs, players = Player.Each, storeExiledAs = "contestExiledCards")`
   (`ExileTopCardContestEffect`) — each player exiles the top card of their library face up; the one who
   exiled the **greatest mana value** is published as the single entry of the pipeline collection

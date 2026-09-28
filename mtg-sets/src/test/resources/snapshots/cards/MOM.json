@@ -2428,6 +2428,247 @@
     ]
 }
 
+// Invasion of Alara
+{
+    "name": "Invasion of Alara",
+    "manaCost": "{W}{U}{B}{R}{G}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, exile cards from the top of your library until you exile two nonland cards with mana value 4 or less. You may cast one of those two cards without paying its mana cost. Put one of them into your hand. Then put the other cards exiled this way on the bottom of your library in a random order.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Alara:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherUntilMatch",
+                            "filter": "nonland mv<=4",
+                            "storeMatch": "matched0",
+                            "storeRevealed": "revealed0",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 2
+                            }
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "revealed0",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Exile"
+                            }
+                        },
+                        {
+                            "type": "CastAnyNumberFromCollectionWithoutPayingCost",
+                            "from": "matched0",
+                            "maxCasts": 1
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "matched0",
+                            "filter": {
+                                "statePredicates": [
+                                    {
+                                        "type": "InZone",
+                                        "zone": "Exile"
+                                    }
+                                ]
+                            },
+                            "storeMatching": "matching3"
+                        },
+                        {
+                            "type": "SelectFromCollection",
+                            "from": "matching3",
+                            "selection": {
+                                "type": "ChooseExactly",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 1
+                                }
+                            },
+                            "storeSelected": "selected4",
+                            "prompt": "Put one of them into your hand"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "selected4",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Hand"
+                            }
+                        },
+                        {
+                            "type": "FilterCollection",
+                            "from": "revealed0",
+                            "collectionFilter": {
+                                "type": "ExcludeOtherCollection",
+                                "otherCollectionName": "matched0"
+                            },
+                            "storeMatching": "matching6"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "matching6",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Library",
+                                "placement": "Bottom"
+                            },
+                            "order": "Random"
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Siege enters, exile cards from the top of your library until you exile two nonland cards with mana value 4 or less. You may cast one of those two cards without paying its mana cost. Put one of them into your hand. Then put the other cards exiled this way on the bottom of your library in a random order."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Awaken the Maelstrom",
+        "manaCost": "",
+        "typeLine": "Sorcery",
+        "oracleText": "Awaken the Maelstrom is all colors.\nTarget player draws two cards. You may put an artifact card from your hand onto the battlefield. Create a token that's a copy of a permanent you control. Distribute three +1/+1 counters among one, two, or three creatures you control. Destroy target permanent an opponent controls.",
+        "script": {
+            "spellEffect": {
+                "type": "Composite",
+                "effects": [
+                    {
+                        "type": "DrawCards",
+                        "count": {
+                            "type": "Fixed",
+                            "amount": 2
+                        },
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t0"
+                        }
+                    },
+                    {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "FromZone",
+                                    "zone": "Hand",
+                                    "filter": "artifact"
+                                },
+                                "storeAs": "put_candidates"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "put_candidates",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "storeSelected": "putting"
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "putting",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Battlefield"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "type": "CreateTokenCopyOfChosenPermanent",
+                        "filter": "permanent ctrl:you"
+                    },
+                    {
+                        "type": "DistributeCountersAmongFiltered",
+                        "totalCounters": 3,
+                        "filter": "creature ctrl:you"
+                    },
+                    {
+                        "type": "MoveToZone",
+                        "target": {
+                            "type": "BoundVariable",
+                            "name": "t1"
+                        },
+                        "destination": "Graveyard",
+                        "byDestruction": true
+                    }
+                ]
+            },
+            "targetRequirements": [
+                {
+                    "type": "TargetPlayer",
+                    "id": "t0"
+                },
+                {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": "permanent ctrl:opponent"
+                    },
+                    "id": "t1"
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "230",
+            "rarity": "RARE",
+            "artist": "Mathias Kollros",
+            "imageUri": "https://cards.scryfall.io/normal/back/3/1/318c363b-61cc-4e2f-8f86-a4287539ea07.jpg?1783951955",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "Awaken the Maelstrom has two targets: the player who will draw cards and the permanent an opponent controls that will be destroyed. You must choose legal targets for both to cast Awaken the Maelstrom. All other choices are made on resolution. Specifically, this means you can create a token that's a copy of the artifact you just put onto the battlefield (which perhaps you just drew) and then put +1/+1 counters on it if it's also a creature."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "WHITE",
+            "BLUE",
+            "BLACK",
+            "RED",
+            "GREEN"
+        ],
+        "colorIndicator": [
+            "WHITE",
+            "BLUE",
+            "BLACK",
+            "RED",
+            "GREEN"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "230",
+        "rarity": "RARE",
+        "artist": "Mathias Kollros",
+        "imageUri": "https://cards.scryfall.io/normal/front/3/1/318c363b-61cc-4e2f-8f86-a4287539ea07.jpg?1783951955",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "For Invasion of Alara's triggered ability, if you exile two nonland cards with mana value 4 or less, but you don't cast one of them, the one you don't put into your hand will remain in exile. It won't be put on the bottom of your library."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If you exile only one nonland card with mana value 4 or less, you'll have the option to cast it. If you don't, you'll put it into your hand."
+            }
+        ]
+    },
+    "startingDefense": 7,
+    "colorIdentityOverride": [
+        "WHITE",
+        "BLUE",
+        "BLACK",
+        "RED",
+        "GREEN"
+    ]
+}
+
 // Invasion of Amonkhet
 {
     "name": "Invasion of Amonkhet",
