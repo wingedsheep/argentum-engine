@@ -51,6 +51,20 @@ data class AssignAsUnblockedContinuation(
 ) : AnswerContinuation
 
 /**
+ * Resume combat damage after the player picks (or declines to pick) a creature for an unblocked
+ * attacker with AssignUnblockedCombatDamageToDefendingCreature (Cunning Giant) to assign its
+ * combat damage to.
+ *
+ * @property attackerId The unblocked attacking creature with the ability
+ * @property firstStrike Whether this is during the first strike combat damage step
+ */
+@Serializable
+data class AssignUnblockedToCreatureContinuation(
+    val attackerId: EntityId,
+    val firstStrike: Boolean = false
+) : AnswerContinuation
+
+/**
  * Resume after player has distributed damage among targets.
  *
  * Used for effects like Forked Lightning where the player divides damage

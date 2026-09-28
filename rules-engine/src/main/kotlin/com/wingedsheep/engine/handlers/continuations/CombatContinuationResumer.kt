@@ -28,6 +28,9 @@ class CombatContinuationResumer(
         resumer(AssignAsUnblockedContinuation::class) { state, continuation, response, _ ->
             resumeAssignAsUnblocked(state, continuation, response)
         },
+        questionResumer(AssignUnblockedToCreatureContinuation::class) { state, continuation, question, response, _ ->
+            resumeAssignUnblockedToCreature(state, continuation, question, response)
+        },
         resumer(DamagePreventionContinuation::class, ::resumeDamagePrevention),
         resumer(DistributeDamageContinuation::class, ::resumeDistributeDamage),
         resumer(DeflectDamageSourceChoiceContinuation::class, ::resumeDeflectDamageSourceChoice),
@@ -130,6 +133,39 @@ class CombatContinuationResumer(
             }
         }
 
+        return services.combatManager.applyCombatDamage(newState, firstStrike = continuation.firstStrike)
+    }
+
+    /**
+     * Record the chosen creature as the unblocked attacker's whole assignment, or an empty
+     * assignment (assign to what it's attacking, as normal) when the player declined.
+     */
+    fun resumeAssignUnblockedToCreature(
+        state: GameState,
+        continuation: AssignUnblockedToCreatureContinuation,
+        question: PendingDecision,
+        response: DecisionResponse
+    ): ExecutionResult {
+        if (response !is CardsSelectedResponse) {
+            return ExecutionResult.error(state, "Expected card selection for unblocked damage assignment")
+        }
+        val options = (question as? SelectCardsDecision)?.options.orEmpty()
+        val chosen = response.selectedCards.singleOrNull()
+        if (response.selectedCards.size > 1 || (chosen != null && chosen !in options)) {
+            return ExecutionResult.error(state, "Invalid creature for unblocked damage assignment")
+        }
+        val assignments = if (chosen == null) emptyMap() else {
+            val amount = com.wingedsheep.engine.mechanics.combat.CombatDamageUtils.getAssignedCombatDamage(
+                state, state.projectedState, continuation.attackerId, services.cardRegistry,
+                predicateEvaluator = services.predicateEvaluator
+            )
+            mapOf(chosen to amount)
+        }
+        val newState = state.updateEntity(continuation.attackerId) { container ->
+            container.with(
+                com.wingedsheep.engine.state.components.combat.DamageAssignmentComponent(assignments)
+            )
+        }
         return services.combatManager.applyCombatDamage(newState, firstStrike = continuation.firstStrike)
     }
 

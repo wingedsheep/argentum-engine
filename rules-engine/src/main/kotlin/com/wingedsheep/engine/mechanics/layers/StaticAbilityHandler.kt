@@ -991,6 +991,7 @@ class StaticAbilityHandler(
             // Combat: damage assignment (CombatDamageManager / CombatDamageUtils / DamageUtils):
             is com.wingedsheep.sdk.scripting.CreaturesDamagedBySourceAreDoomed,
             is AssignCombatDamageAsUnblocked,
+            is com.wingedsheep.sdk.scripting.AssignUnblockedCombatDamageToDefendingCreature,
             is AssignDamageEqualToToughness,
             is DivideCombatDamageFreely,
             is NoncombatDamageBonus,

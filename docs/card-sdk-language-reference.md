@@ -7874,6 +7874,14 @@ staticAbility {
   toughness rather than its power"), grant the `AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS` flag via
   `Effects.GrantKeyword(AbilityFlag.ASSIGNS_COMBAT_DAMAGE_AS_TOUGHNESS, target, duration)`; the same combat
   util reads it from projected keywords (unconditional — no toughness > power gate).
+- `AssignUnblockedCombatDamageToDefendingCreature(filter = source())` — static: "if this creature is
+  unblocked, you may have it assign its combat damage to a creature defending player controls" (Cunning
+  Giant). The mirror of `AssignCombatDamageAsUnblocked` (Thorn Elemental — a *blocked* creature skipping
+  its blockers). `CombatDamageManager` pre-checks every unblocked, face-up attacker carrying it at each
+  combat damage step it deals damage in (so double strike asks twice, CR 510.1) and pauses on an
+  optional pick-one `SelectCardsDecision` over the defending player's creatures (a battle's protector's,
+  CR 508.5) on the battlefield; the pick becomes the attacker's whole `DamageAssignmentComponent`, and
+  declining assigns to the player / planeswalker / battle as normal. No creatures, no question.
 - `GrantKeyword(AbilityFlag.ASSIGNS_NO_COMBAT_DAMAGE, target, duration)` — "it assigns no combat damage
   this turn", the Fallen Empires rider that trades a creature's damage away for something else (Farrel's
   Zealot, Farrel's Mantle, Delif's Cone, Delif's Cube). **Not damage prevention**: the creature assigns

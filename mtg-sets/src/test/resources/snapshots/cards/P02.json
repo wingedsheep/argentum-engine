@@ -711,6 +711,32 @@
     ]
 }
 
+// Cunning Giant
+{
+    "name": "Cunning Giant",
+    "manaCost": "{5}{R}",
+    "typeLine": "Creature — Giant",
+    "oracleText": "If this creature is unblocked, you may have it assign its combat damage to a creature defending player controls.",
+    "creatureStats": {
+        "power": 4,
+        "toughness": 4
+    },
+    "script": {
+        "staticAbilities": [
+            "AssignUnblockedCombatDamageToDefendingCreature"
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "93",
+        "rarity": "RARE",
+        "artist": "Jeffrey R. Busch",
+        "imageUri": "https://cards.scryfall.io/normal/front/0/a/0aa284a7-3aac-4e88-becb-548a28c77401.jpg?1783946468"
+    },
+    "colorIdentityOverride": [
+        "RED"
+    ]
+}
+
 // Dakmor Bat
 {
     "name": "Dakmor Bat",

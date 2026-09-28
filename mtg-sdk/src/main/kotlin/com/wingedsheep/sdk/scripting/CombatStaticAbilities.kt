@@ -209,6 +209,29 @@ data class AssignCombatDamageAsUnblocked(
 }
 
 /**
+ * If this creature is unblocked, its controller may have it assign all its combat damage to one
+ * creature the defending player controls instead of to the player, planeswalker or battle it is
+ * attacking. Used for Cunning Giant.
+ *
+ * The mirror of [AssignCombatDamageAsUnblocked]: that one lets a *blocked* creature skip its
+ * blockers, this one lets an *unblocked* creature reach a creature that isn't blocking it. The
+ * choice is made as combat damage is assigned, once per combat damage step (CR 510.1), among the
+ * creatures the defending player controls at that moment — for a battle, its protector's (CR 508.5).
+ */
+@SerialName("AssignUnblockedCombatDamageToDefendingCreature")
+@Serializable
+data class AssignUnblockedCombatDamageToDefendingCreature(
+    val filter: GroupFilter = GroupFilter.source()
+) : StaticAbility {
+    override val description: String =
+        "If this creature is unblocked, you may have it assign its combat damage to a creature defending player controls"
+    override fun applyTextReplacement(replacer: TextReplacer): StaticAbility {
+        val newFilter = filter.applyTextReplacement(replacer)
+        return if (newFilter !== filter) copy(filter = newFilter) else this
+    }
+}
+
+/**
  * This creature can't attack unless a condition is met.
  * Checked at attack declaration time when the defending player is known.
  *

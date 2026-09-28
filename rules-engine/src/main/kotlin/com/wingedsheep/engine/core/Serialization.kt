@@ -357,6 +357,7 @@ val engineSerializersModule = SerializersModule {
         subclass(DamageAssignmentContinuation::class)
         subclass(CombatResolutionContinuation::class)
         subclass(AssignAsUnblockedContinuation::class)
+        subclass(AssignUnblockedToCreatureContinuation::class)
         subclass(DistributeDamageContinuation::class)
         subclass(DamagePreventionContinuation::class)
         subclass(DeflectDamageSourceChoiceContinuation::class)

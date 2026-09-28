@@ -37,6 +37,7 @@ import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.CounterType
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.AssignCombatDamageAsUnblocked
+import com.wingedsheep.sdk.scripting.AssignUnblockedCombatDamageToDefendingCreature
 import com.wingedsheep.sdk.scripting.DivideCombatDamageFreely
 import com.wingedsheep.sdk.scripting.effects.RedirectScope
 
@@ -136,6 +137,54 @@ internal class CombatDamageManager(
                     )
                 },
                 answer = continuation
+            )
+        }
+
+        // Pre-check: an unblocked attacker with AssignUnblockedCombatDamageToDefendingCreature
+        // (Cunning Giant) asks its controller whether to assign its damage to a creature the
+        // defending player controls instead of to what it's attacking.
+        for ((attackerId, attackingComponent) in attackers) {
+            if (attackerId !in state.getBattlefield()) continue
+            val attackerContainer = state.getEntity(attackerId) ?: continue
+            val attackerCard = attackerContainer.get<CardComponent>() ?: continue
+            // CR 708.2a: a face-down permanent has no abilities.
+            if (attackerContainer.has<FaceDownComponent>()) continue
+            // A creature whose blockers all left combat is still blocked (CR 509.1h).
+            if (!CombatStatusQueries.isUnblockedAttacker(state, attackerId, attackerContainer, projected::getController)) continue
+            if (attackerContainer.get<DamageAssignmentComponent>() != null) continue
+
+            val cardDef = cardRegistry.getCard(attackerCard.cardDefinitionId) ?: continue
+            if (cardDef.staticAbilities.none { it is AssignUnblockedCombatDamageToDefendingCreature }) continue
+            if (!dealsDamageThisStep(projected, attackerId, firstStrike)) continue
+            val attackerPower = CombatDamageUtils.getAssignedCombatDamage(state, projected, attackerId, cardRegistry, predicateEvaluator = predicateEvaluator)
+            if (attackerPower <= 0) continue
+
+            // "Defending player" for a battle is its protector (CR 508.5).
+            val defendingPlayer = CombatDefenders.defendingPlayerOf(state, attackingComponent.defenderId)
+            val creatures = state.getBattlefield().filter { entityId ->
+                projected.getController(entityId) == defendingPlayer && projected.isCreature(entityId)
+            }
+            if (creatures.isEmpty()) continue
+            val attackingPlayer = projected.getController(attackerId) ?: continue
+
+            return state.suspendForDecision(
+                question = { decisionId ->
+                    SelectCardsDecision(
+                        id = decisionId,
+                        playerId = attackingPlayer,
+                        prompt = "Choose a creature for ${attackerCard.name} to assign its $attackerPower combat damage to, or none to assign it normally",
+                        context = DecisionContext(
+                            sourceId = attackerId,
+                            sourceName = attackerCard.name,
+                            phase = DecisionPhase.COMBAT
+                        ),
+                        options = creatures,
+                        minSelections = 0,
+                        maxSelections = 1,
+                        useTargetingUI = true
+                    )
+                },
+                answer = AssignUnblockedToCreatureContinuation(attackerId = attackerId, firstStrike = firstStrike)
             )
         }
 
@@ -1667,8 +1716,11 @@ internal class CombatDamageManager(
             if (attackerPower <= 0) continue
 
             val blockedBy = attackerContainer.get<BlockedComponent>()
+            // An empty assignment is a declined choice ("assign normally"), not "assign nothing".
+            val manualAssignment = attackerContainer.get<DamageAssignmentComponent>()
+                ?.assignments?.takeIf { it.isNotEmpty() }
 
-            if (blockedBy == null) {
+            if (blockedBy == null && manualAssignment == null) {
                 val defenderId = attackingComponent.defenderId
                 if (!DamageUtils.isPreventedByRecipientGroupShield(state, defenderId, attackerId, isCombatDamage = true, predicateEvaluator = predicateEvaluator) &&
                     !isCombatDamagePreventedByGroupFilter(state, attackerId, projected)) {
@@ -1677,9 +1729,8 @@ internal class CombatDamageManager(
                         .merge(attackerId, amplified) { a, b -> a + b }
                 }
             } else {
-                val manualAssignment = attackerContainer.get<DamageAssignmentComponent>()
                 val damageDistribution = if (manualAssignment != null) {
-                    manualAssignment.assignments
+                    manualAssignment
                 } else {
                     damageCalculator.calculateAutoDamageDistribution(state, attackerId).assignments
                 }
