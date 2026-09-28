@@ -308,6 +308,7 @@ object PermanentEntryReplacements {
             controllerId = controllerId,
             fromZone = fromZone,
             additionalSubtypes = effect.additionalSubtypes,
+            additionalColors = effect.additionalColors,
             additionalKeywords = effect.additionalKeywords,
             nameOverride = effect.nameOverride,
             powerOverride = effect.powerOverride,

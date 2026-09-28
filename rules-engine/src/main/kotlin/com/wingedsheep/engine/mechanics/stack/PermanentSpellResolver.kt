@@ -124,6 +124,7 @@ internal class PermanentSpellResolver(
                     ownerId = ownerId,
                     castFaceDown = spellComponent.castFaceDown,
                     additionalSubtypes = entersAsCopy.additionalSubtypes,
+                    additionalColors = entersAsCopy.additionalColors,
                     additionalKeywords = entersAsCopy.additionalKeywords,
                     nameOverride = entersAsCopy.nameOverride,
                     powerOverride = entersAsCopy.powerOverride,

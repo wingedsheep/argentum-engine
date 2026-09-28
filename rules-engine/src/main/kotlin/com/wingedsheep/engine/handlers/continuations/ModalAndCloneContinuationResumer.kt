@@ -222,7 +222,7 @@ class ModalAndCloneContinuationResumer(
     /**
      * Apply an `EntersAsCopy` copy onto [entityId] in place (CR 707.2): overwrite its
      * [CardComponent] with [targetCardComponent]'s copiable characteristics (re-homed to [newOwnerId]),
-     * add any [additionalSubtypes] / [additionalKeywords] and name / P-T overrides (via
+     * add any [additionalSubtypes] / [additionalColors] / [additionalKeywords] and name / P-T overrides (via
      * [CopyExceptionApplier], the same arithmetic every other copy path runs), and snapshot a
      * [com.wingedsheep.engine.state.components.identity.CopyOfComponent] so the permanent reverts to
      * its printed identity when it leaves the battlefield (CR 400.7 / 707.2).
@@ -239,6 +239,7 @@ class ModalAndCloneContinuationResumer(
         targetCardComponent: CardComponent,
         newOwnerId: EntityId?,
         additionalSubtypes: List<String>,
+        additionalColors: Set<com.wingedsheep.sdk.core.Color>,
         additionalKeywords: List<com.wingedsheep.sdk.core.Keyword>,
         nameOverride: String?,
         powerOverride: Int?,
@@ -250,6 +251,7 @@ class ModalAndCloneContinuationResumer(
             nameOverride = nameOverride,
             addedKeywords = additionalKeywords.toSet(),
             addedSubtypes = additionalSubtypes.map { com.wingedsheep.sdk.core.Subtype(it) }.toSet(),
+            addedColors = additionalColors,
             powerOverride = powerOverride,
             toughnessOverride = toughnessOverride,
         )
@@ -352,6 +354,7 @@ class ModalAndCloneContinuationResumer(
                     targetCardComponent = targetCardComponent,
                     newOwnerId = ownerId,
                     additionalSubtypes = continuation.additionalSubtypes,
+                    additionalColors = continuation.additionalColors,
                     additionalKeywords = continuation.additionalKeywords,
                     nameOverride = continuation.nameOverride,
                     powerOverride = continuation.powerOverride,
@@ -455,6 +458,7 @@ class ModalAndCloneContinuationResumer(
                     targetCardComponent = targetCardComponent,
                     newOwnerId = originalCardComponent.ownerId,
                     additionalSubtypes = continuation.additionalSubtypes,
+                    additionalColors = continuation.additionalColors,
                     additionalKeywords = continuation.additionalKeywords,
                     nameOverride = continuation.nameOverride,
                     powerOverride = continuation.powerOverride,

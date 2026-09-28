@@ -13744,14 +13744,15 @@ The priority groups are (CR 616.1a–f):
   or granted (`ActiveReplacements`). Not yet ordered against `CreateAdditionalToken` by the affected
   player (CR 616.1): the substitution runs first and `CreateAdditionalToken` then judges only the
   substitutes, so Worldwalker Helm adds no Map for a Treasure that became a Dragon.
-- `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard, tappedIfCopied, additionalCounters)` —
+- `EntersAsCopy(optional, copyFilter, copyFromZone, filterByTotalManaSpent, additionalSubtypes, additionalColors, additionalKeywords, nameOverride, powerOverride, toughnessOverride, exileCopiedCard, tappedIfCopied, additionalCounters)` —
   "enter as a copy of …". As the permanent enters, the controller picks an object matching
   `copyFilter` and the permanent enters as a copy (Rule 707 copiable values), with any overrides
   applied. `copyFromZone` selects the candidate pool: `Zone.BATTLEFIELD` (default — Clone, Clever
   Impersonator, Mockingbird) copies a permanent in play; `Zone.GRAVEYARD` copies a *card*
   from any graveyard (Superior Spider-Man; Echoing Deeps copies a land card) via the modal card-list
   overlay. `additionalSubtypes` /
-  `additionalKeywords` are added "in addition to its other types"; `nameOverride` keeps a fixed name;
+  `additionalKeywords` are added "in addition to its other types"; `additionalColors` is unioned onto
+  the copied colors ("a 4/4 black Zombie in addition to its other colors and types" — Lazotep Convert); `nameOverride` keeps a fixed name;
   `powerOverride` / `toughnessOverride` force base P/T; `exileCopiedCard` exiles the copied card after
   the copy ("When you do, exile that card"). `filterByTotalManaSpent` restricts copy targets to mana
   value ≤ total mana spent (Mockingbird). `tappedIfCopied` makes the permanent enter **tapped** only

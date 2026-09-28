@@ -1721,6 +1721,10 @@ data class ReplaceLifePaymentWithLibraryExile(
  *                                to cast this spell are valid copy targets. Used for Mockingbird.
  * @param additionalSubtypes Subtypes to add to the copy (e.g., "Bird" for Mockingbird; "Spider", "Human",
  *                   "Hero" for Superior Spider-Man — added "in addition to its other types").
+ * @param additionalColors Colors unioned onto the copied colors — "it's a 4/4 black Zombie in addition
+ *                   to its other colors and types" (Lazotep Convert, the back of Invasion of Amonkhet).
+ *                   Rides the same [com.wingedsheep.sdk.scripting.effects.CopyExceptions.addedColors]
+ *                   axis every other copy path uses.
  * @param additionalKeywords Keywords to grant to the copy (e.g., FLYING for Mockingbird).
  * @param nameOverride When non-null, the copy keeps this name instead of the copied object's name
  *                   ("except his name is Superior Spider-Man").
@@ -1751,6 +1755,7 @@ data class EntersAsCopy(
     val copyFromZone: Zone = Zone.BATTLEFIELD,
     val filterByTotalManaSpent: Boolean = false,
     val additionalSubtypes: List<String> = emptyList(),
+    val additionalColors: Set<Color> = emptySet(),
     val additionalKeywords: List<Keyword> = emptyList(),
     val nameOverride: String? = null,
     val powerOverride: Int? = null,
@@ -1783,8 +1788,12 @@ data class EntersAsCopy(
                 if (powerOverride != null && toughnessOverride != null) {
                     add("it's $powerOverride/$toughnessOverride")
                 }
-                if (additionalSubtypes.isNotEmpty()) {
-                    add("a ${additionalSubtypes.joinToString(" ")} in addition to its other types")
+                if (additionalSubtypes.isNotEmpty() || additionalColors.isNotEmpty()) {
+                    val colorWords = additionalColors.joinToString(" ") { it.displayName.lowercase() }
+                    val words = listOf(colorWords, additionalSubtypes.joinToString(" ")).filter { it.isNotEmpty() }
+                    val what = if (additionalColors.isNotEmpty() && additionalSubtypes.isNotEmpty()) "colors and types"
+                        else if (additionalColors.isNotEmpty()) "colors" else "types"
+                    add("a ${words.joinToString(" ")} in addition to its other $what")
                 }
                 if (additionalKeywords.isNotEmpty()) {
                     add("it has ${additionalKeywords.joinToString(", ") { it.name.lowercase() }}")

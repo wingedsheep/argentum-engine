@@ -2,6 +2,7 @@ package com.wingedsheep.engine.core
 
 import com.wingedsheep.engine.state.components.stack.ChosenTarget
 import com.wingedsheep.sdk.core.CounterType
+import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Keyword
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
@@ -244,6 +245,7 @@ data class ModalTargetContinuation(
  * @property castFaceDown Whether the spell was cast face-down
  * @property optional Whether the copy is optional (Clone is optional)
  * @property additionalSubtypes Subtypes to add to the copy (e.g., "Bird" for Mockingbird)
+ * @property additionalColors Colors added to the copy's colors (Lazotep Convert: black)
  * @property additionalKeywords Keywords to grant to the copy (e.g., FLYING for Mockingbird)
  * @property nameOverride When non-null, the copy keeps this name instead of the copied object's
  *   name (Superior Spider-Man: "except his name is Superior Spider-Man")
@@ -262,6 +264,7 @@ data class CloneEntersContinuation(
     val ownerId: EntityId,
     val castFaceDown: Boolean,
     val additionalSubtypes: List<String> = emptyList(),
+    val additionalColors: Set<Color> = emptySet(),
     val additionalKeywords: List<Keyword> = emptyList(),
     val nameOverride: String? = null,
     val powerOverride: Int? = null,
@@ -297,6 +300,7 @@ data class CloneEntersOnBattlefieldContinuation(
     val controllerId: EntityId,
     val fromZone: Zone? = null,
     val additionalSubtypes: List<String> = emptyList(),
+    val additionalColors: Set<Color> = emptySet(),
     val additionalKeywords: List<Keyword> = emptyList(),
     val nameOverride: String? = null,
     val powerOverride: Int? = null,

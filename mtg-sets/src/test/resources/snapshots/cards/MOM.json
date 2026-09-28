@@ -2265,6 +2265,179 @@
     ]
 }
 
+// Invasion of Amonkhet
+{
+    "name": "Invasion of Amonkhet",
+    "manaCost": "{1}{U}{B}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, each player mills three cards, then each opponent discards a card and you draw a card. (To mill three cards, a player puts the top three cards of their library into their graveyard.)",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Amonkhet:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "Composite",
+                    "effects": [
+                        {
+                            "type": "GatherCards",
+                            "source": {
+                                "type": "TopOfLibrary",
+                                "count": {
+                                    "type": "Fixed",
+                                    "amount": 3
+                                },
+                                "player": "Each",
+                                "isMill": true
+                            },
+                            "storeAs": "milled"
+                        },
+                        {
+                            "type": "MoveCollection",
+                            "from": "milled",
+                            "destination": {
+                                "type": "ToZone",
+                                "zone": "Graveyard",
+                                "player": "Each"
+                            }
+                        },
+                        {
+                            "type": "Composite",
+                            "effects": [
+                                {
+                                    "type": "GatherCards",
+                                    "source": {
+                                        "type": "FromZone",
+                                        "zone": "Hand",
+                                        "player": "EachOpponent"
+                                    },
+                                    "storeAs": "hand"
+                                },
+                                {
+                                    "type": "SelectFromCollection",
+                                    "from": "hand",
+                                    "selection": {
+                                        "type": "ChooseExactly",
+                                        "count": {
+                                            "type": "Fixed",
+                                            "amount": 1
+                                        }
+                                    },
+                                    "chooser": "Opponent",
+                                    "storeSelected": "discarded",
+                                    "prompt": "Choose 1 card to discard"
+                                },
+                                {
+                                    "type": "MoveCollection",
+                                    "from": "discarded",
+                                    "destination": {
+                                        "type": "ToZone",
+                                        "zone": "Graveyard",
+                                        "player": "EachOpponent"
+                                    },
+                                    "moveType": "Discard"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        }
+                    ]
+                },
+                "descriptionOverride": "When this Siege enters, each player mills three cards, then each opponent discards a card and you draw a card."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Lazotep Convert",
+        "manaCost": "",
+        "typeLine": "Creature — Zombie",
+        "oracleText": "You may have this creature enter as a copy of any creature card in a graveyard, except it's a 4/4 black Zombie in addition to its other colors and types.",
+        "creatureStats": {
+            "power": 4,
+            "toughness": 4
+        },
+        "script": {
+            "replacementEffects": [
+                {
+                    "type": "EntersAsCopy",
+                    "copyFromZone": "Graveyard",
+                    "additionalSubtypes": [
+                        "Zombie"
+                    ],
+                    "additionalColors": [
+                        "BLACK"
+                    ],
+                    "powerOverride": 4,
+                    "toughnessOverride": 4
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "231",
+            "rarity": "UNCOMMON",
+            "artist": "Jokubas Uogintas",
+            "flavorText": "As the lazotep covered his body, he heard Norn's voice fade from a deafening clarion to a distant whisper.",
+            "imageUri": "https://cards.scryfall.io/normal/back/9/8/981f091a-17f8-412e-9752-69070ebed4ea.jpg?1783916953",
+            "rulings": [
+                {
+                    "date": "2023-04-14",
+                    "text": "Lazotep Convert has received an update to its official rules text to clarify that it keeps its other colors and types as part of its copy effect."
+                },
+                {
+                    "date": "2023-04-14",
+                    "text": "Lazotep Convert copies exactly what was printed on the original creature card, with the noted exceptions."
+                },
+                {
+                    "date": "2023-04-14",
+                    "text": "Any enters-the-battlefield abilities of the copied creature card will trigger when Lazotep Convert enters the battlefield. Any \"as [this creature] enters the battlefield\" or \"[this creature] enters the battlefield with\" abilities of the chosen creature card will also work."
+                }
+            ]
+        },
+        "colorIdentityOverride": [
+            "BLUE",
+            "BLACK"
+        ],
+        "colorIndicator": [
+            "BLUE",
+            "BLACK"
+        ],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "231",
+        "rarity": "UNCOMMON",
+        "artist": "Jokubas Uogintas",
+        "imageUri": "https://cards.scryfall.io/normal/front/9/8/981f091a-17f8-412e-9752-69070ebed4ea.jpg?1783916953",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "To resolve Invasion of Amonkhet's enters-the-battlefield ability, first each player mills three cards. Then the next opponent in turn order (or, if it's an opponent's turn, the opponent whose turn it is) chooses a card in hand and sets it aside without revealing it. Then each other opponent in turn order does the same. Finally, all chosen cards are revealed and discarded at the same time. Finally, you draw a card."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "Sieges each have an intrinsic triggered ability. That ability is \"When the last defense counter is removed from this permanent, exile it, then you may cast it transformed without paying its mana cost.\""
+            },
+            {
+                "date": "2023-04-14",
+                "text": "As a Siege enters the battlefield, its controller chooses an opponent to be its protector."
+            }
+        ]
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": [
+        "BLUE",
+        "BLACK"
+    ]
+}
+
 // Invasion of Azgol
 {
     "name": "Invasion of Azgol",
