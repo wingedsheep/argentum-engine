@@ -434,14 +434,6 @@ internal class ActivatedManaAbilityResolver(
     }
 
     /**
-     * Scales the mana [effect] produces by [multiplier], leaving everything else about it — color,
-     * restriction, riders, expiry — untouched. Recurses into a [CompositeEffect] so a mana ability
-     * bundled with a side effect (pain, a counter) scales its mana half only.
-     *
-     * [AddOneManaOfEachColorAmongEffect] has no amount to scale (it is "one of each colour among
-     * …"), so it is deliberately left alone rather than silently mis-scaled.
-     */
-    /**
      * Adds [restriction] to the mana [effect] produces, keeping any restriction it already carries
      * (both then apply). Recurses into a [CompositeEffect] like [multiplyManaProduced].
      *
@@ -462,6 +454,14 @@ internal class ActivatedManaAbilityResolver(
         else -> effect
     }
 
+    /**
+     * Scales the mana [effect] produces by [multiplier], leaving everything else about it — color,
+     * restriction, riders, expiry — untouched. Recurses into a [CompositeEffect] so a mana ability
+     * bundled with a side effect (pain, a counter) scales its mana half only.
+     *
+     * [AddOneManaOfEachColorAmongEffect] has no amount to scale (it is "one of each colour among
+     * …"), so it is deliberately left alone rather than silently mis-scaled.
+     */
     private fun multiplyManaProduced(effect: Effect, multiplier: Int): Effect = when (effect) {
         is AddManaEffect -> effect.copy(amount = DynamicAmount.Multiply(effect.amount, multiplier))
         is AddColorlessManaEffect -> effect.copy(amount = DynamicAmount.Multiply(effect.amount, multiplier))
