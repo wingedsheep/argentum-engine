@@ -372,6 +372,7 @@ class PredicateEvaluator(
             CardPredicate.IsColorless,
             CardPredicate.IsDoubleFaced,
             CardPredicate.IsMonocolored,
+            is CardPredicate.HasExactlyColors,
             CardPredicate.IsMulticolored,
             CardPredicate.IsNonartifact,
             CardPredicate.IsNoncreature,
@@ -715,6 +716,7 @@ class PredicateEvaluator(
             CardPredicate.IsColored -> colors.isNotEmpty()
             CardPredicate.IsMulticolored -> colors.size > 1
             CardPredicate.IsMonocolored -> colors.size == 1
+            is CardPredicate.HasExactlyColors -> colors.size == predicate.count
 
             // Subtype predicates - use projected subtypes when available (for text-changing effects)
             // Face-down creatures have no subtypes (Rule 708.2)
@@ -2432,6 +2434,7 @@ class PredicateEvaluator(
             CardPredicate.IsColored -> record.colors.isNotEmpty()
             CardPredicate.IsMulticolored -> record.colors.size > 1
             CardPredicate.IsMonocolored -> record.colors.size == 1
+            is CardPredicate.HasExactlyColors -> record.colors.size == predicate.count
 
             // Subtype predicates
             is CardPredicate.HasSubtype -> typeLine.hasSubtype(predicate.subtype)

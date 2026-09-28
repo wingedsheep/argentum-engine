@@ -3305,6 +3305,160 @@
     ]
 }
 
+// Invasion of Ravnica
+{
+    "name": "Invasion of Ravnica",
+    "manaCost": "{5}",
+    "typeLine": "Battle — Siege",
+    "oracleText": "(As a Siege enters, choose an opponent to protect it. You and others can attack it. When it's defeated, exile it, then cast it transformed.)\nWhen this Siege enters, exile target nonland permanent an opponent controls that isn't exactly two colors.",
+    "script": {
+        "triggeredAbilities": [
+            {
+                "id": "Invasion of Ravnica:1",
+                "trigger": {
+                    "type": "ZoneChangeEvent",
+                    "to": "Battlefield"
+                },
+                "effect": {
+                    "type": "MoveToZone",
+                    "target": {
+                        "type": "BoundVariable",
+                        "name": "t0"
+                    },
+                    "destination": "Exile"
+                },
+                "targetRequirement": {
+                    "type": "TargetObject",
+                    "filter": {
+                        "baseFilter": {
+                            "cardPredicates": [
+                                "IsNonland",
+                                "IsPermanent",
+                                {
+                                    "type": "Not",
+                                    "predicate": {
+                                        "type": "HasExactlyColors",
+                                        "count": 2
+                                    }
+                                }
+                            ],
+                            "controllerPredicate": "ControlledByOpponent"
+                        }
+                    },
+                    "id": "t0"
+                },
+                "descriptionOverride": "When this Siege enters, exile target nonland permanent an opponent controls that isn't exactly two colors."
+            }
+        ]
+    },
+    "backFace": {
+        "name": "Guildpact Paragon",
+        "manaCost": "",
+        "typeLine": "Artifact Creature — Construct",
+        "oracleText": "Whenever you cast a spell that's exactly two colors, look at the top six cards of your library. You may reveal a card that's exactly two colors from among them and put it into your hand. Put the rest on the bottom of your library in a random order.",
+        "creatureStats": {
+            "power": 5,
+            "toughness": 5
+        },
+        "script": {
+            "triggeredAbilities": [
+                {
+                    "id": "Guildpact Paragon:1",
+                    "trigger": {
+                        "type": "SpellCastEvent",
+                        "spellFilter": {
+                            "cardPredicates": [
+                                {
+                                    "type": "HasExactlyColors",
+                                    "count": 2
+                                }
+                            ]
+                        }
+                    },
+                    "binding": "ANY",
+                    "effect": {
+                        "type": "Composite",
+                        "effects": [
+                            {
+                                "type": "GatherCards",
+                                "source": {
+                                    "type": "TopOfLibrary",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 6
+                                    }
+                                },
+                                "storeAs": "gathered0"
+                            },
+                            {
+                                "type": "SelectFromCollection",
+                                "from": "gathered0",
+                                "selection": {
+                                    "type": "ChooseUpTo",
+                                    "count": {
+                                        "type": "Fixed",
+                                        "amount": 1
+                                    }
+                                },
+                                "filter": {
+                                    "cardPredicates": [
+                                        {
+                                            "type": "HasExactlyColors",
+                                            "count": 2
+                                        }
+                                    ]
+                                },
+                                "storeSelected": "selected1",
+                                "storeRemainder": "remainder1",
+                                "prompt": "You may reveal a card that's exactly two colors to put into your hand.",
+                                "selectedLabel": "Put into hand",
+                                "remainderLabel": "Put on bottom",
+                                "showAllCards": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "selected1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Hand"
+                                },
+                                "revealed": true
+                            },
+                            {
+                                "type": "MoveCollection",
+                                "from": "remainder1",
+                                "destination": {
+                                    "type": "ToZone",
+                                    "zone": "Library",
+                                    "placement": "Bottom"
+                                },
+                                "order": "Random"
+                            }
+                        ]
+                    },
+                    "descriptionOverride": "Whenever you cast a spell that's exactly two colors, look at the top six cards of your library. You may reveal a card that's exactly two colors from among them and put it into your hand. Put the rest on the bottom of your library in a random order."
+                }
+            ]
+        },
+        "metadata": {
+            "collectorNumber": "1",
+            "rarity": "MYTHIC",
+            "artist": "Leon Tukker",
+            "imageUri": "https://cards.scryfall.io/normal/back/7/3/73f8fc4f-2f36-4932-8d04-3c2651c116dc.jpg?1783917079"
+        },
+        "colorIdentityOverride": [],
+        "hasNoManaCost": true
+    },
+    "metadata": {
+        "collectorNumber": "1",
+        "rarity": "MYTHIC",
+        "artist": "Leon Tukker",
+        "imageUri": "https://cards.scryfall.io/normal/front/7/3/73f8fc4f-2f36-4932-8d04-3c2651c116dc.jpg?1783917079"
+    },
+    "startingDefense": 4,
+    "colorIdentityOverride": []
+}
+
 // Iridescent Blademaster
 {
     "name": "Iridescent Blademaster",

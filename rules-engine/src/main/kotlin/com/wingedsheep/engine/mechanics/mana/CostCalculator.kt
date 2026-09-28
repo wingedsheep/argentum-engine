@@ -1265,6 +1265,7 @@ class CostCalculator(
             CardPredicate.IsColored -> cardDef.colors.isNotEmpty()
             CardPredicate.IsMulticolored -> cardDef.colors.size > 1
             CardPredicate.IsMonocolored -> cardDef.colors.size == 1
+            is CardPredicate.HasExactlyColors -> cardDef.colors.size == predicate.count
 
             is CardPredicate.HasSubtype -> typeLine.hasSubtype(predicate.subtype)
             is CardPredicate.NotSubtype -> !typeLine.hasSubtype(predicate.subtype)

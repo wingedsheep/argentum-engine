@@ -252,6 +252,17 @@ sealed interface CardPredicate : TextReplaceable<CardPredicate> {
         override val description: String = "monocolored"
     }
 
+    /**
+     * Exactly [count] colors (CR 105.2). "a spell that's exactly two colors" (Guildpact Paragon);
+     * wrap in [Not] for "that isn't exactly two colors" (Invasion of Ravnica). `count = 1` is
+     * [IsMonocolored] — prefer that spelling there.
+     */
+    @SerialName("HasExactlyColors")
+    @Serializable
+    data class HasExactlyColors(val count: Int) : CardPredicate {
+        override val description: String = "exactly $count colors"
+    }
+
     // =============================================================================
     // Subtype Predicates
     // =============================================================================

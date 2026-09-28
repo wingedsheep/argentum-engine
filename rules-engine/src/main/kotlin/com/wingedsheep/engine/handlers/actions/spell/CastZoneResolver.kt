@@ -884,6 +884,7 @@ class CastZoneResolver(
                 is CardPredicate.IsColored -> card.colors.isNotEmpty()
                 is CardPredicate.IsMulticolored -> card.colors.size >= 2
                 is CardPredicate.IsMonocolored -> card.colors.size == 1
+                is CardPredicate.HasExactlyColors -> card.colors.size == predicate.count
                 // --- Subtypes ---
                 is CardPredicate.HasSubtype -> card.typeLine.hasSubtype(predicate.subtype)
                 is CardPredicate.HasAnyOfSubtypes ->

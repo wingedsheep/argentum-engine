@@ -201,6 +201,22 @@ class PredicateEvaluatorRecordTest : FunSpec({
                 filter(CardPredicate.IsMulticolored)
             ) shouldBe false
         }
+
+        test("HasExactlyColors matches only that many colors") {
+            val two = filter(CardPredicate.HasExactlyColors(2))
+            evaluator.matchesFilter(
+                record(TypeLine.instant(), colors = setOf(Color.RED, Color.GREEN)), two
+            ) shouldBe true
+            evaluator.matchesFilter(record(TypeLine.instant(), colors = setOf(Color.RED)), two) shouldBe false
+            evaluator.matchesFilter(
+                record(TypeLine.instant(), colors = setOf(Color.RED, Color.GREEN, Color.WHITE)), two
+            ) shouldBe false
+            evaluator.matchesFilter(record(TypeLine.instant(), colors = emptySet()), two) shouldBe false
+            evaluator.matchesFilter(
+                record(TypeLine.instant(), colors = emptySet()),
+                filter(CardPredicate.Not(CardPredicate.HasExactlyColors(2)))
+            ) shouldBe true
+        }
     }
 
     // --- Subtype predicates -------------------------------------------------

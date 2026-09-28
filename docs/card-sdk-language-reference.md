@@ -5328,6 +5328,7 @@ This is the player-arm prerequisite for the planned composable mixed `TargetUnio
   "whenever a Vehicle crewed by this creature this turn attacks" (Balthier and Fran).
 - `.nontoken()` / `.token()` — token vs printed.
 - `.monocolored()` — restrict to monocolored objects (exactly one color, CR 105.2); colorless objects don't match. ("for each color among monocolored permanents you control" — Tarnation Vista.)
+- `.exactlyColors(n)` / `.notExactlyColors(n)` — objects that are (or aren't) exactly `n` colors (CR 105.2; `CardPredicate.HasExactlyColors(n)`). Colorless is zero colors, so it passes `notExactlyColors(2)`. ("a spell that's exactly two colors" — Guildpact Paragon; "target nonland permanent an opponent controls that isn't exactly two colors" — Invasion of Ravnica.) For one color prefer `.monocolored()`.
 - `.faceDown()` — face-down state.
 - `.transformed()` — a **transformed permanent** (CR 701.27g): back face up on the battlefield. "Each transformed permanent you control" (Mutagen Connoisseur), "other transformed permanents you control have …" (Gargantuan Slabhorn). Not `Filters.DoubleFaced` — that is the *card*, true in every zone and of a front-face werewolf too.
 - `.withMorph()` — has a morph *procedure*: the printed keyword (`HasMorphAbilityComponent`, any

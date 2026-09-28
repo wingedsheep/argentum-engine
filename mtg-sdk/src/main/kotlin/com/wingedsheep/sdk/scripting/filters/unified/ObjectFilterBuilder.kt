@@ -55,6 +55,13 @@ interface ObjectFilterBuilder<out Self> {
     /** Restrict to monocolored objects (exactly one color). Colorless objects do not match. */
     fun monocolored() = withCardPredicate(CardPredicate.IsMonocolored)
 
+    /** Restrict to objects that are exactly [count] colors (CR 105.2). */
+    fun exactlyColors(count: Int) = withCardPredicate(CardPredicate.HasExactlyColors(count))
+
+    /** Restrict to objects that are *not* exactly [count] colors — "that isn't exactly two colors". */
+    fun notExactlyColors(count: Int) =
+        withCardPredicate(CardPredicate.Not(CardPredicate.HasExactlyColors(count)))
+
     /** Add a subtype requirement */
     fun withSubtype(subtype: Subtype) = withCardPredicate(CardPredicate.HasSubtype(subtype))
 
