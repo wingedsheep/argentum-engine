@@ -10308,6 +10308,15 @@ composite abilities).
   toggles live — it fires on attack while the condition holds and not while it's false. (Self-scoped
   `GrantTriggeredAbility`, plain or conditional, is consulted by `TriggerAbilityResolver.getSelfGrantedTriggeredAbilities`
   alongside the existing battlefield-scope/lord and attached-aura grant paths.)
+  The same shape carries a **conditional dies / leaves-the-battlefield trigger** — "as long as you control a
+  transformed permanent, this creature has 'When this creature dies, draw a card'" (Oculus Whelp):
+  `ConditionalStaticAbility(GrantTriggeredAbility(grantedTriggeredAbility { trigger = Triggers.self.dies(); … },
+  GroupFilter.source()), Conditions.YouControl(…))`. Such a trigger looks back in time (CR 603.10a), so the
+  engine freezes the condition onto the permanent's exit snapshot (`EntitySnapshot.conditionalSelfGrantIds`,
+  `ConditionalSelfGrants`) rather than reading it live once the permanent is gone. When several objects leave as
+  one event, the freeze is taken before the whole batch moves — a state-based-action pass, a `MoveCollection`
+  batch (`Effects.DestroyAll`), `ZoneTransitionService.moveToZoneBatch`, and a `ForEachInGroup` loop (via
+  `EffectContext.lookBackSelfGrants`) — so the Whelp still draws when the transformed permanent dies beside it.
 - `Increment` — "Whenever you cast a spell, if the amount of mana you spent is greater than this creature's power
   or toughness, put a +1/+1 counter on this creature." (Secrets of Strixhaven). Display-only; wire the behavior with
   the `card { increment() }` builder helper, which adds the `KeywordAbility.Increment` display marker (surfacing

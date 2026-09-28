@@ -89,7 +89,7 @@ class DeathAndLeaveTriggerDetector(
 
         // For "When this creature dies" - the creature might be in graveyard now
         // Look up abilities by card definition
-        val abilities = abilityResolver.getTriggeredAbilities(entityId, info.cardDefinitionId, state, statics)
+        val abilities = abilityResolver.getDepartedTriggeredAbilities(event, info.cardDefinitionId, state, statics)
         val controllerId = event.ownerId
 
         for (ability in abilities) {
@@ -567,7 +567,7 @@ class DeathAndLeaveTriggerDetector(
         val entityId = event.entityId
         val info = resolveDyingEntity(state, event) ?: return
 
-        val abilities = abilityResolver.getTriggeredAbilities(entityId, info.cardDefinitionId, state, statics)
+        val abilities = abilityResolver.getDepartedTriggeredAbilities(event, info.cardDefinitionId, state, statics)
         val controllerId = event.ownerId
 
         for (ability in abilities) {

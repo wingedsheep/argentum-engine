@@ -311,6 +311,14 @@ data class EffectContext(
     // --- Zone state ---
     /** Zone the spell was cast from (e.g., HAND, GRAVEYARD for flashback) */
     val castFromZone: Zone? = null,
+    /**
+     * Each iterated permanent's conditional self-granted triggered abilities, frozen by a
+     * group loop ("destroy all creatures" as `ForEachInGroup`) before its first iteration moved
+     * anything. The loop is one simultaneous event, and leaves-the-battlefield abilities look back
+     * to before it (CR 603.10a); a single-entity move reads its entry here into
+     * `ZoneEntryOptions.conditionalSelfGrantIds`. See [com.wingedsheep.engine.event.ConditionalSelfGrants].
+     */
+    val lookBackSelfGrants: Map<EntityId, List<com.wingedsheep.sdk.scripting.AbilityId>> = emptyMap(),
     // --- Projection state ---
     /** The entity being modified during continuous effect projection (for DynamicAmount evaluation) */
     val affectedEntityId: EntityId? = null,

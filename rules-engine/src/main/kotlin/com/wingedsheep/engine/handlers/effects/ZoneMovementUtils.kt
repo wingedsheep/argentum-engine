@@ -553,7 +553,9 @@ object ZoneMovementUtils {
         zones: ZoneTransitionService,
         state: GameState,
         entityId: EntityId,
-        canRegenerate: Boolean = true
+        canRegenerate: Boolean = true,
+        /** Frozen look-back self-grants when this destruction is one of a simultaneous batch. */
+        conditionalSelfGrantIds: List<com.wingedsheep.sdk.scripting.AbilityId>? = null
     ): EffectResult {
         val container = state.getEntity(entityId)
             ?: return EffectResult.error(state, "Entity not found: $entityId")
@@ -598,7 +600,10 @@ object ZoneMovementUtils {
         }
 
         // Delegate to ZoneTransitionService
-        val result = zones.moveToZone(state, entityId, Zone.GRAVEYARD)
+        val result = zones.moveToZone(
+            state, entityId, Zone.GRAVEYARD,
+            ZoneEntryOptions(conditionalSelfGrantIds = conditionalSelfGrantIds)
+        )
         return EffectResult.success(result.state, result.events)
     }
 

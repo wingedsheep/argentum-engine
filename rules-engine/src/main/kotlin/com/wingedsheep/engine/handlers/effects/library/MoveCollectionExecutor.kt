@@ -800,6 +800,12 @@ class MoveCollectionExecutor(
             state
         }
 
+        // Leaves-the-battlefield abilities look back to before this one simultaneous event
+        // (CR 603.10a): freeze each card's conditional self-grants before the first card moves.
+        val lookBack = com.wingedsheep.engine.event.ConditionalSelfGrants.frozen(
+            state, cards, cardRegistry, predicateEvaluator.conditions
+        )
+
         val movedIds = mutableListOf<EntityId>()
         // Track every library that received at least one card so per-card owner routing
         // (e.g., a permanent owned by another player going to its owner's library) shuffles
@@ -895,7 +901,9 @@ class MoveCollectionExecutor(
                 // LibraryRevealUtils.placementAudience — this only names the mover and whether the
                 // move was public.
                 libraryMoverId = context.controllerId,
-                libraryMovePublic = revealed
+                libraryMovePublic = revealed,
+                // The whole collection moves as one event (CR 603.10a look-back).
+                conditionalSelfGrantIds = lookBack[cardId] ?: emptyList()
             )
 
             // Delegate to ZoneTransitionService for full cleanup + entry

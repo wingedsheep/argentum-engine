@@ -50,7 +50,9 @@ import com.wingedsheep.engine.core.Outcome
  */
 class ForEachExecutor(
     private val effectExecutor: (GameState, Effect, EffectContext) -> EffectResult,
-    private val predicateEvaluator: PredicateEvaluator
+    private val predicateEvaluator: PredicateEvaluator,
+    /** For the group look-back freeze in [execute]; the continuation resumer needs none. */
+    private val cardRegistry: com.wingedsheep.engine.registry.CardRegistry? = null
 ) : EffectExecutor<ForEachEffect> {
 
     override val effectType: KClass<ForEachEffect> = ForEachEffect::class
@@ -77,7 +79,18 @@ class ForEachExecutor(
             }
         }
 
-        return processItems(currentState, effect, items, context)
+        // A group loop is one simultaneous event: freeze each member's conditional self-grants
+        // before the first iteration moves anything, for its leaves-the-battlefield look-back
+        // (CR 603.10a). Carried on the outer context, so it survives a mid-loop pause.
+        val loopContext = if (space is IterationSpace.Group && cardRegistry != null) {
+            val frozen = com.wingedsheep.engine.event.ConditionalSelfGrants.frozen(
+                state, items.mapNotNull { (it as? ForEachItem.OfEntity)?.entityId },
+                cardRegistry, predicateEvaluator.conditions
+            )
+            if (frozen.isEmpty()) context else context.copy(lookBackSelfGrants = context.lookBackSelfGrants + frozen)
+        } else context
+
+        return processItems(currentState, effect, items, loopContext)
     }
 
     /**

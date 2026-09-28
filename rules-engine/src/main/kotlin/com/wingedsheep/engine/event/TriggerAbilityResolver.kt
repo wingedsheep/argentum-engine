@@ -580,15 +580,9 @@ class TriggerAbilityResolver(
                 is GrantTriggeredAbility ->
                     if (ability.filter.scope is Scope.Self) result.add(ability.ability)
 
-                is ConditionalStaticAbility -> {
-                    val grant = ability.ability as? GrantTriggeredAbility ?: continue
-                    if (grant.filter.scope !is Scope.Self) continue
-                    val controllerId = state.projectedState.getController(entityId) ?: continue
-                    val context = EffectContext(sourceId = entityId, controllerId = controllerId)
-                    if (conditionEvaluator.evaluate(state, ability.condition, context)) {
-                        result.add(grant.ability)
-                    }
-                }
+                // Conditional grants are read by ConditionalSelfGrants below: live here, and frozen
+                // onto the exit snapshot for a permanent that has left (CR 603.10a).
+                is ConditionalStaticAbility -> {}
 
                 // "This permanent has all activated and triggered abilities of the last chosen card
                 // exiled with it" (Koh, the Face Stealer): the chosen card's triggered abilities fire
@@ -605,7 +599,27 @@ class TriggerAbilityResolver(
                 else -> {}
             }
         }
+        result += ConditionalSelfGrants.active(state, entityId, cardRegistry, conditionEvaluator)
         return result
+    }
+
+    /**
+     * The departed permanent's own triggered abilities, plus the conditional self-grants frozen on
+     * its exit snapshot ([ConditionalSelfGrants]) — the ability set a dies / leaves-the-battlefield
+     * trigger looks back to (CR 603.10a). The live read can't supply those: the permanent is gone
+     * and has no controller to evaluate the condition against.
+     */
+    fun getDepartedTriggeredAbilities(
+        event: com.wingedsheep.engine.core.ZoneChangeEvent,
+        cardDefinitionId: String,
+        state: GameState,
+        statics: BattlefieldStaticsIndex,
+    ): List<TriggeredAbility> {
+        val live = getTriggeredAbilities(event.entityId, cardDefinitionId, state, statics)
+        val frozenIds = event.lastKnown?.conditionalSelfGrantIds ?: return live
+        val liveIds = live.mapTo(HashSet()) { it.id }
+        return live + ConditionalSelfGrants.byIds(cardDefinitionId, frozenIds, cardRegistry)
+            .filter { it.id !in liveIds }
     }
 
     /**

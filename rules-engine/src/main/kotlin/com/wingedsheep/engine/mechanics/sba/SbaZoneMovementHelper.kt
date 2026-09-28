@@ -120,7 +120,12 @@ object SbaZoneMovementHelper {
             newState, entityId, destinationZone,
             com.wingedsheep.engine.handlers.effects.ZoneEntryOptions(
                 skipZoneChangeRedirect = true,
-                libraryPlacement = deathLibraryPlacement
+                libraryPlacement = deathLibraryPlacement,
+                // The whole SBA pass is one simultaneous event (CR 704.3), so its dies triggers
+                // look back to the pass start, not to the partly-moved state (CR 603.10a).
+                conditionalSelfGrantIds = com.wingedsheep.engine.event.ConditionalSelfGrants.activeIds(
+                    passStartState, entityId, zones.cardRegistry, zones.predicateEvaluator.conditions
+                )
             )
         )
         newState = transitionResult.state

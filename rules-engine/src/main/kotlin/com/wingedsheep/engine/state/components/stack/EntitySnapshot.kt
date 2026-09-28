@@ -206,6 +206,15 @@ data class EntitySnapshot(
      * way [wasSuspected] does for the suspected designation.
      */
     val wasFaceDown: Boolean = false,
+    /**
+     * The "as long as …" self-granted triggered abilities ([com.wingedsheep.sdk.scripting.ConditionalStaticAbility]
+     * around a `Scope.Self` [com.wingedsheep.sdk.scripting.GrantTriggeredAbility]) whose condition held
+     * immediately before the permanent left. Leaves-the-battlefield abilities look back in time
+     * (CR 603.10a), and by trigger time the permanent has no controller to evaluate the condition
+     * against — Oculus Whelp's granted "when this creature dies" is read from here. See
+     * [com.wingedsheep.engine.event.ConditionalSelfGrants].
+     */
+    val conditionalSelfGrantIds: List<com.wingedsheep.sdk.scripting.AbilityId> = emptyList(),
 ) : EntityView {
     companion object {
         /**

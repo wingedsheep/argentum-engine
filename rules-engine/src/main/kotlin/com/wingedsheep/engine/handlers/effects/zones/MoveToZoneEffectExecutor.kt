@@ -69,7 +69,10 @@ class MoveToZoneEffectExecutor(
 
         // byDestruction delegates to destroyPermanent (handles indestructible)
         if (effect.byDestruction) {
-            return destroyPermanent(zones, state, targetId)
+            return destroyPermanent(
+                zones, state, targetId,
+                conditionalSelfGrantIds = context.lookBackSelfGrants[targetId]
+            )
         }
 
         val container = state.getEntity(targetId)
@@ -121,6 +124,7 @@ class MoveToZoneEffectExecutor(
 
         // Build ZoneEntryOptions based on placement and effect properties
         val entryOptions = buildEntryOptions(effect, cardComponent, controllerId, context.controllerId)
+            .copy(conditionalSelfGrantIds = context.lookBackSelfGrants[targetId])
 
         val transitionResult = zones.moveToZone(
             state, targetId, effect.destination, entryOptions, currentZone

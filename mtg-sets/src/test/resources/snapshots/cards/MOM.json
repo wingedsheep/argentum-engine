@@ -4454,6 +4454,76 @@
     ]
 }
 
+// Oculus Whelp
+{
+    "name": "Oculus Whelp",
+    "manaCost": "{3}{U}",
+    "typeLine": "Creature — Phyrexian Dragon",
+    "oracleText": "Flying\nAs long as you control a transformed permanent, this creature has \"When this creature dies, draw a card.\"",
+    "creatureStats": {
+        "power": 3,
+        "toughness": 2
+    },
+    "keywords": [
+        "FLYING"
+    ],
+    "script": {
+        "staticAbilities": [
+            {
+                "type": "ConditionalStaticAbility",
+                "ability": {
+                    "type": "GrantTriggeredAbility",
+                    "ability": {
+                        "id": "Oculus Whelp:1",
+                        "trigger": {
+                            "type": "ZoneChangeEvent",
+                            "from": "Battlefield",
+                            "to": "Graveyard"
+                        },
+                        "effect": {
+                            "type": "DrawCards",
+                            "count": {
+                                "type": "Fixed",
+                                "amount": 1
+                            }
+                        },
+                        "descriptionOverride": "When this creature dies, draw a card."
+                    },
+                    "filter": {
+                        "baseFilter": "permanent",
+                        "scope": "Self"
+                    }
+                },
+                "condition": {
+                    "type": "Exists",
+                    "player": "You",
+                    "zone": "Battlefield",
+                    "filter": "permanent transformed"
+                }
+            }
+        ]
+    },
+    "metadata": {
+        "collectorNumber": "69",
+        "artist": "Donato Giancola",
+        "flavorText": "Even before Phyrexia's forces arrived on Tarkir, Silumgar's draconic brood had a discerning eye for valuables.",
+        "imageUri": "https://cards.scryfall.io/normal/front/5/8/58b35399-79af-49fa-989e-867a85320cc2.jpg?1783917031",
+        "rulings": [
+            {
+                "date": "2023-04-14",
+                "text": "A \"transformed permanent\" is a double-faced permanent with its back face up. Notably, modal double-faced permanents and melded permanents are never transformed permanents, no matter which faces are up."
+            },
+            {
+                "date": "2023-04-14",
+                "text": "If Oculus Whelp dies at the same time as your transformed permanents, its ability will trigger, and you'll draw a card. (This wouldn't be true if the ability were worded differently, in case you were wondering.)"
+            }
+        ]
+    },
+    "colorIdentityOverride": [
+        "BLUE"
+    ]
+}
+
 // Omnath, Locus of All
 {
     "name": "Omnath, Locus of All",

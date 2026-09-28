@@ -62,6 +62,7 @@ import com.wingedsheep.sdk.core.TypeLine
 import com.wingedsheep.sdk.core.Zone
 import com.wingedsheep.sdk.model.EntityId
 import com.wingedsheep.sdk.scripting.EntersTapped
+import com.wingedsheep.engine.event.ConditionalSelfGrants
 
 
 /**
@@ -106,7 +107,16 @@ data class ZoneEntryOptions(
      * placement public knowledge rather than the mover's alone. Independent of the source zone —
      * a move out of a public zone is already table-wide without this.
      */
-    val libraryMovePublic: Boolean = false
+    val libraryMovePublic: Boolean = false,
+    /**
+     * The conditional self-granted triggered abilities ([ConditionalSelfGrants]) this permanent had
+     * immediately before the event this move is part of, frozen by a caller that moves several
+     * objects as one simultaneous event (a board wipe, a state-based-action pass) one at a time.
+     * Leaves-the-battlefield abilities look back in time to before the event (CR 603.10a), so a
+     * condition over *other* objects — "as long as you control a transformed permanent" — must not
+     * see the partly-moved state. Null for a lone move: the pre-move state already is the look-back.
+     */
+    val conditionalSelfGrantIds: List<com.wingedsheep.sdk.scripting.AbilityId>? = null
 )
 
 /**
@@ -456,6 +466,8 @@ class ZoneTransitionService(
                 damageDealtByPlayers = lastKnownDamageDealtByPlayers,
                 damageSources = lastKnownDamageSources,
                 wasFaceDown = lastKnownWasFaceDown,
+                conditionalSelfGrantIds = options.conditionalSelfGrantIds
+                    ?: ConditionalSelfGrants.activeIds(state, entityId, cardRegistry, conditionEvaluator),
             )
         } else null
 
@@ -1117,6 +1129,8 @@ class ZoneTransitionService(
         var currentState = state
         val allEvents = mutableListOf<EngineGameEvent>()
         val transitions = mutableListOf<ZoneTransitionOutcome>()
+        // One simultaneous event: freeze every look-back self-grant before the first move.
+        val lookBack = ConditionalSelfGrants.frozen(state, entityIds, cardRegistry, conditionEvaluator)
 
         for (entityId in entityIds) {
             // For batch library moves with Shuffled placement, don't shuffle per-card
@@ -1129,7 +1143,12 @@ class ZoneTransitionService(
                 options
             }
 
-            val result = moveToZone(currentState, entityId, destinationZone, perCardOptions)
+            val result = moveToZone(
+                currentState, entityId, destinationZone,
+                perCardOptions.copy(
+                    conditionalSelfGrantIds = perCardOptions.conditionalSelfGrantIds ?: lookBack[entityId]
+                )
+            )
             currentState = result.state
             allEvents.addAll(result.events)
             transitions.addAll(result.transitions)

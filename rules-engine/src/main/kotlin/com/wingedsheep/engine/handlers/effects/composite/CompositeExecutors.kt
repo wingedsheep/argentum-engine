@@ -28,7 +28,7 @@ class CompositeExecutors(
 ) : ExecutorModule {
     private val compositeEffectExecutor = CompositeEffectExecutor(effectExecutor)
     private val createDelayedTriggerExecutor = CreateDelayedTriggerExecutor(dynamicAmountEvaluator = amountEvaluator)
-    private val forEachExecutor = ForEachExecutor(effectExecutor, predicateEvaluator = amountEvaluator.predicates)
+    private val forEachExecutor = ForEachExecutor(effectExecutor, predicateEvaluator = amountEvaluator.predicates, cardRegistry = cardRegistry)
     private val forEachCapturedControllerExecutor = ForEachCapturedControllerExecutor(effectExecutor)
     private val mayRevealCardFromHandEffectExecutor = MayRevealCardFromHandEffectExecutor(effectExecutor, predicateEvaluator = amountEvaluator.predicates)
     private val beholdEffectExecutor = BeholdEffectExecutor(effectExecutor, predicateEvaluator = amountEvaluator.predicates)
