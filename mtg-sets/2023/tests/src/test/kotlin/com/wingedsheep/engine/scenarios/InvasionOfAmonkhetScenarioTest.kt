@@ -1,6 +1,7 @@
 package com.wingedsheep.engine.scenarios
 
 import com.wingedsheep.engine.core.SelectCardsDecision
+import com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent
 import com.wingedsheep.engine.support.ScenarioTestBase
 import com.wingedsheep.sdk.core.Color
 import com.wingedsheep.sdk.core.Phase
@@ -29,7 +30,7 @@ class InvasionOfAmonkhetScenarioTest : ScenarioTestBase() {
         while (state.pendingDecision == null && guard++ < 30) {
             if (state.step == Step.DECLARE_BLOCKERS &&
                 state.getEntity(player2Id)
-                    ?.has<com.wingedsheep.engine.state.components.combat.BlockersDeclaredThisCombatComponent>() != true
+                    ?.has<BlockersDeclaredThisCombatComponent>() != true
             ) {
                 declareNoBlockers()
             } else {

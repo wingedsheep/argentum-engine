@@ -281,7 +281,7 @@ data class CloneEntersContinuation(
  * [CloneEntersContinuation]).
  *
  * The resumer copies the chosen object's copiable characteristics (CR 707.2) onto the entity, adds
- * any [additionalSubtypes] / [additionalKeywords] and overrides, taps the entity if
+ * any [additionalSubtypes] / [additionalColors] / [additionalKeywords] and overrides, taps the entity if
  * [tappedIfCopied] and a copy was actually made, optionally exiles the copied card, then fires the
  * entry's ETB triggers off a synthesized [ZoneChangeEvent] (so the copied identity's landfall /
  * "when ~ enters" triggers see the final characteristics). Declining leaves the permanent as its
